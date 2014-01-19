@@ -1,5 +1,5 @@
 <?php
-class Order extends InfoEntityAbstract
+class OrderInfo extends InfoAbstract
 {
 	/**
 	 * (non-PHPdoc)
@@ -7,7 +7,7 @@ class Order extends InfoEntityAbstract
 	 */
 	public function __loadDaoMap()
 	{
-		DaoMap::begin($this, 'log');
+		DaoMap::begin($this, 'oinfo');
 		parent::__loadDaoMap();
 		DaoMap::commit();
 	}
