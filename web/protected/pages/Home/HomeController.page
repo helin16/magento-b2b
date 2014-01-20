@@ -1,2 +1,6 @@
 <com:TContent ID="MainContent">
+	<div class="contentDiv">
+		<div class="h_title">Orders</div>
+		<div class="h_content">fdsfsd</div>		
+	</div>
 </com:TContent>

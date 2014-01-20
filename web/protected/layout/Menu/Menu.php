@@ -15,16 +15,5 @@ class Menu extends TTemplateControl
 	public function onLoad($param)
 	{
 	}
-	/**
-	 * 
-	 * @param unknown $sender
-	 * @param unknown $param
-	 */
-	public function logout($sender, $param)
-	{
-		$auth = $this->getApplication()->Modules['auth'];
-		$auth->logout();
-		$this->Response->Redirect('/');
-	}
 }
 ?>

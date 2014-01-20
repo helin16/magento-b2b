@@ -8,7 +8,7 @@
 </com:THead>
 <body>
     <com:TForm>
-	    <div id="frontend">
+	    <div>
 	        <div class="framewrapper content">
 	            <div class="contentwrapper">
 	               <com:TContentPlaceHolder ID="MainContent" />

@@ -12,11 +12,7 @@
 	        <div class="framewrapper header">
 	            <div class="contentwrapper">
 		            <com:Application.layout.Header.Header ID="Header" />
-	            </div>
-	        </div>
-	        <div class="framewrapper menu">
-	            <div class="contentwrapper">
-		            <com:Application.layout.Menu.Menu ID="Menu" />
+			        <com:Application.layout.Menu.Menu ID="Menu" />
 	            </div>
 	        </div>
 	        <div class="framewrapper content">

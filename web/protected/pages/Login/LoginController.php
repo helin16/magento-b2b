@@ -20,6 +20,7 @@ class LoginController extends TPage
 	    if(!$this->IsPostBack)
 	    {
 	    	$this->username->focus();
+	    	$this->errorDiv->visible = false;
 	    }
 	}
 	/**
@@ -33,14 +34,17 @@ class LoginController extends TPage
     public function login($sender, $params)
     {
     	$this->errorMsg->Text = "";
+    	$this->errorDiv->visible = false;
         if( ($username = trim($this->username->Text)) === '')
         {
         	$this->errorMsg->setText('username not provided!');
+        	$this->errorDiv->visible = true;
         	return;
         }
         if(($password = trim($this->password->Text)) === '')
         {
         	$this->errorMsg->setText('password not provided!');
+        	$this->errorDiv->visible = true;
         	return;
         }
         try
@@ -49,6 +53,7 @@ class LoginController extends TPage
 	        if(!$authManager->login($username, $password))
 	        {
 	        	$this->errorMsg->setText('Invalid username and password!');
+	        	$this->errorDiv->visible = true;
 	        	return;
 	        }
 	        $this->getResponse()->redirect('/');
@@ -56,6 +61,7 @@ class LoginController extends TPage
         catch(Exception $ex)
         {
         	$this->errorMsg->setText($ex->getMessage());
+        	$this->errorDiv->visible = true;
         	return;
         }
     }
