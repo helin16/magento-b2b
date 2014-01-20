@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<application id="BMV-Lib-System" mode="Debug">
+	<!-- alias definitions and namespace usings <paths> <alias id="myalias" 
+		path="./lib" /> <using namespace="Application.common.*" /> </paths> -->
+
+	<paths>
+		<using namespace="System.I18N.*" />
+		<using namespace="System.Web.UI.ActiveControls.*" />
+	</paths>
+
+	<!-- configurations for modules -->
+	<modules>
+		<module id="Session" class="Application.classes.Session.SessionDb" UseCustomStorage="true" />
+		<module id="security" class="TSecurityManager" EncryptionKey="BPCinternal" ValidationKey="bfb9e1b24ba6308e39495a4a78f35d70" />
+		<module id="request" class="THttpRequest" UrlManager="friendly-url" />
+		<module id="friendly-url" class="System.Web.TUrlMapping" EnableCustomUrl="true" UrlPrefix="/">
+		
+			<!-- FrontEnd:: login page -->
+			<url ServiceParameter="Login.LoginController" pattern="login.html" />
+			
+			<!-- FrontEnd:: logout page -->
+			<url ServiceParameter="Logout.LogoutController" pattern="logout.html" />
+			
+			<!-- asset service -->
+			<url ServiceId="asset" ServiceParameter="" pattern="asset/{method}" parameters.method="get" />
+		</module>
+
+		<module id="globalization" class="TGlobalization">
+			<translation type="XLIFF" source="Application.messages"	marker="@@" autosave="true" cache="true" />
+		</module>
+	</modules>
+
+	<!-- configuration for available services -->
+	<services>
+		<service id="page" class="TPageService" DefaultPage="Home.HomeController">
+		    <pages MasterClass="Application.layout.PageLayout" Theme="default" />
+			<modules>
+				<module id="auth" class="Application.classes.WebUser.AuthManager" UserManager="users" ReturnUrl="/" LoginPage="Login.LoginController" AuthExpire="3600" />
+				<module id="users" class="Application.classes.WebUser.WebUserManager" />
+			</modules>
+		</service>
+
+		<service id="asset" class="Application.pages.Asset.AssetController"></service>
+		<service id="soap" class="System.Web.Services.TSoapService">
+			<soap id="webauth" provider="Application.classes.Soap.WebAuth" />
+		</service>
+	</services>
+	<!-- application parameters -->
+	<parameters>
+		<parameter id="AppTitle" value="Budget PC Internal Management System" />
+		<parameter id="AppVersion" value="1.0.0" />
+	</parameters>
+
+</application>

@@ -40,5 +40,5 @@ insert into `orderinfotype` (`id`, `name`, `active`, `created`, `createdById`, `
 	(1, 'Customer Name', 1, NOW(), 10, NOW(), 10),
 	(2, 'Shipping Address', 1, NOW(), 10, NOW(), 10),
 	(3, 'Billing Address', 1, NOW(), 10, NOW(), 10),
-	(4, 'Shipping PostCode', 1, NOW(), 10, NOW(), 10);
+	(4, 'Shipping PostCode', 1, NOW(), 10, NOW(), 10),
 	(5, 'Customer Contact', 1, NOW(), 10, NOW(), 10);

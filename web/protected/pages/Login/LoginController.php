@@ -1,0 +1,62 @@
+<?php
+/**
+ * The login page
+ * 
+ * @package    Web
+ * @subpackage Controller
+ * @author     lhe<helin16@gmail.com>
+ */
+class LoginController extends TPage
+{
+	public function onLoad($param)
+	{
+		parent::onLoad($param);
+		$cScripts = BPCPageAbstract::getLastestJS(get_class($this));
+	    if (isset($cScripts['js']) && ($lastestJs = trim($cScripts['js'])) !== '')
+	        $this->getPage()->getClientScript()->registerScriptFile('pageJs', $this->publishAsset($lastestJs));
+	    if (isset($cScripts['css']) && ($lastestCss = trim($cScripts['css'])) !== '')
+	        $this->getPage()->getClientScript()->registerStyleSheetFile('pageCss', $this->publishAsset($lastestCss));
+	    
+	    if(!$this->IsPostBack)
+	    {
+	    	$this->username->focus();
+	    }
+	}
+	/**
+	 * Login action
+	 * 
+	 * @param unknown $sender
+	 * @param unknown $params
+	 * 
+	 * @throws Exception
+	 */
+    public function login($sender, $params)
+    {
+    	$this->errorMsg->Text = "";
+        if( ($username = trim($this->username->Text)) === '')
+        {
+        	$this->errorMsg->setText('username not provided!');
+        	return;
+        }
+        if(($password = trim($this->password->Text)) === '')
+        {
+        	$this->errorMsg->setText('password not provided!');
+        	return;
+        }
+        try
+        {
+	        $authManager=$this->getApplication()->getModule('auth');
+	        if(!$authManager->login($username, $password))
+	        {
+	        	$this->errorMsg->setText('Invalid username and password!');
+	        	return;
+	        }
+	        $this->getResponse()->redirect('/');
+        }
+        catch(Exception $ex)
+        {
+        	$this->errorMsg->setText($ex->getMessage());
+        	return;
+        }
+    }
+}

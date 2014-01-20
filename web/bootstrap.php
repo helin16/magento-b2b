@@ -12,10 +12,10 @@ class Web
 		$autoloadPaths = array(
 			dirname(__FILE__) . '/protected/',
 			dirname(__FILE__) . '/protected/classes/',
-				);
+			dirname(__FILE__) . '/protected/classes/BPCPage/',
+		);
 		
 		$found = false;
-		
 		foreach ($autoloadPaths as $path)
 		{
 			if (file_exists($path . $className . '.php'))

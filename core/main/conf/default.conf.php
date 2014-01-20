@@ -3,7 +3,7 @@ return array(
 	'Database' => array(
 			'Driver' => 'mysql',
 			'DBHost' => 'lin.bsuite.net',
-			'DB' => 'bmv',
+			'DB' => 'budgetpc',
 			'Username' => 'developers',
 			'Password' => 'hydraworks'
 		)
