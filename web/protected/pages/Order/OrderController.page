@@ -1,0 +1,149 @@
+<com:TContent ID="MainContent">
+	<com:TCallback ID="getOrdersBtn" onCallBack="Page.getOrders" />
+	<div class="contentDiv">
+		<div class="h_title">Orders</div>
+		<div class="h_content">
+			<h2>Orders loaded from Magento</h2>
+			These are the orders loaded from Magento.
+			<div class="entry">
+				<div class="sep"></div>
+			</div>
+			<div class="dataTableWrapper">
+				<div class="dataTable" id="resultDiv">
+					<div class="row header">
+						<span class="inlineblock cell">testtest</span>
+						<span class="inlineblock cell">testfdsfasd</span>
+						<span class="inlineblock cell">testfdsafasd</span>
+						<span class="inlineblock cell">testfdsa</span>
+						<span class="inlineblock cell">testfdsafdas</span>
+					</div>
+					<div class="row">
+						<span class="inlineblock cell">test</span>
+						<span class="inlineblock cell">test</span>
+						<span class="inlineblock cell">test</span>
+						<span class="inlineblock cell">test</span>
+						<span class="inlineblock cell">test</span>
+					</div>
+				</div>
+			<table class="dataTable">
+				<thead>
+					<tr class="row header">
+						<th class="cell" scope="col">ID</th>
+						<th class="cell" scope="col">Title</th>
+						<th class="cell" scope="col">Author</th>
+						<th class="cell" scope="col">Date</th>
+						<th class="cell" scope="col">Category</th>
+						<th class="cell" style="width: 65px;" scope="col">Modify</th>
+					</tr>
+				</thead>
+					
+				<tbody>
+					<tr class="row">
+						<td class="align-center">2</td>
+						<td class="cell">Home</td>
+						<td class="cell">Paweł B.</td>
+						<td class="cell">22-03-2012</td>
+						<td class="cell">-</td>
+						<td class="cell">
+							<a title="Edit" class="table-icon edit" href="#"></a>
+							<a title="Archive" class="table-icon archive" href="#"></a>
+							<a title="Delete" class="table-icon delete" href="#"></a>
+						</td>
+					</tr>
+					<tr class="row">
+						<td class="align-center">3</td>
+						<td class="cell">Our offer</td>
+						<td class="cell">Paweł B.</td>
+						<td class="cell">22-03-2012</td>
+						<td class="cell">-</td>
+						<td class="cell">
+							<a title="Edit" class="table-icon edit" href="#"></a>
+							<a title="Archive" class="table-icon archive" href="#"></a>
+							<a title="Delete" class="table-icon delete" href="#"></a>
+						</td>
+					</tr>
+						
+					<tr class="row">
+						<td class="align-center">5</td>
+						<td class="cell">About</td>
+						<td class="cell">Admin</td>
+						<td class="cell">23-03-2012</td>
+						<td class="cell">-</td>
+						<td class="cell">
+							<a title="Edit" class="table-icon edit" href="#"></a>
+							<a title="Archive" class="table-icon archive" href="#"></a>
+							<a title="Delete" class="table-icon delete" href="#"></a>
+						</td>
+					</tr>
+						
+					<tr class="row">
+						<td class="align-center">12</td>
+						<td class="cell">Contact</td>
+						<td class="cell">Admin</td>
+						<td class="cell">25-03-2012</td>
+						<td class="cell">-</td>
+						<td class="cell">
+							<a title="Edit" class="table-icon edit" href="#"></a>
+							<a title="Archive" class="table-icon archive" href="#"></a>
+							<a title="Delete" class="table-icon delete" href="#"></a>
+						</td>
+					</tr>						
+					<tr class="row">
+						<td class="align-center">114</td>
+						<td class="cell">Portfolio</td>
+						<td class="cell">Paweł B.</td>
+						<td class="cell">22-03-2012</td>
+						<td class="cell">-</td>
+						<td class="cell">
+							<a title="Edit" class="table-icon edit" href="#"></a>
+							<a title="Archive" class="table-icon archive" href="#"></a>
+							<a title="Delete" class="table-icon delete" href="#"></a>
+						</td>
+					</tr>
+						
+					<tr class="row">
+						<td class="align-center">116</td>
+						<td class="cell">Clients</td>
+						<td class="cell">Admin</td>
+						<td class="cell">23-03-2012</td>
+						<td class="cell">-</td>
+						<td class="cell">
+							<a title="Edit" class="table-icon edit" href="#"></a>
+							<a title="Archive" class="table-icon archive" href="#"></a>
+							<a title="Delete" class="table-icon delete" href="#"></a>
+						</td>
+					</tr>
+						
+					<tr class="row">
+						<td class="align-center">131</td>
+						<td class="cell">Customer reviews</td>
+						<td class="cell">Admin</td>
+						<td class="cell">25-03-2012</td>
+						<td class="cell">-</td>
+						<td class="cell">
+							<a title="Edit" class="table-icon edit" href="#"></a>
+							<a title="Archive" class="table-icon archive" href="#"></a>
+							<a title="Delete" class="table-icon delete" href="#"></a>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<div class="entry">
+				<div class="pagination">
+					<span>« First</span>
+					<span class="button">1</span>
+					<a class="button disabled">2</a>
+					<a class="button" disabled>3</a>
+					<a href="">4</a>
+					<span>...</span>
+					<a href="">23</a>
+					<a href="">24</a>
+					<a href="">Last »</a>
+				</div>
+				<div class="sep"></div>		
+				<a href="" class="button add">Add new page</a> <a href="" class="button">Categories</a> 
+			</div>
+		</div>
+		</div>
+	</div>
+</com:TContent>

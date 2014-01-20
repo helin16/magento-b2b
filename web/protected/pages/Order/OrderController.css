@@ -1,0 +1,13 @@
+.orderNo,
+.invNo{
+	width: 80px;
+}
+.orderDate{
+	width: 120px;
+}
+.status {
+	width: 100px;
+}
+.payment {
+	width: 100px;
+}

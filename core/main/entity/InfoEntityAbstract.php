@@ -20,7 +20,8 @@ class InfoEntityAbstract extends BaseEntityAbstract
 	 */
 	public function getInfos() 
 	{
-	    return $this->Infos;
+		$this->loadOneToMany('infos');
+	    return $this->infos;
 	}
 	/**
 	 * Setter for the information
@@ -31,7 +32,7 @@ class InfoEntityAbstract extends BaseEntityAbstract
 	 */
 	public function setInfos($value) 
 	{
-	    $this->Infos = $value;
+	    $this->infos = $value;
 	    return $this;
 	}
 	/**

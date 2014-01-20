@@ -15,7 +15,7 @@ abstract class FactoryAbastract
 	 * @param string $entityClassName The entity class name of the service
 	 * @throws HydraDaoException
 	 * 
-	 * @return EntityService
+	 * @return BaseServiceAbastract
 	 */
 	public static function service($entityClassName)
 	{
@@ -35,11 +35,11 @@ abstract class FactoryAbastract
 	 * @param string $entityClassName The entity class name of the service
 	 * @throws HydraDaoException
      * 
-     * @return GenericDAO
+     * @return BaseEntityAbstract
      */
 	public static function dao($entityClassName)
 	{
-		return self::_getDao(trim($entityClassName), 'EntityDAO');
+		return self::_getDao(trim($entityClassName), 'EntityDao');
 	}
     /**
      * Getting the treedao
@@ -69,7 +69,7 @@ abstract class FactoryAbastract
 		if(!isset(self::$_elements[$holderName]))
 		{	
 			if(!class_exists($entityClassName))
-				throw new HydraDaoException("Invalid class : ".$entityClassName);
+				throw new DaoException("Invalid class : ".$entityClassName);
 			self::$_elements[$holderName] = new $type($entityClassName);
 		}
 		return self::$_elements[$holderName];

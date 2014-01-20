@@ -235,7 +235,7 @@ class Order extends InfoEntityAbstract
 	 */
 	public function __loadDaoMap()
 	{
-		DaoMap::begin($this, 'order');
+		DaoMap::begin($this, 'ord');
 		DaoMap::setStringType('orderNo');
 		DaoMap::setStringType('invNo');
 		DaoMap::setDateType('orderDate');

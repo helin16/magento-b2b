@@ -184,6 +184,35 @@ body {
     color: #848484;
     margin: 0 0 20px;
 }
+.contentDiv .sep {
+	border-bottom: 1px dashed #DDDDDD;
+    margin: 10px 0;
+}
+.contentDiv .button {
+	background: none repeat scroll 0 0 #F3F3F3;
+    border: 1px solid #DCDCDC;
+    border-radius: 2px;
+    color: #444444;
+    cursor: pointer;
+    display: inline-block;
+    font: 700 11px Tahoma,Arial,sans-serif;
+    margin-right: 10px;
+    padding: 7px 12px;
+    position: relative;
+    text-decoration: none;
+    text-shadow: 0 1px 0 #FFFFFF;
+}
+.contentDiv .button:hover {
+	border: 1px solid rgb(178, 178, 178);
+}
+.contentDiv .button.disabled,
+.contentDiv .button[disabled] {
+    border: 1px solid #DCDCDC;
+	cursor: auto;
+	color: #B6B6B6;
+    text-decoration: none;
+}
+
 .contentDiv h1, 
 .contentDiv h2, 
 .contentDiv h3,
@@ -209,6 +238,48 @@ body {
 .contentDiv ol {
 	list-style-position: inside;
     margin: 0 0 0 35px;
+}
+
+.dataTableWrapper {
+	
+}
+.dataTableWrapper .dataTable {
+	border-collapse: collapse;
+    margin: 15px;
+}
+.dataTableWrapper .dataTable .cell{
+	border-bottom: 1px solid #FFFFFF;
+    border-right: 1px solid #FFFFFF;
+    color: #565656;
+    padding: 8px;
+    vertical-align: top;
+    display: inline-block;
+    min-height: 15px;
+}
+.dataTableWrapper .dataTable .row:nth-child(2n) {
+    background: none repeat scroll 0 0 #FFFFFF;
+}
+.dataTableWrapper .dataTable .row:nth-child(2n+1) {
+    background: none repeat scroll 0 0 #F7F7F7;
+}
+.dataTableWrapper .dataTable .row.header {
+	background: url("images/bg_box_head.jpg") repeat-x scroll 0 0 rgba(0, 0, 0, 0);
+}
+.dataTableWrapper .dataTable .row.header .cell{
+    color: #DACDCD;
+    font-size: 11px;
+    font-weight: bold;
+    text-shadow: 0 1px #242424;
+}
+.dataTableWrapper .pagination {
+	margin: 5px auto;
+    padding: 12px 0;
+    text-align: center;
+}
+.dataTableWrapper .pagination .pageBtn {
+	border: 1px solid #D2D2D2;
+    color: #444444;
+    margin-right: 2px;
 }
 
 /****************footer *************************/

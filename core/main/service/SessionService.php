@@ -38,7 +38,7 @@ class SessionService extends BaseServiceAbastract
 	public function write($sessionId, $sessionData)
 	{
 	    $user = Core::getUser(); 
-	    $user = ($user instanceof UserAccount ? $user : BaseServiceAbastract::getInstance('UserAccount')->get(UserAccount::ID_SYSTEM_ACCOUNT));
+	    $user = ($user instanceof UserAccount ? $user : FactoryAbastract::service('UserAccount')->get(UserAccount::ID_SYSTEM_ACCOUNT));
 	    Core::setUser($user, Core::getRole());
 	    $session = $this->getSession($sessionId);
 	    $session = ($session instanceof Session ? $session : new Session());
@@ -56,7 +56,7 @@ class SessionService extends BaseServiceAbastract
 	 */
 	public function delete($sessionId)
 	{
-        EntityDao::getInstance('Session')->deleteByCriteria('`key` = ?', array($sessionId));
+        FactoryAbastract::dao('Session')->deleteByCriteria('`key` = ?', array($sessionId));
 	    return $this;
 	}
 	/**
@@ -70,7 +70,7 @@ class SessionService extends BaseServiceAbastract
 	{
 	    $now = new UDate();
 	    $now->modify('-' . $maxTimeOut . ' second');
-	    return EntityDao::getInstance('Session')->deleteByCriteria('`active` = 0 and `updated` < ?' , array($now->__toString()));
+	    return FactoryAbastract::dao('Session')->deleteByCriteria('`active` = 0 and `updated` < ?' , array($now->__toString()));
 	}
 	/**
 	 * Getting the session object from the session ID

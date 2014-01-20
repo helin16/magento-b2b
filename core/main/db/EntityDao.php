@@ -39,31 +39,12 @@ class EntityDao
      */
     private $_pageStats = array('totalPages' => null, 'totalRows' => null, 'pageNumber' => null, 'pageSize' => DaoQuery::DEFAUTL_PAGE_SIZE);
     /**
-     * The registery of the entity daos
-     *
-     * @var array
-     */
-    private static $_entityDaos = array();
-    /**
      * @param string $namespace
      */
     public function __construct($entityClassName)
     {
         $this->_tmpQuery = new DaoQuery($entityClassName);
         $this->resetQuery();
-    }
-    /**
-     * Singleton Design of the entity Dao
-     *
-     * @param string $entityName The name of the entity
-     *
-     * @return EntityDao
-     */
-    public static function getInstance($entityName)
-    {
-        if(!array_key_exists($entityName, self::$_entityDaos))
-        self::$_entityDaos[$entityName] = new EntityDao($entityName);
-        return self::$_entityDaos[$entityName];
     }
     /**
      * set a new query to the dao

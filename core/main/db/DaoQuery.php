@@ -188,7 +188,7 @@ class DaoQuery
         //get all fields
         $sql .= implode(', ', $this->_buildFieldsForSelect()) . ' ';
         //get from table
-        $sql .= sprintf('from %s %s', $focus, $fAlias) . ' ';
+        $sql .= sprintf('from `%s` `%s`', $focus, $fAlias) . ' ';
         //get all joins
         $sql .= count($this->_joins) === 0 ? '' : implode(' ', array_map(create_function('$a', 'return $a["joinType"] . " " . $a["joinClass"] . " `" . $a["joinAlias"] . "` on (" . $a["joinCondition"] . ")";'), $this->_joins)) . ' ';
         //get whereclause
@@ -237,7 +237,7 @@ class DaoQuery
         $focus = strtolower($this->_focus);
         $fAlias = DaoMap::$map[$focus]['_']['alias'];
         $fields = array();
-        $fields[] = $fAlias . '.`id`';
+        $fields[] = '`' . $fAlias . '`.`id`';
         foreach (DaoMap::$map[$focus] as $field => $properties)
         {
             //entity metadata
@@ -247,7 +247,7 @@ class DaoQuery
             //if this is not a relationship
             if (!isset($properties['rel']))
             {
-                $fields[] = $fAlias . '.`' . $field . '`';
+                $fields[] = '`' . $fAlias . '`.`' . $field . '`';
                 continue;
             }
              
@@ -262,7 +262,7 @@ class DaoQuery
                     }
                 default:
                     $field .= 'Id';
-                $fields[] = $fAlias . '.`' . $field . '`';
+                $fields[] = '`' . $fAlias . '`.`' . $field . '`';
                 break;
             }
         }

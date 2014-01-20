@@ -33,7 +33,7 @@
 
 	<!-- configuration for available services -->
 	<services>
-		<service id="page" class="TPageService" DefaultPage="Home.HomeController">
+		<service id="page" class="TPageService" DefaultPage="Order.OrderController">
 		    <pages MasterClass="Application.layout.PageLayout" Theme="default" />
 			<modules>
 				<module id="auth" class="Application.classes.WebUser.AuthManager" UserManager="users" ReturnUrl="/" LoginPage="Login.LoginController" AuthExpire="3600" />
