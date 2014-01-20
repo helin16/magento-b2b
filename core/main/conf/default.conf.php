@@ -2,10 +2,10 @@
 return array(
 	'Database' => array(
 			'Driver' => 'mysql',
-			'DBHost' => 'lin.bsuite.net',
-			'DB' => 'budgetpc',
-			'Username' => 'developers',
-			'Password' => 'hydraworks'
+			'DBHost' => 'localhost',
+			'DB' => 'bpcinternal',
+			'Username' => 'root',
+			'Password' => 'root'
 		)
 	,'social' => array (
 		'addThisAccount' => 'helin16' 
