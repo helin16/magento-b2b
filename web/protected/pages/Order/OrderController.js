@@ -23,7 +23,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					tmp.resultDiv = $(tmp.me.resultDivId);
 					//reset div
 					if(tmp.reset === true) {
-						tmp.titleRow = {'orderNo': "Order No.", 'orderDate': 'Order Date', 'invNo': 'Invoice No.', 'status': {'name': 'Status'}, 'totalDue': 'Total Due'};
+						tmp.titleRow = {'orderNo': "Order No.", 'orderDate': 'Order Date', 'custName': 'Customer Name', 'invNo': 'Invoice No.', 'status': {'name': 'Status'}, 'totalDue': 'Total Due'};
 						tmp.resultDiv.update(tmp.me._getResultRow(tmp.titleRow, true).addClassName('header'));
 					}
 					//remove next page button
@@ -66,6 +66,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		return new Element('div', {'class': 'row'}).store('data', row)
 			.insert({'bottom': new Element('span', {'class': 'cell orderNo'}).update(row.orderNo) })
 			.insert({'bottom': new Element('span', {'class': 'cell orderDate'}).update(row.orderDate) })
+			.insert({'bottom': new Element('span', {'class': 'cell custName'}).update(tmp.isTitle ? row.custName : new Element('div').update(row.infos[1][0].value).insert({'bottom': new Element('div', {'class': 'custEmail'}).update(row.infos[6][0].value) }) ) })
 			.insert({'bottom': new Element('span', {'class': 'cell invNo'}).update(row.invNo) })
 			.insert({'bottom': new Element('span', {'class': 'cell status'}).update(row.status ? row.status.name : '') })
 			.insert({'bottom': new Element('span', {'class': 'cell payment'}).update(tmp.isTitle ? row.totalDue : tmp.me.getCurrency(row.totalDue)) });

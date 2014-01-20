@@ -61,7 +61,7 @@ class B2BConnector
 			$orders = $this->getlastestOrders($lastUpdatedTime);
 			foreach($orders as $order)
 			{
-				if(($status = trim($order->status)) === '')
+				if(($status = trim($order->state)) === '')
 					continue;
 				$totalDue = (!isset($order->total_due) ? 0 : trim($order->total_due));
 				$o = new Order();
@@ -74,6 +74,12 @@ class B2BConnector
 				  ->setStatus(OrderStatus::createStatus($status))
 				  ->setTotalPaid(trim($order->grand_total)*1 - $totalDue*1);
 				FactoryAbastract::dao('Order')->save($o);
+				
+				OrderInfo::create($o, OrderInfoType::get(OrderInfoType::ID_CUS_NAME), trim($order->customer_firstname) . ' ' . trim($order->customer_lastname));
+				OrderInfo::create($o, OrderInfoType::get(OrderInfoType::ID_CUS_EMAIL), trim($order->customer_email));
+				OrderInfo::create($o, OrderInfoType::get(OrderInfoType::ID_CUS_BILL_ADDR), trim($order->customer_email));
+				OrderInfo::create($o, OrderInfoType::get(OrderInfoType::ID_CUS_SHIP_ADDR), trim($order->customer_email));
+				OrderInfo::create($o, OrderInfoType::get(OrderInfoType::ID_CUS_SHIP_PC), trim($order->customer_email));
 			}
 			SystemSettings::addSettings(SystemSettings::TYPE_B2B_SOAP_LAST_IMPORT_TIME, trim($now));
 			

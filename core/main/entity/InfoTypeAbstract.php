@@ -2,6 +2,12 @@
 class InfoTypeAbstract extends BaseEntityAbstract
 {
 	/**
+	 * The cache of the object
+	 * 
+	 * @var array
+	 */
+	protected static $_cache;
+	/**
 	 * The name of the type
 	 * 
 	 * @var string
@@ -29,6 +35,21 @@ class InfoTypeAbstract extends BaseEntityAbstract
 	    return $this;
 	}
 	/**
+	 * Getting object
+	 * 
+	 * @param int $typeId The id of the type
+	 * 
+	 * @return InfoTypeAbstract
+	 */
+	public static function get($typeId)
+	{
+		if(!isset(self::$_cache[$typeId]))
+		{
+			self::$_cache[$typeId] = FactoryAbastract::dao(get_called_class())->findById($typeId);
+		}
+		return self::$_cache[$typeId];
+	}
+	/**
 	 * (non-PHPdoc)
 	 * @see BaseEntity::__loadDaoMap()
 	 */
@@ -37,6 +58,5 @@ class InfoTypeAbstract extends BaseEntityAbstract
 		DaoMap::setStringType('name','varchar', 100);
 		parent::__loadDaoMap();
 		DaoMap::createIndex('name');
-		DaoMap::commit();
 	}
 }

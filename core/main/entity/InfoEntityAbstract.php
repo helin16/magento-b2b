@@ -52,7 +52,20 @@ class InfoEntityAbstract extends BaseEntityAbstract
 			$result = Dao::getSingleResultNative($sql, array($separator, $this->getId(), $typeId), PDO::FETCH_ASSOC);
 			$this->_cache[$typeCode] = array_map(create_function('$row', 'return $row["value"];'), $result);
 		}
-		return $this->_cache[$typeCode];
+		return $this->_cache[$typeId];
+	}
+	/**
+	 * removing all information for that type
+	 * 
+	 * @param int $typeId The type id 
+	 * 
+	 * @return InfoEntityAbstract
+	 */
+	public function removeInfo($typeId)
+	{
+		FactoryAbastract::dao(get_class($this))->updateByCriteria('active = 0', 'typeId = ?', array($typeId));
+		unset($this->_cache[$typeId]);
+		return $this;
 	}
 	/**
 	 * (non-PHPdoc)

@@ -14,11 +14,18 @@ class InfoAbstract extends BaseEntityAbstract
 	 */
 	protected $type;
 	/**
-	 * The entity this information is for
-	 * 
-	 * @var InfoEntityAbstract
+	 * The class name of the entity
+	 * @var unknown
 	 */
-	protected $entity;
+	private $_entityClass;
+	/**
+	 * constructor
+	 */
+	public function __construct()
+	{
+		parent::__construct();
+		$this->_entityClass = str_replace('Info', '', get_class($this));
+	}
 	/**
 	 * Getter for the value
 	 * 
@@ -69,8 +76,8 @@ class InfoAbstract extends BaseEntityAbstract
 	 */
 	public function getEntity() 
 	{
-		$this->loadManyToOne('entity');
-	    return $this->entity;
+		$method = 'get' . $this->_entityClass;
+	    return $this->$method();
 	}
 	/**
 	 * Setter for the enttiy
@@ -81,8 +88,27 @@ class InfoAbstract extends BaseEntityAbstract
 	 */
 	public function setEntity($value) 
 	{
-	    $this->entity = $value;
-	    return $this;
+	    $method = 'set' . $this->_entityClass;
+	    return $this->$method($value);
+	}
+	/**
+	 * creating a new info object
+	 * 
+	 * @param InfoEntityAbstract $entity
+	 * @param InfoTypeAbstract   $type
+	 * @param string             $value
+	 * 
+	 * @return InfoAbstract
+	 */
+	public static function create(InfoEntityAbstract $entity, InfoTypeAbstract $type, $value)
+	{
+		$className = get_called_class();
+		$info = new $className();
+		$info->setEntity($entity)
+			->setType($type)
+			->setValue($value);
+		FactoryAbastract::dao($className)->save($info);
+		return $info;
 	}
 	/**
 	 * (non-PHPdoc)
@@ -91,8 +117,7 @@ class InfoAbstract extends BaseEntityAbstract
 	public function __loadDaoMap()
 	{
 		DaoMap::setStringType('value', 'varchar', 255);
-		$entityClass = str_replace('Info', '', get_class($this));
-		DaoMap::setManyToOne(StringUtilsAbstract::lcFirst($entityClass), $entityClass, strtolower(get_class($this)) . '_entity');
+		DaoMap::setManyToOne(StringUtilsAbstract::lcFirst($this->_entityClass), $this->_entityClass, strtolower(get_class($this)) . '_entity');
 		DaoMap::setManyToOne('type', get_class($this) . 'Type', strtolower(get_class($this)) . '_info_type');
 		parent::__loadDaoMap();
 	}

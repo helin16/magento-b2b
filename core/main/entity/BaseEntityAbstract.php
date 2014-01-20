@@ -46,6 +46,13 @@ abstract class BaseEntityAbstract
      */
     protected $proxyMode = false;
     /**
+     * __constructor
+     */
+    public function __construct()
+    {
+    	
+    }
+    /**
      * Set the primary key for this entity
      *
      * @param int $id
