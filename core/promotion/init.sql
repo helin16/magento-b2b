@@ -16,9 +16,10 @@ CREATE TABLE `asset` (
 	,INDEX (`updatedById`)
 	,UNIQUE INDEX (`assetId`)
 ) ENGINE=innodb DEFAULT CHARSET=utf8;
-DROP TABLE IF EXISTS `order`;
-CREATE TABLE `order` (
+DROP TABLE IF EXISTS `courier`;
+CREATE TABLE `courier` (
 	`id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+	`name` varchar(50) NOT NULL DEFAULT '',
 	`active` bool NOT NULL DEFAULT 1,
 	`created` datetime NOT NULL DEFAULT '0001-01-01 00:00:00',
 	`createdById` int(10) unsigned NOT NULL DEFAULT 0,
@@ -27,6 +28,29 @@ CREATE TABLE `order` (
 	PRIMARY KEY (`id`)
 	,INDEX (`createdById`)
 	,INDEX (`updatedById`)
+	,INDEX (`name`)
+) ENGINE=innodb DEFAULT CHARSET=utf8;
+DROP TABLE IF EXISTS `order`;
+CREATE TABLE `order` (
+	`id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+	`orderNo` varchar(50) NOT NULL DEFAULT '',
+	`invNo` varchar(50) NOT NULL DEFAULT '',
+	`orderDate` datetime NOT NULL DEFAULT '0001-01-01 00:00:00',
+	`totalAmount` Double(10,4) unsigned NOT NULL DEFAULT 0,
+	`totalPaid` Double(10,4) unsigned NOT NULL DEFAULT 0,
+	`statusId` int(10) unsigned NOT NULL DEFAULT 0,
+	`active` bool NOT NULL DEFAULT 1,
+	`created` datetime NOT NULL DEFAULT '0001-01-01 00:00:00',
+	`createdById` int(10) unsigned NOT NULL DEFAULT 0,
+	`updated` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+	`updatedById` int(10) unsigned NOT NULL DEFAULT 0,
+	PRIMARY KEY (`id`)
+	,INDEX (`statusId`)
+	,INDEX (`createdById`)
+	,INDEX (`updatedById`)
+	,INDEX (`orderNo`)
+	,INDEX (`invNo`)
+	,INDEX (`orderDate`)
 ) ENGINE=innodb DEFAULT CHARSET=utf8;
 DROP TABLE IF EXISTS `orderinfo`;
 CREATE TABLE `orderinfo` (
@@ -73,10 +97,50 @@ CREATE TABLE `orderstatus` (
 	,INDEX (`updatedById`)
 	,UNIQUE INDEX (`name`)
 ) ENGINE=innodb DEFAULT CHARSET=utf8;
+DROP TABLE IF EXISTS `shippment`;
+CREATE TABLE `shippment` (
+	`id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+	`noOfCartons` int(10) unsigned NOT NULL DEFAULT 0,
+	`receiver` varchar(50) NOT NULL DEFAULT '',
+	`address` varchar(50) NOT NULL DEFAULT '',
+	`contact` varchar(50) NOT NULL DEFAULT '',
+	`shippingDate` datetime NOT NULL DEFAULT '0001-01-01 00:00:00',
+	`conNoteNo` varchar(50) NOT NULL DEFAULT '',
+	`estShippingCost` Double(10,4) unsigned NOT NULL DEFAULT 0,
+	`deliveryInstructions` varchar(255) NOT NULL DEFAULT '',
+	`courierId` int(10) unsigned NOT NULL DEFAULT 0,
+	`active` bool NOT NULL DEFAULT 1,
+	`created` datetime NOT NULL DEFAULT '0001-01-01 00:00:00',
+	`createdById` int(10) unsigned NOT NULL DEFAULT 0,
+	`updated` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+	`updatedById` int(10) unsigned NOT NULL DEFAULT 0,
+	PRIMARY KEY (`id`)
+	,INDEX (`courierId`)
+	,INDEX (`createdById`)
+	,INDEX (`updatedById`)
+) ENGINE=innodb DEFAULT CHARSET=utf8;
+DROP TABLE IF EXISTS `comments`;
+CREATE TABLE `comments` (
+	`id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+	`entityId` int(10) unsigned NOT NULL DEFAULT 0,
+	`entityName` varchar(100) NOT NULL DEFAULT '',
+	`comments` varchar(255) NOT NULL DEFAULT '',
+	`groupId` varchar(100) NOT NULL DEFAULT '',
+	`active` bool NOT NULL DEFAULT 1,
+	`created` datetime NOT NULL DEFAULT '0001-01-01 00:00:00',
+	`createdById` int(10) unsigned NOT NULL DEFAULT 0,
+	`updated` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+	`updatedById` int(10) unsigned NOT NULL DEFAULT 0,
+	PRIMARY KEY (`id`)
+	,INDEX (`createdById`)
+	,INDEX (`updatedById`)
+	,INDEX (`entityId`)
+	,INDEX (`entityName`)
+	,INDEX (`groupId`)
+) ENGINE=innodb DEFAULT CHARSET=utf8;
 DROP TABLE IF EXISTS `log`;
 CREATE TABLE `log` (
 	`id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-	`libraryId` int(10) unsigned NOT NULL DEFAULT 0,
 	`transId` varchar(100) NOT NULL DEFAULT '',
 	`type` varchar(100) NOT NULL DEFAULT '',
 	`entityId` int(10) unsigned NOT NULL DEFAULT 0,
@@ -90,7 +154,6 @@ CREATE TABLE `log` (
 	`updated` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 	`updatedById` int(10) unsigned NOT NULL DEFAULT 0,
 	PRIMARY KEY (`id`)
-	,INDEX (`libraryId`)
 	,INDEX (`createdById`)
 	,INDEX (`updatedById`)
 	,INDEX (`transId`)
@@ -150,7 +213,6 @@ CREATE TABLE `useraccount` (
 	`username` varchar(100) NOT NULL DEFAULT '',
 	`password` varchar(40) NOT NULL DEFAULT '',
 	`personId` int(10) unsigned NOT NULL DEFAULT 0,
-	`libraryId` int(10) unsigned NOT NULL DEFAULT 0,
 	`active` bool NOT NULL DEFAULT 1,
 	`created` datetime NOT NULL DEFAULT '0001-01-01 00:00:00',
 	`createdById` int(10) unsigned NOT NULL DEFAULT 0,
@@ -158,7 +220,6 @@ CREATE TABLE `useraccount` (
 	`updatedById` int(10) unsigned NOT NULL DEFAULT 0,
 	PRIMARY KEY (`id`)
 	,INDEX (`personId`)
-	,INDEX (`libraryId`)
 	,INDEX (`createdById`)
 	,INDEX (`updatedById`)
 	,INDEX (`password`)

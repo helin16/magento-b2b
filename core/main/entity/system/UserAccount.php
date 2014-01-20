@@ -9,17 +9,11 @@
 class UserAccount extends BaseEntityAbstract
 {
     /**
-     * The id of the GUEST account
-     * 
-     * @var int
-     */
-    const ID_GUEST_ACCOUNT = 1;
-    /**
      * The id of the system account
      * 
      * @var int
      */
-    const ID_SYSTEM_ACCOUNT = 100;
+    const ID_SYSTEM_ACCOUNT = 10;
     /**
      * The username
      *
@@ -146,18 +140,6 @@ class UserAccount extends BaseEntityAbstract
         return $this->library;
     }
     /**
-     * Setter for the library
-     * 
-     * @param Library $value The library the user belongs to
-     * 
-     * @return UserAccount
-     */
-    public function setLibrary(Library $value) 
-    {
-        $this->library = $value;
-        return $this;
-    }
-    /**
      * (non-PHPdoc)
      * @see BaseEntity::__toString()
      */
@@ -176,7 +158,6 @@ class UserAccount extends BaseEntityAbstract
         DaoMap::setStringType('password', 'varchar', 40);
         DaoMap::setManyToOne("person", "Person", "p");
         DaoMap::setManyToMany("roles", "Role", DaoMap::LEFT_SIDE, "r", false);
-        DaoMap::setManyToOne('library', 'Library', 'lib');
         parent::__loadDaoMap();
         
         DaoMap::createUniqueIndex('username');

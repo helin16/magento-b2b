@@ -1,33 +1,44 @@
 ############################ add role table
 insert into `role`(`id`, `name`,`active`, `created`, `createdById`, `updated`, `updatedById`) values 
-	(1, 'Logistics', 1, NOW(), 100, NOW(), 100),
-	(2, 'Sales', 1, NOW(), 100, NOW(), 100),
-	(3, 'Billing', 1, NOW(), 100, NOW(), 100),
-	(4, 'Store Manager', 1, NOW(), 100, NOW(), 100),
-	(5, 'Administrator', 1, NOW(), 100, NOW(), 100);
+	(1, 'Logistics', 1, NOW(), 10, NOW(), 10),
+	(2, 'Sales', 1, NOW(), 10, NOW(), 10),
+	(3, 'Billing', 1, NOW(), 10, NOW(), 10),
+	(4, 'Store Manager', 1, NOW(), 10, NOW(), 10),
+	(5, 'Administrator', 1, NOW(), 10, NOW(), 10);
 
 ############################ add person table
+ALTER TABLE `person` AUTO_INCREMENT = 10;
 insert into `person`(`id`, `firstName`, `lastName`, `active`, `created`, `createdById`, `updated`, `updatedById`) values
-	(1, 'Logistics', 'user', 1, NOW(), 100, NOW(), 100),
-	(2, 'Sales', 'user', 1, NOW(), 100, NOW(), 100),
-	(3, 'Billing', 'user', 1, NOW(), 100, NOW(), 100),
-	(4, 'Store Manager', 'user', 1, NOW(), 100, NOW(), 100),
-	(5, 'Administrator', 'user', 1, NOW(), 100, NOW(), 100);
+	(10, 'System', 'User', 1, NOW(), 10, NOW(), 10),
+	(1, 'Logistics', 'user', 1, NOW(), 10, NOW(), 10),
+	(2, 'Sales', 'user', 1, NOW(), 10, NOW(), 10),
+	(3, 'Billing', 'user', 1, NOW(), 10, NOW(), 10),
+	(4, 'Store Manager', 'user', 1, NOW(), 10, NOW(), 10),
+	(5, 'Administrator', 'user', 1, NOW(), 10, NOW(), 10);
 
 
 ############################ add user table
-ALTER TABLE `useraccount` AUTO_INCREMENT = 100;
-insert into `useraccount`(`id`, `username`, `password`, `personId`, `libraryId`, `active`, `created`, `createdById`, `updated`, `updatedById`) values
-	(1, 'luser', sha1('user'), 1, 1, 1, NOW(), 100, NOW(), 100),
-	(2, 'suser', sha1('user'), 2, 1, 1, NOW(), 100, NOW(), 100),
-	(3, 'buser', sha1('user'), 3, 1, 1, NOW(), 100, NOW(), 100),
-	(4, 'smuser', sha1('user'), 4, 1, 1, NOW(), 100, NOW(), 100),
-	(5, 'auser', sha1('user'), 5, 1, 1, NOW(), 100, NOW(), 100);
+ALTER TABLE `useraccount` AUTO_INCREMENT = 10;
+insert into `useraccount`(`id`, `username`, `password`, `personId`, `active`, `created`, `createdById`, `updated`, `updatedById`) values
+	(10, md5('disabled'), 'disabled', 10, 1, NOW(), 10, NOW(), 10),
+	(1, 'luser', sha1('user'), 1,  1, NOW(), 10, NOW(), 10),
+	(2, 'suser', sha1('user'), 2,  1, NOW(), 10, NOW(), 10),
+	(3, 'buser', sha1('user'), 3,  1, NOW(), 10, NOW(), 10),
+	(4, 'smuser', sha1('user'), 4, 1, NOW(), 10, NOW(), 10),
+	(5, 'auser', sha1('user'), 5,  1, NOW(), 10, NOW(), 10);
 
 ############################ add role_useraccount table
 insert into `role_useraccount`(`userAccountId`, `roleId`, `created`, `createdById`) values 
-	(1, 1, NOW(), 100),
-	(2, 2, NOW(), 100),
-	(3, 3, NOW(), 100),
-	(4, 4, NOW(), 100),
-	(5, 5, NOW(), 100);
+	(1, 1, NOW(), 10),
+	(2, 2, NOW(), 10),
+	(3, 3, NOW(), 10),
+	(4, 4, NOW(), 10),
+	(5, 5, NOW(), 10);
+	
+############################ add orderinfotype table
+insert into `orderinfotype` (`id`, `name`, `active`, `created`, `createdById`, `updated`, `updatedById`) values
+	(1, 'Customer Name', 1, NOW(), 10, NOW(), 10),
+	(2, 'Shipping Address', 1, NOW(), 10, NOW(), 10),
+	(3, 'Billing Address', 1, NOW(), 10, NOW(), 10),
+	(4, 'Shipping PostCode', 1, NOW(), 10, NOW(), 10);
+	(5, 'Customer Contact', 1, NOW(), 10, NOW(), 10);

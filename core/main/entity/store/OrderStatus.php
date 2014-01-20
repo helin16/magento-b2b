@@ -1,4 +1,11 @@
 <?php
+/**
+ * Entity for OrderStatus
+ *
+ * @package    Core
+ * @subpackage Entity
+ * @author     lhe<helin16@gmail.com>
+ */
 class OrderStatus extends InfoEntityAbstract
 {
 	private $name;
