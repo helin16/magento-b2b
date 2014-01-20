@@ -26,7 +26,7 @@ class OrderController extends BPCPageAbstract
 		$js = parent::_getEndJs();
 		$js .= 'pageJs.resultDivId = "resultDiv";';
 		$js .= 'pageJs.setCallbackId("getOrders", "' . $this->getOrdersBtn->getUniqueID(). '");';
-		$js .= 'pageJs.getResults(true);';
+		$js .= 'pageJs.getResults(true, ' . DaoQuery::DEFAUTL_PAGE_SIZE. ');';
 		return $js;
 	}
 	
@@ -35,7 +35,15 @@ class OrderController extends BPCPageAbstract
 		$results = $errors = array();
 		try
 		{
-			$orders = FactoryAbastract::service('Order')->findAll(true, 1, DaoQuery::DEFAUTL_PAGE_SIZE);
+			$pageNo = 1;
+			$pageSize = DaoQuery::DEFAUTL_PAGE_SIZE;
+			if(isset($params->CallbackParameter->pagination))
+			{
+				$pageNo = $params->CallbackParameter->pagination->pageNo;
+				$pageSize = $params->CallbackParameter->pagination->pageSize;
+			}
+			
+			$orders = FactoryAbastract::service('Order')->findAll(true, $pageNo, $pageSize);
 			$results['items'] = array();
 			foreach($orders as $order)
 			{

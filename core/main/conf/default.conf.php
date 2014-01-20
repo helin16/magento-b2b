@@ -7,9 +7,6 @@ return array(
 			'Username' => 'root',
 			'Password' => 'root'
 		)
-	,'social' => array (
-		'addThisAccount' => 'helin16' 
-	)
 );
 
 ?>

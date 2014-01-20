@@ -4,12 +4,14 @@
 var PageJs = new Class.create();
 PageJs.prototype = Object.extend(new BPCPageJs(), {
 	resultDivId: '' //the html id of the result div
+	,_pagination: {'pageNo': 1, 'pageSize': 30} //the pagination details
 		
-	,getResults: function(reset) {
+	,getResults: function(reset, pageSize) {
 		var tmp = {};
 		tmp.me = this;
 		tmp.reset = (reset || false);
-		tmp.me.postAjax(tmp.me.getCallbackId('getOrders'), {}, {
+		tmp.pageSize = (pageSize || tmp.me._pagination.pageSize);
+		tmp.me.postAjax(tmp.me.getCallbackId('getOrders'), {'pagination': tmp.me._pagination}, {
 			'onLoading': function () {}
 			,'onComplete': function(sender, param) {
 				try{
