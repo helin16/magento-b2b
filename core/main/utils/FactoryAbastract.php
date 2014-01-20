@@ -35,7 +35,7 @@ abstract class FactoryAbastract
 	 * @param string $entityClassName The entity class name of the service
 	 * @throws HydraDaoException
      * 
-     * @return BaseEntityAbstract
+     * @return EntityDao
      */
 	public static function dao($entityClassName)
 	{

@@ -25,7 +25,7 @@ insert into `useraccount`(`id`, `username`, `password`, `personId`, `active`, `c
 	(2, 'suser', sha1('user'), 2,  1, NOW(), 10, NOW(), 10),
 	(3, 'buser', sha1('user'), 3,  1, NOW(), 10, NOW(), 10),
 	(4, 'smuser', sha1('user'), 4, 1, NOW(), 10, NOW(), 10),
-	(5, 'auser', sha1('user'), 5,  1, NOW(), 10, NOW(), 10);
+	(5, 'auser', sha1('user'), 5, 1, NOW(), 10, NOW(), 10);
 
 ############################ add role_useraccount table
 insert into `role_useraccount`(`userAccountId`, `roleId`, `created`, `createdById`) values 
@@ -42,3 +42,10 @@ insert into `orderinfotype` (`id`, `name`, `active`, `created`, `createdById`, `
 	(3, 'Billing Address', 1, NOW(), 10, NOW(), 10),
 	(4, 'Shipping PostCode', 1, NOW(), 10, NOW(), 10),
 	(5, 'Customer Contact', 1, NOW(), 10, NOW(), 10);
+
+
+############################ add systemsettings table
+insert into `systemsettings`(`id`, `type`, `value`, `active`, `created`, `createdById`, `updated`, `updatedById`) values
+	(1, 'b2b_soap_wdsl', 'http://ccbooks.com.au/index.php/api/v2_soap?wsdl=1',  1, NOW(), 10, NOW(), 10),
+	(2, 'b2b_soap_user', 'B2BUser',  1, NOW(), 10, NOW(), 10),
+	(3, 'b2b_soap_key', 'B2BUser',  1, NOW(), 10, NOW(), 10);
