@@ -45,7 +45,7 @@ class OrderController extends BPCPageAbstract
 			}
 			
 			$orders = FactoryAbastract::service('Order')->findAll(true, $pageNo, $pageSize);
-			$results['pageStats'] = FactoryAbastract::service('Order')->getPageStats();Order
+			$results['pageStats'] = FactoryAbastract::service('Order')->getPageStats();
 			$results['items'] = array();
 			foreach($orders as $order)
 			{
