@@ -25,7 +25,7 @@ class Order extends InfoEntityAbstract
 	 * 
 	 * @var string
 	 */
-	private $invNo;
+	private $invNo = '';
 	/**
 	 * The status of the order
 	 * 
@@ -49,7 +49,7 @@ class Order extends InfoEntityAbstract
 	 *
 	 * @var number
 	 */
-	private $totalPaid;
+	private $totalPaid = 0;
 	/**
 	 * The shippment of the order
 	 * 
@@ -228,6 +228,46 @@ class Order extends InfoEntityAbstract
 	{
 	    $this->shippments = $value;
 	    return $this;
+	}
+	/**
+	 * Getter for the totalDue
+	 * 
+	 * @return number
+	 */
+	public function getTotalDue()
+	{
+		return $this->totalAmount - $this->totalPaid;
+	}
+	/**
+	 * (non-PHPdoc)
+	 * @see BaseEntityAbstract::preSave()
+	 */
+	public function preSave()
+	{
+		if(trim($this->getOrderNo()) === '')
+			$this->orderNo = StringUtilsAbstract::getRandKey('', 'ORD');
+	}
+	/**
+	 * (non-PHPdoc)
+	 * @see BaseEntityAbstract::getJson()
+	 */
+	public function getJson($extra = '', $reset = false)
+	{
+		$array = array();
+	    if(!$this->isJsonLoaded($reset))
+	    {
+	    	$array['totalDue'] = $this->getTotalDue();
+	    	$array['infos'] = array();
+		    foreach($this->getInfos() as $info)
+		    {
+		        $typeId = $info->getType()->getId();
+		        if(!isset($array['infos'][$typeId]))
+		            $array['infos'][$typeId] = array();
+	            $array['infos'][$typeId][] = $info->getJson();
+		    }
+		    $array['status'] = $this->getStatus()->getJson();
+	    }
+	    return parent::getJson($array, $reset);
 	}
 	/**
 	 * (non-PHPdoc)

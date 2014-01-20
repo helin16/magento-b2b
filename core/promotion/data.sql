@@ -45,7 +45,9 @@ insert into `orderinfotype` (`id`, `name`, `active`, `created`, `createdById`, `
 
 
 ############################ add systemsettings table
-insert into `systemsettings`(`id`, `type`, `value`, `active`, `created`, `createdById`, `updated`, `updatedById`) values
-	(1, 'b2b_soap_wdsl', 'http://ccbooks.com.au/index.php/api/v2_soap?wsdl=1',  1, NOW(), 10, NOW(), 10),
-	(2, 'b2b_soap_user', 'B2BUser',  1, NOW(), 10, NOW(), 10),
-	(3, 'b2b_soap_key', 'B2BUser',  1, NOW(), 10, NOW(), 10);
+insert into `systemsettings`(`type`, `value`, `active`, `created`, `createdById`, `updated`, `updatedById`) values
+	('b2b_soap_wsdl', 'http://ccbooks.com.au/index.php/api/v2_soap?wsdl=1',  1, NOW(), 10, NOW(), 10),
+	('b2b_soap_user', 'B2BUser',  1, NOW(), 10, NOW(), 10),
+	('b2b_soap_key', 'B2BUser',  1, NOW(), 10, NOW(), 10),
+	('b2b_soap_timezone', 'Australia/Melbourne',  1, NOW(), 10, NOW(), 10),
+	('b2b_soap_last_import_time', '2012-01-20 22:24:20',  1, NOW(), 10, NOW(), 10);

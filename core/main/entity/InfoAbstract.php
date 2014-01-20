@@ -79,7 +79,7 @@ class InfoAbstract extends BaseEntityAbstract
 	 * 
 	 * @return InfoAbstract
 	 */
-	public function setentity($value) 
+	public function setEntity($value) 
 	{
 	    $this->entity = $value;
 	    return $this;
@@ -91,7 +91,8 @@ class InfoAbstract extends BaseEntityAbstract
 	public function __loadDaoMap()
 	{
 		DaoMap::setStringType('value', 'varchar', 255);
-		DaoMap::setManyToOne('entity', str_replace('Info', '', get_class($this)), strtolower(get_class($this)) . '_entity');
+		$entityClass = str_replace('Info', '', get_class($this));
+		DaoMap::setManyToOne(StringUtilsAbstract::lcFirst($entityClass), $entityClass, strtolower(get_class($this)) . '_entity');
 		DaoMap::setManyToOne('type', get_class($this) . 'Type', strtolower(get_class($this)) . '_info_type');
 		parent::__loadDaoMap();
 	}

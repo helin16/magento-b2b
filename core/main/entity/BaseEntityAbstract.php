@@ -221,7 +221,7 @@ abstract class BaseEntityAbstract
 
         DaoMap::loadMap($cls);
         $alias = DaoMap::$map[strtolower($cls)]['_']['alias'];
-        $field = strtolower(substr($thisClass, 0, 1)) . substr($thisClass, 1);
+        $field = StringUtilsAbstract::lcFirst($thisClass);
         $this->$property = Dao::findByCriteria(new DaoQuery($cls), sprintf('%s.`%sId`=?', $alias, $field), array($this->getId()));
          
         return $this;

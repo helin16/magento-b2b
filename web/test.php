@@ -1,6 +1,8 @@
 <?php
 require 'bootstrap.php';
-
-$client = new B2BConnector('http://ccbooks.com.au/index.php/api/v2_soap/?wsdl', 'B2BUser', 'B2BUser');
-$result = $client->getOrderInfo('100000002');
+Core::setUser(FactoryAbastract::service('UserAccount')->get(UserAccount::ID_SYSTEM_ACCOUNT));
+$client = new B2BConnector(SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_WSDL), 
+		SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_USER), 
+		SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_KEY));
+$result = $client->importOrders();
 var_dump($result);

@@ -29,6 +29,21 @@ class OrderStatus extends InfoEntityAbstract
 	    return $this;
 	}
 	/**
+	 * createStatus
+	 * 
+	 * @param string $status The name of the status
+	 * 
+	 * @return Ambigous <OrderStatus, BaseEntityAbstract>
+	 */
+	public static function createStatus($status)
+	{
+		$items = FactoryAbastract::dao(__CLASS__)->findByCriteria('name=?', array($status), false, 1, 1);
+		$st = (count($items) === 0 ? new OrderStatus() : $items[0]);
+		$st->setName($status);
+		FactoryAbastract::dao(__CLASS__)->save($st);
+		return $st;
+	}
+	/**
 	 * (non-PHPdoc)
 	 * @see BaseEntityAbstract::__toString()
 	 */

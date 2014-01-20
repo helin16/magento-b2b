@@ -25,12 +25,13 @@ class OrderController extends BPCPageAbstract
 	{
 		$js = parent::_getEndJs();
 		$js .= 'pageJs.resultDivId = "resultDiv";';
+		$js .= 'pageJs.totalNoOfItemsId = "total_no_of_items";';
 		$js .= 'pageJs.setCallbackId("getOrders", "' . $this->getOrdersBtn->getUniqueID(). '");';
 		$js .= 'pageJs.getResults(true, ' . DaoQuery::DEFAUTL_PAGE_SIZE. ');';
 		return $js;
 	}
 	
-	public function getOrders($sender, $param)
+	public function getOrders($sender, $params)
 	{
 		$results = $errors = array();
 		try
@@ -44,6 +45,7 @@ class OrderController extends BPCPageAbstract
 			}
 			
 			$orders = FactoryAbastract::service('Order')->findAll(true, $pageNo, $pageSize);
+			$results['pageStats'] = FactoryAbastract::service('Order')->getPageStats();
 			$results['items'] = array();
 			foreach($orders as $order)
 			{
@@ -54,7 +56,7 @@ class OrderController extends BPCPageAbstract
 		{
 			$errors[] = $ex->getMessage();
 		}
-		$param->ResponseData = StringUtilsAbstract::getJson($results, $errors);
+		$params->ResponseData = StringUtilsAbstract::getJson($results, $errors);
 	}
 }
 ?>

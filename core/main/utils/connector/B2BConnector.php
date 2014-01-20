@@ -36,15 +36,74 @@ class B2BConnector
 			$this->_session = $this->_soapClient->login($this->_apiUser, $this->_apikey);
 		return $this->_soapClient;
 	}
+	/**
+	 * Import Orders
+	 * 
+	 * @param string $lastUpdatedTime The datatime string
+	 * 
+	 * @return B2BConnector
+	 */
+	public function importOrders($lastUpdatedTime = '')
+	{
+		$transStarted = false;
+		try {Dao::beginTransaction();} catch(Exception $e) {$transStarted = true;}
+		
+		try 
+		{
+			if(($lastUpdatedTime = trim($lastUpdatedTime)) === '')
+			{
+				$lastImportTime = new UDate(SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_LAST_IMPORT_TIME));
+				$lastImportTime->setTimeZone(SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_TIMEZONE));
+				$lastUpdatedTime = trim($lastImportTime);
+			}
+			
+			$now = new UDate();
+			$orders = $this->getlastestOrders($lastUpdatedTime);
+			foreach($orders as $order)
+			{
+				if(($status = trim($order->status)) === '')
+					continue;
+				$totalDue = (!isset($order->total_due) ? 0 : trim($order->total_due));
+				$o = new Order();
+				$orderDate = new UDate(trim($order->created_at), SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_TIMEZONE));
+				$orderDate->setTimeZone('UTC');
+				
+				$o->setOrderNo(trim($order->increment_id))
+				  ->setOrderDate(trim($orderDate))
+				  ->setTotalAmount(trim($order->grand_total))
+				  ->setStatus(OrderStatus::createStatus($status))
+				  ->setTotalPaid(trim($order->grand_total)*1 - $totalDue*1);
+				FactoryAbastract::dao('Order')->save($o);
+			}
+			SystemSettings::addSettings(SystemSettings::TYPE_B2B_SOAP_LAST_IMPORT_TIME, trim($now));
+			
+			if($transStarted === false)
+				Dao::commitTransaction();
+		}
+		catch(Exception $e)
+		{
+			if($transStarted === false)
+				Dao::rollbackTransaction();
+			throw $e;
+		}
+		return $this;
+	}
+	/**
+	 * Getting the list of lastest updated orders
+	 * 
+	 * @param string $lastUpdatedTime The datatime string
+	 * 
+	 * @return array
+	 */
 	public function getlastestOrders($lastUpdatedTime)
 	{
 		$params = array(
 			'complex_filter' => array(
 				array(
-						'key' => 'created_at',
+						'key' => 'updated_at',
 						'value' => array(
 								'key' => 'gt',
-								'value' => '2014-01-01 12:12:07'
+								'value' => $lastUpdatedTime
 						),
 				),
 			)

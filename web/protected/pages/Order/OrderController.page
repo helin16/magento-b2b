@@ -1,7 +1,7 @@
 <com:TContent ID="MainContent">
 	<com:TCallback ID="getOrdersBtn" onCallBack="Page.getOrders" />
 	<div class="contentDiv">
-		<div class="h_title">Orders</div>
+		<div class="h_title"><span id='total_no_of_items'>0</span> Orders Found!</div>
 		<div class="h_content">
 			<h2>Orders loaded from Magento</h2>
 			These are the orders loaded from Magento.
@@ -10,11 +10,6 @@
 			</div>
 			<div class="dataTableWrapper">
 				<div class="dataTable" id="resultDiv"></div>
-				<div class="pagination">
-					<span class="button">1</span>
-					<a class="button disabled">2</a>
-					<a class="button" disabled>3</a>
-				</div>
 			</div>
 		</div>
 	</div>
