@@ -38,17 +38,14 @@ insert into `role_useraccount`(`userAccountId`, `roleId`, `created`, `createdByI
 ############################ add orderinfotype table
 insert into `orderinfotype` (`id`, `name`, `active`, `created`, `createdById`, `updated`, `updatedById`) values
 	(1, 'Customer Name', 1, NOW(), 10, NOW(), 10),
-	(2, 'Shipping Address', 1, NOW(), 10, NOW(), 10),
-	(3, 'Billing Address', 1, NOW(), 10, NOW(), 10),
-	(4, 'Shipping PostCode', 1, NOW(), 10, NOW(), 10),
-	(5, 'Customer Contact No', 1, NOW(), 10, NOW(), 10),
-	(6, 'Customer Email', 1, NOW(), 10, NOW(), 10);
+	(2, 'Customer Email', 1, NOW(), 10, NOW(), 10);
 
 
 ############################ add systemsettings table
-insert into `systemsettings`(`type`, `value`, `active`, `created`, `createdById`, `updated`, `updatedById`) values
-	('b2b_soap_wsdl', 'http://ccbooks.com.au/index.php/api/v2_soap?wsdl=1',  1, NOW(), 10, NOW(), 10),
-	('b2b_soap_user', 'B2BUser',  1, NOW(), 10, NOW(), 10),
-	('b2b_soap_key', 'B2BUser',  1, NOW(), 10, NOW(), 10),
-	('b2b_soap_timezone', 'Australia/Melbourne',  1, NOW(), 10, NOW(), 10),
-	('b2b_soap_last_import_time', '2012-01-20 22:24:20',  1, NOW(), 10, NOW(), 10);
+insert into `systemsettings`(`type`, `value`, `description`, `active`, `created`, `createdById`, `updated`, `updatedById`) values
+	('b2b_soap_wsdl', 'http://ccbooks.com.au/index.php/api/v2_soap?wsdl=1', 'Where the magento wsdl v2 is?',  1, NOW(), 10, NOW(), 10),
+	('b2b_soap_user', 'B2BUser', 'The user for the magento B2B',  1, NOW(), 10, NOW(), 10),
+	('b2b_soap_key', 'B2BUser', 'The user for the magento API key',  1, NOW(), 10, NOW(), 10),
+	('b2b_soap_timezone', 'Australia/Melbourne', 'The timezone the magento is operating on',  1, NOW(), 10, NOW(), 10),
+	('b2b_soap_last_import_time', '2012-01-20 22:24:20', 'When did we do the imports from Magento last time',  1, NOW(), 10, NOW(), 10),
+	('system_timezone', 'Australia/Melbourne', 'The timezone this CURRENT SYSTEM is operating on',  1, NOW(), 10, NOW(), 10);

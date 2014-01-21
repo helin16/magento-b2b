@@ -27,6 +27,7 @@ class OrderController extends BPCPageAbstract
 		$js .= 'pageJs.resultDivId = "resultDiv";';
 		$js .= 'pageJs.totalNoOfItemsId = "total_no_of_items";';
 		$js .= 'pageJs.setCallbackId("getOrders", "' . $this->getOrdersBtn->getUniqueID(). '");';
+		$js .= 'pageJs._infoTypes = {"custName": ' . OrderInfoType::ID_CUS_NAME. ', "custEmail" : ' . OrderInfoType::ID_CUS_EMAIL . '};';
 		$js .= 'pageJs.getResults(true, ' . DaoQuery::DEFAUTL_PAGE_SIZE. ');';
 		return $js;
 	}

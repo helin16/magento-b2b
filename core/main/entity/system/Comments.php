@@ -1,4 +1,10 @@
 <?php
+/** Comments Entity
+ *
+ * @package    Core
+ * @subpackage Entity
+ * @author     lhe<helin16@gmail.com>
+ */
 class Comments extends BaseEntityAbstract
 {
 	/**

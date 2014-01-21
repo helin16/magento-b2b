@@ -13,6 +13,7 @@ class SystemSettings extends BaseEntityAbstract
 	const TYPE_B2B_SOAP_KEY = 'b2b_soap_key';
 	const TYPE_B2B_SOAP_TIMEZONE = 'b2b_soap_timezone';
 	const TYPE_B2B_SOAP_LAST_IMPORT_TIME = 'b2b_soap_last_import_time';
+	const TYPE_SYSTEM_TIMEZONE = 'system_timezone';
 	/**
 	 * The value of the setting
 	 * 
@@ -25,7 +26,18 @@ class SystemSettings extends BaseEntityAbstract
 	 * @var string
 	 */
 	private $type;
-	private static $_settings = array();
+	/**
+	 * The description
+	 * 
+	 * @var string
+	 */
+	private $description;
+	/**
+	 * The cache
+	 * 
+	 * @var array
+	 */
+	private static $_cache = array();
 	/**
 	 * Getting Settings Object
 	 * 
@@ -35,12 +47,12 @@ class SystemSettings extends BaseEntityAbstract
 	 */
 	public static function getSettings($type)
 	{
-		if(!isset(self::$_settings[$type]))
+		if(!isset(self::$_cache[$type]))
 		{
 			$settings = FactoryAbastract::dao(__CLASS__)->findByCriteria('type=?', array($type), false, 1, 1);
-			self::$_settings[$type] = trim(count($settings) === 0 ? '' : $settings[0]->getValue());
+			self::$_cache[$type] = trim(count($settings) === 0 ? '' : $settings[0]->getValue());
 		}
-		return self::$_settings[$type];
+		return self::$_cache[$type];
 	}
 	/**
 	 * adding a new Settings Object
@@ -56,7 +68,7 @@ class SystemSettings extends BaseEntityAbstract
 		$setting->setValue($value);
 		$setting->setActive(true);
 		FactoryAbastract::dao($class)->save($setting);
-		self::$_settings[$type] = $value;
+		self::$_cache[$type] = $value;
 	}
 	/**
 	 * Removing Settings Object
@@ -110,6 +122,27 @@ class SystemSettings extends BaseEntityAbstract
 		return $this;
 	}
 	/**
+	 * Getter for description
+	 *
+	 * @return string
+	 */
+	public function getDescription() 
+	{
+	    return $this->description;
+	}
+	/**
+	 * Setter for description
+	 *
+	 * @param string $value The description
+	 *
+	 * @return SystemSettings
+	 */
+	public function setDescription($value) 
+	{
+	    $this->description = $value;
+	    return $this;
+	}
+	/**
 	 * (non-PHPdoc)
 	 * @see BaseEntity::__loadDaoMap()
 	 */
@@ -119,6 +152,7 @@ class SystemSettings extends BaseEntityAbstract
 	
 		DaoMap::setStringType('type','varchar', 50);
 		DaoMap::setStringType('value','varchar', 255);
+		DaoMap::setStringType('description','varchar', 100);
 	
 		parent::__loadDaoMap();
 	

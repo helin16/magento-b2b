@@ -1,22 +1,20 @@
 <?php
 /**
- * Entity for OrderInfoType
+ * Entity for ProductInfoType
  *
  * @package    Core
  * @subpackage Entity
  * @author     lhe<helin16@gmail.com>
  */
-class OrderInfoType extends InfoTypeAbstract
+class ProductInfoType extends InfoTypeAbstract
 {
-	const ID_CUS_NAME = 1;
-	const ID_CUS_EMAIL = 2;
 	/**
 	 * (non-PHPdoc)
 	 * @see BaseEntity::__loadDaoMap()
 	 */
 	public function __loadDaoMap()
 	{
-		DaoMap::begin($this, 'oinfo_type');
+		DaoMap::begin($this, 'pro_info_type');
 		parent::__loadDaoMap();
 		DaoMap::commit();
 	}

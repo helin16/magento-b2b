@@ -6,6 +6,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 	resultDivId: '' //the html id of the result div
 	,totalNoOfItemsId: '' //the html if of the total no of items
 	,_pagination: {'pageNo': 1, 'pageSize': 30} //the pagination details
+	,_infoTypes:{'custName': '', 'custEmail': ''} //the infotype ids
 		
 	,getResults: function(reset, pageSize) {
 		var tmp = {};
@@ -18,7 +19,6 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				try{
 					tmp.result = tmp.me.getResp(param, false, true);
 					$(tmp.me.totalNoOfItemsId).update(tmp.result.pageStats.totalRows);
-					console.debug(tmp.result );
 					
 					tmp.resultDiv = $(tmp.me.resultDivId);
 					//reset div
@@ -37,7 +37,6 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					//show the next page button
 					if(tmp.result.pageStats.pageNumber < tmp.result.pageStats.totalPages)
 						tmp.resultDiv.insert({'bottom': tmp.me._getNextPageBtn().addClassName('paginWrapper') });
-					console.debug(tmp.resultDiv);
 					
 				} catch (e) {
 					console.error(e);
@@ -66,7 +65,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		return new Element('div', {'class': 'row'}).store('data', row)
 			.insert({'bottom': new Element('span', {'class': 'cell orderNo'}).update(row.orderNo) })
 			.insert({'bottom': new Element('span', {'class': 'cell orderDate'}).update(row.orderDate) })
-			.insert({'bottom': new Element('span', {'class': 'cell custName'}).update(tmp.isTitle ? row.custName : new Element('div').update(row.infos[1][0].value).insert({'bottom': new Element('div', {'class': 'custEmail'}).update(row.infos[6][0].value) }) ) })
+			.insert({'bottom': new Element('span', {'class': 'cell custName'}).update(tmp.isTitle ? row.custName : new Element('div').update(row.infos[tmp.me._infoTypes['custName']][0].value).insert({'bottom': new Element('div', {'class': 'custEmail'}).update(row.infos[tmp.me._infoTypes['custEmail']][0].value) }) ) })
 			.insert({'bottom': new Element('span', {'class': 'cell invNo'}).update(row.invNo) })
 			.insert({'bottom': new Element('span', {'class': 'cell status'}).update(row.status ? row.status.name : '') })
 			.insert({'bottom': new Element('span', {'class': 'cell payment'}).update(tmp.isTitle ? row.totalDue : tmp.me.getCurrency(row.totalDue)) });

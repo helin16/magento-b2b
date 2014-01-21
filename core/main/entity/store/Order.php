@@ -57,6 +57,18 @@ class Order extends InfoEntityAbstract
 	 */
 	protected $shippments;
 	/**
+	 * The shipping address
+	 * 
+	 * @var Address
+	 */
+	protected $shippingAddr;
+	/**
+	 * The billing address
+	 * 
+	 * @var Address
+	 */
+	protected $billingAddr;
+	/**
 	 * Getter for orderNo
 	 *
 	 * @return string
@@ -239,6 +251,62 @@ class Order extends InfoEntityAbstract
 		return $this->totalAmount - $this->totalPaid;
 	}
 	/**
+	 * Getter for shippingAddr
+	 *
+	 * @return Address
+	 */
+	public function getShippingAddr() 
+	{
+		$this->loadManyToOne('shippingAddr');
+	    return $this->shippingAddr;
+	}
+	/**
+	 * Setter for shippingAddr
+	 *
+	 * @param Address $value The shippingAddr
+	 *
+	 * @return Order
+	 */
+	public function setShippingAddr($value) 
+	{
+	    $this->shippingAddr = $value;
+	    return $this;
+	}
+	/**
+	 * Getter for billingAddr
+	 *
+	 * @return Address
+	 */
+	public function getBillingAddr() 
+	{
+		$this->loadManyToOne('billingAddr');
+	    return $this->billingAddr;
+	}
+	/**
+	 * Setter for billingAddr
+	 *
+	 * @param Address $value The billingAddr
+	 *
+	 * @return Order
+	 */
+	public function setBillingAddr($value) 
+	{
+	    $this->billingAddr = $value;
+	    return $this;
+	}
+	/**
+	 * Getting the order by order no
+	 * 
+	 * @param string $orderNo
+	 * 
+	 * @return Ambigous <NULL, unknown>
+	 */
+	public static function get($orderNo)
+	{
+		$items = FactoryAbastract::dao(get_called_class())->findByCriteria('orderNo = ?', array($orderNo), false, 1, 1);
+		return (count($items) === 0 ? null : $items[0]);
+	}
+	/**
 	 * (non-PHPdoc)
 	 * @see BaseEntityAbstract::preSave()
 	 */
@@ -282,12 +350,14 @@ class Order extends InfoEntityAbstract
 		DaoMap::setIntType('totalAmount', 'Double', '10,4');
 		DaoMap::setIntType('totalPaid', 'Double', '10,4');
 		DaoMap::setManyToOne('status', 'OrderStatus', 'o_status');
+		DaoMap::setManyToOne('billingAddr', 'Address', 'baddr');
+		DaoMap::setManyToOne('shippingAddr', 'Address', 'saddr');
 		
 		DaoMap::setOneToMany('shippments', 'Shippment', 'o_ship');
 		DaoMap::setOneToMany('payments', 'Payment', 'o_pay');
 		parent::__loadDaoMap();
 		
-		DaoMap::createIndex('orderNo');
+		DaoMap::createUniqueIndex('orderNo');
 		DaoMap::createIndex('invNo');
 		DaoMap::createIndex('orderDate');
 		DaoMap::commit();
