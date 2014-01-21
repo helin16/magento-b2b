@@ -89,9 +89,7 @@ class OrderController extends BPCPageAbstract
 			if($noSearch === true)
 				throw new Exception("Nothing to search!");
 			
-			Dao::$debug = true;
 			$orders = FactoryAbastract::service('Order')->findByCriteria(implode(' AND ', $where), $params, true, $pageNo, $pageSize);
-			Dao::$debug = false;
 			$results['pageStats'] = FactoryAbastract::service('Order')->getPageStats();
 			$results['items'] = array();
 			foreach($orders as $order)

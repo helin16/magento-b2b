@@ -1,14 +1,1 @@
-.contentDiv {
-	vertical-align: top;
-	width: 23%;
-}
-.contentDiv .row {
-	padding: 3px 0;
-}
-.contentDiv .row label {
-	font-size: 9px;
-	display:block;
-}
-.contentDiv .row .input_field{
-	width: 90%;
-}
+.contentDiv{vertical-align:top;width:23%}.contentDiv .row{padding:3px 0}.contentDiv .row label{font-size:9px;display:block}.contentDiv .row .input_field{width:90%}
