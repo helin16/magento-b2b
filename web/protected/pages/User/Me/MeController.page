@@ -2,27 +2,28 @@
 	<div class="contentDiv changePassDiv inlineblock">
 		<div class="h_title">Change Password:</div>
 		<div class="h_content">
-			<com
+		    <com:TCallback ID="changePwdBtn" onCallback="changePwd" />
 			<div class="row">
 				<label for="oldPwd">Old Password:</label>
 				<input id="oldPwd" type="text" placeholder="The current password" change_pass="oldPwd" class="input_field"/>
 			</div>
 			<div class="row">
 				<label for="newPwd">New Password:</label>
-				<input id="newPwd" type="text" placeholder="The new password" change_pass="newPwd" class="input_field"/>
+				<input id="newPwd" type="password" placeholder="The new password" change_pass="newPwd" class="input_field"/>
 			</div>
 			<div class="row">
 				<label for="confirmNewPwd">Confirm New Password:</label>
-				<input id="confirmNewPwd" type="text" placeholder="Confirm the new password" change_pass="confirmNewPwd" class="input_field"/>
+				<input id="confirmNewPwd" type="password" placeholder="Confirm the new password" change_pass="confirmNewPwd" class="input_field"/>
 			</div>
 			<div class="row">
-				<input type="button" value="Save" class="button"/>
+				<input type="button" value="Save" class="button" onclick="pageJs.changePwd(this);"/>
 			</div>
 		</div>
 	</div>
 	<div class="contentDiv changePerson inlineblock">
 		<div class="h_title">Change Personal Info:</div>
 		<div class="h_content">
+		    <com:TCallback ID="changePersonInfoBtn" onCallback="changePersonInfo" />
 			<div class="row">
 				<label for="firstName">First Name:</label>
 				<input id="firstName" type="text" placeholder="First Name" change_pinfo="firstName" class="input_field" value="<%= Core::getUser()->getPerson()->getFirstName() %>"/>

@@ -17,6 +17,12 @@ abstract class BPCPageAbstract extends TPage
 	 */
 	protected $_loginUserBtn = null;
 	/**
+	 * The menu item identifier
+	 * 
+	 * @var string
+	 */
+	public $menuItem = '';
+	/**
 	 * constructor
 	 */
 	public function __construct()

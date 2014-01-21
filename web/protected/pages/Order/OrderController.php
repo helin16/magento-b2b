@@ -10,6 +10,11 @@ class OrderController extends BPCPageAbstract
 {
 	/**
 	 * (non-PHPdoc)
+	 * @see BPCPageAbstract::$menuItem
+	 */
+	public $menuItem = 'order';
+	/**
+	 * (non-PHPdoc)
 	 * @see BPCPageAbstract::onLoad()
 	 */
 	public function onLoad($param)

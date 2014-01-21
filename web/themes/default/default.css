@@ -172,6 +172,10 @@ body {
 .mainMenuDiv ul li a:hover {
 	color: rgb(240, 126, 1);
 }
+.mainMenuDiv ul li a.active {
+	color: rgb(240, 126, 1);
+	text-decoration: none;
+}
 
 /****************content *************************/
 .content {

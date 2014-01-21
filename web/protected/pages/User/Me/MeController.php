@@ -9,12 +9,24 @@
 class MeController extends BPCPageAbstract
 {
 	/**
-	 * (non-PHPdoc)
-	 * @see BPCPageAbstract::onLoad()
+	 * Getting The end javascript
+	 *
+	 * @return string
 	 */
-	public function onLoad($param)
+	protected function _getEndJs()
 	{
-		parent::onLoad($param);
+		$js = parent::_getEndJs();
+		$js .= 'pageJs.setCallbackId("changePwd", "' . $this->changePwdBtn->getUniqueID(). '");';
+		$js .= 'pageJs.setCallbackId("changePersonInfo", "' . $this->changePersonInfoBtn->getUniqueID(). '");';
+		return $js;
+	}
+	public function changePwd($sender, $param)
+	{
+		
+	}
+	public function changePersonInfo($sender, $param)
+	{
+		
 	}
 }
 ?>

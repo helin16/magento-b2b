@@ -9,7 +9,6 @@
 	font-size: 9px;
 	display:block;
 }
-.searchField .row .input_field{
+.contentDiv .row .input_field{
 	width: 90%;
-}
 }

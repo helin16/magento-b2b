@@ -15,5 +15,21 @@ class Menu extends TTemplateControl
 	public function onLoad($param)
 	{
 	}
+	public function getMenuItems()
+	{
+		$pageItem = trim($this->getPage()->menuItem);
+		$array = array(
+			'' => array('url' => '/', 'name' => 'Home')
+			,'order' => array('url' => '/order.html', 'name' => 'Orders')
+		);
+		$html = "<ul class='mainMenu'>";
+			foreach($array as $key => $item)
+			{
+				$activeClass = ($pageItem === $key ? 'active' : '');
+				$html .= "<li class='mainMenuItem'><a href='" . $item['url'] . "' class='" . $activeClass . "'>" . $item['name'] . "</a>";
+			}
+		$html .= "</ul>";
+		return $html;
+	}
 }
 ?>
