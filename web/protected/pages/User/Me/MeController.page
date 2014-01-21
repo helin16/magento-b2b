@@ -1,0 +1,38 @@
+<com:TContent ID="MainContent">
+	<div class="contentDiv changePassDiv inlineblock">
+		<div class="h_title">Change Password:</div>
+		<div class="h_content">
+			<div class="row">
+				<label for="oldPwd">Old Password:</label>
+				<input id="oldPwd" type="text" placeholder="The current password" change_pass="oldPwd" class="input_field"/>
+			</div>
+			<div class="row">
+				<label for="newPwd">New Password:</label>
+				<input id="newPwd" type="text" placeholder="The new password" change_pass="newPwd" class="input_field"/>
+			</div>
+			<div class="row">
+				<label for="confirmNewPwd">Confirm New Password:</label>
+				<input id="confirmNewPwd" type="text" placeholder="Confirm the new password" change_pass="confirmNewPwd" class="input_field"/>
+			</div>
+			<div class="row">
+				<input type="button" value="Save" class="button"/>
+			</div>
+		</div>
+	</div>
+	<div class="contentDiv changePerson inlineblock">
+		<div class="h_title">Change Personal Info:</div>
+		<div class="h_content">
+			<div class="row">
+				<label for="firstName">First Name:</label>
+				<input id="firstName" type="text" placeholder="First Name" change_pinfo="firstName" class="input_field" value="<%= Core::getUser()->getPerson()->getFirstName() %>"/>
+			</div>
+			<div class="row">
+				<label for="lastName">Last Name:</label>
+				<input id="lastName" type="text" placeholder="Last Name" change_pinfo="lastName" class="input_field" value="<%= Core::getUser()->getPerson()->getLastName() %>"/>
+			</div>
+			<div class="row">
+				<input type="button" value="Save" class="button"/>
+			</div>
+		</div>
+	</div>
+</com:TContent>
