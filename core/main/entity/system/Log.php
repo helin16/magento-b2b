@@ -249,7 +249,7 @@ class Log extends BaseEntityAbstract
 		$log->settype($type);
 		$log->setComments($comments);
 		$log->setFuncName($funcName);
-		EntityDao::getInstance($className)->save($log);
+		FactoryAbastract::dao($className)->save($log);
 	}
 	/**
 	 * Getting the transid

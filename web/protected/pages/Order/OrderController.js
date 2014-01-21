@@ -6,7 +6,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 	resultDivId: '' //the html id of the result div
 	,totalNoOfItemsId: '' //the html if of the total no of items
 	,_pagination: {'pageNo': 1, 'pageSize': 30} //the pagination details
-	,_infoTypes:{'custName': '', 'custEmail': ''} //the infotype ids
+	,_infoTypes:{} //the infotype ids
 		
 	,getResults: function(reset, pageSize) {
 		var tmp = {};
@@ -23,7 +23,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					tmp.resultDiv = $(tmp.me.resultDivId);
 					//reset div
 					if(tmp.reset === true) {
-						tmp.titleRow = {'orderNo': "Order No.", 'orderDate': 'Order Date', 'custName': 'Customer Name', 'invNo': 'Invoice No.', 'status': {'name': 'Status'}, 'totalDue': 'Total Due'};
+						tmp.titleRow = {'orderNo': "Order No.", 'orderDate': 'Order Date', 'custName': 'Customer Name', 'shippingAddr': 'Shipping Address', 'invNo': 'Invoice No.', 'status': {'name': 'Status'}, 'totalDue': 'Total Due'};
 						tmp.resultDiv.update(tmp.me._getResultRow(tmp.titleRow, true).addClassName('header'));
 					}
 					//remove next page button
@@ -57,17 +57,26 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				})
 			});
 	}
+	
+	,_getAddrDiv: function(addr) {
+		return new Element('div')
+			.insert({'bottom': new Element('span', {'class': 'addr_contact_name'}).update(addr.contactName).insert({'top': new Element('span', {'class': 'icon'}) })  })
+			.insert({'bottom': new Element('span', {'class': 'addr_contactNo'}).update(addr.contactNo).insert({'top': new Element('span', {'class': 'icon'}) }) })
+			.insert({'bottom': new Element('span', {'class': 'addr_addr'}).update(addr.full).insert({'top': new Element('span', {'class': 'icon'}) }) })
+		;
+	}
 		
 	,_getResultRow: function(row, isTitle) {
 		var tmp = {};
 		tmp.me = this;
 		tmp.isTitle = (isTitle || false);
 		return new Element('div', {'class': 'row'}).store('data', row)
-			.insert({'bottom': new Element('span', {'class': 'cell orderNo'}).update(row.orderNo) })
+			.insert({'bottom': new Element('span', {'class': 'cell orderNo'}).update(tmp.isTitle ? row.orderNo : new Element('div').update(row.orderNo).insert({'bottom': new Element('div', {'class': 'qty'}).update('Qty: ' + row.infos[tmp.me._infoTypes['qty']][0].value) })) })
 			.insert({'bottom': new Element('span', {'class': 'cell orderDate'}).update(row.orderDate) })
 			.insert({'bottom': new Element('span', {'class': 'cell custName'}).update(tmp.isTitle ? row.custName : new Element('div').update(row.infos[tmp.me._infoTypes['custName']][0].value).insert({'bottom': new Element('div', {'class': 'custEmail'}).update(row.infos[tmp.me._infoTypes['custEmail']][0].value) }) ) })
-			.insert({'bottom': new Element('span', {'class': 'cell invNo'}).update(row.invNo) })
+			.insert({'bottom': new Element('span', {'class': 'cell shippingAddr'}).update(tmp.isTitle ? row.shippingAddr : tmp.me._getAddrDiv(row.address.shipping)) })
 			.insert({'bottom': new Element('span', {'class': 'cell status'}).update(row.status ? row.status.name : '') })
-			.insert({'bottom': new Element('span', {'class': 'cell payment'}).update(tmp.isTitle ? row.totalDue : tmp.me.getCurrency(row.totalDue)) });
+			.insert({'bottom': new Element('span', {'class': 'cell payment'}).update(tmp.isTitle ? row.totalDue : tmp.me.getCurrency(row.totalDue)) })
+			.insert({'bottom': new Element('span', {'class': 'cell invNo'}).update(row.invNo) });		
 	}
 });

@@ -233,6 +233,19 @@ class Address extends BaseEntityAbstract
 	}
 	/**
 	 * (non-PHPdoc)
+	 * @see BaseEntityAbstract::getJson()
+	 */
+	public function getJson($extra = '', $reset = false)
+	{
+		$array = array();
+		if(!$this->isJsonLoaded($reset))
+		{
+			$array['full'] = trim($this);
+		}
+		return parent::getJson($array, $reset);
+	}
+	/**
+	 * (non-PHPdoc)
 	 * @see BaseEntity::__loadDaoMap()
 	 */
 	public function __loadDaoMap()

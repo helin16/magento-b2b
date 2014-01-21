@@ -326,6 +326,8 @@ class Order extends InfoEntityAbstract
 	    {
 	    	$array['totalDue'] = $this->getTotalDue();
 	    	$array['infos'] = array();
+	    	$array['address']['shipping'] = $this->getShippingAddr()->getJson();
+	    	$array['address']['billing'] = $this->getBillingAddr()->getJson();
 		    foreach($this->getInfos() as $info)
 		    {
 		        $typeId = $info->getType()->getId();

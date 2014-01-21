@@ -38,7 +38,10 @@ insert into `role_useraccount`(`userAccountId`, `roleId`, `created`, `createdByI
 ############################ add orderinfotype table
 insert into `orderinfotype` (`id`, `name`, `active`, `created`, `createdById`, `updated`, `updatedById`) values
 	(1, 'Customer Name', 1, NOW(), 10, NOW(), 10),
-	(2, 'Customer Email', 1, NOW(), 10, NOW(), 10);
+	(2, 'Customer Email', 1, NOW(), 10, NOW(), 10),
+	(3, 'Total Order Qty', 1, NOW(), 10, NOW(), 10),
+	(4, 'Magento Order Status', 1, NOW(), 10, NOW(), 10),
+	(5, 'Magento Order State', 1, NOW(), 10, NOW(), 10);
 
 
 ############################ add systemsettings table

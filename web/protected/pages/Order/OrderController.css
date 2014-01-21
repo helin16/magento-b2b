@@ -2,17 +2,60 @@
 .invNo{
 	width: 80px;
 }
-.orderDate,
+.orderNo {
+	font-weight: bold;
+}
+.orderDate{
+	width: 65px;
+}
 .custName{
 	width: 120px;
 }
+.shippingAddr {
+	width: 200px;
+}
 .status {
-	width: 100px;
+	width: 60px;
 }
 .payment {
-	width: 100px;
+	width: 60px;
+	text-align: right;
 }
-
+.qty {
+	margin: 20px 0 0 0;
+	font-weight:normal;
+}
+.qty,
+.addr_addr,
+.payment,
+.orderDate,
 .custEmail {
 	font-size: 9px;
+}
+
+.icon {
+	display: inline-block;
+	width: 16px;
+	height: 16px;
+	background-size: 320px auto;
+	background-color: transparent;
+	background-image: url("/themes/default/images/icons.jpg");
+	background-repeat: none;
+	margin-right: 2px;
+}
+
+.addr_addr,
+.addr_contactNo,
+.addr_contact_name {
+	display: block;
+}
+
+.addr_contact_name .icon {
+	background-position: -3px -124px;
+}
+.addr_contactNo .icon {
+	background-position: -34px -124px;
+}
+.addr_addr .icon {
+	background-position: -49px -103px;
 }

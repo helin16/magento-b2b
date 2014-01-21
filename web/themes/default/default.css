@@ -248,13 +248,15 @@ body {
     margin: 15px;
 }
 .dataTableWrapper .dataTable .cell{
-	border-bottom: 1px solid #FFFFFF;
     border-right: 1px solid #FFFFFF;
     color: #565656;
     padding: 8px;
     vertical-align: top;
     display: inline-block;
     min-height: 15px;
+}
+.dataTableWrapper .dataTable .row {
+	border-bottom: 1px solid #FFFFFF;
 }
 .dataTableWrapper .dataTable .row:nth-child(2n) {
     background: none repeat scroll 0 0 #FFFFFF;
