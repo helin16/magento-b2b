@@ -2,6 +2,7 @@
 	<div class="contentDiv changePassDiv inlineblock">
 		<div class="h_title">Change Password:</div>
 		<div class="h_content">
+			<com
 			<div class="row">
 				<label for="oldPwd">Old Password:</label>
 				<input id="oldPwd" type="text" placeholder="The current password" change_pass="oldPwd" class="input_field"/>
