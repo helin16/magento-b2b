@@ -119,5 +119,14 @@ abstract class BaseServiceAbastract
 	{
 	    return $this->_pageStats;
 	}
+	/**
+	 * return the dao
+	 * 
+	 * @return EntityDao
+	 */
+	public function getDao()
+	{
+		return FactoryAbastract::dao($this->_entityName);
+	}
 }
 ?>

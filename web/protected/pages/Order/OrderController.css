@@ -1,35 +1,38 @@
-.orderNo,
-.invNo{
+.orderNo,.invNo {
 	width: 80px;
 }
+
 .orderNo {
 	font-weight: bold;
 }
-.orderDate{
+
+.orderDate {
 	width: 65px;
 }
-.custName{
+
+.custName {
 	width: 120px;
 }
+
 .shippingAddr {
 	width: 200px;
 }
+
 .status {
 	width: 60px;
 }
+
 .payment {
 	width: 60px;
 	text-align: right;
 }
+
 .qty {
 	margin: 20px 0 0 0;
-	font-weight:normal;
+	font-weight: normal;
 }
-.qty,
-.addr_addr,
-.payment,
-.orderDate,
-.custEmail {
+
+.qty,.addr_addr,.payment,.orderDate,.custEmail {
 	font-size: 9px;
 }
 
@@ -44,18 +47,28 @@
 	margin-right: 2px;
 }
 
-.addr_addr,
-.addr_contactNo,
-.addr_contact_name {
+.addr_addr,.addr_contactNo,.addr_contact_name {
 	display: block;
 }
 
 .addr_contact_name .icon {
 	background-position: -3px -124px;
 }
+
 .addr_contactNo .icon {
 	background-position: -34px -124px;
 }
+
 .addr_addr .icon {
 	background-position: -49px -103px;
+}
+
+.searchField {
+	width: 22%;
+}
+.searchField label{
+	font-size: 9px;
+}
+.searchField [search_field]{
+	width: 90%;
 }

@@ -4,16 +4,41 @@
 var PageJs = new Class.create();
 PageJs.prototype = Object.extend(new BPCPageJs(), {
 	resultDivId: '' //the html id of the result div
+	,searchDivId: '' //the html id of the search div
 	,totalNoOfItemsId: '' //the html if of the total no of items
 	,_pagination: {'pageNo': 1, 'pageSize': 30} //the pagination details
+	,_searchCriteria: {} //the searching criteria
 	,_infoTypes:{} //the infotype ids
+	
+	,getSearchCriteria: function() {
+		var tmp = {};
+		tmp.me = this;
+		if(tmp.me._searchCriteria === null)
+			tmp.me._searchCriteria = {};
+		tmp.nothingTosearch = true;
+		$(tmp.me.searchDivId).getElementsBySelector('[search_field]').each(function(item) {
+			tmp.me._searchCriteria[item.readAttribute('search_field')] = $F(item);
+			if(!$F(item).blank())
+				tmp.nothingTosearch = false;
+		});
+		if(tmp.nothingTosearch === true)
+			tmp.me._searchCriteria = null;
+		return this;
+	}
 		
 	,getResults: function(reset, pageSize) {
 		var tmp = {};
 		tmp.me = this;
 		tmp.reset = (reset || false);
+		if(tmp.me._searchCriteria === null)
+		{
+			alert('Nothing to search!');
+			return;
+		}
+		if(tmp.reset === true)
+			tmp.me._pagination.pageNo = 1;
 		tmp.me._pagination.pageSize = (pageSize || tmp.me._pagination.pageSize);
-		tmp.me.postAjax(tmp.me.getCallbackId('getOrders'), {'pagination': tmp.me._pagination}, {
+		tmp.me.postAjax(tmp.me.getCallbackId('getOrders'), {'pagination': tmp.me._pagination, 'searchCriteria': tmp.me._searchCriteria}, {
 			'onLoading': function () {}
 			,'onComplete': function(sender, param) {
 				try{
@@ -39,7 +64,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 						tmp.resultDiv.insert({'bottom': tmp.me._getNextPageBtn().addClassName('paginWrapper') });
 					
 				} catch (e) {
-					console.error(e);
+					alert(e);
 				}
 			}
 		});
