@@ -19,8 +19,12 @@
 			<!-- FrontEnd:: login page -->
 			<url ServiceParameter="Login.LoginController" pattern="login.html" />
 			
+			<!-- FrontEnd:: order list page -->
+			<url ServiceParameter="Order.List.OrderController" pattern="order.html" />
+			
 			<!-- FrontEnd:: order page -->
-			<url ServiceParameter="Order.OrderController" pattern="order.html" />
+			<url ServiceParameter="Order.Details.OrderDetailsController" pattern="orderdetails/{orderId}.html" parameters.orderId="\d+"/>
+			<url ServiceParameter="Order.Details.OrderDetailsController" pattern="orderdetails.html" />
 			
 			<!-- FrontEnd:: me page -->
 			<url ServiceParameter="User.Me.MeController" pattern="me.html" />
@@ -36,7 +40,7 @@
 
 	<!-- configuration for available services -->
 	<services>
-		<service id="page" class="TPageService" DefaultPage="Order.OrderController">
+		<service id="page" class="TPageService" DefaultPage="Order.List.OrderController">
 		    <pages MasterClass="Application.layout.PageLayout" Theme="default" />
 			<modules>
 				<module id="auth" class="Application.classes.WebUser.AuthManager" UserManager="users" ReturnUrl="/" LoginPage="Login.LoginController" AuthExpire="3600" />

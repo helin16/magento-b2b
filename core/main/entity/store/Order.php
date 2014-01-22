@@ -69,6 +69,12 @@ class Order extends InfoEntityAbstract
 	 */
 	protected $billingAddr;
 	/**
+	 * The array of order items
+	 * 
+	 * @var Multiple:OrderItem
+	 */
+	protected $orderItems;
+	/**
 	 * Getter for orderNo
 	 *
 	 * @return string
@@ -307,6 +313,28 @@ class Order extends InfoEntityAbstract
 		return (count($items) === 0 ? null : $items[0]);
 	}
 	/**
+	 * Getter for orderItems
+	 *
+	 * @return Multiple:OrderItem
+	 */
+	public function getOrderItems() 
+	{
+		$this->loadOneToMany('orderItems');
+	    return $this->orderItems;
+	}
+	/**
+	 * Setter for orderItems
+	 *
+	 * @param array $value The orderItems
+	 *
+	 * @return Order
+	 */
+	public function setorderItems($value) 
+	{
+	    $this->orderItems = $value;
+	    return $this;
+	}
+	/**
 	 * (non-PHPdoc)
 	 * @see BaseEntityAbstract::preSave()
 	 */
@@ -357,6 +385,7 @@ class Order extends InfoEntityAbstract
 		
 		DaoMap::setOneToMany('shippments', 'Shippment', 'o_ship');
 		DaoMap::setOneToMany('payments', 'Payment', 'o_pay');
+		DaoMap::setOneToMany('orderItems', 'OrderItem', 'o_items');
 		parent::__loadDaoMap();
 		
 		DaoMap::createUniqueIndex('orderNo');

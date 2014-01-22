@@ -1,0 +1,55 @@
+<%@MasterClass="Application.layout.BlankLayout"%>
+<com:TContent ID="MainContent">
+	<div class="pagewrapper orderdetails container">
+		<div class="orderViewWrapper inlineblock">
+			<table class='orderview'>
+				<thead>
+					<tr class="title_row">
+						<td colspan=6>
+							<span class="inlineblock logo">
+								fdsfds
+							</span>
+							<span class="inlineblock info">
+								<div class="cname">BUDGET PC PTY LTD</div>
+								<div class="abn">ABN 29 133 654 761</div>
+							</span>
+						</td>
+					</tr>
+					<tr class="orderno_row">
+						<td colspan=6>
+							<span class="inlineblock orderno hidewhenprint">
+								Order No.: <%= $this->order->getOrderNo()%>
+							</span>
+							<span class="inlineblock info">
+								<div class="cname">BUDGET PC PTY LTD</div>
+								<div class="abn">ABN 29 133 654 761</div>
+							</span>
+						</td>
+					</tr>
+					<tr class="addr_info">
+						<td colspan=6>
+							<span class="inlineblock half">
+								<div class="title">Billing To:</div>
+								<div class="addr"><%= $this->getAddress('Billing') %></div>
+							</span>
+							<span class="inlineblock half">
+								<div class="title">Shipping To:</div>
+								<div class="addr"><%= $this->getAddress('Shipping') %></div>
+							</span>
+						</td>
+					</tr>
+					<%= $this->getRow('QTY', 'SKU', 'NAME', 'Unit Price', 'Total Price'); %>
+				</thead>
+				<tbody>
+					<%= $this->showProducts(); %>
+				</tbody>
+				<tfoot>
+					<tr><td colspan=6>test</td></tr>
+				</tfoot>
+			</table>
+		</div>
+		<div class="operationWrapper inlineblock hidewhenprint">
+			fdsafdas
+		</div>
+	</div>
+</com:TContent>

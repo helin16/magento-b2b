@@ -1,0 +1,70 @@
+@media print {
+  body  {background: white; }
+  table { page-break-after:auto }
+  tr    { page-break-inside:avoid; page-break-after:auto }
+  td    { page-break-inside:avoid; page-break-after:auto }
+  thead { display:table-header-group }
+  tfoot { display:table-footer-group }
+  .hidewhenprint {display: none;}
+}
+
+.orderViewWrapper,
+.operationWrapper {
+	vertical-align: top;
+	padding: 5px;
+	float: left;
+}
+
+.orderViewWrapper {
+	width: 511pt;
+	background: white;
+}
+
+.operationWrapper {
+	width: auto;
+	border: 1px #000000 solid;
+}
+
+/************ address info row ****************/
+.title_row .logo {
+	vertical-align: top;
+	width: 75%;
+}
+
+/************ order no row ****************/
+.orderno_row .orderno {
+	width: 60%;
+}
+
+
+/************ address info row ****************/
+.addr_info {
+	width: 100%;
+}
+.addr_info .half {
+	width: 49%;
+	height: 100px;
+	float: left;
+}
+.addr_info .half .addr{
+	padding: 5px 0 0 30px;
+	font-weight: bold;
+	vertical-align: top;
+}
+
+table.orderview {
+	width: 100%;
+}
+.qty {
+	width: 40px;
+}
+.sku {
+	width: 100px;
+}
+.uprice,
+.tprice {
+	width: 70px;
+}
+.name {
+	width: auto;
+}

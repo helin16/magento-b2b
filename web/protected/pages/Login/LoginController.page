@@ -1,6 +1,6 @@
 <%@MasterClass="Application.layout.BlankLayout"%>
 <com:TContent ID="MainContent">
-	<div class="LoginPanel container">
+	<div class="pagewrapper login container LoginPanel">
 		<section id="content">
 			<div class="form">
 				<h1>Login</h1>

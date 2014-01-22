@@ -32,8 +32,8 @@ class OrderController extends BPCPageAbstract
 		$js .= 'pageJs.resultDivId = "resultDiv";';
 		$js .= 'pageJs.searchDivId = "searchDiv";';
 		$js .= 'pageJs.totalNoOfItemsId = "total_no_of_items";';
-		$js .= 'pageJs.setCallbackId("getOrders", "' . $this->getOrdersBtn->getUniqueID(). '");';
 		$js .= 'pageJs._infoTypes = {"custName": ' . OrderInfoType::ID_CUS_NAME. ', "custEmail" : ' . OrderInfoType::ID_CUS_EMAIL . ', "qty": ' . OrderInfoType::ID_QTY_ORDERED . '};';
+		$js .= 'pageJs.setCallbackId("getOrders", "' . $this->getOrdersBtn->getUniqueID(). '");';
 		return $js;
 	}
 	

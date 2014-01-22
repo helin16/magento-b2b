@@ -96,7 +96,25 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.me = this;
 		tmp.isTitle = (isTitle || false);
 		return new Element('div', {'class': 'row'}).store('data', row)
-			.insert({'bottom': new Element('span', {'class': 'cell orderNo'}).update(tmp.isTitle ? row.orderNo : new Element('div').update(row.orderNo).insert({'bottom': new Element('div', {'class': 'qty'}).update('Qty: ' + row.infos[tmp.me._infoTypes['qty']][0].value) })) })
+			.insert({'bottom': new Element('span', {'class': 'cell orderNo'}).update(
+				tmp.isTitle ? row.orderNo : new Element('div').update(
+						new Element('div', {'class': 'orderNoNo'}).update(row.orderNo).observe('click', function() {
+							jQuery.fancybox({
+								//'orig'			: jQuery(this),
+								'width'			: '80%',
+								'height'		: '90%',
+								'autoScale'     : false,
+						        'transitionIn'	: 'none',
+								'transitionOut'	: 'none',
+								'type'			: 'iframe',
+								'autoDimensions': false,
+								'autoSize'      : false,
+								'href'			: '/orderdetails/' + row.id + '.html',
+					 		});
+						})
+					)
+					.insert({'bottom': new Element('div', {'class': 'qty'}).update('Qty: ' + row.infos[tmp.me._infoTypes['qty']][0].value) })
+			) })
 			.insert({'bottom': new Element('span', {'class': 'cell orderDate'}).update(row.orderDate) })
 			.insert({'bottom': new Element('span', {'class': 'cell custName'}).update(tmp.isTitle ? row.custName : new Element('div').update(row.infos[tmp.me._infoTypes['custName']][0].value).insert({'bottom': new Element('div', {'class': 'custEmail'}).update(row.infos[tmp.me._infoTypes['custEmail']][0].value) }) ) })
 			.insert({'bottom': new Element('span', {'class': 'cell shippingAddr'}).update(tmp.isTitle ? row.shippingAddr : tmp.me._getAddrDiv(row.address.shipping)) })

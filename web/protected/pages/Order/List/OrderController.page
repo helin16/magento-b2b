@@ -1,0 +1,40 @@
+<com:TContent ID="MainContent">
+	<com:Application.controls.fancybox.FancyBox />
+	<com:TCallback ID="getOrdersBtn" onCallBack="Page.getOrders" />
+	<div class="pagewrapper login container LoginPanel">
+		<div class="contentDiv">
+			<div class="h_title">Search orders:</div>
+			<div class="h_content">
+				<div id="searchDiv" class="searchDiv">
+					<fieldset class="searchField inlineblock">
+						<label for="orderNo">Order No: </label>
+						<input id='orderNo' type="text" placeholder="Order No" search_field="ord.orderNo" />
+					</fieldset>
+					<fieldset class="searchField inlineblock">
+						<label for="invNo">Inv No: </label>
+						<input id='invNo' type="text" placeholder="Invoice Number" search_field="ord.invNo" />
+					</fieldset>
+					<fieldset class="searchField  inlineblock">
+						<label for="custName">Customer Name: </label>
+						<input id='custName' type="text" placeholder="Customer Name" search_field="ord.infos.<%= OrderInfoType::ID_CUS_NAME %>" />
+					</fieldset>
+					<fieldset class="searchField  inlineblock">
+						<label for="status">Status: </label>
+						<input id='status' type="text" placeholder="status" search_field="ord.status" />
+					</fieldset>
+					<input type="button" value="search" class="button" onclick="pageJs.getSearchCriteria().getResults(true, <%= DaoQuery::DEFAUTL_PAGE_SIZE %>);"/>
+	 			</div>
+			</div>
+		</div>
+		<div class="contentDiv">
+			<div class="h_title"><span id='total_no_of_items'>0</span> Orders Found!</div>
+			<div class="h_content">
+				<p>Orders found from the search criteria:</p>
+				<div class="sep"></div>
+				<div class="dataTableWrapper">
+					<div class="dataTable" id="resultDiv"></div>
+				</div>
+			</div>
+		</div>
+	</div>
+</com:TContent>

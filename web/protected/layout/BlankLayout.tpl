@@ -8,13 +8,7 @@
 </com:THead>
 <body>
     <com:TForm>
-	    <div>
-	        <div class="framewrapper content">
-	            <div class="contentwrapper">
-	               <com:TContentPlaceHolder ID="MainContent" />
-	            </div>
-	        </div>
-	    </div>
+        <com:TContentPlaceHolder ID="MainContent" />
     </com:TForm>
 </body>
 </html>
