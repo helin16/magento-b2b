@@ -1,4 +1,5 @@
 <com:TContent ID="MainContent">
+	<com:Application.controls.fancybox.FancyBox />
 	<com:TCallback ID="getOrdersBtn" onCallBack="Page.getOrders" />
 	<div class="contentDiv">
 		<div class="h_title">Search orders:</div>
