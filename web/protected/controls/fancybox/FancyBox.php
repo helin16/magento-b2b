@@ -18,7 +18,6 @@ class FancyBox extends TClientScript
 		if(!$this->getPage()->IsPostBack || !$this->getPage()->IsCallback)
 		{
 			// Add jQuery library
-			$clientScript->registerScriptFile('jquery', $this->publishAsset('lib/lib/jquery-1.10.1.min.js'));
 			// Add mousewheel plugin (this is optional)
 			$clientScript->registerScriptFile('jquery.mousewheel', $this->publishAsset('lib/lib/jquery.mousewheel-3.0.6.pack.js'));
 			// Add fancyBox main JS and CSS files

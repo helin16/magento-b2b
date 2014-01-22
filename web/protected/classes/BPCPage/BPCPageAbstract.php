@@ -116,8 +116,9 @@ abstract class BPCPageAbstract extends TPage
 	 */
 	protected function _loadPageJsClass()
 	{
-	    $this->getPage()->getClientScript()->registerScriptFile('jQueryJs', Prado::getApplication()->getAssetManager()->publishFilePath(dirname(__FILE__) . '/' . 'jQuery.js', true));
-	    $this->getPage()->getClientScript()->registerScriptFile('frontEndPageJs', Prado::getApplication()->getAssetManager()->publishFilePath(dirname(__FILE__) . '/' . __CLASS__ . '.js', true));
+	    $this->getClientScript()->registerScriptFile('jquery', $this->publishFilePath(dirname(__FILE__) . DIRECTORY_SEPARATOR . 'jquery-1.10.1.min.js'));
+	    $this->getClientScript()->registerScriptFile('BPCPageJs', $this->publishFilePath(dirname(__FILE__) . DIRECTORY_SEPARATOR . 'BPCPageAbstract.js'));
+	    $this->getClientScript()->registerBeginScript('jquery.noConflict', 'jQuery.noConflict();');
 	    return $this;
 	}
 	/**
@@ -139,27 +140,24 @@ abstract class BPCPageAbstract extends TPage
 	        {
 	            //loop through the directory to find the lastes js version or css version
 	            $lastestJs = $lastestJsVersionNo = $lastestCss = $lastestCssVersionNo = '';
-	            if ($handle = opendir($fileDir))
+	            foreach(glob($fileDir . '*.{js,css}', GLOB_BRACE) as $file)
 	            {
-	                while (false !== ($fileName = readdir($handle)))
-	                {
-	                    preg_match("/^" . $className . "\.([0-9]+\.)?(js|css)$/i", $fileName, $versionNo);
-	                    if (isset($versionNo[0]) && isset($versionNo[1]) && isset($versionNo[2]))
-	                    {
-	                        $type = trim(strtolower($versionNo[2]));
-	                        $version = str_replace('.', '', trim($versionNo[1]));
-	                        if ($type === 'js') //if loading a javascript
-	                        {
-	                            if ($lastestJs === '' || $version > $lastestJsVersionNo)
-	                            $array['js'] = trim($versionNo[0]);
-	                        }
-	                        else if ($type === 'css')
-	                        {
-	                            if ($lastestCss === '' || $version > $lastestCssVersionNo)
-	                            $array['css'] = trim($versionNo[0]);
-	                        }
-	                    }
-	                }
+                    preg_match("/^" . $className . "\.([0-9]+\.)?(js|css)$/i", basename($file), $versionNo);
+                    if (isset($versionNo[0]) && isset($versionNo[1]) && isset($versionNo[2]))
+                    {
+                        $type = trim(strtolower($versionNo[2]));
+                        $version = str_replace('.', '', trim($versionNo[1]));
+                        if ($type === 'js') //if loading a javascript
+                        {
+                            if ($lastestJs === '' || $version > $lastestJsVersionNo)
+                            $array['js'] = trim($versionNo[0]);
+                        }
+                        else if ($type === 'css')
+                        {
+                            if ($lastestCss === '' || $version > $lastestCssVersionNo)
+                            $array['css'] = trim($versionNo[0]);
+                        }
+                    }
 	            }
 	        }
 	        unset($className, $class, $fileDir, $lastestJs, $lastestJsVersionNo, $lastestCss, $lastestCssVersionNo);
