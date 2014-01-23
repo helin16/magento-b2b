@@ -6,10 +6,10 @@
 				<h1>Login</h1>
 				<com:TPanel ID='errorDiv' CssClass="errorMsgDiv msgDiv"><com:TLabel id="errorMsg" CssClass="msg"/></com:TPanel>
 				<div>
-					<com:TTextbox id="username" CssClass="username" Attributes.placeholder="Username" Attributes.required="Username required!"/>
+					<com:TTextBox id="username" CssClass="username" Attributes.placeholder="Username" Attributes.required="Username required!"/>
 				</div>
 				<div>
-					<com:TTextbox id="password" CssClass="password" Attributes.type="password" Attributes.placeholder="Password" Attributes.required="Password required!"" />
+					<com:TTextBox id="password" CssClass="password" Attributes.type="password" Attributes.placeholder="Password" Attributes.required="Password required!"" />
 				</div>
 				<div>
 					<com:TButton Text="Log in" onClick="page.login" />
