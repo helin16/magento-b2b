@@ -9,7 +9,7 @@
 							<div>
 								<span class="inlineblock logo">
 									<img src="/themes/default/images/logo.png" style="padding: 0px; margin: 0px;display: block;"/>
-									<span class="inlineblock orderno hidewhenprint">
+									<span class="inlineblock orderno">
 										Order No.: <%= $this->order->getOrderNo()%>
 									</span>
 								</span>
@@ -50,24 +50,25 @@
 						<td colspan=6>
 							<div class="order_payments">
 								<span class="payment_details inlineblock">
-									<div class="shipping_details box">
-										<div class="row">
-											<span class="inlineblock half"><span class="inlineblock title">Salesperson:</span><span class="inlineblock details">fdsfds</span></span>
-											<span class="inlineblock half"><span class="inlineblock title">Payment:</span><span class="inlineblock details">fdsfds</span></span>
-										</div>
-										<div class="row">
-											<span class="inlineblock half"><span class="inlineblock title">Delivery Via:</span><span class="inlineblock details">fdsfds</span></span>
-											<span class="inlineblock half"><span class="inlineblock title">comments:</span><span class="inlineblock details">fdsfds</span></span>
-										</div>
-									</div>
 									<div class="bank_details box">
 										<span class="bank_title">Budget PC Bank Details: </span>
 										<span class="bank_details_name"><span class="details_title">Account Name: </span>Budget PC Pty Ltd</span>
 										<span class="bank_details_acc_bsb"><span class="details_title">BSB:</span>013 471</span>
 										<span class="bank_details_acc_no"><span class="details_title">ACC:</span>4796 74364</span>
 									</div>
+									<div class="shipping_details box">
+										<div class="row">
+											<span class="inlineblock half"><span class="inlineblock title">Salesperson:</span><span class="inlineblock details"><%= $this->order->getUpdatedBy()->getPerson() %></span></span>
+											<span class="inlineblock half"><span class="inlineblock title">Payment:</span><span class="inlineblock details"></span></span>
+										</div>
+										<div class="row">
+											<span class="inlineblock half"><span class="inlineblock title">Delivery Via:</span><span class="inlineblock details"></span></span>
+											<span class="inlineblock half"><span class="inlineblock title">comments:</span><span class="inlineblock details"></span></span>
+										</div>
+									</div>
 								</span>
 								<span class="payment_summary inlineblock box">
+									<%= $this->getPaymentSummary() %>
 								</span>
 							</div>
 							<div class="order_tc box">
@@ -85,6 +86,9 @@
 								</div>
 							</div>
 							<div class="order_receiver_signature">
+								<span class="printName inlineblock third"><span class="details_title">Print Name: </span></span>
+								<span class="signature inlineblock third"><span class="details_title">Signature: </span></span>
+								<span class="received_date inlineblock third"><span class="details_title">Received on: </span>___ / ____ / _____</span>
 							</div>
 							<div class="order_company_details">
 								<div class="addr">
@@ -103,7 +107,15 @@
 			</table>
 		</div>
 		<div class="operationWrapper inlineblock hidewhenprint">
-			fdsafdas
+			<div class="operation_box">
+				<div class="operation_title expandable">
+					Order Details:
+					<span class="icon inlineblock"></span>
+				</div>
+				<div class="operation_content">
+					fdsfsd
+				</div>
+			</div>
 		</div>
 	</div>
 </com:TContent>

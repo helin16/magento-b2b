@@ -23,6 +23,7 @@
 			<url ServiceParameter="Order.List.OrderController" pattern="order.html" />
 			
 			<!-- FrontEnd:: order page -->
+			<url ServiceParameter="Order.Details.OrderDetailsController" pattern="orderdetails/{action}/{orderId}.html" parameters.action="print" parameters.orderId="\d+"/>
 			<url ServiceParameter="Order.Details.OrderDetailsController" pattern="orderdetails/{orderId}.html" parameters.orderId="\d+"/>
 			<url ServiceParameter="Order.Details.OrderDetailsController" pattern="orderdetails.html" />
 			
