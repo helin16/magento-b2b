@@ -4,6 +4,10 @@
 
 .orderNo {
 	font-weight: bold;
+	cursor: pointer;
+}
+.orderNo:hover {
+	text-decoration: underline;
 }
 
 .orderDate {
