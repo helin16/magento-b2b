@@ -58,11 +58,15 @@ class OrderDetailsController extends BPCPageAbstract
 	public function showProducts()
 	{
 		$html = '';
-		foreach($this->order->getOrderItems() as $orderItem)
+		foreach($this->order->getOrderItems() as  $index => $orderItem)
 		{
 			$uPrice = '$' . number_format($orderItem->getUnitPrice(), 2, '.', ',');
 			$tPrice = '$' . number_format($orderItem->getTotalPrice(), 2, '.', ',');
 			$html .= $this->getRow($orderItem->getQtyOrdered(), $orderItem->getProduct()->getSku(), $orderItem->getProduct()->getname(), $uPrice, $tPrice, 'itemRow');
+		}
+		for ( $i = 12; $i > $index; $i--)
+		{
+			$html .= $this->getRow('&nbsp;', '&nbsp;', '&nbsp;', '&nbsp;', '&nbsp;', 'itemRow');
 		}
 		return $html;
 	}
