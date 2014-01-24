@@ -71,6 +71,10 @@ body {
 	margin: 0px auto;
 }
 
+.cuspntr {
+	cursor: pointer;
+}
+
 #frontend {
 	background: url("images/bg_top.jpg") repeat-x scroll 0 0 #F3F3F3;
 	color: #BEBEBE;

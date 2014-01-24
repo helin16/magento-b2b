@@ -307,6 +307,9 @@ table.orderview .order_company_details .details_title {
 	width: 300px;
 }
 
+.operationWrapper .operation_box {
+	margin: 5px 0;
+}
 .operationWrapper .operation_box .operation_title {
 	background-color: #F5F6F7;
     background-position: 100% 0;
@@ -360,4 +363,26 @@ table.orderview .order_company_details .details_title {
     font-size: 11px;
     color: #BBBBBB;
     padding: 10px 10px 5px;
+}
+
+
+
+/********************** order details ************************************/
+.operationWrapper .btns{
+	text-align: right;
+	margin: 5px 0;
+}
+.operationWrapper .operation_box .operation_content .row{
+	padding: 3px 0;
+}
+.operationWrapper .operation_box .operation_content .row .title{
+	width: 100px;
+}
+.operationWrapper .operation_box .operation_content .row .rowContent{
+	width: 170px;
+}
+
+.operationWrapper .operation_box .operation_content .row .rowContent .order_status {
+	font-weight: bold;
+	color: #000000;
 }

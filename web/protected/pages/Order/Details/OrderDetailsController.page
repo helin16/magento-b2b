@@ -106,16 +106,6 @@
 				</tfoot>
 			</table>
 		</div>
-		<div class="operationWrapper inlineblock hidewhenprint">
-			<div class="operation_box">
-				<div class="operation_title expandable">
-					Order Details:
-					<span class="icon inlineblock"></span>
-				</div>
-				<div class="operation_content">
-					fdsfsd
-				</div>
-			</div>
-		</div>
+		<div id="operationWrapper" class="operationWrapper inlineblock hidewhenprint"></div>
 	</div>
 </com:TContent>

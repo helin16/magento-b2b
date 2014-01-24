@@ -20,6 +20,16 @@ class OrderDetailsController extends BPCPageAbstract
 	 */
 	public $order = null;
 	/**
+	 * constructor
+	 */
+	public function __construct()
+	{
+		parent::__construct();
+		$this->order = FactoryAbastract::service('Order')->get($this->Request['orderId']);
+		if(!$this->order instanceof Order)
+			die('Invalid Order!');
+	}
+	/**
 	 * (non-PHPdoc)
 	 * @see BPCPageAbstract::onLoad()
 	 */
@@ -28,9 +38,6 @@ class OrderDetailsController extends BPCPageAbstract
 		parent::onLoad($param);
 		if(!$this->isPostBack)
 		{
-			$this->order = FactoryAbastract::service('Order')->get($this->Request['orderId']);
-			if(!$this->order instanceof Order)
-				die('Invalid Order!');
 		}
 	}
 	/**
@@ -41,9 +48,13 @@ class OrderDetailsController extends BPCPageAbstract
 	protected function _getEndJs()
 	{
 		$js = parent::_getEndJs();
-		$js .= "pageJs.init();";
 		if(isset($this->Request['action']) && trim($this->Request['action']) === 'print')
 			$js .= "$$('.hidewhenprint').each(function(item){item.hide();});";
+		else { //initialise the js for order
+			$js .= "pageJs.opDiv = 'operationWrapper';";
+			$js .= "pageJs.order = " . json_encode($this->order->getJson()) . ';';
+			$js .= "pageJs.loadOperations();";
+		}
 		return $js;
 	}
 	/**
@@ -72,7 +83,7 @@ class OrderDetailsController extends BPCPageAbstract
 			$tPrice = '$' . number_format($orderItem->getTotalPrice(), 2, '.', ',');
 			$html .= $this->getRow($orderItem->getQtyOrdered(), $orderItem->getProduct()->getSku(), $orderItem->getProduct()->getname(), $uPrice, $tPrice, 'itemRow');
 		}
-		for ( $i = 12; $i > $index; $i--)
+		for ( $i = 17; $i > $index; $i--)
 		{
 			$html .= $this->getRow('&nbsp;', '&nbsp;', '&nbsp;', '&nbsp;', '&nbsp;', 'itemRow');
 		}
