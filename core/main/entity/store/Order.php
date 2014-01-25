@@ -343,6 +343,7 @@ class Order extends InfoEntityAbstract
 		if(trim($this->getOrderNo()) === '')
 			$this->orderNo = StringUtilsAbstract::getRandKey('', 'ORD');
 	}
+	
 	/**
 	 * (non-PHPdoc)
 	 * @see BaseEntityAbstract::getJson()

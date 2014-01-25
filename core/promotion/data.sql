@@ -1,8 +1,8 @@
 ############################ add role table
 insert into `role`(`id`, `name`,`active`, `created`, `createdById`, `updated`, `updatedById`) values 
 	(1, 'Logistics', 1, NOW(), 10, NOW(), 10),
-	(2, 'Sales', 1, NOW(), 10, NOW(), 10),
-	(3, 'Billing', 1, NOW(), 10, NOW(), 10),
+	(2, 'Purchasing', 1, NOW(), 10, NOW(), 10),
+	(3, 'Accounting', 1, NOW(), 10, NOW(), 10),
 	(4, 'Store Manager', 1, NOW(), 10, NOW(), 10),
 	(5, 'Administrator', 1, NOW(), 10, NOW(), 10);
 
@@ -11,8 +11,8 @@ ALTER TABLE `person` AUTO_INCREMENT = 10;
 insert into `person`(`id`, `firstName`, `lastName`, `active`, `created`, `createdById`, `updated`, `updatedById`) values
 	(10, 'System', 'User', 1, NOW(), 10, NOW(), 10),
 	(1, 'Logistics', 'user', 1, NOW(), 10, NOW(), 10),
-	(2, 'Sales', 'user', 1, NOW(), 10, NOW(), 10),
-	(3, 'Billing', 'user', 1, NOW(), 10, NOW(), 10),
+	(2, 'Purchasing', 'user', 1, NOW(), 10, NOW(), 10),
+	(3, 'Accounting', 'user', 1, NOW(), 10, NOW(), 10),
 	(4, 'Store Manager', 'user', 1, NOW(), 10, NOW(), 10),
 	(5, 'Administrator', 'user', 1, NOW(), 10, NOW(), 10);
 
@@ -41,7 +41,22 @@ insert into `orderinfotype` (`id`, `name`, `active`, `created`, `createdById`, `
 	(2, 'Customer Email', 1, NOW(), 10, NOW(), 10),
 	(3, 'Total Order Qty', 1, NOW(), 10, NOW(), 10),
 	(4, 'Magento Order Status', 1, NOW(), 10, NOW(), 10),
-	(5, 'Magento Order State', 1, NOW(), 10, NOW(), 10);
+	(5, 'Magento Order State', 1, NOW(), 10, NOW(), 10),
+	(6, 'Magento Payment Method', 1, NOW(), 10, NOW(), 10);
+	
+############################ add courierinfotype table
+insert into `courierinfotype` (`id`, `name`, `active`, `created`, `createdById`, `updated`, `updatedById`) values
+	(1, 'Url', 1, NOW(), 10, NOW(), 10);
+	
+############################ add courier table
+insert into `courier` (`id`, `name`, `active`, `created`, `createdById`, `updated`, `updatedById`) values
+	(1, 'AUS POST', 1, NOW(), 10, NOW(), 10),
+	(2, 'VIC FAST', 1, NOW(), 10, NOW(), 10);
+	
+############################ add courierinfo table
+insert into `courierinfo` (`courierId`, `typeId`, `value`, `active`, `created`, `createdById`, `updated`, `updatedById`) values
+	(1, 1, 'HTTP://auspost.com.au/', 1, NOW(), 10, NOW(), 10),
+	(2, 1, 'HTTP://vicfast.com.au/', 1, NOW(), 10, NOW(), 10);
 
 
 ############################ add systemsettings table

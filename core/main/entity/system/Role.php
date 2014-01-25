@@ -9,23 +9,35 @@
 class Role extends BaseEntityAbstract
 {
     /**
-     * ID the guest role
+     * ID the Logistics role
      * 
      * @var int
      */
-    const ID_GUEST = 1;
+    const ID_LOGISTICS = 1;
     /**
-     * ID the READER role
+     * ID the Purchasing role
      * 
      * @var int
      */
-    const ID_READER = 2;
+    const ID_PURCHASING = 2;
     /**
-     * ID the sysadmin role
+     * ID the Accounting role
      * 
      * @var int
      */
-    const ID_ADMIN = 10;
+    const ID_ACCOUNTING = 3;
+    /**
+     * ID the Accounting role
+     * 
+     * @var int
+     */
+    const ID_STORE_MANAGER = 4;
+    /**
+     * ID the SYSTEM ADMIN role
+     * 
+     * @var int
+     */
+    const ID_SYSTEM_ADMIN = 5;
     /**
      * The name of the role
      * @var string
