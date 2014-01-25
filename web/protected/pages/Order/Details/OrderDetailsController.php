@@ -14,12 +14,6 @@ class OrderDetailsController extends BPCPageAbstract
 	 */
 	public $menuItem = 'order';
 	/**
-	 * The order that we are viewing
-	 * 
-	 * @var Order
-	 */
-	public $order = null;
-	/**
 	 * (non-PHPdoc)
 	 * @see BPCPageAbstract::onLoad()
 	 */
@@ -28,9 +22,6 @@ class OrderDetailsController extends BPCPageAbstract
 		parent::onLoad($param);
 		if(!$this->isPostBack)
 		{
-			$this->order = FactoryAbastract::service('Order')->get($this->Request['orderId']);
-			if(!$this->order instanceof Order)
-				die('Invalid Order!');
 		}
 	}
 	/**
@@ -41,6 +32,9 @@ class OrderDetailsController extends BPCPageAbstract
 	protected function _getEndJs()
 	{
 		$js = parent::_getEndJs();
+		$order = FactoryAbastract::service('Order')->get($this->Request['orderId']);
+		if(!$order instanceof Order)
+			die('Invalid Order!');
 		$js .= "pageJs.init();";
 		return $js;
 	}

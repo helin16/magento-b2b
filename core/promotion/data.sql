@@ -1,6 +1,6 @@
 ############################ add role table
 insert into `role`(`id`, `name`,`active`, `created`, `createdById`, `updated`, `updatedById`) values 
-	(1, 'Logistics', 1, NOW(), 10, NOW(), 10),
+	(1, 'Warehouse', 1, NOW(), 10, NOW(), 10),
 	(2, 'Purchasing', 1, NOW(), 10, NOW(), 10),
 	(3, 'Accounting', 1, NOW(), 10, NOW(), 10),
 	(4, 'Store Manager', 1, NOW(), 10, NOW(), 10),
@@ -34,6 +34,17 @@ insert into `role_useraccount`(`userAccountId`, `roleId`, `created`, `createdByI
 	(3, 3, NOW(), 10),
 	(4, 4, NOW(), 10),
 	(5, 5, NOW(), 10);
+	
+############################ add orderstatus table
+insert into `orderstatus` (`id`, `name`, `active`, `created`, `createdById`, `updated`, `updatedById`) values
+	(1, 'NEW', 1, NOW(), 10, NOW(), 10),
+	(2, 'CANCELLED', 1, NOW(), 10, NOW(), 10),
+	(3, 'ON HOLD', 1, NOW(), 10, NOW(), 10),
+	(4, 'ETA', 1, NOW(), 10, NOW(), 10),
+	(5, 'STOCK CHECKED BY PURCHASING', 1, NOW(), 10, NOW(), 10),
+	(6, 'INSUFFICIENT STOCK', 1, NOW(), 10, NOW(), 10),
+	(7, 'PICKED', 1, NOW(), 10, NOW(), 10),
+	(8, 'SHIPPED', 1, NOW(), 10, NOW(), 10);
 	
 ############################ add orderinfotype table
 insert into `orderinfotype` (`id`, `name`, `active`, `created`, `createdById`, `updated`, `updatedById`) values

@@ -8,12 +8,13 @@
  */
 class Role extends BaseEntityAbstract
 {
+	private static $_cache;
     /**
      * ID the Logistics role
      * 
      * @var int
      */
-    const ID_LOGISTICS = 1;
+    const ID_WAREHOUSE= 1;
     /**
      * ID the Purchasing role
      * 
@@ -89,6 +90,32 @@ class Role extends BaseEntityAbstract
     {
         $this->userAccounts = $UserAccounts;
         return $this;
+    }
+    public function getOrderAccessedStatusIds(Role $role)
+    {
+    	if(isset(self::$_cache['list']))
+    	{
+	    	switch($_cache->getId())
+	    	{
+	    		case Role::ID_WAREHOUSE:
+    			{
+    				return array(OrderStatus::ID_ETA, OrderStatus::ID_STOCK_CHECKED_BY_PURCHASING);
+    			}
+	    		case Role::ID_PURCHASING:
+    			{
+    				return array(OrderStatus::ID_NEW, OrderStatus::ID_INSUFFICIENT_STOCK);
+    			}
+	    		case Role::ID_STORE_MANAGER:
+	    		case Role::ID_ACCOUNTING:
+    			{
+    				return array_map(create_function('$a', 'return $a->getId();'), FactoryAbastract::dao('OrderStatus')->findAll());
+    			}
+	    		case Role::ID_SYSTEM_ADMIN:
+    			{
+    				return array();
+    			}
+	    	}
+    	}
     }
     /**
      * (non-PHPdoc)
