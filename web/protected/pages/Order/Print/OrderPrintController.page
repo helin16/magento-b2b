@@ -1,0 +1,6 @@
+<%@MasterClass="Application.layout.BlankLayout"%>
+<com:TContent ID="MainContent">
+	<div class="pagewrapper orderprint container">
+		
+	</div>
+</com:TContent>

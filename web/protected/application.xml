@@ -24,9 +24,11 @@
 			<url ServiceParameter="Order.List.OrderController" pattern="order.html" />
 			
 			<!-- FrontEnd:: order page -->
-			<url ServiceParameter="Order.Details.OrderDetailsController" pattern="orderdetails/{action}/{orderId}.html" parameters.action="print" parameters.orderId="\d+"/>
+			<url ServiceParameter="Order.Print.OrderPrintController" pattern="print/order/{orderId}.html" parameters.orderId="\d+"/>
+		
+			
+			<!-- FrontEnd:: order page -->
 			<url ServiceParameter="Order.Details.OrderDetailsController" pattern="orderdetails/{orderId}.html" parameters.orderId="\d+"/>
-			<url ServiceParameter="Order.Details.OrderDetailsController" pattern="orderdetails.html" />
 			
 			<!-- FrontEnd:: me page -->
 			<url ServiceParameter="User.Me.MeController" pattern="me.html" />

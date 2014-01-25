@@ -80,7 +80,7 @@ class OrderController extends BPCPageAbstract
 					case 'ord.infos.' . OrderInfoType::ID_CUS_NAME:
 					{
 						$query->eagerLoad("Order.infos", 'inner join', 'x', 'x.orderId = ord.id and x.active = 1 and x.typeId = ' . OrderInfoType::ID_CUS_NAME . ' AND x.value like ?');
-						$params[] = '%' . trim($value) . '%';
+						$params[] = trim($value) . '%';
 						break;
 					} 
 				}
@@ -89,7 +89,7 @@ class OrderController extends BPCPageAbstract
 			if($noSearch === true)
 				throw new Exception("Nothing to search!");
 			
-			$orders = FactoryAbastract::service('Order')->findByCriteria(implode(' AND ', $where), $params, true, $pageNo, $pageSize);
+			$orders = FactoryAbastract::service('Order')->findByCriteria(implode(' AND ', $where), $params, true, $pageNo, $pageSize, array('ord.id' => 'desc'));
 			$results['pageStats'] = FactoryAbastract::service('Order')->getPageStats();
 			$results['items'] = array();
 			foreach($orders as $order)
