@@ -8,6 +8,14 @@
  */
 class OrderStatus extends InfoEntityAbstract
 {
+	const ID_NEW = 1;
+	const ID_CANCELLED = 2;
+	const ID_ON_HOLD = 3;
+	const ID_ETA = 4;
+	const ID_STOCK_CHECKED_BY_PURCHASING = 5;
+	const ID_INSUFFICIENT_STOCK = 6;
+	const ID_PICKED = 7;
+	const ID_SHIPPED = 8;
 	private $name;
 	/**
 	 * Getter for the name

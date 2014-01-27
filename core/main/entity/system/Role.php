@@ -8,24 +8,37 @@
  */
 class Role extends BaseEntityAbstract
 {
+	private static $_cache;
     /**
-     * ID the guest role
+     * ID the Logistics role
      * 
      * @var int
      */
-    const ID_GUEST = 1;
+    const ID_WAREHOUSE= 1;
     /**
-     * ID the READER role
+     * ID the Purchasing role
      * 
      * @var int
      */
-    const ID_READER = 2;
+    const ID_PURCHASING = 2;
     /**
-     * ID the sysadmin role
+     * ID the Accounting role
      * 
      * @var int
      */
-    const ID_ADMIN = 10;
+    const ID_ACCOUNTING = 3;
+    /**
+     * ID the Accounting role
+     * 
+     * @var int
+     */
+    const ID_STORE_MANAGER = 4;
+    /**
+     * ID the SYSTEM ADMIN role
+     * 
+     * @var int
+     */
+    const ID_SYSTEM_ADMIN = 5;
     /**
      * The name of the role
      * @var string
@@ -77,6 +90,32 @@ class Role extends BaseEntityAbstract
     {
         $this->userAccounts = $UserAccounts;
         return $this;
+    }
+    public function getOrderAccessedStatusIds(Role $role)
+    {
+    	if(isset(self::$_cache['list']))
+    	{
+	    	switch($_cache->getId())
+	    	{
+	    		case Role::ID_WAREHOUSE:
+    			{
+    				return array(OrderStatus::ID_ETA, OrderStatus::ID_STOCK_CHECKED_BY_PURCHASING);
+    			}
+	    		case Role::ID_PURCHASING:
+    			{
+    				return array(OrderStatus::ID_NEW, OrderStatus::ID_INSUFFICIENT_STOCK);
+    			}
+	    		case Role::ID_STORE_MANAGER:
+	    		case Role::ID_ACCOUNTING:
+    			{
+    				return array_map(create_function('$a', 'return $a->getId();'), FactoryAbastract::dao('OrderStatus')->findAll());
+    			}
+	    		case Role::ID_SYSTEM_ADMIN:
+    			{
+    				return array();
+    			}
+	    	}
+    	}
     }
     /**
      * (non-PHPdoc)

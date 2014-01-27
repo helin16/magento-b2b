@@ -6,7 +6,7 @@
  * @subpackage Entity
  * @author     lhe<helin16@gmail.com>
  */
-class Courier extends BaseEntityAbstract
+class Courier extends InfoEntityAbstract
 {
 	/**
 	 * The name of the courier
