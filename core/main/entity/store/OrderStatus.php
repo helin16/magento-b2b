@@ -52,6 +52,17 @@ class OrderStatus extends InfoEntityAbstract
 		return $st;
 	}
 	/**
+	 * getStatus
+	 * 
+	 * @param string $status The name of the status
+	 * 
+	 * @return Ambigous <OrderStatus, BaseEntityAbstract>
+	 */
+	public static function get($statusId)
+	{
+		return FactoryAbastract::dao(__CLASS__)->findById($statusId);
+	}
+	/**
 	 * (non-PHPdoc)
 	 * @see BaseEntityAbstract::__toString()
 	 */

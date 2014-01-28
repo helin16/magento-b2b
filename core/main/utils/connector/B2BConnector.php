@@ -97,7 +97,7 @@ class B2BConnector
 				$o->setOrderNo(trim($order->increment_id))
 				  ->setOrderDate(trim($orderDate))
 				  ->setTotalAmount(trim($order->grand_total))
-				  ->setStatus(OrderStatus::createStatus($status))
+				  ->setStatus((strtolower($status) === 'canceled' ? OrderStatus::get(OrderStatus::ID_CANCELLED) : OrderStatus::get(OrderStatus::ID_NEW)))
 				  ->setTotalPaid($totalPaid)
 				  ->setShippingAddr($this->_createAddr($order->billing_address, $shippingAddr))
 				  ->setBillingAddr($this->_createAddr($order->shipping_address, $billingAddr));

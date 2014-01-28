@@ -9,12 +9,6 @@
 class Product extends InfoEntityAbstract
 {
 	/**
-	 * The default qty of the product
-	 * 
-	 * @var int
-	 */
-	const DEFAULT_QTY = 1;
-	/**
 	 * The sku of the product
 	 * 
 	 * @var string
@@ -114,7 +108,6 @@ class Product extends InfoEntityAbstract
 		DaoMap::begin($this, 'pro');
 		DaoMap::setStringType('sku');
 		DaoMap::setStringType('name', 'varchar', 255);
-		DaoMap::setIntType('qty', 'int', 10, false);
 		parent::__loadDaoMap();
 		
 		DaoMap::createUniqueIndex('sku');
