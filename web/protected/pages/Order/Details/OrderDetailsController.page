@@ -1,6 +1,7 @@
 <%@MasterClass="Application.layout.BlankLayout"%>
 <com:TContent ID="MainContent">
 	<div class="pagewrapper orderdetails container">
-		<div class=""></div>
+		<com:TCallback ID="getProductsBtn" onCallback="page.getProducts" />
+		<div id="detailswrapper"></div>
 	</div>
 </com:TContent>

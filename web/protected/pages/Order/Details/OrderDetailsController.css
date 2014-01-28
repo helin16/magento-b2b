@@ -1,0 +1,69 @@
+.pagewrapper.orderdetails {
+	background: white;
+	min-height: 400px;
+}
+
+.fieldDiv {
+	display: inline-block;
+	padding: 3px;
+}
+.fieldDiv .fieldDiv_title {
+	display: block;
+	font-size: 9px;
+	color: #cccccc;
+	text-transform: uppercase;
+}
+
+fieldset.row{
+	padding: 5px;
+	border-radius: 5px;
+	border: 1px #ccc solid;
+	margin: 0 0 5px 0;
+	min-width: 800px;
+}
+fieldset.row .inlineblock {
+	vertical-align: top;
+}
+fieldset.row legend {
+	float: right;
+	border: 1px #ccc solid;
+	padding: 5px;
+	background: #eee;
+	border-radius: 5px;
+}
+
+.orderInfo .orderNo {
+	width: 150px;
+	font-size: 18px;
+	font-weight: bold;
+	color: #28428B;
+}
+.orderInfo .orderDate,
+.orderInfo .orderStatus,
+.orderInfo .custName,
+.orderInfo .custEmail {
+	width: 150px;
+}
+
+.addressRow .customer {
+	margin: 0 0 5px 0;
+}
+.addressRow .customer .fieldDiv .fieldDiv_content {
+	font-weight: bold;
+}
+
+.addressRow .addr{
+	display: inline-block;
+	width: 350px;
+}
+.addressRow .addr .addr_content {
+	padding: 2px 0 2px 20px;
+}
+
+.addressRow .addr .contactName{
+	font-weight: bold;
+}
+.addressRow .addr .region {
+	padding: 0 5px;
+	text-transform: uppercase;
+}

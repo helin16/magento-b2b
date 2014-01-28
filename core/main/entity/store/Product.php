@@ -27,12 +27,6 @@ class Product extends InfoEntityAbstract
 	 */
 	private $name;
 	/**
-	 * The qty of the product
-	 * 
-	 * @var int
-	 */
-	private $qty = Product::DEFAULT_QTY;
-	/**
 	 * Getter for sku
 	 *
 	 * @return string
@@ -75,42 +69,19 @@ class Product extends InfoEntityAbstract
 	    return $this;
 	}
 	/**
-	 * Getter for qty
-	 *
-	 * @return number
-	 */
-	public function getQty() 
-	{
-	    return $this->qty;
-	}
-	/**
-	 * Setter for qty
-	 *
-	 * @param number $value The qty
-	 *
-	 * @return Product
-	 */
-	public function setQty($value) 
-	{
-	    $this->qty = $value;
-	    return $this;
-	}
-	/**
 	 * Creating the product based on sku
 	 * 
 	 * @param string $sku
 	 * @param string $name
-	 * @param number $qty
 	 * 
 	 * @return Ambigous <Product, Ambigous, NULL, BaseEntityAbstract>
 	 */
-	public static function create($sku, $name, $qty = Product::DEFAULT_QTY)
+	public static function create($sku, $name)
 	{
 		if(!($product = self::get($sku)) instanceof Product)
 			$product = new Product();
 		$product->setSku($sku)
-			->setName($name)
-			->setQty($qty);
+			->setName($name);
 		FactoryAbastract::dao(get_called_class())->save($product);
 		return $product;
 	}

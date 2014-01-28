@@ -25,9 +25,7 @@ class OrderDetailsController extends BPCPageAbstract
 	public function __construct()
 	{
 		parent::__construct();
-		$this->order = FactoryAbastract::service('Order')->get($this->Request['orderId']);
-		if(!$this->order instanceof Order)
-			die('Invalid Order!');
+		
 	}
 	/**
 	 * (non-PHPdoc)
@@ -39,6 +37,44 @@ class OrderDetailsController extends BPCPageAbstract
 		if(!$this->isPostBack)
 		{
 		}
+	}
+	/**
+	 * Getting The end javascript
+	 *
+	 * @return string
+	 */
+	protected function _getEndJs()
+	{
+		$order = FactoryAbastract::service('Order')->get($this->Request['orderId']);
+		if(!$order instanceof Order)
+			die('Invalid Order!');
+		$js = parent::_getEndJs();
+		$js .= 'pageJs.setCallbackId("getProducts", "' . $this->getProductsBtn->getUniqueID() . '");';
+		$js .= 'pageJs.load("detailswrapper", ' . json_encode($order->getJson()) . ');';
+		return $js;
+	}
+	/**
+	 * 
+	 * @param unknown $sender
+	 * @param unknown $params
+	 */
+	public function getProducts($sender, $params)
+	{
+		$results = $errors = array();
+		try
+		{
+			if(!isset($params->CallbackParameter->orderId) || !($order = FactoryAbastract::service('Order')->get(trim($params->CallbackParameter->orderId))) instanceof Order)
+				throw new Exception('System Error: invalid order!');
+			foreach($order->getOrderItems() as $orderItem)
+			{
+				$results['items'] = $orderItem->getJson();
+			}
+		}
+		catch(Exception $ex)
+		{
+			$errors[] = $ex->getMessage();
+		}
+		$params->ResponseData = StringUtilsAbstract::getJson($results, $errors);
 	}
 }
 ?>

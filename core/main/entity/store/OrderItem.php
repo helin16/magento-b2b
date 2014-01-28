@@ -215,6 +215,19 @@ class OrderItem extends BaseEntityAbstract
 	}
 	/**
 	 * (non-PHPdoc)
+	 * @see BaseEntityAbstract::getJson()
+	 */
+	public function getJson($extra = '', $reset = false)
+	{
+		$array = array();
+	    if(!$this->isJsonLoaded($reset))
+	    {
+	    	$array['product'] = $this->getProduct()->getJson();
+	    }
+	    return parent::getJson($array, $reset);
+	}
+	/**
+	 * (non-PHPdoc)
 	 * @see BaseEntityAbstract::__loadDaoMap()
 	 */
 	public function __loadDaoMap()
