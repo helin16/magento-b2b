@@ -25,7 +25,6 @@ class OrderDetailsController extends BPCPageAbstract
 	public function __construct()
 	{
 		parent::__construct();
-		
 	}
 	/**
 	 * (non-PHPdoc)
@@ -49,8 +48,12 @@ class OrderDetailsController extends BPCPageAbstract
 		if(!$order instanceof Order)
 			die('Invalid Order!');
 		$js = parent::_getEndJs();
-		$js .= 'pageJs.setCallbackId("getProducts", "' . $this->getProductsBtn->getUniqueID() . '");';
-		$js .= 'pageJs.load("detailswrapper", ' . json_encode($order->getJson()) . ');';
+		
+		$orderItems = array();
+		foreach($order->getOrderItems() as $orderItem)
+			$orderItems[] = $orderItem->getJson();
+		$js .= 'pageJs.setEditMode(true, false).setOrder('. json_encode($order->getJson()) . ', ' . json_encode($orderItems) . ');';
+		$js .= 'pageJs.load("detailswrapper");';
 		return $js;
 	}
 	/**

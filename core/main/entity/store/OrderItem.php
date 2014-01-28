@@ -1,4 +1,11 @@
 <?php
+/**
+ * Entity for OrderItem
+ *
+ * @package    Core
+ * @subpackage Entity
+ * @author     lhe<helin16@gmail.com>
+ */
 class OrderItem extends BaseEntityAbstract
 {
 	/**
@@ -37,6 +44,12 @@ class OrderItem extends BaseEntityAbstract
 	 * @var UDate
 	 */
 	private $eta = '';
+	/**
+	 * Whether the warehouse has picked this item for shipping
+	 * 
+	 * @var bool
+	 */
+	private $isPicked = false;
 	/**
 	 * Getter for order
 	 *
@@ -168,6 +181,27 @@ class OrderItem extends BaseEntityAbstract
 	    return $this;
 	}
 	/**
+	 * Getter for isPicked
+	 *
+	 * @return Bool
+	 */
+	public function getIsPicked() 
+	{
+	    return trim($this->isPicked) === '1';
+	}
+	/**
+	 * Setter for isPicked
+	 *
+	 * @param string $value The isPicked
+	 *
+	 * @return OrderItem
+	 */
+	public function setIsPicked($value) 
+	{
+	    $this->isPicked = $value;
+	    return $this;
+	}
+	/**
 	 * creating the orderitem object
 	 * 
 	 * @param Order   $order
@@ -233,13 +267,18 @@ class OrderItem extends BaseEntityAbstract
 	public function __loadDaoMap()
 	{
 		DaoMap::begin($this, 'ord_item');
+		
 		DaoMap::setManyToOne('order', 'Order', 'ord');
 		DaoMap::setManyToOne('product', 'Product', 'pro');
 		DaoMap::setIntType('qtyOrdered');
 		DaoMap::setIntType('unitPrice', 'double', '10,4');
 		DaoMap::setIntType('totalPrice', 'double', '10,4');
 		DaoMap::setDateType('eta');
+		DaoMap::setBoolType('isPicked');
+		
 		parent::__loadDaoMap();
+		
+		DaoMap::createIndex('isPicked');
 		DaoMap::commit();
 	}
 }

@@ -127,6 +127,7 @@ CREATE TABLE `orderitem` (
 	`unitPrice` double(10,4) unsigned NOT NULL DEFAULT 0,
 	`totalPrice` double(10,4) unsigned NOT NULL DEFAULT 0,
 	`eta` datetime NOT NULL DEFAULT '0001-01-01 00:00:00',
+	`isPicked` bool NOT NULL DEFAULT 0,
 	`active` bool NOT NULL DEFAULT 1,
 	`created` datetime NOT NULL DEFAULT '0001-01-01 00:00:00',
 	`createdById` int(10) unsigned NOT NULL DEFAULT 0,
@@ -137,6 +138,7 @@ CREATE TABLE `orderitem` (
 	,INDEX (`productId`)
 	,INDEX (`createdById`)
 	,INDEX (`updatedById`)
+	,INDEX (`isPicked`)
 ) ENGINE=innodb DEFAULT CHARSET=utf8;
 DROP TABLE IF EXISTS `orderstatus`;
 CREATE TABLE `orderstatus` (

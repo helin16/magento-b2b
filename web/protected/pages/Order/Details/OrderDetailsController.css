@@ -67,3 +67,37 @@ fieldset.row legend {
 	padding: 0 5px;
 	text-transform: uppercase;
 }
+
+.productlist {
+	width: 980px;
+}
+.productlist .sku {
+	width: 100px;
+}
+.productlist .productName {
+	width: 180px;
+}
+.productlist .uprice,
+.productlist .tprice {
+	width: 80px;
+	text-align: right;
+}
+.productlist .qty {
+	width: 40px;
+	text-align: center;
+}
+
+.productlist .purchasing,
+.productlist .warehouse {
+	width: 160px;
+}
+.productlist .productRow .purchasing {
+	background: lightblue;
+	color: black;
+}
+.productlist .operationDiv .fieldDiv {
+	display: block;
+}
+.productlist .operationDiv .fieldDiv .fieldDiv_title {
+	color: inherit;
+}
