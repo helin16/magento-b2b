@@ -43,7 +43,7 @@ class OrderItem extends BaseEntityAbstract
 	 * 
 	 * @var UDate
 	 */
-	private $eta = '';
+	private $eta = null;
 	/**
 	 * Whether the warehouse has picked this item for shipping
 	 * 
@@ -164,6 +164,8 @@ class OrderItem extends BaseEntityAbstract
 	 */
 	public function getEta() 
 	{
+		if($this->eta === null || $this->eta === '' )
+			return null;
 		if(is_string($this->eta))
 			$this->eta = new UDate($this->eta);
 	    return $this->eta;
@@ -213,7 +215,7 @@ class OrderItem extends BaseEntityAbstract
 	 * 
 	 * @return Ambigous <OrderItem, BaseEntityAbstract>
 	 */
-	public static function create(Order $order, Product $product, $unitPrice, $qty, $totalPrice, $eta = '')
+	public static function create(Order $order, Product $product, $unitPrice, $qty, $totalPrice, $eta = null)
 	{
 		if(count($items = self::getItems($order, $product)) === 0)
 			$item = new OrderItem();
@@ -273,7 +275,7 @@ class OrderItem extends BaseEntityAbstract
 		DaoMap::setIntType('qtyOrdered');
 		DaoMap::setIntType('unitPrice', 'double', '10,4');
 		DaoMap::setIntType('totalPrice', 'double', '10,4');
-		DaoMap::setDateType('eta');
+		DaoMap::setDateType('eta', 'datetime', true, null);
 		DaoMap::setBoolType('isPicked');
 		
 		parent::__loadDaoMap();

@@ -266,7 +266,7 @@ class SchemaGenerator
 		{
 			$value = $mods['default'];
 			$output .= "DEFAULT ";
-			if(isset($mods['rel']) && $mods['nullable'])
+			if((isset($mods['rel']) && $mods['nullable']))
 			{
 				$output .= "NULL";
 			} else if(is_string($value))

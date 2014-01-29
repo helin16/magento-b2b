@@ -52,7 +52,7 @@ class OrderDetailsController extends BPCPageAbstract
 		$orderItems = array();
 		foreach($order->getOrderItems() as $orderItem)
 			$orderItems[] = $orderItem->getJson();
-		$js .= 'pageJs.setEditMode(true, false).setOrder('. json_encode($order->getJson()) . ', ' . json_encode($orderItems) . ');';
+		$js .= 'pageJs.setEditMode(true, true).setOrder('. json_encode($order->getJson()) . ', ' . json_encode($orderItems) . ');';
 		$js .= 'pageJs.load("detailswrapper");';
 		return $js;
 	}

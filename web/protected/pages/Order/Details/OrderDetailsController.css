@@ -90,14 +90,18 @@ fieldset.row legend {
 .productlist .purchasing,
 .productlist .warehouse {
 	width: 160px;
+	font-size: 10px;
 }
 .productlist .productRow .purchasing {
-	background: lightblue;
-	color: black;
+	background: #99B898;
 }
 .productlist .operationDiv .fieldDiv {
 	display: block;
 }
 .productlist .operationDiv .fieldDiv .fieldDiv_title {
 	color: inherit;
+}
+.productlist .operationDiv .hasStock,
+.productlist .operationDiv .fieldDiv_content {
+	font-size: 10px;
 }

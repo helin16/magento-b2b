@@ -40,41 +40,84 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			.insert({'bottom': new Element('span', {'class': 'fieldDiv_content'}).update(content) });
 	}
 	
-	,_getHasStockSel: function(changeFunc) {
-		return new Element('select', {'class': 'hasStock'})
-			.insert({'bottom': new Element('option', {'value': ''}).update('Has Stock?')})
-			.insert({'bottom': new Element('option', {'value': '1'}).update('YES')})
-			.insert({'bottom': new Element('option', {'value': '0'}).update('NO')})
+	,_getHasStockSel: function(title, selectedValue, changeFunc) {
+		var tmp = {};
+		tmp.selBox = new Element('select', {'class': 'hasStock'})
+			.insert({'bottom': new Element('option', {'value': ''}).update(title)})
+			.insert({'bottom': new Element('option', {'value': 'Y'}).update('YES')})
+			.insert({'bottom': new Element('option', {'value': 'N'}).update('NO')})
 			.observe('change', changeFunc);
+		if(!selectedValue.blank()) {
+			tmp.options = tmp.selBox.getElementsBySelector('option');
+			for( tmp.i = 0 ; tmp.i < tmp.options.size(); tmp.i++ ) {
+				if(tmp.options[tmp.i].value === selectedValue)
+					tmp.options[tmp.i].selected = true;
+			}
+		}
+		return tmp.selBox;
+	}
+	
+	,_showLastestComments: function(comments) {
+		var tmp = {};
+		return new Element('div', {'class': 'comments'})
+			.insert({'bottom': new Element('div', {'class': 'lastest'}).update(!comments ? 'N/A' : comments[0]) });
 	}
 	
 	,_getPurchasingCell: function(orderItem) {
 		var tmp = {};
 		tmp.me = this;
+		tmp.hasStock = (orderItem.eta === '' ? '' : (orderItem.eta === '0000-01-01 00:00:00' ? 'Y' : 'N'));
+		if(tmp.me._editMode.purchasing === false) {
+			tmp.newDiv = new Element('div');
+			if(tmp.hasStock === '')
+				return tmp.newDiv.update('N/A');
+			return tmp.newDiv
+				.insert({'bottom': 'hasStock?: ' + tmp.hasStock })
+				.insert({'bottom': 'ETA: ' + orderItem.eta })
+				.insert({'bottom': tmp.me._showLastestComments() });
+		}
+		
 		tmp.func = function() {
-			if($F(this) === '0') {
+			if($F(this) === 'N') {
 				tmp.etaBox = new Element('input', {'type': 'text', 'placeholder': 'ETA:', 'update_order_item': 'eta', 'id': 'order_item_' + orderItem.id, 'readonly': true});
 				$(this).up('.operationDiv').update(new Element('div')
 					.insert({'bottom': tmp.me._getfieldDiv('ETA:', tmp.etaBox) })
 					.insert({'bottom': tmp.me._getfieldDiv('Comments: ', new Element('input', {'update_order_item': 'comments', 'placeholder': 'The reason'})) })
 					.insert({'bottom': new Element('a', {'href': 'javascript: void(0);'}).update('cancel')
 						.observe('click', function() {
-							$(this).up('.operationDiv').update(tmp.me._getHasStockSel(tmp.func));
+							$(this).up('.operationDiv').update(tmp.me._getHasStockSel('Has Stock?', tmp.hasStock, tmp.func));
 						})
 					})
 				);
 				new Prado.WebUI.TDatePicker({'ID':'order_item_' + orderItem.id,'InputMode':"TextBox",'Format':"dd/MMM/yyyy",'FirstDayOfWeek':1,'CalendarStyle':"default",'FromYear':2009,'UpToYear':2024,'PositionMode':"Bottom"});
 			} else {
-				$(this).up('.operationDiv').insert({'bottom': new Element('input', {'type': 'hidden', 'update_order_item': 'eta', 'value': 'NOW'}) });
+				$(this).up('.operationDiv').insert({'bottom': new Element('input', {'type': 'hidden', 'update_order_item': 'eta', 'value': '0001-01-01 00:00:00'}) });
 			}
+		};
+		if(tmp.hasStock === 'N') {
+			return new Element('div', {'class': 'operationDiv'});
 		}
-		tmp.newDiv = new Element('div', {'class': 'operationDiv'})
-			.insert({'bottom': tmp.me._getHasStockSel(tmp.func)	});
-		return tmp.newDiv;
+		return tmp.me._getHasStockSel('Has Stock?', tmp.hasStock, tmp.func).wrap(new Element('div', {'class': 'operationDiv'}));
 	}
 	,_getWarehouseCell: function(orderItem) {
 		var tmp = {};
 		tmp.me = this;
+		if(tmp.me._editMode.warehouse === false) {
+			return new Element('div').insert({'bottom': tmp.me._showLastestComments(orderItem.comments) });
+		}
+		tmp.func = function() {
+			if($F(this) === 'N') {
+				$(this).up('.operationDiv').update(new Element('div')
+					.insert({'bottom': tmp.me._getfieldDiv('Comments: ', new Element('input', {'pick_order_item': 'comments', 'placeholder': 'The reason'})) })
+					.insert({'bottom': new Element('a', {'href': 'javascript: void(0);'}).update('cancel')
+						.observe('click', function() {
+							$(this).up('.operationDiv').update(tmp.me._getHasStockSel('Is Picked?', tmp.func));
+						})
+					})
+				);
+			}
+		};
+		return tmp.me._getHasStockSel('Is Picked?', '', tmp.func).wrap(new Element('div', {'class': 'operationDiv'}));
 	}
 	
 	,_getProductRow: function(orderItem, isTitleRow) {
