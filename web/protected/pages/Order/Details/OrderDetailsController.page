@@ -2,6 +2,6 @@
 <com:TContent ID="MainContent">
 	<com:TDatePicker Style="display:none;"/>
 	<div class="pagewrapper orderdetails container">
-		<div id="detailswrapper"></div>
+		<div id="detailswrapper" class="contentDiv"></div>
 	</div>
 </com:TContent>

@@ -76,29 +76,36 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				.insert({'bottom': 'ETA: ' + orderItem.eta })
 				.insert({'bottom': tmp.me._showLastestComments() });
 		}
-		
-		tmp.func = function() {
-			if($F(this) === 'N') {
-				tmp.etaBox = new Element('input', {'type': 'text', 'placeholder': 'ETA:', 'update_order_item': 'eta', 'id': 'order_item_' + orderItem.id, 'readonly': true});
-				$(this).up('.operationDiv').update(new Element('div')
-					.insert({'bottom': tmp.me._getfieldDiv('ETA:', tmp.etaBox) })
-					.insert({'bottom': tmp.me._getfieldDiv('Comments: ', new Element('input', {'update_order_item': 'comments', 'placeholder': 'The reason'})) })
-					.insert({'bottom': new Element('a', {'href': 'javascript: void(0);'}).update('cancel')
-						.observe('click', function() {
-							$(this).up('.operationDiv').update(tmp.me._getHasStockSel('Has Stock?', tmp.hasStock, tmp.func));
-						})
+		tmp.getEditDiv = function(hasStock, eta) {
+			tmp.etaBox = new Element('input', {'type': 'text', 'placeholder': 'ETA:', 'update_order_item': 'eta', 'id': 'order_item_' + orderItem.id, 'readonly': true, 'value': eta ? eta : ''});
+			return new Element('div')
+				.insert({'bottom': tmp.me._getfieldDiv('ETA:', tmp.etaBox) })
+				.insert({'bottom': tmp.me._getfieldDiv('Comments: ', new Element('input', {'update_order_item': 'comments', 'placeholder': 'The reason'})) })
+				.insert({'bottom': new Element('a', {'href': 'javascript: void(0);'}).update('cancel')
+					.observe('click', function() {
+						$(this).up('.operationDiv').update(tmp.me._getHasStockSel('Has Stock?', hasStock, tmp.func));
 					})
-				);
-				new Prado.WebUI.TDatePicker({'ID':'order_item_' + orderItem.id,'InputMode':"TextBox",'Format':"dd/MMM/yyyy",'FirstDayOfWeek':1,'CalendarStyle':"default",'FromYear':2009,'UpToYear':2024,'PositionMode':"Bottom"});
+				})
+		};
+		tmp.func = function() {
+			//remove error msg
+			$(this).up('.cell').getElementsBySelector('.msgDiv').each(function(msg){
+				msg.remove();
+			});
+			
+			if($F(this) === 'N') {
+				$(this).up('.operationDiv').update(tmp.getEditDiv(tmp.hasStock));
+				new Prado.WebUI.TDatePicker({'ID':'order_item_' + orderItem.id,'InputMode':"TextBox",'Format':"yyyy-MM-dd 17:00:00",'FirstDayOfWeek':1,'CalendarStyle':"default",'FromYear':2009,'UpToYear':2024,'PositionMode':"Bottom"});
 			} else {
 				$(this).up('.operationDiv').insert({'bottom': new Element('input', {'type': 'hidden', 'update_order_item': 'eta', 'value': '0001-01-01 00:00:00'}) });
 			}
 		};
 		if(tmp.hasStock === 'N') {
-			return new Element('div', {'class': 'operationDiv'});
+			return new Element('div', {'class': 'operationDiv'}).update(tmp.getEditDiv('', orderItem.eta));
 		}
 		return tmp.me._getHasStockSel('Has Stock?', tmp.hasStock, tmp.func).wrap(new Element('div', {'class': 'operationDiv'}));
 	}
+	
 	,_getWarehouseCell: function(orderItem) {
 		var tmp = {};
 		tmp.me = this;
@@ -106,15 +113,23 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			return new Element('div').insert({'bottom': tmp.me._showLastestComments(orderItem.comments) });
 		}
 		tmp.func = function() {
+			//remove error msg
+			$(this).up('.cell').getElementsBySelector('.msgDiv').each(function(msg){
+				msg.remove();
+			});
+			
 			if($F(this) === 'N') {
 				$(this).up('.operationDiv').update(new Element('div')
 					.insert({'bottom': tmp.me._getfieldDiv('Comments: ', new Element('input', {'pick_order_item': 'comments', 'placeholder': 'The reason'})) })
 					.insert({'bottom': new Element('a', {'href': 'javascript: void(0);'}).update('cancel')
 						.observe('click', function() {
-							$(this).up('.operationDiv').update(tmp.me._getHasStockSel('Is Picked?', tmp.func));
+							$(this).up('.operationDiv').update(tmp.me._getHasStockSel('Is Picked?', '', tmp.func));
 						})
 					})
+					.insert({'bottom': new Element('input', {'type': 'hidden', 'pick_order_item': 'isPicked', 'value': $F(this)}) })
 				);
+			} else {
+				$(this).up('.operationDiv').insert({'bottom': new Element('input', {'type': 'hidden', 'pick_order_item': 'isPicked', 'value': $F(this)}) });
 			}
 		};
 		return tmp.me._getHasStockSel('Is Picked?', '', tmp.func).wrap(new Element('div', {'class': 'operationDiv'}));
@@ -124,7 +139,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		var tmp = {};
 		tmp.me = this;
 		tmp.isTitle = (isTitleRow || false);
-		tmp.newDiv = new Element('div', {'class': 'row ' + (tmp.isTitle === true ? '' : 'productRow')})
+		tmp.newDiv = new Element('div', {'class': 'row ' + (tmp.isTitle === true ? '' : 'productRow')}).store('data', orderItem)
 			.insert({'bottom': new Element('span', {'class': 'inlineblock cell sku'}).update(orderItem.product.sku) })
 			.insert({'bottom': new Element('span', {'class': 'inlineblock cell productName'}).update(orderItem.product.name) })
 			.insert({'bottom': new Element('span', {'class': 'inlineblock cell uprice'}).update(tmp.isTitle === true ? orderItem.unitPrice : tmp.me.getCurrency(orderItem.unitPrice)) })
@@ -133,6 +148,86 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			.insert({'bottom': new Element('span', {'class': 'inlineblock cell purchasing'}).update(tmp.isTitle === true ? 'Purchasing' : tmp.me._getPurchasingCell(orderItem)) })
 			.insert({'bottom': new Element('span', {'class': 'inlineblock cell warehouse'}).update(tmp.isTitle === true ? 'Warehouse' : tmp.me._getWarehouseCell(orderItem)) });
 		return tmp.newDiv;
+	}
+	
+	,_getFinanceBtns: function() {
+		var tmp = {};
+		tmp.me = this;
+		return new Element('div', {"class": 'wrapper'})
+			.insert({'bottom': tmp.me._getfieldDiv('Paid:',new Element('input')) });
+	}
+	,_collectData: function(colname, attrName) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.data = {};
+		tmp.hasError = false;
+		$(tmp.me._resultDivId).getElementsBySelector('.productRow .' + colname).each(function(cell) {
+			//remove msg divs
+			cell.getElementsBySelector('.msgDiv').each(function(div) {
+				div.remove();
+			});
+			
+			//check whether the user has made a change
+			tmp.fields = cell.getElementsBySelector('[' + attrName + ']');
+			if(tmp.fields.size() === 0) {
+				cell.insert({'top': new Element('div', {'class': 'msgDiv errorMsgDiv'}).update(new Element('div', {'class': 'msg'}).update('Pls Select One!') ) });
+				tmp.hasError = true;
+			} else {
+				//check if we have any empty data
+				tmp.orderItem = cell.up('.row').retrieve('data');
+				tmp.data[tmp.orderItem.id] = {'orderItem': tmp.orderItem};
+				tmp.attrData = {};
+				
+				tmp.fields.each(function(field) {
+					tmp.fieldName = field.readAttribute(attrName);
+					tmp.value = $F(field);
+					if(tmp.value.blank()) {
+						field.insert({'before': new Element('div', {'class': 'msgDiv errorMsgDiv'}).update(new Element('div', {'class': 'msg'}).update(tmp.fieldName + ' Required!') ) });
+						tmp.hasError = true;
+					} else {
+						tmp.attrData[tmp.fieldName] = tmp.value;
+					}
+				})
+				tmp.data[tmp.orderItem.id][colname] = tmp.attrData;
+			}
+			
+		});
+		return (tmp.hasError === true ? null : tmp.data);
+	}
+	
+	,_getPurchasingBtns: function() {
+		var tmp = {};
+		tmp.me = this;
+		if(tmp.me._editMode.purchasing === false)
+			return '';
+		return new Element('div')
+			.insert({'bottom': new Element('span', {'class': 'button'}).update('submit')
+				.observe('click', function() {
+					tmp.data = tmp.me._collectData('purchasing', 'update_order_item');
+					if(tmp.data === null) {
+						alert('Error Occurred, pls scroll up to see details!');
+						return;
+					}
+					console.debug(tmp.data);
+				})
+			});
+	}
+	,_getWHBtns: function() {
+		var tmp = {};
+		tmp.me = this;
+		if(tmp.me._editMode.warehouse === false)
+			return '';
+		return new Element('div')
+			.insert({'bottom': new Element('span', {'class': 'button'}).update('submit')
+				.observe('click', function() {
+					tmp.data = tmp.me._collectData('warehouse', 'pick_order_item');
+					if(tmp.data === null) {
+						alert('Error Occurred, pls scroll up to see details!');
+						return;
+					}
+					console.debug(tmp.data);
+				})
+			});
 	}
 	
 	,load: function(resultdiv) {
@@ -167,7 +262,6 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.productListDiv = new Element('div', {'class': 'productlist dataTable'})
 			.insert({'bottom': tmp.me._getProductRow({'product': {'sku': 'SKU', 'name': 'Product Name'}, 
 				'unitPrice': 'Unit Price', 'qtyOrdered': 'Qty', 'totalPrice': 'Total Price'}, true).addClassName('header') });
-		console.debug(tmp.me._orderItems);
 		tmp.me._orderItems.each(function(orderItem) {
 			tmp.productListDiv.insert({'bottom': tmp.me._getProductRow(orderItem) });
 		});
@@ -175,6 +269,26 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			.insert({'bottom': new Element('legend').update('Products') })
 			.insert({'bottom': tmp.productListDiv})
 		});
+		//getting the summray row
+		tmp.newDiv.insert({'bottom': new Element('fieldset', {'class': 'row summary'})
+			.insert({'bottom': new Element('legend').update('Summary') })
+			.insert({'bottom': new Element('div')
+				.insert({'bottom': tmp.me._getfieldDiv('Total Amount', tmp.me.getCurrency(tmp.me._order.totalAmount)).addClassName('totalAmount') })
+				.insert({'bottom': tmp.me._getfieldDiv('Total Paid', tmp.me.getCurrency(tmp.me._order.totalPaid)).addClassName('totalPaid') })
+				.insert({'bottom': tmp.me._getfieldDiv('Total Due', tmp.me.getCurrency(tmp.me._order.totalDue)).addClassName('totalDue') })
+			})
+		});
+		
+		//getting the submit buttons
+		tmp.newDiv.insert({'bottom': new Element('fieldset', {'class': 'submitbtns'})
+			.insert({'bottom': new Element('span', {'class': 'financeBtns inlineblock'}).update( tmp.me._getFinanceBtns()
+			) })
+			.insert({'bottom': new Element('span', {'class': 'purchasingBtns inlineblock'}).update( tmp.me._getPurchasingBtns()
+			) })
+			.insert({'bottom': new Element('span', {'class': 'warehouseBtns inlineblock'}).update( tmp.me._getWHBtns()
+			) })
+		});
+		
 		
 		$(tmp.me._resultDivId).update(tmp.newDiv);
 		return this;
