@@ -365,29 +365,38 @@ abstract class BaseEntityAbstract
      * Adding the comments for this entity;
      * 
      * @param string $comments The new comments
+     * @param string $type     The type of the comments
      * @param string $groupId  The group identifier for the comments
      * 
      * @return BaseEntityAbstract
      */
-    public function addComment($comments, $groupId = '')
+    public function addComment($comments, $type = Comments::TYPE_NORMAL, $groupId = '')
     {
-    	Comments::addComments($this, $comments, $groupId);
+    	Comments::addComments($this, $comments, $type, $groupId);
     	return $this;
     }
     /**
      * Getting the comments for this entity
      * 
+     * @param string $type
      * @param string $pageNo
      * @param int    $pageSize
      * @param array  $orderBy
      * 
      * @return Ambigous <multitype:, multitype:BaseEntityAbstract >
      */
-    public function getComments($pageNo = null, $pageSize = DaoQuery::DEFAUTL_PAGE_SIZE, $orderBy = array())
+    public function getComments($type = null, $pageNo = null, $pageSize = DaoQuery::DEFAUTL_PAGE_SIZE, $orderBy = array())
     {
     	if(count($orderBy) === 0)
     		$orderBy = array(get_class($this) . '.id' => 'desc');
-    	return FactoryAbastract::dao('Comments')->findByCriteria('entityName = ? and entityId = ?', array(get_class($this), $this->getId(), true, $pageNo, $pageSize, $orderBy));
+    	$where = 'entityName = ? and entityId = ?';
+    	$params = array(get_class($this), $this->getId());
+    	if(($type = trim($type)) !== '')
+    	{
+    		$where .= ' AND type = ?';
+    		$params[] = $type;
+    	}
+    	return FactoryAbastract::dao('Comments')->findByCriteria($where, $params, true, $pageNo, $pageSize, $orderBy);
     }
     /**
      * Default toString implementation

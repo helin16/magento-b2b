@@ -7,6 +7,7 @@
  */
 class Comments extends BaseEntityAbstract
 {
+	const TYPE_NORMAL = 'NORMAL';
 	const TYPE_PURCHASING = 'PURCHASING';
 	const TYPE_WAREHOUSE = 'WAREHOUSE';
 	const TYPE_CUSTOMER = 'CUSTOMER';
@@ -66,13 +67,14 @@ class Comments extends BaseEntityAbstract
 	 * @param string             $comments The comemnts
 	 * @param string             $groupId  The groupId
 	 */
-	public static function addComments(BaseEntityAbstract $entity, $comments = '', $groupId = '')
+	public static function addComments(BaseEntityAbstract $entity, $comments = '', $type = self::TYPE_NORMAL, $groupId = '')
 	{
 		$className = __CLASS__;
 		$en = new $className();
 		$en->setEntityId($entity->getId());
 		$en->setEntityName(get_class($entity));
 		$en->setComments($comments);
+		$en->setType($type);
 		$groupId = trim($groupId);
 		$en->setGroupId($groupId === '' ? self::genGroupId() : $groupId);
 		EntityDao::getInstance($className)->save($en);
