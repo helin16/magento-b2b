@@ -385,7 +385,7 @@ abstract class BaseEntityAbstract
      * 
      * @return Ambigous <multitype:, multitype:BaseEntityAbstract >
      */
-    public function getComments($type = null, $pageNo = null, $pageSize = DaoQuery::DEFAUTL_PAGE_SIZE, $orderBy = array(), &$pageStats = array())
+    public function getComment($type = null, $pageNo = null, $pageSize = DaoQuery::DEFAUTL_PAGE_SIZE, $orderBy = array(), &$pageStats = array())
     {
     	if(count($orderBy) === 0)
     		$orderBy = array(get_class($this) . '.id' => 'desc');

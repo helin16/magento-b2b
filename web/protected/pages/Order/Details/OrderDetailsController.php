@@ -63,6 +63,7 @@ class OrderDetailsController extends BPCPageAbstract
 		$js .= 'pageJs.setOrder('. json_encode($order->getJson()) . ', ' . json_encode($orderItems) . ');';
 		$js .= 'pageJs.setCallbackId("updateOrder", "' . $this->updateOrderBtn->getUniqueID() . '");';
 		$js .= 'pageJs.setCallbackId("getComments", "' . $this->getCommentsBtn->getUniqueID() . '");';
+		$js .= 'pageJs.setCallbackId("addComments", "' . $this->addCommentsBtn->getUniqueID() . '");';
 		$js .= 'pageJs.load("detailswrapper");';
 		return $js;
 	}
@@ -162,6 +163,22 @@ class OrderDetailsController extends BPCPageAbstract
 	}
 	/**
 	 * 
+	 * @param Comments $comments
+	 * @return multitype:string
+	 */
+	private function _formatComments(Comments $comments)
+	{
+		$array = array();
+		$created = new UDate($comments->getCreated());
+		$created->setTimeZone(SystemSettings::getSettings(SystemSettings::TYPE_SYSTEM_TIMEZONE));
+		$array['created'] = trim($created);
+		$array['creator'] = trim($comments->getCreatedBy()->getPerson());
+		$array['comments'] = trim($comments->getComments());
+		$array['type'] = trim($comments->getType());
+		return $array;
+	}
+	/**
+	 * 
 	 * @param unknown $sender
 	 * @param unknown $params
 	 */
@@ -182,22 +199,35 @@ class OrderDetailsController extends BPCPageAbstract
 			}
 			$items = array();
 			$pageStats = array();
-			$commentsArray = $order->getComments($type, $pageNo, $pageSize, array('`comm`.id' => 'desc'), $pageStats);
+			$commentsArray = $order->getComment($type, $pageNo, $pageSize, array('`comm`.id' => 'desc'), $pageStats);
 			foreach($commentsArray as $comments)
-			{
-				$array = array();
-				$created = new UDate($comments->getCreated());
-				$created->setTimeZone(SystemSettings::getSettings(SystemSettings::TYPE_SYSTEM_TIMEZONE));
-				$array['created'] = trim($created);
-				$array['creator'] = trim($comments->getCreatedBy()->getPerson());
-				$array['comments'] = trim($comments->getComments());
-				$array['type'] = trim($comments->getType());
-				$items[] = $array;
-			}
+				$items[] = $this->_formatComments($comments);
 			
 			$results['items'] = $items;
 			$results['pagination'] = $pageStats;
-			var_dump($results);
+		}
+		catch(Exception $ex)
+		{
+			$errors[] = $ex->getMessage();
+		}
+		$params->ResponseData = StringUtilsAbstract::getJson($results, $errors);
+	}
+	/**
+	 * 
+	 * @param unknown $sender
+	 * @param unknown $params
+	 */
+	public function addComments($sender, $params)
+	{
+		$results = $errors = array();
+		try
+		{
+			if(!isset($params->CallbackParameter->order) || !($order = Order::get($params->CallbackParameter->order->orderNo)) instanceof Order)
+				throw new Exception('System Error: invalid order passed in!');
+			if(!isset($params->CallbackParameter->comments) || ($comments = trim($params->CallbackParameter->comments)) === '')
+				throw new Exception('System Error: invalid comments passed in!');
+			$comment = Comments::addComments($order, $comments, Comments::TYPE_NORMAL);
+			$results = $this->_formatComments($comment);
 		}
 		catch(Exception $ex)
 		{

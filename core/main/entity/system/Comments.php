@@ -78,6 +78,7 @@ class Comments extends BaseEntityAbstract
 		$groupId = trim($groupId);
 		$en->setGroupId($groupId === '' ? self::genGroupId() : $groupId);
 		FactoryAbastract::dao($className)->save($en);
+		return $en;
 	}
 	/**
 	 * Getter for EntityId

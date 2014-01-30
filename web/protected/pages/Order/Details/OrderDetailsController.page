@@ -3,6 +3,7 @@
 	<com:TDatePicker Style="display:none;"/>
 	<com:TCallback ID="updateOrderBtn" OnCallback="updateOrder" />
 	<com:TCallback ID="getCommentsBtn" OnCallback="getComments" />
+	<com:TCallback ID="addCommentsBtn" OnCallback="addComments" />
 	<div class="pagewrapper orderdetails container">
 		<div id="detailswrapper" class="contentDiv"></div>
 	</div>

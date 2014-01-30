@@ -219,7 +219,8 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 						'onComplete': function(sender, param) {
 							try {
 								tmp.result = tmp.me.getResp(param, false, true);
-								
+								alert('Saved Successfully!');
+								location.reload();
 							} catch (e) {
 								alert(e);
 							}
@@ -300,6 +301,31 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		return this;
 	}
 	
+	,_addComments: function(btn, commentsResultDivId) {
+		var tmp = {};
+		tmp.me = this;
+		console.debug($(btn).up());
+		tmp.comments = $F($(btn).up('.new_comments_wrapper').down('[new_comments=comments]'));
+		if(tmp.comments.blank())
+			return this;
+		tmp.me.postAjax(tmp.me.getCallbackId('addComments'), {'comments': tmp.comments, 'order': tmp.me._order}, {
+			'onLoading': function(sender, param) {
+				$(btn).store('originValue', $F(btn)).addClassName('disabled').setValue('saving ...').disabled = true;
+			}
+			,'onComplete': function (sender, param) {
+				try {
+					tmp.result = tmp.me.getResp(param, false, true);
+					$(commentsResultDivId).down('.header').insert({'after': tmp.me._getCommentsRow(tmp.result) })
+				} catch (e) {
+					console.error(e);
+				}
+				tmp.originValue = $(btn).retrieve('originValue');
+				$(btn).removeClassName('disabled').setValue(tmp.originValue).disabled = false;
+			}
+		})
+		return this;
+	}
+	
 	,load: function(resultdiv) {
 		var tmp = {};
 		tmp.me = this;
@@ -362,6 +388,16 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.newDiv.insert({'bottom': new Element('fieldset', {'class': 'row commentsWrapper dataTableWrapper'}) 
 			.insert({'bottom': new Element('legend').update('Comments') })
 			.insert({'bottom': new Element('div', {'id': 'comments_list', 'class': 'dataTable'}) })
+			.insert({'bottom': new Element('div', {'class': 'comments_input_row'})
+				.insert({'bottom': tmp.me._getfieldDiv('New Comments:', new Element('div', {'class': 'new_comments_wrapper'})
+					.insert({'bottom': new Element('input', {'type': 'text', 'new_comments': 'comments'}) })
+					.insert({'bottom': new Element('input', {'type': 'button', 'new_comments': 'btn', 'value': 'Add', 'class': 'button'})
+						.observe('click', function() {
+							tmp.me._addComments(this, 'comments_list');
+						})
+					})
+				) })
+			})
 		});
 		
 		//dom insert

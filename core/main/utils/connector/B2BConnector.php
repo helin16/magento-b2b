@@ -99,6 +99,7 @@ class B2BConnector
 				  ->setTotalAmount(trim($order->grand_total))
 				  ->setStatus((strtolower($status) === 'canceled' ? OrderStatus::get(OrderStatus::ID_CANCELLED) : OrderStatus::get(OrderStatus::ID_NEW)))
 				  ->setTotalPaid($totalPaid)
+				  ->setIsFromB2B(true)
 				  ->setShippingAddr($this->_createAddr($order->billing_address, $shippingAddr))
 				  ->setBillingAddr($this->_createAddr($order->shipping_address, $billingAddr));
 				FactoryAbastract::dao('Order')->save($o);

@@ -74,6 +74,31 @@ body {
 .cuspntr {
 	cursor: pointer;
 }
+input[type="text"] {
+	padding: 5px;
+	border-radius: 3px;
+	border: 1px #cccccc solid;
+}
+input[type="text"]:focus {
+	border: 1px solid #483d8b;
+	-webkit-box-shadow: 0 0 2px #483d8b inset;
+	-moz-box-shadow: 0 0 2px #483d8b inset;
+	-ms-box-shadow: 0 0 2px #483d8b inset;
+	-o-box-shadow: 0 0 2px #483d8b inset;
+	box-shadow: 0 0 2px #483d8b inset;
+	background-color: #fff;
+	outline: none;
+}
+
+input[type="text"].err {
+	border: 1px solid #ed1c24;
+	-webkit-box-shadow: 0 0 2px #ed1c24 inset;
+	-moz-box-shadow: 0 0 2px #ed1c24 inset;
+	-ms-box-shadow: 0 0 2px #ed1c24 inset;
+	-o-box-shadow: 0 0 2px #ed1c24 inset;
+	box-shadow: 0 0 2px #ed1c24 inset;
+	outline: medium none;
+}
 
 #frontend {
 	background: url("images/bg_top.jpg") repeat-x scroll 0 0 #F3F3F3;

@@ -166,3 +166,22 @@ fieldset.row legend {
 .commentsWrapper .row.header .cell.comments {
 	border-right: none;
 }
+
+.commentsWrapper .comments_input_row .fieldDiv {
+	display: block;
+}
+.commentsWrapper .comments_input_row .fieldDiv .fieldDiv_title,
+.commentsWrapper .comments_input_row .fieldDiv .fieldDiv_content {
+	display: inline-block;
+}
+.commentsWrapper .comments_input_row .fieldDiv .fieldDiv_title {
+	width: 9%;
+}
+.commentsWrapper .comments_input_row .fieldDiv .fieldDiv_content {
+	width: 80%;
+}
+
+.commentsWrapper .comments_input_row .fieldDiv .fieldDiv_content [new_comments="comments"] {
+	width: 70%;
+	margin: 0 5px;
+}
