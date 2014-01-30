@@ -362,6 +362,34 @@ abstract class BaseEntityAbstract
     	return (is_array($this->_jsonArray) && count($this->_jsonArray) > 0 );
     }
     /**
+     * Adding the comments for this entity;
+     * 
+     * @param string $comments The new comments
+     * @param string $groupId  The group identifier for the comments
+     * 
+     * @return BaseEntityAbstract
+     */
+    public function addComment($comments, $groupId = '')
+    {
+    	Comments::addComments($this, $comments, $groupId);
+    	return $this;
+    }
+    /**
+     * Getting the comments for this entity
+     * 
+     * @param string $pageNo
+     * @param int    $pageSize
+     * @param array  $orderBy
+     * 
+     * @return Ambigous <multitype:, multitype:BaseEntityAbstract >
+     */
+    public function getComments($pageNo = null, $pageSize = DaoQuery::DEFAUTL_PAGE_SIZE, $orderBy = array())
+    {
+    	if(count($orderBy) === 0)
+    		$orderBy = array(get_class($this) . '.id' => 'desc');
+    	return FactoryAbastract::dao('Comments')->findByCriteria('entityName = ? and entityId = ?', array(get_class($this), $this->getId(), true, $pageNo, $pageSize, $orderBy));
+    }
+    /**
      * Default toString implementation
      *
      * @return string

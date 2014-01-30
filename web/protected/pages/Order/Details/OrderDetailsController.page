@@ -1,6 +1,7 @@
 <%@MasterClass="Application.layout.BlankLayout"%>
 <com:TContent ID="MainContent">
 	<com:TDatePicker Style="display:none;"/>
+	<com:TCallback ID="updateOrderBtn" OnCallback="updateOrder" />
 	<div class="pagewrapper orderdetails container">
 		<div id="detailswrapper" class="contentDiv"></div>
 	</div>

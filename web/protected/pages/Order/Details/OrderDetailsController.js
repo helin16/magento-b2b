@@ -156,10 +156,11 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		return new Element('div', {"class": 'wrapper'})
 			.insert({'bottom': tmp.me._getfieldDiv('Paid:',new Element('input')) });
 	}
+	
 	,_collectData: function(colname, attrName) {
 		var tmp = {};
 		tmp.me = this;
-		tmp.data = {};
+		tmp.data = [];
 		tmp.hasError = false;
 		$(tmp.me._resultDivId).getElementsBySelector('.productRow .' + colname).each(function(cell) {
 			//remove msg divs
@@ -175,8 +176,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			} else {
 				//check if we have any empty data
 				tmp.orderItem = cell.up('.row').retrieve('data');
-				tmp.data[tmp.orderItem.id] = {'orderItem': tmp.orderItem};
-				tmp.attrData = {};
+				tmp.attrData = {'orderItem': tmp.orderItem};
 				
 				tmp.fields.each(function(field) {
 					tmp.fieldName = field.readAttribute(attrName);
@@ -185,10 +185,12 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 						field.insert({'before': new Element('div', {'class': 'msgDiv errorMsgDiv'}).update(new Element('div', {'class': 'msg'}).update(tmp.fieldName + ' Required!') ) });
 						tmp.hasError = true;
 					} else {
-						tmp.attrData[tmp.fieldName] = tmp.value;
+						if(!tmp.attrData[colname])
+							tmp.attrData[colname] = {};
+						tmp.attrData[colname][tmp.fieldName] = tmp.value;
 					}
 				})
-				tmp.data[tmp.orderItem.id][colname] = tmp.attrData;
+				tmp.data.push(tmp.attrData);
 			}
 			
 		});
@@ -203,12 +205,24 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		return new Element('div')
 			.insert({'bottom': new Element('span', {'class': 'button'}).update('submit')
 				.observe('click', function() {
+					tmp.btn = this;
 					tmp.data = tmp.me._collectData('purchasing', 'update_order_item');
 					if(tmp.data === null) {
 						alert('Error Occurred, pls scroll up to see details!');
 						return;
 					}
-					console.debug(tmp.data);
+					tmp.me.postAjax(tmp.me.getCallbackId('updateOrder'), {'items': tmp.data, 'order': tmp.me._order, 'for': 'purchasing'}, {
+						'onLoading': function(sender, param) {tmp.btn.addClassName('disabled').update('Saving ...');},
+						'onComplete': function(sender, param) {
+							try {
+								tmp.result = tmp.me.getResp(param, true, false);
+								
+							} catch (e) {
+								alert(e);
+							}
+							tmp.btn.removeClassName('disabled').update('submit');
+						},
+					});
 				})
 			});
 	}
@@ -225,7 +239,6 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 						alert('Error Occurred, pls scroll up to see details!');
 						return;
 					}
-					console.debug(tmp.data);
 				})
 			});
 	}

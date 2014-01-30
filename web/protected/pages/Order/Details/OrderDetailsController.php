@@ -52,6 +52,7 @@ class OrderDetailsController extends BPCPageAbstract
 		$orderItems = array();
 		foreach($order->getOrderItems() as $orderItem)
 			$orderItems[] = $orderItem->getJson();
+		$js .= 'pageJs.setCallbackId("updateOrder", "' . $this->updateOrderBtn->getUniqueID() . '");';
 		$js .= 'pageJs.setEditMode(true, true).setOrder('. json_encode($order->getJson()) . ', ' . json_encode($orderItems) . ');';
 		$js .= 'pageJs.load("detailswrapper");';
 		return $js;
@@ -61,20 +62,35 @@ class OrderDetailsController extends BPCPageAbstract
 	 * @param unknown $sender
 	 * @param unknown $params
 	 */
-	public function getProducts($sender, $params)
+	public function updateOrder($sender, $params)
 	{
 		$results = $errors = array();
 		try
 		{
-			if(!isset($params->CallbackParameter->orderId) || !($order = FactoryAbastract::service('Order')->get(trim($params->CallbackParameter->orderId))) instanceof Order)
-				throw new Exception('System Error: invalid order!');
-			foreach($order->getOrderItems() as $orderItem)
+			Dao::beginTransaction();
+			if(!isset($params->CallbackParameter->order) || !($order = Order::get($params->CallbackParameter->order->orderNo)) instanceof Order)
+				throw new Exception('System Error: invalid order passed in!');
+			
+			if(!isset($params->CallbackParameter->for) || ($for = trim($params->CallbackParameter->order->for)) === '')
+				throw new Exception('System Error: invalid for passed in!');
+			
+			if(!$order->canEditBy(Core::getRole()))
+				throw new Exception('You do NOT edit this order as ' . Core::getRole() . '!');
+			
+			foreach($params->CallbackParameter->items as $obj)
 			{
-				$results['items'] = $orderItem->getJson();
+				if(($orderItem = FactoryAbastract::service('OrderItem')->get($obj->orderItem->id)) instanceof OrderItem)
+					$orderItem = new OrderItem();
+				$orderItem->setQtyOrdered($obj->orderItem->qtyOrdered);
+				$orderItem->setUnitPrice($obj->orderItem->unitPrice);
+				$orderItem->setTotalPrice($obj->orderItem->totalPrice);
+				$orderItem->setProduct(Product::get($obj->orderItem->product->sku));
 			}
+			Dao::commitTransaction();
 		}
 		catch(Exception $ex)
 		{
+			Dao::rollbackTransaction();
 			$errors[] = $ex->getMessage();
 		}
 		$params->ResponseData = StringUtilsAbstract::getJson($results, $errors);

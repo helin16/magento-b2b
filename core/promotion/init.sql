@@ -69,6 +69,7 @@ CREATE TABLE `order` (
 	`orderDate` datetime NOT NULL DEFAULT '0001-01-01 00:00:00',
 	`totalAmount` Double(10,4) unsigned NOT NULL DEFAULT 0,
 	`totalPaid` Double(10,4) unsigned NOT NULL DEFAULT 0,
+	`passPaymentCheck` bool NOT NULL DEFAULT 0,
 	`statusId` int(10) unsigned NOT NULL DEFAULT 0,
 	`billingAddrId` int(10) unsigned NOT NULL DEFAULT 0,
 	`shippingAddrId` int(10) unsigned NOT NULL DEFAULT 0,
@@ -85,6 +86,7 @@ CREATE TABLE `order` (
 	,INDEX (`updatedById`)
 	,INDEX (`invNo`)
 	,INDEX (`orderDate`)
+	,INDEX (`passPaymentCheck`)
 	,UNIQUE INDEX (`orderNo`)
 ) ENGINE=innodb DEFAULT CHARSET=utf8;
 DROP TABLE IF EXISTS `orderinfo`;
@@ -126,7 +128,7 @@ CREATE TABLE `orderitem` (
 	`qtyOrdered` int(10) unsigned NOT NULL DEFAULT 0,
 	`unitPrice` double(10,4) unsigned NOT NULL DEFAULT 0,
 	`totalPrice` double(10,4) unsigned NOT NULL DEFAULT 0,
-	`eta` datetime NOT NULL DEFAULT '0001-01-01 00:00:00',
+	`eta` datetime NULL ,
 	`isPicked` bool NOT NULL DEFAULT 0,
 	`active` bool NOT NULL DEFAULT 1,
 	`created` datetime NOT NULL DEFAULT '0001-01-01 00:00:00',
@@ -255,6 +257,7 @@ CREATE TABLE `comments` (
 	`entityName` varchar(100) NOT NULL DEFAULT '',
 	`comments` varchar(255) NOT NULL DEFAULT '',
 	`groupId` varchar(100) NOT NULL DEFAULT '',
+	`type` varchar(50) NOT NULL DEFAULT '',
 	`active` bool NOT NULL DEFAULT 1,
 	`created` datetime NOT NULL DEFAULT '0001-01-01 00:00:00',
 	`createdById` int(10) unsigned NOT NULL DEFAULT 0,
@@ -266,6 +269,7 @@ CREATE TABLE `comments` (
 	,INDEX (`entityId`)
 	,INDEX (`entityName`)
 	,INDEX (`groupId`)
+	,INDEX (`type`)
 ) ENGINE=innodb DEFAULT CHARSET=utf8;
 DROP TABLE IF EXISTS `log`;
 CREATE TABLE `log` (

@@ -75,6 +75,12 @@ class Order extends InfoEntityAbstract
 	 */
 	protected $orderItems;
 	/**
+	 * Wether the order passed the payment check
+	 * 
+	 * @var bool
+	 */
+	private $passPaymentCheck;
+	/**
 	 * Getter for orderNo
 	 *
 	 * @return string
@@ -301,6 +307,27 @@ class Order extends InfoEntityAbstract
 	    return $this;
 	}
 	/**
+	 * Getter for passPaymentCheck
+	 *
+	 * @return bool
+	 */
+	public function getPassPaymentCheck() 
+	{
+	    return trim($this->passPaymentCheck) === '1';
+	}
+	/**
+	 * Setter for passPaymentCheck
+	 *
+	 * @param bool $value The passPaymentCheck
+	 *
+	 * @return Order
+	 */
+	public function setPassPaymentCheck($value) 
+	{
+	    $this->passPaymentCheck = $value;
+	    return $this;
+	}
+	/**
 	 * Getting the order by order no
 	 * 
 	 * @param string $orderNo
@@ -321,6 +348,32 @@ class Order extends InfoEntityAbstract
 	{
 		$this->loadOneToMany('orderItems');
 	    return $this->orderItems;
+	}
+	/**
+	 * checking whether the order can be edit by a role
+	 * 
+	 * @param Role $role The role who is trying to edit the roder
+	 * 
+	 * @return boolean
+	 */
+	public function canEditBy(Role $role)
+	{
+		switch($role->getId())
+		{
+			case Role::ID_STORE_MANAGER:
+			case Role::ID_SYSTEM_ADMIN:
+			{
+				return true;
+			}
+			case Role::ID_PURCHASING:
+			{
+				return in_array($this->getStatus()->getId(), array(OrderStatus::ID_NEW, OrderStatus::ID_INSUFFICIENT_STOCK));
+			}
+			case Role::ID_WAREHOUSE:
+			{
+				return in_array($this->getStatus()->getId(), array(OrderStatus::ID_ETA, OrderStatus::ID_STOCK_CHECKED_BY_PURCHASING)) && $this->getPassPaymentCheck();
+			}
+		}
 	}
 	/**
 	 * Setter for orderItems
@@ -380,6 +433,7 @@ class Order extends InfoEntityAbstract
 		DaoMap::setDateType('orderDate');
 		DaoMap::setIntType('totalAmount', 'Double', '10,4');
 		DaoMap::setIntType('totalPaid', 'Double', '10,4');
+		DaoMap::setBoolType('passPaymentCheck');
 		DaoMap::setManyToOne('status', 'OrderStatus', 'o_status');
 		DaoMap::setManyToOne('billingAddr', 'Address', 'baddr');
 		DaoMap::setManyToOne('shippingAddr', 'Address', 'saddr');
@@ -392,6 +446,7 @@ class Order extends InfoEntityAbstract
 		DaoMap::createUniqueIndex('orderNo');
 		DaoMap::createIndex('invNo');
 		DaoMap::createIndex('orderDate');
+		DaoMap::createIndex('passPaymentCheck');
 		DaoMap::commit();
 	}
 }

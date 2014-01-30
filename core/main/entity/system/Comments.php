@@ -7,6 +7,9 @@
  */
 class Comments extends BaseEntityAbstract
 {
+	const TYPE_PURCHASING = 'PURCHASING';
+	const TYPE_WAREHOUSE = 'WAREHOUSE';
+	const TYPE_CUSTOMER = 'CUSTOMER';
 	/**
 	 * The id of the entity
 	 * 
@@ -26,11 +29,23 @@ class Comments extends BaseEntityAbstract
 	 */
 	private $comments;
 	/**
+	 * The type of the comments
+	 * 
+	 * @var string
+	 */
+	private $type;
+	/**
 	 * The groupId of a couple of comments
 	 * 
 	 * @var string
 	 */
 	private $groupId;
+	/**
+	 * The cached groupid
+	 * 
+	 * @var string
+	 */
+	private static $_groupId;
 	/**
 	 * Getting the transid
 	 *
@@ -40,7 +55,9 @@ class Comments extends BaseEntityAbstract
 	 */
 	public static function genGroupId($salt = '')
 	{
-		return StringUtilsAbstract::getRandKey($salt);
+		if(!is_string(self::$_groupId))
+			self::$_groupId = StringUtilsAbstract::getRandKey($salt);
+		return self::$_groupId;
 	}
 	/**
 	 * add Comments
@@ -56,7 +73,8 @@ class Comments extends BaseEntityAbstract
 		$en->setEntityId($entity->getId());
 		$en->setEntityName(get_class($entity));
 		$en->setComments($comments);
-		$en->setGroupId($groupId);
+		$groupId = trim($groupId);
+		$en->setGroupId($groupId === '' ? self::genGroupId() : $groupId);
 		EntityDao::getInstance($className)->save($en);
 	}
 	/**
@@ -144,6 +162,27 @@ class Comments extends BaseEntityAbstract
 	    return $this;
 	}
 	/**
+	 * Getter for type
+	 *
+	 * @return 
+	 */
+	public function getType() 
+	{
+	    return $this->type;
+	}
+	/**
+	 * Setter for type
+	 *
+	 * @param unkown $value The type
+	 *
+	 * @return Comments
+	 */
+	public function setType($value) 
+	{
+	    $this->type = $value;
+	    return $this;
+	}
+	/**
 	 * (non-PHPdoc)
 	 * @see BaseEntity::__loadDaoMap()
 	 */
@@ -155,12 +194,14 @@ class Comments extends BaseEntityAbstract
 		DaoMap::setStringType('entityName','varchar', 100);
 		DaoMap::setStringType('comments','varchar', 255);
 		DaoMap::setStringType('groupId','varchar', 100);
+		DaoMap::setStringType('type','varchar', 50);
 	
 		parent::__loadDaoMap();
 	
 		DaoMap::createIndex('entityId');
 		DaoMap::createIndex('entityName');
 		DaoMap::createIndex('groupId');
+		DaoMap::createIndex('type');
 	
 		DaoMap::commit();
 	}
