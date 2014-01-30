@@ -81,6 +81,12 @@ class Order extends InfoEntityAbstract
 	 */
 	private $passPaymentCheck;
 	/**
+	 * Whether this order is imported from B2B
+	 * 
+	 * @var bool
+	 */
+	private $isFromB2B;
+	/**
 	 * Getter for orderNo
 	 *
 	 * @return string
@@ -328,6 +334,37 @@ class Order extends InfoEntityAbstract
 	    return $this;
 	}
 	/**
+	 * Getter for orderItems
+	 *
+	 * @return Multiple:OrderItem
+	 */
+	public function getOrderItems() 
+	{
+		$this->loadOneToMany('orderItems');
+	    return $this->orderItems;
+	}
+	/**
+	 * Getter for isFromB2B
+	 *
+	 * @return bool
+	 */
+	public function getIsFromB2B() 
+	{
+	    return (trim($this->isFromB2B) === '1');
+	}
+	/**
+	 * Setter for isFromB2B
+	 *
+	 * @param unkown $value The isFromB2B
+	 *
+	 * @return Order
+	 */
+	public function setIsFromB2B($value) 
+	{
+	    $this->isFromB2B = $value;
+	    return $this;
+	}
+	/**
 	 * Getting the order by order no
 	 * 
 	 * @param string $orderNo
@@ -340,14 +377,16 @@ class Order extends InfoEntityAbstract
 		return (count($items) === 0 ? null : $items[0]);
 	}
 	/**
-	 * Getter for orderItems
+	 * Setter for orderItems
 	 *
-	 * @return Multiple:OrderItem
+	 * @param array $value The orderItems
+	 *
+	 * @return Order
 	 */
-	public function getOrderItems() 
+	public function setorderItems($value) 
 	{
-		$this->loadOneToMany('orderItems');
-	    return $this->orderItems;
+	    $this->orderItems = $value;
+	    return $this;
 	}
 	/**
 	 * checking whether the order can be edit by a role
@@ -374,18 +413,6 @@ class Order extends InfoEntityAbstract
 				return in_array($this->getStatus()->getId(), array(OrderStatus::ID_ETA, OrderStatus::ID_STOCK_CHECKED_BY_PURCHASING)) && $this->getPassPaymentCheck();
 			}
 		}
-	}
-	/**
-	 * Setter for orderItems
-	 *
-	 * @param array $value The orderItems
-	 *
-	 * @return Order
-	 */
-	public function setorderItems($value) 
-	{
-	    $this->orderItems = $value;
-	    return $this;
 	}
 	/**
 	 * (non-PHPdoc)
@@ -434,6 +461,7 @@ class Order extends InfoEntityAbstract
 		DaoMap::setIntType('totalAmount', 'Double', '10,4');
 		DaoMap::setIntType('totalPaid', 'Double', '10,4');
 		DaoMap::setBoolType('passPaymentCheck');
+		DaoMap::setBoolType('isFromB2B');
 		DaoMap::setManyToOne('status', 'OrderStatus', 'o_status');
 		DaoMap::setManyToOne('billingAddr', 'Address', 'baddr');
 		DaoMap::setManyToOne('shippingAddr', 'Address', 'saddr');
@@ -447,6 +475,7 @@ class Order extends InfoEntityAbstract
 		DaoMap::createIndex('invNo');
 		DaoMap::createIndex('orderDate');
 		DaoMap::createIndex('passPaymentCheck');
+		DaoMap::createIndex('isFromB2B');
 		DaoMap::commit();
 	}
 }

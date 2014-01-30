@@ -70,6 +70,7 @@ CREATE TABLE `order` (
 	`totalAmount` Double(10,4) unsigned NOT NULL DEFAULT 0,
 	`totalPaid` Double(10,4) unsigned NOT NULL DEFAULT 0,
 	`passPaymentCheck` bool NOT NULL DEFAULT 0,
+	`isFromB2B` bool NOT NULL DEFAULT 0,
 	`statusId` int(10) unsigned NOT NULL DEFAULT 0,
 	`billingAddrId` int(10) unsigned NOT NULL DEFAULT 0,
 	`shippingAddrId` int(10) unsigned NOT NULL DEFAULT 0,
@@ -87,6 +88,7 @@ CREATE TABLE `order` (
 	,INDEX (`invNo`)
 	,INDEX (`orderDate`)
 	,INDEX (`passPaymentCheck`)
+	,INDEX (`isFromB2B`)
 	,UNIQUE INDEX (`orderNo`)
 ) ENGINE=innodb DEFAULT CHARSET=utf8;
 DROP TABLE IF EXISTS `orderinfo`;

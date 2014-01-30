@@ -7,6 +7,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 	,_orderItems: [] //the order items on that order
 	,_resultDivId: '' //the result div id
 	,_editMode: {'purchasing': false, 'warehouse': false} //the edit mode for purchasing and warehouse
+	,_commentsDiv: {'pagination': {'pageSize': 10, 'pageNo': 1}, 'resultDivId': '', 'type': ''} //the pagination for the comments
 	
 	,setEditMode: function(editPurchasing, editWH) {
 		this._editMode.purchasing = (editPurchasing || false);
@@ -66,15 +67,15 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 	,_getPurchasingCell: function(orderItem) {
 		var tmp = {};
 		tmp.me = this;
-		tmp.hasStock = (orderItem.eta === '' ? '' : (orderItem.eta === '0000-01-01 00:00:00' ? 'Y' : 'N'));
+		tmp.hasStock = (orderItem.eta === '' ? '' : (orderItem.eta === '0001-01-01 00:00:00' ? 'Y' : 'N'));
 		if(tmp.me._editMode.purchasing === false) {
-			tmp.newDiv = new Element('div');
+			tmp.newDiv = new Element('div', {'class': 'order_item_details'});
 			if(tmp.hasStock === '')
 				return tmp.newDiv.update('N/A');
 			return tmp.newDiv
-				.insert({'bottom': 'hasStock?: ' + tmp.hasStock })
-				.insert({'bottom': 'ETA: ' + orderItem.eta })
-				.insert({'bottom': tmp.me._showLastestComments() });
+				.insert({'bottom': tmp.me._getfieldDiv('hasStock?: ', tmp.hasStock) })
+				.insert({'bottom': tmp.me._getfieldDiv('ETA: ', orderItem.eta) })
+				.insert({'bottom': tmp.me._getfieldDiv('Comments: ', tmp.me._showLastestComments()) });
 		}
 		tmp.getEditDiv = function(hasStock, eta) {
 			tmp.etaBox = new Element('input', {'type': 'text', 'placeholder': 'ETA:', 'update_order_item': 'eta', 'id': 'order_item_' + orderItem.id, 'readonly': true, 'value': eta ? eta : ''});
@@ -110,7 +111,9 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		var tmp = {};
 		tmp.me = this;
 		if(tmp.me._editMode.warehouse === false) {
-			return new Element('div').insert({'bottom': tmp.me._showLastestComments(orderItem.comments) });
+			return new Element('div', {'class': 'order_item_details'})
+				.insert({'bottom': tmp.me._getfieldDiv('Picked?: ', orderItem.isPicked ? 'Y' : 'N') })
+				.insert({'bottom': tmp.me._getfieldDiv('Comments: ', tmp.me._showLastestComments()) });
 		}
 		tmp.func = function() {
 			//remove error msg
@@ -215,7 +218,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 						'onLoading': function(sender, param) {tmp.btn.addClassName('disabled').update('Saving ...');},
 						'onComplete': function(sender, param) {
 							try {
-								tmp.result = tmp.me.getResp(param, true, false);
+								tmp.result = tmp.me.getResp(param, false, true);
 								
 							} catch (e) {
 								alert(e);
@@ -241,6 +244,60 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					}
 				})
 			});
+	}
+	
+	,_getCommentsRow: function(comments) {
+		return new Element('div', {'class': 'row comments'})
+			.insert({'bottom': new Element('span', {'class': 'inlineblock cell created'}).update(comments.created) })
+			.insert({'bottom': new Element('span', {'class': 'inlineblock cell creator'}).update(comments.creator) })
+			.insert({'bottom': new Element('span', {'class': 'inlineblock cell type'}).update(comments.type) })
+			.insert({'bottom': new Element('span', {'class': 'inlineblock cell comments'}).update(comments.comments) });
+	}
+	
+	,_getComments: function (reset, btn) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.reset = (reset || false);
+		tmp.me.postAjax(tmp.me.getCallbackId('getComments'), {'pagination': tmp.me._commentsDiv.pagination, 'order': tmp.me._order, 'type': tmp.me._commentsDiv.type}, {
+			'onLoading': function (sender, param) {
+				if(tmp.reset === true) {
+					$(tmp.me._commentsDiv.resultDivId).update(new Element('img', {'src': '/themes/default/images/loading_big.gif'}));
+				}
+				if(btn) {
+					$(btn).store('originValue', $F(btn)).addClassName('disabled').setValue('Getting ...').disabled = true;
+				}
+			}
+			,'onComplete': function (sender, param) {
+				try {
+					tmp.result = tmp.me.getResp(param, false, true);
+
+					if(tmp.reset === true) {
+						$(tmp.me._commentsDiv.resultDivId).update(tmp.me._getCommentsRow({'type': 'Type', 'creator': 'WHO', 'created': 'WHEN', 'comments': 'COMMENTS'}).addClassName('header'));
+					}
+					tmp.result.items.each(function(item) {
+						$(tmp.me._commentsDiv.resultDivId).insert({'bottom': tmp.me._getCommentsRow(item) });
+					})
+					
+					if(btn) 
+						$(btn).remove();
+					if(tmp.result.pagination.pageNumber < tmp.result.pagination.totalPages) {
+						$(tmp.me._commentsDiv.resultDivId).insert({'bottom': new Element('input', {'type': 'button', 'class': 'button', 'value': 'Get More'})
+							.observe('click', function(){
+								tmp.me._commentsDiv.pagination.pageNo = tmp.me._commentsDiv.pagination.pageNo * 1 + 1;
+								tmp.me._getComments(false, this);
+							})
+						})
+					}
+				} catch (e) {
+					alert(e)
+					if(btn) {
+						tmp.orginalValue = $(btn).retrieve('originValue');
+						$(btn).removeClassName('disabled').setValue(tmp.orginalValue).disabled = false;
+					}
+				}
+			}
+		})
+		return this;
 	}
 	
 	,load: function(resultdiv) {
@@ -286,6 +343,8 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.newDiv.insert({'bottom': new Element('fieldset', {'class': 'row summary'})
 			.insert({'bottom': new Element('legend').update('Summary') })
 			.insert({'bottom': new Element('div')
+				.insert({'bottom': tmp.me._getfieldDiv('Shipping', tmp.me._order.infos[9][0].value) })
+				.insert({'bottom': tmp.me._getfieldDiv('Payment Method', tmp.me._order.infos[6][0].value) })
 				.insert({'bottom': tmp.me._getfieldDiv('Total Amount', tmp.me.getCurrency(tmp.me._order.totalAmount)).addClassName('totalAmount') })
 				.insert({'bottom': tmp.me._getfieldDiv('Total Paid', tmp.me.getCurrency(tmp.me._order.totalPaid)).addClassName('totalPaid') })
 				.insert({'bottom': tmp.me._getfieldDiv('Total Due', tmp.me.getCurrency(tmp.me._order.totalDue)).addClassName('totalDue') })
@@ -294,16 +353,23 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		
 		//getting the submit buttons
 		tmp.newDiv.insert({'bottom': new Element('fieldset', {'class': 'submitbtns'})
-			.insert({'bottom': new Element('span', {'class': 'financeBtns inlineblock'}).update( tmp.me._getFinanceBtns()
-			) })
-			.insert({'bottom': new Element('span', {'class': 'purchasingBtns inlineblock'}).update( tmp.me._getPurchasingBtns()
-			) })
-			.insert({'bottom': new Element('span', {'class': 'warehouseBtns inlineblock'}).update( tmp.me._getWHBtns()
-			) })
+			.insert({'bottom': new Element('span', {'class': 'financeBtns inlineblock'}).update( tmp.me._getFinanceBtns()			) })
+			.insert({'bottom': new Element('span', {'class': 'purchasingBtns inlineblock'}).update( tmp.me._getPurchasingBtns() 	) })
+			.insert({'bottom': new Element('span', {'class': 'warehouseBtns inlineblock'}).update( tmp.me._getWHBtns()				) })
 		});
 		
+		//getting the comments row
+		tmp.newDiv.insert({'bottom': new Element('fieldset', {'class': 'row commentsWrapper dataTableWrapper'}) 
+			.insert({'bottom': new Element('legend').update('Comments') })
+			.insert({'bottom': new Element('div', {'id': 'comments_list', 'class': 'dataTable'}) })
+		});
 		
+		//dom insert
 		$(tmp.me._resultDivId).update(tmp.newDiv);
+		
+		//load the comments after
+		tmp.me._commentsDiv.resultDivId = 'comments_list';
+		tmp.me._getComments(true);
 		return this;
 	}
 });

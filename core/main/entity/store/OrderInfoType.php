@@ -14,6 +14,9 @@ class OrderInfoType extends InfoTypeAbstract
 	const ID_MAGE_ORDER_STATUS = 4;
 	const ID_MAGE_ORDER_STATE = 5;
 	const ID_MAGE_ORDER_PAYMENT_METHOD = 6;
+	const ID_MAGE_ORDER_TOTAL_AMOUNT = 7;
+	const ID_MAGE_ORDER_PAID_AMOUNT = 8;
+	const ID_MAGE_ORDER_SHIPPING_METHOD = 9;
 	/**
 	 * (non-PHPdoc)
 	 * @see BaseEntity::__loadDaoMap()

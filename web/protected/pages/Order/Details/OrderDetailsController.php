@@ -52,8 +52,17 @@ class OrderDetailsController extends BPCPageAbstract
 		$orderItems = array();
 		foreach($order->getOrderItems() as $orderItem)
 			$orderItems[] = $orderItem->getJson();
+		$purchaseEdit = $warehouseEdit = 'false';
+		if($order->canEditBy(Core::getRole()))
+		{
+			$purchaseEdit = ($order->canEditBy(FactoryAbastract::service('Role')->get(Role::ID_PURCHASING))) ? 'true' : 'false';
+			$warehouseEdit = ($order->canEditBy(FactoryAbastract::service('Role')->get(Role::ID_WAREHOUSE))) ? 'true' : 'false';
+		}
+		
+		$js .= 'pageJs.setEditMode(' . $purchaseEdit . ', ' . $warehouseEdit . ');';
+		$js .= 'pageJs.setOrder('. json_encode($order->getJson()) . ', ' . json_encode($orderItems) . ');';
 		$js .= 'pageJs.setCallbackId("updateOrder", "' . $this->updateOrderBtn->getUniqueID() . '");';
-		$js .= 'pageJs.setEditMode(true, true).setOrder('. json_encode($order->getJson()) . ', ' . json_encode($orderItems) . ');';
+		$js .= 'pageJs.setCallbackId("getComments", "' . $this->getCommentsBtn->getUniqueID() . '");';
 		$js .= 'pageJs.load("detailswrapper");';
 		return $js;
 	}
@@ -83,40 +92,44 @@ class OrderDetailsController extends BPCPageAbstract
 			$commentType = ($for === 'purchasing' ? Comments::TYPE_PURCHASING : Comments::TYPE_WAREHOUSE);
 			foreach($params->CallbackParameter->items as $obj)
 			{
-				if(($orderItem = FactoryAbastract::service('OrderItem')->get($obj->orderItem->id)) instanceof OrderItem)
+				if(!($orderItem = FactoryAbastract::service('OrderItem')->get($obj->orderItem->id)) instanceof OrderItem)
 					$orderItem = new OrderItem();
+				
 				$orderItem->setQtyOrdered($obj->orderItem->qtyOrdered);
 				$orderItem->setUnitPrice($obj->orderItem->unitPrice);
 				$orderItem->setTotalPrice($obj->orderItem->totalPrice);
+				$orderItem->setOrder($order);
 				$sku = trim($obj->orderItem->product->sku);
 				$orderItem->setProduct(Product::get($sku));
+				FactoryAbastract::service('OrderItem')->save($orderItem);
 				
-				if(isset($obj->orderItem->$for))
-				{
-					$comments = trim($obj->orderItem->$for->comments);
+				if(!isset($obj->$for))
+					throw new Exception('System Error: ' . $for .' is NOT defined!');
+				$comments = isset($obj->$for->comments) ? trim($obj->$for->comments) : '';
+				if($comments !== '')
 					$orderItem->addComment($comments, $commentType);
-					if(isset($obj->orderItem->$for->eta))
+				if(isset($obj->$for->eta))
+				{
+					$eta = trim($obj->$for->eta);
+					$orderItem->setEta($eta === '' ? null : $eta);
+					if($eta!== '' && $eta !== trim(UDate::zeroDate()))
 					{
-						$eta = trim($obj->orderItem->$for->eta);
-						$orderItem->setEta($eta === '' ? null : $eta);
-						if($eta!== '' && $eta !== trim(UDate::zeroDate()))
-						{
-							$order->addComment('Added ETA[' . $eta . '] for product(SKU=' . $sku .'): ' . $comments, $commentType);
-							$hasETA = true;
-						}
-					}
-					
-					if(isset($obj->orderItem->$for->isPicked))
-					{
-						$picked = (trim($obj->orderItem->$for->isPicked) === 'Y');
-						$orderItem->setIsPicked($picked);
-						if($picked === false)
-						{
-							$order->addComment('Picked product(SKU=' . $sku .'): ' . $comments, $commentType);
-							$allPicked = false;
-						}
+						$order->addComment('Added ETA[' . $eta . '] for product(SKU=' . $sku .'): ' . $comments, $commentType);
+						$hasETA = true;
 					}
 				}
+				
+				if(isset($obj->$for->isPicked))
+				{
+					$picked = (trim($obj->$for->isPicked) === 'Y');
+					$orderItem->setIsPicked($picked);
+					if($picked === false)
+					{
+						$order->addComment('Picked product(SKU=' . $sku .'): ' . $comments, $commentType);
+						$allPicked = false;
+					}
+				}
+				FactoryAbastract::service('OrderItem')->save($orderItem);
 			}
 			
 			$status = trim($order->getStatus());
@@ -143,6 +156,51 @@ class OrderDetailsController extends BPCPageAbstract
 		catch(Exception $ex)
 		{
 			Dao::rollbackTransaction();
+			$errors[] = $ex->getMessage();
+		}
+		$params->ResponseData = StringUtilsAbstract::getJson($results, $errors);
+	}
+	/**
+	 * 
+	 * @param unknown $sender
+	 * @param unknown $params
+	 */
+	public function getComments($sender, $params)
+	{
+		$results = $errors = array();
+		try
+		{
+			if(!isset($params->CallbackParameter->order) || !($order = Order::get($params->CallbackParameter->order->orderNo)) instanceof Order)
+				throw new Exception('System Error: invalid order passed in!');
+			$type = isset($params->CallbackParameter->type) ? trim($params->CallbackParameter->type) : '';
+			$pageNo = 1;
+			$pageSize = DaoQuery::DEFAUTL_PAGE_SIZE;
+			if(isset($params->CallbackParameter->pagination))
+			{
+				$pageNo = isset($params->CallbackParameter->pagination->pageNo) ? trim($params->CallbackParameter->pagination->pageNo) : $pageNo;
+				$pageSize = isset($params->CallbackParameter->pagination->pageSize) ? trim($params->CallbackParameter->pagination->pageSize) : $pageSize;
+			}
+			$items = array();
+			$pageStats = array();
+			$commentsArray = $order->getComments($type, $pageNo, $pageSize, array('`comm`.id' => 'desc'), $pageStats);
+			foreach($commentsArray as $comments)
+			{
+				$array = array();
+				$created = new UDate($comments->getCreated());
+				$created->setTimeZone(SystemSettings::getSettings(SystemSettings::TYPE_SYSTEM_TIMEZONE));
+				$array['created'] = trim($created);
+				$array['creator'] = trim($comments->getCreatedBy()->getPerson());
+				$array['comments'] = trim($comments->getComments());
+				$array['type'] = trim($comments->getType());
+				$items[] = $array;
+			}
+			
+			$results['items'] = $items;
+			$results['pagination'] = $pageStats;
+			var_dump($results);
+		}
+		catch(Exception $ex)
+		{
 			$errors[] = $ex->getMessage();
 		}
 		$params->ResponseData = StringUtilsAbstract::getJson($results, $errors);

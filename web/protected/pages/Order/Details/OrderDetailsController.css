@@ -116,9 +116,18 @@ fieldset.row legend {
 .productlist .operationDiv .hasStock,.productlist .operationDiv .fieldDiv_content {
 	font-size: 10px;
 }
+
+.productlist .order_item_details .fieldDiv {
+	display: block;
+}
+.productlist .order_item_details .fieldDiv .fieldDiv_title {
+	display: inline-block;
+	padding: 0 5px 0 0;
+}
 /************************ summary *********************************/
 .summary .fieldDiv {
 	width: 120px;
+	vertical-align: top;
 }
 .summary .totalDue .fieldDiv_content{
 	font-weight: bold;
@@ -141,4 +150,19 @@ fieldset.row legend {
 
 .submitbtns .financeBtns {
 	width: 600px;
+}
+
+/************************ comments *********************************/
+.commentsWrapper .cell {
+	font-size: 10px;
+}
+.commentsWrapper .type {
+	width: 80px
+}
+.commentsWrapper .creator,
+.commentsWrapper .created {
+	width: 100px
+}
+.commentsWrapper .row.header .cell.comments {
+	border-right: none;
 }

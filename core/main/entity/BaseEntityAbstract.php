@@ -385,7 +385,7 @@ abstract class BaseEntityAbstract
      * 
      * @return Ambigous <multitype:, multitype:BaseEntityAbstract >
      */
-    public function getComments($type = null, $pageNo = null, $pageSize = DaoQuery::DEFAUTL_PAGE_SIZE, $orderBy = array())
+    public function getComments($type = null, $pageNo = null, $pageSize = DaoQuery::DEFAUTL_PAGE_SIZE, $orderBy = array(), &$pageStats = array())
     {
     	if(count($orderBy) === 0)
     		$orderBy = array(get_class($this) . '.id' => 'desc');
@@ -396,7 +396,9 @@ abstract class BaseEntityAbstract
     		$where .= ' AND type = ?';
     		$params[] = $type;
     	}
-    	return FactoryAbastract::dao('Comments')->findByCriteria($where, $params, true, $pageNo, $pageSize, $orderBy);
+    	$results = FactoryAbastract::dao('Comments')->findByCriteria($where, $params, true, $pageNo, $pageSize, $orderBy);
+    	$pageStats = FactoryAbastract::dao('Comments')->getPageStats();
+    	return $results;
     }
     /**
      * Default toString implementation
