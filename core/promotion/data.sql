@@ -41,7 +41,7 @@ insert into `orderstatus` (`id`, `name`, `active`, `created`, `createdById`, `up
 	(2, 'CANCELLED', 1, NOW(), 10, NOW(), 10),
 	(3, 'ON HOLD', 1, NOW(), 10, NOW(), 10),
 	(4, 'ETA', 1, NOW(), 10, NOW(), 10),
-	(5, 'STOCK CHECKED BY PURCHASING', 1, NOW(), 10, NOW(), 10),
+	(5, 'STOCK CHECKED', 1, NOW(), 10, NOW(), 10),
 	(6, 'INSUFFICIENT STOCK', 1, NOW(), 10, NOW(), 10),
 	(7, 'PICKED', 1, NOW(), 10, NOW(), 10),
 	(8, 'SHIPPED', 1, NOW(), 10, NOW(), 10);
