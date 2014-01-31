@@ -7,6 +7,7 @@
  */
 class Log extends BaseEntityAbstract
 {
+	const TYPE_SYSTEM = 'System';
 	/**
 	 * caching the transid
 	 * 
@@ -274,7 +275,7 @@ class Log extends BaseEntityAbstract
 	 */
 	public static function LogEntity(BaseEntityAbstract $entity, $msg, $type, $comments = '', $funcName = '')
 	{
-		self::logEntity($lib, $entity->getId(), get_class($entity), $msg, $type, $comments, $funcName);
+		self::logging($entity->getId(), get_class($entity), $msg, $type, $comments, $funcName);
 	}
 	/**
 	 * (non-PHPdoc)

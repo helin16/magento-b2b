@@ -87,6 +87,12 @@ class Order extends InfoEntityAbstract
 	 */
 	private $isFromB2B;
 	/**
+	 * The Preivous Status pri to change
+	 * 
+	 * @var OrderStatus
+	 */
+	private $_previousStatus = null;
+	/**
 	 * Getter for orderNo
 	 *
 	 * @return string
@@ -146,7 +152,7 @@ class Order extends InfoEntityAbstract
 	 *
 	 * @return Order
 	 */
-	public function setinvNo($value) 
+	public function setInvNo($value)
 	{
 	    $this->invNo = $value;
 	    return $this;
@@ -170,6 +176,8 @@ class Order extends InfoEntityAbstract
 	 */
 	public function setStatus($value) 
 	{
+		if($this->status !== null)
+			$this->_previousStatus = $this->getStatus();
 	    $this->status = $value;
 	    return $this;
 	}
@@ -344,6 +352,18 @@ class Order extends InfoEntityAbstract
 	    return $this->orderItems;
 	}
 	/**
+	 * Setter for orderItems
+	 *
+	 * @param array $value The orderItems
+	 *
+	 * @return Order
+	 */
+	public function setOrderItems($value)
+	{
+		$this->orderItems = $value;
+		return $this;
+	}
+	/**
 	 * Getter for isFromB2B
 	 *
 	 * @return bool
@@ -375,18 +395,6 @@ class Order extends InfoEntityAbstract
 	{
 		$items = FactoryAbastract::dao(get_called_class())->findByCriteria('orderNo = ?', array($orderNo), false, 1, 1);
 		return (count($items) === 0 ? null : $items[0]);
-	}
-	/**
-	 * Setter for orderItems
-	 *
-	 * @param array $value The orderItems
-	 *
-	 * @return Order
-	 */
-	public function setorderItems($value) 
-	{
-	    $this->orderItems = $value;
-	    return $this;
 	}
 	/**
 	 * checking whether the order can be edit by a role
@@ -422,6 +430,21 @@ class Order extends InfoEntityAbstract
 	{
 		if(trim($this->getOrderNo()) === '')
 			$this->orderNo = StringUtilsAbstract::getRandKey('', 'ORD');
+	}
+	/**
+	 * (non-PHPdoc)
+	 * @see BaseEntityAbstract::postSave()
+	 */
+	public function postSave()
+	{
+		if($this->_previousStatus instanceof OrderStatus && $this->_previousStatus->getId() !== $this->getStatus()->getId())
+		{
+			$infoType = OrderInfoType::get(OrderInfoType::ID_MAGE_ORDER_STATUS_BEFORE_CHANGE);
+			$orderInfos = OrderInfo::find($this, $infoType, false, 1, 1);
+			$orderInfo = count($orderInfos) === 0 ? null : $orderInfos[0];
+			OrderInfo::create($this, $infoType, $this->_previousStatus->getId(), $orderInfo);
+			Log::LogEntity($this, 'Changed Status from [' . $this->_previousStatus . '] to [' . $this->getStatus() .']', Log::TYPE_SYSTEM, 'Auto Change', get_class($this) . '::' . __FUNCTION__);
+		}
 	}
 	
 	/**

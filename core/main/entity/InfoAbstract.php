@@ -130,6 +130,25 @@ class InfoAbstract extends BaseEntityAbstract
 		return FactoryAbastract::dao(get_called_class())->findByCriteria($where, $params, $searchActiveOnly, $pageNo, $pageSize, $orderBy);
 	}
 	/**
+	 * removing all the information object
+	 * 
+	 * @param InfoEntityAbstract $entity
+	 * @param InfoTypeAbstract   $type
+	 * 
+	 * @return Ambigous <multitype:, multitype:BaseEntityAbstract >
+	 */
+	public static function remove(InfoEntityAbstract $entity, InfoTypeAbstract $type = null)
+	{
+		$where = StringUtilsAbstract::lcFirst(str_replace('Info', '', get_called_class())) . 'Id = ?';
+		$params = array($entity->getId());
+		if($type instanceof InfoTypeAbstract)
+		{
+			$where .=' AND typeId = ?';
+			$params[] = $type->getId();
+		}
+		FactoryAbastract::dao(get_called_class())->updateByCriteria('active = 0', $where, $params);
+	}
+	/**
 	 * (non-PHPdoc)
 	 * @see HydraEntity::__loadDaoMap()
 	 */
