@@ -441,7 +441,8 @@ class Order extends InfoEntityAbstract
 		{
 			$infoType = OrderInfoType::get(OrderInfoType::ID_MAGE_ORDER_STATUS_BEFORE_CHANGE);
 			$orderInfos = OrderInfo::find($this, $infoType, false, 1, 1);
-			OrderInfo::create($this, $infoType, $this->_previousStatus->getId(), count($orderInfos) === 0 ? null : $orderInfos[0]);
+			$orderInfo = count($orderInfos) === 0 ? null : $orderInfos[0];
+			OrderInfo::create($this, $infoType, $this->_previousStatus->getId(), $orderInfo);
 			Log::LogEntity($this, 'Changed Status from [' . $this->_previousStatus . '] to [' . $this->getStatus() .']', Log::TYPE_SYSTEM, 'Auto Change', get_class($this) . '::' . __FUNCTION__);
 		}
 	}

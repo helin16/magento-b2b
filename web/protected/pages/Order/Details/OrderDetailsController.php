@@ -52,18 +52,20 @@ class OrderDetailsController extends BPCPageAbstract
 		$orderItems = array();
 		foreach($order->getOrderItems() as $orderItem)
 			$orderItems[] = $orderItem->getJson();
-		$purchaseEdit = $warehouseEdit = 'false';
+		$purchaseEdit = $warehouseEdit = $accounEdit = $statusEdit = 'false';
 		if($order->canEditBy(Core::getRole()))
 		{
 			$purchaseEdit = ($order->canEditBy(FactoryAbastract::service('Role')->get(Role::ID_PURCHASING))) ? 'true' : 'false';
 			$warehouseEdit = ($order->canEditBy(FactoryAbastract::service('Role')->get(Role::ID_WAREHOUSE))) ? 'true' : 'false';
+			$accounEdit = ($order->canEditBy(FactoryAbastract::service('Role')->get(Role::ID_ACCOUNTING))) ? 'true' : 'false';
+			$statusEdit = ($order->canEditBy(FactoryAbastract::service('Role')->get(Role::ID_STORE_MANAGER)) || $order->canEditBy(FactoryAbastract::service('Role')->get(Role::ID_SYSTEM_ADMIN))) ? 'true' : 'false';
 		}
 		
 		$orderStatuses = array();
 		foreach(OrderStatus::findAll() as $status)
 			$orderStatuses[] = $status->getJson();
 		
-		$js .= 'pageJs.setEditMode(' . $purchaseEdit . ', ' . $warehouseEdit . ');';
+		$js .= 'pageJs.setEditMode(' . $purchaseEdit . ', ' . $warehouseEdit . ', ' . $accounEdit . ', ' . $statusEdit . ');';
 		$js .= 'pageJs.setOrder('. json_encode($order->getJson()) . ', ' . json_encode($orderItems) . ', ' . json_encode($orderStatuses) . ');';
 		$js .= 'pageJs.setCallbackId("updateOrder", "' . $this->updateOrderBtn->getUniqueID() . '");';
 		$js .= 'pageJs.setCallbackId("getComments", "' . $this->getCommentsBtn->getUniqueID() . '");';
@@ -259,7 +261,7 @@ class OrderDetailsController extends BPCPageAbstract
 			Dao::beginTransaction();
 			if(!isset($params->CallbackParameter->order) || !($order = Order::get($params->CallbackParameter->order->orderNo)) instanceof Order)
 				throw new Exception('System Error: invalid order passed in!');
-			if(!isset($params->CallbackParameter->statusId) || !($orderStatus = OrderStatus::get($params->CallbackParameter->statusId)) instanceof OrderStatus)
+			if(!isset($params->CallbackParameter->orderStatusId) || !($orderStatus = OrderStatus::get($params->CallbackParameter->orderStatusId)) instanceof OrderStatus)
 				throw new Exception('System Error: invalid orderStatus passed in!');
 			if(!isset($params->CallbackParameter->comments) || ($comments = trim($params->CallbackParameter->comments)) === '')
 				throw new Exception('System Error: comments not provided!');

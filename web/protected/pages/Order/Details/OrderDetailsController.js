@@ -160,11 +160,20 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 	,_changeOrderStatus: function(selBox) {
 		var tmp = {};
 		tmp.me = this;
-		tmp.checked = checkbox.checked;
-		tmp.msg = 'About to ' + (tmp.checked ? ' ONHOLD ' : ' REMOVE ONHOLD ') + 'of this order?\n Continue?';
+		tmp.msg = 'About to change the status of this order?\n Continue?';
 		if(confirm(tmp.msg)) {
-			tmp.me.postAjax(tmp.me.getCallbackId('changeOrderStatus'), {'order': tmp.me._order, 'orderStatusId': tmp.checked ? 3 : 1}, {
-				'onLoading': function (sender, param) { $(checkbox).disabled = true; }
+			tmp.comments = '';
+			while(tmp.comments !== null && tmp.comments.blank()) {
+				tmp.comments = window.prompt("Please Type in the reason for changing:");
+			}
+			//user has cancelled the input
+			if(tmp.comments === null) {
+				$(selBox).replace(tmp.me._getOrderStatus());
+				return this;
+			}
+			
+			tmp.me.postAjax(tmp.me.getCallbackId('changeOrderStatus'), {'order': tmp.me._order, 'orderStatusId': $F(selBox), 'comments': tmp.comments}, {
+				'onLoading': function (sender, param) { $(selBox).disabled = true; }
 				,'onComplete': function (sender, param) {
 					try {
 						tmp.result = tmp.me.getResp(param, false, true);
@@ -172,14 +181,14 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 						location.reload();
 					} catch (e) {
 						alert(e);
-						$(checkbox).disabled = false;
-						$(checkbox).checked = !tmp.checked;
+						$(selBox).disabled = false;
+						$(selBox).replace(tmp.me._getOrderStatus());
 					}
 				}
 			});
 			return this;
 		}
-		$(checkbox).checked = !tmp.checked;
+		$(selBox).replace(tmp.me._getOrderStatus());
 		return this;
 	}
 	
@@ -359,10 +368,20 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 	
 	,_getOrderStatus: function () {
 		var tmp = {}
-		tmp.me = me;
+		tmp.me = this;
 		if(tmp.me._editMode.status !== true)
 			return tmp.me._order.status.name;
-		tmp.me._order
+		tmp.selBox = new Element('select')
+			.observe('change', function(){
+				tmp.me._changeOrderStatus(this);
+			});
+		tmp.me._orderStatuses.each(function(status) {
+			tmp.opt = new Element('option', {'value': status.id}).update(status.name);
+			if(status.id === tmp.me._order.status.id)
+				tmp.opt.writeAttribute('selected', true);
+			tmp.selBox.insert({'bottom':  tmp.opt});
+		})
+		return tmp.selBox;
 	}
 	
 	,load: function(resultdiv) {
@@ -376,7 +395,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			.insert({'bottom': new Element('legend').update('info') })
 			.insert({'bottom': new Element('span', {'class': 'orderNo inlineblock'}).update(tmp.me._getfieldDiv('Order No.', tmp.me._order.orderNo)) })
 			.insert({'bottom': new Element('span', {'class': 'orderDate inlineblock'}).update(tmp.me._getfieldDiv('Order Date:', tmp.me._order.orderDate)) })
-			.insert({'bottom': new Element('span', {'class': 'orderStatus inlineblock'}).update(tmp.me._getfieldDiv('Order Status:', tmp.me._order.status.name)) })
+			.insert({'bottom': new Element('span', {'class': 'orderStatus inlineblock'}).update(tmp.me._getfieldDiv('Order Status:', tmp.me._getOrderStatus() )) })
 		});
 		
 		//getting the address row
