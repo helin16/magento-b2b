@@ -61,6 +61,8 @@ class OrderController extends BPCPageAbstract
 				if(($value = trim($value)) === '')
 					continue;
 				
+				$value = $value.'%';
+				
 				$query = FactoryAbastract::service('Order')->getDao()->getQuery();
 				switch ($field)
 				{
@@ -68,19 +70,19 @@ class OrderController extends BPCPageAbstract
 					case 'ord.invNo': 
 					{
 						$where[] =  $field . " like ? ";
-						$params[] = trim($value) . '%';
+						$params[] = $value;
 						break;
 					}
 					case 'ord.status': 
 					{
 						$query->eagerLoad("Order.status", 'inner join', 'st', 'st.id = ord.statusId and st.name like ?');
-						$params[] = trim($value) . '%';
+						$params[] = $value;
 						break;
 					}
 					case 'ord.infos.' . OrderInfoType::ID_CUS_NAME:
 					{
 						$query->eagerLoad("Order.infos", 'inner join', 'x', 'x.orderId = ord.id and x.active = 1 and x.typeId = ' . OrderInfoType::ID_CUS_NAME . ' AND x.value like ?');
-						$params[] = trim($value) . '%';
+						$params[] = $value;
 						break;
 					} 
 				}
