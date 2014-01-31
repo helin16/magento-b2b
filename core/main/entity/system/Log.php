@@ -7,6 +7,7 @@
  */
 class Log extends BaseEntityAbstract
 {
+	const TYPE_SYSTEM = 'System';
 	/**
 	 * caching the transid
 	 * 

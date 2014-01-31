@@ -56,7 +56,8 @@ insert into `orderinfotype` (`id`, `name`, `active`, `created`, `createdById`, `
 	(6, 'Magento Payment Method', 1, NOW(), 10, NOW(), 10),
 	(7, 'Magento Total Order Amount', 1, NOW(), 10, NOW(), 10),
 	(8, 'Magento Total Paid Amount', 1, NOW(), 10, NOW(), 10),
-	(9, 'Magento SHIPPING METHOD', 1, NOW(), 10, NOW(), 10);
+	(9, 'Magento SHIPPING METHOD', 1, NOW(), 10, NOW(), 10),
+	(10, 'Preious Status Before Change', 1, NOW(), 10, NOW(), 10);
 	
 ############################ add courierinfotype table
 insert into `courierinfotype` (`id`, `name`, `active`, `created`, `createdById`, `updated`, `updatedById`) values

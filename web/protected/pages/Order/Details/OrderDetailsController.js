@@ -4,20 +4,24 @@
 var PageJs = new Class.create();
 PageJs.prototype = Object.extend(new BPCPageJs(), {
 	_order: null //the order object
+	,_orderStatuses: [] //the order statuses object
 	,_orderItems: [] //the order items on that order
 	,_resultDivId: '' //the result div id
-	,_editMode: {'purchasing': false, 'warehouse': false} //the edit mode for purchasing and warehouse
+	,_editMode: {'purchasing': false, 'warehouse': false, 'accounting': false, 'status': false} //the edit mode for purchasing and warehouse
 	,_commentsDiv: {'pagination': {'pageSize': 10, 'pageNo': 1}, 'resultDivId': '', 'type': ''} //the pagination for the comments
 	
-	,setEditMode: function(editPurchasing, editWH) {
+	,setEditMode: function(editPurchasing, editWH, editAcc, editStatus) {
 		this._editMode.purchasing = (editPurchasing || false);
 		this._editMode.warehouse = (editWH || false);
+		this._editMode.accounting = (editAcc || false);
+		this._editMode.status = (editStatus || false);
 		return this;
 	}
 		
-	,setOrder: function(order, orderItems) {
+	,setOrder: function(order, orderItems, orderStatuses) {
 		this._order = order;
 		this._orderItems = orderItems;
+		this._orderStatuses = orderStatuses;
 		return this;
 	}
 	
@@ -153,11 +157,37 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		return tmp.newDiv;
 	}
 	
+	,_changeOrderStatus: function(selBox) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.checked = checkbox.checked;
+		tmp.msg = 'About to ' + (tmp.checked ? ' ONHOLD ' : ' REMOVE ONHOLD ') + 'of this order?\n Continue?';
+		if(confirm(tmp.msg)) {
+			tmp.me.postAjax(tmp.me.getCallbackId('changeOrderStatus'), {'order': tmp.me._order, 'orderStatusId': tmp.checked ? 3 : 1}, {
+				'onLoading': function (sender, param) { $(checkbox).disabled = true; }
+				,'onComplete': function (sender, param) {
+					try {
+						tmp.result = tmp.me.getResp(param, false, true);
+						alert('Saved Successfully!');
+						location.reload();
+					} catch (e) {
+						alert(e);
+						$(checkbox).disabled = false;
+						$(checkbox).checked = !tmp.checked;
+					}
+				}
+			});
+			return this;
+		}
+		$(checkbox).checked = !tmp.checked;
+		return this;
+	}
+	
 	,_getFinanceBtns: function() {
 		var tmp = {};
 		tmp.me = this;
 		return new Element('div', {"class": 'wrapper'})
-			.insert({'bottom': tmp.me._getfieldDiv('Paid:',new Element('input')) });
+			.insert({'bottom': tmp.me._getfieldDiv('Paid:',new Element('input', {'type': 'text'})) });
 	}
 	
 	,_collectData: function(colname, attrName) {
@@ -282,7 +312,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					if(btn) 
 						$(btn).remove();
 					if(tmp.result.pagination.pageNumber < tmp.result.pagination.totalPages) {
-						$(tmp.me._commentsDiv.resultDivId).insert({'bottom': new Element('input', {'type': 'button', 'class': 'button', 'value': 'Get More'})
+						$(tmp.me._commentsDiv.resultDivId).insert({'bottom': new Element('input', {'type': 'button', 'class': 'button', 'value': 'Get More Comments'})
 							.observe('click', function(){
 								tmp.me._commentsDiv.pagination.pageNo = tmp.me._commentsDiv.pagination.pageNo * 1 + 1;
 								tmp.me._getComments(false, this);
@@ -304,8 +334,8 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 	,_addComments: function(btn, commentsResultDivId) {
 		var tmp = {};
 		tmp.me = this;
-		console.debug($(btn).up());
-		tmp.comments = $F($(btn).up('.new_comments_wrapper').down('[new_comments=comments]'));
+		tmp.commentsBox = $(btn).up('.new_comments_wrapper').down('[new_comments=comments]');
+		tmp.comments = $F(tmp.commentsBox);
 		if(tmp.comments.blank())
 			return this;
 		tmp.me.postAjax(tmp.me.getCallbackId('addComments'), {'comments': tmp.comments, 'order': tmp.me._order}, {
@@ -315,7 +345,8 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			,'onComplete': function (sender, param) {
 				try {
 					tmp.result = tmp.me.getResp(param, false, true);
-					$(commentsResultDivId).down('.header').insert({'after': tmp.me._getCommentsRow(tmp.result) })
+					$(commentsResultDivId).down('.header').insert({'after': tmp.me._getCommentsRow(tmp.result) });
+					tmp.commentsBox.setValue('');
 				} catch (e) {
 					console.error(e);
 				}
@@ -324,6 +355,14 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			}
 		})
 		return this;
+	}
+	
+	,_getOrderStatus: function () {
+		var tmp = {}
+		tmp.me = me;
+		if(tmp.me._editMode.status !== true)
+			return tmp.me._order.status.name;
+		tmp.me._order
 	}
 	
 	,load: function(resultdiv) {
@@ -390,7 +429,13 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			.insert({'bottom': new Element('div', {'id': 'comments_list', 'class': 'dataTable'}) })
 			.insert({'bottom': new Element('div', {'class': 'comments_input_row'})
 				.insert({'bottom': tmp.me._getfieldDiv('New Comments:', new Element('div', {'class': 'new_comments_wrapper'})
-					.insert({'bottom': new Element('input', {'type': 'text', 'new_comments': 'comments'}) })
+					.insert({'bottom': new Element('input', {'type': 'text', 'new_comments': 'comments', 'placeholder': 'add more comments to this order'})
+						.observe('keydown', function(event) {
+							tmp.me.keydown(event, function() {
+								$(event.currentTarget).up('.new_comments_wrapper').down('[new_comments=btn]').click();
+							});
+						})
+					})
 					.insert({'bottom': new Element('input', {'type': 'button', 'new_comments': 'btn', 'value': 'Add', 'class': 'button'})
 						.observe('click', function() {
 							tmp.me._addComments(this, 'comments_list');

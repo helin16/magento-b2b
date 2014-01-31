@@ -59,11 +59,16 @@ class OrderDetailsController extends BPCPageAbstract
 			$warehouseEdit = ($order->canEditBy(FactoryAbastract::service('Role')->get(Role::ID_WAREHOUSE))) ? 'true' : 'false';
 		}
 		
+		$orderStatuses = array();
+		foreach(OrderStatus::findAll() as $status)
+			$orderStatuses[] = $status->getJson();
+		
 		$js .= 'pageJs.setEditMode(' . $purchaseEdit . ', ' . $warehouseEdit . ');';
-		$js .= 'pageJs.setOrder('. json_encode($order->getJson()) . ', ' . json_encode($orderItems) . ');';
+		$js .= 'pageJs.setOrder('. json_encode($order->getJson()) . ', ' . json_encode($orderItems) . ', ' . json_encode($orderStatuses) . ');';
 		$js .= 'pageJs.setCallbackId("updateOrder", "' . $this->updateOrderBtn->getUniqueID() . '");';
 		$js .= 'pageJs.setCallbackId("getComments", "' . $this->getCommentsBtn->getUniqueID() . '");';
 		$js .= 'pageJs.setCallbackId("addComments", "' . $this->addCommentsBtn->getUniqueID() . '");';
+		$js .= 'pageJs.setCallbackId("changeOrderStatus", "' . $this->changeOrderStatusBtn->getUniqueID() . '");';
 		$js .= 'pageJs.load("detailswrapper");';
 		return $js;
 	}
@@ -187,6 +192,7 @@ class OrderDetailsController extends BPCPageAbstract
 		$results = $errors = array();
 		try
 		{
+			Dao::beginTransaction();
 			if(!isset($params->CallbackParameter->order) || !($order = Order::get($params->CallbackParameter->order->orderNo)) instanceof Order)
 				throw new Exception('System Error: invalid order passed in!');
 			$type = isset($params->CallbackParameter->type) ? trim($params->CallbackParameter->type) : '';
@@ -205,9 +211,11 @@ class OrderDetailsController extends BPCPageAbstract
 			
 			$results['items'] = $items;
 			$results['pagination'] = $pageStats;
+			Dao::commitTransaction();
 		}
 		catch(Exception $ex)
 		{
+			Dao::rollbackTransaction();
 			$errors[] = $ex->getMessage();
 		}
 		$params->ResponseData = StringUtilsAbstract::getJson($results, $errors);
@@ -222,15 +230,49 @@ class OrderDetailsController extends BPCPageAbstract
 		$results = $errors = array();
 		try
 		{
+			Dao::beginTransaction();
 			if(!isset($params->CallbackParameter->order) || !($order = Order::get($params->CallbackParameter->order->orderNo)) instanceof Order)
 				throw new Exception('System Error: invalid order passed in!');
 			if(!isset($params->CallbackParameter->comments) || ($comments = trim($params->CallbackParameter->comments)) === '')
 				throw new Exception('System Error: invalid comments passed in!');
 			$comment = Comments::addComments($order, $comments, Comments::TYPE_NORMAL);
 			$results = $this->_formatComments($comment);
+			Dao::commitTransaction();
 		}
 		catch(Exception $ex)
 		{
+			Dao::rollbackTransaction();
+			$errors[] = $ex->getMessage();
+		}
+		$params->ResponseData = StringUtilsAbstract::getJson($results, $errors);
+	}
+	/**
+	 * 
+	 * @param unknown $sender
+	 * @param unknown $params
+	 */
+	public function changeOrderStatus($sender, $params)
+	{
+		$results = $errors = array();
+		try
+		{
+			Dao::beginTransaction();
+			if(!isset($params->CallbackParameter->order) || !($order = Order::get($params->CallbackParameter->order->orderNo)) instanceof Order)
+				throw new Exception('System Error: invalid order passed in!');
+			if(!isset($params->CallbackParameter->statusId) || !($orderStatus = OrderStatus::get($params->CallbackParameter->statusId)) instanceof OrderStatus)
+				throw new Exception('System Error: invalid orderStatus passed in!');
+			if(!isset($params->CallbackParameter->comments) || ($comments = trim($params->CallbackParameter->comments)) === '')
+				throw new Exception('System Error: comments not provided!');
+			
+			$oldStatus = $order->getStatus();
+			$order->setStatus($orderStatus);
+			$order->addComment('change Status from [' . $oldStatus. '] to [' . $order->getStatus() . ']: ' . $comments, Comments::TYPE_NORMAL);
+			FactoryAbastract::service('Order')->save($order);
+			Dao::commitTransaction();
+		}
+		catch(Exception $ex)
+		{
+			Dao::rollbackTransaction();
 			$errors[] = $ex->getMessage();
 		}
 		$params->ResponseData = StringUtilsAbstract::getJson($results, $errors);
