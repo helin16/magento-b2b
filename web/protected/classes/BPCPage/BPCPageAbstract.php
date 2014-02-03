@@ -82,7 +82,7 @@ abstract class BPCPageAbstract extends TPage
 	 */
 	public function onLoad($param)
 	{
-	    if(!$this->IsPostBack || !$this->IsCallback)
+	    if(!$this->IsPostBack && !$this->IsCallback)
 	    {
 	        $this->getClientScript()->registerEndScript('pageJs', $this->_getEndJs());
 	    }

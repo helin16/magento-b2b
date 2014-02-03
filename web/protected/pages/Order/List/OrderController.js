@@ -64,7 +64,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 						tmp.resultDiv.insert({'bottom': tmp.me._getNextPageBtn().addClassName('paginWrapper') });
 					
 				} catch (e) {
-					alert(e);
+					console.error(e);
 				}
 			}
 		});
@@ -95,6 +95,19 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		var tmp = {};
 		tmp.me = this;
 		tmp.isTitle = (isTitle || false);
+		tmp.quantity = 'n/a';
+		tmp.custName = 'n/a';
+		tmp.custEmail = 'n/a';
+		if(row.infos && row.infos !== null)
+		{
+			if(tmp.me._infoTypes['qty'] in row.infos && row.infos[tmp.me._infoTypes['qty']].length > 0)
+				tmp.quantity = row.infos[tmp.me._infoTypes['qty']][0].value;
+			if(tmp.me._infoTypes['custName'] in row.infos && row.infos[tmp.me._infoTypes['custName']].length > 0)
+				tmp.custName = row.infos[tmp.me._infoTypes['custName']][0].value;
+			if(tmp.me._infoTypes['custEmail'] in row.infos && row.infos[tmp.me._infoTypes['custEmail']].length > 0)
+				tmp.custEmail = row.infos[tmp.me._infoTypes['custEmail']][0].value;
+		}
+		
 		return new Element('div', {'class': 'row'}).store('data', row)
 			.insert({'bottom': new Element('span', {'class': 'cell orderNo'}).update(
 				tmp.isTitle ? row.orderNo : new Element('div').update(
@@ -113,10 +126,10 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					 		});
 						})
 					)
-					.insert({'bottom': new Element('div', {'class': 'qty'}).update('Qty: ' + row.infos[tmp.me._infoTypes['qty']][0].value) })
+					.insert({'bottom': new Element('div', {'class': 'qty'}).update('Qty: ' + tmp.quantity) })
 			) })
 			.insert({'bottom': new Element('span', {'class': 'cell orderDate'}).update(row.orderDate) })
-			.insert({'bottom': new Element('span', {'class': 'cell custName'}).update(tmp.isTitle ? row.custName : new Element('div').update(row.infos[tmp.me._infoTypes['custName']][0].value).insert({'bottom': new Element('div', {'class': 'custEmail'}).update(row.infos[tmp.me._infoTypes['custEmail']][0].value) }) ) })
+			.insert({'bottom': new Element('span', {'class': 'cell custName'}).update(tmp.isTitle ? row.custName : new Element('div').update(tmp.custName).insert({'bottom': new Element('div', {'class': 'custEmail'}).update(tmp.custEmail) }) ) })
 			.insert({'bottom': new Element('span', {'class': 'cell shippingAddr'}).update(tmp.isTitle ? row.shippingAddr : tmp.me._getAddrDiv(row.address.shipping)) })
 			.insert({'bottom': new Element('span', {'class': 'cell status'}).update(row.status ? row.status.name : '') })
 			.insert({'bottom': new Element('span', {'class': 'cell payment'}).update(tmp.isTitle ? row.totalDue : tmp.me.getCurrency(row.totalDue)) })
