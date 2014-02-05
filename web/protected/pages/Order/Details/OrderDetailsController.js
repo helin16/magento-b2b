@@ -528,6 +528,15 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		return tmp.selBox;
 	}
 	
+	,_getShippingRow: function() {
+		var tmp = {};
+		tmp.me = this;
+		return  new Element('div', {'class': 'shippingWrapper'})
+			.insert({'bottom': new Element('div', {'class': 'row'})
+				.insert({'bottom': tmp.me._getfieldDiv('Courier:', '')
+			});
+	}
+	
 	,load: function(resultdiv) {
 		var tmp = {};
 		tmp.me = this;
@@ -594,6 +603,11 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			.insert({'bottom': new Element('span', {'class': 'financeBtns inlineblock'}).update( tmp.me._getFinanceBtns()			) })
 			.insert({'bottom': new Element('span', {'class': 'purchasingBtns inlineblock'}).update( tmp.me._getPurchasingBtns() 	) })
 			.insert({'bottom': new Element('span', {'class': 'warehouseBtns inlineblock'}).update( tmp.me._getWHBtns()				) })
+		});
+		
+		//getting the shippment row
+		tmp.newDiv.insert({'bottom': new Element('fieldset', {'class': 'shipping'})
+			.insert({'bottom': tmp.me._getShippingRow() ) })
 		});
 		
 		//getting the comments row
