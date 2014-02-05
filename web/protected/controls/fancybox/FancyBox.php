@@ -33,7 +33,7 @@ class FancyBox extends TClientScript
 			$clientScript->registerScriptFile('jquery.fancybox.media', $this->publishAsset('lib/source/helpers/jquery.fancybox-media.js'));
 			
 			$clientScript->registerBeginScript('jquery.noConflict', 'jQuery.noConflict();');
-			$this->_publishSource($clientScript);
+			$this->_publishSource();
 		}
 	}
 	private function _publishSource()

@@ -9,6 +9,23 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 	,_pagination: {'pageNo': 1, 'pageSize': 30} //the pagination details
 	,_searchCriteria: {} //the searching criteria
 	,_infoTypes:{} //the infotype ids
+	,orderStatuses: [] //the order statuses object
+	
+	,_loadStatuses: function() {
+		var tmp = {};
+		tmp.me = this;
+		tmp.statusBox = $(tmp.me.searchDivId).down('#orderStatusId');
+		tmp.me.orderStatuses.each(function(status) {
+			tmp.statusBox.insert({'bottom': new Element('option', {'value': status.id}).update(status.name) });
+		});
+		
+		tmp.statusBox.store('chosen', new Chosen(tmp.statusBox, {
+		    disable_search_threshold: 10,
+		    no_results_text: "Oops, nothing found!",
+		    width: "95%"
+		}) );
+		return this;
+	}
 	
 	,getSearchCriteria: function() {
 		var tmp = {};
@@ -18,7 +35,10 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.nothingTosearch = true;
 		$(tmp.me.searchDivId).getElementsBySelector('[search_field]').each(function(item) {
 			tmp.me._searchCriteria[item.readAttribute('search_field')] = $F(item);
-			if(!$F(item).blank())
+//			console.debug(($F(item) instanceof String));
+//			console.debug((!$F(item).blank()));
+//			console.debug(($F(item) instanceof String && !$F(item).blank()));
+			if(($F(item) instanceof Array && $F(item).size() > 0) || (typeof $F(item) === 'string' && !$F(item).blank()))
 				tmp.nothingTosearch = false;
 		});
 		if(tmp.nothingTosearch === true)

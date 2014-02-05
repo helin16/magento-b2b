@@ -358,7 +358,9 @@ class OrderDetailsController extends BPCPageAbstract
 				
 				if(!isset($oi->warehouse->isPicked) || (($isPicked = trim($oi->warehouse->isPicked)) === 'N' && (!isset($oi->warehouse->comments) || ($pickedComment = trim($oi->warehouse->comments)) === '')))
 					throw new Exception('System Error: isPicked information not passed in OR isPicked is false but no comments have been provided');
-					
+
+				var_dump($orderItem->getId());
+				
 				$orderItem->setIsPicked(($isPicked === 'Y' ? true : false));
 				FactoryAbastract::service('OrderItem')->save($orderItem);
 				$results[$counter]['orderItem'] = $orderItem;

@@ -28,12 +28,19 @@ class OrderController extends BPCPageAbstract
 	 */
 	protected function _getEndJs()
 	{
+		$orderStatusArray = array();
+		
+		foreach((OrderStatus::findAll()) as $os)
+			$orderStatusArray[] = $os->getJson();
+		
 		$js = parent::_getEndJs();
 		$js .= 'pageJs.resultDivId = "resultDiv";';
 		$js .= 'pageJs.searchDivId = "searchDiv";';
+		$js .= 'pageJs.orderStatuses = '.json_encode($orderStatusArray).';';
 		$js .= 'pageJs.totalNoOfItemsId = "total_no_of_items";';
 		$js .= 'pageJs._infoTypes = {"custName": ' . OrderInfoType::ID_CUS_NAME. ', "custEmail" : ' . OrderInfoType::ID_CUS_EMAIL . ', "qty": ' . OrderInfoType::ID_QTY_ORDERED . '};';
 		$js .= 'pageJs.setCallbackId("getOrders", "' . $this->getOrdersBtn->getUniqueID(). '");';
+		$js .= 'pageJs._loadStatuses();';
 		return $js;
 	}
 	
@@ -58,10 +65,8 @@ class OrderController extends BPCPageAbstract
 			$params = array();
 			foreach($serachCriteria as $field => $value)
 			{
-				if(($value = trim($value)) === '')
+				if((is_array($value) && count($value) === 0) || (is_string($value) && ($value = trim($value)) === ''))
 					continue;
-				
-				$value = $value.'%';
 				
 				$query = FactoryAbastract::service('Order')->getDao()->getQuery();
 				switch ($field)
@@ -70,19 +75,21 @@ class OrderController extends BPCPageAbstract
 					case 'ord.invNo': 
 					{
 						$where[] =  $field . " like ? ";
-						$params[] = $value;
+						$params[] = $value.'%';
 						break;
 					}
 					case 'ord.status': 
 					{
-						$query->eagerLoad("Order.status", 'inner join', 'st', 'st.id = ord.statusId and st.name like ?');
-						$params[] = $value;
+						$query->eagerLoad("Order.status", 'inner join', 'st', 'st.id = ord.statusId');
+						$where[] = 'st.id IN ('.implode(", ", array_fill(0, count($value), "?")).')';
+						$params = array_merge($params, $value);
 						break;
 					}
 					case 'ord.infos.' . OrderInfoType::ID_CUS_NAME:
 					{
-						$query->eagerLoad("Order.infos", 'inner join', 'x', 'x.orderId = ord.id and x.active = 1 and x.typeId = ' . OrderInfoType::ID_CUS_NAME . ' AND x.value like ?');
-						$params[] = $value;
+						$query->eagerLoad("Order.infos", 'inner join', 'x', 'x.orderId = ord.id and x.active = 1 and x.typeId = ' . OrderInfoType::ID_CUS_NAME);
+						$where[] = 'x.value like ?';
+						$params[] = $value.'%';
 						break;
 					} 
 				}
