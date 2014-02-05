@@ -149,7 +149,7 @@ class OrderDetailsController extends BPCPageAbstract
 					$order->setStatus(OrderStatus::get(OrderStatus::ID_ETA));
 				else
 					$order->setStatus(OrderStatus::get(OrderStatus::ID_STOCK_CHECKED_BY_PURCHASING));
-				$order->addComment('Changed from [ ' . $status . '] to [' . $order->getStatus() . ']', Comments::TYPE_NORMAL);
+				$order->addComment('Changed from [' . $status . '] to [' . $order->getStatus() . ']', Comments::TYPE_SYSTEM);
 			}
 			if($for === 'warehouse')
 			{
@@ -157,7 +157,7 @@ class OrderDetailsController extends BPCPageAbstract
 					$order->setStatus(OrderStatus::get(OrderStatus::ID_PICKED));
 				else
 					$order->setStatus(OrderStatus::get(OrderStatus::ID_INSUFFICIENT_STOCK));
-				$order->addComment('Changed from [ ' . $status . '] to [' . $order->getStatus() . ']', Comments::TYPE_NORMAL);
+				$order->addComment('Changed from [' . $status . '] to [' . $order->getStatus() . ']', Comments::TYPE_SYSTEM);
 			}
 			
 			FactoryAbastract::service('Order')->save($order);
@@ -317,7 +317,7 @@ class OrderDetailsController extends BPCPageAbstract
 				$commentString = "Amount is fully paid.".$commentString;
 			
 			$commentString = '['.$commentString.']'.($extraComment !== '' ? ' : '.$extraComment : '');
-			$comment = Comments::addComments($order, $commentString, Comments::TYPE_NORMAL);
+			$comment = Comments::addComments($order, $commentString, Comments::TYPE_ACCOUNTING);
 			$results = $this->_formatComments($comment);
 			Dao::commitTransaction();
 		}

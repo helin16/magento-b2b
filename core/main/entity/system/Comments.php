@@ -8,8 +8,10 @@
 class Comments extends BaseEntityAbstract
 {
 	const TYPE_NORMAL = 'NORMAL';
+	const TYPE_SYSTEM = 'SYSTEM';
 	const TYPE_PURCHASING = 'PURCHASING';
 	const TYPE_WAREHOUSE = 'WAREHOUSE';
+	const TYPE_ACCOUNTING = 'ACCOUNTING';
 	const TYPE_CUSTOMER = 'CUSTOMER';
 	/**
 	 * The id of the entity
