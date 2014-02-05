@@ -9,6 +9,8 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 	,_resultDivId: '' //the result div id
 	,_editMode: {'purchasing': false, 'warehouse': false, 'accounting': false, 'status': false} //the edit mode for purchasing and warehouse
 	,_commentsDiv: {'pagination': {'pageSize': 10, 'pageNo': 1}, 'resultDivId': '', 'type': ''} //the pagination for the comments
+	,infoType_custName : 1
+	,infoType_custEmail : 2
 	
 	,setEditMode: function(editPurchasing, editWH, editAcc, editStatus) {
 		this._editMode.purchasing = (editPurchasing || false);
@@ -192,12 +194,118 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		return this;
 	}
 	
+	,_submitPaymentConfirmation: function(button) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.paidAmount = $F($(button).up('.wrapper').down('#paidAmount'));
+		tmp.confDiv = $(button).up('#extraConfDiv');
+		tmp.extraComment = '';
+		
+		$(button).up('.wrapper').getElementsBySelector('.msgDiv').each(function(div) {
+			div.remove();
+		});
+		
+		if(tmp.paidAmount === null || tmp.paidAmount.blank() || isNaN(tmp.paidAmount))
+		{
+			alert('Paid Amount is NOT valid');
+			return this;
+		}
+		
+		tmp.amtDiff = Math.abs(tmp.confDiv.down('#paidAmtDiff').value);
+		tmp.hasErr = false;
+		if(tmp.amtDiff !== 0) {
+			tmp.confDiv.getElementsBySelector('.extraConf').each(function(item){
+				if(item.readAttribute('type') === 'text') {
+					tmp.extraComment = $F(item).strip();
+					if(tmp.extraComment.blank() || tmp.extraComment === null) {
+						item.insert({'before': new Element('div', {'class': 'msgDiv errorMsgDiv'}).update(new Element('div', {'class': 'msg'}).update('Additional Comment is Mandatory!') ) });
+						tmp.hasErr = true;
+					}
+				}
+				if(item.readAttribute('type') === 'checkbox') {
+					if(!item.checked || item.checked === false || item.checked === null) {
+						item.insert({'before': new Element('div', {'class': 'msgDiv errorMsgDiv'}).update(new Element('div', {'class': 'msg'}).update('Pls Select The Payment Check Box') ) });
+						tmp.hasErr = true;
+					}
+				}
+			});
+		}
+		
+		if(tmp.hasErr === true)
+			return this;
+		
+		tmp.me.postAjax(tmp.me.getCallbackId('confirmPayment'), {'paidAmt': tmp.paidAmount, 'amtDiff': tmp.amtDiff, 'extraComment': tmp.extraComment, 'order': tmp.me._order}, {
+			'onLoading': function (sender, param) { /*$(selBox).disabled = true;*/ }
+			,'onComplete': function (sender, param) {
+				try {
+					tmp.result = tmp.me.getResp(param, false, true);
+					alert('Saved Successfully!');
+					location.reload();
+				} 
+				catch (e) {
+					alert(e);
+					return;
+				}
+			}
+		});
+	}
+	
+	,_checkPaidAmount: function(txtBox) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.paidAmount = $F(txtBox).strip();
+		tmp.paidAmount = tmp.paidAmount.replace(new RegExp('(\\$|\\s|,)', 'g'), '');
+		$(txtBox).value = tmp.paidAmount;
+		
+		$(txtBox).up('.wrapper').getElementsBySelector('.msgDiv').each(function(div) {
+			div.remove();
+		});
+		
+		tmp.extraInfoDiv = $(txtBox).up('.wrapper').down('#extraConfDiv');
+		if(tmp.extraInfoDiv.getElementsBySelector('.fieldDiv').length > 0)
+		{
+			tmp.extraInfoDiv.getElementsBySelector('.fieldDiv').each(function(ec) {
+				ec.remove();
+			});
+		}
+		
+		if(tmp.paidAmount === null || tmp.paidAmount.blank() || isNaN(tmp.paidAmount))
+		{
+			$(txtBox).insert({'before': new Element('div', {'class': 'msgDiv errorMsgDiv'}).update(new Element('div', {'class': 'msg'}).update('Paid Amount is NOT valid') ) });
+			return;
+		}
+		
+		tmp.diff = Math.abs(Math.abs(parseFloat(tmp.paidAmount).toFixed(2)) - Math.abs(parseFloat(tmp.me._order.totalAmount).toFixed(2)));
+		tmp.extraInfoDiv.down('#paidAmtDiff').value = tmp.diff;
+		if(tmp.diff !== 0)
+		{
+			tmp.extraInfoDiv.insert({'bottom': tmp.me._getfieldDiv('Additional Comment', new Element('input', {'type': 'text', 'class': 'extraConf', 'id': 'extraComment'})) })
+						    .insert({'bottom': tmp.me._getfieldDiv('Payment Check',new Element('input', {'type': 'checkbox', 'class': 'extraConf', 'id': 'extraPaymentCheck'})) });
+		}
+		tmp.extraInfoDiv.insert({'bottom': tmp.me._getfieldDiv('', new Element('span', {'class': 'button'}).update('Confirm Payment') 
+									.observe('click', function(){
+										tmp.me._submitPaymentConfirmation(this);
+									})) 
+								});
+	}
+	
 	,_getFinanceBtns: function() {
 		var tmp = {};
 		tmp.me = this;
+		if(tmp.me._editMode.accounting !== true) {
+			return '';
+		}
 		return new Element('div', {"class": 'wrapper'})
-			.insert({'bottom': tmp.me._getfieldDiv('Paid:',new Element('input', {'type': 'text'})) });
-	}
+			.insert({'bottom': tmp.me._getfieldDiv('Paid:',new Element('input', {'type': 'text', 'id': 'paidAmount'})
+				.observe('change', function(){
+					tmp.me._checkPaidAmount(this);
+				})
+			) })
+			.insert({'bottom': new Element('div', {'id': 'extraConfDiv'}) 
+				.insert({'bottom': new Element('input', {'type': 'hidden', 'id': 'paidAmtDiff'}) })
+			
+			});
+	}		
 	
 	,_collectData: function(colname, attrName) {
 		var tmp = {};
@@ -274,14 +382,50 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.me = this;
 		if(tmp.me._editMode.warehouse === false)
 			return '';
+		
+		tmp.hasError = false;
+		
 		return new Element('div')
 			.insert({'bottom': new Element('span', {'class': 'button'}).update('submit')
 				.observe('click', function() {
+					
 					tmp.data = tmp.me._collectData('warehouse', 'pick_order_item');
 					if(tmp.data === null) {
 						alert('Error Occurred, pls scroll up to see details!');
+						tmp.hasError = true;
 						return;
 					}
+					else {
+						tmp.finalOrderItemArray = [];
+						tmp.data.each(function(item) {
+							if(item.warehouse.isPicked === 'N' && (!item.warehouse.comments || item.warehouse.comments === null || item.warehouse.comments.strip() === '')) {
+								alert('Error Occurred, pls scroll up to see details!');
+								tmp.hasError = true;
+								return;
+							}
+							tmp.finalOrderItemArray.push(item);
+						});
+						
+						if(tmp.hasError === true)
+							return;
+						
+						console.debug(tmp.finalOrderItemArray);
+						
+						tmp.me.postAjax(tmp.me.getCallbackId('updateOIForWH'), {'orderItems': tmp.finalOrderItemArray, 'order': tmp.me._order}, {
+							'onLoading': function (sender, param) { /*$(selBox).disabled = true;*/ }
+							,'onComplete': function (sender, param) {
+								try {
+									tmp.result = tmp.me.getResp(param, false, true);
+									alert('Saved Successfully!');
+									location.reload();
+								} 
+								catch (e) {
+									alert(e);
+									return;
+								}
+							}
+						});							
+					}		
 				})
 			});
 	}
@@ -390,6 +534,16 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.me._resultDivId = resultdiv;
 		tmp.newDiv = new Element('div');
 		
+		/// if an order does not have any info for customer name or email set the value to be N/A ///
+		tmp.custName = tmp.custEmail = 'n/a';
+		if(tmp.me._order.infos && tmp.me._order.infos !== null)
+		{
+			if(tmp.me._order.infos[tmp.me.infoType_custName] && tmp.me._order.infos[tmp.me.infoType_custName].length > 0)
+				tmp.custName = tmp.me._order.infos[tmp.me.infoType_custName][0].value;
+			if(tmp.me._order.infos[tmp.me.infoType_custEmail] && tmp.me._order.infos[tmp.me.infoType_custEmail].length > 0)
+				tmp.custEmail = tmp.me._order.infos[tmp.me.infoType_custEmail][0].value;
+		}
+		
 		//getting the order info row
 		tmp.newDiv.insert({'bottom': new Element('fieldset', {'class': 'row orderInfo'})
 			.insert({'bottom': new Element('legend').update('info') })
@@ -403,8 +557,8 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			.insert({'bottom': new Element('legend').update('Customer') })
 			.insert({'bottom': new Element('div', {'class': 'customer'})
 				.insert({'bottom': new Element('div').update('Customer: ') })
-				.insert({'bottom': new Element('span', {'class': 'custName inlineblock'}).update(tmp.me._getfieldDiv('', tmp.me._order.infos[1][0].value)) })
-				.insert({'bottom': new Element('span', {'class': 'custEmail inlineblock'}).update(tmp.me._getfieldDiv('', tmp.me._order.infos[2][0].value)) })
+				.insert({'bottom': new Element('span', {'class': 'custName inlineblock'}).update(tmp.me._getfieldDiv('', tmp.custName)) })
+				.insert({'bottom': new Element('span', {'class': 'custEmail inlineblock'}).update(tmp.me._getfieldDiv('', tmp.custEmail)) })
 			})
 			.insert({'bottom': new Element('div')
 				.insert({'bottom': tmp.me._getAddressDiv("Shipping Address: ", tmp.me._order.address.shipping).addClassName('inlineblock') })

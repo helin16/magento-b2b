@@ -412,6 +412,10 @@ class Order extends InfoEntityAbstract
 			{
 				return true;
 			}
+			case Role::ID_ACCOUNTING:	
+			{
+				return !in_array($this->getStatus()->getId(), array(OrderStatus::ID_CANCELLED)) && !$this->getPassPaymentCheck();
+			}
 			case Role::ID_PURCHASING:
 			{
 				return in_array($this->getStatus()->getId(), array(OrderStatus::ID_NEW, OrderStatus::ID_INSUFFICIENT_STOCK));

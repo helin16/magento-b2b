@@ -33,7 +33,7 @@ class OrderDetailsController extends BPCPageAbstract
 	public function onLoad($param)
 	{
 		parent::onLoad($param);
-		if(!$this->isPostBack)
+		if(!$this->isPostBack && !$this->isCallBack)
 		{
 		}
 	}
@@ -44,9 +44,9 @@ class OrderDetailsController extends BPCPageAbstract
 	 */
 	protected function _getEndJs()
 	{
-		$order = FactoryAbastract::service('Order')->get($this->Request['orderId']);
-		if(!$order instanceof Order)
+		if(!($order = FactoryAbastract::service('Order')->get($this->Request['orderId'])) instanceof Order)
 			die('Invalid Order!');
+		
 		$js = parent::_getEndJs();
 		
 		$orderItems = array();
@@ -70,7 +70,9 @@ class OrderDetailsController extends BPCPageAbstract
 		$js .= 'pageJs.setCallbackId("updateOrder", "' . $this->updateOrderBtn->getUniqueID() . '");';
 		$js .= 'pageJs.setCallbackId("getComments", "' . $this->getCommentsBtn->getUniqueID() . '");';
 		$js .= 'pageJs.setCallbackId("addComments", "' . $this->addCommentsBtn->getUniqueID() . '");';
+		$js .= 'pageJs.setCallbackId("confirmPayment", "' . $this->confirmPaymentBtn->getUniqueID() . '");';
 		$js .= 'pageJs.setCallbackId("changeOrderStatus", "' . $this->changeOrderStatusBtn->getUniqueID() . '");';
+		$js .= 'pageJs.setCallbackId("updateOIForWH", "' . $this->updateOIForWHBtn->getUniqueID() . '");';
 		$js .= 'pageJs.load("detailswrapper");';
 		return $js;
 	}
@@ -277,6 +279,118 @@ class OrderDetailsController extends BPCPageAbstract
 			Dao::rollbackTransaction();
 			$errors[] = $ex->getMessage();
 		}
+		$params->ResponseData = StringUtilsAbstract::getJson($results, $errors);
+	}
+	
+	/**
+	 * 
+	 * @param unknown $sender
+	 * @param unknown $params
+	 * @throws Exception
+	 */
+	public function confirmPayment($sender, $params)
+	{
+		$results = $errors = array();
+		$commentString = "";
+		
+		try 
+		{
+			Dao::beginTransaction();
+			if(!isset($params->CallbackParameter->order) || !($order = Order::get($params->CallbackParameter->order->orderNo)) instanceof Order)
+				throw new Exception('System Error: invalid order passed in!');
+			if(!isset($params->CallbackParameter->paidAmt) || ($paidAmount = trim($params->CallbackParameter->paidAmt)) === '' || !is_numeric($paidAmount))
+				throw new Exception('System Error: invalid Paid Amount passed in!');
+			if(!isset($params->CallbackParameter->amtDiff) || ($amountDiff = trim($params->CallbackParameter->amtDiff)) === '' || !is_numeric($amountDiff))
+				throw new Exception('System Error: Invalid Amount Difference passed in!');
+			if(!isset($params->CallbackParameter->extraComment))
+				throw new Exception('System Error: Invalid Extra Comment passed in!');
+			if(($extraComment = trim($params->CallbackParameter->extraComment)) === '' && $amountDiff !== '0')
+				throw new Exception('Additional Comment is Mandatory as the Paid Amount is not mathcing with the Total Amount!');
+			
+			$order->setTotalPaid($paidAmount);
+			$order->setPassPaymentCheck(true);
+			FactoryAbastract::service('Order')->save($order);
+			
+			$commentString = "Total Amount Due was ".$order->getTotalAmount().". And total amount paid is ".$paidAmount.".";
+			
+			if(($amtDiff = $order->getTotalAmount() - $paidAmount) === 0)
+				$commentString = "Amount is fully paid.".$commentString;
+			
+			$commentString = '['.$commentString.']'.($extraComment !== '' ? ' : '.$extraComment : '');
+			$comment = Comments::addComments($order, $commentString, Comments::TYPE_NORMAL);
+			$results = $this->_formatComments($comment);
+			Dao::commitTransaction();
+		}
+		catch(Exception $ex)
+		{
+			Dao::rollbackTransaction();
+			$errors[] = $ex->getMessage();
+		}
+		
+		$params->ResponseData = StringUtilsAbstract::getJson($results, $errors);
+	}
+	
+	/**
+	 * 
+	 * @param unknown $sender
+	 * @param unknown $params
+	 * @throws Exception
+	 */
+	public function updateOrderItemForWarehouse($sender, $params)
+	{
+		$results = $errors = array();
+		$counter = 0;
+		$allItemsPicked = true;
+		
+		try 
+		{
+			Dao::beginTransaction();
+			
+			if(!isset($params->CallbackParameter->order) || !($order = Order::get($params->CallbackParameter->order->orderNo)) instanceof Order)
+				throw new Exception('System Error: invalid order passed in!');
+			if(!isset($params->CallbackParameter->orderItems) || !is_array($orderItemArray = $params->CallbackParameter->orderItems) || count($orderItemArray) === 0)
+				throw new Exception('System Error: invalid order items passed in!');
+			
+			foreach($orderItemArray as $oi)
+			{
+				if(!($orderItem = FactoryAbastract::service('OrderItem')->get($oi->orderItem->id)) instanceof OrderItem)
+					throw new Exception('System Error: invalid order item with id ['.$oi->orderItem->id.'] passed in!');
+				
+				if(!isset($oi->warehouse->isPicked) || (($isPicked = trim($oi->warehouse->isPicked)) === 'N' && (!isset($oi->warehouse->comments) || ($pickedComment = trim($oi->warehouse->comments)) === '')))
+					throw new Exception('System Error: isPicked information not passed in OR isPicked is false but no comments have been provided');
+					
+				$orderItem->setIsPicked(($isPicked === 'Y' ? true : false));
+				FactoryAbastract::service('OrderItem')->save($orderItem);
+				$results[$counter]['orderItem'] = $orderItem;
+				$results[$counter]['comment'] = array();
+
+				if($isPicked === 'N')
+				{
+					$comment = Comments::addComments($orderItem, $pickedComment, Comments::TYPE_WAREHOUSE);
+					$this->_formatComments($comment);
+					$results[$counter]['comment'] = $comment;
+					$allItemsPicked = false;
+				}
+				$counter++;
+			}
+			
+			$newStatus = null;
+			if($allItemsPicked === true)
+				$newStatus = FactoryAbastract::service('OrderStatus')->get(OrderStatus::ID_PICKED);
+			else
+				$newStatus = FactoryAbastract::service('OrderStatus')->get(OrderStatus::ID_INSUFFICIENT_STOCK);
+			
+			$order->setStatus($newStatus);
+			FactoryAbastract::service('Order')->save($order);
+			
+			Dao::commitTransaction();
+		}
+		catch(Exception $ex)
+		{
+			Dao::rollbackTransaction();
+			$errors[] = $ex->getMessage();
+		}
+		
 		$params->ResponseData = StringUtilsAbstract::getJson($results, $errors);
 	}
 }
