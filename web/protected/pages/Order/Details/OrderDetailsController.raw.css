@@ -1,0 +1,187 @@
+.pagewrapper.orderdetails {
+	background: white;
+	min-height: 400px;
+}
+
+.fieldDiv {
+	display: inline-block;
+	padding: 3px;
+}
+
+.fieldDiv .fieldDiv_title {
+	display: block;
+	font-size: 9px;
+	color: #cccccc;
+	text-transform: uppercase;
+}
+
+fieldset.row {
+	padding: 5px;
+	border-radius: 5px;
+	border: 1px #ccc solid;
+	margin: 0 0 5px 0;
+	min-width: 800px;
+}
+
+fieldset.row .inlineblock {
+	vertical-align: top;
+}
+
+fieldset.row legend {
+	float: right;
+	border: 1px #ccc solid;
+	padding: 5px;
+	font-size:9px;
+	background: #eee;
+	border-radius: 5px;
+}
+
+.orderInfo .orderNo {
+	width: 150px;
+	font-size: 18px;
+	font-weight: bold;
+	color: #28428B;
+}
+
+.orderInfo .orderDate,.orderInfo .orderStatus,.orderInfo .custName,.orderInfo .custEmail
+	{
+	width: 150px;
+}
+
+.addressRow .customer {
+	margin: 0 0 5px 0;
+}
+
+.addressRow .customer .fieldDiv .fieldDiv_content {
+	font-weight: bold;
+}
+
+.addressRow .addr {
+	display: inline-block;
+	width: 350px;
+}
+
+.addressRow .addr .addr_content {
+	padding: 2px 0 2px 20px;
+}
+
+.addressRow .addr .contactName {
+	font-weight: bold;
+}
+
+.addressRow .addr .region {
+	padding: 0 5px;
+	text-transform: uppercase;
+}
+
+.productlist {
+	width: 980px;
+}
+
+.productlist .sku {
+	width: 100px;
+}
+
+.productlist .productName {
+	width: 180px;
+}
+
+.productlist .uprice,.productlist .tprice {
+	width: 80px;
+	text-align: right;
+}
+
+.productlist .qty {
+	width: 40px;
+	text-align: center;
+}
+
+.productlist .purchasing,.productlist .warehouse {
+	width: 160px;
+	font-size: 10px;
+}
+
+.productlist .productRow .purchasing {
+	background: #99B898;
+}
+
+.productlist .operationDiv .fieldDiv {
+	display: block;
+}
+
+.productlist .operationDiv .fieldDiv .fieldDiv_title {
+	color: inherit;
+}
+
+.productlist .operationDiv .hasStock,.productlist .operationDiv .fieldDiv_content {
+	font-size: 10px;
+}
+
+.productlist .order_item_details .fieldDiv {
+	display: block;
+}
+.productlist .order_item_details .fieldDiv .fieldDiv_title {
+	display: inline-block;
+	padding: 0 5px 0 0;
+}
+/************************ summary *********************************/
+.summary .fieldDiv {
+	width: 120px;
+	vertical-align: top;
+}
+.summary .totalDue .fieldDiv_content{
+	font-weight: bold;
+}
+
+/************************ btns *********************************/
+.submitbtns {
+}
+
+.submitbtns .financeBtns,.submitbtns .purchasingBtns,.submitbtns .warehouseBtns {
+	width: 150px;
+	vertical-align: top;
+}
+.submitbtns .wrapper {
+	border: 1px #cccccc solid;
+	border-radius: 5px;
+	padding: 5px;
+	margin: 5px;
+}
+
+.submitbtns .financeBtns {
+	width: 600px;
+}
+
+/************************ comments *********************************/
+.commentsWrapper .cell {
+	font-size: 10px;
+}
+.commentsWrapper .type {
+	width: 80px
+}
+.commentsWrapper .creator,
+.commentsWrapper .created {
+	width: 100px
+}
+.commentsWrapper .row.header .cell.comments {
+	border-right: none;
+}
+
+.commentsWrapper .comments_input_row .fieldDiv {
+	display: block;
+}
+.commentsWrapper .comments_input_row .fieldDiv .fieldDiv_title,
+.commentsWrapper .comments_input_row .fieldDiv .fieldDiv_content {
+	display: inline-block;
+}
+.commentsWrapper .comments_input_row .fieldDiv .fieldDiv_title {
+	width: 9%;
+}
+.commentsWrapper .comments_input_row .fieldDiv .fieldDiv_content {
+	width: 80%;
+}
+
+.commentsWrapper .comments_input_row .fieldDiv .fieldDiv_content [new_comments="comments"] {
+	width: 70%;
+	margin: 0 5px;
+}
