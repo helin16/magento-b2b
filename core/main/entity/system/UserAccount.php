@@ -39,12 +39,6 @@ class UserAccount extends BaseEntityAbstract
      */
     protected $roles;
     /**
-     * The library the user is belonging to
-     * 
-     * @var Library
-     */
-    protected $library;
-    /**
      * getter UserName
      *
      * @return String
@@ -129,15 +123,6 @@ class UserAccount extends BaseEntityAbstract
     {
         $this->roles = $Roles;
         return $this;
-    }
-    /**
-     * Getter for the library
-     * 
-     * @return Library
-     */ 
-    public function getLibrary() 
-    {
-        return $this->library;
     }
     /**
      * (non-PHPdoc)

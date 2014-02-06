@@ -57,12 +57,6 @@ class Log extends BaseEntityAbstract
 	 */
 	private $funcName = '';
 	/**
-	 * The library this log is for
-	 * 
-	 * @var Library
-	 */
-	protected $library;
-	/**
 	 * Getter for entityId
 	 */
 	public function getEntityId() 
@@ -205,28 +199,6 @@ class Log extends BaseEntityAbstract
 	public function setFuncName($value) 
 	{
 	    $this->funcName = $value;
-	    return $this;
-	}
-	/**
-	 * Getter for Library
-	 * 
-	 * @return Library
-	 */
-	public function getLibrary() 
-	{
-		$this->loadManyToOne('library');
-	    return $this->library;
-	}
-	/**
-	 * Setter for library
-	 * 
-	 * @param Library $value The library
-	 * 
-	 * @return Log
-	 */
-	public function setLibrary(Library $value) 
-	{
-	    $this->library = $value;
 	    return $this;
 	}
 	/**
