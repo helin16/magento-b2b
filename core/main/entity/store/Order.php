@@ -405,26 +405,7 @@ class Order extends InfoEntityAbstract
 	 */
 	public function canEditBy(Role $role)
 	{
-		switch($role->getId())
-		{
-			case Role::ID_STORE_MANAGER:
-			case Role::ID_SYSTEM_ADMIN:
-			{
-				return true;
-			}
-			case Role::ID_ACCOUNTING:	
-			{
-				return !in_array($this->getStatus()->getId(), array(OrderStatus::ID_CANCELLED)) && !$this->getPassPaymentCheck();
-			}
-			case Role::ID_PURCHASING:
-			{
-				return in_array($this->getStatus()->getId(), array(OrderStatus::ID_NEW, OrderStatus::ID_INSUFFICIENT_STOCK));
-			}
-			case Role::ID_WAREHOUSE:
-			{
-				return in_array($this->getStatus()->getId(), array(OrderStatus::ID_ETA, OrderStatus::ID_STOCK_CHECKED_BY_PURCHASING)) && $this->getPassPaymentCheck();
-			}
-		}
+		return AccessControl::canEditOrder($this, $role);
 	}
 	/**
 	 * (non-PHPdoc)
