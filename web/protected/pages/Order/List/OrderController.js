@@ -11,6 +11,30 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 	,_infoTypes:{} //the infotype ids
 	,orderStatuses: [] //the order statuses object
 	
+	,_loadChosen: function () {
+		$$(".chosen").each(function(item) {
+			item.store('chosen', new Chosen(item, {
+				disable_search_threshold: 10,
+				no_results_text: "Oops, nothing found!",
+				width: "95%"
+			}) );
+		});
+		return this;
+	}
+	
+	,_bindSearchKey: function() {
+		var tmp = {}
+		tmp.me = this;
+		$('searchDiv').getElementsBySelector('[search_field]').each(function(item) {
+			item.observe('keydown', function(event) {
+				tmp.me.keydown(event, function() {
+					$('searchBtn').click();
+				});
+			})
+		});
+		return this;
+	}
+	
 	,_loadStatuses: function() {
 		var tmp = {};
 		tmp.me = this;
@@ -18,12 +42,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.me.orderStatuses.each(function(status) {
 			tmp.statusBox.insert({'bottom': new Element('option', {'value': status.id}).update(status.name) });
 		});
-		
-		tmp.statusBox.store('chosen', new Chosen(tmp.statusBox, {
-		    disable_search_threshold: 10,
-		    no_results_text: "Oops, nothing found!",
-		    width: "95%"
-		}) );
+		tmp.me._loadChosen()._bindSearchKey();
 		return this;
 	}
 	
@@ -49,6 +68,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 	,getResults: function(reset, pageSize) {
 		var tmp = {};
 		tmp.me = this;
+		tmp.searchBtn = $('searchBtn');
 		tmp.reset = (reset || false);
 		if(tmp.me._searchCriteria === null)
 		{
@@ -59,7 +79,9 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			tmp.me._pagination.pageNo = 1;
 		tmp.me._pagination.pageSize = (pageSize || tmp.me._pagination.pageSize);
 		tmp.me.postAjax(tmp.me.getCallbackId('getOrders'), {'pagination': tmp.me._pagination, 'searchCriteria': tmp.me._searchCriteria}, {
-			'onLoading': function () {}
+			'onLoading': function () {
+				tmp.searchBtn.store('originValue', $F(tmp.searchBtn)).addClassName('disabled').setValue('Searching ...').disabled = true;
+			}
 			,'onComplete': function(sender, param) {
 				try{
 					tmp.result = tmp.me.getResp(param, false, true);
@@ -68,7 +90,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					tmp.resultDiv = $(tmp.me.resultDivId);
 					//reset div
 					if(tmp.reset === true) {
-						tmp.titleRow = {'orderNo': "Order No.", 'orderDate': 'Order Date', 'custName': 'Customer Name', 'shippingAddr': 'Shipping Address', 'invNo': 'Invoice No.', 'status': {'name': 'Status'}, 'totalDue': 'Total Due'};
+						tmp.titleRow = {'orderNo': "Order No.", 'orderDate': 'Order Date', 'custName': 'Customer Name', 'shippingAddr': 'Shipping Address', 'invNo': 'Invoice No.', 'status': {'name': 'Status'}, 'totalDue': 'Total Due', 'passPaymentCheck': 'Payment Cleared?'};
 						tmp.resultDiv.update(tmp.me._getResultRow(tmp.titleRow, true).addClassName('header'));
 					}
 					//remove next page button
@@ -84,8 +106,9 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 						tmp.resultDiv.insert({'bottom': tmp.me._getNextPageBtn().addClassName('paginWrapper') });
 					
 				} catch (e) {
-					console.error(e);
+					alert(e);
 				}
+				tmp.searchBtn.removeClassName('disabled').setValue(tmp.searchBtn.retrieve('originValue')).disabled = false;
 			}
 		});
 	}
@@ -109,6 +132,12 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			.insert({'bottom': new Element('span', {'class': 'addr_contactNo'}).update(addr.contactNo).insert({'top': new Element('span', {'class': 'icon'}) }) })
 			.insert({'bottom': new Element('span', {'class': 'addr_addr'}).update(addr.full).insert({'top': new Element('span', {'class': 'icon'}) }) })
 		;
+	}
+	
+	,_getTitledDiv: function(title, content) {
+		return new Element('div', {'class': 'field_div'})
+			.insert({'bottom': new Element('span', {'class': 'inlineblock title'}).update(title) })
+			.insert({'bottom': new Element('span', {'class': 'inlineblock divcontent'}).update(content) });
 	}
 		
 	,_getResultRow: function(row, isTitle) {
@@ -152,7 +181,10 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			.insert({'bottom': new Element('span', {'class': 'cell custName'}).update(tmp.isTitle ? row.custName : new Element('div').update(tmp.custName).insert({'bottom': new Element('div', {'class': 'custEmail'}).update(tmp.custEmail) }) ) })
 			.insert({'bottom': new Element('span', {'class': 'cell shippingAddr'}).update(tmp.isTitle ? row.shippingAddr : tmp.me._getAddrDiv(row.address.shipping)) })
 			.insert({'bottom': new Element('span', {'class': 'cell status'}).update(row.status ? row.status.name : '') })
-			.insert({'bottom': new Element('span', {'class': 'cell payment'}).update(tmp.isTitle ? row.totalDue : tmp.me.getCurrency(row.totalDue)) })
-			.insert({'bottom': new Element('span', {'class': 'cell invNo'}).update(row.invNo) });		
+			.insert({'bottom': new Element('span', {'class': 'cell payment'}).update(tmp.isTitle ? 'Payments' :
+				new Element('div').insert({'bottom': tmp.me._getTitledDiv('Payment Checked?', row.passPaymentCheck ? new Element('span', {'class': 'passPaymentChecked inlineblock'}) : '') })
+					.insert({'bottom': tmp.me._getTitledDiv('Total Due: ', tmp.isTitle ? row.totalDue : tmp.me.getCurrency(row.totalDue)) })
+					.insert({'bottom': tmp.me._getTitledDiv('Inv. No.: ', row.invNo) })
+			) });		
 	}
 });

@@ -1,4 +1,4 @@
-.orderNo,.invNo {
+.orderNo {
 	width: 80px;
 }
 
@@ -27,8 +27,17 @@
 }
 
 .payment {
-	width: 60px;
+	width: 160px;
+}
+.payment .title {
+	width: 100px;
 	text-align: right;
+	padding: 2px 4px 2px 0;
+}
+.payment .passPaymentChecked  {
+	background: transparent url(/themes/default/images/i_ok.png) no-repeat left bottom;
+	height:16px;
+	width: 16px;
 }
 
 .qty {

@@ -533,7 +533,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.me = this;
 		return  new Element('div', {'class': 'shippingWrapper'})
 			.insert({'bottom': new Element('div', {'class': 'row'})
-				.insert({'bottom': tmp.me._getfieldDiv('Courier:', '')
+				.insert({'bottom': tmp.me._getfieldDiv('Courier:', '') })
 			});
 	}
 	
@@ -607,7 +607,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		
 		//getting the shippment row
 		tmp.newDiv.insert({'bottom': new Element('fieldset', {'class': 'shipping'})
-			.insert({'bottom': tmp.me._getShippingRow() ) })
+			.insert({'bottom': tmp.me._getShippingRow()  })
 		});
 		
 		//getting the comments row

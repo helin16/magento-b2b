@@ -74,7 +74,7 @@ class Product extends InfoEntityAbstract
 	{
 		if(!($product = self::get($sku)) instanceof Product)
 			$product = new Product();
-		$product->setSku($sku)
+		$product->setSku(trim($sku))
 			->setName($name);
 		FactoryAbastract::dao(get_called_class())->save($product);
 		return $product;
@@ -88,7 +88,7 @@ class Product extends InfoEntityAbstract
 	 */
 	public static function get($sku)
 	{
-		$products = FactoryAbastract::dao(get_called_class())->findByCriteria('sku = ? ', array($sku), false, 1, 1);
+		$products = FactoryAbastract::dao(get_called_class())->findByCriteria('sku = ? ', array(trim($sku)), false, 1, 1);
 		return (count($products) === 0 ? null : $products[0]);
 	}
 	/**
@@ -106,7 +106,7 @@ class Product extends InfoEntityAbstract
 	public function __loadDaoMap()
 	{
 		DaoMap::begin($this, 'pro');
-		DaoMap::setStringType('sku');
+		DaoMap::setStringType('sku', 'varchar', 100);
 		DaoMap::setStringType('name', 'varchar', 255);
 		parent::__loadDaoMap();
 		

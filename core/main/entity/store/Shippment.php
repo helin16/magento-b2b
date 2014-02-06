@@ -15,6 +15,12 @@ class Shippment extends BaseEntityAbstract
 	 */
 	protected $courier;
 	/**
+	 * The order this shippment is for
+	 * 
+	 * @var Order
+	 */
+	protected $order;
+	/**
 	 * The number of cartons on the shipping
 	 * 
 	 * @var int
@@ -82,6 +88,28 @@ class Shippment extends BaseEntityAbstract
 	public function setCourier($value) 
 	{
 	    $this->courier = $value;
+	    return $this;
+	}
+	/**
+	 * Getter for order
+	 *
+	 * @return 
+	 */
+	public function getOrder() 
+	{
+		$this->loadManyToOne('order');
+	    return $this->order;
+	}
+	/**
+	 * Setter for order
+	 *
+	 * @param Order $value The order
+	 *
+	 * @return Shippment
+	 */
+	public function setOrder(Order $value) 
+	{
+	    $this->order = $value;
 	    return $this;
 	}
 	/**
@@ -260,6 +288,8 @@ class Shippment extends BaseEntityAbstract
 	{
 		DaoMap::begin($this, 'shippment');
 		
+		DaoMap::setManyToOne('order', 'Order', 'sh_order');
+		DaoMap::setManyToOne('courier', 'Courier', 'sh_courier');
 		DaoMap::setIntType('noOfCartons');
 		DaoMap::setStringType('receiver');
 		DaoMap::setStringType('address');
@@ -269,7 +299,6 @@ class Shippment extends BaseEntityAbstract
 		DaoMap::setIntType('estShippingCost', 'Double', '10,4');
 		DaoMap::setStringType('deliveryInstructions', 'varchar', 255);
 		
-		DaoMap::setManyToOne('courier', 'Courier', 'sh_courier');
 		
 		parent::__loadDaoMap();
 		DaoMap::commit();

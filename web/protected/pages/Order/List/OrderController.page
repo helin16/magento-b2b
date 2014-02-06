@@ -21,10 +21,18 @@
 					</fieldset>
 					<fieldset class="searchField  inlineblock">
 						<label for="status">Status: </label>
-						<select search_field="ord.status" id="orderStatusId" multiple>
+						<select search_field="ord.status" id="orderStatusId" multiple  class="chosen">
 						</select>
 					</fieldset>
-					<input type="button" value="search" class="button" onclick="pageJs.getSearchCriteria().getResults(true, <%= DaoQuery::DEFAUTL_PAGE_SIZE %>);"/>
+					<fieldset class="searchField  inlineblock">
+						<label for="status">Paid: </label>
+						<select search_field="ord.passPaymentCheck" class="chosen">
+							<option value=""> </option>
+							<option value="1">YES</option>
+							<option value="0">NO</option>
+						</select>
+					</fieldset>
+					<input id="searchBtn" type="button" value="search" class="button" onclick="pageJs.getSearchCriteria().getResults(true, <%= DaoQuery::DEFAUTL_PAGE_SIZE %>);"/>
 	 			</div>
 			</div>
 		</div>

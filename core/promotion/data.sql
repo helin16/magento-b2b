@@ -76,7 +76,7 @@ insert into `courierinfo` (`courierId`, `typeId`, `value`, `active`, `created`, 
 
 ############################ add systemsettings table
 insert into `systemsettings`(`type`, `value`, `description`, `active`, `created`, `createdById`, `updated`, `updatedById`) values
-	('b2b_soap_wsdl', 'http://ccbooks.com.au/index.php/api/v2_soap?wsdl=1', 'Where the magento wsdl v2 is?',  1, NOW(), 10, NOW(), 10),
+	('b2b_soap_wsdl', 'http://hobbymaster.com.au/index.php/api/v2_soap?wsdl=1', 'Where the magento wsdl v2 is?',  1, NOW(), 10, NOW(), 10),
 	('b2b_soap_user', 'B2BUser', 'The user for the magento B2B',  1, NOW(), 10, NOW(), 10),
 	('b2b_soap_key', 'B2BUser', 'The user for the magento API key',  1, NOW(), 10, NOW(), 10),
 	('b2b_soap_timezone', 'Australia/Melbourne', 'The timezone the magento is operating on',  1, NOW(), 10, NOW(), 10),

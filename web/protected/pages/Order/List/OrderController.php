@@ -78,6 +78,12 @@ class OrderController extends BPCPageAbstract
 						$params[] = $value.'%';
 						break;
 					}
+					case 'ord.passPaymentCheck': 
+					{
+						$where[] =  $field . " = ? ";
+						$params[] = $value;
+						break;
+					}
 					case 'ord.status': 
 					{
 						$query->eagerLoad("Order.status", 'inner join', 'st', 'st.id = ord.statusId');

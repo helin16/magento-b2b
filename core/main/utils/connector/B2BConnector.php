@@ -106,7 +106,7 @@ class B2BConnector
 				Log::logging(0, get_class($this), 'Saved the order, ID = ' . $o->getId(), self::LOG_TYPE, '$index = ' . $index, __FUNCTION__);
 				
 				//create order info
-				$this->_createOrderInfo($o, OrderInfoType::get(OrderInfoType::ID_CUS_NAME), trim($order->customer_firstname) . ' ' . trim($order->customer_lastname))
+				$this->_createOrderInfo($o, OrderInfoType::get(OrderInfoType::ID_CUS_NAME), isset($order->customer_firstname) ? trim($order->customer_firstname) . ' ' . trim($order->customer_lastname) : '')
 					->_createOrderInfo($o, OrderInfoType::get(OrderInfoType::ID_CUS_EMAIL), trim($order->customer_email))
 					->_createOrderInfo($o, OrderInfoType::get(OrderInfoType::ID_QTY_ORDERED), intval(trim($order->total_qty_ordered)))
 					->_createOrderInfo($o, OrderInfoType::get(OrderInfoType::ID_MAGE_ORDER_STATUS), trim($order->status))

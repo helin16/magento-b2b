@@ -161,7 +161,7 @@ CREATE TABLE `orderstatus` (
 DROP TABLE IF EXISTS `product`;
 CREATE TABLE `product` (
 	`id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-	`sku` varchar(50) NOT NULL DEFAULT '',
+	`sku` varchar(100) NOT NULL DEFAULT '',
 	`name` varchar(255) NOT NULL DEFAULT '',
 	`active` bool NOT NULL DEFAULT 1,
 	`created` datetime NOT NULL DEFAULT '0001-01-01 00:00:00',
@@ -208,6 +208,8 @@ CREATE TABLE `productinfotype` (
 DROP TABLE IF EXISTS `shippment`;
 CREATE TABLE `shippment` (
 	`id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+	`orderId` int(10) unsigned NOT NULL DEFAULT 0,
+	`courierId` int(10) unsigned NOT NULL DEFAULT 0,
 	`noOfCartons` int(10) unsigned NOT NULL DEFAULT 0,
 	`receiver` varchar(50) NOT NULL DEFAULT '',
 	`address` varchar(50) NOT NULL DEFAULT '',
@@ -216,13 +218,13 @@ CREATE TABLE `shippment` (
 	`conNoteNo` varchar(50) NOT NULL DEFAULT '',
 	`estShippingCost` Double(10,4) unsigned NOT NULL DEFAULT 0,
 	`deliveryInstructions` varchar(255) NOT NULL DEFAULT '',
-	`courierId` int(10) unsigned NOT NULL DEFAULT 0,
 	`active` bool NOT NULL DEFAULT 1,
 	`created` datetime NOT NULL DEFAULT '0001-01-01 00:00:00',
 	`createdById` int(10) unsigned NOT NULL DEFAULT 0,
 	`updated` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 	`updatedById` int(10) unsigned NOT NULL DEFAULT 0,
 	PRIMARY KEY (`id`)
+	,INDEX (`orderId`)
 	,INDEX (`courierId`)
 	,INDEX (`createdById`)
 	,INDEX (`updatedById`)
