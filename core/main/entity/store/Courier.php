@@ -63,6 +63,22 @@ class Courier extends InfoEntityAbstract
 	    $this->shippments = $value;
 	    return $this;
 	}
+	
+	/**
+	 * get all Couriers
+	 *
+	 * @param bool  $searchActiveOnly
+	 * @param int   $pageNo
+	 * @param int   $pageSize
+	 * @param array $orderBy
+	 *
+	 * @return Ambigous <multitype:, multitype:BaseEntityAbstract >
+	 */
+	public static function findAll($searchActiveOnly = true, $pageNo = null, $pageSize = DaoQuery::DEFAUTL_PAGE_SIZE, $orderBy = array())
+	{
+		return FactoryAbastract::dao(__CLASS__)->findAll($searchActiveOnly, $pageNo, $pageSize, $orderBy);
+	}
+	
 	/**
 	 * (non-PHPdoc)
 	 * @see BaseEntity::__loadDaoMap()

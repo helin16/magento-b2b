@@ -49,7 +49,7 @@ class OrderDetailsController extends BPCPageAbstract
 		
 		$js = parent::_getEndJs();
 		
-		$orderItems = array();
+		$orderItems = $courierArray = array();
 		foreach($order->getOrderItems() as $orderItem)
 			$orderItems[] = $orderItem->getJson();
 		$purchaseEdit = $warehouseEdit = $accounEdit = $statusEdit = 'false';
@@ -65,8 +65,12 @@ class OrderDetailsController extends BPCPageAbstract
 		foreach(OrderStatus::findAll() as $status)
 			$orderStatuses[] = $status->getJson();
 		
+		foreach(Courier::findAll() as $courier)
+			$courierArray[] = $courier->getJson();
+		
 		$js .= 'pageJs.setEditMode(' . $purchaseEdit . ', ' . $warehouseEdit . ', ' . $accounEdit . ', ' . $statusEdit . ');';
 		$js .= 'pageJs.setOrder('. json_encode($order->getJson()) . ', ' . json_encode($orderItems) . ', ' . json_encode($orderStatuses) . ');';
+		$js .= 'pageJs.setCourier('. json_encode($courierArray) . ');';
 		$js .= 'pageJs.setCallbackId("updateOrder", "' . $this->updateOrderBtn->getUniqueID() . '");';
 		$js .= 'pageJs.setCallbackId("getComments", "' . $this->getCommentsBtn->getUniqueID() . '");';
 		$js .= 'pageJs.setCallbackId("addComments", "' . $this->addCommentsBtn->getUniqueID() . '");';
