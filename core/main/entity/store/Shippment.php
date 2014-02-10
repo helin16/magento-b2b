@@ -291,11 +291,11 @@ class Shippment extends BaseEntityAbstract
 		DaoMap::setManyToOne('order', 'Order', 'sh_order');
 		DaoMap::setManyToOne('courier', 'Courier', 'sh_courier');
 		DaoMap::setIntType('noOfCartons');
-		DaoMap::setStringType('receiver');
-		DaoMap::setStringType('address');
-		DaoMap::setStringType('contact');
+		DaoMap::setStringType('receiver', 'varchar', 100);
+		DaoMap::setStringType('address', 'varchar', 200);
+		DaoMap::setStringType('contact', 'varchar', 100);
 		DaoMap::setDateType('shippingDate');
-		DaoMap::setStringType('conNoteNo');
+		DaoMap::setStringType('conNoteNo', 'varchar', 100);
 		DaoMap::setIntType('estShippingCost', 'Double', '10,4');
 		DaoMap::setStringType('deliveryInstructions', 'varchar', 255);
 		
