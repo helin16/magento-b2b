@@ -25,4 +25,16 @@ Abstract class AccessControl
 				}
 		}
 	}
+	public static function canAccessUsersPage(Role $role)
+	{
+		switch($role->getId())
+		{
+			case Role::ID_STORE_MANAGER:
+			case Role::ID_SYSTEM_ADMIN:
+				{
+					return true;
+				}
+		}
+		return false;
+	}
 }
