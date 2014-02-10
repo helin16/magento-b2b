@@ -174,6 +174,16 @@ fieldset.row legend {
 	width: 99%;
 }
 
+.viewShipping .fieldDiv {
+	min-width:150px;
+	padding: 0 5px 0 0;
+	margin: 2px;
+}
+
+.viewShipping .deliveryIns {
+	width: 400px;
+}
+
 
 /************************ comments *********************************/
 .commentsWrapper .cell {

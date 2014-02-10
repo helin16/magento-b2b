@@ -8,6 +8,7 @@
 	<com:TCallback ID="changeOrderStatusBtn" OnCallback="changeOrderStatus" />
 	<com:TCallback ID="confirmPaymentBtn" OnCallback="confirmPayment" />
 	<com:TCallback ID="updateOIForWHBtn" OnCallback="updateOrderItemForWarehouse" />
+	<com:TCallback ID="updateShippingInfoBtn" OnCallback="updateShippingDetails" />
 	<div class="pagewrapper orderdetails container">
 		<div id="detailswrapper" class="contentDiv"></div>
 	</div>

@@ -280,6 +280,20 @@ class Shippment extends BaseEntityAbstract
 	    $this->deliveryInstructions = $value;
 	    return $this;
 	}
+	
+	/**
+	 * (non-PHPdoc)
+	 * @see BaseEntityAbstract::getJson()
+	 */
+	public function getJson($extra = '', $reset = false)
+	{
+		$array = array();
+		if(!$this->isJsonLoaded($reset))
+			$array['courier'] = $this->getCourier()->getJson();
+		
+		return parent::getJson($array, $reset);
+	}
+	
 	/**
 	 * (non-PHPdoc)
 	 * @see BaseEntity::__loadDaoMap()
