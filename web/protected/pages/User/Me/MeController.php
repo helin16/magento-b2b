@@ -34,7 +34,7 @@ class MeController extends BPCPageAbstract
 			if($confirmNewPwd !== $newPwd)
 				throw new Exception("New passwrod and confirm password NOT match!");
 			Core::getUser()->setPassword(sha1($newPwd));
-			Core::setUser(FactoryAbastract::service('UserAccount')->save(Core::getUser()));
+			Core::setUser(FactoryAbastract::service('UserAccount')->save(Core::getUser()), Core::getRole());
 			$results['succ'] = true;
 		}
 		catch(Exception $ex)
@@ -53,7 +53,7 @@ class MeController extends BPCPageAbstract
 			if(!isset($param->CallbackParameter->lastName) || (($lastName= trim($param->CallbackParameter->lastName)) === '') )
 				throw new Exception("Invalid lastName!");
 			FactoryAbastract::service('Person')->save(Core::getUser()->getPerson()->setFirstName($firstName)->setLastName($lastName));
-			Core::setUser(FactoryAbastract::service('UserAccount')->get(Core::getUser()->getId()));
+			Core::setUser(FactoryAbastract::service('UserAccount')->get(Core::getUser()->getId()), Core::getRole());
 			$results['succ'] = true;
 		}
 		catch(Exception $ex)
