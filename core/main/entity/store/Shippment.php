@@ -275,7 +275,7 @@ class Shippment extends BaseEntityAbstract
 	 *
 	 * @return Shippment
 	 */
-	public function setdeliveryInstructions($value) 
+	public function setDeliveryInstructions($value) 
 	{
 	    $this->deliveryInstructions = $value;
 	    return $this;
