@@ -1,0 +1,10 @@
+<com:TContent ID="MainContent">
+	<div class="pagewrapper userlist container">
+		<div class="contentDiv">
+			<div class="h_title">List of Users:</div>
+			<div class="h_content">
+			    <div id="resultDiv" class="dataTable"></div>
+			</div>
+		</div>
+	</div>
+</com:TContent>

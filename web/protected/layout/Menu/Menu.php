@@ -21,6 +21,7 @@ class Menu extends TTemplateControl
 		$array = array(
 			'' => array('url' => '/', 'name' => 'Home')
 			,'order' => array('url' => '/order.html', 'name' => 'Orders')
+			,'users' => array('url' => '/users.html', 'name' => 'Users')
 		);
 		$html = "<ul class='mainMenu'>";
 			foreach($array as $key => $item)

@@ -30,6 +30,9 @@
 			<url ServiceParameter="Order.Details.OrderDetailsController" pattern="orderdetails/{orderId}.html" parameters.orderId="\d+"/>
 			
 			<!-- FrontEnd:: me page -->
+			<url ServiceParameter="User.List.UsersController" pattern="users.html" />
+			
+			<!-- FrontEnd:: me page -->
 			<url ServiceParameter="User.Me.MeController" pattern="me.html" />
 			
 			<!-- asset service -->
