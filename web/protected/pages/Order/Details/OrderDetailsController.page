@@ -1,6 +1,7 @@
 <%@MasterClass="Application.layout.BlankLayout"%>
 <com:TContent ID="MainContent">
 	<com:Application.controls.chosen.Chosen />
+	<com:Application.controls.qtip.QTip />
 	<com:TDatePicker Style="display:none;"/>
 	<com:TCallback ID="updateOrderBtn" OnCallback="updateOrder" />
 	<com:TCallback ID="getCommentsBtn" OnCallback="getComments" />

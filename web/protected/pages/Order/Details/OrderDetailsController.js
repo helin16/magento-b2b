@@ -90,7 +90,22 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			return tmp.newDiv
 				.insert({'bottom': tmp.me._getfieldDiv('hasStock?: ', tmp.hasStock) })
 				.insert({'bottom': tmp.me._getfieldDiv('ETA: ', orderItem.eta) })
-				.insert({'bottom': tmp.me._getfieldDiv('Comments: ', tmp.me._showLastestComments()) });
+				.insert({'bottom': tmp.me._getfieldDiv('Comments: ', new Element('span', {'class': 'orderItemComment'}) 
+						.qtip({
+							content: {
+								text: 'Loading...',
+								ajax: {
+									url: '/ajax',
+									type: 'POST',
+									data: orderItem,
+									success: function(data, status) {
+										
+									}
+								}
+							}
+						})
+					) 
+				});
 		}
 		tmp.getEditDiv = function(hasStock, eta) {
 			tmp.etaBox = new Element('input', {'type': 'text', 'placeholder': 'ETA:', 'update_order_item': 'eta', 'id': 'order_item_' + orderItem.id, 'readonly': true, 'value': eta ? eta : ''});

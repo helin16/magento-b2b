@@ -37,6 +37,8 @@
 			
 			<!-- asset service -->
 			<url ServiceId="asset" ServiceParameter="" pattern="asset/{method}" parameters.method="get" />
+			
+			<url ServiceId='ajax' ServiceParameter="" pattern="ajax" />
 		</module>
 
 		<module id="globalization" class="TGlobalization">
@@ -53,6 +55,8 @@
 				<module id="users" class="Application.classes.WebUser.WebUserManager" />
 			</modules>
 		</service>
+		
+		<service id = "ajax" class = "Application.pages.Ajax.AjaxController"></service>
 
 		<service id="asset" class="Application.pages.Asset.AssetController"></service>
 		<service id="soap" class="System.Web.Services.TSoapService">
