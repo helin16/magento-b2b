@@ -7,31 +7,35 @@
 			<div class="h_title">Search orders:</div>
 			<div class="h_content">
 				<div id="searchDiv" class="searchDiv">
-					<fieldset class="searchField inlineblock">
-						<label for="orderNo">Order No: </label>
-						<input id='orderNo' type="text" placeholder="Order No" search_field="ord.orderNo" />
-					</fieldset>
-					<fieldset class="searchField inlineblock">
-						<label for="invNo">Inv No: </label>
-						<input id='invNo' type="text" placeholder="Invoice Number" search_field="ord.invNo" />
-					</fieldset>
-					<fieldset class="searchField  inlineblock">
-						<label for="custName">Customer Name: </label>
-						<input id='custName' type="text" placeholder="Customer Name" search_field="ord.infos.<%= OrderInfoType::ID_CUS_NAME %>" />
-					</fieldset>
-					<fieldset class="searchField  inlineblock">
-						<label for="status">Status: </label>
-						<select search_field="ord.status" id="orderStatusId" multiple  class="chosen">
-						</select>
-					</fieldset>
-					<fieldset class="searchField  inlineblock">
-						<label for="status">Paid: </label>
-						<select search_field="ord.passPaymentCheck" class="chosen">
-							<option value=""> </option>
-							<option value="1">YES</option>
-							<option value="0">NO</option>
-						</select>
-					</fieldset>
+					<div class="row">
+						<fieldset class="searchField inlineblock">
+							<label for="orderNo">Order No: </label>
+							<input id='orderNo' type="text" placeholder="Order No" search_field="ord.orderNo" />
+						</fieldset>
+						<fieldset class="searchField inlineblock">
+							<label for="invNo">Inv No: </label>
+							<input id='invNo' type="text" placeholder="Invoice Number" search_field="ord.invNo" />
+						</fieldset>
+						<fieldset class="searchField  inlineblock">
+							<label for="custName">Customer Name: </label>
+							<input id='custName' type="text" placeholder="Customer Name" search_field="ord.infos.<%= OrderInfoType::ID_CUS_NAME %>" />
+						</fieldset>
+						<fieldset class="searchField  inlineblock">
+							<label for="status">Paid: </label>
+							<select search_field="ord.passPaymentCheck" class="chosen">
+								<option value=""> </option>
+								<option value="1">YES</option>
+								<option value="0">NO</option>
+							</select>
+						</fieldset>
+					</div>
+					<div class="row">
+						<fieldset>
+							<label for="status">Status: </label>
+							<select search_field="ord.status" id="orderStatusId" multiple  class="chosen" style="width: 99%;">
+							</select>
+						</fieldset>
+					</div>
 					<input id="searchBtn" type="button" value="search" class="button" onclick="pageJs.getSearchCriteria().getResults(true, <%= DaoQuery::DEFAUTL_PAGE_SIZE %>);"/>
 	 			</div>
 			</div>

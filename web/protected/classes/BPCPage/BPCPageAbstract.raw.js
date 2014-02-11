@@ -12,6 +12,7 @@ BPCPageJs.prototype = {
 	
 	,setCallbackId: function(key, callbackid) {
 		this.callbackIds[key] = callbackid;
+		return this;
 	}
 	
 	,getCallbackId: function(key) {
