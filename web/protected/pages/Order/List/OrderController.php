@@ -29,7 +29,6 @@ class OrderController extends BPCPageAbstract
 	protected function _getEndJs()
 	{
 		$orderStatusArray = array();
-		
 		foreach((OrderStatus::findAll()) as $os)
 			$orderStatusArray[] = $os->getJson();
 		
@@ -39,11 +38,41 @@ class OrderController extends BPCPageAbstract
 		$js .= 'pageJs.orderStatuses = '.json_encode($orderStatusArray).';';
 		$js .= 'pageJs.totalNoOfItemsId = "total_no_of_items";';
 		$js .= 'pageJs._infoTypes = {"custName": ' . OrderInfoType::ID_CUS_NAME. ', "custEmail" : ' . OrderInfoType::ID_CUS_EMAIL . ', "qty": ' . OrderInfoType::ID_QTY_ORDERED . '};';
-		$js .= 'pageJs.setCallbackId("getOrders", "' . $this->getOrdersBtn->getUniqueID(). '");';
-		$js .= 'pageJs._loadStatuses();';
+		$js .= 'pageJs.setCallbackId("getOrders", "' . $this->getOrdersBtn->getUniqueID(). '")';
+			$js .= '._loadStatuses()';
+			$js .= '.setSearchCriteria(' . json_encode($this->getViewPreference()) . ')';
+			$js .= ';';
+		$js .= '$("searchBtn").click();';
 		return $js;
 	}
+	public function getViewPreference()
+	{
+		$preferences = array();
+		$preferences['ord.status'] = AccessControl::canAccessOrderStatusIds(Core::getRole());
+		switch(Core::getRole()->getId())
+		{
+			case Role::ID_ACCOUNTING:
+			{
+				$preferences['ord.passPaymentCheck'] =  array('0');
+				break;
+			}
+			case Role::ID_WAREHOUSE:
+			{
+				$preferences['ord.passPaymentCheck'] = array('1');
+				break;
+			}
+		}
+		return $preferences;
+	}
 	
+	/**
+	 * Getting the orders
+	 * 
+	 * @param unknown $sender
+	 * @param unknown $param
+	 * @throws Exception
+	 * 
+	 */
 	public function getOrders($sender, $param)
 	{
 		$results = $errors = array();

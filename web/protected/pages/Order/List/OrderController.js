@@ -42,6 +42,26 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.me.orderStatuses.each(function(status) {
 			tmp.statusBox.insert({'bottom': new Element('option', {'value': status.id}).update(status.name) });
 		});
+		return this;
+	}
+	
+	,setSearchCriteria: function(criteria) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.searchPanel = $(tmp.me.searchDivId);
+		$H(criteria).each(function(cri){
+			tmp.field = cri.key;
+			tmp.value = cri.value;
+			tmp.fieldBox = tmp.searchPanel.down('[search_field="' + tmp.field + '"]');
+			if(tmp.fieldBox) {
+				tmp.optlength = tmp.fieldBox.options.length;
+				for(tmp.i = 0; tmp.i < tmp.optlength; tmp.i++) {
+					if(tmp.value.indexOf(tmp.fieldBox.options[tmp.i].value * 1) >= 0) {
+						tmp.fieldBox.options[tmp.i].selected = true;
+					}
+				}
+			}
+		});
 		tmp.me._loadChosen()._bindSearchKey();
 		return this;
 	}

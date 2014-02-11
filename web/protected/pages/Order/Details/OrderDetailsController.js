@@ -75,8 +75,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 	
 	,_showLastestComments: function(comments) {
 		var tmp = {};
-		return new Element('div', {'class': 'comments'})
-			.insert({'bottom': new Element('div', {'class': 'lastest'}).update(!comments ? 'N/A' : comments[0]) });
+		return new Element('div', {'class': 'comments'});
 	}
 	
 	,_getPurchasingCell: function(orderItem) {
