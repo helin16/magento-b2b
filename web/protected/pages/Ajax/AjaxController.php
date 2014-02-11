@@ -11,40 +11,23 @@
  */
 class AjaxController extends TService 
 {
-	// NOTE If anyone copies this controller, then you require this method to profile ajax requests
-	public function __construct()
-	{
-		// Services dont have constructors Apparently
-		//parent::__construct();
-	}
-	
-	/**
-	 * Init
-	 *
-	 * @param unknown_type $config
-	 */
-  	public function init($config) 
-  	{
-		
-  	}
-  	
   	/**
   	 * Run
-  	 *
   	 */
   	public function run() 
   	{
-  		if(!(Core::getUser() instanceof UserAccount) || !(Core::getRole() instanceof Role))
-  			throw new Exception("No defined access.");
+//   		if(!($this->getUser()->getUserAccount() instanceof UserAccount))
+//   			die (BPCPageAbstract::show404Page('Invalid request',"No defined access."));
   		
-  		if(sizeof($_REQUEST) > 0)
-			$this->_processRequest($_REQUEST);
+  		if(!isset($this->Request['method']) || ($method = trim($this->Request['method'])) === '' || !method_exists($this, ($method = '_' .$method)))
+  			die (BPCPageAbstract::show404Page('Invalid request',"No method passed in."));
+  		
+		$this->$method($_REQUEST);
   	}
 
-  	private function _processRequest(Array $params)
+  	private function _test(Array $params)
   	{
   		var_dump($params);
-  		
   	}
 
 }

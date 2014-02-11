@@ -38,7 +38,7 @@
 			<!-- asset service -->
 			<url ServiceId="asset" ServiceParameter="" pattern="asset/{method}" parameters.method="get" />
 			
-			<url ServiceId='ajax' ServiceParameter="" pattern="ajax" />
+			<url ServiceId='ajax' ServiceParameter="" pattern="ajax/{method}" parameters.method="\w+"  />
 		</module>
 
 		<module id="globalization" class="TGlobalization">
