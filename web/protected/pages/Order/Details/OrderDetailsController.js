@@ -618,9 +618,9 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				}
 			}
 		});
-		
 	}
 	
+	/* Generating the EDITABLE Shipping Info details */
 	,_getShippingRow: function() {
 		var tmp = {};
 		tmp.me = this;
@@ -688,6 +688,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			});
 	}
 	
+	/* *** Generating the VIEWABLE Shipping Details *** */
 	,_viewShippingDetails: function(shippingInfos) {
 		var tmp = {};
 		tmp.me = this;
@@ -811,11 +812,9 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		}
 		else
 		{
-			console.debug(tmp.me._order);
 			if(tmp.me._order.shippment.length > 0)
 			{
 				tmp.shippingInfos = tmp.me._order.shippment;
-				
 				tmp.newDiv.insert({'bottom': new Element('fieldset', {'class': 'row shipping'})
 					.insert({'bottom': new Element('legend').update('Shipping') })
 					.insert({'bottom': tmp.me._viewShippingDetails(tmp.shippingInfos) })
