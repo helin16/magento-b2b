@@ -1,1 +1,186 @@
-var PageJs=new Class.create();PageJs.prototype=Object.extend(new BPCPageJs(),{resultDivId:"",searchDivId:"",totalNoOfItemsId:"",_pagination:{pageNo:1,pageSize:30},_searchCriteria:{},_infoTypes:{},orderStatuses:[],_loadChosen:function(){$$(".chosen").each(function(a){a.store("chosen",new Chosen(a,{disable_search_threshold:10,no_results_text:"Oops, nothing found!",width:"95%"}))});return this},_bindSearchKey:function(){var a={};a.me=this;$("searchDiv").getElementsBySelector("[search_field]").each(function(b){b.observe("keydown",function(c){a.me.keydown(c,function(){$("searchBtn").click()})})});return this},_loadStatuses:function(){var a={};a.me=this;a.statusBox=$(a.me.searchDivId).down("#orderStatusId");a.me.orderStatuses.each(function(b){a.statusBox.insert({bottom:new Element("option",{value:b.id}).update(b.name)})});a.me._loadChosen()._bindSearchKey();return this},getSearchCriteria:function(){var a={};a.me=this;if(a.me._searchCriteria===null){a.me._searchCriteria={}}a.nothingTosearch=true;$(a.me.searchDivId).getElementsBySelector("[search_field]").each(function(b){a.me._searchCriteria[b.readAttribute("search_field")]=$F(b);if(($F(b) instanceof Array&&$F(b).size()>0)||(typeof $F(b)==="string"&&!$F(b).blank())){a.nothingTosearch=false}});if(a.nothingTosearch===true){a.me._searchCriteria=null}return this},getResults:function(c,a){var b={};b.me=this;b.searchBtn=$("searchBtn");b.reset=(c||false);if(b.me._searchCriteria===null){alert("Nothing to search!");return}if(b.reset===true){b.me._pagination.pageNo=1}b.me._pagination.pageSize=(a||b.me._pagination.pageSize);b.me.postAjax(b.me.getCallbackId("getOrders"),{pagination:b.me._pagination,searchCriteria:b.me._searchCriteria},{onLoading:function(){b.searchBtn.store("originValue",$F(b.searchBtn)).addClassName("disabled").setValue("Searching ...").disabled=true},onComplete:function(d,g){try{b.result=b.me.getResp(g,false,true);$(b.me.totalNoOfItemsId).update(b.result.pageStats.totalRows);b.resultDiv=$(b.me.resultDivId);if(b.reset===true){b.titleRow={orderNo:"Order No.",orderDate:"Order Date",custName:"Customer Name",shippingAddr:"Shipping Address",invNo:"Invoice No.",status:{name:"Status"},totalDue:"Total Due",passPaymentCheck:"Payment Cleared?"};b.resultDiv.update(b.me._getResultRow(b.titleRow,true).addClassName("header"))}b.resultDiv.getElementsBySelector(".paginWrapper").each(function(e){e.remove()});b.result.items.each(function(e){b.resultDiv.insert({bottom:b.me._getResultRow(e)})});if(b.result.pageStats.pageNumber<b.result.pageStats.totalPages){b.resultDiv.insert({bottom:b.me._getNextPageBtn().addClassName("paginWrapper")})}}catch(f){alert(f)}b.searchBtn.removeClassName("disabled").setValue(b.searchBtn.retrieve("originValue")).disabled=false}})},_getNextPageBtn:function(){var a={};a.me=this;return new Element("div",{"class":"pagination"}).insert({bottom:new Element("span",{"class":"button"}).update("Show More").observe("click",function(){a.me._pagination.pageNo=a.me._pagination.pageNo*1+1;$(this).update("Fetching more results ...").addClassName("disabled");a.me.getResults()})})},_getAddrDiv:function(a){return new Element("div").insert({bottom:new Element("span",{"class":"addr_contact_name"}).update(a.contactName).insert({top:new Element("span",{"class":"icon"})})}).insert({bottom:new Element("span",{"class":"addr_contactNo"}).update(a.contactNo).insert({top:new Element("span",{"class":"icon"})})}).insert({bottom:new Element("span",{"class":"addr_addr"}).update(a.full).insert({top:new Element("span",{"class":"icon"})})})},_getTitledDiv:function(b,a){return new Element("div",{"class":"field_div"}).insert({bottom:new Element("span",{"class":"inlineblock title"}).update(b)}).insert({bottom:new Element("span",{"class":"inlineblock divcontent"}).update(a)})},_getResultRow:function(c,a){var b={};b.me=this;b.isTitle=(a||false);b.quantity="n/a";b.custName="n/a";b.custEmail="n/a";if(c.infos&&c.infos!==null){if(b.me._infoTypes.qty in c.infos&&c.infos[b.me._infoTypes.qty].length>0){b.quantity=c.infos[b.me._infoTypes.qty][0].value}if(b.me._infoTypes.custName in c.infos&&c.infos[b.me._infoTypes.custName].length>0){b.custName=c.infos[b.me._infoTypes.custName][0].value}if(b.me._infoTypes.custEmail in c.infos&&c.infos[b.me._infoTypes.custEmail].length>0){b.custEmail=c.infos[b.me._infoTypes.custEmail][0].value}}return new Element("div",{"class":"row"}).store("data",c).insert({bottom:new Element("span",{"class":"cell orderNo"}).update(b.isTitle?c.orderNo:new Element("div").update(new Element("div",{"class":"orderNoNo"}).update(c.orderNo).observe("click",function(){jQuery.fancybox({width:"80%",height:"90%",autoScale:false,transitionIn:"none",transitionOut:"none",type:"iframe",autoDimensions:false,autoSize:false,href:"/orderdetails/"+c.id+".html"})})).insert({bottom:new Element("div",{"class":"qty"}).update("Qty: "+b.quantity)}))}).insert({bottom:new Element("span",{"class":"cell orderDate"}).update(c.orderDate)}).insert({bottom:new Element("span",{"class":"cell custName"}).update(b.isTitle?c.custName:new Element("div").update(b.custName).insert({bottom:new Element("div",{"class":"custEmail"}).update(b.custEmail)}))}).insert({bottom:new Element("span",{"class":"cell shippingAddr"}).update(b.isTitle?c.shippingAddr:b.me._getAddrDiv(c.address.shipping))}).insert({bottom:new Element("span",{"class":"cell status"}).update(c.status?c.status.name:"")}).insert({bottom:new Element("span",{"class":"cell payment"}).update(b.isTitle?"Payments":new Element("div").insert({bottom:b.me._getTitledDiv("Payment Checked?",c.passPaymentCheck?new Element("span",{"class":"passPaymentChecked inlineblock"}):"")}).insert({bottom:b.me._getTitledDiv("Total Due: ",b.isTitle?c.totalDue:b.me.getCurrency(c.totalDue))}).insert({bottom:b.me._getTitledDiv("Inv. No.: ",c.invNo)}))})}});
+/**
+ * The page Js file
+ */
+var PageJs = new Class.create();
+PageJs.prototype = Object.extend(new BPCPageJs(), {
+	resultDivId: '' //the html id of the result div
+	,searchDivId: '' //the html id of the search div
+	,totalNoOfItemsId: '' //the html if of the total no of items
+	,_pagination: {'pageNo': 1, 'pageSize': 30} //the pagination details
+	,_searchCriteria: {} //the searching criteria
+	,_infoTypes:{} //the infotype ids
+	,orderStatuses: [] //the order statuses object
+	
+	,_loadChosen: function () {
+		$$(".chosen").each(function(item) {
+			item.store('chosen', new Chosen(item, {
+				disable_search_threshold: 10,
+				no_results_text: "Oops, nothing found!",
+				width: "95%"
+			}) );
+		});
+		return this;
+	}
+	
+	,_bindSearchKey: function() {
+		var tmp = {}
+		tmp.me = this;
+		$('searchDiv').getElementsBySelector('[search_field]').each(function(item) {
+			item.observe('keydown', function(event) {
+				tmp.me.keydown(event, function() {
+					$('searchBtn').click();
+				});
+			})
+		});
+		return this;
+	}
+	
+	,_loadStatuses: function() {
+		var tmp = {};
+		tmp.me = this;
+		tmp.statusBox = $(tmp.me.searchDivId).down('#orderStatusId');
+		tmp.me.orderStatuses.each(function(status) {
+			tmp.statusBox.insert({'bottom': new Element('option', {'value': status.id}).update(status.name) });
+		});
+		tmp.me._loadChosen()._bindSearchKey();
+		return this;
+	}
+	
+	,getSearchCriteria: function() {
+		var tmp = {};
+		tmp.me = this;
+		if(tmp.me._searchCriteria === null)
+			tmp.me._searchCriteria = {};
+		tmp.nothingTosearch = true;
+		$(tmp.me.searchDivId).getElementsBySelector('[search_field]').each(function(item) {
+			tmp.me._searchCriteria[item.readAttribute('search_field')] = $F(item);
+			if(($F(item) instanceof Array && $F(item).size() > 0) || (typeof $F(item) === 'string' && !$F(item).blank()))
+				tmp.nothingTosearch = false;
+		});
+		if(tmp.nothingTosearch === true)
+			tmp.me._searchCriteria = null;
+		return this;
+	}
+		
+	,getResults: function(reset, pageSize) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.searchBtn = $('searchBtn');
+		tmp.reset = (reset || false);
+		if(tmp.me._searchCriteria === null)
+		{
+			alert('Nothing to search!');
+			return;
+		}
+		if(tmp.reset === true)
+			tmp.me._pagination.pageNo = 1;
+		tmp.me._pagination.pageSize = (pageSize || tmp.me._pagination.pageSize);
+		tmp.me.postAjax(tmp.me.getCallbackId('getOrders'), {'pagination': tmp.me._pagination, 'searchCriteria': tmp.me._searchCriteria}, {
+			'onLoading': function () {
+				tmp.searchBtn.store('originValue', $F(tmp.searchBtn)).addClassName('disabled').setValue('Searching ...').disabled = true;
+			}
+			,'onComplete': function(sender, param) {
+				try{
+					tmp.result = tmp.me.getResp(param, false, true);
+					$(tmp.me.totalNoOfItemsId).update(tmp.result.pageStats.totalRows);
+					
+					tmp.resultDiv = $(tmp.me.resultDivId);
+					//reset div
+					if(tmp.reset === true) {
+						tmp.titleRow = {'orderNo': "Order No.", 'orderDate': 'Order Date', 'custName': 'Customer Name', 'shippingAddr': 'Shipping Address', 'invNo': 'Invoice No.', 'status': {'name': 'Status'}, 'totalDue': 'Total Due', 'passPaymentCheck': 'Payment Cleared?'};
+						tmp.resultDiv.update(tmp.me._getResultRow(tmp.titleRow, true).addClassName('header'));
+					}
+					//remove next page button
+					tmp.resultDiv.getElementsBySelector('.paginWrapper').each(function(item){
+						item.remove();
+					})
+					//show all next page items
+					tmp.result.items.each(function(item) {
+						tmp.resultDiv.insert({'bottom': tmp.me._getResultRow(item) });
+					})
+					//show the next page button
+					if(tmp.result.pageStats.pageNumber < tmp.result.pageStats.totalPages)
+						tmp.resultDiv.insert({'bottom': tmp.me._getNextPageBtn().addClassName('paginWrapper') });
+					
+				} catch (e) {
+					alert(e);
+				}
+				tmp.searchBtn.removeClassName('disabled').setValue(tmp.searchBtn.retrieve('originValue')).disabled = false;
+			}
+		});
+	}
+	
+	,_getNextPageBtn: function() {
+		var tmp = {}
+		tmp.me = this;
+		return new Element('div', {'class': 'pagination'})
+			.insert({'bottom': new Element('span', {'class': 'button'}).update('Show More')
+				.observe('click', function() {
+					tmp.me._pagination.pageNo = tmp.me._pagination.pageNo*1 + 1;
+					$(this).update('Fetching more results ...').addClassName('disabled');
+					tmp.me.getResults();
+				})
+			});
+	}
+	
+	,_getAddrDiv: function(addr) {
+		return new Element('div')
+			.insert({'bottom': new Element('span', {'class': 'addr_contact_name'}).update(addr.contactName).insert({'top': new Element('span', {'class': 'icon'}) })  })
+			.insert({'bottom': new Element('span', {'class': 'addr_contactNo'}).update(addr.contactNo).insert({'top': new Element('span', {'class': 'icon'}) }) })
+			.insert({'bottom': new Element('span', {'class': 'addr_addr'}).update(addr.full).insert({'top': new Element('span', {'class': 'icon'}) }) })
+		;
+	}
+	
+	,_getTitledDiv: function(title, content) {
+		return new Element('div', {'class': 'field_div'})
+			.insert({'bottom': new Element('span', {'class': 'inlineblock title'}).update(title) })
+			.insert({'bottom': new Element('span', {'class': 'inlineblock divcontent'}).update(content) });
+	}
+		
+	,_getResultRow: function(row, isTitle) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.isTitle = (isTitle || false);
+		tmp.quantity = 'n/a';
+		tmp.custName = 'n/a';
+		tmp.custEmail = 'n/a';
+		if(row.infos && row.infos !== null)
+		{
+			if(tmp.me._infoTypes['qty'] in row.infos && row.infos[tmp.me._infoTypes['qty']].length > 0)
+				tmp.quantity = row.infos[tmp.me._infoTypes['qty']][0].value;
+			if(tmp.me._infoTypes['custName'] in row.infos && row.infos[tmp.me._infoTypes['custName']].length > 0)
+				tmp.custName = row.infos[tmp.me._infoTypes['custName']][0].value;
+			if(tmp.me._infoTypes['custEmail'] in row.infos && row.infos[tmp.me._infoTypes['custEmail']].length > 0)
+				tmp.custEmail = row.infos[tmp.me._infoTypes['custEmail']][0].value;
+		}
+		
+		return new Element('div', {'class': 'row', 'order_id' : row.id}).store('data', row)
+			.insert({'bottom': new Element('span', {'class': 'cell orderNo'}).update(
+				tmp.isTitle ? row.orderNo : new Element('div').update(
+						new Element('div', {'class': 'orderNoNo'}).update(row.orderNo).observe('click', function() {
+							jQuery.fancybox({
+								'width'			: '80%',
+								'height'		: '90%',
+								'autoScale'     : true,
+								'type'			: 'iframe',
+								'href'			: '/orderdetails/' + row.id + '.html',
+								'beforeClose'	    : function() {
+									if($(tmp.me.resultDivId).down('.row[order_id=' + row.id + ']'))
+										$(tmp.me.resultDivId).down('.row[order_id=' + row.id + ']').replace(tmp.me._getResultRow($$('iframe.fancybox-iframe').first().contentWindow.pageJs._order));
+								}
+					 		});
+						})
+					)
+					.insert({'bottom': new Element('div', {'class': 'qty'}).update('Qty: ' + tmp.quantity) })
+			) })
+			.insert({'bottom': new Element('span', {'class': 'cell orderDate'}).update(row.orderDate) })
+			.insert({'bottom': new Element('span', {'class': 'cell custName'}).update(tmp.isTitle ? row.custName : new Element('div').update(tmp.custName).insert({'bottom': new Element('div', {'class': 'custEmail'}).update(tmp.custEmail) }) ) })
+			.insert({'bottom': new Element('span', {'class': 'cell shippingAddr'}).update(tmp.isTitle ? row.shippingAddr : tmp.me._getAddrDiv(row.address.shipping)) })
+			.insert({'bottom': new Element('span', {'class': 'cell status'}).update(row.status ? row.status.name : '') })
+			.insert({'bottom': new Element('span', {'class': 'cell payment'}).update(tmp.isTitle ? 'Payments' :
+				new Element('div').insert({'bottom': tmp.me._getTitledDiv('Payment Checked?', row.passPaymentCheck ? new Element('span', {'class': 'passPaymentChecked inlineblock'}) : '') })
+					.insert({'bottom': tmp.me._getTitledDiv('Total Due: ', tmp.isTitle ? row.totalDue : tmp.me.getCurrency(row.totalDue)) })
+					.insert({'bottom': tmp.me._getTitledDiv('Inv. No.: ', row.invNo) })
+			) });		
+	}
+});
