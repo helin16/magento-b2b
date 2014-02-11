@@ -35,7 +35,8 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		return this;
 	}
 	
-	,_loadStatuses: function() {
+	,_loadStatuses: function(orderStatuses) {
+		this.orderStatuses = orderStatuses;
 		var tmp = {};
 		tmp.me = this;
 		tmp.statusBox = $(tmp.me.searchDivId).down('#orderStatusId');

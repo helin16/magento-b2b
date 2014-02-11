@@ -35,11 +35,10 @@ class OrderController extends BPCPageAbstract
 		$js = parent::_getEndJs();
 		$js .= 'pageJs.resultDivId = "resultDiv";';
 		$js .= 'pageJs.searchDivId = "searchDiv";';
-		$js .= 'pageJs.orderStatuses = '.json_encode($orderStatusArray).';';
+		$js .= 'pageJs._loadStatuses('.json_encode($orderStatusArray).');';
 		$js .= 'pageJs.totalNoOfItemsId = "total_no_of_items";';
 		$js .= 'pageJs._infoTypes = {"custName": ' . OrderInfoType::ID_CUS_NAME. ', "custEmail" : ' . OrderInfoType::ID_CUS_EMAIL . ', "qty": ' . OrderInfoType::ID_QTY_ORDERED . '};';
 		$js .= 'pageJs.setCallbackId("getOrders", "' . $this->getOrdersBtn->getUniqueID(). '")';
-			$js .= '._loadStatuses()';
 			$js .= '.setSearchCriteria(' . json_encode($this->getViewPreference()) . ')';
 			$js .= ';';
 		$js .= '$("searchBtn").click();';
@@ -53,12 +52,7 @@ class OrderController extends BPCPageAbstract
 		{
 			case Role::ID_ACCOUNTING:
 			{
-				$preferences['ord.passPaymentCheck'] =  array('0');
-				break;
-			}
-			case Role::ID_WAREHOUSE:
-			{
-				$preferences['ord.passPaymentCheck'] = array('1');
+				$preferences['ord.passPaymentCheck'] =  array(0);
 				break;
 			}
 		}
