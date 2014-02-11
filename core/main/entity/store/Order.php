@@ -453,6 +453,10 @@ class Order extends InfoEntityAbstract
 	            $array['infos'][$typeId][] = $info->getJson();
 		    }
 		    $array['status'] = $this->getStatus()->getJson();
+		    
+		    $array['shippment'] = array();
+		    foreach($this->getShippments() as $shippment)
+		    	$array['shippment'][] = $shippment->getJson();
 	    }
 	    return parent::getJson($array, $reset);
 	}

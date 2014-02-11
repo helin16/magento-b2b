@@ -77,6 +77,7 @@ class OrderDetailsController extends BPCPageAbstract
 		$js .= 'pageJs.setCallbackId("confirmPayment", "' . $this->confirmPaymentBtn->getUniqueID() . '");';
 		$js .= 'pageJs.setCallbackId("changeOrderStatus", "' . $this->changeOrderStatusBtn->getUniqueID() . '");';
 		$js .= 'pageJs.setCallbackId("updateOIForWH", "' . $this->updateOIForWHBtn->getUniqueID() . '");';
+		$js .= 'pageJs.setCallbackId("updateShippingInfo", "' . $this->updateShippingInfoBtn->getUniqueID() . '");';
 		$js .= 'pageJs.load("detailswrapper");';
 		return $js;
 	}
@@ -363,8 +364,6 @@ class OrderDetailsController extends BPCPageAbstract
 				if(!isset($oi->warehouse->isPicked) || (($isPicked = trim($oi->warehouse->isPicked)) === 'N' && (!isset($oi->warehouse->comments) || ($pickedComment = trim($oi->warehouse->comments)) === '')))
 					throw new Exception('System Error: isPicked information not passed in OR isPicked is false but no comments have been provided');
 
-				var_dump($orderItem->getId());
-				
 				$orderItem->setIsPicked(($isPicked === 'Y' ? true : false));
 				FactoryAbastract::service('OrderItem')->save($orderItem);
 				$results[$counter]['orderItem'] = $orderItem;
@@ -398,6 +397,101 @@ class OrderDetailsController extends BPCPageAbstract
 		}
 		
 		$params->ResponseData = StringUtilsAbstract::getJson($results, $errors);
+	}
+	
+	/**
+	 * This function validates the Shipping info received from the JS 
+	 * 
+	 * @param Array $shippingInfoArray
+	 * @param Array $validColumns
+	 * 
+	 * @throws Exception
+	 * @return OrderDetailsController
+	 */
+	private function _validateShppingDetails($shippingInfoArray, $validColumns)
+	{
+		foreach($validColumns as $vc)
+		{
+			if(!isset($shippingInfoArray->$vc))
+				throw new Exception('System Error: Incomplete Shipping Info Details provided!!!');
+			
+			if((!is_array($shippingInfoArray->$vc) || count($shippingInfoArray->$vc) === 0))
+				throw new Exception('System Error: Mandatory Information ['.$vc.'] missing');
+		}
+		return $this;
+	}
+	
+	/**
+	 * 
+	 * @param unknown $sender
+	 * @param unknown $param
+	 */
+	public function updateShippingDetails($sender, $params)
+	{
+		$result = $error = $shippingInfoArray = array();
+		$validColumns = array('courierId', 'contactNo', 'contactName', 'street', 'city', 'region', 'country', 'postCode', 'noOfCartons', 'conNoteNo', 'estShippingCost');
+		
+		try 
+		{
+			Dao::beginTransaction();
+			
+			if(!isset($params->CallbackParameter->order) || !($order = Order::get($params->CallbackParameter->order->orderNo)) instanceof Order)
+				throw new Exception('System Error: invalid order passed in!');
+			if(!isset($params->CallbackParameter->shippingInfo))
+				throw new Exception('System Error: invalid Shipping Info Details passed in!');
+			
+			if(!$order->getStatus() instanceof OrderStatus || trim($order->getStatus()->getId()) !== trim(OrderStatus::ID_PICKED))
+				throw new Exception('System Error: Order ['.$order->getOrderNo().'] Is Not is PICKED status. Current status is ['.($order->getStatus() instanceof OrderStatus ? $order->getStatus()->getName() : 'NULL').']');
+			
+			$shippingInfoArray = $params->CallbackParameter->shippingInfo;
+			$this->_validateShppingDetails($shippingInfoArray, $validColumns);
+			
+			if(!($courier = FactoryAbastract::service('Courier')->get($shippingInfoArray->courierId[0])) instanceof Courier)
+				throw new Exception('Invalid Courier Id ['.$shippingInfoArray->courierId[0].'] provided');
+			
+			$contactName = implode(",", $shippingInfoArray->contactName);
+			$contactNo = implode(",", $shippingInfoArray->contactNo);
+			$street = trim($shippingInfoArray->street[0]);
+			$city = trim($shippingInfoArray->city[0]);
+			$region = trim($shippingInfoArray->region[0]);
+			$country = trim($shippingInfoArray->country[0]);
+			$postCode = trim($shippingInfoArray->postCode[0]);
+			$noOfCartons = trim($shippingInfoArray->noOfCartons[0]);
+			$consignmentNo = trim($shippingInfoArray->conNoteNo[0]);
+			$estShippingCost = trim($shippingInfoArray->estShippingCost[0]);
+			$deliveryInstructions = (isset($shippingInfoArray->deliveryInstructions) ? implode(", ", $shippingInfoArray->deliveryInstructions) : '');
+			
+			$shippingAddress = $street.', '.$city.', '.$region.', '.$country.' '.$postCode;
+			
+			$shipment = new Shippment();
+			$shipment->setOrder($order);
+			$shipment->setCourier($courier);
+			$shipment->setNoOfCartons($noOfCartons);
+			$shipment->setReceiver($contactName);
+			$shipment->setAddress($shippingAddress);
+			$shipment->setContact($contactNo);
+			$shipment->setShippingDate(new UDate("now"));
+			$shipment->setConNoteNo($consignmentNo);
+			$shipment->setEstShippingCost($estShippingCost);
+			$shipment->setDeliveryInstructions($deliveryInstructions);
+			$shipment->setActive(true);
+			$shipment = FactoryAbastract::dao('Shippment')->save($shipment);
+			
+			$order->setStatus(FactoryAbastract::service('OrderStatus')->get(OrderStatus::ID_SHIPPED));
+			FactoryAbastract::service('Order')->save($order);
+			
+			$result['shipment'] = $shipment->getJson();
+			
+			Dao::commitTransaction();
+		}
+		catch(Exception $ex)
+		{
+			Dao::rollbackTransaction();
+			$error[] = $ex->getMessage();
+		}
+		
+		$params->ResponseData = StringUtilsAbstract::getJson($result, $error);
+		
 	}
 }
 ?>

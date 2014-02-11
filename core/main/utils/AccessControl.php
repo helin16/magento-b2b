@@ -21,7 +21,7 @@ Abstract class AccessControl
 				}
 			case Role::ID_WAREHOUSE:
 				{
-					return in_array($order->getStatus()->getId(), array(OrderStatus::ID_ETA, OrderStatus::ID_STOCK_CHECKED_BY_PURCHASING)) && $order->getPassPaymentCheck();
+					return in_array($order->getStatus()->getId(), array(OrderStatus::ID_ETA, OrderStatus::ID_STOCK_CHECKED_BY_PURCHASING, OrderStatus::ID_PICKED)) && $order->getPassPaymentCheck();
 				}
 		}
 	}

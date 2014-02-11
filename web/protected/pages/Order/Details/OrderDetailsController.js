@@ -12,6 +12,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 	,_commentsDiv: {'pagination': {'pageSize': 10, 'pageNo': 1}, 'resultDivId': '', 'type': ''} //the pagination for the comments
 	,infoType_custName : 1
 	,infoType_custEmail : 2
+	,order_status_picked: '7'
 	
 	,setEditMode: function(editPurchasing, editWH, editAcc, editStatus) {
 		this._editMode.purchasing = (editPurchasing || false);
@@ -553,7 +554,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.me = this;
 		
 		tmp.hasErr = false;
-		tmp.finalShippingDataArray = [];
+		tmp.finalShippingDataArray = {};
 		
 		tmp.shippingDiv = $(button).up('#shippingInfoDiv');
 		tmp.shippingDiv.getElementsBySelector('.msgDiv').each(function(errorDiv) {
@@ -593,24 +594,33 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			
 			if(tmp.insertData === true && tmp.hasErr === false)
 			{
-				console.debug(item.readAttribute('dataType'));
-				console.debug(tmp.itemValue);
-				console.debug((item.readAttribute('dataType') in tmp.finalShippingDataArray));
 				if(!(item.readAttribute('dataType') in tmp.finalShippingDataArray))
 					tmp.finalShippingDataArray[item.readAttribute('dataType')] = [];
 				
 				tmp.finalShippingDataArray[item.readAttribute('dataType')].push(tmp.itemValue);
-				console.debug(tmp.finalShippingDataArray);
 			}
 		});
 		
 		if(tmp.hasErr === true)
 			return;
 		
-		console.debug(tmp.finalShippingDataArray);
-		
+		tmp.me.postAjax(tmp.me.getCallbackId('updateShippingInfo'), {'shippingInfo': tmp.finalShippingDataArray, 'order': tmp.me._order}, {
+			'onLoading': function (sender, param) { /*$(selBox).disabled = true;*/ }
+			,'onComplete': function (sender, param) {
+				try {
+					tmp.result = tmp.me.getResp(param, false, true);
+					alert('Saved Successfully!');
+					location.reload();
+				} 
+				catch (e) {
+					alert(e);
+					return;
+				}
+			}
+		});
 	}
 	
+	/* Generating the EDITABLE Shipping Info details */
 	,_getShippingRow: function() {
 		var tmp = {};
 		tmp.me = this;
@@ -620,7 +630,12 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			})
 			.insert({'bottom': new Element('div', {'class': 'row'})
 				.insert({'bottom': new Element('span', {'class': 'courier'})
-					.insert({'bottom': tmp.me._getfieldDiv('Courier:', tmp.me._getCourierList().addClassName('1shipmentInfo')) })
+					.insert({'bottom': tmp.me._getfieldDiv('Courier:', tmp.me._getCourierList().addClassName('shipmentInfo')
+																							   .writeAttribute('dataType', 'courierId')
+																							   .writeAttribute('displayValue', 'Courier Info')
+																							   .writeAttribute('mandatory', 'true')
+																							   
+							) })
 				})
 				.insert({'bottom': new Element('span', {'class': 'contactName'})
 					.insert({'bottom': tmp.me._getfieldDiv('Contact Name:', new Element('input', {'type': 'text', 'dataType': 'contactName', 'displayValue': 'Contact Name', 'class': 'shipmentInfo'}).writeAttribute('value', tmp.me._order.address.shipping.contactName) ) })
@@ -671,6 +686,41 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					})
 				})
 			});
+	}
+	
+	/* *** Generating the VIEWABLE Shipping Details *** */
+	,_viewShippingDetails: function(shippingInfos) {
+		var tmp = {};
+		tmp.me = this;
+		
+		if(!shippingInfos instanceof Array || shippingInfos.length === 0)
+			shippingInfos = tmp.me._order.shippment;
+		
+		tmp.finalReturnDiv = new Element('div', {'class': 'viewShipping'});
+		
+		shippingInfos.each(function(item) {
+			tmp.returnDiv = new Element('div');
+			tmp.returnDiv.insert({'bottom': new Element('div', {}) 
+				.insert({'bottom': tmp.me._getfieldDiv('Receiver:', item.receiver) })
+				.insert({'bottom': tmp.me._getfieldDiv('Contact No:', (item.contact)) })
+				.insert({'bottom': tmp.me._getfieldDiv('Shipping Address:', item.address) })
+				.insert({'bottom': tmp.me._getfieldDiv('Courier:', (item.courier.name)) })
+			})
+			.insert({'bottom': new Element('div', {})
+				.insert({'bottom': tmp.me._getfieldDiv('No Of Cartons:', item.noOfCartons) })
+				.insert({'bottom': tmp.me._getfieldDiv('Est Shipping Cost:', (item.estShippingCost)) })
+				.insert({'bottom': tmp.me._getfieldDiv('Consignment No:', item.conNoteNo) })
+				.insert({'bottom': tmp.me._getfieldDiv('Shipping Date:', item.shippingDate) })
+			})
+			.insert({'bottom': new Element('div', {})
+				.insert({'bottom': tmp.me._getfieldDiv('Delivery Instructions:', new Element('textarea', {'readonly': 'readonly'}).update(item.deliveryInstructions).addClassName('deliveryIns') ) })
+				
+			});
+			
+			tmp.finalReturnDiv.insert({'bottom': tmp.returnDiv});
+		});
+		
+		return tmp.finalReturnDiv;
 	}
 	
 	,_loadChosen: function () {
@@ -753,13 +803,24 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			.insert({'bottom': new Element('span', {'class': 'warehouseBtns inlineblock'}).update( tmp.me._getWHBtns()				) })
 		});
 		
-		//getting the shippment row
-		if(tmp.me._order.status.id === '7') {
+		//getting the EDITABLE shippment row
+		if(tmp.me._order.status.id === tmp.me.order_status_picked && tmp.me._editMode.warehouse === true) {
 			tmp.newDiv.insert({'bottom': new Element('fieldset', {'class': 'row shipping'})
 			.insert({'bottom': new Element('legend').update('Shipping') })
 			.insert({'bottom': tmp.me._getShippingRow()  })
 			});
 		}
+		else
+		{
+			if(tmp.me._order.shippment.length > 0)
+			{
+				tmp.shippingInfos = tmp.me._order.shippment;
+				tmp.newDiv.insert({'bottom': new Element('fieldset', {'class': 'row shipping'})
+					.insert({'bottom': new Element('legend').update('Shipping') })
+					.insert({'bottom': tmp.me._viewShippingDetails(tmp.shippingInfos) })
+				});
+			}
+		}	
 		
 		//getting the comments row
 		tmp.newDiv.insert({'bottom': new Element('fieldset', {'class': 'row commentsWrapper dataTableWrapper'}) 
