@@ -82,3 +82,10 @@ insert into `systemsettings`(`type`, `value`, `description`, `active`, `created`
 	('b2b_soap_timezone', 'Australia/Melbourne', 'The timezone the magento is operating on',  1, NOW(), 10, NOW(), 10),
 	('b2b_soap_last_import_time', '2012-01-20 22:24:20', 'When did we do the imports from Magento last time',  1, NOW(), 10, NOW(), 10),
 	('system_timezone', 'Australia/Melbourne', 'The timezone this CURRENT SYSTEM is operating on',  1, NOW(), 10, NOW(), 10);
+	
+############################ add paymentmethod table
+insert into `paymentmethod`(`id`, `name`, `description`, `active`, `created`, `createdById`, `updated`, `updatedById`) values
+	(1, 'Direct Deposit', 'Direct Deposit',  1, NOW(), 10, NOW(), 10),
+	(2, 'PayPal', 'Paid via Paypal',  1, NOW(), 10, NOW(), 10),
+	(3, 'EGate', 'Paid via ANZ EGate', 1, NOW(), 10, NOW(), 10);
+	
