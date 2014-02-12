@@ -4,7 +4,7 @@ Abstract class AccessControl
 {
 	private static $_cache;
 	
-	public function canAccessOrderStatusIds(Role $role)
+	public static function canAccessOrderStatusIds(Role $role)
 	{
 		if(isset(self::$_cache['accessOrderStatusIds']))
 			self::$_cache['accessOrderStatusIds'] = array();

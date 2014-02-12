@@ -89,22 +89,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			return tmp.newDiv
 				.insert({'bottom': tmp.me._getfieldDiv('hasStock?: ', tmp.hasStock) })
 				.insert({'bottom': tmp.me._getfieldDiv('ETA: ', orderItem.eta) })
-				.insert({'bottom': tmp.me._getfieldDiv('Comments: ', new Element('span', {'class': 'orderItemComment'}) 
-						.qtip({
-							content: {
-								text: 'Loading...',
-								ajax: {
-									url: '/ajax',
-									type: 'POST',
-									data: orderItem,
-									success: function(data, status) {
-										
-									}
-								}
-							}
-						})
-					) 
-				});
+				.insert({'bottom': tmp.me._getfieldDiv('Comments: ', new Element('span', {'class': 'oiPurchasingComment'}).update('click me') ) });
 		}
 		tmp.getEditDiv = function(hasStock, eta) {
 			tmp.etaBox = new Element('input', {'type': 'text', 'placeholder': 'ETA:', 'update_order_item': 'eta', 'id': 'order_item_' + orderItem.id, 'readonly': true, 'value': eta ? eta : ''});
@@ -171,7 +156,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		var tmp = {};
 		tmp.me = this;
 		tmp.isTitle = (isTitleRow || false);
-		tmp.newDiv = new Element('div', {'class': 'row ' + (tmp.isTitle === true ? '' : 'productRow')}).store('data', orderItem)
+		tmp.newDiv = new Element('div', {'class': 'row ' + (tmp.isTitle === true ? '' : 'productRow')}).store('data', orderItem).writeAttribute('order_item_id', orderItem.id)
 			.insert({'bottom': new Element('span', {'class': 'inlineblock cell sku'}).update(orderItem.product.sku) })
 			.insert({'bottom': new Element('span', {'class': 'inlineblock cell productName'}).update(orderItem.product.name) })
 			.insert({'bottom': new Element('span', {'class': 'inlineblock cell uprice'}).update(tmp.isTitle === true ? orderItem.unitPrice : tmp.me.getCurrency(orderItem.unitPrice)) })
@@ -737,6 +722,34 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		return tmp.finalReturnDiv;
 	}
 	
+	,_bindPurchasingCommentForOrderItems: function() {
+		var tmp = {};
+		jQuery('.productlist .oiPurchasingComment').qtip({
+			content: {
+				text: function(event, api) {
+					tmp.orderId = api.elements.target.parents('.productRow').attr('order_item_id');
+					tmp.data = {'entityId': tmp.orderId, 'entity': 'OrderItem', 'type': 'PURCHASING'};
+					
+                    jQuery.ajax({
+                        url: '/ajax/getComments', // Use href attribute as URL
+                        data: tmp.data,
+                        type: 'POST'
+                    })
+                    .then(function(content) {
+                        // Set the tooltip content upon successful retrieval
+                        console.debug(content);
+                    	api.set('content.text', content);
+                    }, function(xhr, status, error) {
+                        // Upon failure... set the tooltip content to error
+                        api.set('content.text', status + ': ' + error);
+                    });
+        
+                    return 'Loading...'; // Set some initial text
+                }
+			}
+		});
+	}
+	
 	,_loadChosen: function () {
 		$$(".chosen").each(function(item) {
 			item.store('chosen', new Chosen(item, {
@@ -798,6 +811,9 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			.insert({'bottom': new Element('legend').update('Products') })
 			.insert({'bottom': tmp.productListDiv})
 		});
+		
+		
+		
 		//getting the summray row
 		tmp.newDiv.insert({'bottom': new Element('fieldset', {'class': 'row summary'})
 			.insert({'bottom': new Element('legend').update('Summary') })
@@ -864,7 +880,9 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		//load the comments after
 		tmp.me._commentsDiv.resultDivId = 'comments_list';
 		tmp.me._getComments(true)
-			._loadChosen();
+			._loadChosen()
+			._bindPurchasingCommentForOrderItems();
+		
 		return this;
 	}
 });

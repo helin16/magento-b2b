@@ -29,6 +29,14 @@ class AjaxController extends TService
   	{
   		var_dump($params);
   	}
+  	
+  	private function _getComments(Array $params)
+  	{
+  		if(!isset($params['entityId']) || !isset($params['entity']) || ($entityId = trim($params['entityId'])) === '' || ($entity = trim($params['entity'])) === '')
+  			echo 'SYSTEM ERROR: INCOMPLETE DATA PROVIDED';
+  		
+  		echo "fsdafdsf";
+  	}
 
 }
 
