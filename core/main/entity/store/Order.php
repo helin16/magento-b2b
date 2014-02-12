@@ -479,7 +479,7 @@ class Order extends InfoEntityAbstract
 		DaoMap::setManyToOne('shippingAddr', 'Address', 'saddr');
 		
 		DaoMap::setOneToMany('shippments', 'Shippment', 'o_ship');
-		DaoMap::setOneToMany('payments', 'Payment', 'o_pay');
+		DaoMap::setOneToMany('payments', 'Payment', 'py');
 		DaoMap::setOneToMany('orderItems', 'OrderItem', 'o_items');
 		parent::__loadDaoMap();
 		
