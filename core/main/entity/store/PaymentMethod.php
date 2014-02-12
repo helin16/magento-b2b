@@ -14,6 +14,28 @@ class PaymentMethod extends BaseEntityAbstract
 	 */
 	private $description;
 	/**
+	 * The cache
+	 * 
+	 * @var array
+	 */
+	private static $_cache;
+	/**
+	 * Getting the PaymentMethod
+	 * 
+	 * @param int $id The id of the paymentmethod
+	 * 
+	 * @return PaymentMethod|null
+	 */
+	public static function get($id)
+	{
+		if(!isset(self::$_cache[$id]))
+		{
+			$entityClassName = trim(get_called_class());
+			self::$_cache[$id] = FactoryAbastract::dao($entityClassName);
+		}
+		return self::$_cache[$id];
+	}
+	/**
 	 * Getter for name
 	 *
 	 * @return PaymentMethod
