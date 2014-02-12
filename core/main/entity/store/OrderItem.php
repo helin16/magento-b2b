@@ -51,6 +51,12 @@ class OrderItem extends BaseEntityAbstract
 	 */
 	private $isPicked = false;
 	/**
+	 * Whether this item has been ordered by purchasing
+	 * 
+	 * @var bool
+	 */
+	private $isOrdered = false;
+	/**
 	 * Getter for order
 	 *
 	 * @return Order
@@ -204,6 +210,27 @@ class OrderItem extends BaseEntityAbstract
 	    return $this;
 	}
 	/**
+	 * Getter for isOrdered
+	 *
+	 * @return book
+	 */
+	public function getIsOrdered() 
+	{
+	    return trim($this->isOrdered) === '1';
+	}
+	/**
+	 * Setter for isOrdered
+	 *
+	 * @param bool $value The isOrdered
+	 *
+	 * @return OrderItem
+	 */
+	public function setIsOrdered($value) 
+	{
+	    $this->isOrdered = $value;
+	    return $this;
+	}
+	/**
 	 * creating the orderitem object
 	 * 
 	 * @param Order   $order
@@ -277,10 +304,12 @@ class OrderItem extends BaseEntityAbstract
 		DaoMap::setIntType('totalPrice', 'double', '10,4');
 		DaoMap::setDateType('eta', 'datetime', true, null);
 		DaoMap::setBoolType('isPicked');
+		DaoMap::setBoolType('isOrdered');
 		
 		parent::__loadDaoMap();
 		
 		DaoMap::createIndex('isPicked');
+		DaoMap::createIndex('isOrdered');
 		DaoMap::commit();
 	}
 }
