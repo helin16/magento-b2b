@@ -33,9 +33,19 @@ class AjaxController extends TService
   	private function _getComments(Array $params)
   	{
   		if(!isset($params['entityId']) || !isset($params['entity']) || ($entityId = trim($params['entityId'])) === '' || ($entity = trim($params['entity'])) === '')
+  		{	
   			echo 'SYSTEM ERROR: INCOMPLETE DATA PROVIDED';
+  			return;
+  		}
+  		if(!isset($params['type']) || ($commentType = $params['type']) === '')
+  			$commentType = 'NORMAL';
   		
-  		echo "fsdafdsf";
+  		$returnArray = json_encode(array());
+  		$commentsArray = FactoryAbastract::service('Comments')->findByCriteria('entityName = ? and entityId = ? and type = ?', array($entity, $entityId, $commentType), true);
+  		if(count($commentsArray) > 0)
+  			$returnArray = json_encode(array_map(create_function('$a', 'return $a->getJson();'), $commentsArray));
+  		echo $returnArray;
+  		return;
   	}
 
 }

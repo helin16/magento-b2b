@@ -13,6 +13,8 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 	,infoType_custName : 1
 	,infoType_custEmail : 2
 	,order_status_picked: '7'
+	,comment_type_warehouse: 'WAREHOUSE'
+	,comment_type_purchasing: 'PURCHASING'	
 	
 	,setEditMode: function(editPurchasing, editWH, editAcc, editStatus) {
 		this._editMode.purchasing = (editPurchasing || false);
@@ -89,7 +91,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			return tmp.newDiv
 				.insert({'bottom': tmp.me._getfieldDiv('hasStock?: ', tmp.hasStock) })
 				.insert({'bottom': tmp.me._getfieldDiv('ETA: ', orderItem.eta) })
-				.insert({'bottom': tmp.me._getfieldDiv('Comments: ', new Element('span', {'class': 'oiPurchasingComment'}).update('click me') ) });
+				.insert({'bottom': tmp.me._getfieldDiv('Comments: ', new Element('span', {'class': 'comment', 'comment_type': tmp.me.comment_type_purchasing, 'entity_name': 'OrderItem' }).update('click me') ) });
 		}
 		tmp.getEditDiv = function(hasStock, eta) {
 			tmp.etaBox = new Element('input', {'type': 'text', 'placeholder': 'ETA:', 'update_order_item': 'eta', 'id': 'order_item_' + orderItem.id, 'readonly': true, 'value': eta ? eta : ''});
@@ -112,13 +114,24 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				$(this).up('.operationDiv').update(tmp.getEditDiv(tmp.hasStock));
 				new Prado.WebUI.TDatePicker({'ID':'order_item_' + orderItem.id,'InputMode':"TextBox",'Format':"yyyy-MM-dd 17:00:00",'FirstDayOfWeek':1,'CalendarStyle':"default",'FromYear':2009,'UpToYear':2024,'PositionMode':"Bottom"});
 			} else {
-				$(this).up('.operationDiv').insert({'bottom': new Element('input', {'type': 'hidden', 'update_order_item': 'eta', 'value': '0001-01-01 00:00:00'}) });
-			}
+				$(this).up('.operationDiv').getElementsBySelector('[update_order_item]').each(function(item) { 
+					item.remove();
+				});
+				if($F(this) === 'Y')
+					$(this).up('.operationDiv').insert({'bottom': new Element('input', {'type': 'hidden', 'update_order_item': 'eta', 'value': '0001-01-01 00:00:00'}) });
+			}	
 		};
 		if(tmp.hasStock === 'N') {
 			return new Element('div', {'class': 'operationDiv'}).update(tmp.getEditDiv('', orderItem.eta));
 		}
-		return tmp.me._getHasStockSel('Has Stock?', tmp.hasStock, tmp.func).wrap(new Element('div', {'class': 'operationDiv'}));
+		
+		tmp.selBox = tmp.me._getHasStockSel('Has Stock?', tmp.hasStock, tmp.func);
+		tmp.returnDiv = new Element('div', {'class': 'operationDiv'});
+		tmp.returnDiv.insert({'bottom': tmp.selBox});
+		if(tmp.hasStock === 'Y')
+			tmp.returnDiv.insert({'bottom': new Element('input', {'type': 'hidden', 'update_order_item': 'eta', 'value': '0001-01-01 00:00:00'}) })
+		
+		return tmp.returnDiv;
 	}
 	
 	,_getWarehouseCell: function(orderItem) {
@@ -127,7 +140,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		if(tmp.me._editMode.warehouse === false) {
 			return new Element('div', {'class': 'order_item_details'})
 				.insert({'bottom': tmp.me._getfieldDiv('Picked?: ', orderItem.isPicked ? 'Y' : 'N') })
-				.insert({'bottom': tmp.me._getfieldDiv('Comments: ', tmp.me._showLastestComments()) });
+				.insert({'bottom': tmp.me._getfieldDiv('Comments: ', new Element('span', {'class': 'comment', 'comment_type': tmp.me.comment_type_warehouse, 'entity_name': 'OrderItem'}).update('click me')  ) });
 		}
 		tmp.func = function() {
 			//remove error msg
@@ -415,7 +428,10 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 						});
 						
 						if(tmp.hasError === true)
+						{
+							alert('fasfdds');
 							return;
+						}	
 						
 						console.debug(tmp.finalOrderItemArray);
 						
@@ -722,30 +738,66 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		return tmp.finalReturnDiv;
 	}
 	
+	/* *** This function will generate the comments in a organized manner to be used in the  *** */
+	,_generateCommentsForDisplayInQTip: function(comments) {
+		var tmp = {};
+		tmp.me = this;
+		
+		tmp.counter = 0;
+		tmp.returnDiv = new Element('div', {});
+		comments.each(function(item) {
+			tmp.returnDiv.insert({'bottom': new Element('div', {})  
+				.insert({'bottom': tmp.me._getfieldDiv((++tmp.counter) + '.', item.comments.strip()) })
+			});
+		});
+		return tmp.returnDiv;
+	}
+	
+	/* *** This function will bind the JQuery QTip event to all the OrderItem Purchasing Comment link(s) *** */
 	,_bindPurchasingCommentForOrderItems: function() {
 		var tmp = {};
-		jQuery('.productlist .oiPurchasingComment').qtip({
+		jQuery('.productlist .comment').qtip({
 			content: {
 				text: function(event, api) {
 					tmp.orderId = api.elements.target.parents('.productRow').attr('order_item_id');
-					tmp.data = {'entityId': tmp.orderId, 'entity': 'OrderItem', 'type': 'PURCHASING'};
+					tmp.commentType = api.elements.target.attr('comment_type');
+					tmp.entityName = api.elements.target.attr('entity_name');
+					tmp.data = {'entityId': tmp.orderId, 'entity': tmp.entityName, 'type': tmp.commentType};
 					
                     jQuery.ajax({
                         url: '/ajax/getComments', // Use href attribute as URL
                         data: tmp.data,
-                        type: 'POST'
+                        type: 'POST',
+                        dataType: 'json'
                     })
-                    .then(function(content) {
+                    .then(function(result) {
                         // Set the tooltip content upon successful retrieval
-                        console.debug(content);
-                    	api.set('content.text', content);
+                        if((result instanceof Array && result.length === 0) || result === null || !result || result === undefined)
+                        	api.set('content.text', 'Nothing found');
+                        else
+                        {
+                        	if(result instanceof Array) 
+                        		api.set('content.text', pageJs._generateCommentsForDisplayInQTip(result));
+                        }
+                    	//api.set('content.text', );
                     }, function(xhr, status, error) {
                         // Upon failure... set the tooltip content to error
                         api.set('content.text', status + ': ' + error);
                     });
         
                     return 'Loading...'; // Set some initial text
-                }
+                },
+                title: function(event, api) {
+                	return api.elements.target.attr('comment_type') + ' Comments:';
+                },
+				button: true,
+			},
+			show: {
+				event: 'click mouseenter'
+			},
+			hide : {
+				event: 'click',
+				inactive: 5000
 			}
 		});
 	}
@@ -811,8 +863,6 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			.insert({'bottom': new Element('legend').update('Products') })
 			.insert({'bottom': tmp.productListDiv})
 		});
-		
-		
 		
 		//getting the summray row
 		tmp.newDiv.insert({'bottom': new Element('fieldset', {'class': 'row summary'})
