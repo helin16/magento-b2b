@@ -24,6 +24,8 @@ class Menu extends TTemplateControl
 		);
 		if(AccessControl::canAccessUsersPage(Core::getRole()) )
 			$array['users'] = array('url' => '/users.html', 'name' => 'Users');
+		if(AccessControl::canAccessUsersPage(Core::getRole()) )
+			$array['orderitems'] = array('url' => '/orderitems.html', 'name' => 'OrderItems');
 		$html = "<ul class='mainMenu'>";
 			foreach($array as $key => $item)
 			{

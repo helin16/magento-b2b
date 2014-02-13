@@ -71,4 +71,17 @@ Abstract class AccessControl
 		}
 		return false;
 	}
+	public static function canAccessOrderItemsPage(Role $role)
+	{
+		switch($role->getId())
+		{
+			case Role::ID_STORE_MANAGER:
+			case Role::ID_SYSTEM_ADMIN:
+			case Role::ID_PURCHASING:
+				{
+					return true;
+				}
+		}
+		return false;
+	}
 }

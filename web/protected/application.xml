@@ -22,14 +22,16 @@
 			<!-- FrontEnd:: order list page -->
 			<url ServiceParameter="Order.List.OrderController" pattern="order.html" />
 			
-			<!-- FrontEnd:: order page -->
+			<!-- FrontEnd:: order print page -->
 			<url ServiceParameter="Order.Print.OrderPrintController" pattern="print/order/{orderId}.html" parameters.orderId="\d+"/>
-		
 			
-			<!-- FrontEnd:: order page -->
+			<!-- FrontEnd:: order details page -->
 			<url ServiceParameter="Order.Details.OrderDetailsController" pattern="orderdetails/{orderId}.html" parameters.orderId="\d+"/>
 			
-			<!-- FrontEnd:: me page -->
+			<!-- FrontEnd:: orderitem list page -->
+			<url ServiceParameter="OrderItem.List.OrderItemController" pattern="orderitems.html"/>
+			
+			<!-- FrontEnd:: user page -->
 			<url ServiceParameter="User.List.UsersController" pattern="users.html" />
 			
 			<!-- FrontEnd:: me page -->
@@ -38,6 +40,7 @@
 			<!-- asset service -->
 			<url ServiceId="asset" ServiceParameter="" pattern="asset/{method}" parameters.method="get" />
 			
+			<!-- ajax service -->
 			<url ServiceId='ajax' ServiceParameter="" pattern="ajax/{method}" parameters.method="\w+"  />
 		</module>
 
