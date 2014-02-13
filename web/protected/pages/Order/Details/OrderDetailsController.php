@@ -55,9 +55,9 @@ class OrderDetailsController extends BPCPageAbstract
 		$purchaseEdit = $warehouseEdit = $accounEdit = $statusEdit = 'false';
 		if($order->canEditBy(Core::getRole()))
 		{
-			$purchaseEdit = ($order->canEditBy(FactoryAbastract::service('Role')->get(Role::ID_PURCHASING))) ? 'true' : 'false';
-			$warehouseEdit = ($order->canEditBy(FactoryAbastract::service('Role')->get(Role::ID_WAREHOUSE))) ? 'true' : 'false';
-			$accounEdit = ($order->canEditBy(FactoryAbastract::service('Role')->get(Role::ID_ACCOUNTING))) ? 'true' : 'false';
+			$purchaseEdit = ((trim(Core::getRole()->getId()) === trim(Role::ID_PURCHASING))) ? 'true' : 'false';
+			$warehouseEdit = ((trim(Core::getRole()->getId()) === trim(Role::ID_WAREHOUSE))) ? 'true' : 'false';
+			$accounEdit = ((trim(Core::getRole()->getId()) === trim(Role::ID_ACCOUNTING))) ? 'true' : 'false';
 			$statusEdit = ($order->canEditBy(FactoryAbastract::service('Role')->get(Role::ID_STORE_MANAGER)) || $order->canEditBy(FactoryAbastract::service('Role')->get(Role::ID_SYSTEM_ADMIN))) ? 'true' : 'false';
 		}
 		
