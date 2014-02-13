@@ -202,7 +202,7 @@ class DaoQuery
         //get from table
         $sql .= sprintf('from `%s` `%s`', $focus, $fAlias) . ' ';
         //get all joins
-        $sql .= count($this->_joins) === 0 ? '' : implode(' ', array_map(create_function('$a', 'return $a["joinType"] . " " . $a["joinClass"] . " `" . $a["joinAlias"] . "` on (" . $a["joinCondition"] . ")";'), $this->_joins)) . ' ';
+        $sql .= count($this->_joins) === 0 ? '' : implode(' ', array_map(create_function('$a', 'return $a["joinType"] . " `" . $a["joinClass"] . "` `" . $a["joinAlias"] . "` on (" . $a["joinCondition"] . ")";'), $this->_joins)) . ' ';
         //get whereclause
         if($this->_selectActiveOnly === true)
         	$this->where('`' . $fAlias . '`.`active` = 1');
