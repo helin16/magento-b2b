@@ -49,16 +49,28 @@ class OrderDetailsController extends BPCPageAbstract
 		
 		$js = parent::_getEndJs();
 		
-		$orderItems = $courierArray = array();
+		$orderItems = $courierArray = $paymentMethodArray = array();
 		foreach($order->getOrderItems() as $orderItem)
 			$orderItems[] = $orderItem->getJson();
 		$purchaseEdit = $warehouseEdit = $accounEdit = $statusEdit = 'false';
 		if($order->canEditBy(Core::getRole()))
 		{
-			$purchaseEdit = ((trim(Core::getRole()->getId()) === trim(Role::ID_PURCHASING))) ? 'true' : 'false';
-			$warehouseEdit = ((trim(Core::getRole()->getId()) === trim(Role::ID_WAREHOUSE))) ? 'true' : 'false';
-			$accounEdit = ((trim(Core::getRole()->getId()) === trim(Role::ID_ACCOUNTING))) ? 'true' : 'false';
 			$statusEdit = ($order->canEditBy(FactoryAbastract::service('Role')->get(Role::ID_STORE_MANAGER)) || $order->canEditBy(FactoryAbastract::service('Role')->get(Role::ID_SYSTEM_ADMIN))) ? 'true' : 'false';
+			if(in_array(trim(Core::getRole()->getId()), array(Role::ID_SYSTEM_ADMIN, Role::ID_STORE_MANAGER)))
+			{	
+				$purchaseEdit = ($order->canEditBy(FactoryAbastract::service('Role')->get(Role::ID_PURCHASING))) ? 'true' : 'false';
+				$warehouseEdit = ($order->canEditBy(FactoryAbastract::service('Role')->get(Role::ID_WAREHOUSE))) ? 'true' : 'false';
+				$accounEdit = ($order->canEditBy(FactoryAbastract::service('Role')->get(Role::ID_ACCOUNTING))) ? 'true' : 'false';
+			}
+			else
+			{
+				if(trim(Core::getRole()->getId()) === trim(Role::ID_PURCHASING))
+					$purchaseEdit = 'true';
+				else if(trim(Core::getRole()->getId()) === trim(Role::ID_WAREHOUSE))
+					$warehouseEdit = 'true';
+				else if(trim(Core::getRole()->getId()) === trim(Role::ID_ACCOUNTING))
+					$accounEdit = 'true';
+			}
 		}
 		
 		$orderStatuses = array();
@@ -68,9 +80,13 @@ class OrderDetailsController extends BPCPageAbstract
 		foreach(Courier::findAll() as $courier)
 			$courierArray[] = $courier->getJson();
 		
+		foreach(PaymentMethod::findAll(true) as $paymentMethod)
+			$paymentMethodArray[] = $paymentMethod->getJson();
+		
 		$js .= 'pageJs.setEditMode(' . $purchaseEdit . ', ' . $warehouseEdit . ', ' . $accounEdit . ', ' . $statusEdit . ');';
 		$js .= 'pageJs.setOrder('. json_encode($order->getJson()) . ', ' . json_encode($orderItems) . ', ' . json_encode($orderStatuses) . ');';
 		$js .= 'pageJs.setCourier('. json_encode($courierArray) . ');';
+		$js .= 'pageJs.setPaymentMethods('. json_encode($paymentMethodArray) . ');';
 		$js .= 'pageJs.setCallbackId("updateOrder", "' . $this->updateOrderBtn->getUniqueID() . '");';
 		$js .= 'pageJs.setCallbackId("getComments", "' . $this->getCommentsBtn->getUniqueID() . '");';
 		$js .= 'pageJs.setCallbackId("addComments", "' . $this->addCommentsBtn->getUniqueID() . '");';
@@ -305,6 +321,8 @@ class OrderDetailsController extends BPCPageAbstract
 				throw new Exception('System Error: invalid order passed in!');
 			if(!isset($params->CallbackParameter->paidAmt) || ($paidAmount = trim($params->CallbackParameter->paidAmt)) === '' || !is_numeric($paidAmount))
 				throw new Exception('System Error: invalid Paid Amount passed in!');
+			if(!isset($params->CallbackParameter->paymentMethod) || ($paymentMethodId = trim($params->CallbackParameter->paymentMethod)) === '' || !($paymentMethod = FactoryAbastract::dao('PaymentMethod')->findById($paymentMethodId)) instanceof PaymentMethod)
+				throw new Exception('System Error: invalid Payment Method passed in!');
 			if(!isset($params->CallbackParameter->amtDiff) || ($amountDiff = trim($params->CallbackParameter->amtDiff)) === '' || !is_numeric($amountDiff))
 				throw new Exception('System Error: Invalid Amount Difference passed in!');
 			if(!isset($params->CallbackParameter->extraComment))
@@ -312,14 +330,21 @@ class OrderDetailsController extends BPCPageAbstract
 			if(($extraComment = trim($params->CallbackParameter->extraComment)) === '' && $amountDiff !== '0')
 				throw new Exception('Additional Comment is Mandatory as the Paid Amount is not mathcing with the Total Amount!');
 			
-			$order->setTotalPaid($paidAmount);
-			$order->setPassPaymentCheck(true);
-			FactoryAbastract::service('Order')->save($order);
+			$payment = new Payment();
+			$payment->setOrder($order);
+			$payment->setMethod($paymentMethod);
+			$payment->setValue($paidAmount);
+			$payment->setActive(true);
+			FactoryAbastract::dao('Payment')->save($payment);
 			
-			$commentString = "Total Amount Due was ".$order->getTotalAmount().". And total amount paid is ".$paidAmount.".";
+ 			$order->setTotalPaid($paidAmount);
+ 			$order->setPassPaymentCheck(true);
+ 			FactoryAbastract::service('Order')->save($order);
+			
+			$commentString = "Total Amount Due was ".$order->getTotalAmount().". And total amount paid is ".$paidAmount.". Payment Method is ".$paymentMethod->getName();
 			
 			if(($amtDiff = $order->getTotalAmount() - $paidAmount) === 0)
-				$commentString = "Amount is fully paid.".$commentString;
+				$commentString = "Amount is fully paid.".$commentString.". Payment method is ".$paymentMethod->getName();
 			
 			$commentString = '['.$commentString.']'.($extraComment !== '' ? ' : '.$extraComment : '');
 			$comment = Comments::addComments($order, $commentString, Comments::TYPE_ACCOUNTING);
