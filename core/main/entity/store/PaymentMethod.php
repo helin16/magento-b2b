@@ -85,6 +85,22 @@ class PaymentMethod extends BaseEntityAbstract
 	{
 		return trim($this->getName());
 	}
+	
+	/**
+	 * get all PaymentMethods
+	 *
+	 * @param bool  $searchActiveOnly
+	 * @param int   $pageNo
+	 * @param int   $pageSize
+	 * @param array $orderBy
+	 *
+	 * @return Ambigous <multitype:, multitype:BaseEntityAbstract >
+	 */
+	public static function findAll($searchActiveOnly = true, $pageNo = null, $pageSize = DaoQuery::DEFAUTL_PAGE_SIZE, $orderBy = array())
+	{
+		return FactoryAbastract::dao(__CLASS__)->findAll($searchActiveOnly, $pageNo, $pageSize, $orderBy);
+	}
+	
 	/**
 	 * (non-PHPdoc)
 	 * @see HydraEntity::__loadDaoMap()
