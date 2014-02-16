@@ -1,10 +1,35 @@
 <com:TContent ID="MainContent">
 	<div class="pagewrapper userlist container">
 		<div class="contentDiv">
-			<div class="h_title">List of Users:</div>
+			<div class="h_title">Search/Add Users:</div>
 			<div class="h_content">
-			    <div id="resultDiv" class="dataTable"></div>
+			
+			<div id="searchDiv" class="searchDiv">
+					<div class="row">
+						<fieldset class="searchField inlineblock">
+							<label for="orderNo">User: </label>
+							<input id='user' type="text" placeholder="User" search_field="usr.user" />
+						</fieldset>
+				
+				<input id="searchBtn" type="button" value="Search User" class="button" onclick="pageJs.getSearchCriteria().getResults(true, <%= DaoQuery::DEFAUTL_PAGE_SIZE %>);"/>
+					
+					
+					
+					<div class="alignright"><input id="addBtn" type="button" value="Add User" class="button" onclick=""/></div>
+					
+					</div>
 			</div>
+			
+						</div>
 		</div>
 	</div>
+			<div class="contentDiv">
+			<div class="h_title">List of Users</div>
+			<div class="h_content">
+			</div>
+			
+			    <div id="resultDiv" class="dataTable">
+			    hkkjkhhk
+			    </div>
+
 </com:TContent>
