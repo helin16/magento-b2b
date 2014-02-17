@@ -7,7 +7,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 	,searchDivId: '' //the html id of the search div
 	,searchBtnId: 'searchBtn' //the html id of the search button
 	,totalNoOfItemsId: '' //the html if of the total no of items
-	,_pagination: {'pageNo': 1, 'pageSize': 1} //the pagination details
+	,_pagination: {'pageNo': 1, 'pageSize': 30} //the pagination details
 	,_searchCriteria: {} //the searching criteria
 	
 	,_loadChosen: function () {
