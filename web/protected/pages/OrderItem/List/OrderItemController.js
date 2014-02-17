@@ -7,7 +7,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 	,searchDivId: '' //the html id of the search div
 	,searchBtnId: 'searchBtn' //the html id of the search button
 	,totalNoOfItemsId: '' //the html if of the total no of items
-	,_pagination: {'pageNo': 1, 'pageSize': 30} //the pagination details
+	,_pagination: {'pageNo': 1, 'pageSize': 1} //the pagination details
 	,_searchCriteria: {} //the searching criteria
 	
 	,_loadChosen: function () {
@@ -40,7 +40,13 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 	}
 	
 	,setSearchCriteria: function(criteria) {
-		this._searchCriteria = criteria;
+		var tmp = {}
+		tmp.me = this;
+		$(tmp.me.searchDivId).getElementsBySelector('[search_field]').each(function(item) {
+			tmp.field = item.readAttribute('search_field');
+			if(criteria[tmp.field])
+				$(item).setValue(criteria[tmp.field]);
+		});
 		return this;
 	}
 	
@@ -60,6 +66,22 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		return this;
 	}
 	
+	,_getResultDiv: function(row, isTitle) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.newDiv = new Element('div', {'class': 'row'}).store('data', row)
+			.insert({'bottom': new Element('span', {'class': 'cell  productsku'}).update(row.product.sku) })
+			.insert({'bottom': new Element('span', {'class': 'cell  productname'}).update(row.product.name) })
+			.insert({'bottom': new Element('span', {'class': 'cell  orderno'}).update(row.order.orderNo) })
+			.insert({'bottom': new Element('span', {'class': 'cell  orderstatus'}).update(row.order.status.name) })
+			.insert({'bottom': new Element('span', {'class': 'cell  qty'}).update(row.qtyOrdered) })
+			.insert({'bottom': new Element('span', {'class': 'cell  eta'}).update(row.eta) })
+			.insert({'bottom': new Element('span', {'class': 'cell  comments'}).update(
+				isTitle === true? 'Comments': ''
+			) })
+		return tmp.newDiv;
+	}
+	
 	,getResults: function (reset, pageSize) {
 		var tmp = {};
 		tmp.me = this;
@@ -74,6 +96,19 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			, 'onComplete': function (sender, param) {
 				try {
 					tmp.result = tmp.me.getResp(param, false, true);
+					console.debug(tmp.result);
+					
+					//if reset the result div
+					if(reset === true) {
+						$(tmp.me.resultDivId).update(
+							tmp.me._getResultDiv({'order': {'orderNo': 'ORDER NO', 'status': {'name': 'Order Status'}}, 'product': {'sku': 'SKU', 'name': 'Product Name'}, 'qtyOrdered': 'QTY', 'eta': 'ETA' }, true)
+								.addClassName('header')
+						)
+					}
+					
+					tmp.result.items.each(function (item) {
+						$(tmp.me.resultDivId).insert({'bottom': tmp.me._getResultDiv(item) })
+					});
 				} catch(e) {
 					alert(e);
 				}

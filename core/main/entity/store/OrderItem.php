@@ -286,6 +286,7 @@ class OrderItem extends BaseEntityAbstract
 	    if(!$this->isJsonLoaded($reset))
 	    {
 	    	$array['product'] = $this->getProduct()->getJson();
+	    	$array['order'] = $this->getOrder()->getJson();
 	    }
 	    return parent::getJson($array, $reset);
 	}

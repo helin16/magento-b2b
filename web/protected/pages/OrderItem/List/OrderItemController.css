@@ -3,3 +3,25 @@
 	border-bottom: 1px #ccc solid;
 	border-radius: 0px;
 }
+
+select.isordered {
+	width: 100px;
+}
+.cell.productsku,
+.cell.productname {
+	width: 25%;
+}
+
+.cell.orderno,
+.cell.orderstatus {
+	width: 8%;
+}
+.cell.eta {
+	width: 15%;
+}
+.cell.qty {
+	width: 5%;
+}
+.cell.comments {
+	width: auto;
+}
