@@ -18,7 +18,7 @@
 						</fieldset>
 						<fieldset class="searchField  inlineblock">
 							<label for="status">Has Ordered: </label>
-							<select search_field="ord_item.isOrdered" class="chosen">
+							<select search_field="ord_item.isOrdered" class="chosen isordered">
 								<option value=""> </option>
 								<option value="1">YES</option>
 								<option value="0">NO</option>
@@ -28,8 +28,8 @@
 					<div class="row">
 						<fieldset class="searchField  inlineblock eta">
 							<label for="status">ETA: </label>
-							<com:TDatePicker Attributes.search_field="ord_item.eta.from" DateFormat="yyyy-MM-dd 00:00:00" Attributes.readonly="true" CssClass="cuspntr" Attributes.placeholder="Search ETA from"/>	
-							<com:TDatePicker Attributes.search_field="ord_item.eta.to" DateFormat="yyyy-MM-dd 23:59:59" Attributes.readonly="true" CssClass="cuspntr" Attributes.placeholder="Search ETA to"/>
+							<com:TDatePicker Attributes.search_field="ord_item.eta.from" DateFormat="yyyy-MM-dd 00:00:00" Attributes.readonly="true" CssClass="cuspntr" Attributes.placeholder="from"/>	
+							<com:TDatePicker Attributes.search_field="ord_item.eta.to" DateFormat="yyyy-MM-dd 23:59:59" Attributes.readonly="true" CssClass="cuspntr" Attributes.placeholder="to"/>
 						</fieldset>
 						<input id="searchBtn" type="button" value="search" class="button" onclick="pageJs.getSearchCriteria().getResults(true, <%= DaoQuery::DEFAUTL_PAGE_SIZE %>);"/>
 					</div>
@@ -37,9 +37,9 @@
 			</div>
 		</div>
 		<div class="contentDiv">
-			<div class="h_title"><span id='total_no_of_items'>0</span> Orders Found!</div>
+			<div class="h_title"><span id='total_no_of_items'>0</span> Order Items Found!</div>
 			<div class="h_content">
-				<p>Orders found from the search criteria:</p>
+				<p>Order Items found from the search criteria:</p>
 				<div class="sep"></div>
 				<div class="dataTableWrapper">
 					<div class="dataTable" id="resultDiv"></div>

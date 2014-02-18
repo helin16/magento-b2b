@@ -67,7 +67,7 @@ body {
 
 .contentwrapper {
 	display: block;
-	width: 1000px;
+	width: 98%;
 	margin: 0px auto;
 }
 
@@ -285,11 +285,12 @@ input[type="text"].err {
     color: #565656;
     padding: 8px;
     vertical-align: top;
-    display: inline-block;
+    display: table-cell;
     min-height: 15px;
 }
 .dataTableWrapper .dataTable .row {
 	border-bottom: 1px solid #FFFFFF;
+	display: table-row;
 }
 .dataTableWrapper .dataTable .row:nth-child(2n) {
     background: none repeat scroll 0 0 #FFFFFF;

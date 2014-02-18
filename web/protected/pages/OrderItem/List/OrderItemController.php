@@ -45,9 +45,16 @@ class OrderItemController extends BPCPageAbstract
 		$js .= '$("searchBtn").click();';
 		return $js;
 	}
+	/**
+	 * Getting the view preferences
+	 * 
+	 * @return multitype:
+	 */
 	private function _getViewPreference()
 	{
-		return array();
+		$now = new UDate('now', SystemSettings::getSettings(SystemSettings::TYPE_SYSTEM_TIMEZONE));
+		return array('ord_item.eta.from' => $now->format('Y-m-d 00:00:00'),
+				'ord_item.eta.to' => $now->format('Y-m-d 23:59:59'));
 	}
 	/**
 	 * Getting the orders
@@ -82,12 +89,12 @@ class OrderItemController extends BPCPageAbstract
 					continue;
 				
 				$query = FactoryAbastract::service('OrderItem')->getDao()->getQuery();
+				$query->eagerLoad("OrderItem.order", 'inner join', 'ord', 'ord.id = ord_item.orderId');
 				switch ($field)
 				{
 					case 'ord.orderNo': 
 					case 'ord.invNo': 
 					{
-						$query->eagerLoad("OrderItem.order", 'inner join', 'ord', 'ord.id = ord_item.orderId');
 						$where[] =  $field . " like ? ";
 						$params[] = $value.'%';
 						break;
@@ -98,15 +105,15 @@ class OrderItemController extends BPCPageAbstract
 						$params[] = $value;
 						break;
 					}
-					case 'ord.eta.from':
+					case 'ord_item.eta.from':
 					{
-						$where[] = $field . ' <= ?';
+						$where[] = 'ord_item.eta >= ?';
 						$params[] = $value;
 						break;
 					}
-					case 'ord.eta.to': 
+					case 'ord_item.eta.to': 
 					{
-						$where[] = $field . ' >= ?';
+						$where[] = 'ord_item.eta <= ?';
 						$params[] = $value;
 						break;
 					}
@@ -115,12 +122,11 @@ class OrderItemController extends BPCPageAbstract
 			}
 			if($noSearch === true)
 				throw new Exception("Nothing to search!");
-			
-			$orders = FactoryAbastract::service('OrderItem')->findByCriteria(implode(' AND ', $where), $params, true, $pageNo, $pageSize, array('ord_item.eta' => 'asc'));
-			$results['pageStats'] = FactoryAbastract::service('Order')->getPageStats();
+			$orderItems = FactoryAbastract::service('OrderItem')->findByCriteria(implode(' AND ', $where), $params, true, $pageNo, $pageSize, array('ord_item.eta' => 'asc', 'ord.orderNo' => 'asc'));
+			$results['pageStats'] = FactoryAbastract::service('OrderItem')->getPageStats();
 			$results['items'] = array();
-			foreach($orders as $order)
-				$results['items'][] = $order->getJson();
+			foreach($orderItems as $item)
+				$results['items'][] = $item->getJson();
 		}
 		catch(Exception $ex)
 		{

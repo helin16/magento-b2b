@@ -35,12 +35,33 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		return this;
 	}
 	
-	,_loadStatuses: function() {
+	,_loadStatuses: function(orderStatuses) {
+		this.orderStatuses = orderStatuses;
 		var tmp = {};
 		tmp.me = this;
 		tmp.statusBox = $(tmp.me.searchDivId).down('#orderStatusId');
 		tmp.me.orderStatuses.each(function(status) {
 			tmp.statusBox.insert({'bottom': new Element('option', {'value': status.id}).update(status.name) });
+		});
+		return this;
+	}
+	
+	,setSearchCriteria: function(criteria) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.searchPanel = $(tmp.me.searchDivId);
+		$H(criteria).each(function(cri){
+			tmp.field = cri.key;
+			tmp.value = cri.value;
+			tmp.fieldBox = tmp.searchPanel.down('[search_field="' + tmp.field + '"]');
+			if(tmp.fieldBox) {
+				tmp.optlength = tmp.fieldBox.options.length;
+				for(tmp.i = 0; tmp.i < tmp.optlength; tmp.i++) {
+					if(tmp.value.indexOf(tmp.fieldBox.options[tmp.i].value * 1) >= 0) {
+						tmp.fieldBox.options[tmp.i].selected = true;
+					}
+				}
+			}
 		});
 		tmp.me._loadChosen()._bindSearchKey();
 		return this;
@@ -54,9 +75,6 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.nothingTosearch = true;
 		$(tmp.me.searchDivId).getElementsBySelector('[search_field]').each(function(item) {
 			tmp.me._searchCriteria[item.readAttribute('search_field')] = $F(item);
-//			console.debug(($F(item) instanceof String));
-//			console.debug((!$F(item).blank()));
-//			console.debug(($F(item) instanceof String && !$F(item).blank()));
 			if(($F(item) instanceof Array && $F(item).size() > 0) || (typeof $F(item) === 'string' && !$F(item).blank()))
 				tmp.nothingTosearch = false;
 		});
@@ -157,21 +175,20 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				tmp.custEmail = row.infos[tmp.me._infoTypes['custEmail']][0].value;
 		}
 		
-		return new Element('div', {'class': 'row'}).store('data', row)
+		return new Element('div', {'class': 'row', 'order_id' : row.id}).store('data', row)
 			.insert({'bottom': new Element('span', {'class': 'cell orderNo'}).update(
 				tmp.isTitle ? row.orderNo : new Element('div').update(
 						new Element('div', {'class': 'orderNoNo'}).update(row.orderNo).observe('click', function() {
 							jQuery.fancybox({
-								//'orig'			: jQuery(this),
 								'width'			: '80%',
 								'height'		: '90%',
-								'autoScale'     : false,
-						        'transitionIn'	: 'none',
-								'transitionOut'	: 'none',
+								'autoScale'     : true,
 								'type'			: 'iframe',
-								'autoDimensions': false,
-								'autoSize'      : false,
 								'href'			: '/orderdetails/' + row.id + '.html',
+								'beforeClose'	    : function() {
+									if($(tmp.me.resultDivId).down('.row[order_id=' + row.id + ']'))
+										$(tmp.me.resultDivId).down('.row[order_id=' + row.id + ']').replace(tmp.me._getResultRow($$('iframe.fancybox-iframe').first().contentWindow.pageJs._order));
+								}
 					 		});
 						})
 					)
