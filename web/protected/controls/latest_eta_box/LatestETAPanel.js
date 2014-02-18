@@ -62,7 +62,6 @@ LatestETAPanel.prototype = {
 				try
 				{
 					tmp.result = tmp.me._pageObj.getResp(param, false, true);
-					console.debug(tmp.result);
 					if(tmp.reset === true) {
 						if(tmp.result.items.length === 0) {
 							$(tmp.me.resultDiv).update("No ETA found!");
@@ -80,7 +79,12 @@ LatestETAPanel.prototype = {
 					});
 					
 					if(tmp.result.totalPages > tmp.result.pageNumber) {
-						
+						$(tmp.me.resultDiv).insert({'bottom': new Element('span', {}).update("Show More") 
+							.observe('click', function() {
+								tmp.me.pagination.pageNo = (tmp.me.pagination.pageNo*1) + 1;
+								tmp.me.loadLatestETA(false);
+							})
+						});
 					}
 					
 				} 
