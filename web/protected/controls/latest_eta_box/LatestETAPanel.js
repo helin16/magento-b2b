@@ -50,11 +50,10 @@ LatestETAPanel.prototype = {
 					});
 	}
 	
-	
-
-	,loadLatestETA: function() {
+	,loadLatestETA: function(reset) {
 		var tmp = {};
 		tmp.me = this;
+		tmp.reset = (reset || true);
 		
 		tmp.me._pageObj.postAjax(tmp.me.callBackId, {'pagination': tmp.me.pagination}, {
 			'onLoading': function () {
@@ -63,20 +62,26 @@ LatestETAPanel.prototype = {
 				try
 				{
 					tmp.result = tmp.me._pageObj.getResp(param, false, true);
-					if(tmp.result.length === 0)
-					{
-						$(tmp.me.resultDiv).update("No ETA found!");
-						return;	
+					console.debug(tmp.result);
+					if(tmp.reset === true) {
+						if(tmp.result.items.length === 0) {
+							$(tmp.me.resultDiv).update("No ETA found!");
+								return;	
+						}
+						//title row
+						tmp.headerRow = {"id": "", "sku": "SKU", "productName": "Name", "eta": "ETA", "orderNo": "Order No"};
+						tmp.titleDiv = tmp.me._generateResultRow(tmp.headerRow,  true);
+						$(tmp.me.resultDiv).insert({'bottom': tmp.titleDiv});
 					}
 					
-					tmp.headerRow = {"id": "", "sku": "SKU", "productName": "Name", "eta": "ETA", "orderNo": "Order No"};
-					tmp.titleDiv = tmp.me._generateResultRow(tmp.headerRow,  true);
-					
-					$(tmp.me.resultDiv).insert({'bottom': tmp.titleDiv});
-					
-					tmp.result.each(function(row) {
+					//add data
+					tmp.result.items.each(function(row) {
 						$(tmp.me.resultDiv).insert({'bottom': tmp.me._generateResultRow(row) });
 					});
+					
+					if(tmp.result.totalPages > tmp.result.pageNumber) {
+						
+					}
 					
 				} 
 				catch (e) 
