@@ -715,6 +715,8 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 	
 	/* Generating the EDITABLE Shipping Info Receiver and Courier details. Function is used by _getShippingRow() */
 	,_generateShippingReceiverInfoDetailsForEdit: function() {
+		var tmp = {};
+		tmp.me = this;
 		return new Element('div', {'class': 'row'})
 				.insert({'bottom': new Element('span', {'class': 'courier'})
 					.insert({'bottom': tmp.me._getfieldDiv('Courier:', tmp.me._getCourierList().addClassName('shipmentInfo')
@@ -734,6 +736,8 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 	
 	/* Generating the EDITABLE Shipping Address Info details. Function is used by _getShippingRow() */
 	,_generateShippingAddressDetailsForEdit: function() {
+		var tmp = {};
+		tmp.me = this;
 		return new Element('div', {'class': 'row'})
 				.insert({'bottom': new Element('span', {'class': 'street'})
 					.insert({'bottom': tmp.me._getfieldDiv('Street:', new Element('input', {'type': 'text', 'mandatory': 'true', 'dataType': 'street', 'displayValue': 'Street', 'class': 'shipmentInfo'}).writeAttribute('value', tmp.me._order.address.shipping.street) ) })
@@ -754,6 +758,8 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 	
 	/* Generating the EDITABLE Other Shipping Info details. Function is used by _getShippingRow() */
 	,_generateOtherShippingDetailsForEdit: function() {
+		var tmp = {};
+		tmp.me = this;
 		return new Element('div', {'class': 'row'}) 
 				.insert({'bottom': new Element('span', {'class': 'noOfCartons'})
 					.insert({'bottom': tmp.me._getfieldDiv('No Of Carton(s):', new Element('input', {'type': 'text', 'mandatory': 'true', 'dataType': 'noOfCartons', 'displayValue': 'No Of Carton', 'class': 'shipmentInfo'}) ) })
