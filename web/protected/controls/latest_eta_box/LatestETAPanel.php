@@ -73,6 +73,7 @@ class LatestETAPanel extends TTemplateControl
 				$tmp['sku']	= $oi->getProduct()->getSku();
 				$tmp['productName']	= $oi->getProduct()->getName();
 				$tmp['id'] = $oi->getId();
+				$tmp['orderId'] = $oi->getOrder()->getId();
 				$result[] = $tmp;
 			}
 		}

@@ -37,7 +37,17 @@ LatestETAPanel.prototype = {
 					.insert({'bottom': new Element("span", {"class": "cell sku"}).update(row.sku) })
 					.insert({'bottom': new Element("span", {"class": "cell product_name"}).update(row.productName) })
 					.insert({'bottom': new Element("span", {"class": "cell eta"}).update(row.eta) })
-					.insert({'bottom': new Element("span", {"class": "cell order_no"}).update(row.orderNo) });
+					.insert({'bottom': new Element("span", {"class": "cell order_no"}).update(row.orderNo) 
+						.observe('click', function() {
+							jQuery.fancybox({
+								'width'			: '80%',
+								'height'		: '90%',
+								'autoScale'     : true,
+								'type'			: 'iframe',
+								'href'			: '/orderdetails/' + row.orderId + '.html'
+					 		});
+						})
+					});
 	}
 	
 	
