@@ -108,7 +108,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					tmp.resultDiv = $(tmp.me.resultDivId);
 					//reset div
 					if(tmp.reset === true) {
-						tmp.titleRow = {'orderNo': "Order No.", 'orderDate': 'Order Date', 'custName': 'Customer Name', 'shippingAddr': 'Shipping Address', 'invNo': 'Invoice No.', 'status': {'name': 'Status'}, 'totalDue': 'Total Due', 'passPaymentCheck': 'Payment Cleared?'};
+						tmp.titleRow = {'orderNo': "Order Info.", 'custName': 'Customer Name', 'shippingAddr': 'Shipping Address', 'invNo': 'Invoice No.', 'status': {'name': 'Status'}, 'totalDue': 'Total Due', 'passPaymentCheck': 'Payment Cleared?'};
 						tmp.resultDiv.update(tmp.me._getResultRow(tmp.titleRow, true).addClassName('header'));
 					}
 					//remove next page button
@@ -145,10 +145,12 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 	}
 	
 	,_getAddrDiv: function(addr) {
+		var tmp = {};
+		tmp.me = this;
 		return new Element('div')
-			.insert({'bottom': new Element('span', {'class': 'addr_contact_name'}).update(addr.contactName).insert({'top': new Element('span', {'class': 'icon'}) })  })
-			.insert({'bottom': new Element('span', {'class': 'addr_contactNo'}).update(addr.contactNo).insert({'top': new Element('span', {'class': 'icon'}) }) })
-			.insert({'bottom': new Element('span', {'class': 'addr_addr'}).update(addr.full).insert({'top': new Element('span', {'class': 'icon'}) }) })
+			.insert({'bottom':tmp.me._getTitledDiv(new Element('span', {'class': 'icon'}), addr.contactName ).addClassName('addr_contact_name')  })
+			.insert({'bottom':tmp.me._getTitledDiv(new Element('span', {'class': 'icon'}), addr.contactNo ).addClassName('addr_contactNo')  })
+			.insert({'bottom':tmp.me._getTitledDiv(new Element('span', {'class': 'icon'}), addr.full ).addClassName('addr_addr')  })
 		;
 	}
 	
@@ -157,14 +159,30 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			.insert({'bottom': new Element('span', {'class': 'inlineblock title'}).update(title) })
 			.insert({'bottom': new Element('span', {'class': 'inlineblock divcontent'}).update(content) });
 	}
-		
-	,_getResultRow: function(row, isTitle) {
+	
+	,_openDetailPage: function(row) {
 		var tmp = {};
 		tmp.me = this;
-		tmp.isTitle = (isTitle || false);
+		jQuery.fancybox({
+			'width'			: '80%',
+			'height'		: '90%',
+			'autoScale'     : true,
+			'type'			: 'iframe',
+			'href'			: '/orderdetails/' + row.id + '.html',
+			'beforeClose'	    : function() {
+				if($(tmp.me.resultDivId).down('.row[order_id=' + row.id + ']'))
+					$(tmp.me.resultDivId).down('.row[order_id=' + row.id + ']').replace(tmp.me._getResultRow($$('iframe.fancybox-iframe').first().contentWindow.pageJs._order));
+			}
+ 		});
+	}
+	
+	,_getOrderInfoCell: function(row) {
+		var tmp = {};
+		tmp.me = this
 		tmp.quantity = 'n/a';
 		tmp.custName = 'n/a';
 		tmp.custEmail = 'n/a';
+		
 		if(row.infos && row.infos !== null)
 		{
 			if(tmp.me._infoTypes['qty'] in row.infos && row.infos[tmp.me._infoTypes['qty']].length > 0)
@@ -174,34 +192,96 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			if(tmp.me._infoTypes['custEmail'] in row.infos && row.infos[tmp.me._infoTypes['custEmail']].length > 0)
 				tmp.custEmail = row.infos[tmp.me._infoTypes['custEmail']][0].value;
 		}
+		return new Element('div').update(
+				new Element('div', {'class': 'orderNo'}).update(row.orderNo).observe('click', function() {
+					tmp.me._openDetailPage(row);
+				})
+			)
+			.insert({'bottom': tmp.me._getTitledDiv(new Element('span', {'class': 'icon'}), tmp.custName).addClassName('custName addr_contact_name') })
+			.insert({'bottom': tmp.me._getTitledDiv(new Element('span', {'class': 'icon'}), new Element('a', {'href': 'mailto:' + tmp.custEmail}).update(tmp.custEmail) ).addClassName('custEmail addr_contact_email') })
+			.insert({'bottom': tmp.me._getTitledDiv(new Element('span', {'class': 'icon'}) , row.orderDate).addClassName('orderDate') });
+	}
+	
+	,_getPaymentCell: function(row) {
+		var tmp = {};
+		tmp.me = this
+		return new Element('div')
+			.insert({'bottom': tmp.me._getTitledDiv('', 
+					!row.passPaymentCheck ? '': new Element('span', {'class': 'icon'})
+							.addClassName(row.totalDue === 0 ? 'ok' : 'warning').writeAttribute('title', row.totalDue === 0 ? 'Full Paied' : 'Short Paid')
+				) })
+				.insert({'bottom': tmp.me._getTitledDiv(new Element('span', {'class': 'icon'}), tmp.me.getCurrency(row.totalDue) ).addClassName('totalDue').writeAttribute('title', 'Total Due Amount:' + tmp.me.getCurrency(row.totalDue)) })
+				.insert({'bottom': !row.passPaymentCheck ? '' : tmp.me._getTitledDiv(new Element('span', {'class': 'icon'}), 
+						new Element('span', {'class': 'tooltipTarget'}).update('payment details').writeAttribute('title', 'click to view payment details')
+							.observe('click', function() {
+								tmp.me._openDetailPage(row);
+							})
+				).addClassName('paymentdetails') });
+	}
+	
+	,_getPurchasingCell: function(row) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.statusId_stockchecked =['4', '5', '6', '7', '8'];
+		tmp.statusId_stockchecked_not_passed =['4', '6'];
+		
+		tmp.hasCheckedStock = (tmp.statusId_stockchecked.indexOf(row.status.id) >= 0);
+		tmp.stockChkedWIssues = (tmp.statusId_stockchecked_not_passed.indexOf(row.status.id) >= 0);
+		return new Element('div')
+			.insert({'bottom': tmp.me._getTitledDiv('', 
+					!tmp.hasCheckedStock ? '' : new Element('span', {'class': 'icon'})
+						.addClassName(!tmp.stockChkedWIssues ? 'ok' : 'warning').writeAttribute('title', tmp.stockChkedWIssues ? 'insufficient stock' :'Stocked checked' )
+			) })
+			.insert({'bottom': !tmp.hasCheckedStock ? '' : tmp.me._getTitledDiv(new Element('span', {'class': 'icon'}), new Element('span', {'class': 'tooltipTarget'}).update('view items').writeAttribute('title', 'click to view order items')
+					.observe('click', function() {
+						tmp.me._openDetailPage(row);
+					})
+			).addClassName('vieworderitems') });
+	}
+	
+	,_getWarehouseCell: function(row) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.statusId_whchecked =['6', '7', '8'];
+		tmp.statusId_whchecked_not_passed =['6'];
+		
+		tmp.hasChecked = (tmp.statusId_whchecked.indexOf(row.status.id) >= 0);
+		tmp.chkedWIssues = (tmp.statusId_whchecked_not_passed.indexOf(row.status.id) >= 0);
+		return new Element('div')
+			.insert({'bottom': tmp.me._getTitledDiv('', 
+					!tmp.hasChecked ? '' : new Element('span', {'class': 'icon'})
+						.addClassName(!tmp.chkedWIssues ? 'ok' : 'warning').writeAttribute('title', tmp.chkedWIssues ? 'insufficient stock' : 'Stock Handled successfully!' )
+			) })
+			.insert({'bottom': !tmp.hasChecked ? '' : tmp.me._getTitledDiv(new Element('span', {'class': 'icon'}), new Element('span', {'class': 'tooltipTarget'}).update('view items').writeAttribute('title', 'click to view order items')
+					.observe('click', function() {
+						tmp.me._openDetailPage(row);
+					})
+			).addClassName('vieworderitems') });
+	}
+		
+	,_getResultRow: function(row, isTitle) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.isTitle = (isTitle || false);
 		
 		return new Element('div', {'class': 'row', 'order_id' : row.id}).store('data', row)
-			.insert({'bottom': new Element('span', {'class': 'cell orderNo'}).update(
-				tmp.isTitle ? row.orderNo : new Element('div').update(
-						new Element('div', {'class': 'orderNoNo'}).update(row.orderNo).observe('click', function() {
-							jQuery.fancybox({
-								'width'			: '80%',
-								'height'		: '90%',
-								'autoScale'     : true,
-								'type'			: 'iframe',
-								'href'			: '/orderdetails/' + row.id + '.html',
-								'beforeClose'	    : function() {
-									if($(tmp.me.resultDivId).down('.row[order_id=' + row.id + ']'))
-										$(tmp.me.resultDivId).down('.row[order_id=' + row.id + ']').replace(tmp.me._getResultRow($$('iframe.fancybox-iframe').first().contentWindow.pageJs._order));
-								}
-					 		});
-						})
-					)
-					.insert({'bottom': new Element('div', {'class': 'qty'}).update('Qty: ' + tmp.quantity) })
+			.insert({'bottom': new Element('span', {'class': 'cell orderInfo'}).update(
+				tmp.isTitle ? row.orderNo : tmp.me._getOrderInfoCell(row)
 			) })
-			.insert({'bottom': new Element('span', {'class': 'cell orderDate'}).update(row.orderDate) })
-			.insert({'bottom': new Element('span', {'class': 'cell custName'}).update(tmp.isTitle ? row.custName : new Element('div').update(tmp.custName).insert({'bottom': new Element('div', {'class': 'custEmail'}).update(tmp.custEmail) }) ) })
-			.insert({'bottom': new Element('span', {'class': 'cell shippingAddr'}).update(tmp.isTitle ? row.shippingAddr : tmp.me._getAddrDiv(row.address.shipping)) })
-			.insert({'bottom': new Element('span', {'class': 'cell status'}).update(row.status ? row.status.name : '') })
-			.insert({'bottom': new Element('span', {'class': 'cell payment'}).update(tmp.isTitle ? 'Payments' :
-				new Element('div').insert({'bottom': tmp.me._getTitledDiv('Payment Checked?', row.passPaymentCheck ? new Element('span', {'class': 'passPaymentChecked inlineblock'}) : '') })
-					.insert({'bottom': tmp.me._getTitledDiv('Total Due: ', tmp.isTitle ? row.totalDue : tmp.me.getCurrency(row.totalDue)) })
-					.insert({'bottom': tmp.me._getTitledDiv('Inv. No.: ', row.invNo) })
-			) });		
+			.insert({'bottom': new Element('span', {'class': 'cell shippingAddr'}).update(
+					tmp.isTitle ? row.shippingAddr : tmp.me._getAddrDiv(row.address.shipping)
+			) })
+			.insert({'bottom': new Element('span', {'class': 'cell status', 'order_status': row.status.name}).update(
+					row.status ? row.status.name : ''
+			) })
+			.insert({'bottom': new Element('span', {'class': 'cell payment'}).update(
+				tmp.isTitle ? 'Payments' : tmp.me._getPaymentCell(row)
+			) })		
+			.insert({'bottom': new Element('span', {'class': 'cell purchasing'}).update(
+					tmp.isTitle ? 'Purchasing' : tmp.me._getPurchasingCell(row)
+			) })
+			.insert({'bottom': new Element('span', {'class': 'cell warehouse'}).update(
+					tmp.isTitle ? 'Warehouse' : tmp.me._getWarehouseCell(row)
+			) });
 	}
 });

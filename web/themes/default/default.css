@@ -71,6 +71,11 @@ body {
 	margin: 0px auto;
 }
 
+.tooltipTarget {
+	cursor: pointer;
+	border-bottom: 1px #ccc dotted;
+}
+
 .cuspntr {
 	cursor: pointer;
 }
