@@ -9,6 +9,12 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 	,totalNoOfItemsId: '' //the html if of the total no of items
 	,_pagination: {'pageNo': 1, 'pageSize': 30} //the pagination details
 	,_searchCriteria: {} //the searching criteria
+	,_tooltipObj: null //the tooltip object
+	
+	,setToolTipCommentsObj: function(tooltipObj) {
+		this._tooltipObj = tooltipObj;
+		return this;
+	}
 	
 	,_loadChosen: function () {
 		$$(".chosen").each(function(item) {
@@ -66,84 +72,6 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		return this;
 	}
 	
-	,_getCommentRows: function(items) {
-		var tmp = {};
-		tmp.me = this;
-		tmp.newDiv = jQuery('<div class="tipcommentslist"></div>');
-		jQuery.each(items, function(index, value) {
-			jQuery('<fieldset class="row"></fieldset>')
-				.append(jQuery('<legend class="inlineblock type"></legend>').html(value.type))
-				.append(jQuery('<span class="inlineblock who"></span>').html(value.createdBy.person.fullname))
-				.append(jQuery('<span class="inlineblock when"></span>').html(value.created))
-				.append(jQuery('<span class="inlineblock what"></span>').html(value.comments))
-				.appendTo(tmp.newDiv);
-		});
-		return tmp.newDiv;
-	}
-	
-	,_getCommentsData: function(event, api, entityId, entityName, commentsType, pageNo, pageSize) {
-		var tmp = {};
-		tmp.me = this;
-		tmp.pageNo = (pageNo || null);
-		tmp.pageSize = (pageSize || null);
-		tmp.data = {'entityId': entityId, 'entity': entityName, 'type': commentsType, 'pageNo': tmp.pageNo, 'pageSize': tmp.pageSize};
-		
-		jQuery.ajax({
-			url: '/ajax/getComments', // Use href attribute as URL
-			data: tmp.data,
-			type: 'POST',
-			dataType: 'json'
-		})
-		.then(function(result) {
-			
-			// Set the tooltip content upon successful retrieval
-			tmp.result = 'Nothing found'
-				if(result.items && result.items instanceof Array && result.items.length > 0) {
-					tmp.result = tmp.me._getCommentRows(result.items);
-				}
-			api.set('content.text', tmp.result);
-			
-			//api.set('content.text', );
-		}, function(xhr, status, error) {
-			// Upon failure... set the tooltip content to error
-			api.set('content.text', status + ': ' + error);
-		});
-		
-		return 'Loading...'; // Set some initial text
-	}
-	
-	,_getComments: function(btn, event, entityId, entityName, commentsType) {
-		var tmp = {};
-		tmp.me = this;
-		jQuery(btn).qtip({
-			position: {
-	            my: 'right center',
-	            at: 'left center',
-	            target: jQuery(btn),
-	            viewport: jQuery(window)
-	        },
-			overwrite: false, // Don't overwrite tooltips already bound
-			show: {
-                event: event.type, // Use the same event type as above
-                ready: true // Show immediately - important!
-            },
-            hide: {
-                fixed: true,
-                delay: 300
-            },
-            style: {
-                classes: 'qtip-bootstrap qtip-shadow'
-            },
-            content: {
-            	text: function(event, api) {
-            		return tmp.me._getCommentsData(event, api, entityId, entityName, commentsType);
-            	},
-            	title: function(event, api) {
-            		return 'Comments:';
-            	}
-            }
-		});
-	}
 	
 	,_getResultRow: function(row, isTitle) {
 		var tmp = {};
@@ -177,9 +105,9 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			.insert({'bottom': new Element('span', {'class': 'cell  isordered'}).update(isTitle === true ? row.isOrdered : (row.isOrdered ? new Element('span', {'class': 'ticked inlineblock'}) : '')) })
 			.insert({'bottom': new Element('span', {'class': 'cell  eta'}).update(row.eta) })
 			.insert({'bottom': new Element('span', {'class': 'cell  comments'}).update(
-				isTitle === true? 'Comments': new Element('span', {'class': 'cuspntr'}).update('show comments')
+				isTitle === true? 'Comments': new Element('span', {'class': 'cuspntr', 'tooltipcomments_entity': 'OrderItem', 'tooltipcomments_entityid': row.id}).update('show comments')
 					.observe('mouseover', function(event) {
-						tmp.me._getComments(this, event, row.id, 'OrderItem', 1);
+						tmp.me._tooltipObj._getComments(this, event);
 					})
 			) })
 		return tmp.newDiv;

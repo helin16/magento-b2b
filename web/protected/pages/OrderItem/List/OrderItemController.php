@@ -41,6 +41,7 @@ class OrderItemController extends BPCPageAbstract
 		$js .= 'pageJs._infoTypes = {"custName": ' . OrderInfoType::ID_CUS_NAME. ', "custEmail" : ' . OrderInfoType::ID_CUS_EMAIL . ', "qty": ' . OrderInfoType::ID_QTY_ORDERED . '};';
 		$js .= 'pageJs.setCallbackId("getOrderitems", "' . $this->getOrderItemsBtn->getUniqueID(). '")';
 			$js .= '.setSearchCriteria(' . json_encode($this->_getViewPreference()) . ')';
+			$js .= '.setToolTipCommentsObj(new TooltipComments(pageJs))';
 			$js .= '.init();';
 		$js .= '$("searchBtn").click();';
 		return $js;

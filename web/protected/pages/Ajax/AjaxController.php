@@ -22,7 +22,14 @@ class AjaxController extends TService
   		if(!isset($this->Request['method']) || ($method = trim($this->Request['method'])) === '' || !method_exists($this, ($method = '_' .$method)))
   			die (BPCPageAbstract::show404Page('Invalid request',"No method passed in."));
   		
-		echo $this->$method($_REQUEST);
+		try
+		{
+			echo $this->$method($_REQUEST);
+		} 
+		catch (Exception $ex)
+		{
+			echo $ex->getMessage();
+		}
   	}
 	/**
 	 * Getting the comments for an entity
@@ -34,10 +41,7 @@ class AjaxController extends TService
   	private function _getComments(Array $params)
   	{
   		if(!isset($params['entityId']) || !isset($params['entity']) || ($entityId = trim($params['entityId'])) === '' || ($entity = trim($params['entity'])) === '')
-  		{	
-  			echo 'SYSTEM ERROR: INCOMPLETE DATA PROVIDED';
-  			return;
-  		}
+  			throw  new Exception('SYSTEM ERROR: INCOMPLETE DATA PROVIDED');
   		
   		$pageSize = (isset($params['pageSize']) && ($pageSize = trim($params['pageSize'])) !== '' ? $pageSize : 1);
   		$pageNo = (isset($params['pageNo']) && ($pageNo = trim($params['pageNo'])) !== '' ? $pageNo : DaoQuery::DEFAUTL_PAGE_SIZE);

@@ -21,7 +21,7 @@ class LatestETAPanel extends TTemplateControl
 	{
 		parent::onInit($param);
 		
-		$scriptArray = $this->_loadJsAndCssFiles(get_class($this));
+		$scriptArray = BPCPageAbstract::getLastestJS(get_class($this));
 		foreach($scriptArray as $key => $value)
 		{
 			if(($value = trim($value)) !== '')
@@ -82,47 +82,6 @@ class LatestETAPanel extends TTemplateControl
 		}
 		
 		$param->ResponseData = StringUtilsAbstract::getJson($result, $error);
-	}
-	
-	private function _loadJsAndCssFiles($className)
-	{
-		$array = array('js' => '', 'css' => '');
-		try
-		{
-			//loading controller.js
-			$class = new ReflectionClass($className);
-			$fileDir = dirname($class->getFileName()) . DIRECTORY_SEPARATOR;
-			if (is_dir($fileDir))
-			{
-				//loop through the directory to find the lastes js version or css version
-				$lastestJs = $lastestJsVersionNo = $lastestCss = $lastestCssVersionNo = '';
-				foreach(glob($fileDir . '*.{js,css}', GLOB_BRACE) as $file)
-				{
-					preg_match("/^" . $className . "\.([0-9]+\.)?(js|css)$/i", basename($file), $versionNo);
-					if (isset($versionNo[0]) && isset($versionNo[1]) && isset($versionNo[2]))
-					{
-						$type = trim(strtolower($versionNo[2]));
-						$version = str_replace('.', '', trim($versionNo[1]));
-						if ($type === 'js') //if loading a javascript
-						{
-							if ($lastestJs === '' || $version > $lastestJsVersionNo)
-								$array['js'] = trim($versionNo[0]);
-						}
-						else if ($type === 'css')
-						{
-							if ($lastestCss === '' || $version > $lastestCssVersionNo)
-								$array['css'] = trim($versionNo[0]);
-						}
-					}
-				}
-			}
-			unset($className, $class, $fileDir, $lastestJs, $lastestJsVersionNo, $lastestCss, $lastestCssVersionNo);
-		}
-		catch(Exception $e)
-		{
-			//we are not doing anything if we failed here!
-		}
-		return $array;
 	}
 }
 ?>
