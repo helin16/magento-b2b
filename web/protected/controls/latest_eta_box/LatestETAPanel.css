@@ -1,6 +1,17 @@
+#dtw_eta .row .order_no {
+	cursor:pointer;
+	font-weight:bold;
+}
+#dtw_eta .row .order_no:hover {
+	text-decoration: underline;
+}
+
+
+/*
 #dtw_eta {
 	width:600px;
 }
+
 
 #dtw_eta .row .sku {
 	width:100px;
@@ -11,3 +22,4 @@
 #dtw_eta .row .eta {
 	width:100px;
 }
+*/
