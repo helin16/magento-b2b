@@ -32,6 +32,7 @@ select.isordered {
 	height:16px;
 	width: 16px;
 }
+.cell.comments .cuspntr:hover,
 .cell.orderno .orderNolink:hover {
 	text-decoration: underline;
 }

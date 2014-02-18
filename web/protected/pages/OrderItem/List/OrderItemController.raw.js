@@ -9,6 +9,12 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 	,totalNoOfItemsId: '' //the html if of the total no of items
 	,_pagination: {'pageNo': 1, 'pageSize': 30} //the pagination details
 	,_searchCriteria: {} //the searching criteria
+	,_tooltipObj: null //the tooltip object
+	
+	,setToolTipCommentsObj: function(tooltipObj) {
+		this._tooltipObj = tooltipObj;
+		return this;
+	}
 	
 	,_loadChosen: function () {
 		$$(".chosen").each(function(item) {
@@ -66,6 +72,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		return this;
 	}
 	
+	
 	,_getResultRow: function(row, isTitle) {
 		var tmp = {};
 		tmp.me = this;
@@ -98,7 +105,10 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			.insert({'bottom': new Element('span', {'class': 'cell  isordered'}).update(isTitle === true ? row.isOrdered : (row.isOrdered ? new Element('span', {'class': 'ticked inlineblock'}) : '')) })
 			.insert({'bottom': new Element('span', {'class': 'cell  eta'}).update(row.eta) })
 			.insert({'bottom': new Element('span', {'class': 'cell  comments'}).update(
-				isTitle === true? 'Comments': ''
+				isTitle === true? 'Comments': new Element('span', {'class': 'cuspntr', 'tooltipcomments_entity': 'OrderItem', 'tooltipcomments_entityid': row.id}).update('show comments')
+					.observe('mouseover', function(event) {
+						tmp.me._tooltipObj._getComments(this, event);
+					})
 			) })
 		return tmp.newDiv;
 	}
