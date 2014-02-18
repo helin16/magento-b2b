@@ -152,7 +152,11 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.returnDiv = new Element('div', {'class': 'operationDiv'});
 		tmp.returnDiv.insert({'bottom': tmp.selBox});
 		if(tmp.hasStock === 'Y')
-			tmp.returnDiv.insert({'bottom': new Element('input', {'type': 'hidden', 'update_order_item': 'eta', 'value': '0001-01-01 00:00:00'}) })
+		{
+			tmp.returnDiv
+				.insert({'bottom': new Element('input', {'type': 'hidden', 'update_order_item': 'eta', 'value': '0001-01-01 00:00:00'}) })
+				.insert({'bottom': new Element('input', {'type': 'hidden', 'update_order_item': 'isOrdered', 'value': 'false'}) });
+		}	
 		
 		return tmp.returnDiv;
 	}

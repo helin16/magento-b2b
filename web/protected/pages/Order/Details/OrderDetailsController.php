@@ -133,7 +133,7 @@ class OrderDetailsController extends BPCPageAbstract
 				$sku = trim($obj->orderItem->product->sku);
 				$orderItem->setProduct(Product::get($sku));
 				
-				$isOrdered = (isset($obj->$for->isOrdered) && (bool)$obj->$for->isOrdered === true) ? true : false;
+				$isOrdered = (isset($obj->$for->isOrdered) && ($obj->$for->isOrdered === true || $obj->$for->isOrdered === 'true')) ? true : false;
 				$orderItem->setIsOrdered($isOrdered);
 				
 				FactoryAbastract::service('OrderItem')->save($orderItem);
