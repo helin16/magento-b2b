@@ -94,6 +94,8 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		var tmp = {};
 		tmp.me = this;
 		tmp.hasStock = (orderItem.eta === '' ? '' : (orderItem.eta === '0001-01-01 00:00:00' ? 'Y' : 'N'));
+		tmp.isOrdered = (orderItem.isOrdered === false ? false : true);
+		
 		if(tmp.me._editMode.purchasing === false) {
 			tmp.newDiv = new Element('div', {'class': 'order_item_details'});
 			if(tmp.hasStock === '')
@@ -101,18 +103,26 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			return tmp.newDiv
 				.insert({'bottom': tmp.me._getfieldDiv('hasStock?: ', tmp.hasStock) })
 				.insert({'bottom': tmp.me._getfieldDiv('ETA: ', orderItem.eta) })
-				.insert({'bottom': tmp.me._getfieldDiv('Comments: ', new Element('span', {'class': 'comment', 'comment_type': tmp.me.comment_type_purchasing, 'entity_name': 'OrderItem' }).update('click me') ) });
+				.insert({'bottom': tmp.me._getfieldDiv('Comments: ', new Element('span', {'class': 'comment', 'comment_type': tmp.me.comment_type_purchasing, 'entity_name': 'OrderItem' }).update('click me') ) })
+				.insert({'bottom': tmp.me._getfieldDiv('Is Ordered: ', new Element('span', {}).update((tmp.isOrdered === true ? 'Y' : 'N'))  ) });
 		}
+		
 		tmp.getEditDiv = function(hasStock, eta) {
 			tmp.etaBox = new Element('input', {'type': 'text', 'placeholder': 'ETA:', 'update_order_item': 'eta', 'id': 'order_item_' + orderItem.id, 'readonly': true, 'value': eta ? eta : ''});
-			return new Element('div')
+			tmp.returnDiv = new Element('div')
 				.insert({'bottom': tmp.me._getfieldDiv('ETA:', tmp.etaBox) })
 				.insert({'bottom': tmp.me._getfieldDiv('Comments: ', new Element('input', {'update_order_item': 'comments', 'placeholder': 'The reason'})) })
+				.insert({'bottom': tmp.me._getfieldDiv('Is Ordered: ', new Element('input', {'type': 'checkbox', 'update_order_item': 'isOrdered', 'is_ordered': 'is_ordered'}) ) })
 				.insert({'bottom': new Element('a', {'href': 'javascript: void(0);'}).update('cancel')
 					.observe('click', function() {
 						$(this).up('.operationDiv').update(tmp.me._getHasStockSel('Has Stock?', hasStock, tmp.func));
 					})
-				})
+				});
+			
+			if(tmp.isOrdered === true)
+				$(tmp.returnDiv).down('[is_ordered]').writeAttribute("checked", "checked");
+			
+			return tmp.returnDiv;
 		};
 		tmp.func = function() {
 			//remove error msg
@@ -128,7 +138,10 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					item.remove();
 				});
 				if($F(this) === 'Y')
+				{	
 					$(this).up('.operationDiv').insert({'bottom': new Element('input', {'type': 'hidden', 'update_order_item': 'eta', 'value': '0001-01-01 00:00:00'}) });
+					$(this).up('.operationDiv').insert({'bottom': new Element('input', {'type': 'hidden', 'update_order_item': 'isOrdered', 'value': 'false'}) });
+				}	
 			}	
 		};
 		if(tmp.hasStock === 'N') {
@@ -412,8 +425,12 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				
 				tmp.fields.each(function(field) {
 					tmp.fieldName = field.readAttribute(attrName);
-					tmp.value = $F(field);
-					if(tmp.value.blank()) {
+					if(field.readAttribute('type') !== 'checkbox')
+						tmp.value = $F(field);
+					else
+						tmp.value = $(field).checked;
+					
+					if((typeof tmp.value == 'string') && tmp.value.blank()) {
 						field.insert({'before': new Element('div', {'class': 'msgDiv errorMsgDiv'}).update(new Element('div', {'class': 'msg'}).update(tmp.fieldName + ' Required!') ) });
 						tmp.hasError = true;
 					} else {
