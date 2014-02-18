@@ -22,14 +22,15 @@ class AjaxController extends TService
   		if(!isset($this->Request['method']) || ($method = trim($this->Request['method'])) === '' || !method_exists($this, ($method = '_' .$method)))
   			die (BPCPageAbstract::show404Page('Invalid request',"No method passed in."));
   		
-		$this->$method($_REQUEST);
+		echo $this->$method($_REQUEST);
   	}
-
-  	private function _test(Array $params)
-  	{
-  		var_dump($params);
-  	}
-  	
+	/**
+	 * Getting the comments for an entity
+	 * 
+	 * @param array $params
+	 * 
+	 * @return string The json string
+	 */  	
   	private function _getComments(Array $params)
   	{
   		if(!isset($params['entityId']) || !isset($params['entity']) || ($entityId = trim($params['entityId'])) === '' || ($entity = trim($params['entity'])) === '')
@@ -37,15 +38,24 @@ class AjaxController extends TService
   			echo 'SYSTEM ERROR: INCOMPLETE DATA PROVIDED';
   			return;
   		}
-  		if(!isset($params['type']) || ($commentType = $params['type']) === '')
-  			$commentType = 'NORMAL';
   		
+  		$pageSize = (isset($params['pageSize']) && ($pageSize = trim($params['pageSize'])) !== '' ? $pageSize : 1);
+  		$pageNo = (isset($params['pageNo']) && ($pageNo = trim($params['pageNo'])) !== '' ? $pageNo : DaoQuery::DEFAUTL_PAGE_SIZE);
+  		$orderBy = array(); //TODO: need to figure out a way to pass in the order by params
+  		
+  		$where ='entityName = ? and entityId = ?';
+  		$params = array($entity, $entityId);
+  		if(isset($params['type']) && ($commentType = $params['type']) !== '')
+  		{
+  			$where .= 'and type = ?';
+  			$params[] = trim($commentType);
+  		}
   		$returnArray = json_encode(array());
-  		$commentsArray = FactoryAbastract::service('Comments')->findByCriteria('entityName = ? and entityId = ? and type = ?', array($entity, $entityId, $commentType), true);
-  		if(count($commentsArray) > 0)
-  			$returnArray = json_encode(array_map(create_function('$a', 'return $a->getJson();'), $commentsArray));
-  		echo $returnArray;
-  		return;
+  		$commentsArray = FactoryAbastract::service('Comments')->findByCriteria($where, $params, true, $pageSize, $pageNo, $orderBy);
+  		$results = array();
+  		$results['items'] = array_map(create_function('$a', 'return $a->getJson();'), $commentsArray);
+  		$results['pageStats'] = FactoryAbastract::service('OrderItem')->getPageStats();
+  		return json_encode($results);
   	}
 
 }

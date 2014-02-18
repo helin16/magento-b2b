@@ -5,12 +5,17 @@ var PageJs = new Class.create();
 PageJs.prototype = Object.extend(new BPCPageJs(), {
 	_order: null //the order object
 	,_orderStatuses: [] //the order statuses object
+	,_paymentMethods: []
 	,_orderItems: [] //the order items on that order
 	,_resultDivId: '' //the result div id
+	,_couriers: []	
 	,_editMode: {'purchasing': false, 'warehouse': false, 'accounting': false, 'status': false} //the edit mode for purchasing and warehouse
 	,_commentsDiv: {'pagination': {'pageSize': 10, 'pageNo': 1}, 'resultDivId': '', 'type': ''} //the pagination for the comments
 	,infoType_custName : 1
 	,infoType_custEmail : 2
+	,order_status_picked: '7'
+	,comment_type_warehouse: 'WAREHOUSE'
+	,comment_type_purchasing: 'PURCHASING'	
 	
 	,setEditMode: function(editPurchasing, editWH, editAcc, editStatus) {
 		this._editMode.purchasing = (editPurchasing || false);
@@ -25,6 +30,22 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		this._orderItems = orderItems;
 		this._orderStatuses = orderStatuses;
 		return this;
+	}
+	
+	/* *** This function sets all the couriers to the class property *** */
+	,setCourier: function(couriers) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.me._couriers = couriers;
+		return tmp.me;
+	}
+	
+	/* *** This function sets all the payment methods to the class property *** */
+	,setPaymentMethods: function(paymentMethods) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.me._paymentMethods = paymentMethods;
+		return tmp.me;
 	}
 	
 	,_getAddressDiv: function(title, addr) {
@@ -80,7 +101,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			return tmp.newDiv
 				.insert({'bottom': tmp.me._getfieldDiv('hasStock?: ', tmp.hasStock) })
 				.insert({'bottom': tmp.me._getfieldDiv('ETA: ', orderItem.eta) })
-				.insert({'bottom': tmp.me._getfieldDiv('Comments: ', tmp.me._showLastestComments()) });
+				.insert({'bottom': tmp.me._getfieldDiv('Comments: ', new Element('span', {'class': 'comment', 'comment_type': tmp.me.comment_type_purchasing, 'entity_name': 'OrderItem' }).update('click me') ) });
 		}
 		tmp.getEditDiv = function(hasStock, eta) {
 			tmp.etaBox = new Element('input', {'type': 'text', 'placeholder': 'ETA:', 'update_order_item': 'eta', 'id': 'order_item_' + orderItem.id, 'readonly': true, 'value': eta ? eta : ''});
@@ -103,13 +124,24 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				$(this).up('.operationDiv').update(tmp.getEditDiv(tmp.hasStock));
 				new Prado.WebUI.TDatePicker({'ID':'order_item_' + orderItem.id,'InputMode':"TextBox",'Format':"yyyy-MM-dd 17:00:00",'FirstDayOfWeek':1,'CalendarStyle':"default",'FromYear':2009,'UpToYear':2024,'PositionMode':"Bottom"});
 			} else {
-				$(this).up('.operationDiv').insert({'bottom': new Element('input', {'type': 'hidden', 'update_order_item': 'eta', 'value': '0001-01-01 00:00:00'}) });
-			}
+				$(this).up('.operationDiv').getElementsBySelector('[update_order_item]').each(function(item) { 
+					item.remove();
+				});
+				if($F(this) === 'Y')
+					$(this).up('.operationDiv').insert({'bottom': new Element('input', {'type': 'hidden', 'update_order_item': 'eta', 'value': '0001-01-01 00:00:00'}) });
+			}	
 		};
 		if(tmp.hasStock === 'N') {
 			return new Element('div', {'class': 'operationDiv'}).update(tmp.getEditDiv('', orderItem.eta));
 		}
-		return tmp.me._getHasStockSel('Has Stock?', tmp.hasStock, tmp.func).wrap(new Element('div', {'class': 'operationDiv'}));
+		
+		tmp.selBox = tmp.me._getHasStockSel('Has Stock?', tmp.hasStock, tmp.func);
+		tmp.returnDiv = new Element('div', {'class': 'operationDiv'});
+		tmp.returnDiv.insert({'bottom': tmp.selBox});
+		if(tmp.hasStock === 'Y')
+			tmp.returnDiv.insert({'bottom': new Element('input', {'type': 'hidden', 'update_order_item': 'eta', 'value': '0001-01-01 00:00:00'}) })
+		
+		return tmp.returnDiv;
 	}
 	
 	,_getWarehouseCell: function(orderItem) {
@@ -118,7 +150,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		if(tmp.me._editMode.warehouse === false) {
 			return new Element('div', {'class': 'order_item_details'})
 				.insert({'bottom': tmp.me._getfieldDiv('Picked?: ', orderItem.isPicked ? 'Y' : 'N') })
-				.insert({'bottom': tmp.me._getfieldDiv('Comments: ', tmp.me._showLastestComments()) });
+				.insert({'bottom': tmp.me._getfieldDiv('Comments: ', new Element('span', {'class': 'comment', 'comment_type': tmp.me.comment_type_warehouse, 'entity_name': 'OrderItem'}).update('click me')  ) });
 		}
 		tmp.func = function() {
 			//remove error msg
@@ -147,7 +179,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		var tmp = {};
 		tmp.me = this;
 		tmp.isTitle = (isTitleRow || false);
-		tmp.newDiv = new Element('div', {'class': 'row ' + (tmp.isTitle === true ? '' : 'productRow')}).store('data', orderItem)
+		tmp.newDiv = new Element('div', {'class': 'row ' + (tmp.isTitle === true ? '' : 'productRow')}).store('data', orderItem).writeAttribute('order_item_id', orderItem.id)
 			.insert({'bottom': new Element('span', {'class': 'inlineblock cell sku'}).update(orderItem.product.sku) })
 			.insert({'bottom': new Element('span', {'class': 'inlineblock cell productName'}).update(orderItem.product.name) })
 			.insert({'bottom': new Element('span', {'class': 'inlineblock cell uprice'}).update(tmp.isTitle === true ? orderItem.unitPrice : tmp.me.getCurrency(orderItem.unitPrice)) })
@@ -197,6 +229,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		var tmp = {};
 		tmp.me = this;
 		tmp.paidAmount = $F($(button).up('.wrapper').down('#paidAmount'));
+		tmp.paymentMethod = $F($(button).up('.wrapper').down('#paymentMethod'));
 		tmp.confDiv = $(button).up('#extraConfDiv');
 		tmp.extraComment = '';
 		
@@ -204,11 +237,17 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			div.remove();
 		});
 		
+		tmp.exception = '';
 		if(tmp.paidAmount === null || tmp.paidAmount.blank() || isNaN(tmp.paidAmount))
+			tmp.exception += 'Paid Amount is NOT valid\n';
+		if(tmp.paymentMethod === null || tmp.paidAmount.blank())
+			tmp.exception += 'Payment Method is NOT selected\n';
+		
+		if(!tmp.exception.blank())
 		{
-			alert('Paid Amount is NOT valid');
+			alert(tmp.exception);
 			return this;
-		}
+		}	
 		
 		tmp.amtDiff = Math.abs(tmp.confDiv.down('#paidAmtDiff').value);
 		tmp.hasErr = false;
@@ -233,7 +272,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		if(tmp.hasErr === true)
 			return this;
 		
-		tmp.me.postAjax(tmp.me.getCallbackId('confirmPayment'), {'paidAmt': tmp.paidAmount, 'amtDiff': tmp.amtDiff, 'extraComment': tmp.extraComment, 'order': tmp.me._order}, {
+		tmp.me.postAjax(tmp.me.getCallbackId('confirmPayment'), {'paidAmt': tmp.paidAmount, 'paymentMethod': tmp.paymentMethod, 'amtDiff': tmp.amtDiff, 'extraComment': tmp.extraComment, 'order': tmp.me._order}, {
 			'onLoading': function (sender, param) { /*$(selBox).disabled = true;*/ }
 			,'onComplete': function (sender, param) {
 				try {
@@ -252,6 +291,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 	,_checkPaidAmount: function(txtBox) {
 		var tmp = {};
 		tmp.me = this;
+		tmp.hasError = false;
 		tmp.paidAmount = $F(txtBox).strip();
 		tmp.paidAmount = tmp.paidAmount.replace(new RegExp('(\\$|\\s|,)', 'g'), '');
 		$(txtBox).value = tmp.paidAmount;
@@ -268,11 +308,22 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			});
 		}
 		
+		tmp.paymentMethodElement = $(txtBox).up('.wrapper').down('#paymentMethod');
+		tmp.paymentMethod = $F(tmp.paymentMethodElement).strip();
+		if(tmp.paymentMethod.blank() || tmp.paymentMethod === null || tmp.paymentMethod === '')
+		{
+			tmp.paymentMethodElement.insert({'before': new Element('div', {'class': 'msgDiv errorMsgDiv'}).update(new Element('div', {'class': 'msg'}).update('Payment Method NOT selected') ) });
+			tmp.hasError = true;
+		}	
+		
 		if(tmp.paidAmount === null || tmp.paidAmount.blank() || isNaN(tmp.paidAmount))
 		{
 			$(txtBox).insert({'before': new Element('div', {'class': 'msgDiv errorMsgDiv'}).update(new Element('div', {'class': 'msg'}).update('Paid Amount is NOT valid') ) });
-			return;
+			tmp.hasError = true;
 		}
+		
+		if(tmp.hasError === true)
+			return;
 		
 		tmp.diff = Math.abs(Math.abs(parseFloat(tmp.paidAmount).toFixed(2)) - Math.abs(parseFloat(tmp.me._order.totalAmount).toFixed(2)));
 		tmp.extraInfoDiv.down('#paidAmtDiff').value = tmp.diff;
@@ -288,21 +339,53 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 								});
 	}
 	
+	,_generateSelectionForPaymentMethod: function(pmArray) {
+		var tmp = {};
+		tmp.me = this;
+		if((pmArray instanceof Array && pmArray.length === 0) || !(pmArray instanceof Array))
+			pmArray = tmp.me._paymentMethods;
+		
+		tmp.selBox = new Element('select', {'id': 'paymentMethod', 'class': 'chosen2', 'title_text': 'Select Payment Method', 'dis_search': 'false'})
+						.insert({'bottom': new Element('option', {'value': ''}).update('')  });
+		pmArray.each(function(item) {
+			tmp.selBox.insert({'bottom': new Element('option', {'value': item.id}).update(item.name) });
+		});
+		return tmp.selBox;
+	}
+	
 	,_getFinanceBtns: function() {
 		var tmp = {};
 		tmp.me = this;
 		if(tmp.me._editMode.accounting !== true) {
 			return '';
 		}
-		return new Element('div', {"class": 'wrapper'})
+		return new Element('div', {"class": 'wrapper financeBtnWrapper'})
+			.insert({'bottom': tmp.me._getfieldDiv('Payment Method:', tmp.me._generateSelectionForPaymentMethod(tmp.me._paymentMethods)
+					.observe('change', function() {
+						if(((tmp.paymentMethod = $F(this).strip()) !== '' && tmp.paymentMethod !== null && !tmp.paymentMethod.blank())  && 
+						   (tmp.paidAmount = $F($(this).up('.financeBtnWrapper').down('#paidAmount')).strip()) !== '' && (!tmp.paidAmount.blank()) && (tmp.paidAmount !== null))
+						{
+							tmp.me._checkPaidAmount($(this).up('.financeBtnWrapper').down('#paidAmount'));
+						}	
+					})
+			) })
 			.insert({'bottom': tmp.me._getfieldDiv('Paid:',new Element('input', {'type': 'text', 'id': 'paidAmount'})
-				.observe('change', function(){
-					tmp.me._checkPaidAmount(this);
+				.observe('change', function() {
+					if((tmp.paymentMethod = $F($(this).up('.financeBtnWrapper').down('#paymentMethod')).strip()) !== '' && !tmp.paymentMethod.blank() && tmp.paymentMethod !== null)
+						tmp.me._checkPaidAmount(this);
+					else 
+					{
+						$(this).up('.financeBtnWrapper').getElementsBySelector('.msgDiv').each(function(item) {
+							item.remove();
+						});
+						$(this).up('.financeBtnWrapper').down('#extraConfDiv').getElementsBySelector('.fieldDiv').each(function(item) {
+							item.remove();
+						});
+					}	
 				})
 			) })
 			.insert({'bottom': new Element('div', {'id': 'extraConfDiv'}) 
 				.insert({'bottom': new Element('input', {'type': 'hidden', 'id': 'paidAmtDiff'}) })
-			
 			});
 	}		
 	
@@ -406,9 +489,10 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 						});
 						
 						if(tmp.hasError === true)
+						{
+							alert('fasfdds');
 							return;
-						
-						console.debug(tmp.finalOrderItemArray);
+						}	
 						
 						tmp.me.postAjax(tmp.me.getCallbackId('updateOIForWH'), {'orderItems': tmp.finalOrderItemArray, 'order': tmp.me._order}, {
 							'onLoading': function (sender, param) { /*$(selBox).disabled = true;*/ }
@@ -500,7 +584,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					$(commentsResultDivId).down('.header').insert({'after': tmp.me._getCommentsRow(tmp.result) });
 					tmp.commentsBox.setValue('');
 				} catch (e) {
-					console.error(e);
+					alert(e);
 				}
 				tmp.originValue = $(btn).retrieve('originValue');
 				$(btn).removeClassName('disabled').setValue(tmp.originValue).disabled = false;
@@ -527,13 +611,275 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		return tmp.selBox;
 	}
 	
+	/// this function generates a select box populating all the courier infos ///
+	,_getCourierList: function () {
+		var tmp = {};
+		tmp.me = this;
+		tmp.courierSelect = new Element('select', {'class': 'chosen', 'title_text': 'Select Post Option', 'dis_search': 'false'})
+			.insert({'bottom': new Element('option', {'value': ''}).update('') });
+		tmp.me._couriers.each(function(courier) {
+			tmp.courierSelect.insert({'bottom': new Element('option', {'value': courier.id}).update(courier.name) });
+		});
+		return tmp.courierSelect;
+	}
+	
+	,_checkAndSubmitShippingOptions: function(button) {
+		var tmp = {};
+		tmp.me = this;
+		
+		tmp.hasErr = false;
+		tmp.finalShippingDataArray = {};
+		
+		tmp.shippingDiv = $(button).up('#shippingInfoDiv');
+		tmp.shippingDiv.getElementsBySelector('.msgDiv').each(function(errorDiv) {
+			errorDiv.remove();
+		});
+		
+		tmp.shippingDiv.getElementsBySelector('.shipmentInfo').each(function(item) {
+			tmp.insertData = false;
+			tmp.itemValue = $F(item).strip();
+			if(item.readAttribute('mandatory') === 'true')
+			{	
+				if(tmp.itemValue === null || !tmp.itemValue || tmp.itemValue === '' || tmp.itemValue.blank())
+				{
+					item.insert({'before': new Element('div', {'class': 'msgDiv errorMsgDiv'}).update(new Element('div', {'class': 'msg'}).update(item.readAttribute('displayValue') + ' is Mandatory!') ) });
+					tmp.hasErr = true;
+				}
+				else
+				{
+					if(item.hasAttribute('amount') && item.readAttribute('amount') === 'true')
+					{
+						tmp.itemValue = tmp.itemValue.replace(new RegExp('(\\$|\\s|,)', 'g'), '');
+						$(item).value = tmp.itemValue;
+						if(isNaN(tmp.itemValue))
+						{
+							item.insert({'before': new Element('div', {'class': 'msgDiv errorMsgDiv'}).update(new Element('div', {'class': 'msg'}).update(item.readAttribute('displayValue') + ' is Not Valid!') ) });
+							tmp.hasErr = true;
+						}
+						else
+							tmp.insertData = true;
+					}
+					else
+						tmp.insertData = true;
+				}
+			}
+			else
+				tmp.insertData = true;
+			
+			if(tmp.insertData === true && tmp.hasErr === false)
+			{
+				if(!(item.readAttribute('dataType') in tmp.finalShippingDataArray))
+					tmp.finalShippingDataArray[item.readAttribute('dataType')] = [];
+				
+				tmp.finalShippingDataArray[item.readAttribute('dataType')].push(tmp.itemValue);
+			}
+		});
+		
+		if(tmp.hasErr === true)
+			return;
+		
+		tmp.me.postAjax(tmp.me.getCallbackId('updateShippingInfo'), {'shippingInfo': tmp.finalShippingDataArray, 'order': tmp.me._order}, {
+			'onLoading': function (sender, param) { /*$(selBox).disabled = true;*/ }
+			,'onComplete': function (sender, param) {
+				try {
+					tmp.result = tmp.me.getResp(param, false, true);
+					alert('Saved Successfully!');
+					location.reload();
+				} 
+				catch (e) {
+					alert(e);
+					return;
+				}
+			}
+		});
+	}
+	
+	/* Generating the EDITABLE Shipping Info Receiver and Courier details. Function is used by _getShippingRow() */
+	,_generateShippingReceiverInfoDetailsForEdit: function() {
+		return new Element('div', {'class': 'row'})
+				.insert({'bottom': new Element('span', {'class': 'courier'})
+					.insert({'bottom': tmp.me._getfieldDiv('Courier:', tmp.me._getCourierList().addClassName('shipmentInfo')
+																					   .writeAttribute('dataType', 'courierId')
+																					   .writeAttribute('displayValue', 'Courier Info')
+																					   .writeAttribute('mandatory', 'true')
+																					   
+						) })
+				})
+				.insert({'bottom': new Element('span', {'class': 'contactName'})
+					.insert({'bottom': tmp.me._getfieldDiv('Contact Name:', new Element('input', {'type': 'text', 'dataType': 'contactName', 'displayValue': 'Contact Name', 'class': 'shipmentInfo'}).writeAttribute('value', tmp.me._order.address.shipping.contactName) ) })
+				})
+				.insert({'bottom': new Element('span', {'class': 'contactNo'})
+					.insert({'bottom': tmp.me._getfieldDiv('Contact No:', new Element('input', {'type': 'text', 'dataType': 'contactNo', 'displayValue': 'Contact No', 'class': 'shipmentInfo'}).writeAttribute('value', tmp.me._order.address.shipping.contactNo) ) })
+				});
+	}
+	
+	/* Generating the EDITABLE Shipping Address Info details. Function is used by _getShippingRow() */
+	,_generateShippingAddressDetailsForEdit: function() {
+		return new Element('div', {'class': 'row'})
+				.insert({'bottom': new Element('span', {'class': 'street'})
+					.insert({'bottom': tmp.me._getfieldDiv('Street:', new Element('input', {'type': 'text', 'mandatory': 'true', 'dataType': 'street', 'displayValue': 'Street', 'class': 'shipmentInfo'}).writeAttribute('value', tmp.me._order.address.shipping.street) ) })
+				})
+				.insert({'bottom': new Element('span', {'class': 'city'})
+					.insert({'bottom': tmp.me._getfieldDiv('City:', new Element('input', {'type': 'text', 'mandatory': 'true', 'dataType': 'city', 'displayValue': 'City', 'class': 'shipmentInfo'}).writeAttribute('value', tmp.me._order.address.shipping.city) ) })
+				})
+				.insert({'bottom': new Element('span', {'class': 'region'})
+					.insert({'bottom': tmp.me._getfieldDiv('Region:', new Element('input', {'type': 'text', 'mandatory': 'true', 'dataType': 'region', 'displayValue': 'Region', 'class': 'shipmentInfo'}).writeAttribute('value', tmp.me._order.address.shipping.region) ) })
+				})
+				.insert({'bottom': new Element('span', {'class': 'country'})
+					.insert({'bottom': tmp.me._getfieldDiv('Country:', new Element('input', {'type': 'text', 'mandatory': 'true', 'dataType': 'country', 'displayValue': 'Counter', 'class': 'shipmentInfo'}).writeAttribute('value', tmp.me._order.address.shipping.country) ) })
+				})
+				.insert({'bottom': new Element('span', {'class': 'postCode'})
+					.insert({'bottom': tmp.me._getfieldDiv('Post Code:', new Element('input', {'type': 'text', 'mandatory': 'true', 'dataType': 'postCode', 'displayValue': 'Post Code', 'class': 'shipmentInfo'}).writeAttribute('value', tmp.me._order.address.shipping.postCode) ) })
+				});
+	}
+	
+	/* Generating the EDITABLE Other Shipping Info details. Function is used by _getShippingRow() */
+	,_generateOtherShippingDetailsForEdit: function() {
+		return new Element('div', {'class': 'row'}) 
+				.insert({'bottom': new Element('span', {'class': 'noOfCartons'})
+					.insert({'bottom': tmp.me._getfieldDiv('No Of Carton(s):', new Element('input', {'type': 'text', 'mandatory': 'true', 'dataType': 'noOfCartons', 'displayValue': 'No Of Carton', 'class': 'shipmentInfo'}) ) })
+				})
+				.insert({'bottom': new Element('span', {'class': 'consignmentNo'})
+					.insert({'bottom': tmp.me._getfieldDiv('Consignment No:', new Element('input', {'type': 'text', 'mandatory': 'true', 'dataType': 'conNoteNo', 'displayValue': 'Consignment No', 'class': 'shipmentInfo'}) ) })
+				})
+				.insert({'bottom': new Element('span', {'class': 'estShippingCost'})
+					.insert({'bottom': tmp.me._getfieldDiv('Estimated Shipping Cost', new Element('input', {'type': 'text', 'mandatory': 'true', 'amount': 'true', 'dataType': 'estShippingCost', 'displayValue': 'Est Shipping Cost', 'class': 'shipmentInfo number'}) ) })
+				});
+	}
+	
+	/* Generating the EDITABLE Shipping Info details */
 	,_getShippingRow: function() {
 		var tmp = {};
 		tmp.me = this;
-		return  new Element('div', {'class': 'shippingWrapper'})
+		
+		return  new Element('div', {'class': 'shippingWrapper', 'id': 'shippingInfoDiv'})
+			.insert({'bottom': new Element('div', {'class': 'row header'}).update('Receiver Info') })
+			.insert({'bottom': tmp.me._generateShippingReceiverInfoDetailsForEdit() })
+			.insert({'bottom': new Element('div', {'class': 'row header'}).update('Shipping Address Info') })
+			.insert({'bottom': tmp.me._generateShippingAddressDetailsForEdit() })
+			.insert({'bottom': new Element('div', {'class': 'row header'}).update('Other Shipping Details') })
+			.insert({'bottom': tmp.me._generateOtherShippingDetailsForEdit() })
 			.insert({'bottom': new Element('div', {'class': 'row'})
-				.insert({'bottom': tmp.me._getfieldDiv('Courier:', '') })
+				.insert({'bottom': tmp.me._getfieldDiv('Delivery Instruction:', new Element('textarea', {'mandatory': 'false', 'dataType': 'deliveryInstructions', 'class': 'shipmentInfo'}) ).addClassName('deliveryIns') })
+				.insert({'bottom': new Element('span', {'class': 'submitShipping fieldDiv'})
+					.insert({'bottom': new Element('span', {'class': 'button'}).update('Save')
+							.observe('click', function() {
+								tmp.me._checkAndSubmitShippingOptions(this);
+							})
+					})
+				})
 			});
+	}
+	
+	/* *** Generating the VIEWABLE Shipping Details *** */
+	,_viewShippingDetails: function(shippingInfos) {
+		var tmp = {};
+		tmp.me = this;
+		
+		if(!shippingInfos instanceof Array || shippingInfos.length === 0)
+			shippingInfos = tmp.me._order.shippment;
+		
+		tmp.finalReturnDiv = new Element('div', {'class': 'viewShipping'});
+		
+		shippingInfos.each(function(item) {
+			tmp.returnDiv = new Element('div');
+			tmp.returnDiv.insert({'bottom': new Element('div', {}) 
+				.insert({'bottom': tmp.me._getfieldDiv('Receiver:', item.receiver) })
+				.insert({'bottom': tmp.me._getfieldDiv('Contact No:', (item.contact)) })
+				.insert({'bottom': tmp.me._getfieldDiv('Shipping Address:', item.address) })
+				.insert({'bottom': tmp.me._getfieldDiv('Courier:', (item.courier.name)) })
+			})
+			.insert({'bottom': new Element('div', {})
+				.insert({'bottom': tmp.me._getfieldDiv('No Of Cartons:', item.noOfCartons) })
+				.insert({'bottom': tmp.me._getfieldDiv('Est Shipping Cost:', (item.estShippingCost)) })
+				.insert({'bottom': tmp.me._getfieldDiv('Consignment No:', item.conNoteNo) })
+				.insert({'bottom': tmp.me._getfieldDiv('Shipping Date:', item.shippingDate) })
+			})
+			.insert({'bottom': new Element('div', {})
+				.insert({'bottom': tmp.me._getfieldDiv('Delivery Instructions:', new Element('textarea', {'readonly': 'readonly'}).update(item.deliveryInstructions).addClassName('deliveryIns') ) })
+				
+			});
+			
+			tmp.finalReturnDiv.insert({'bottom': tmp.returnDiv});
+		});
+		
+		return tmp.finalReturnDiv;
+	}
+	
+	/* *** This function will generate the comments in a organized manner to be used in the  *** */
+	,_generateCommentsForDisplayInQTip: function(comments) {
+		var tmp = {};
+		tmp.me = this;
+		
+		tmp.counter = 0;
+		tmp.returnDiv = new Element('div', {});
+		comments.each(function(item) {
+			tmp.returnDiv.insert({'bottom': new Element('div', {})  
+				.insert({'bottom': tmp.me._getfieldDiv((++tmp.counter) + '.', item.comments.strip()) })
+			});
+		});
+		return tmp.returnDiv;
+	}
+	
+	/* *** This function will bind the JQuery QTip event to all the OrderItem Purchasing/Warehouse Comment link(s) *** */
+	,_bindAllCommentsForOrderItems: function() {
+		var tmp = {};
+		jQuery('.productlist .comment').qtip({
+			content: {
+				text: function(event, api) {
+					tmp.orderId = api.elements.target.parents('.productRow').attr('order_item_id');
+					tmp.commentType = api.elements.target.attr('comment_type');
+					tmp.entityName = api.elements.target.attr('entity_name');
+					tmp.data = {'entityId': tmp.orderId, 'entity': tmp.entityName, 'type': tmp.commentType};
+					
+                    jQuery.ajax({
+                        url: '/ajax/getComments', // Use href attribute as URL
+                        data: tmp.data,
+                        type: 'POST',
+                        dataType: 'json'
+                    })
+                    .then(function(result) {
+                        // Set the tooltip content upon successful retrieval
+                        if((result instanceof Array && result.length === 0) || result === null || !result || result === undefined)
+                        	api.set('content.text', 'Nothing found');
+                        else
+                        {
+                        	if(result instanceof Array) 
+                        		api.set('content.text', pageJs._generateCommentsForDisplayInQTip(result));
+                        }
+                    	//api.set('content.text', );
+                    }, function(xhr, status, error) {
+                        // Upon failure... set the tooltip content to error
+                        api.set('content.text', status + ': ' + error);
+                    });
+        
+                    return 'Loading...'; // Set some initial text
+                },
+                title: function(event, api) {
+                	return api.elements.target.attr('comment_type') + ' Comments:';
+                },
+				button: true,
+			},
+			show: {
+				event: 'click mouseenter'
+			},
+			hide : {
+				event: 'click',
+				inactive: 5000
+			}
+		});
+	}
+	
+	,_loadChosen: function () {
+		$$(".chosen").each(function(item) {
+			item.store('chosen', new Chosen(item, {
+				no_results_text: "Oops, nothing found!",
+				placeholder_text_single: ((titleText = $(item).readAttribute('title_text').strip()) !== '' ? titleText : 'Select Post Option'),
+				disable_search: ((titleText = $(item).readAttribute('dis_search').strip()) === 'true' ? true : false),
+				width: "100%"
+			}) );
+		});
+		return this;
 	}
 	
 	,load: function(resultdiv) {
@@ -585,6 +931,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			.insert({'bottom': new Element('legend').update('Products') })
 			.insert({'bottom': tmp.productListDiv})
 		});
+		
 		//getting the summray row
 		tmp.newDiv.insert({'bottom': new Element('fieldset', {'class': 'row summary'})
 			.insert({'bottom': new Element('legend').update('Summary') })
@@ -604,10 +951,24 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			.insert({'bottom': new Element('span', {'class': 'warehouseBtns inlineblock'}).update( tmp.me._getWHBtns()				) })
 		});
 		
-		//getting the shippment row
-		tmp.newDiv.insert({'bottom': new Element('fieldset', {'class': 'shipping'})
+		//getting the EDITABLE shippment row
+		if(tmp.me._order.status.id === tmp.me.order_status_picked && tmp.me._editMode.warehouse === true) {
+			tmp.newDiv.insert({'bottom': new Element('fieldset', {'class': 'row shipping'})
+			.insert({'bottom': new Element('legend').update('Shipping') })
 			.insert({'bottom': tmp.me._getShippingRow()  })
-		});
+			});
+		}
+		else
+		{
+			if(tmp.me._order.shippment.length > 0)
+			{
+				tmp.shippingInfos = tmp.me._order.shippment;
+				tmp.newDiv.insert({'bottom': new Element('fieldset', {'class': 'row shipping'})
+					.insert({'bottom': new Element('legend').update('Shipping') })
+					.insert({'bottom': tmp.me._viewShippingDetails(tmp.shippingInfos) })
+				});
+			}
+		}	
 		
 		//getting the comments row
 		tmp.newDiv.insert({'bottom': new Element('fieldset', {'class': 'row commentsWrapper dataTableWrapper'}) 
@@ -636,7 +997,10 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		
 		//load the comments after
 		tmp.me._commentsDiv.resultDivId = 'comments_list';
-		tmp.me._getComments(true);
+		tmp.me._getComments(true)
+			._loadChosen()
+			._bindAllCommentsForOrderItems();
+		
 		return this;
 	}
 });

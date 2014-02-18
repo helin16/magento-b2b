@@ -1,6 +1,7 @@
 <com:TContent ID="MainContent">
 	<com:Application.controls.fancybox.FancyBox />
 	<com:Application.controls.chosen.Chosen />
+	<com:Application.controls.qtip.QTip />
 	<com:TCallback ID="getOrderItemsBtn" onCallBack="Page.getOrderItems" />
 	<div class="pagewrapper login container LoginPanel">
 		<div class="contentDiv">

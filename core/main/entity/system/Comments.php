@@ -189,6 +189,20 @@ class Comments extends BaseEntityAbstract
 	}
 	/**
 	 * (non-PHPdoc)
+	 * @see BaseEntityAbstract::getJson()
+	 */
+	public function getJson($extra = '', $reset = false)
+	{
+		$array = array();
+	    if(!$this->isJsonLoaded($reset))
+	    {
+	    	$array['createdBy'] = array('id'=> $this->getCreatedBy()->getId(), 'person' => $this->getCreatedBy()->getPerson()->getJson());
+	    	$array['updatedBy'] = array('id'=> $this->getUpdatedBy()->getId(), 'person' => $this->getUpdatedBy()->getPerson()->getJson());
+	    }
+	    return parent::getJson($array, $reset);
+	}
+	/**
+	 * (non-PHPdoc)
 	 * @see BaseEntity::__loadDaoMap()
 	 */
 	public function __loadDaoMap()

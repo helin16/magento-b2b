@@ -97,10 +97,23 @@ class Person extends BaseEntityAbstract
     {
         $names = array();
         if(($firstName = trim($this->getFirstName())) !== '')
-        $names[] = $firstName;
+        	$names[] = $firstName;
         if(($lastName = trim($this->getLastName())) !== '')
-        $names[] = $lastName;
+        	$names[] = $lastName;
         return trim(implode(' ', $names));
+    }
+    /**
+     * (non-PHPdoc)
+     * @see BaseEntityAbstract::getJson()
+     */
+    public function getJson($extra = '', $reset = false)
+    {
+    	$array = array();
+    	if(!$this->isJsonLoaded($reset))
+    	{
+    		$array['fullname'] = trim($this->getFullName());
+    	}
+    	return parent::getJson($array, $reset);
     }
     /**
      * (non-PHPdoc)
