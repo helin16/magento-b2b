@@ -1,6 +1,6 @@
 .dataTableWrapper .dataTable .cell[order_status="INSUFFICIENT STOCK"] {
 	background-color: yellow;
-	color: white;
+	color: black;
 }
 .dataTableWrapper .dataTable .cell[order_status="ETA"],
 .dataTableWrapper .dataTable .cell[order_status="STOCK CHECKED"] {

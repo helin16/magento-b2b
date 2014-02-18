@@ -1,59 +1,70 @@
-.orderNo {
-	width: 80px;
+.searchField {
+	width: 22%;
+}
+.searchField label{
+	font-size: 9px;
+}
+.searchField [search_field]{
+	width: 90%;
 }
 
-.orderNo {
+.cell .field_div{
+	display:table-row;
+	padding: 1px 0;
+}
+
+.cell .field_div .inlineblock {
+	display:table-cell;
+}
+.cell .field_div .title{
+	width: 20%;
+	text-align: right;
+	padding: 0 4px 0 0;
+}
+.cell .field_div .divcontent{
+	width: auto;
+}
+
+.orderInfo {
+	width: 20%;
+}
+.orderInfo .orderNo {
 	font-weight: bold;
 	cursor: pointer;
 }
-.orderNo:hover {
+.orderInfo .orderNo:hover {
 	text-decoration: underline;
 }
 
-.orderDate {
-	width: 65px;
-}
-
-.custName {
-	width: 120px;
-}
-
 .shippingAddr {
-	width: 200px;
+	width: auto;
+}
+.shippingAddr.cell .field_div .title{
+	width: auto;
 }
 
 .status {
-	width: 60px;
+	width: 5%;
 }
 
+.purchasing,
+.warehouse,
 .payment {
-	width: 160px;
+	width: 12%;
 }
-.payment .title {
-	width: 100px;
-	text-align: right;
-	padding: 2px 4px 2px 0;
-}
-.payment .passPaymentChecked  {
+
+.icon.ok {
 	background: transparent url(/themes/default/images/i_ok.png) no-repeat left bottom;
-	height:16px;
-	width: 16px;
 }
-
-.qty {
-	margin: 20px 0 0 0;
-	font-weight: normal;
-}
-
-.qty,.addr_addr,.payment,.orderDate,.custEmail {
-	font-size: 9px;
+.icon.warning {
+	background: transparent url(/themes/default/images/i_warning.png) no-repeat left bottom;
 }
 
 .icon {
 	display: inline-block;
 	width: 16px;
 	height: 16px;
-	background-size: 320px auto;
+	background-size: 500px auto;
 	background-color: transparent;
 	background-image: url("/themes/default/images/icons.jpg");
 	background-repeat: none;
@@ -63,25 +74,27 @@
 .addr_addr,.addr_contactNo,.addr_contact_name {
 	display: block;
 }
-
 .addr_contact_name .icon {
-	background-position: -3px -124px;
+	background-position: -10px -199px;
 }
-
+.addr_contact_email .icon {
+	background-position: -204px -199px;
+}
 .addr_contactNo .icon {
-	background-position: -34px -124px;
+	background-position: -58px -199px;
 }
-
 .addr_addr .icon {
-	background-position: -49px -103px;
+	background-position: -83px -170px;
 }
-
-.searchField {
-	width: 22%;
+.orderDate .icon {
+	background-position: -325px -297px;
 }
-.searchField label{
-	font-size: 9px;
+.totalDue .icon {
+	background-position: -83px -297px;
 }
-.searchField [search_field]{
-	width: 90%;
+.paymentdetails .icon {
+	background-position: -251px -297px;
+}
+.vieworderitems .icon {
+	 background-position: -373px -233px;
 }
