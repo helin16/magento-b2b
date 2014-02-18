@@ -1,0 +1,19 @@
+.dataTableWrapper .dataTable .cell[order_status="INSUFFICIENT STOCK"] {
+	background-color: yellow;
+	color: white;
+}
+.dataTableWrapper .dataTable .cell[order_status="ETA"],
+.dataTableWrapper .dataTable .cell[order_status="STOCK CHECKED"] {
+	background-color: orange;
+	color: white;
+}
+.dataTableWrapper .dataTable .cell[order_status="PICKED"],
+.dataTableWrapper .dataTable .cell[order_status="SHIPPED"] {
+	background-color: green;
+	color: white;
+}
+.dataTableWrapper .dataTable .cell[order_status="CANCELLED"],
+.dataTableWrapper .dataTable .cell[order_status="ON HOLD"] {
+	background-color: red;
+	color: white;
+}

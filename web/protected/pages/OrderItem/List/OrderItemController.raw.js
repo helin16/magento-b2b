@@ -100,7 +100,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				 		});
 					})
 			) })
-			.insert({'bottom': new Element('span', {'class': 'cell  orderstatus'}).update(row.order.status.name) })
+			.insert({'bottom': new Element('span', {'class': 'cell  orderstatus', 'order_status': row.order.status.name}).update(row.order.status.name) })
 			.insert({'bottom': new Element('span', {'class': 'cell  qty'}).update(row.qtyOrdered) })
 			.insert({'bottom': new Element('span', {'class': 'cell  isordered'}).update(isTitle === true ? row.isOrdered : (row.isOrdered ? new Element('span', {'class': 'ticked inlineblock'}) : '')) })
 			.insert({'bottom': new Element('span', {'class': 'cell  eta'}).update(row.eta) })
