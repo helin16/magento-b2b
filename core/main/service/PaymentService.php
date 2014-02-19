@@ -7,7 +7,7 @@
  * @author     lhe<helin16@gmail.com>
  *
  */
-class Payment extends BaseServiceAbastract
+class PaymentService extends BaseServiceAbastract
 {
     /**
      * constructor
