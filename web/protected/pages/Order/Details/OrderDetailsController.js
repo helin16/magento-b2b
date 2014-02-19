@@ -853,6 +853,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 	/* *** This function will bind the JQuery QTip event to all the OrderItem Purchasing/Warehouse Comment link(s) *** */
 	,_bindAllCommentsForOrderItems: function() {
 		var tmp = {};
+		tmp.me = this;
 		jQuery('.productlist .comment').qtip({
 			content: {
 				text: function(event, api) {
@@ -897,6 +898,36 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				inactive: 5000
 			}
 		});
+		return tmp.me;
+	}
+	
+	,_getLatestPaymentMethod: function() {
+		var tmp = {};
+		tmp.me = this;
+		
+		tmp.insertPoint = $(tmp.me._resultDivId).down('#lastPaymentMethod');
+		
+		tmp.me.postAjax(tmp.me.getCallbackId('getPaymentDetails'), {'order': tmp.me._order}, {
+			'onLoading': function (sender, param) { /*$(selBox).disabled = true;*/ }
+			,'onComplete': function (sender, param) {
+				try {
+					tmp.result = tmp.me.getResp(param, false, true);
+					console.debug(tmp.result);
+					if(tmp.result.items.length > 0)
+					{
+						tmp.lastPaymentMethod = tmp.result.items[0].method.name;
+						tmp.insertPoint.update(tmp.lastPaymentMethod);
+					}
+					else
+						tmp.insertPoint.update('N/A');
+				} 
+				catch (e) {
+					alert(e);
+					return;
+				}
+			}
+		});
+		return tmp.me;
 	}
 	
 	,_loadChosen: function () {
@@ -963,10 +994,11 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		
 		//getting the summray row
 		tmp.newDiv.insert({'bottom': new Element('fieldset', {'class': 'row summary'})
-			.insert({'bottom': new Element('legend').update('Summary') })
+			.insert({'bottom': new Element('legend').update('Magento Info') })
 			.insert({'bottom': new Element('div')
 				.insert({'bottom': tmp.me._getfieldDiv('Shipping', tmp.me._order.infos[9][0].value) })
-				.insert({'bottom': tmp.me._getfieldDiv('Payment Method', tmp.me._order.infos[6][0].value) })
+				.insert({'bottom': tmp.me._getfieldDiv('Magento Payment Method', tmp.me._order.infos[6][0].value) })
+				.insert({'bottom': tmp.me._getfieldDiv('Last Payment Method', new Element("span", {"id": "lastPaymentMethod"}).update(new Element('img')) ) })
 				.insert({'bottom': tmp.me._getfieldDiv('Total Amount', tmp.me.getCurrency(tmp.me._order.totalAmount)).addClassName('totalAmount') })
 				.insert({'bottom': tmp.me._getfieldDiv('Total Paid', tmp.me.getCurrency(tmp.me._order.totalPaid)).addClassName('totalPaid') })
 				.insert({'bottom': tmp.me._getfieldDiv('Total Due', tmp.me.getCurrency(tmp.me._order.totalDue)).addClassName('totalDue') })
@@ -1028,7 +1060,8 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.me._commentsDiv.resultDivId = 'comments_list';
 		tmp.me._getComments(true)
 			._loadChosen()
-			._bindAllCommentsForOrderItems();
+			._bindAllCommentsForOrderItems()
+			._getLatestPaymentMethod();
 		
 		return this;
 	}
