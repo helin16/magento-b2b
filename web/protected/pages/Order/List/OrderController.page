@@ -5,7 +5,13 @@
 	<div class="pagewrapper orderlist splitpanels">
 		<span class="splitpanel maincontent">
 			<div class="contentDiv">
-				<div class="h_title">Search orders:</div>
+				<div class="h_title">
+					Search orders:
+					<span class="showSearchPanel">
+						<label for="showSearch">Show Search?</label>
+						<input type="check" checked=true id="showSearch" onclick="$(this).up('.contentDiv').down('.h_content').toggle(); return false;"/>
+					</span>
+				</div>
 				<div class="h_content">
 					<div id="searchDiv" class="searchDiv">
 						<div class="row">
