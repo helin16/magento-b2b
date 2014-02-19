@@ -6,13 +6,12 @@
 		<span class="splitpanel maincontent">
 			<div class="contentDiv">
 				<div class="h_title">
-					Search orders:
 					<span class="showSearchPanel">
-						<label for="showSearch">Show Search?</label>
-						<input type="check" checked=true id="showSearch" onclick="$(this).up('.contentDiv').down('.h_content').toggle(); return false;"/>
+						<label for="showSearch">Show Search Criteria?</label>
+						<input type="checkbox" id="showSearch" onclick="$(this).up('.contentDiv').down('.h_content').toggle();"/>
 					</span>
 				</div>
-				<div class="h_content">
+				<div class="h_content" style="display: none;">
 					<div id="searchDiv" class="searchDiv">
 						<div class="row">
 							<fieldset class="searchField inlineblock">
@@ -43,7 +42,7 @@
 								</select>
 							</fieldset>
 						</div>
-						<input id="searchBtn" type="button" value="search" class="button" onclick="pageJs.getSearchCriteria().getResults(true, <%= DaoQuery::DEFAUTL_PAGE_SIZE %>);"/>
+						<input id="searchBtn" type="button" value="search" class="button" onclick="pageJs.getSearchCriteria().getResults(true, <%= $this->orderPageSize %>);"/>
 		 			</div>
 				</div>
 			</div>
