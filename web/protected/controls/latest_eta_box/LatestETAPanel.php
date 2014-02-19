@@ -63,8 +63,9 @@ class LatestETAPanel extends TTemplateControl
 				$pageNo = $param->CallbackParameter->pagination->pageNo;
 				$pageSize = $param->CallbackParameter->pagination->pageSize;
 			}
-				
-			$oiArray = FactoryAbastract::service('OrderItem')->findByCriteria("(eta != '' and eta IS NOT NULL and eta != ?)", array(trim(UDate::zeroDate())), true, $pageNo, $pageSize, array("ord_item.eta" => "ASC", "ord_item.orderId" => "DESC"));
+			$notSearchStatusIds = array(OrderStatus::ID_CANCELLED, OrderStatus::ID_PICKED, OrderStatus::ID_SHIPPED);
+			FactoryAbastract::service('OrderItem')->getDao()->getQuery()->eagerLoad('OrderItem.order', 'inner join', 'ord', 'ord.id = ord_item.orderId and ord.active = 1');
+			$oiArray = FactoryAbastract::service('OrderItem')->findByCriteria("(eta != '' and eta IS NOT NULL and eta != ? and ord.statusId not in (" . implode(',', $notSearchStatusIds). "))", array(trim(UDate::zeroDate())), true, $pageNo, $pageSize, array("ord_item.eta" => "ASC", "ord_item.orderId" => "DESC"));
 			$result['pagination'] =  FactoryAbastract::service('OrderItem')->getPageStats();
 			$result['items'] = array();
 			foreach($oiArray as $oi)
