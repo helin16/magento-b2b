@@ -11,7 +11,8 @@ class Payment extends BaseEntityAbstract
 	 */
 	public function getMethod() 
 	{
-	    return $this->method;
+	    $this->loadManyToOne('method');
+		return $this->method;
 	}
 	/**
 	 * Setter for method
@@ -32,7 +33,8 @@ class Payment extends BaseEntityAbstract
 	 */
 	public function getOrder() 
 	{
-	    return $this->order;
+		$this->loadManyToOne('order');
+		return $this->order;
 	}
 	/**
 	 * Setter for order
@@ -75,6 +77,19 @@ class Payment extends BaseEntityAbstract
 	{
 		return trim($this->getMethod() . ': ' . $this->getValue() . " for Order:" . $this->getOrder()->getOrderNo());
 	}
+	
+	/**
+	 * (non-PHPdoc)
+	 * @see BaseEntityAbstract::getJson()
+	 */
+	public function getJson($extra = '', $reset = false)
+	{
+		$array = array();
+		if(!$this->isJsonLoaded($reset))
+			$array['method'] = $this->getMethod()->getJson();
+		return parent::getJson($array, $reset);
+	}
+	
 	/**
 	 * (non-PHPdoc)
 	 * @see HydraEntity::__loadDaoMap()
