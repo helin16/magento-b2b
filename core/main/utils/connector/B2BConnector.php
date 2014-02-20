@@ -206,7 +206,7 @@ class B2BConnector
 		$params = array(
 			'complex_filter' => array(
 				array(
-						'key' => 'updated_at',
+						'key' => 'created_at',
 						'value' => array(
 								'key' => 'gt',
 								'value' => $lastUpdatedTime
