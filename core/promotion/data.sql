@@ -89,3 +89,8 @@ insert into `paymentmethod`(`id`, `name`, `description`, `active`, `created`, `c
 	(2, 'PayPal', 'Paid via Paypal',  1, NOW(), 10, NOW(), 10),
 	(3, 'EGate', 'Paid via ANZ EGate', 1, NOW(), 10, NOW(), 10);
 	
+
+############################ add productinfotype table
+insert into `productinfotype` (`id`, `name`, `active`, `created`, `createdById`, `updated`, `updatedById`) values
+	(1, 'Magento Product ID', 'Direct Deposit',  1, NOW(), 10, NOW(), 10);
+	

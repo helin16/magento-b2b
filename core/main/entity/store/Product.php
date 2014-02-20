@@ -65,18 +65,21 @@ class Product extends InfoEntityAbstract
 	/**
 	 * Creating the product based on sku
 	 * 
-	 * @param string $sku
-	 * @param string $name
+	 * @param string $sku           The sku of the product
+	 * @param string $name          The name of the product
+	 * @param string $mageProductId The magento id of the product
 	 * 
 	 * @return Ambigous <Product, Ambigous, NULL, BaseEntityAbstract>
 	 */
-	public static function create($sku, $name)
+	public static function create($sku, $name, $mageProductId = '')
 	{
 		if(!($product = self::get($sku)) instanceof Product)
 			$product = new Product();
 		$product->setSku(trim($sku))
 			->setName($name);
 		FactoryAbastract::dao(get_called_class())->save($product);
+		if(($mageProductId = trim($mageProductId)) !== "")
+			$product->addInfo(ProductInfoType::ID_MAGE_PRODUCT_ID, $mageProductId);
 		return $product;
 	}
 	/**

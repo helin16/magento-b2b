@@ -37,7 +37,7 @@ class InfoEntityAbstract extends BaseEntityAbstract
 	}
 	/**
 	 * Getting the 
-	 * @param unknown $typeId
+	 * @param int $typeId
 	 * @param string $reset
 	 * @throws EntityException
 	 */
@@ -55,6 +55,44 @@ class InfoEntityAbstract extends BaseEntityAbstract
 		return $this->_cache[$typeId];
 	}
 	/**
+	 * adding new value to this entity
+	 * 
+	 * @param int  $typeId
+	 * @param int  $value
+	 * @param bool $overRideValue Whether we over write the value when we found one: clear all other value, and keep this new one
+	 * 
+	 * @return InfoEntityAbstract
+	 */
+	public function addInfo($typeId, $value, $overRideValue = false)
+	{
+		DaoMap::loadMap($this);
+		if(!isset(DaoMap::$map[strtolower(get_class($this))]['infos']) || ($class = trim(aoMap::$map[strtolower(get_class($this))]['infos']['class'])) === '')
+			throw new EntityException('You can NOT get information from a entity' . get_class($this) . ', setup the relationship first!');
+		
+		$InfoTypeClass = $class . 'Type';
+		$infoType = $InfoTypeClass::get($typeId);
+		if($overRideValue === true)
+		{
+			//clear all info
+			$this->removeInfo($typeId);
+			//create a new
+			$info = $class::create($infoType, $value);
+		}
+		else 
+		{
+			//check whether we have one already
+			$infos = FactoryAbastract::dao($class)->findByCriteria('entityId = ? and value = ? and typeId = ?', array($this->getId(), trim($typeId, trim($value))), true, 1 , 1);
+			if(count($infos) > 0)
+				return $this;
+			//create new
+			$info = $class::create($infoType, $value);
+		}
+		
+		//referesh cache
+		$this->getInfo($typeId, true);
+		return $this;
+	}
+	/**
 	 * removing all information for that type
 	 * 
 	 * @param int $typeId The type id 
@@ -63,7 +101,11 @@ class InfoEntityAbstract extends BaseEntityAbstract
 	 */
 	public function removeInfo($typeId)
 	{
-		FactoryAbastract::dao(get_class($this))->updateByCriteria('active = 0', 'typeId = ?', array($typeId));
+		DaoMap::loadMap($this);
+		if(!isset(DaoMap::$map[strtolower(get_class($this))]['infos']) || ($class = trim(aoMap::$map[strtolower(get_class($this))]['infos']['class'])) === '')
+			throw new EntityException('You can NOT get information from a entity' . get_class($this) . ', setup the relationship first!');
+		
+		FactoryAbastract::dao($class)->updateByCriteria('active = 0', 'typeId = ? and entityId = ?', array($typeId, $this->getId()));
 		unset($this->_cache[$typeId]);
 		return $this;
 	}

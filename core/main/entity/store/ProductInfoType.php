@@ -9,6 +9,12 @@
 class ProductInfoType extends InfoTypeAbstract
 {
 	/**
+	 * The magento product id
+	 * 
+	 * @var int
+	 */
+	const ID_MAGE_PRODUCT_ID = 1;
+	/**
 	 * (non-PHPdoc)
 	 * @see BaseEntity::__loadDaoMap()
 	 */
