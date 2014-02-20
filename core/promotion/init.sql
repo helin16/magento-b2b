@@ -20,6 +20,7 @@ DROP TABLE IF EXISTS `courier`;
 CREATE TABLE `courier` (
 	`id` int(10) unsigned NOT NULL AUTO_INCREMENT,
 	`name` varchar(50) NOT NULL DEFAULT '',
+	`code` varchar(50) NOT NULL DEFAULT '',
 	`active` bool NOT NULL DEFAULT 1,
 	`created` datetime NOT NULL DEFAULT '0001-01-01 00:00:00',
 	`createdById` int(10) unsigned NOT NULL DEFAULT 0,
@@ -29,6 +30,7 @@ CREATE TABLE `courier` (
 	,INDEX (`createdById`)
 	,INDEX (`updatedById`)
 	,INDEX (`name`)
+	,INDEX (`code`)
 ) ENGINE=innodb DEFAULT CHARSET=utf8;
 DROP TABLE IF EXISTS `courierinfo`;
 CREATE TABLE `courierinfo` (
@@ -133,6 +135,7 @@ CREATE TABLE `orderitem` (
 	`eta` datetime NULL ,
 	`isPicked` bool NOT NULL DEFAULT 0,
 	`isOrdered` bool NOT NULL DEFAULT 0,
+	`mageOrderId` int(10) unsigned NOT NULL DEFAULT 0,
 	`active` bool NOT NULL DEFAULT 1,
 	`created` datetime NOT NULL DEFAULT '0001-01-01 00:00:00',
 	`createdById` int(10) unsigned NOT NULL DEFAULT 0,
@@ -145,6 +148,7 @@ CREATE TABLE `orderitem` (
 	,INDEX (`updatedById`)
 	,INDEX (`isPicked`)
 	,INDEX (`isOrdered`)
+	,INDEX (`mageOrderId`)
 ) ENGINE=innodb DEFAULT CHARSET=utf8;
 DROP TABLE IF EXISTS `orderstatus`;
 CREATE TABLE `orderstatus` (
@@ -252,6 +256,7 @@ CREATE TABLE `shippment` (
 	`conNoteNo` varchar(100) NOT NULL DEFAULT '',
 	`estShippingCost` Double(10,4) unsigned NOT NULL DEFAULT 0,
 	`deliveryInstructions` varchar(255) NOT NULL DEFAULT '',
+	`mageShipmentId` varchar(100) NOT NULL DEFAULT '',
 	`active` bool NOT NULL DEFAULT 1,
 	`created` datetime NOT NULL DEFAULT '0001-01-01 00:00:00',
 	`createdById` int(10) unsigned NOT NULL DEFAULT 0,
@@ -262,6 +267,10 @@ CREATE TABLE `shippment` (
 	,INDEX (`courierId`)
 	,INDEX (`createdById`)
 	,INDEX (`updatedById`)
+	,INDEX (`receiver`)
+	,INDEX (`conNoteNo`)
+	,INDEX (`shippingDate`)
+	,INDEX (`mageShipmentId`)
 ) ENGINE=innodb DEFAULT CHARSET=utf8;
 DROP TABLE IF EXISTS `address`;
 CREATE TABLE `address` (

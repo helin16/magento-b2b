@@ -69,6 +69,12 @@ class Shippment extends BaseEntityAbstract
 	 */
 	private $deliveryInstructions;
 	/**
+	 * The shipment id from magento
+	 * 
+	 * @var string
+	 */
+	private $mageShipmentId = '';
+	/**
 	 * Getter of the courier
 	 * 
 	 * @return Courier
@@ -280,6 +286,27 @@ class Shippment extends BaseEntityAbstract
 	    $this->deliveryInstructions = $value;
 	    return $this;
 	}
+	/**
+	 * Getter for mageShipmentId
+	 *
+	 * @return string
+	 */
+	public function getMageShipmentId() 
+	{
+	    return $this->mageShipmentId;
+	}
+	/**
+	 * Setter for mageShipmentId
+	 *
+	 * @param string $value The mageShipmentId
+	 *
+	 * @return Shippment
+	 */
+	public function setMageShipmentId($value) 
+	{
+	    $this->mageShipmentId = $value;
+	    return $this;
+	}
 	
 	/**
 	 * (non-PHPdoc)
@@ -312,9 +339,14 @@ class Shippment extends BaseEntityAbstract
 		DaoMap::setStringType('conNoteNo', 'varchar', 100);
 		DaoMap::setIntType('estShippingCost', 'Double', '10,4');
 		DaoMap::setStringType('deliveryInstructions', 'varchar', 255);
+		DaoMap::setStringType('mageShipmentId', 'varchar', 100);
 		
 		
 		parent::__loadDaoMap();
+		DaoMap::createIndex('receiver');
+		DaoMap::createIndex('conNoteNo');
+		DaoMap::createIndex('shippingDate');
+		DaoMap::createIndex('mageShipmentId');
 		DaoMap::commit();
 	}
 }

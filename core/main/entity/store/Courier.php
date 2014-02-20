@@ -15,6 +15,12 @@ class Courier extends InfoEntityAbstract
 	 */
 	private $name;
 	/**
+	 * The courier code for magento to use
+	 * 
+	 * @var string
+	 */
+	private $code = 'custom';
+	/**
 	 * The shippment of the courier
 	 * 
 	 * @var Multiple:Shippment
@@ -63,7 +69,27 @@ class Courier extends InfoEntityAbstract
 	    $this->shippments = $value;
 	    return $this;
 	}
-	
+	/**
+	 * Getter for code
+	 *
+	 * @return string
+	 */
+	public function getCode() 
+	{
+	    return $this->code;
+	}
+	/**
+	 * Setter for code
+	 *
+	 * @param string $value The code
+	 *
+	 * @return Courier
+	 */
+	public function setCode($value) 
+	{
+	    $this->code = $value;
+	    return $this;
+	}
 	/**
 	 * get all Couriers
 	 *
@@ -78,7 +104,6 @@ class Courier extends InfoEntityAbstract
 	{
 		return FactoryAbastract::dao(__CLASS__)->findAll($searchActiveOnly, $pageNo, $pageSize, $orderBy);
 	}
-	
 	/**
 	 * (non-PHPdoc)
 	 * @see BaseEntity::__loadDaoMap()
@@ -87,10 +112,12 @@ class Courier extends InfoEntityAbstract
 	{
 		DaoMap::begin($this, 'courier');
 		DaoMap::setStringType('name');
+		DaoMap::setStringType('code');
 		DaoMap::setOneToMany('shippments', 'Shippment', 'c_shippments');
 		parent::__loadDaoMap();
 		
 		DaoMap::createIndex('name');
+		DaoMap::createIndex('code');
 		DaoMap::commit();
 	}
 }

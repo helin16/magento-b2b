@@ -57,6 +57,12 @@ class OrderItem extends BaseEntityAbstract
 	 */
 	private $isOrdered = false;
 	/**
+	 * The magento order_item_id
+	 * 
+	 * @var int
+	 */
+	private $mageOrderId = 0;
+	/**
 	 * Getter for order
 	 *
 	 * @return Order
@@ -231,6 +237,27 @@ class OrderItem extends BaseEntityAbstract
 	    return $this;
 	}
 	/**
+	 * Getter for mageOrderId
+	 *
+	 * @return 
+	 */
+	public function getMageOrderId() 
+	{
+	    return $this->mageOrderId;
+	}
+	/**
+	 * Setter for mageOrderId
+	 *
+	 * @param int $value The mageOrderId
+	 *
+	 * @return OrderItem
+	 */
+	public function setMageOrderId($value) 
+	{
+	    $this->mageOrderId = $value;
+	    return $this;
+	}
+	/**
 	 * creating the orderitem object
 	 * 
 	 * @param Order   $order
@@ -238,11 +265,12 @@ class OrderItem extends BaseEntityAbstract
 	 * @param number  $unitPrice
 	 * @param number  $qty
 	 * @param number  $totalPrice
+	 * @param number  $mageOrderItemId The order_item_id from Magento
 	 * @param string  $eta
 	 * 
 	 * @return Ambigous <OrderItem, BaseEntityAbstract>
 	 */
-	public static function create(Order $order, Product $product, $unitPrice, $qty, $totalPrice, $eta = null)
+	public static function create(Order $order, Product $product, $unitPrice, $qty, $totalPrice, $mageOrderItemId, $eta = null)
 	{
 		if(count($items = self::getItems($order, $product)) === 0)
 			$item = new OrderItem();
@@ -253,6 +281,7 @@ class OrderItem extends BaseEntityAbstract
 			->setUnitPrice($unitPrice)
 			->setQtyOrdered($qty)
 			->setTotalPrice($totalPrice)
+			->setMageOrderId($mageOrderItemId)
 			->setEta($eta);
 		FactoryAbastract::dao(get_called_class())->save($item);
 		return $item;
@@ -306,11 +335,13 @@ class OrderItem extends BaseEntityAbstract
 		DaoMap::setDateType('eta', 'datetime', true, null);
 		DaoMap::setBoolType('isPicked');
 		DaoMap::setBoolType('isOrdered');
+		DaoMap::setIntType('mageOrderId');
 		
 		parent::__loadDaoMap();
 		
 		DaoMap::createIndex('isPicked');
 		DaoMap::createIndex('isOrdered');
+		DaoMap::createIndex('mageOrderId');
 		DaoMap::commit();
 	}
 }

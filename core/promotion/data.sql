@@ -64,9 +64,9 @@ insert into `courierinfotype` (`id`, `name`, `active`, `created`, `createdById`,
 	(1, 'Url', 1, NOW(), 10, NOW(), 10);
 	
 ############################ add courier table
-insert into `courier` (`id`, `name`, `active`, `created`, `createdById`, `updated`, `updatedById`) values
-	(1, 'AUS POST', 1, NOW(), 10, NOW(), 10),
-	(2, 'VIC FAST', 1, NOW(), 10, NOW(), 10);
+insert into `courier` (`id`, `name`, `code`, `active`, `created`, `createdById`, `updated`, `updatedById`) values
+	(1, 'AUS POST', 'custom', 1, NOW(), 10, NOW(), 10),
+	(2, 'VIC FAST', 'custom', 1, NOW(), 10, NOW(), 10);
 	
 ############################ add courierinfo table
 insert into `courierinfo` (`courierId`, `typeId`, `value`, `active`, `created`, `createdById`, `updated`, `updatedById`) values
