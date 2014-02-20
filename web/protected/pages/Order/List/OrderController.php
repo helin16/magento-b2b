@@ -8,6 +8,7 @@
  */
 class OrderController extends BPCPageAbstract
 {
+	public $orderPageSize = 10;
 	/**
 	 * (non-PHPdoc)
 	 * @see BPCPageAbstract::$menuItem

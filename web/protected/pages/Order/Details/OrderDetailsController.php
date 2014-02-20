@@ -94,6 +94,7 @@ class OrderDetailsController extends BPCPageAbstract
 		$js .= 'pageJs.setCallbackId("changeOrderStatus", "' . $this->changeOrderStatusBtn->getUniqueID() . '");';
 		$js .= 'pageJs.setCallbackId("updateOIForWH", "' . $this->updateOIForWHBtn->getUniqueID() . '");';
 		$js .= 'pageJs.setCallbackId("updateShippingInfo", "' . $this->updateShippingInfoBtn->getUniqueID() . '");';
+		$js .= 'pageJs.setCallbackId("getPaymentDetails", "' . $this->getPaymentDetailsBtn->getUniqueID() . '");';
 		$js .= 'pageJs.load("detailswrapper");';
 		return $js;
 	}
@@ -133,7 +134,7 @@ class OrderDetailsController extends BPCPageAbstract
 				$sku = trim($obj->orderItem->product->sku);
 				$orderItem->setProduct(Product::get($sku));
 				
-				$isOrdered = (isset($obj->$for->isOrdered) && (bool)$obj->$for->isOrdered === true) ? true : false;
+				$isOrdered = (isset($obj->$for->isOrdered) && ($obj->$for->isOrdered === true || $obj->$for->isOrdered === 'true')) ? true : false;
 				$orderItem->setIsOrdered($isOrdered);
 				
 				FactoryAbastract::service('OrderItem')->save($orderItem);
@@ -522,5 +523,27 @@ class OrderDetailsController extends BPCPageAbstract
 		$params->ResponseData = StringUtilsAbstract::getJson($result, $error);
 		
 	}
+	
+	public function getPaymentDetailsForOrder($sender, $param)
+	{
+		$result = $error = array();
+		try 
+		{
+			$result['items'] = array();
+			
+			if(!isset($param->CallbackParameter->order) || !($order = Order::get($param->CallbackParameter->order->orderNo)) instanceof Order)
+				throw new Exception('System Error: invalid order passed in!');
+			
+			$paymentArray = FactoryAbastract::service('Payment')->findByCriteria('orderId = ?', array($order->getId()), true, null, DaoQuery::DEFAUTL_PAGE_SIZE, array("py.updated" => "desc"));
+			foreach($paymentArray as $payment)
+				$result['items'][] = $payment->getJson();	
+		}
+		catch(Exception $ex)
+		{	
+			$error[] = $ex->getMessage();
+		}
+		$param->ResponseData = StringUtilsAbstract::getJson($result, $error);
+	}
+	
 }
 ?>
