@@ -92,5 +92,4 @@ insert into `paymentmethod`(`id`, `name`, `description`, `active`, `created`, `c
 
 ############################ add productinfotype table
 insert into `productinfotype` (`id`, `name`, `active`, `created`, `createdById`, `updated`, `updatedById`) values
-	(1, 'Magento Product ID', 'Direct Deposit',  1, NOW(), 10, NOW(), 10);
-	
+	(1, 'Magento Product ID', 1, NOW(), 10, NOW(), 10);

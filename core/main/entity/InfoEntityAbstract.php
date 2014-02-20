@@ -46,11 +46,12 @@ class InfoEntityAbstract extends BaseEntityAbstract
 		DaoMap::loadMap($this);
 		if(!isset($this->_cache[$typeId]) || $reset === true)
 		{
-			if(!isset(DaoMap::$map[strtolower(get_class($this))]['infos']) || ($class = trim(aoMap::$map[strtolower(get_class($this))]['infos']['class'])) === '')
+			if(!isset(DaoMap::$map[strtolower(get_class($this))]['infos']) || ($class = trim(DaoMap::$map[strtolower(get_class($this))]['infos']['class'])) === '')
 				throw new EntityException('You can NOT get information from a entity' . get_class($this) . ', setup the relationship first!');
-			$sql = 'select lib.value `value` from ' . $class . ' info where info.active = 1 and info.entityId = ? and info.TypeId = ?';
-			$result = Dao::getSingleResultNative($sql, array($separator, $this->getId(), $typeId), PDO::FETCH_ASSOC);
-			$this->_cache[$typeCode] = array_map(create_function('$row', 'return $row["value"];'), $result);
+			
+			$sql = 'select value `value` from ' . strtolower($class) . ' `info` where `info`.active = 1 and `info`.' . strtolower(get_class($this)) . 'Id = ? and `info`.TypeId = ?';
+			$result = Dao::getSingleResultNative($sql, array($this->getId(), $typeId), PDO::FETCH_ASSOC);
+			$this->_cache[$typeId] = array_map(create_function('$row', 'return $row["value"];'), $result);
 		}
 		return $this->_cache[$typeId];
 	}
@@ -66,7 +67,7 @@ class InfoEntityAbstract extends BaseEntityAbstract
 	public function addInfo($typeId, $value, $overRideValue = false)
 	{
 		DaoMap::loadMap($this);
-		if(!isset(DaoMap::$map[strtolower(get_class($this))]['infos']) || ($class = trim(aoMap::$map[strtolower(get_class($this))]['infos']['class'])) === '')
+		if(!isset(DaoMap::$map[strtolower(get_class($this))]['infos']) || ($class = trim(DaoMap::$map[strtolower(get_class($this))]['infos']['class'])) === '')
 			throw new EntityException('You can NOT get information from a entity' . get_class($this) . ', setup the relationship first!');
 		
 		$InfoTypeClass = $class . 'Type';
@@ -76,16 +77,16 @@ class InfoEntityAbstract extends BaseEntityAbstract
 			//clear all info
 			$this->removeInfo($typeId);
 			//create a new
-			$info = $class::create($infoType, $value);
+			$info = $class::create($this, $infoType, $value);
 		}
 		else 
 		{
 			//check whether we have one already
-			$infos = FactoryAbastract::dao($class)->findByCriteria('entityId = ? and value = ? and typeId = ?', array($this->getId(), trim($typeId, trim($value))), true, 1 , 1);
+			$infos = FactoryAbastract::dao($class)->findByCriteria(strtolower(get_class($this)).'Id = ? and value = ? and typeId = ?', array($this->getId(), trim($typeId), trim($value)), true, 1 , 1);
 			if(count($infos) > 0)
 				return $this;
 			//create new
-			$info = $class::create($infoType, $value);
+			$info = $class::create($this, $infoType, $value);
 		}
 		
 		//referesh cache
@@ -102,7 +103,7 @@ class InfoEntityAbstract extends BaseEntityAbstract
 	public function removeInfo($typeId)
 	{
 		DaoMap::loadMap($this);
-		if(!isset(DaoMap::$map[strtolower(get_class($this))]['infos']) || ($class = trim(aoMap::$map[strtolower(get_class($this))]['infos']['class'])) === '')
+		if(!isset(DaoMap::$map[strtolower(get_class($this))]['infos']) || ($class = trim(DaoMap::$map[strtolower(get_class($this))]['infos']['class'])) === '')
 			throw new EntityException('You can NOT get information from a entity' . get_class($this) . ', setup the relationship first!');
 		
 		FactoryAbastract::dao($class)->updateByCriteria('active = 0', 'typeId = ? and entityId = ?', array($typeId, $this->getId()));
