@@ -1,0 +1,8 @@
+<com:TContent ID="MainContent">
+	<div class="pagewrapper orderlist splitpanels">
+		<div id = "main_content">
+			<div id="drop_file">Drop you file here</div>
+			<div id = "show_file"></div>
+		</div>
+	</div>
+</com:TContent>
