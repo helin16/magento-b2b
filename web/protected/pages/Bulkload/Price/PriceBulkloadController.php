@@ -37,7 +37,7 @@ class PriceBulkloadController extends BPCPageAbstract
 		// Setup the dnd listeners.
 		$js .= 'pageJs.dropShowDiv.dropDiv = "drop_file";';
 		$js .= 'pageJs.dropShowDiv.showDiv = "show_file";';
-		$js .= 'pageJs.intializeFileReader();';
+		//$js .= 'pageJs.intializeFileReader();';
 		$js .= 'pageJs.initializeFileHandler();';
 		return $js;
 	}
