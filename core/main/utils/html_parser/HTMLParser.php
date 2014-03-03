@@ -7,7 +7,7 @@
  */
 abstract class HTMLParser
 {
-	const URL = 'http://www.staticice.com.au/cgi-bin/search.cgi?q=';
+	const URL = 'http://www.staticice.com.au/cgi-bin/search.cgi';
 	const HTML_DOM_OBJECT_NAME = 'simple_html_dom';
 	
 	private static $_cache;
@@ -26,9 +26,7 @@ abstract class HTMLParser
     			self::$_cache[$key] = apc_fetch($key);
 	    	}
 	    	else
-	    	{
 	    		self::$_cache[$key] = self::_readUrl($url);
-	    	}
 		}
 		return self::$_cache[$key];
 	}
@@ -46,18 +44,44 @@ abstract class HTMLParser
 		 if(($productName = trim($productName)) === '')
 		 	throw new Exception("Product name must be provided to get the price list");
 		 
+		 $outputArray = array();
+		 
 		 try 
 		 {
-			$url = self::URL.str_replace("'", '%27', str_replace(' ', '+', str_replace('&', '%26', str_replace('+', '%2B', $productName))));
-			var_dump($url);
+			$array = array(
+		 		'start' => 1,
+		 		'links' => PHP_INT_MAX,
+				'q'=> $productName
+			);
+			$url = self::URL . '?' . http_build_query($array);
 			$data = self::getWebsite($url);
-			var_dump($data->nodes); die();
+			foreach($data->find("tr td a[target]") as $index => $l)
+			{	
+				if(preg_match('/^\$\d+.*\d+$/', $l->plaintext))
+				{
+					$tmp = array();
+					$tmp['price'] = trim($l->plaintext);
+					$tmp['priceLink'] = trim($l->href);
+					$tmp['compnayDetails'] = $l->parent()->next_sibling()->plaintext;
+					
+					if($l->parent()->next_sibling()->find("font a[target]") > 0)
+					{
+						foreach($l->parent()->next_sibling()->find("font a[target]") as $companyLink)
+						{
+							$tmp['companyName'] = trim($companyLink->plaintext);
+							$tmp['companyLink'] = $companyLink->href;
+						}
+					}
+					$outputArray[] = $tmp;
+				}
+			}
 		 }
 		 catch(Exception $ex)
 		 {
 		 	throw new Exception('Unexpected exception occured:['.$ex->getMessage().']');
 		 }
-		  
+		 
+		return $outputArray;
 	}
 }
 
