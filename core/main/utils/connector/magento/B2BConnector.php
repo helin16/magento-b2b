@@ -60,7 +60,7 @@ abstract class B2BConnector
 	{
 		$options = array('exceptions' => true, 'encoding'=>'utf-8', 'compression' => SOAP_COMPRESSION_ACCEPT | SOAP_COMPRESSION_GZIP);
 // 		$options = array_merge($options, array('proxy_host' => "proxy.bytecraft.internal", 'proxy_port' => 3128));
-		$this->_soapClient = new SoapClient($wsdl, $options);
+		$this->_soapClient = ComScriptSoap::getScript($wsdl, $options);
 		$this->_apiUser = $apiUser;
 		$this->_apikey = $apiKey;
 	}
