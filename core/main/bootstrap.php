@@ -30,6 +30,7 @@ abstract class SystemCoreAbstract
 			$base . '/utils/connector/',
 			$base . '/utils/connector/magento/',
 			$base . '/utils/connector/magento/Order/',
+			$base . '/utils/html_parser/',
 		);
 		foreach ($autoloadPaths as $path)
 		{
