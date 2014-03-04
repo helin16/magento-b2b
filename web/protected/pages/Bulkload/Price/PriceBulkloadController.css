@@ -3,3 +3,6 @@
 	width:600px;
 	height:200px;
 }
+#price_compare .row {
+	display:inline-block;
+}

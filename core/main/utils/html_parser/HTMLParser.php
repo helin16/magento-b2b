@@ -62,7 +62,7 @@ abstract class HTMLParser
 					$tmp = array();
 					$tmp['price'] = trim($l->plaintext);
 					$tmp['priceLink'] = trim($l->href);
-					$tmp['compnayDetails'] = $l->parent()->next_sibling()->plaintext;
+					$tmp['companyDetails'] = $l->parent()->next_sibling()->plaintext;
 					
 					if($l->parent()->next_sibling()->find("font a[target]") > 0)
 					{
