@@ -10,7 +10,8 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 	,csvSeperator: ','
 	,csvFileLineFormat: ['sku', 'price']
 	,csvNewLineSeperator: '\r\n'
-	,allFileLineArray: []	
+	,allFileLineArray: []
+	,companyNameArray: []
 	
 	/*
 	,intializeFileReader: function() {
@@ -120,25 +121,21 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.ppArray = productPriceArray;
 		
 		if(tmp.ppArray.sku === '' || tmp.ppArray.sku === undefined || tmp.ppArray.sku === null || tmp.ppArray.sku.blank())
-		{
-			// skipping
-		}
-		
+			return tmp.me;
+
 		tmp.rowDiv = new Element('div', {'class': 'row'})
-						.insert({'bottom': new Element('span', {})
-							.insert({'bottom': new Element('div').update('SKU') })
-							.insert({'bottom': new Element('div').update(tmp.ppArray.sku) })
-					});
+						.insert({'bottom': new Element('span', {'class': 'sku'}).update(tmp.ppArray.sku) })
+						.insert({'bottom': new Element('span', {'class': 'minPrice'}).update(tmp.ppArray.minPrice) })
+						.insert({'bottom': new Element('span', {'class': 'myPrice'}).update(tmp.ppArray.myPrice) });
 		
 		tmp.ppArray.data.each(function(item) {
-			tmp.rowDiv.insert({'bottom': new Element('span', {}) 
-				.insert({'bottom': new Element('div', {}).update(item.company) })
-				.insert({'bottom': new Element('div', {}).update(item.price) })
-			});
+			if((item.price.blank() || item.price === '' || item.price === null || item.price === undefined) && (item.priceURL.blank() || item.priceURL === '' || item.priceURL === null || item.priceURL === undefined))
+				tmp.rowDiv.insert({'bottom': new Element('span', {'class': 'company'}).update(item.company) });
+			else
+				tmp.rowDiv.insert({'bottom': new Element('span', {'class': 'company'}).update(item.price) });
 		});
 		
 		$(tmp.me.dropShowDiv.resultDiv).insert({'bottom': tmp.rowDiv });
-		
 		return tmp.me;
 	}
 	
@@ -157,6 +154,16 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		$(tmp.me.dropShowDiv.showDiv).insert({'bottom': new Element('span', {'class': 'button'})
 			.update('Start Load')
 			.observe('click', function() {
+				$(tmp.me.dropShowDiv.resultDiv).update('');
+				
+				/// Generate the header for the price compare table ///
+				tmp.headerCompanyArray = [];
+				tmp.me.companyNameArray.each(function(cName) {
+					tmp.headerCompanyArray.push({'price': '', 'priceURL': '', 'company': cName});
+				});
+				tmp.me._generatePriceRowForProduct({'sku': 'SKU', 'minPrice': 'Min Price', 'myPrice': 'My Price', 'data': tmp.headerCompanyArray});
+				///////////////////////////////////////////////////////////
+				
 				tmp.me.allFileLineArray.each(function(item) {
 					item.fileContent.each(function(line) {
 						tmp.me.postAjax(tmp.me.getCallbackId('getAllPricesForProduct'), {'sku': line.sku, 'price': line.price}, {
@@ -179,7 +186,6 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					});
 				});
 			})
-			
 		});
 		
 		return tmp.me;

@@ -9,6 +9,7 @@
 abstract class Config
 {
     const DEFAULT_CONF_FILE = 'default.conf';
+    
     /**
      * The values in the config file
      * 
@@ -67,6 +68,19 @@ abstract class Config
 	public static function getConfigDir()
 	{
 		return dirname(__FILE__) . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'conf' . DIRECTORY_SEPARATOR;
+	}
+	
+	/**
+	 * This function returns an array having info of all the companies that we want to track the price on
+	 * 
+	 * @return multitype:multitype:string
+	 */
+	public static function getCompnyListForPriceMatching()
+	{
+		return array('Mega Buy' => array('megabuy', 'mega buy', 'www.megabuy.com.au'),
+    				 'MSY' => array('msy', 'www.msy.com.au'),	
+    				 'ii Buy' => array('iiBuy', 'ii Buy', 'i i Buy', 'i iBuy', 'www.iibuy.com.au')
+                    );
 	}
 }
 

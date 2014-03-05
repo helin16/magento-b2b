@@ -34,10 +34,13 @@ class PriceBulkloadController extends BPCPageAbstract
 	{
 		$js = parent::_getEndJs();
 		
+		$compnayArray = json_encode(array_keys(Config::getCompnyListForPriceMatching()));
+		
 		// Setup the dnd listeners.
 		$js .= 'pageJs.dropShowDiv.dropDiv = "drop_file";';
 		$js .= 'pageJs.dropShowDiv.showDiv = "show_file";';
 		$js .= 'pageJs.dropShowDiv.resultDiv = "price_compare";';
+		$js .= 'pageJs.companyNameArray = '.json_encode(array_keys(Config::getCompnyListForPriceMatching())).';';
 		$js .= 'pageJs.csvSeperator = ",";';
 		//$js .= 'pageJs.intializeFileReader();';
 		$js .= 'pageJs.setCallbackId("getAllPricesForProduct", "' . $this->getAllPricesForProductBtn->getUniqueID() . '");';
@@ -51,25 +54,18 @@ class PriceBulkloadController extends BPCPageAbstract
 		try
 		{
 			$sku = $minPrice = '';
+			$myPrice = 0;
+			
 			if(isset($param->CallbackParameter->sku) && trim($param->CallbackParameter->sku) !== '')
 				$sku = trim($param->CallbackParameter->sku);
 			if(isset($param->CallbackParameter->price) && trim($param->CallbackParameter->price) !== '')
-				$price = trim($param->CallbackParameter->price);
+				$myPrice = trim($param->CallbackParameter->price);
 			
 			if($sku !== '')
 			{	
 				$productPriceArray = HTMLParser::getPriceListForProduct($sku);
 				foreach($productPriceArray as $pp)
 				{
-					if(preg_match('/^\$/', $pp['price']))
-						$currentPrice = substr($pp['price'], 1);
-					
-					if($minPrice === '' || $currentPrice < $minPrice)
-						$minPrice = $currentPrice;
-					
-					$tmp = array();
-					$tmp['price'] = $pp['price'];
-					$tmp['priceURL'] = $pp['priceLink'];
 					$companyURL = '';
 					if(($companyDetails = trim($pp['companyDetails'])) !== '')
 					{
@@ -78,15 +74,72 @@ class PriceBulkloadController extends BPCPageAbstract
 							$companyURL = trim($cdArray[count($cdArray) - 2]);
 						else
 							$companyURL =  $companyDetails;
+					}
+					
+					$insert = false;
+					foreach(Config::getCompnyListForPriceMatching() as $key => $value)
+					{
+						$newValueArray = array_map(create_function('$a', 'return strtolower($a);'), $value);
+						if(in_array(strtolower($companyURL), $newValueArray))
+						{	
+							$insert = true;
+							break;
+						}	
 					}	
-					$tmp['company'] = $pp['companyName'].'('.$companyURL.')';
-					$outputArray[] = $tmp;
+					
+					if($insert === true)
+					{
+						$tmp = array();
+						$currentPrice = $pp['price'];
+						if(preg_match('/^\$/', $currentPrice))
+							$currentPrice = substr($currentPrice, 1);
+							
+						if($minPrice === '' || $currentPrice < $minPrice)
+							$minPrice = $currentPrice;
+							
+						$tmp['price'] = $pp['price'];
+						$tmp['priceURL'] = $pp['priceLink'];
+						$tmp['companyKey'] = $key;
+						$tmp['company'] = $key;
+						$outputArray[] = $tmp;
+					}
+				}
+				
+				if($myPrice !== 0)
+				{
+					if(($minPrice !== '' && $myPrice < $minPrice) || ($minPrice === ''))
+						$minPrice = $myPrice;
+				}	
+				else
+				{
+					if($minPrice === '')
+						$minPrice = 0.00;
+				}
+
+				/// here we are actually serializing the price /// 
+				$fOutputArray = array();
+				
+				foreach(Config::getCompnyListForPriceMatching() as $key => $value)
+				{
+					$keyFound = false;
+					foreach($outputArray as $priceInfo)
+					{
+						if($priceInfo['companyKey'] === $key)
+						{	
+							$keyFound = true;
+							$fOutputArray[] = $priceInfo;
+							break;
+						}
+					}
+					if($keyFound === false)
+						$fOutputArray[] = array('price' => '$0.00', 'priceURL' => '', 'company' => $key);
 				}
 			}
 			
 			$finalOutputArray['sku'] = $sku;
 			$finalOutputArray['minPrice'] = $minPrice;
-			$finalOutputArray['data'] = $outputArray;
+			$finalOutputArray['myPrice'] = $myPrice;
+			$finalOutputArray['data'] = $fOutputArray;
 			
 			$result['items'] = $finalOutputArray;
 		}
