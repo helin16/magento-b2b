@@ -84,6 +84,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.validFiles = [];
 		
 		$(tmp.me.dropShowDiv.showDiv).update('');
+		$(tmp.me.dropShowDiv.resultDiv).update('');
 		
 		for(tmp.i = 0, tmp.f; tmp.f = tmp.files[tmp.i]; tmp.i++) 
 		{
@@ -132,8 +133,17 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			if((item.price.blank() || item.price === '' || item.price === null || item.price === undefined) && (item.priceURL.blank() || item.priceURL === '' || item.priceURL === null || item.priceURL === undefined))
 				tmp.rowDiv.insert({'bottom': new Element('span', {'class': 'company'}).update(item.company) });
 			else
-				tmp.rowDiv.insert({'bottom': new Element('span', {'class': 'company'}).update(item.price) });
+			{
+				tmp.rowDiv.insert({'bottom': new Element('span', {'class': 'company'}).update(item.price) 
+					.observe('click', function() {
+						tmp.url = item.priceURL.strip();
+						if(tmp.url !== '' && tmp.url !== null && tmp.url !== undefined)
+							window.open(tmp.url, '_blank');
+					})
+				});
+			}	
 		});
+		tmp.rowDiv.store(tmp.ppArray);
 		
 		$(tmp.me.dropShowDiv.resultDiv).insert({'bottom': tmp.rowDiv });
 		return tmp.me;
