@@ -10,6 +10,7 @@ class OrderConnector extends B2BConnector
 	 */
 	public function importOrders($lastUpdatedTime = '')
 	{
+		$totalItems = 0;
 		$transStarted = false;
 		try {Dao::beginTransaction();} catch(Exception $e) {$transStarted = true;}
 	
@@ -84,6 +85,8 @@ class OrderConnector extends B2BConnector
 				//saving the order item
 				foreach($order->items as $item)
 					$this->_createItem($o, $item);
+				
+				$totalItems++;
 			}
 				
 			if($transStarted === false)
@@ -95,7 +98,8 @@ class OrderConnector extends B2BConnector
 				Dao::rollbackTransaction();
 			throw $e;
 		}
-		return $this;
+		return $totalItems;
+// 		return $this;
 	}
 	/**
 	 * creating order info
