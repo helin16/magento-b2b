@@ -23,14 +23,17 @@ class Menu extends TTemplateControl
 			,'order' => array('url' => '/order.html', 'name' => 'Orders')
 		);
 		if(AccessControl::canAccessUsersPage(Core::getRole()) )
+		{	
 			$array['users'] = array('url' => '/users.html', 'name' => 'Users');
-		if(AccessControl::canAccessUsersPage(Core::getRole()) )
+			$array['priceMatch'] = array('url' => '/pricematch.html', 'name' => 'Price Match');
+		}	
+		if(AccessControl::canAccessOrderItemsPage(Core::getRole()) )
 			$array['orderitems'] = array('url' => '/orderitems.html', 'name' => 'OrderItems');
 		$html = "<ul class='mainMenu'>";
 			foreach($array as $key => $item)
 			{
 				$activeClass = ($pageItem === $key ? 'active' : '');
-				$html .= "<li class='mainMenuItem'><a href='" . $item['url'] . "' class='" . $activeClass . "'>" . $item['name'] . "</a>";
+				$html .= "<li class='mainMenuItem'><a href='" . $item['url'] . "' class='" . $activeClass . "'>" . $item['name'] . "</a></li>";
 			}
 		$html .= "</ul>";
 		return $html;
