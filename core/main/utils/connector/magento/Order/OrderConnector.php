@@ -98,7 +98,7 @@ class OrderConnector extends B2BConnector
 				Dao::rollbackTransaction();
 			throw $e;
 		}
-		return $totalItems;
+		return $lastUpdatedTime . ":" . SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_LAST_IMPORT_TIME) . ':' . $totalItems;
 // 		return $this;
 	}
 	/**
