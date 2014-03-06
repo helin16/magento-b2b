@@ -129,8 +129,8 @@ class OrderConnector extends B2BConnector
 	 */
 	private function _createAddr($addressObj, &$exsitAddr = null)
 	{
-		return Address::create(trim($addressObj->street),
-				trim($addressObj->city),
+		return Address::create(isset($addressObj->street) ? trim($addressObj->street) : '',
+				trim(isset($addressObj->city) ? trim($addressObj->city) : ''),
 				isset($addressObj->region) ? trim($addressObj->region) : '',
 				trim($addressObj->country_id),
 				trim($addressObj->postcode),
