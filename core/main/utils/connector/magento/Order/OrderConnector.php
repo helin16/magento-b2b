@@ -21,7 +21,7 @@ class OrderConnector extends B2BConnector
 		
 		//getting the lastest order since last updated time
 		$orders = $this->getlastestOrders($lastUpdatedTime);
-		Log::logging(0, get_class($this), 'Found ' . count($orders) . ' order(s) since "' . $lastImportTime . '".', self::LOG_TYPE, '', __FUNCTION__);
+		Log::logging(0, get_class($this), 'Found ' . count($orders) . ' order(s) since "' . $lastUpdatedTime . '".', self::LOG_TYPE, '', __FUNCTION__);
 		foreach($orders as $index => $order)
 		{
 			$transStarted = false;
