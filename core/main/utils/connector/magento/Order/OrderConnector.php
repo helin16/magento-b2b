@@ -11,27 +11,24 @@ class OrderConnector extends B2BConnector
 	public function importOrders($lastUpdatedTime = '')
 	{
 		$totalItems = 0;
-		$transStarted = false;
-		try {Dao::beginTransaction();} catch(Exception $e) {$transStarted = true;}
-	
-		try
+		Log::logging(0, get_class($this), 'starting ...', self::LOG_TYPE, 'start', __FUNCTION__);
+		if(($lastUpdatedTime = trim($lastUpdatedTime)) === '')
 		{
-			Log::logging(0, get_class($this), 'starting ...', self::LOG_TYPE, 'start', __FUNCTION__);
-			if(($lastUpdatedTime = trim($lastUpdatedTime)) === '')
+			Log::logging(0, get_class($this), 'Getting the last updated time', self::LOG_TYPE, '$lastUpdatedTime is blank', __FUNCTION__);
+// 			$lastImportTime = new UDate(SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_LAST_IMPORT_TIME), SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_TIMEZONE));
+			$lastUpdatedTime = trim(SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_LAST_IMPORT_TIME));
+		}
+		
+		//getting the lastest order since last updated time
+		$orders = $this->getlastestOrders($lastUpdatedTime);
+		Log::logging(0, get_class($this), 'Found ' . count($orders) . ' order(s) since "' . $lastImportTime . '".', self::LOG_TYPE, '', __FUNCTION__);
+		foreach($orders as $index => $order)
+		{
+			$transStarted = false;
+			try
 			{
-				Log::logging(0, get_class($this), 'Getting the last updated time', self::LOG_TYPE, '$lastUpdatedTime is blank', __FUNCTION__);
-				$lastImportTime = new UDate(SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_LAST_IMPORT_TIME), SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_TIMEZONE));
-				$lastUpdatedTime = trim($lastImportTime);
-			}
-			//record the last imported time for this import process
-			SystemSettings::addSettings(SystemSettings::TYPE_B2B_SOAP_LAST_IMPORT_TIME, trim(new UDate()));
-			Log::logging(0, get_class($this), 'Updating the last updated time', self::LOG_TYPE, '', __FUNCTION__);
+				try {Dao::beginTransaction();} catch(Exception $e) {$transStarted = true;}
 				
-			//getting the lastest order since last updated time
-			$orders = $this->getlastestOrders($lastUpdatedTime);
-			Log::logging(0, get_class($this), 'Found ' . count($orders) . ' order(s) since "' . $lastImportTime . '".', self::LOG_TYPE, '', __FUNCTION__);
-			foreach($orders as $index => $order)
-			{
 				$order = $this->getOrderInfo(trim($order->increment_id));
 				Log::logging(0, get_class($this), 'Found order from Magento with orderNo = ' . trim($order->increment_id) . '.', self::LOG_TYPE, '', __FUNCTION__);
 				if(($status = trim($order->state)) === '')
@@ -59,26 +56,26 @@ class OrderConnector extends B2BConnector
 				}
 	
 				$o->setOrderNo(trim($order->increment_id))
-				->setOrderDate(trim($orderDate))
-				->setTotalAmount(trim($order->grand_total))
-				->setStatus((strtolower($status) === 'canceled' ? OrderStatus::get(OrderStatus::ID_CANCELLED) : OrderStatus::get(OrderStatus::ID_NEW)))
-				->setTotalPaid($totalPaid)
-				->setIsFromB2B(true)
-				->setShippingAddr($this->_createAddr($order->billing_address, $shippingAddr))
-				->setBillingAddr($this->_createAddr($order->shipping_address, $billingAddr));
+					->setOrderDate(trim($orderDate))
+					->setTotalAmount(trim($order->grand_total))
+					->setStatus((strtolower($status) === 'canceled' ? OrderStatus::get(OrderStatus::ID_CANCELLED) : OrderStatus::get(OrderStatus::ID_NEW)))
+					->setTotalPaid($totalPaid)
+					->setIsFromB2B(true)
+					->setShippingAddr($this->_createAddr($order->billing_address, $shippingAddr))
+					->setBillingAddr($this->_createAddr($order->shipping_address, $billingAddr));
 				FactoryAbastract::dao('Order')->save($o);
 				Log::logging(0, get_class($this), 'Saved the order, ID = ' . $o->getId(), self::LOG_TYPE, '$index = ' . $index, __FUNCTION__);
 	
 				//create order info
 				$this->_createOrderInfo($o, OrderInfoType::get(OrderInfoType::ID_CUS_NAME), isset($order->customer_firstname) ? trim($order->customer_firstname) . ' ' . trim($order->customer_lastname) : '')
-				->_createOrderInfo($o, OrderInfoType::get(OrderInfoType::ID_CUS_EMAIL), trim($order->customer_email))
-				->_createOrderInfo($o, OrderInfoType::get(OrderInfoType::ID_QTY_ORDERED), intval(trim($order->total_qty_ordered)))
-				->_createOrderInfo($o, OrderInfoType::get(OrderInfoType::ID_MAGE_ORDER_STATUS), trim($order->status))
-				->_createOrderInfo($o, OrderInfoType::get(OrderInfoType::ID_MAGE_ORDER_STATE), trim($order->state))
-				->_createOrderInfo($o, OrderInfoType::get(OrderInfoType::ID_MAGE_ORDER_TOTAL_AMOUNT), trim($order->grand_total))
-				->_createOrderInfo($o, OrderInfoType::get(OrderInfoType::ID_MAGE_ORDER_PAID_AMOUNT), $totalPaid)
-				->_createOrderInfo($o, OrderInfoType::get(OrderInfoType::ID_MAGE_ORDER_SHIPPING_METHOD), trim($order->shipping_description))
-				->_createOrderInfo($o, OrderInfoType::get(OrderInfoType::ID_MAGE_ORDER_PAYMENT_METHOD), (!isset($order->payment) ? '' : (!isset($order->payment->method) ? '' : trim($order->payment->method))));
+					->_createOrderInfo($o, OrderInfoType::get(OrderInfoType::ID_CUS_EMAIL), trim($order->customer_email))
+					->_createOrderInfo($o, OrderInfoType::get(OrderInfoType::ID_QTY_ORDERED), intval(trim($order->total_qty_ordered)))
+					->_createOrderInfo($o, OrderInfoType::get(OrderInfoType::ID_MAGE_ORDER_STATUS), trim($order->status))
+					->_createOrderInfo($o, OrderInfoType::get(OrderInfoType::ID_MAGE_ORDER_STATE), trim($order->state))
+					->_createOrderInfo($o, OrderInfoType::get(OrderInfoType::ID_MAGE_ORDER_TOTAL_AMOUNT), trim($order->grand_total))
+					->_createOrderInfo($o, OrderInfoType::get(OrderInfoType::ID_MAGE_ORDER_PAID_AMOUNT), $totalPaid)
+					->_createOrderInfo($o, OrderInfoType::get(OrderInfoType::ID_MAGE_ORDER_SHIPPING_METHOD), trim($order->shipping_description))
+					->_createOrderInfo($o, OrderInfoType::get(OrderInfoType::ID_MAGE_ORDER_PAYMENT_METHOD), (!isset($order->payment) ? '' : (!isset($order->payment->method) ? '' : trim($order->payment->method))));
 				Log::logging(0, get_class($this), 'Updated order info', self::LOG_TYPE, '$index = ' . $index, __FUNCTION__);
 	
 				//saving the order item
@@ -86,17 +83,22 @@ class OrderConnector extends B2BConnector
 					$this->_createItem($o, $item);
 				
 				$totalItems++;
-			}
 				
-			if($transStarted === false)
-				Dao::commitTransaction();
+				//record the last imported time for this import process
+				SystemSettings::addSettings(SystemSettings::TYPE_B2B_SOAP_LAST_IMPORT_TIME, trim($order->created_at));
+				Log::logging(0, get_class($this), 'Updating the last updated time', self::LOG_TYPE, '', __FUNCTION__);
+				
+				if($transStarted === false)
+					Dao::commitTransaction();
+			}
+			catch(Exception $e)
+			{
+				if($transStarted === false)
+					Dao::rollbackTransaction();
+				throw $e;
+			}
 		}
-		catch(Exception $e)
-		{
-			if($transStarted === false)
-				Dao::rollbackTransaction();
-			throw $e;
-		}
+				
 		return $lastUpdatedTime . " => " . SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_LAST_IMPORT_TIME) . ' => ' . $totalItems;
 // 		return $this;
 	}
