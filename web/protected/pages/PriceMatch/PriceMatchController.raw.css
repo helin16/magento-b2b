@@ -1,0 +1,40 @@
+#drop_file {
+	border:dashed;
+	padding: 20px;
+	font-size: 30px;
+	text-align: center;
+	cursor: pointer;
+}
+#drop_file:hover {
+	border-color: black;
+}
+#price_compare .row {
+	display:inline-block;
+	width:100%;
+}
+
+#price_compare .row .sku,
+#price_compare .row .myPrice, 
+#price_compare .row .priceDiff, 
+#price_compare .row .minPrice {
+	width:100px;
+}
+
+#price_compare .row .company {
+	width:120px;
+}
+#price_compare .row .company.cuspntr {
+	text-decoration: underline;
+}
+#price_compare .row .priceDiff.overmin{
+	background: red;
+	color: white;
+}
+
+.loading {
+	width: 32px;
+	height: 32px;
+	margin: 0 0 0 50px;
+	background: transparent url(/themes/default/images/loading_big.gif) no-repeat bottom left;
+	background-size: 32px 32px;
+}

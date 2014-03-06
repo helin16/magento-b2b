@@ -38,8 +38,14 @@ abstract class HTMLParser
 		$dom->load($data); 
 		return $dom;
 	}
+	
+	public static function getHostUrl()
+	{
+		$parts = parse_url(self::URL);
+		return trim($parts['scheme']) . '://' . trim($parts['host']);
+	}
 
-	public static function getPriceListForProduct($productName)
+	public static function getPriceListForProduct($productName, &$url = '')
 	{
 		 if(($productName = trim($productName)) === '')
 		 	throw new Exception("Product name must be provided to get the price list");
