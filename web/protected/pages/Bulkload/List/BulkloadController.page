@@ -1,5 +1,0 @@
-<com:TContent ID="MainContent">
-	<com:Application.controls.fancybox.FancyBox />
-	<com:Application.controls.chosen.Chosen />
-	<div id = "mainContent"></div>
-</com:TContent>
