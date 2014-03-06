@@ -20,8 +20,7 @@ class OrderConnector extends B2BConnector
 			if(($lastUpdatedTime = trim($lastUpdatedTime)) === '')
 			{
 				Log::logging(0, get_class($this), 'Getting the last updated time', self::LOG_TYPE, '$lastUpdatedTime is blank', __FUNCTION__);
-				$lastImportTime = new UDate(SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_LAST_IMPORT_TIME));
-				$lastImportTime->setTimeZone(SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_TIMEZONE));
+				$lastImportTime = new UDate(SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_LAST_IMPORT_TIME), SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_TIMEZONE));
 				$lastUpdatedTime = trim($lastImportTime);
 			}
 			//record the last imported time for this import process
