@@ -132,10 +132,10 @@ class OrderConnector extends B2BConnector
 		return Address::create(isset($addressObj->street) ? trim($addressObj->street) : '',
 				trim(isset($addressObj->city) ? trim($addressObj->city) : ''),
 				isset($addressObj->region) ? trim($addressObj->region) : '',
-				trim($addressObj->country_id),
-				trim($addressObj->postcode),
-				trim($addressObj->firstname) . ' ' . trim($addressObj->lastname),
-				trim($addressObj->telephone),
+				trim(isset($addressObj->country_id) ? trim($addressObj->country_id) : ''),
+				trim(isset($addressObj->postcode) ? trim($addressObj->postcode) : ''),
+				trim(trim(isset($addressObj->firstname) ? trim($addressObj->firstname) : '') . ' ' . trim(isset($addressObj->lastname) ? trim($addressObj->lastname) : '')),
+				trim(isset($addressObj->telephone) ? trim($addressObj->telephone) : ''),
 				$exsitAddr
 		);
 	}
