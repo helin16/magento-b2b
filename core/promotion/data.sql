@@ -93,3 +93,16 @@ insert into `paymentmethod`(`id`, `name`, `description`, `active`, `created`, `c
 ############################ add productinfotype table
 insert into `productinfotype` (`id`, `name`, `active`, `created`, `createdById`, `updated`, `updatedById`) values
 	(1, 'Magento Product ID', 1, NOW(), 10, NOW(), 10);
+	
+############################ add pricematchcompany table
+insert into pricematchcompany (`companyName`, `companyAlias`, `active`, `created`, `createdById`, `updated`, `updatedById`) VALUES 
+    ('Mega Buy', 'www.megabuy.com.au', 1, NOW(), 5, NOW(), 5),
+    ('Mega Buy', 'megabuy', 1, NOW(), 5, NOW(), 5),
+    ('Mega Buy', 'mega buy', 1, NOW(), 5, NOW(), 5),
+    ('MSY', 'www.msy.com.au', 1, NOW(), 5, NOW(), 5),
+    ('MSY', 'msy', 1, NOW(), 5, NOW(), 5),
+    ('ii Buy', 'iiBuy', 1, NOW(), 5, NOW(), 5),
+    ('ii Buy', 'ii Buy', 1, NOW(), 5, NOW(), 5),
+    ('ii Buy', 'i i Buy', 1, NOW(), 5, NOW(), 5),
+    ('ii Buy', 'i iBuy', 1, NOW(), 5, NOW(), 5),
+    ('ii Buy', 'www.iibuy.com.au', 1, NOW(), 5, NOW(), 5);
