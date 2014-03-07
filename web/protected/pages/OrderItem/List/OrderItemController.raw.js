@@ -137,10 +137,11 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			'onLoading': function (sender, param) {
 				$(tmp.me.searchBtnId).store('orignValue', $F(tmp.me.searchBtnId)).addClassName('disabled').setValue('searching ...').disabled = true;
 			}
-			, 'onComplete': function (sender, param) {
+			, 'onSuccess': function (sender, param) {
 				try {
 					tmp.result = tmp.me.getResp(param, false, true);
-					
+					if(!tmp.result)
+						return;
 					tmp.resultDiv = $(tmp.me.resultDivId);
 					
 					//remove next page button
