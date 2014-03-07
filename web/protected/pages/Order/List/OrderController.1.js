@@ -103,6 +103,8 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			,'onSuccess': function(sender, param) {
 				try{
 					tmp.result = tmp.me.getResp(param, false, true);
+					if(!tmp.result)
+						return;
 					$(tmp.me.totalNoOfItemsId).update(tmp.result.pageStats.totalRows);
 					
 					tmp.resultDiv = $(tmp.me.resultDivId);
@@ -124,7 +126,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 						tmp.resultDiv.insert({'bottom': tmp.me._getNextPageBtn().addClassName('paginWrapper') });
 					
 				} catch (e) {
-					console.debug(e);
+					alert(e);
 				}
 				tmp.searchBtn.removeClassName('disabled').setValue(tmp.searchBtn.retrieve('originValue')).disabled = false;
 			}

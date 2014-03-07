@@ -103,6 +103,8 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			,'onSuccess': function(sender, param) {
 				try{
 					tmp.result = tmp.me.getResp(param, false, true);
+					if(!tmp.result)
+						return;
 					$(tmp.me.totalNoOfItemsId).update(tmp.result.pageStats.totalRows);
 					
 					tmp.resultDiv = $(tmp.me.resultDivId);
