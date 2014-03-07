@@ -50,7 +50,7 @@ BPCPageJs.prototype = {
 		tmp.result = response;
 		if(tmp.expectNonJSONResult === true)
 			return tmp.result;
-		if(!tmp.result.isJSON()) {
+		if(!tmp.result || !tmp.result.isJSON()) {
 			return;
 //			tmp.error = 'Invalid JSON string: ' + tmp.result;
 //			if (noAlert === true)
