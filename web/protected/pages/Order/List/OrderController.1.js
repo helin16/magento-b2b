@@ -124,7 +124,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 						tmp.resultDiv.insert({'bottom': tmp.me._getNextPageBtn().addClassName('paginWrapper') });
 					
 				} catch (e) {
-					alert(e);
+					console.debug(e);
 				}
 				tmp.searchBtn.removeClassName('disabled').setValue(tmp.searchBtn.retrieve('originValue')).disabled = false;
 			}
