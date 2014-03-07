@@ -48,6 +48,7 @@ BPCPageJs.prototype = {
 		var tmp = {};
 		tmp.expectNonJSONResult = (expectNonJSONResult !== true ? false : true);
 		tmp.result = response;
+		console.debug(tmp.result);
 		if(tmp.expectNonJSONResult === true)
 			return tmp.result;
 		if(!tmp.result || !tmp.result.isJSON()) {
