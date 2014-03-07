@@ -100,7 +100,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			'onLoading': function () {
 				tmp.searchBtn.store('originValue', $F(tmp.searchBtn)).addClassName('disabled').setValue('Searching ...').disabled = true;
 			}
-			,'onComplete': function(sender, param) {
+			,'onSuccess': function(sender, param) {
 				try{
 					tmp.result = tmp.me.getResp(param, false, true);
 					$(tmp.me.totalNoOfItemsId).update(tmp.result.pageStats.totalRows);
