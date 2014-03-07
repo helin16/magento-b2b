@@ -206,10 +206,12 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				}	
 				tmp.me.postAjax(tmp.me.getCallbackId('getAllPricesForProduct'), {'sku': line.sku, 'price': line.price}, {
 					'onLoading': function(sender, param) {}
-					,'onComplete': function (sender, param) {
+					,'onSuccess': function (sender, param) {
 						try 
 						{
 							tmp.result = tmp.me.getResp(param, false, true);
+							if(!tmp.result)
+								return;
 							if(tmp.result.items.sku !== '' && tmp.result.items.sku !== undefined && tmp.result.items.sku !== null && !tmp.result.items.sku.blank())
 								$(tmp.me.dropShowDiv.resultDiv).insert({'bottom': tmp.me._generatePriceRowForProduct(tmp.result.items)});
 							
