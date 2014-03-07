@@ -1,0 +1,10 @@
+<com:TContent ID="MainContent">
+	<com:TCallback ID="getPriceMatchCompanyBtn" onCallBack="Page.getPriceMatchCompanyDetails" />
+	<div class="pagewrapper userlist container">
+		<div class="contentDiv">
+			<div class="dataTableWrapper">
+				<div class="dataTable" id="resultDiv"></div>
+			</div>
+		</div>
+	</div>
+</com:TContent>
