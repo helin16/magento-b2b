@@ -49,9 +49,9 @@ class InfoEntityAbstract extends BaseEntityAbstract
 			if(!isset(DaoMap::$map[strtolower(get_class($this))]['infos']) || ($class = trim(DaoMap::$map[strtolower(get_class($this))]['infos']['class'])) === '')
 				throw new EntityException('You can NOT get information from a entity' . get_class($this) . ', setup the relationship first!');
 			
-			$sql = 'select value `value` from ' . strtolower($class) . ' `info` where `info`.active = 1 and `info`.' . strtolower(get_class($this)) . 'Id = ? and `info`.TypeId = ?';
-			$result = Dao::getSingleResultNative($sql, array($this->getId(), $typeId), PDO::FETCH_ASSOC);
-			$this->_cache[$typeId] = array_map(create_function('$row', 'return $row["value"];'), $result);
+			$sql = 'select value from ' . strtolower($class) . ' `info` where `info`.active = 1 and `info`.' . strtolower(get_class($this)) . 'Id = ? and `info`.TypeId = ?';
+			$result = Dao::getResultsNative($sql, array($this->getId(), $typeId), PDO::FETCH_NUM);
+			$this->_cache[$typeId] = array_map(create_function('$row', 'return $row[0];'), $result);
 		}
 		return $this->_cache[$typeId];
 	}
