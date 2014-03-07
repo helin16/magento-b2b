@@ -177,7 +177,7 @@ class OrderConnector extends B2BConnector
 						),
 				)
 		);
-		return $this->_connect()->salesOrderList($this->_session, $params);InfoEntityAbstract
+		return $this->_connect()->salesOrderList($this->_session, $params);
 	}
 	
 	/**
