@@ -4,8 +4,10 @@
 var BPCPageJs = new Class.create();
 BPCPageJs.prototype = {
 		
+	_ajaxRequest: null
+		
 	//the callback ids
-	callbackIds: {}
+	,callbackIds: {}
 
 	//constructor
 	,initialize: function () {}
@@ -24,16 +26,23 @@ BPCPageJs.prototype = {
 	//posting an ajax request
 	,postAjax: function(callbackId, data, requestProperty, timeout) {
 		var tmp = {};
-		tmp.request = new Prado.CallbackRequest(callbackId, requestProperty);
-		tmp.request.setCallbackParameter(data);
+		tmp.me = this;
+		tmp.me._ajaxRequest = new Prado.CallbackRequest(callbackId, requestProperty);
+		tmp.me._ajaxRequest.setCallbackParameter(data);
 		tmp.timeout = (timeout || 30000);
 		if(tmp.timeout < 30000) {
 			tmp.timeout = 30000;
 		}
-		tmp.request.setRequestTimeOut(tmp.timeout);
-		tmp.request.dispatch();
-		return tmp.request;
+		tmp.me._ajaxRequest.setRequestTimeOut(tmp.timeout);
+		tmp.me._ajaxRequest.dispatch();
+		return tmp.me._ajaxRequest;
 	}
+	
+	,abortAjax: function() {
+		if(tmp.me._ajaxRequest !== null)
+			tmp.me._ajaxRequest.abort();
+	}
+	
 	//parsing an ajax response
 	,getResp: function (response, expectNonJSONResult, noAlert) {
 		var tmp = {};
@@ -42,11 +51,12 @@ BPCPageJs.prototype = {
 		if(tmp.expectNonJSONResult === true)
 			return tmp.result;
 		if(!tmp.result.isJSON()) {
-			tmp.error = 'Invalid JSON string: ' + tmp.result;
-			if (noAlert === true)
-				throw tmp.error;
-			else 
-				return alert(tmp.error);
+			return;
+//			tmp.error = 'Invalid JSON string: ' + tmp.result;
+//			if (noAlert === true)
+//				throw tmp.error;
+//			else 
+//				return alert(tmp.error);
 		}
 		tmp.result = tmp.result.evalJSON();
 		if(tmp.result.errors.size() !== 0) {

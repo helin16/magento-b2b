@@ -39,11 +39,13 @@ class LatestETAPanel extends TTemplateControl
 		parent::onLoad($param);
 		if(!$this->getPage()->IsCallBack && !$this->getPage()->IsPostBack)
 		{
-			$js = 'if(typeof(LatestETAPanel) !== "undefined" && pageJs) { var lepJs = new LatestETAPanel(pageJs); } else {alert("System Error: Cannot Load Latest ETA Panel Control!!");}';
-			$js .= 'lepJs.resultDiv =  "' . $this->latest_eta_result_div->getClientID() . '";';
-			$js .= 'lepJs.callBackId = "'.$this->getLatestEtaBtn->getUniqueID().'";';
-			$js .= 'lepJs.setPagination('.$this->pageNumber.', '.$this->pageSize.');';
-			$js .= 'lepJs.loadLatestETA();';
+			$js = 'if(typeof(LatestETAPanel) !== "undefined" && pageJs) {';
+				$js .= 'var lepJs = new LatestETAPanel(pageJs); ';
+				$js .= 'lepJs.resultDiv = "' . $this->latest_eta_result_div->getClientID() . '";';
+				$js .= 'lepJs.callBackId = "'.$this->getLatestEtaBtn->getUniqueID().'";';
+				$js .= 'lepJs.setPagination('.$this->pageNumber.', '.$this->pageSize.');';
+				$js .= 'lepJs.loadLatestETA();';
+			$js .= '}';
 			$this->getPage()->getClientScript()->registerEndScript('lepJs', $js);		
 		}
 		
