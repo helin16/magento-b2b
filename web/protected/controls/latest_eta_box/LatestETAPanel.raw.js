@@ -62,6 +62,8 @@ LatestETAPanel.prototype = {
 				try
 				{
 					tmp.result = tmp.me._pageObj.getResp(param, false, true);
+					if(!tmp.result)
+						return;
 					if(tmp.reset === true) {
 						if(tmp.result.items.length === 0) {
 							if($(tmp.me.resultDiv)) {
