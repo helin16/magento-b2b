@@ -51,6 +51,8 @@ class OrderController extends BPCPageAbstract
 		$preferences['ord.status'] = AccessControl::canAccessOrderStatusIds(Core::getRole());
 		if(($index = array_search(OrderStatus::ID_CANCELLED, $preferences['ord.status'])) !== false)
 			array_splice($preferences['ord.status'], $index, 1);
+		if(($index = array_search(OrderStatus::ID_SHIPPED, $preferences['ord.status'])) !== false)
+			array_splice($preferences['ord.status'], $index, 1);
 		switch(Core::getRole()->getId())
 		{
 			case Role::ID_ACCOUNTING:
