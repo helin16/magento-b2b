@@ -1,0 +1,21 @@
+#resultDiv .row .company_name {
+	width:200px;
+}
+
+#resultDiv .row .company_alias {
+	width:400px;
+}
+#resultDiv .row .company_alias .single_alias {
+	width:300px;
+	padding-right:12px;
+}
+
+#resultDiv .row .company_alias .single_alias:hover,
+{
+	background-color:pink;
+}
+
+#resultDiv .row .company_alias .single_alias_edit {
+	width:90px;
+	cursor:pointer;
+}
