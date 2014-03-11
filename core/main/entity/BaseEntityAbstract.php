@@ -342,6 +342,8 @@ abstract class BaseEntityAbstract
 	            if($field === '_' || isset($fieldMap['rel']))
 	                continue;
 	            $getterMethod = 'get' . ucfirst($field);
+	            if(!method_exists($this, $getterMethod))
+	            	continue;
 	            $value = $this->$getterMethod();
 	            $array[$field] = is_string($value) ? trim($value) : null;
 	            if(trim($fieldMap['type']) === 'bool')
