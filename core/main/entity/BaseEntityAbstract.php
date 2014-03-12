@@ -345,9 +345,19 @@ abstract class BaseEntityAbstract
 	            if(!method_exists($this, $getterMethod))
 	            	continue;
 	            $value = $this->$getterMethod();
-	            $array[$field] = is_string($value) ? trim($value) : null;
-	            if(trim($fieldMap['type']) === 'bool')
-	                $array[$field] = (trim($array[$field]) === '1' ? true : false);
+	            switch(trim($fieldMap['type']))
+	            {
+	            	case 'bool':
+	            		{
+	            			$array[$field] = (trim($value) === '1' ? true : false);
+	            			break;
+	            		}
+	            	default:
+	            		{
+	            			$array[$field] = trim($value);
+	            			break;
+	            		}
+	            }
 	        }
 	        $this->_jsonArray = array_merge($array, $extra);
     	}

@@ -134,6 +134,22 @@ class UserAccount extends BaseEntityAbstract
     }
     /**
      * (non-PHPdoc)
+     * @see BaseEntityAbstract::getJson()
+     */
+    public function getJson($extra = '', $reset = false)
+    {
+    	$array = array();
+    	if(!$this->isJsonLoaded($reset))
+    	{
+    		$array['person'] = $this->getPerson()->getJson();
+    		$array['roles'] = array();
+    		foreach($this->getRoles() as $role)
+    			$array['roles'][] = $role->getJson();
+    	}
+    	return parent::getJson($array, $reset);
+    }
+    /**
+     * (non-PHPdoc)
      * @see BaseEntity::__loadDaoMap()
      */
     public function __loadDaoMap()

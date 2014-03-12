@@ -283,7 +283,8 @@ input[type="text"].err {
 }
 .dataTableWrapper .dataTable {
 	border-collapse: collapse;
-    margin: 15px;
+    width: 100%;
+    display:table;
 }
 .dataTableWrapper .dataTable .cell{
     border-right: 1px solid #FFFFFF;

@@ -39,7 +39,8 @@
 			<url ServiceParameter="PriceMatch.PriceMatchController" pattern="pricematch.html" />
 			
 			<!-- FrontEnd:: me page -->
-			<url ServiceParameter="User.Me.MeController" pattern="me.html" />
+			<url ServiceParameter="User.Me.MeController" pattern="{id}.html" parameters.id="me"/>
+			<url ServiceParameter="User.Me.MeController" pattern="/useraccount/edit/{id}.html" parameters.id="\d+"/>
 			
 			<!-- asset service -->
 			<url ServiceId="asset" ServiceParameter="" pattern="asset/{method}" parameters.method="get" />
