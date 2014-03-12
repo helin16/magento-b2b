@@ -23,7 +23,6 @@ class UDate
 		if ($string == "0000-00-00 00:00:00")
 			$string = trim(UDate::zeroDate());
 		// Is there a difference between UTC and GMT?
-		date_default_timezone_set('UTC');
 		if($timeZone === '')
 			$this->_dateTime = date_create($string);
 		else

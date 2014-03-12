@@ -443,20 +443,26 @@ class Order extends InfoEntityAbstract
 	    {
 	    	$array['totalDue'] = $this->getTotalDue();
 	    	$array['infos'] = array();
-	    	$array['address']['shipping'] = $this->getShippingAddr()->getJson();
-	    	$array['address']['billing'] = $this->getBillingAddr()->getJson();
+	    	$array['address']['shipping'] = $this->getShippingAddr() instanceof Address ? $this->getShippingAddr()->getJson() : array();
+	    	$array['address']['billing'] = $this->getBillingAddr() instanceof Address ? $this->getBillingAddr()->getJson() : array();
 		    foreach($this->getInfos() as $info)
 		    {
+		    	if(!$info instanceof OrderInfo)
+		    		continue;
 		        $typeId = $info->getType()->getId();
 		        if(!isset($array['infos'][$typeId]))
 		            $array['infos'][$typeId] = array();
 	            $array['infos'][$typeId][] = $info->getJson();
 		    }
-		    $array['status'] = $this->getStatus()->getJson();
+		    $array['status'] = $this->getStatus() instanceof OrderStatus ? $this->getStatus()->getJson() : array();
 		    
 		    $array['shippment'] = array();
 		    foreach($this->getShippments() as $shippment)
+		    {
+		    	if(!$shippment instanceof Shippment)
+		    		continue;
 		    	$array['shippment'][] = $shippment->getJson();
+		    }
 	    }
 	    return parent::getJson($array, $reset);
 	}

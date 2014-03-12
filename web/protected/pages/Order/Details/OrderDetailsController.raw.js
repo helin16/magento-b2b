@@ -94,6 +94,8 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		var tmp = {};
 		tmp.me = this;
 		tmp.hasStock = (orderItem.eta === '' ? '' : (orderItem.eta === '0001-01-01 00:00:00' ? 'Y' : 'N'));
+		tmp.isOrdered = (orderItem.isOrdered === false ? false : true);
+		
 		if(tmp.me._editMode.purchasing === false) {
 			tmp.newDiv = new Element('div', {'class': 'order_item_details'});
 			if(tmp.hasStock === '')
@@ -101,18 +103,26 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			return tmp.newDiv
 				.insert({'bottom': tmp.me._getfieldDiv('hasStock?: ', tmp.hasStock) })
 				.insert({'bottom': tmp.me._getfieldDiv('ETA: ', orderItem.eta) })
-				.insert({'bottom': tmp.me._getfieldDiv('Comments: ', new Element('span', {'class': 'comment', 'comment_type': tmp.me.comment_type_purchasing, 'entity_name': 'OrderItem' }).update('click me') ) });
+				.insert({'bottom': tmp.me._getfieldDiv('Comments: ', new Element('span', {'class': 'comment', 'comment_type': tmp.me.comment_type_purchasing, 'entity_name': 'OrderItem' }).update('click me') ) })
+				.insert({'bottom': tmp.me._getfieldDiv('Is Ordered: ', new Element('span', {}).update((tmp.isOrdered === true ? 'Y' : 'N'))  ) });
 		}
+		
 		tmp.getEditDiv = function(hasStock, eta) {
 			tmp.etaBox = new Element('input', {'type': 'text', 'placeholder': 'ETA:', 'update_order_item': 'eta', 'id': 'order_item_' + orderItem.id, 'readonly': true, 'value': eta ? eta : ''});
-			return new Element('div')
+			tmp.returnDiv = new Element('div')
 				.insert({'bottom': tmp.me._getfieldDiv('ETA:', tmp.etaBox) })
 				.insert({'bottom': tmp.me._getfieldDiv('Comments: ', new Element('input', {'update_order_item': 'comments', 'placeholder': 'The reason'})) })
+				.insert({'bottom': tmp.me._getfieldDiv('Is Ordered: ', new Element('input', {'type': 'checkbox', 'update_order_item': 'isOrdered', 'is_ordered': 'is_ordered'}) ) })
 				.insert({'bottom': new Element('a', {'href': 'javascript: void(0);'}).update('cancel')
 					.observe('click', function() {
 						$(this).up('.operationDiv').update(tmp.me._getHasStockSel('Has Stock?', hasStock, tmp.func));
 					})
-				})
+				});
+			
+			if(tmp.isOrdered === true)
+				$(tmp.returnDiv).down('[is_ordered]').writeAttribute("checked", "checked");
+			
+			return tmp.returnDiv;
 		};
 		tmp.func = function() {
 			//remove error msg
@@ -128,7 +138,10 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					item.remove();
 				});
 				if($F(this) === 'Y')
+				{	
 					$(this).up('.operationDiv').insert({'bottom': new Element('input', {'type': 'hidden', 'update_order_item': 'eta', 'value': '0001-01-01 00:00:00'}) });
+					$(this).up('.operationDiv').insert({'bottom': new Element('input', {'type': 'hidden', 'update_order_item': 'isOrdered', 'value': 'false'}) });
+				}	
 			}	
 		};
 		if(tmp.hasStock === 'N') {
@@ -139,7 +152,11 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.returnDiv = new Element('div', {'class': 'operationDiv'});
 		tmp.returnDiv.insert({'bottom': tmp.selBox});
 		if(tmp.hasStock === 'Y')
-			tmp.returnDiv.insert({'bottom': new Element('input', {'type': 'hidden', 'update_order_item': 'eta', 'value': '0001-01-01 00:00:00'}) })
+		{
+			tmp.returnDiv
+				.insert({'bottom': new Element('input', {'type': 'hidden', 'update_order_item': 'eta', 'value': '0001-01-01 00:00:00'}) })
+				.insert({'bottom': new Element('input', {'type': 'hidden', 'update_order_item': 'isOrdered', 'value': 'false'}) });
+		}	
 		
 		return tmp.returnDiv;
 	}
@@ -412,8 +429,12 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				
 				tmp.fields.each(function(field) {
 					tmp.fieldName = field.readAttribute(attrName);
-					tmp.value = $F(field);
-					if(tmp.value.blank()) {
+					if(field.readAttribute('type') !== 'checkbox')
+						tmp.value = $F(field);
+					else
+						tmp.value = $(field).checked;
+					
+					if((typeof tmp.value == 'string') && tmp.value.blank()) {
 						field.insert({'before': new Element('div', {'class': 'msgDiv errorMsgDiv'}).update(new Element('div', {'class': 'msg'}).update(tmp.fieldName + ' Required!') ) });
 						tmp.hasError = true;
 					} else {
@@ -493,6 +514,8 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 							alert('fasfdds');
 							return;
 						}	
+						
+						//console.debug(tmp.finalOrderItemArray);
 						
 						tmp.me.postAjax(tmp.me.getCallbackId('updateOIForWH'), {'orderItems': tmp.finalOrderItemArray, 'order': tmp.me._order}, {
 							'onLoading': function (sender, param) { /*$(selBox).disabled = true;*/ }
@@ -578,9 +601,12 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			'onLoading': function(sender, param) {
 				$(btn).store('originValue', $F(btn)).addClassName('disabled').setValue('saving ...').disabled = true;
 			}
-			,'onComplete': function (sender, param) {
+			,'onSuccess': function (sender, param) {
 				try {
 					tmp.result = tmp.me.getResp(param, false, true);
+					if(!tmp.result) {
+						return;
+					}
 					$(commentsResultDivId).down('.header').insert({'after': tmp.me._getCommentsRow(tmp.result) });
 					tmp.commentsBox.setValue('');
 				} catch (e) {
@@ -696,6 +722,8 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 	
 	/* Generating the EDITABLE Shipping Info Receiver and Courier details. Function is used by _getShippingRow() */
 	,_generateShippingReceiverInfoDetailsForEdit: function() {
+		var tmp = {};
+		tmp.me = this;
 		return new Element('div', {'class': 'row'})
 				.insert({'bottom': new Element('span', {'class': 'courier'})
 					.insert({'bottom': tmp.me._getfieldDiv('Courier:', tmp.me._getCourierList().addClassName('shipmentInfo')
@@ -715,6 +743,8 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 	
 	/* Generating the EDITABLE Shipping Address Info details. Function is used by _getShippingRow() */
 	,_generateShippingAddressDetailsForEdit: function() {
+		var tmp = {};
+		tmp.me = this;
 		return new Element('div', {'class': 'row'})
 				.insert({'bottom': new Element('span', {'class': 'street'})
 					.insert({'bottom': tmp.me._getfieldDiv('Street:', new Element('input', {'type': 'text', 'mandatory': 'true', 'dataType': 'street', 'displayValue': 'Street', 'class': 'shipmentInfo'}).writeAttribute('value', tmp.me._order.address.shipping.street) ) })
@@ -735,6 +765,8 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 	
 	/* Generating the EDITABLE Other Shipping Info details. Function is used by _getShippingRow() */
 	,_generateOtherShippingDetailsForEdit: function() {
+		var tmp = {};
+		tmp.me = this;
 		return new Element('div', {'class': 'row'}) 
 				.insert({'bottom': new Element('span', {'class': 'noOfCartons'})
 					.insert({'bottom': tmp.me._getfieldDiv('No Of Carton(s):', new Element('input', {'type': 'text', 'mandatory': 'true', 'dataType': 'noOfCartons', 'displayValue': 'No Of Carton', 'class': 'shipmentInfo'}) ) })
@@ -824,6 +856,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 	/* *** This function will bind the JQuery QTip event to all the OrderItem Purchasing/Warehouse Comment link(s) *** */
 	,_bindAllCommentsForOrderItems: function() {
 		var tmp = {};
+		tmp.me = this;
 		jQuery('.productlist .comment').qtip({
 			content: {
 				text: function(event, api) {
@@ -868,6 +901,36 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				inactive: 5000
 			}
 		});
+		return tmp.me;
+	}
+	
+	,_getLatestPaymentMethod: function() {
+		var tmp = {};
+		tmp.me = this;
+		
+		tmp.insertPoint = $(tmp.me._resultDivId).down('#lastPaymentMethod');
+		
+		tmp.me.postAjax(tmp.me.getCallbackId('getPaymentDetails'), {'order': tmp.me._order}, {
+			'onLoading': function (sender, param) { /*$(selBox).disabled = true;*/ }
+			,'onComplete': function (sender, param) {
+				try {
+					tmp.result = tmp.me.getResp(param, false, true);
+					//console.debug(tmp.result);
+					if(tmp.result.items.length > 0)
+					{
+						tmp.lastPaymentMethod = tmp.result.items[0].method.name;
+						tmp.insertPoint.update(tmp.lastPaymentMethod);
+					}
+					else
+						tmp.insertPoint.update('N/A');
+				} 
+				catch (e) {
+					alert(e);
+					return;
+				}
+			}
+		});
+		return tmp.me;
 	}
 	
 	,_loadChosen: function () {
@@ -934,10 +997,11 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		
 		//getting the summray row
 		tmp.newDiv.insert({'bottom': new Element('fieldset', {'class': 'row summary'})
-			.insert({'bottom': new Element('legend').update('Summary') })
+			.insert({'bottom': new Element('legend').update('Magento Info') })
 			.insert({'bottom': new Element('div')
 				.insert({'bottom': tmp.me._getfieldDiv('Shipping', tmp.me._order.infos[9][0].value) })
-				.insert({'bottom': tmp.me._getfieldDiv('Payment Method', tmp.me._order.infos[6][0].value) })
+				.insert({'bottom': tmp.me._getfieldDiv('Magento Payment Method', tmp.me._order.infos[6][0].value) })
+				.insert({'bottom': tmp.me._getfieldDiv('Last Payment Method', new Element("span", {"id": "lastPaymentMethod"}).update(new Element('img')) ) })
 				.insert({'bottom': tmp.me._getfieldDiv('Total Amount', tmp.me.getCurrency(tmp.me._order.totalAmount)).addClassName('totalAmount') })
 				.insert({'bottom': tmp.me._getfieldDiv('Total Paid', tmp.me.getCurrency(tmp.me._order.totalPaid)).addClassName('totalPaid') })
 				.insert({'bottom': tmp.me._getfieldDiv('Total Due', tmp.me.getCurrency(tmp.me._order.totalDue)).addClassName('totalDue') })
@@ -999,7 +1063,8 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.me._commentsDiv.resultDivId = 'comments_list';
 		tmp.me._getComments(true)
 			._loadChosen()
-			._bindAllCommentsForOrderItems();
+			._bindAllCommentsForOrderItems()
+			._getLatestPaymentMethod();
 		
 		return this;
 	}

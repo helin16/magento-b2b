@@ -86,7 +86,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 							'height'		: '90%',
 							'autoScale'     : true,
 							'type'			: 'iframe',
-							'href'			: '/orderdetails/' + row.id + '.html',
+							'href'			: '/orderdetails/' + row.order.id + '.html',
 							'beforeClose'	    : function() {
 								tmp.items = $$('iframe.fancybox-iframe').first().contentWindow.pageJs._orderItems;
 								if(tmp.items && tmp.items.size() >0) {

@@ -25,7 +25,7 @@ class PriceMatchCompanyListController extends BPCPageAbstract
 		$js .= 'pageJs._pageInfo.pageNo = '.$pageNo.';';
 		$js .= 'pageJs._pageInfo.pageSize = '.$pageSize.';';
 		$js .= 'pageJs._resultDivId = "resultDiv";';
-		$js .= 'pageJs.setCallbackId("getPriceMatchCompany", "' . $this->getPriceMatchCompanyBtn->getUniqueID(). '")';
+		$js .= 'pageJs.setCallbackId("getPriceMatchCompany", "' . $this->getPriceMatchCompanyBtn->getUniqueID(). '");';
 		$js .= 'pageJs.displayAllPriceMatchCompany();';
 		
 		return $js;
@@ -33,27 +33,53 @@ class PriceMatchCompanyListController extends BPCPageAbstract
 	
 	public function getPriceMatchCompanyDetails($sender, $param)
 	{
-		$result = $error = $pmcArray = array();
-		
-		if(!isset($param->CallbackParameter->searchCriteria))
-			$searchCriteria = '';
-		else 
-			$searchCriteria = trim($param->CallbackParameter->searchCriteria);
-		
+		$result = $error = $pmcArray = $outputArray = $finalOutputArray = array();
 		$pageNo = 1;
 		$pageSize = 30;
-		if(isset($param->CallbackParameter->pagination))
+		$searchCriteria = '';
+		
+		try 
 		{
-			$pageNo = $param->CallbackParameter->pagination->pageNo;
-			$pageSize = $param->CallbackParameter->pagination->pageSize;
-		}	
-		
-		if($searchCriteria === '')
-			$pmcArray = PriceMatchCompany::findAll(true, $pageNo, $pageSize);
-		
+			if(isset($param->CallbackParameter->searchCriteria))
+				$searchCriteria = trim($param->CallbackParameter->searchCriteria);
+			
+			if(isset($param->CallbackParameter->pagination))
+			{
+				$pageNo = $param->CallbackParameter->pagination->pageNo;
+				$pageSize = $param->CallbackParameter->pagination->pageSize;
+			}	
+			
+			if($searchCriteria === '')
+				$pmcArray = PriceMatchCompany::findAll(true, $pageNo, $pageSize);
+			else
+				$pmcArray = FactoryAbastract::service('PriceMatchCompany')->findByCriteria('companyName like ?', array('%'.$searchCriteria.'%'));
+	
+			foreach($pmcArray as $pmc)
+			{
+				$companyName = trim($pmc->getCompanyName());
+				$compnayAlias = trim($pmc->getCompanyAlias());
 				
+				if(!isset($outputArray[$companyName]))
+					$outputArray[$companyName] = array();
+				
+				$outputArray[$companyName][] = array('id' => $pmc->getId(), 'alias' => $compnayAlias);
+			}
+			
+			foreach($outputArray as $key => $value)
+			{
+				$tmp = array();
+				$tmp['companyName'] = $key;
+				$tmp['companyAliases'] = $value;
+				$finalOutputArray[] = $tmp;
+			}
+			
+			$result['items'] = $finalOutputArray;
+		}
+		catch(Exception $ex)
+		{
+			$error[] = $ex->getMessage();
+		}
 		
-		
-		
+		$param->ResponseData = StringUtilsAbstract::getJson($result, $error);
 	}
 }
