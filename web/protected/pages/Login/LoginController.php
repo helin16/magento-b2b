@@ -11,6 +11,8 @@ class LoginController extends TPage
 	public function onLoad($param)
 	{
 		parent::onLoad($param);
+		if(Core::getUser() instanceof UserAccount)
+			$this->getResponse()->redirect('/');
 		$cScripts = BPCPageAbstract::getLastestJS(get_class($this));
 	    if (isset($cScripts['js']) && ($lastestJs = trim($cScripts['js'])) !== '')
 	        $this->getPage()->getClientScript()->registerScriptFile('pageJs', $this->publishAsset($lastestJs));
