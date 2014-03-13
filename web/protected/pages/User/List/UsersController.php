@@ -100,28 +100,4 @@ class UsersController extends BPCPageAbstract
 		}
 		$param->ResponseData = StringUtilsAbstract::getJson($results, $errors);
 	}
-	/**
-	 * get all roles
-	 * 
-	 * @param unknown $sender
-	 * @param unknown $params
-	 * 
-	 * @throws Exception
-	 */
-	public function getRoles($sender, $param)
-	{
-		$results = $errors = array();
-		try
-		{
-			$items = FactoryAbastract::service('Role')->findAll();
-			$results['items'] = array();
-			foreach($items as $item)
-				$results['items'][] = $item->getJson();
-		}
-		catch(Exception $ex)
-		{
-			$errors[] = $ex->getMessage();
-		}
-		$param->ResponseData = StringUtilsAbstract::getJson($results, $errors);
-	}
 }

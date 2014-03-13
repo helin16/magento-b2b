@@ -30,7 +30,7 @@ class UserAccountService extends BaseServiceAbastract
     {
         $query = FactoryAbastract::dao($this->_entityName)->getQuery();
         $query->eagerLoad('UserAccount.roles', DaoQuery::DEFAULT_JOIN_TYPE, 'r');
-        $userAccounts = $this->findByCriteria("`UserName` = :username AND `Password` = :password", array('username' => $username, 'password' => ($noHashPass === true ? $password : sha1($password))), false, 1, 2);
+        $userAccounts = $this->findByCriteria("`UserName` = :username AND `Password` = :password", array('username' => $username, 'password' => ($noHashPass === true ? $password : sha1($password))), true, 1, 2);
         if(count($userAccounts) === 1)
             return $userAccounts[0];
         else if(count($userAccounts) > 1)
@@ -51,7 +51,7 @@ class UserAccountService extends BaseServiceAbastract
     {
         $query = FactoryAbastract::dao($this->_entityName)->getQuery();
         $query->eagerLoad('UserAccount.roles', DaoQuery::DEFAULT_JOIN_TYPE, 'r');
-        $userAccounts = $this->findByCriteria("`UserName` = :username  AND r.id != :roleId", array('username' => $username), false, 1, 2);
+        $userAccounts = $this->findByCriteria("`UserName` = :username  AND r.id != :roleId", array('username' => $username), true, 1, 2);
         if(count($userAccounts) === 1)
             return $userAccounts[0];
         else if(count($userAccounts) > 1)
