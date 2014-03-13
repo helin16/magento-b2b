@@ -1,8 +1,13 @@
 <com:TContent ID="MainContent">
+	<com:Application.controls.fancybox.FancyBox />
+	<com:Application.controls.jsSaveAs.jsSaveAs />
 	<com:TCallback ID="getAllPricesForProductBtn" OnCallback="getAllPricesForProduct" />
 	<div class="pagewrapper pricematch">
 		<div id="main_content" class="contentDiv dataTableWrapper">
-			<div id="drop_file" title="You can drag multiple files here!">Drop you files here</div>
+			<div id="drop_file" title="You can drag multiple files here!">
+				<span class="button editcompaniesBtn" onclick="pageJs.showAdminCompanies()">Edit Companies</span>
+				Drop you files here
+			</div>
 			<div id="show_file"></div>
 			<div id="price_compare" class="dataTable"></div>
 		</div>

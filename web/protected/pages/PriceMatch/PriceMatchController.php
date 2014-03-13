@@ -45,8 +45,8 @@ class PriceMatchController extends BPCPageAbstract
 		$js .= 'pageJs.companyNameArray = '.json_encode($companyArray).';';
 		$js .= 'pageJs.csvSeperator = ",";';
 		//$js .= 'pageJs.intializeFileReader();';
-		$js .= 'pageJs.setCallbackId("getAllPricesForProduct", "' . $this->getAllPricesForProductBtn->getUniqueID() . '");';
-		$js .= 'pageJs.initializeFileHandler();';
+		$js .= 'pageJs.setCallbackId("getAllPricesForProduct", "' . $this->getAllPricesForProductBtn->getUniqueID() . '")';
+			$js .= '.initializeFileHandler();';
 		return $js;
 	}
 	

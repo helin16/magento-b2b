@@ -14,14 +14,24 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 	,companyNameArray: []
 	,totalLines: 0
 	
-	/*
-	,intializeFileReader: function() {
+	,genCSV: function(btn) {
 		var tmp = {};
 		tmp.me = this;
-		tmp.me._fileReader = new FileReader();
+		if(!$(tmp.me.dropShowDiv.resultDiv))
+			return tmp.me;
+		
+		//collect data
+		tmp.data = [];
+		$(tmp.me.dropShowDiv.resultDiv).getElementsBySelector('.row').each(function(row){
+			tmp.originalData = row.retrieve('data');
+			tmp.data.push('' + tmp.originalData.sku + ', ' + tmp.originalData.myPrice + ', ' + tmp.originalData.minPrice + ', ' + tmp.originalData.priceDiff + '\n');
+		});
+		tmp.now = new Date();
+		tmp.fileName = 'pricematch_' + tmp.now.getFullYear() + '_' + tmp.now.getMonth() + '_' + tmp.now.getDate() + '_' + tmp.now.getHours() + '_' + tmp.now.getMinutes() + '_' + tmp.now.getSeconds() + '.csv';
+		tmp.blob = new Blob(tmp.data, {type: "text/csv;charset=utf-8"});
+		saveAs(tmp.blob, tmp.fileName);
 		return tmp.me;
 	}
-	*/
 		
 	,parseCSVFile: function(lines) {
 		var tmp = {};
@@ -32,8 +42,6 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			line = line.strip();
 			if((line.blank() || line === null || line === ''))
 			{
-//					tmp.outputArray.push({});
-				//console.debug('empty line');
 			}	
 			else
 			{
@@ -47,6 +55,22 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		});
 		return tmp.outputArray;
 	}	
+	
+	,showAdminCompanies: function() {
+		jQuery.fancybox({
+			'width'			: '80%',
+			'height'		: '90%',
+			'autoScale'     : false,
+			'autoDimensions': false,
+			'fitToView'     : false,
+			'autoSize'      : false,
+			'type'			: 'iframe',
+			'href'			: '/pricematchcompanies.html',
+			'beforeClose'	: function() {
+				window.location = document.URL;
+			}
+ 		});
+	}
 	
 	,initializeFileHandler: function() {
 		var tmp = {};
@@ -84,7 +108,6 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.me.allFileLineArray = [];
 		
 		tmp.files = evt.dataTransfer.files;
-		//console.debug(tmp.files);
 		tmp.validFiles = [];
 		
 		$(tmp.me.dropShowDiv.showDiv).update('');
@@ -136,7 +159,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 							})	
 						})
 						.insert({'bottom': new Element('span', {'class': 'cell myPrice'}).update(isNaN(tmp.ppArray.myPrice) ? tmp.ppArray.myPrice : tmp.me.getCurrency(tmp.ppArray.myPrice)) })
-						.insert({'bottom': new Element('span', {'class': 'cell priceDiff' + (!isNaN(tmp.ppArray.priceDiff) && tmp.ppArray.priceDiff > 0 ? ' overmin' : "")}).update(
+						.insert({'bottom': new Element('span', {'class': 'cell priceDiff ' + (isNaN(tmp.ppArray.priceDiff) || tmp.ppArray.priceDiff == 0 ? '' : (tmp.ppArray.priceDiff > 0 ? 'overmin' : "undermin"))}).update(
 								isNaN(tmp.ppArray.priceDiff) ? tmp.ppArray.priceDiff : tmp.me.getCurrency(tmp.ppArray.priceDiff)) 
 						})
 						.insert({'bottom': new Element('span', {'class': 'cell minPrice'}).update(isNaN(tmp.ppArray.minPrice) ? tmp.ppArray.minPrice : tmp.me.getCurrency(tmp.ppArray.minPrice)) });
@@ -163,12 +186,17 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		var tmp = {};
 		tmp.me = this;
 		tmp.lineNo = lineNo;
-//		console.debug(tmp.lineNo);
-//		console.debug(tmp.me.totalLines);
 		if(tmp.lineNo >= tmp.me.totalLines)
 		{
 			$(tmp.me.dropShowDiv.dropDiv).show();
 			spinBar.remove();
+			//adding output to excel btn
+			$(tmp.me.dropShowDiv.resultDiv).insert({'bottom': new Element('span', {'class': 'button'})
+				.update('Output To CSV')
+				.observe('click', function(){
+					tmp.me.genCSV(this);
+				})
+			});
 		}
 		return this;
 	}
@@ -190,7 +218,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		$(tmp.me.dropShowDiv.resultDiv)
 			.update('')
 			.insert({'bottom': tmp.me.
-				_generatePriceRowForProduct({'sku': 'SKU', 'minPrice': 'Min Price', 'myPrice': 'My Price', 'priceDiff': 'Price Difference', 'data': tmp.headerCompanyArray})
+				_generatePriceRowForProduct({'sku': 'SKU', 'minPrice': 'Min Price', 'myPrice': 'My Price', 'priceDiff': 'Price Diff.', 'data': tmp.headerCompanyArray})
 				.addClassName('header')
 			})
 			.insert({'after': tmp.spinBar});
@@ -239,8 +267,6 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			alert("EMPTY FILE(s) UPLOADED!!! PLS TRY AGAIN");
 			return;	
 		}
-//		console.debug(tmp.me.allFileLineArray);
-		
 		$(tmp.me.dropShowDiv.showDiv).insert({'bottom': new Element('span', {'class': 'button'})
 			.update('Start Load')
 			.observe('click', function() {
@@ -263,10 +289,6 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.reader.onload = function(event) { 
 			tmp.contents = event.target.result;
 			tmp.fileArray = tmp.me.parseCSVFile(tmp.contents);
-//			console.debug(file.file.name);
-//			console.debug(tmp.fileArray);
-//			console.debug(tmp.fileArray.size());
-//			console.debug('---------------------------------------------------------');
 			
 			$(tmp.me.dropShowDiv.showDiv).getElementsBySelector('[file_sequence='+ file.index +']')[0].insert({'bottom': new Element('div', {'class': 'msg'}).update('Loaded Successfully') });
 			$(tmp.me.dropShowDiv.showDiv).getElementsBySelector('[file_sequence='+ file.index +']')[0].store(tmp.fileArray);
