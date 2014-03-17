@@ -90,6 +90,48 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		return new Element('div', {'class': 'comments'});
 	}
 	
+	,_clearETA: function(btn, item) {
+		var tmp = {};
+		tmp.me = this;
+		if(!confirm('You are trying to mark a part as received/clearing the ETA?\n continue?'))
+			return tmp.me;
+		
+		tmp.reason = prompt('The reason for clearing the ETA');
+		tmp.me.postAjax(tmp.me.getCallbackId('clearETA'), {'item_id': item.id, 'comments': tmp.reason}, {
+			'onLoading': function (sender, param) {
+				$(btn).store('originValue', $(btn).innerHTML).addClassName('disabled').update('...');
+			}
+			,'onSuccess': function(sender, param) {
+				try {
+					tmp.result = tmp.me.getResp(param, false, true);
+					if(!tmp.result)
+						return;
+					alert('ETA cleared Successfully!');
+					location.reload();
+				} catch (e) {
+					alert(e);
+				}
+			}
+			,'onComplete': function(sender, param) {
+				$(btn).removeClassName('disabled').update($(btn).retrieve('originValue'));
+			}
+		});
+		return tmp.me;
+	}
+	
+	,_getClearETABtn: function (item) {
+		var tmp = {};
+		tmp.me = this;
+		if(item.eta === '0001-01-01 00:00:00')
+			return;
+		tmp.newDiv = new Element('span', {'class': 'button'})
+			.update('clear ETA')
+			.observe('click', function() {
+				tmp.me._clearETA(this, item);
+			});
+		return tmp.newDiv;
+	}
+	
 	,_getPurchasingCell: function(orderItem) {
 		var tmp = {};
 		tmp.me = this;
@@ -104,7 +146,8 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				.insert({'bottom': tmp.me._getfieldDiv('hasStock?: ', tmp.hasStock) })
 				.insert({'bottom': tmp.me._getfieldDiv('ETA: ', orderItem.eta) })
 				.insert({'bottom': tmp.me._getfieldDiv('Comments: ', new Element('span', {'class': 'comment', 'comment_type': tmp.me.comment_type_purchasing, 'entity_name': 'OrderItem' }).update('click me') ) })
-				.insert({'bottom': tmp.me._getfieldDiv('Is Ordered: ', new Element('span', {}).update((tmp.isOrdered === true ? 'Y' : 'N'))  ) });
+				.insert({'bottom': tmp.me._getfieldDiv('Is Ordered: ', new Element('span', {}).update((tmp.isOrdered === true ? 'Y' : 'N'))  ) })
+				.insert({'bottom': tmp.me._getClearETABtn(orderItem) });
 		}
 		
 		tmp.getEditDiv = function(hasStock, eta) {

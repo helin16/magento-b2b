@@ -82,20 +82,20 @@ class OrderDetailsController extends BPCPageAbstract
 		
 		foreach(PaymentMethod::findAll(true) as $paymentMethod)
 			$paymentMethodArray[] = $paymentMethod->getJson();
-		
-		$js .= 'pageJs.setEditMode(' . $purchaseEdit . ', ' . $warehouseEdit . ', ' . $accounEdit . ', ' . $statusEdit . ');';
-		$js .= 'pageJs.setOrder('. json_encode($order->getJson()) . ', ' . json_encode($orderItems) . ', ' . json_encode($orderStatuses) . ');';
-		$js .= 'pageJs.setCourier('. json_encode($courierArray) . ');';
-		$js .= 'pageJs.setPaymentMethods('. json_encode($paymentMethodArray) . ');';
-		$js .= 'pageJs.setCallbackId("updateOrder", "' . $this->updateOrderBtn->getUniqueID() . '");';
-		$js .= 'pageJs.setCallbackId("getComments", "' . $this->getCommentsBtn->getUniqueID() . '");';
-		$js .= 'pageJs.setCallbackId("addComments", "' . $this->addCommentsBtn->getUniqueID() . '");';
-		$js .= 'pageJs.setCallbackId("confirmPayment", "' . $this->confirmPaymentBtn->getUniqueID() . '");';
-		$js .= 'pageJs.setCallbackId("changeOrderStatus", "' . $this->changeOrderStatusBtn->getUniqueID() . '");';
-		$js .= 'pageJs.setCallbackId("updateOIForWH", "' . $this->updateOIForWHBtn->getUniqueID() . '");';
-		$js .= 'pageJs.setCallbackId("updateShippingInfo", "' . $this->updateShippingInfoBtn->getUniqueID() . '");';
-		$js .= 'pageJs.setCallbackId("getPaymentDetails", "' . $this->getPaymentDetailsBtn->getUniqueID() . '");';
-		$js .= 'pageJs.load("detailswrapper");';
+		$js .= 'pageJs.setEditMode(' . $purchaseEdit . ', ' . $warehouseEdit . ', ' . $accounEdit . ', ' . $statusEdit . ')';
+			$js .= '.setOrder('. json_encode($order->getJson()) . ', ' . json_encode($orderItems) . ', ' . json_encode($orderStatuses) . ')';
+			$js .= '.setCourier('. json_encode($courierArray) . ')';
+			$js .= '.setPaymentMethods('. json_encode($paymentMethodArray) . ')';
+			$js .= '.setCallbackId("updateOrder", "' . $this->updateOrderBtn->getUniqueID() . '")';
+			$js .= '.setCallbackId("getComments", "' . $this->getCommentsBtn->getUniqueID() . '")';
+			$js .= '.setCallbackId("addComments", "' . $this->addCommentsBtn->getUniqueID() . '")';
+			$js .= '.setCallbackId("confirmPayment", "' . $this->confirmPaymentBtn->getUniqueID() . '")';
+			$js .= '.setCallbackId("changeOrderStatus", "' . $this->changeOrderStatusBtn->getUniqueID() . '")';
+			$js .= '.setCallbackId("updateOIForWH", "' . $this->updateOIForWHBtn->getUniqueID() . '")';
+			$js .= '.setCallbackId("updateShippingInfo", "' . $this->updateShippingInfoBtn->getUniqueID() . '")';
+			$js .= '.setCallbackId("getPaymentDetails", "' . $this->getPaymentDetailsBtn->getUniqueID() . '")';
+			$js .= '.setCallbackId("clearETA", "' . $this->clearETABtn->getUniqueID() . '")';
+			$js .= '.load("detailswrapper");';
 		return $js;
 	}
 	/**
@@ -391,21 +391,35 @@ class OrderDetailsController extends BPCPageAbstract
 				if(!($orderItem = FactoryAbastract::service('OrderItem')->get($oi->orderItem->id)) instanceof OrderItem)
 					throw new Exception('System Error: invalid order item with id ['.$oi->orderItem->id.'] passed in!');
 				
+				$pickedComment = '';
 				if(!isset($oi->warehouse->isPicked) || (($isPicked = trim($oi->warehouse->isPicked)) === 'N' && (!isset($oi->warehouse->comments) || ($pickedComment = trim($oi->warehouse->comments)) === '')))
 					throw new Exception('System Error: isPicked information not passed in OR isPicked is false but no comments have been provided');
 
-				$orderItem->setIsPicked(($isPicked === 'Y' ? true : false));
-				FactoryAbastract::service('OrderItem')->save($orderItem);
-				$results[$counter]['orderItem'] = $orderItem;
-				$results[$counter]['comment'] = array();
-
-				if($isPicked === 'N')
+				$isPicked = ($isPicked === 'Y' ? true : false);
+				if($isPicked === false)
 				{
 					$comment = Comments::addComments($orderItem, $pickedComment, Comments::TYPE_WAREHOUSE);
+					$order->addComment('product(SKU=' . $sku .') is NOT picked: ' . $pickedComment, $commentType);
 					$this->_formatComments($comment);
 					$results[$counter]['comment'] = $comment;
 					$allItemsPicked = false;
 				}
+				else
+				{
+					if(($eta = trim($orderItem->setETA())) !== '' && $eta !== trim(UDate::zeroDate()) )
+					{
+						$orderItem->setETA(Udate::zeroDate());
+						$comment = Comments::addComments($orderItem, 'Clearing ETA automatcally, as it is now picked', Comments::TYPE_WAREHOUSE);
+						$order->addComment('Clearing ETA automatcally for product(SKU=' . $sku .'), as it is now picked', $commentType);
+						$this->_formatComments($comment);
+						$results[$counter]['comment'] = $comment;
+					}
+				}
+				$orderItem->setIsPicked($isPicked);
+				FactoryAbastract::service('OrderItem')->save($orderItem);
+				$results[$counter]['orderItem'] = $orderItem;
+				$results[$counter]['comment'] = array();
+				
 				$counter++;
 			}
 			
@@ -428,7 +442,6 @@ class OrderDetailsController extends BPCPageAbstract
 		
 		$params->ResponseData = StringUtilsAbstract::getJson($results, $errors);
 	}
-	
 	/**
 	 * This function validates the Shipping info received from the JS 
 	 * 
@@ -543,6 +556,39 @@ class OrderDetailsController extends BPCPageAbstract
 			$error[] = $ex->getMessage();
 		}
 		$param->ResponseData = StringUtilsAbstract::getJson($result, $error);
+	}
+	
+	public function clearETA($sender, $param)
+	{
+		$results = $errors = array();
+		try
+		{
+			if(!isset($param->CallbackParameter->item_id) || !($item = FactoryAbastract::service('OrderItem')->get($param->CallbackParameter->item_id)) instanceof OrderItem)
+				throw new Exception('System Error: invalid order item provided!');
+				
+			if(!isset($param->CallbackParameter->comments) || ($comments = trim($param->CallbackParameter->comments)) === '')
+				$comments = '';
+				
+			Dao::beginTransaction();
+			$item->setETA(UDate::zeroDate());
+			$item->addComment('Clearing the ETA: ' . $comments);
+				
+			$order = $item->getOrder();
+			$sku = $item->getProduct()->getSku();
+				
+			$order->addComment('Clearing the ETA for product (' . $sku . '): ' . $comments, Comments::TYPE_PURCHASING);
+			FactoryAbastract::service('OrderItem')->save($item);
+				
+			$results = $item->getJson();
+				
+			Dao::commitTransaction();
+		}
+		catch(Exception $ex)
+		{
+			Dao::rollbackTransaction();
+			$errors[] = $ex->getMessage();
+		}
+		$param->ResponseData = StringUtilsAbstract::getJson($results, $errors);
 	}
 	
 }
