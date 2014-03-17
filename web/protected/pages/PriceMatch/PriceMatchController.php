@@ -16,7 +16,6 @@ class PriceMatchController extends BPCPageAbstract
 	public $menuItem = 'priceMatch';
 	
 	private $_companyListForPriceMatch;
-	
 	/**
 	 * (non-PHPdoc)
 	 * @see BPCPageAbstract::onLoad()
@@ -24,8 +23,9 @@ class PriceMatchController extends BPCPageAbstract
 	public function onLoad($param)
 	{
 		parent::onLoad($param);
+		if(!AccessControl::canAccessPriceMatchPage(Core::getRole()))
+			die(BPCPageAbstract::show404Page('Access Denied', 'You do NOT have the access to this page!'));
 	}
-	
 	/**
 	 * Getting The end javascript
 	 *

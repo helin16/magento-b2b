@@ -23,10 +23,9 @@ class Menu extends TTemplateControl
 			,'order' => array('url' => '/order.html', 'name' => 'Orders')
 		);
 		if(AccessControl::canAccessUsersPage(Core::getRole()) )
-		{	
 			$array['users'] = array('url' => '/users.html', 'name' => 'Users');
+		if(AccessControl::canAccessPriceMatchPage(Core::getRole()) )
 			$array['priceMatch'] = array('url' => '/pricematch.html', 'name' => 'Price Match');
-		}	
 		if(AccessControl::canAccessOrderItemsPage(Core::getRole()) )
 			$array['orderitems'] = array('url' => '/orderitems.html', 'name' => 'OrderItems');
 		$html = "<ul class='mainMenu'>";
