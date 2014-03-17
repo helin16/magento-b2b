@@ -2,6 +2,7 @@
 <com:TContent ID="MainContent">
 	<com:Application.controls.chosen.Chosen />
 	<com:Application.controls.qtip.QTip />
+	<com:Application.controls.TooltipComments.TooltipComments />
 	<com:TDatePicker Style="display:none;"/>
 	<com:TCallback ID="updateOrderBtn" OnCallback="updateOrder" />
 	<com:TCallback ID="getCommentsBtn" OnCallback="getComments" />

@@ -82,8 +82,11 @@ class OrderDetailsController extends BPCPageAbstract
 		
 		foreach(PaymentMethod::findAll(true) as $paymentMethod)
 			$paymentMethodArray[] = $paymentMethod->getJson();
+		
+		$commentsTypeIds = array("purchasing" =>  Comments::TYPE_PURCHASING, "warehouse" => Comments::TYPE_WAREHOUSE);
 		$js .= 'pageJs.setEditMode(' . $purchaseEdit . ', ' . $warehouseEdit . ', ' . $accounEdit . ', ' . $statusEdit . ')';
 			$js .= '.setOrder('. json_encode($order->getJson()) . ', ' . json_encode($orderItems) . ', ' . json_encode($orderStatuses) . ')';
+			$js .= '.setCommentsTypeIds(' . json_encode($commentsTypeIds) . ')';
 			$js .= '.setCourier('. json_encode($courierArray) . ')';
 			$js .= '.setPaymentMethods('. json_encode($paymentMethodArray) . ')';
 			$js .= '.setCallbackId("updateOrder", "' . $this->updateOrderBtn->getUniqueID() . '")';
@@ -95,6 +98,7 @@ class OrderDetailsController extends BPCPageAbstract
 			$js .= '.setCallbackId("updateShippingInfo", "' . $this->updateShippingInfoBtn->getUniqueID() . '")';
 			$js .= '.setCallbackId("getPaymentDetails", "' . $this->getPaymentDetailsBtn->getUniqueID() . '")';
 			$js .= '.setCallbackId("clearETA", "' . $this->clearETABtn->getUniqueID() . '")';
+			$js .= '.setToolTipCommentsObj(new TooltipComments(pageJs))';
 			$js .= '.load("detailswrapper");';
 		return $js;
 	}

@@ -16,6 +16,18 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 	,order_status_picked: '7'
 	,comment_type_warehouse: 'WAREHOUSE'
 	,comment_type_purchasing: 'PURCHASING'	
+	,_tooltipObj: null //the tooltip object
+	,_commentsTypeIds: {} //the comments object
+	
+	,setToolTipCommentsObj: function(tooltipObj) {
+		this._tooltipObj = tooltipObj;
+		return this;
+	}
+	
+	,setCommentsTypeIds: function (commentsTypeIds) {
+		this._commentsTypeIds = commentsTypeIds;
+		return this;
+	}
 	
 	,setEditMode: function(editPurchasing, editWH, editAcc, editStatus) {
 		this._editMode.purchasing = (editPurchasing || false);
@@ -85,11 +97,6 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		return tmp.selBox;
 	}
 	
-	,_showLastestComments: function(comments) {
-		var tmp = {};
-		return new Element('div', {'class': 'comments'});
-	}
-	
 	,_clearETA: function(btn, item) {
 		var tmp = {};
 		tmp.me = this;
@@ -145,8 +152,14 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			return tmp.newDiv
 				.insert({'bottom': tmp.me._getfieldDiv('hasStock?: ', tmp.hasStock) })
 				.insert({'bottom': tmp.me._getfieldDiv('ETA: ', orderItem.eta) })
-				.insert({'bottom': tmp.me._getfieldDiv('Comments: ', new Element('span', {'class': 'comment', 'comment_type': tmp.me.comment_type_purchasing, 'entity_name': 'OrderItem' }).update('click me') ) })
 				.insert({'bottom': tmp.me._getfieldDiv('Is Ordered: ', new Element('span', {}).update((tmp.isOrdered === true ? 'Y' : 'N'))  ) })
+				.insert({'bottom': tmp.me._getfieldDiv('Comments: ', new Element('span', {'class': 'comment cuspntr', 'tooltipcomments_entity': 'OrderItem', 'tooltipcomments_entityid': orderItem.id, 'tooltipcomments_commentstype': tmp.me._commentsTypeIds.purchasing})
+						.update('show') 
+						.observe('mouseover', function(event) {
+							tmp.me._tooltipObj._getComments(this, event);
+						})
+					) 
+				})
 				.insert({'bottom': tmp.me._getClearETABtn(orderItem) });
 		}
 		
@@ -210,7 +223,13 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		if(tmp.me._editMode.warehouse === false) {
 			return new Element('div', {'class': 'order_item_details'})
 				.insert({'bottom': tmp.me._getfieldDiv('Picked?: ', orderItem.isPicked ? 'Y' : 'N') })
-				.insert({'bottom': tmp.me._getfieldDiv('Comments: ', new Element('span', {'class': 'comment', 'comment_type': tmp.me.comment_type_warehouse, 'entity_name': 'OrderItem'}).update('click me')  ) });
+				.insert({'bottom': tmp.me._getfieldDiv('Comments: ', new Element('span', {'class': 'comment cuspntr', 'tooltipcomments_entity': 'OrderItem', 'tooltipcomments_entityid': orderItem.id, 'tooltipcomments_commentstype': tmp.me._commentsTypeIds.warehouse})
+						.update('show') 
+						.observe('mouseover', function(event) {
+							tmp.me._tooltipObj._getComments(this, event);
+						})
+					) 
+				});
 		}
 		tmp.func = function() {
 			//remove error msg
@@ -881,71 +900,6 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		return tmp.finalReturnDiv;
 	}
 	
-	/* *** This function will generate the comments in a organized manner to be used in the  *** */
-	,_generateCommentsForDisplayInQTip: function(comments) {
-		var tmp = {};
-		tmp.me = this;
-		
-		tmp.counter = 0;
-		tmp.returnDiv = new Element('div', {});
-		comments.each(function(item) {
-			tmp.returnDiv.insert({'bottom': new Element('div', {})  
-				.insert({'bottom': tmp.me._getfieldDiv((++tmp.counter) + '.', item.comments.strip()) })
-			});
-		});
-		return tmp.returnDiv;
-	}
-	
-	/* *** This function will bind the JQuery QTip event to all the OrderItem Purchasing/Warehouse Comment link(s) *** */
-	,_bindAllCommentsForOrderItems: function() {
-		var tmp = {};
-		tmp.me = this;
-		jQuery('.productlist .comment').qtip({
-			content: {
-				text: function(event, api) {
-					tmp.orderId = api.elements.target.parents('.productRow').attr('order_item_id');
-					tmp.commentType = api.elements.target.attr('comment_type');
-					tmp.entityName = api.elements.target.attr('entity_name');
-					tmp.data = {'entityId': tmp.orderId, 'entity': tmp.entityName, 'type': tmp.commentType};
-					
-                    jQuery.ajax({
-                        url: '/ajax/getComments', // Use href attribute as URL
-                        data: tmp.data,
-                        type: 'POST',
-                        dataType: 'json'
-                    })
-                    .then(function(result) {
-                        // Set the tooltip content upon successful retrieval
-                        if((result instanceof Array && result.length === 0) || result === null || !result || result === undefined)
-                        	api.set('content.text', 'Nothing found');
-                        else
-                        {
-                        	if(result instanceof Array) 
-                        		api.set('content.text', pageJs._generateCommentsForDisplayInQTip(result));
-                        }
-                    	//api.set('content.text', );
-                    }, function(xhr, status, error) {
-                        // Upon failure... set the tooltip content to error
-                        api.set('content.text', status + ': ' + error);
-                    });
-        
-                    return 'Loading...'; // Set some initial text
-                },
-                title: function(event, api) {
-                	return api.elements.target.attr('comment_type') + ' Comments:';
-                },
-				button: true,
-			},
-			show: {
-				event: 'click mouseenter'
-			},
-			hide : {
-				event: 'click',
-				inactive: 5000
-			}
-		});
-		return tmp.me;
-	}
 	
 	,_getLatestPaymentMethod: function() {
 		var tmp = {};
@@ -1106,7 +1060,6 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.me._commentsDiv.resultDivId = 'comments_list';
 		tmp.me._getComments(true)
 			._loadChosen()
-			._bindAllCommentsForOrderItems()
 			._getLatestPaymentMethod();
 		
 		return this;
