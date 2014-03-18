@@ -410,7 +410,7 @@ class OrderDetailsController extends BPCPageAbstract
 				}
 				else
 				{
-					if(($eta = trim($orderItem->setETA())) !== '' && $eta !== trim(UDate::zeroDate()) )
+					if(($eta = trim($orderItem->getETA())) !== '' && $eta !== trim(UDate::zeroDate()) )
 					{
 						$orderItem->setETA(Udate::zeroDate());
 						$comment = Comments::addComments($orderItem, 'Clearing ETA automatcally, as it is now picked', Comments::TYPE_WAREHOUSE);
