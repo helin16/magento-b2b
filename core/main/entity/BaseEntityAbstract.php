@@ -271,7 +271,9 @@ abstract class BaseEntityAbstract
         $cls = DaoMap::$map[strtolower(get_class($this))][$property]['class'];
         if (!$this->$property instanceof BaseEntityAbstract)
         throw new DaoException('The property(' . $property . ') for "' . get_class($this) . '" is NOT a BaseEntity!');
-        $this->$property = Dao::findById(new DaoQuery($cls), $this->$property->getId());
+        $qry = new DaoQuery($cls);
+        $qry->setSelectActiveOnly(false);
+        $this->$property = Dao::findById($qry, $this->$property->getId());
         return $this;
     }
     /**
