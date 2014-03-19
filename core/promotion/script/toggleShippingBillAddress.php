@@ -7,6 +7,6 @@ echo "==== start";
 Dao::$debug = true;
 foreach($result as $row)
 {
-	Dao::updateByCriteria(new DaoQuery('Order'), 'billingAddrId = ?, shippingAddrId = ?, updated = updated, updatedById = updatedById', 'where id = ?', array($row['shippingAddrId'], $row['billingAddrId'], $row['id']));
+	Dao::updateByCriteria(new DaoQuery('Order'), 'billingAddrId = ?, shippingAddrId = ?', 'where id = ?', array($row['shippingAddrId'], $row['billingAddrId'], $row['id']));
 }
 echo "==== end";
