@@ -551,7 +551,7 @@ abstract class Dao
     public static function updateByCriteria(DaoQuery $qry, $setClause, $criteria, $params = array())
     {
         self::connect();
-        return Dao::_execSql('update ' . strtolower($qry->getFocusClass()) . ' set ' . $setClause . ' , updatedById = ' . Core::getUser()->getId() . ' where ' . $criteria, $params);
+        return Dao::_execSql('update `' . strtolower($qry->getFocusClass()) . '` set ' . $setClause . ' , updatedById = ' . Core::getUser()->getId() . ' where ' . $criteria, $params);
     }
     /**
      * delete a table for the search criteria
@@ -565,7 +565,7 @@ abstract class Dao
     public static function deleteByCriteria(DaoQuery $qry, $criteria, $params = array())
     {
         self::connect();
-        return Dao::_execSql('delete from ' . strtolower($qry->getFocusClass()) . ' where (' . $criteria . ')', $params);
+        return Dao::_execSql('delete from `' . strtolower($qry->getFocusClass()) . '` where (' . $criteria . ')', $params);
     }
     /**
      * replace into
@@ -580,7 +580,7 @@ abstract class Dao
     public static function replaceInto($table, $columns, $values, $params = array())
     {
         self::connect();
-        return Dao::_execSql('REPLACE INTO ' . $table . ' (`' . implode('`, `', $columns) . '`) values (' . implode(', ', $values) . ')', $params);
+        return Dao::_execSql('REPLACE INTO `' . $table . '` (`' . implode('`, `', $columns) . '`) values (' . implode(', ', $values) . ')', $params);
     }
     /**
      * Add a join table record for many to many relationship
