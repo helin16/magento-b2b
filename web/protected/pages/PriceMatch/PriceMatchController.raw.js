@@ -22,9 +22,16 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		
 		//collect data
 		tmp.data = [];
+		tmp.i = 0;
 		$(tmp.me.dropShowDiv.resultDiv).getElementsBySelector('.row').each(function(row){
 			tmp.originalData = row.retrieve('data');
-			tmp.data.push('' + tmp.originalData.sku + ', ' + tmp.originalData.myPrice + ', ' + tmp.originalData.minPrice + ', ' + tmp.originalData.priceDiff + '\n');
+			tmp.csvRow = tmp.originalData.sku + ', ' + tmp.originalData.myPrice + ', ' + tmp.originalData.minPrice + ', ' + tmp.originalData.priceDiff;
+			tmp.originalData.data.each(function(compData) {
+				tmp.csvRow = tmp.csvRow + ', ' + (tmp.i === 0 ? compData.company : compData.price);
+			})
+			tmp.csvRow = tmp.csvRow + '\n';
+			tmp.data.push(tmp.csvRow);
+			tmp.i = tmp.i * 1 + 1;
 		});
 		tmp.now = new Date();
 		tmp.fileName = 'pricematch_' + tmp.now.getFullYear() + '_' + tmp.now.getMonth() + '_' + tmp.now.getDate() + '_' + tmp.now.getHours() + '_' + tmp.now.getMinutes() + '_' + tmp.now.getSeconds() + '.csv';
