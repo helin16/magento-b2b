@@ -29,7 +29,16 @@ class ShippmentConnector extends B2BConnector
 	{
 		$couriers = $this->getCouriers($order->getOrderNo());
 		$courierCode = trim($shippment->getCourier()->getCode());
-		if(!array_key_exists($courierCode, $couriers))
+		$foundCode = false;
+		foreach($couriers as $courier)
+		{
+			if(trim($courier->key) === $courierCode)
+			{
+				$foundCode = true;
+				break;
+			}
+		}
+		if($foundCode !== true)
 			throw new ConnectorException('System Error: Courier Code is NOT found for: ' . $courierCode . ', ask your magento website admin to add this to Magento!');
 		
 		$itemsQty = array();
@@ -38,7 +47,9 @@ class ShippmentConnector extends B2BConnector
 			$itemsQty[$item->getMageItemId()] = $item->getQtyOrdered();
 		}
 		//now create a shippment for this order
-		$shipmentId = $this->_connect()->salesOrderShipmentCreate($this->_session, $order->getOrderNo(), $itemsQty);
+		$shipmentId = ($shippmentId = trim($shippment->setMageShipmentId($shipmentId))) !== '' ? $shippmentId : $this->_connect()->salesOrderShipmentCreate($this->_session, $order->getOrderNo(), $itemsQty, $comments);
+		if(trim($shipmentId) === '')
+			throw new ConnectorException('System Error: failed to create a shipment in Magento!');
 		
 		//record the magento shipment id now
 		$shippment->setMageShipmentId($shipmentId);
@@ -46,8 +57,10 @@ class ShippmentConnector extends B2BConnector
 		
 		//adding the track number
 		$mageTrackId = $this->_connect()->salesOrderShipmentAddTrack($this->_session, $order->getOrderNo(), $courierCode, 'Track Number', $shippment->getConNoteNo());
+		if(trim($shipmentId) === '')
+			throw new ConnectorException('System Error: failed to add track information to shipment(ID=' . $shippment->getId() . ', MageShipmentId=' . $shipmentId . ') in Magento!');
 		//TODO: maybe we should do something for the magento track id!!!!
 		
-		return $this->_connect()->salesOrderShipmentAddComment($this->_session, $order->getOrderNo(), $comments, $emailCust, includeInEmail);
+		return $this->_connect()->salesOrderShipmentAddComment($this->_session, $order->getOrderNo(), $comments, $emailCust, $includeInEmail);
 	}
 }
