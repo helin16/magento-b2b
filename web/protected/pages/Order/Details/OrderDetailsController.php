@@ -351,13 +351,11 @@ class OrderDetailsController extends BPCPageAbstract
  			FactoryAbastract::service('Order')->save($order);
 			
 			$commentString = "Total Amount Due was ".$order->getTotalAmount().". And total amount paid is ".$paidAmount.". Payment Method is ".$paymentMethod->getName();
-			
 			if(($amtDiff = $order->getTotalAmount() - $paidAmount) === 0)
 				$commentString = "Amount is fully paid.".$commentString.". Payment method is ".$paymentMethod->getName();
-			
 			$commentString = '['.$commentString.']'.($extraComment !== '' ? ' : '.$extraComment : '');
+			
 			$comment = Comments::addComments($order, $commentString, Comments::TYPE_ACCOUNTING);
-			$results = $this->_formatComments($comment);
 			Dao::commitTransaction();
 		}
 		catch(Exception $ex)
@@ -400,10 +398,11 @@ class OrderDetailsController extends BPCPageAbstract
 					throw new Exception('System Error: isPicked information not passed in OR isPicked is false but no comments have been provided');
 
 				$isPicked = ($isPicked === 'Y' ? true : false);
+				$sku = $orderItem->getProduct()->getSku();
 				if($isPicked === false)
 				{
 					$comment = Comments::addComments($orderItem, $pickedComment, Comments::TYPE_WAREHOUSE);
-					$order->addComment('product(SKU=' . $sku .') is NOT picked: ' . $pickedComment, $commentType);
+					$order->addComment('product(SKU=' . $sku .') is NOT picked: ' . $pickedComment, Comments::TYPE_WAREHOUSE);
 					$this->_formatComments($comment);
 					$results[$counter]['comment'] = $comment;
 					$allItemsPicked = false;
@@ -414,7 +413,7 @@ class OrderDetailsController extends BPCPageAbstract
 					{
 						$orderItem->setETA(Udate::zeroDate());
 						$comment = Comments::addComments($orderItem, 'Clearing ETA automatcally, as it is now picked', Comments::TYPE_WAREHOUSE);
-						$order->addComment('Clearing ETA automatcally for product(SKU=' . $sku .'), as it is now picked', $commentType);
+						$order->addComment('Clearing ETA automatcally for product(SKU=' . $sku .'), as it is now picked', Comments::TYPE_WAREHOUSE);
 						$this->_formatComments($comment);
 						$results[$counter]['comment'] = $comment;
 					}

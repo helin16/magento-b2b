@@ -74,6 +74,7 @@ fieldset.row legend {
 	text-transform: uppercase;
 }
 
+ /******************* productsRow ************************/
 .productlist {
 	width: 980px;
 }
@@ -101,7 +102,8 @@ fieldset.row legend {
 	font-size: 10px;
 }
 
-.productlist .productRow .purchasing {
+.productlist .productRow .purchasing,
+.productlist .submitBtns .purchasing {
 	background: #99B898;
 }
 
@@ -124,33 +126,79 @@ fieldset.row legend {
 	display: inline-block;
 	padding: 0 5px 0 0;
 }
-/************************ summary *********************************/
-.summary .fieldDiv {
-	width: 120px;
+/************************ finance *********************************/
+.summary .rowWrapper .viewRow{
+	display: table;
 	vertical-align: top;
+	width: 99%;
 }
-.summary .totalDue .fieldDiv_content{
+.summary .rowWrapper .viewRow .fieldDiv {
+	display: table-cell;
+}
+.summary .rowWrapper .viewRow .fieldDiv.shippingMethod {
+	width: auto;
+}
+.summary .rowWrapper .viewRow .fieldDiv.magePaymentMethod,
+.summary .rowWrapper .viewRow .fieldDiv.lastPaymentMethod{
+	width: 12%;
+}
+.summary .rowWrapper .viewRow .fieldDiv.totalAmount,
+.summary .rowWrapper .viewRow .fieldDiv.totalPaid,
+.summary .rowWrapper .viewRow .fieldDiv.totalDue {
+	width: 10%;
+}
+.summary .rowWrapper .totalDue .fieldDiv_content{
 	font-weight: bold;
 }
 
-/************************ btns *********************************/
-.submitbtns {
-}
+.summary .rowWrapper
 
-.submitbtns .financeBtns,.submitbtns .purchasingBtns,.submitbtns .warehouseBtns {
-	width: 150px;
+
+/************************ Shipping *********************************/
+.shipping .rowWrapper {
 	vertical-align: top;
 }
-.submitbtns .wrapper {
-	border: 1px #cccccc solid;
-	border-radius: 5px;
-	padding: 5px;
-	margin: 5px;
+.shipping .rowWrapper .viewShipping .row {
+	display: table;
+	width: 99%;
+}
+.shipping .rowWrapper .viewShipping .row .fieldDiv{
+	display: table-cell;
 }
 
-.submitbtns .financeBtns {
-	width: 600px;
+.shipping .rowWrapper .viewShipping .row .fieldDiv.receiver,
+.shipping .rowWrapper .viewShipping .row .fieldDiv.noOfCartons,
+.shipping .rowWrapper .viewShipping .row .fieldDiv.contactNo,
+.shipping .rowWrapper .viewShipping .row .fieldDiv.estShippingCost,
+.shipping .rowWrapper .viewShipping .row .fieldDiv.courier,
+.shipping .rowWrapper .viewShipping .row .fieldDiv.consignmentNo {
+	width: 12%;
 }
+.shipping .rowWrapper .viewShipping .row .fieldDiv.shippingAddr,
+.shipping .rowWrapper .viewShipping .row .fieldDiv.shippingDate {
+	width: auto;
+}
+.shipping .rowWrapper .viewShipping .deliveryIns {
+	display: block;
+	width: 99%;
+}
+
+.shippingWrapper .header {
+	background: #242424;
+	color: #DACDCD;
+	font-weight:bold;
+}
+
+.shippingWrapper .fieldDiv {
+	width:150px;
+	padding: 0 5px 0 0;
+	margin: 2px;
+}
+
+.shippingWrapper .deliveryIns {
+	width: 400px;
+}
+
 
 /************************ comments *********************************/
 .commentsWrapper .cell {
