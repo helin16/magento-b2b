@@ -30,6 +30,7 @@ class AjaxController extends TService
 		{
 			echo $ex->getMessage();
 		}
+		die();
   	}
 	/**
 	 * Getting the comments for an entity

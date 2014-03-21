@@ -528,6 +528,12 @@ class OrderDetailsController extends BPCPageAbstract
 			
 			$result['shipment'] = $shipment->getJson();
 			
+			B2BConnector::getConnector(B2BConnector::CONNECTOR_TYPE_SHIP,
+				SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_WSDL),
+				SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_USER),
+				SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_KEY)
+				)
+				->shipOrder($order, $shipment, array(), $deliveryInstructions, true, true);
 			Dao::commitTransaction();
 		}
 		catch(Exception $ex)

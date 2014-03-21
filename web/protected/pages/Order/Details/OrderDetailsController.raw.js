@@ -13,7 +13,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 	,_commentsDiv: {'pagination': {'pageSize': 10, 'pageNo': 1}, 'resultDivId': '', 'type': ''} //the pagination for the comments
 	,infoType_custName : 1
 	,infoType_custEmail : 2
-	,order_status_picked: '7'
+	,order_status_picked: 7
 	,comment_type_warehouse: 'WAREHOUSE'
 	,comment_type_purchasing: 'PURCHASING'	
 	,_tooltipObj: null //the tooltip object
@@ -104,6 +104,9 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			return tmp.me;
 		
 		tmp.reason = prompt('The reason for clearing the ETA');
+		if (tmp.reason === null) {
+			return tmp.me;
+		}
 		tmp.me.postAjax(tmp.me.getCallbackId('clearETA'), {'item_id': item.id, 'comments': tmp.reason}, {
 			'onLoading': function (sender, param) {
 				$(btn).store('originValue', $(btn).innerHTML).addClassName('disabled').update('...');
@@ -114,13 +117,14 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					if(!tmp.result)
 						return;
 					alert('ETA cleared Successfully!');
-					location.reload();
+					window.location = document.URL;
 				} catch (e) {
 					alert(e);
 				}
 			}
-			,'onSuccess': function(sender, param) {
-				$(btn).removeClassName('disabled').update($(btn).retrieve('originValue'));
+			,'onComplete': function(sender, param) {
+				if($(btn))
+					$(btn).removeClassName('disabled').update($(btn).retrieve('originValue'));
 			}
 		});
 		return tmp.me;
@@ -182,9 +186,11 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		};
 		tmp.func = function() {
 			//remove error msg
-			$(this).up('.cell').getElementsBySelector('.msgDiv').each(function(msg){
-				msg.remove();
-			});
+			if($(this) && $(this).up('.cell')) {
+				$(this).up('.cell').getElementsBySelector('.msgDiv').each(function(msg){
+					msg.remove();
+				});
+			}
 			
 			if($F(this) === 'N') {
 				$(this).up('.operationDiv').update(tmp.getEditDiv(tmp.hasStock));
@@ -220,7 +226,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 	,_getWarehouseCell: function(orderItem) {
 		var tmp = {};
 		tmp.me = this;
-		if(tmp.me._editMode.warehouse === false) {
+		if(tmp.me._editMode.warehouse === false || tmp.me._order.status.id * 1 === tmp.me.order_status_picked) {
 			return new Element('div', {'class': 'order_item_details'})
 				.insert({'bottom': tmp.me._getfieldDiv('Picked?: ', orderItem.isPicked ? 'Y' : 'N') })
 				.insert({'bottom': tmp.me._getfieldDiv('Comments: ', new Element('span', {'class': 'comment cuspntr', 'tooltipcomments_entity': 'OrderItem', 'tooltipcomments_entityid': orderItem.id, 'tooltipcomments_commentstype': tmp.me._commentsTypeIds.warehouse})
@@ -290,7 +296,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					try {
 						tmp.result = tmp.me.getResp(param, false, true);
 						alert('Saved Successfully!');
-						location.reload();
+						window.location = document.URL;
 					} catch (e) {
 						alert(e);
 						$(selBox).disabled = false;
@@ -359,14 +365,15 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				try {
 					tmp.result = tmp.me.getResp(param, false, true);
 					alert('Saved Successfully!');
-					location.reload();
+					window.location = document.URL;
 				} 
 				catch (e) {
 					alert(e);
 				}
 			},
 			'onComplete': function (sender, param) {
-				$(button).update($(button).retrieve('originValue')).removeClassName('disabled');
+				if($(button))
+					$(button).update($(button).retrieve('originValue')).removeClassName('disabled');
 			}
 		});
 		
@@ -542,13 +549,14 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 								if(!tmp.result)
 									return;
 								alert('Saved Successfully!');
-								location.reload();
+								window.location = document.URL;
 							} catch (e) {
 								alert(e);
 							}
 						},
 						'onComplete': function(sender, param) {
-							tmp.btn.removeClassName('disabled').update('submit');
+							if(tmp.btn)
+								tmp.btn.removeClassName('disabled').update('submit');
 						}
 					});
 				})
@@ -558,7 +566,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 	,_getWHBtns: function() {
 		var tmp = {};
 		tmp.me = this;
-		if(tmp.me._editMode.warehouse === false)
+		if(tmp.me._editMode.warehouse === false || tmp.me._order.status.id * 1 === tmp.me.order_status_picked)
 			return '';
 		
 		return new Element('div')
@@ -594,13 +602,14 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 								if(!tmp.result)
 									return;
 								alert('Saved Successfully!');
-								location.reload();
+								window.location = document.URL;
 							} catch (e) {
 								alert(e);
 							}
 						},
 						'onComplete': function(sender, param) {
-							tmp.btn.removeClassName('disabled').update('submit');
+							if(tmp.btn)
+								tmp.btn.removeClassName('disabled').update('submit');
 						}
 					});							
 				})
@@ -785,15 +794,18 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			,'onSuccess': function (sender, param) {
 				try {
 					tmp.result = tmp.me.getResp(param, false, true);
+					if(!tmp.result)
+						return;
 					alert('Saved Successfully!');
-					location.reload();
+					window.location = document.URL;
 				} 
 				catch (e) {
 					alert(e);
 				}
 			},
 			'onComplete': function(sender, param) {
-				tmp.btn.removeClassName('disabled').update('submit');
+				if(tmp.btn)
+					tmp.btn.removeClassName('disabled').update('submit');
 			}
 		});
 	}
@@ -1028,7 +1040,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		
 		//getting the EDITABLE shippment row
 		tmp.shipmentRow = '';
-		if(tmp.me._order.status.id === tmp.me.order_status_picked && tmp.me._editMode.warehouse === true) {
+		if(tmp.me._order.status.id * 1 === tmp.me.order_status_picked && tmp.me._editMode.warehouse === true) {
 			tmp.shipmentRow = tmp.me._getShippingRow();
 		} else if(tmp.me._order.shippment.length > 0) {
 				tmp.shippingInfos = tmp.me._order.shippment;
