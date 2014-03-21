@@ -350,7 +350,7 @@ class OrderDetailsController extends BPCPageAbstract
  			$order->setPassPaymentCheck(true);
  			FactoryAbastract::service('Order')->save($order);
 			
-			$commentString = "Total Amount Due was ".$order->getTotalAmount().". And total amount paid is ".$paidAmount.". Payment Method is ".$paymentMethod->getName();
+			$commentString = "Total Amount Due was $" . number_format($order->getTotalAmount(), 2, '.', ',') . ". And total amount paid is $" . number_format($paidAmount, 2, '.', ',') . ". Payment Method is " . $paymentMethod->getName();
 			if(($amtDiff = $order->getTotalAmount() - $paidAmount) === 0)
 				$commentString = "Amount is fully paid.".$commentString.". Payment method is ".$paymentMethod->getName();
 			$commentString = '['.$commentString.']'.($extraComment !== '' ? ' : '.$extraComment : '');
