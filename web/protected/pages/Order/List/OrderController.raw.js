@@ -166,9 +166,12 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		var tmp = {};
 		tmp.me = this;
 		jQuery.fancybox({
-			'width'			: '80%',
-			'height'		: '90%',
-			'autoScale'     : true,
+			'width'			: '95%',
+			'height'		: '95%',
+			'autoScale'     : false,
+			'autoDimensions': false,
+			'fitToView'     : false,
+			'autoSize'      : false,
 			'type'			: 'iframe',
 			'href'			: '/orderdetails/' + row.id + '.html',
 			'beforeClose'	    : function() {
