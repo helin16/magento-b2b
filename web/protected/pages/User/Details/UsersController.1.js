@@ -43,6 +43,8 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			'beforeClose'	: function() {
 				if(!$(tmp.me._resultDivId))
 					return;
+				if(!$$('iframe.fancybox-iframe').first().contentWindow.pageJs)
+					return;
 				tmp.userAccount = $$('iframe.fancybox-iframe').first().contentWindow.pageJs._userAccount;
 				if(tmp.userAccount) {
 					tmp.itemRow = $(tmp.me._resultDivId).down('.row[useraccount_id=' + row.id + ']');
