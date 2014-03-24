@@ -9,7 +9,6 @@
 			<div class="h_content">
 			<div id="searchDiv" class="searchDiv">
 				<div class="row">
-				    <input id="searchBtn" type="button" value="Search User" class="button" onclick="pageJs.getUsers(true, this);"/>
 					<div class="alignright"><input id="addBtn" type="button" value="Add User" class="button" onclick="pageJs._showEditPanel()"/></div>
 					</div>
 			     </div>
