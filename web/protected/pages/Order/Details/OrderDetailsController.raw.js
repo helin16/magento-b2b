@@ -97,6 +97,18 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		return tmp.selBox;
 	}
 	
+	,_blockUI: function() {
+//		jQuery.fancybox.helpers.overlay.open();
+		jQuery.fancybox.showLoading();
+		return this;
+	}
+	
+	,_unBlockUI: function () {
+		jQuery.fancybox.hideLoading();
+//		jQuery.fancybox.helpers.overlay.close();
+		return this;
+	}
+	
 	,_clearETA: function(btn, item) {
 		var tmp = {};
 		tmp.me = this;
@@ -110,6 +122,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.me.postAjax(tmp.me.getCallbackId('clearETA'), {'item_id': item.id, 'comments': tmp.reason}, {
 			'onLoading': function (sender, param) {
 				$(btn).store('originValue', $(btn).innerHTML).addClassName('disabled').update('...');
+				tmp.me._blockUI();
 			}
 			,'onSuccess': function(sender, param) {
 				try {
@@ -125,6 +138,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			,'onComplete': function(sender, param) {
 				if($(btn))
 					$(btn).removeClassName('disabled').update($(btn).retrieve('originValue'));
+				tmp.me._unblockUI();
 			}
 		});
 		return tmp.me;
@@ -291,7 +305,10 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			}
 			
 			tmp.me.postAjax(tmp.me.getCallbackId('changeOrderStatus'), {'order': tmp.me._order, 'orderStatusId': $F(selBox), 'comments': tmp.comments}, {
-				'onLoading': function (sender, param) { $(selBox).disabled = true; }
+				'onLoading': function (sender, param) { 
+					tmp.me._blockUI();
+					$(selBox).disabled = true; 
+				}
 				,'onSuccess': function (sender, param) {
 					try {
 						tmp.result = tmp.me.getResp(param, false, true);
@@ -302,6 +319,9 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 						$(selBox).disabled = false;
 						$(selBox).replace(tmp.me._getOrderStatus());
 					}
+				}
+				,'onComplete': function(sender, param) {
+					tmp.me._unblockUI();
 				}
 			});
 			return this;
@@ -360,6 +380,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.me.postAjax(tmp.me.getCallbackId('confirmPayment'), {'paidAmt': tmp.paidAmount, 'paymentMethod': tmp.paymentMethod, 'amtDiff': tmp.amtDiff, 'extraComment': tmp.extraComment, 'order': tmp.me._order}, {
 			'onLoading': function (sender, param) { 
 				$(button).store('originValue', $(button).innerHTML).addClassName('disabled').update('saving ...');
+				tmp.me._blockUI();
 			}
 			,'onSuccess': function (sender, param) {
 				try {
@@ -374,6 +395,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			'onComplete': function (sender, param) {
 				if($(button))
 					$(button).update($(button).retrieve('originValue')).removeClassName('disabled');
+				tmp.me._unblockUI();
 			}
 		});
 		
@@ -542,7 +564,10 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 						return;
 					}
 					tmp.me.postAjax(tmp.me.getCallbackId('updateOrder'), {'items': tmp.data, 'order': tmp.me._order, 'for': 'purchasing'}, {
-						'onLoading': function(sender, param) {tmp.btn.addClassName('disabled').update('Saving ...');},
+						'onLoading': function(sender, param) {
+							tmp.btn.addClassName('disabled').update('Saving ...');
+							tmp.me._blockUI();
+						},
 						'onSuccess': function(sender, param) {
 							try {
 								tmp.result = tmp.me.getResp(param, false, true);
@@ -557,6 +582,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 						'onComplete': function(sender, param) {
 							if(tmp.btn)
 								tmp.btn.removeClassName('disabled').update('submit');
+							tmp.me._unblockUI();
 						}
 					});
 				})
@@ -595,7 +621,10 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 						return;
 					
 					tmp.me.postAjax(tmp.me.getCallbackId('updateOIForWH'), {'orderItems': tmp.finalOrderItemArray, 'order': tmp.me._order}, {
-						'onLoading': function (sender, param) {tmp.btn.addClassName('disabled').update('Saving ...');}
+						'onLoading': function (sender, param) {
+							tmp.btn.addClassName('disabled').update('Saving ...');
+							tmp.me._blockUI();
+						}
 						,'onSuccess': function (sender, param) {
 							try {
 								tmp.result = tmp.me.getResp(param, false, true);
@@ -610,6 +639,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 						'onComplete': function(sender, param) {
 							if(tmp.btn)
 								tmp.btn.removeClassName('disabled').update('submit');
+							tmp.me._unblockUI();
 						}
 					});							
 				})
@@ -694,6 +724,8 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				} catch (e) {
 					alert(e);
 				}
+			}
+			,'onComplete': function () {
 				tmp.originValue = $(btn).retrieve('originValue');
 				$(btn).removeClassName('disabled').setValue(tmp.originValue).disabled = false;
 			}
@@ -790,6 +822,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.me.postAjax(tmp.me.getCallbackId('updateShippingInfo'), {'shippingInfo': tmp.finalShippingDataArray, 'order': tmp.me._order}, {
 			'onLoading': function (sender, param) {
 				tmp.btn.addClassName('disabled').update('Saving ...');
+				tmp.me._blockUI();
 			}
 			,'onSuccess': function (sender, param) {
 				try {
@@ -806,6 +839,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			'onComplete': function(sender, param) {
 				if(tmp.btn)
 					tmp.btn.removeClassName('disabled').update('submit');
+				tmp.me._unblockUI();
 			}
 		});
 	}

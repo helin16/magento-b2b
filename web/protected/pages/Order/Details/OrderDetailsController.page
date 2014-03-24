@@ -1,5 +1,6 @@
 <%@MasterClass="Application.layout.BlankLayout"%>
 <com:TContent ID="MainContent">
+	<com:Application.controls.fancybox.FancyBox />
 	<com:Application.controls.chosen.Chosen />
 	<com:Application.controls.qtip.QTip />
 	<com:Application.controls.TooltipComments.TooltipComments />
