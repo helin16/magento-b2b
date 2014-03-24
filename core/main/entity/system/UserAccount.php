@@ -124,6 +124,28 @@ class UserAccount extends BaseEntityAbstract
         $this->roles = $Roles;
         return $this;
     }
+    public function clearRoles()
+    {
+    	if(trim($this->getId()) === '')
+    		return $this;
+    	foreach($this->getRoles() as $role)
+    		$this->removeRole($role);
+    	return $this;
+    }
+    public function addRole(Role $role)
+    {
+    	if(trim($this->getId()) === '')
+    		throw new CoreException('Save this useraccount first!');
+    	Dao::saveManyToManyJoin(new DaoQuery(get_class($role)), get_class($this), $role->getId(), $this->getId());
+    	return $this;
+    }
+    public function removeRole(Role $role)
+    {
+    	if(trim($this->getId()) === '')
+    		return $this;
+    	Dao::deleteManyToManyJoin(new DaoQuery(get_class($role)), get_class($this), $role->getId(), $this->getId());
+    	return $this;
+    }
     /**
      * (non-PHPdoc)
      * @see BaseEntity::__toString()
