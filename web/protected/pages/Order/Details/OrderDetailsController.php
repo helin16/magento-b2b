@@ -98,6 +98,7 @@ class OrderDetailsController extends BPCPageAbstract
 			$js .= '.setCallbackId("updateShippingInfo", "' . $this->updateShippingInfoBtn->getUniqueID() . '")';
 			$js .= '.setCallbackId("getPaymentDetails", "' . $this->getPaymentDetailsBtn->getUniqueID() . '")';
 			$js .= '.setCallbackId("clearETA", "' . $this->clearETABtn->getUniqueID() . '")';
+			$js .= '.setCallbackId("changeIsOrdered", "' . $this->changeIsOrderedBtn->getUniqueID() . '")';
 			$js .= '.setToolTipCommentsObj(new TooltipComments(pageJs))';
 			$js .= '.load("detailswrapper");';
 		return $js;
@@ -590,6 +591,41 @@ class OrderDetailsController extends BPCPageAbstract
 				
 			$results = $item->getJson();
 				
+			Dao::commitTransaction();
+		}
+		catch(Exception $ex)
+		{
+			Dao::rollbackTransaction();
+			$errors[] = $ex->getMessage();
+		}
+		$param->ResponseData = StringUtilsAbstract::getJson($results, $errors);
+	}
+	
+	
+	public function changeIsOrdered($sender, $param)
+	{
+		$results = $errors = array();
+		try
+		{
+			if(!isset($param->CallbackParameter->item_id) || !($item = FactoryAbastract::service('OrderItem')->get($param->CallbackParameter->item_id)) instanceof OrderItem)
+				throw new Exception('System Error: invalid order item provided!');
+		
+			if(!isset($param->CallbackParameter->isOrdered))
+				throw new Exception('System Error: invalid order item: isOrdered needed!');
+			$setIsOrdered = intval($param->CallbackParameter->isOrdered);
+	
+			Dao::beginTransaction();
+			$item->setIsOrdered($setIsOrdered);
+			$item->addComment('Changing the isOrdered to be : ' . ($setIsOrdered === 1 ? 'ORDERED' : 'NOT ORDERED'));
+		
+			$order = $item->getOrder();
+			$sku = $item->getProduct()->getSku();
+		
+			$order->addComment('Changing the isOrdered for product (sku=' . $sku . ') to be : ' . ($setIsOrdered === 1 ? 'ORDERED' : 'NOT ORDERED'), Comments::TYPE_PURCHASING);
+			FactoryAbastract::service('OrderItem')->save($item);
+		
+			$results = $item->getJson();
+		
 			Dao::commitTransaction();
 		}
 		catch(Exception $ex)

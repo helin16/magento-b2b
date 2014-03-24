@@ -157,6 +157,34 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		return tmp.newDiv;
 	}
 	
+	,_changeIsOrdered: function(btn, orderItem) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.isOrdered = $(btn).checked
+		if(!confirm('You are going to change this order item to be: ' + (tmp.isOrdered === true ? 'ORDERED' : 'NOT ORDERED') ))
+			return false;
+		tmp.me.postAjax(tmp.me.getCallbackId('changeIsOrdered'), {'item_id': orderItem.id, 'isOrdered': tmp.isOrdered}, {
+			'onLoading': function (sender, param) {
+				tmp.me._blockUI();
+			}
+			,'onSuccess': function(sender, param) {
+				try {
+					tmp.result = tmp.me.getResp(param, false, true);
+					if(!tmp.result)
+						return;
+					alert('IsOrdered flag changed Successfully!');
+					window.location = document.URL;
+				} catch (e) {
+					alert(e);
+				}
+			}
+			,'onComplete': function(sender, param) {
+				tmp.me._unblockUI();
+			}
+		});
+		return true;
+	}
+	
 	,_getPurchasingCell: function(orderItem) {
 		var tmp = {};
 		tmp.me = this;
@@ -170,7 +198,12 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			return tmp.newDiv
 				.insert({'bottom': tmp.me._getfieldDiv('hasStock?: ', tmp.hasStock) })
 				.insert({'bottom': tmp.me._getfieldDiv('ETA: ', orderItem.eta) })
-				.insert({'bottom': tmp.me._getfieldDiv('Is Ordered: ', new Element('span', {}).update((tmp.isOrdered === true ? 'Y' : 'N'))  ) })
+				.insert({'bottom': tmp.me._getfieldDiv('Is Ordered: ', new Element('input', {'type': 'checkbox', 'checked': tmp.isOrdered})
+						.observe('change', function(event) {
+							return tmp.me._changeIsOrdered(this, orderItem);
+						})
+					) 
+				})
 				.insert({'bottom': tmp.me._getfieldDiv('Comments: ', new Element('span', {'class': 'comment cuspntr', 'tooltipcomments_entity': 'OrderItem', 'tooltipcomments_entityid': orderItem.id, 'tooltipcomments_commentstype': tmp.me._commentsTypeIds.purchasing})
 						.update('show') 
 						.observe('mouseover', function(event) {
