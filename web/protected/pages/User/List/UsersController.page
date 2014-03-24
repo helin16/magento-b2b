@@ -1,23 +1,25 @@
 <com:TContent ID="MainContent">
-    <com:Application.controls.fancybox.FancyBox />
-    <com:TCallback ID="getUsersBtn" OnCallback="Page.getUsers" />
-    <com:TCallback ID="deleteUserBtn" OnCallback="Page.deleteUser" />
-    <com:TCallback ID="getRolesBtn" OnCallback="Page.getRoles" />
+	<com:Application.controls.fancybox.FancyBox />
+	<com:TCallback ID="getUsersBtn" OnCallback="Page.getUsers" />
+	<com:TCallback ID="deleteUserBtn" OnCallback="Page.deleteUser" />
+	<com:TCallback ID="getRolesBtn" OnCallback="Page.getRoles" />
 	<div class="pagewrapper userlist container">
 		<div class="contentDiv">
 			<div class="h_title">Search/Add Users:</div>
 			<div class="h_content">
-			<div id="searchDiv" class="searchDiv">
-				<div class="row">
-					<div class="alignright"><input id="addBtn" type="button" value="Add User" class="button" onclick="pageJs._showEditPanel()"/></div>
+				<div id="searchDiv" class="searchDiv">
+					<div class="row">
+						<input id="addBtn" type="button" value="Add User" class="button"
+							onclick="pageJs._showEditPanel()" />
 					</div>
-			     </div>
-	      </div>
-	    </div>
-        <div class="contentDiv">
-			<div class="h_title"><span id="totalUsers">0</span> Users found:</div>
-			<div class="h_content dataTableWrapper">
-			 <div id="resultDiv" class="dataTable"></div>
+				</div>
 			</div>
-		</div>
+			<div class="contentDiv">
+				<div class="h_title">
+					<span id="totalUsers">0</span> Users found:
+				</div>
+				<div class="h_content dataTableWrapper">
+					<div id="resultDiv" class="dataTable"></div>
+				</div>
+			</div>
 </com:TContent>
