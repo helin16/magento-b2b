@@ -36,7 +36,8 @@
 			<url ServiceParameter="User.List.UsersController" pattern="users.html" />
 			
 			<!-- FrontEnd:: user edit page -->
-			<url ServiceParameter="User.Me.MeController" pattern="/useraccount/edit/{id}.html" parameters.id="\d+"/>
+			<url ServiceParameter="User.Details.UsersController" pattern="/useraccount/{action}.html" parameters.action="add"/>
+			<url ServiceParameter="User.Details.UsersController" pattern="/useraccount/{action}/{id}.html" parameters.action="edit" parameters.id="\d+"/>
 			
 			<!-- FrontEnd:: Price Match page -->
 			<url ServiceParameter="PriceMatch.PriceMatchController" pattern="pricematch.html" />

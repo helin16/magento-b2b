@@ -79,7 +79,8 @@ body {
 .cuspntr {
 	cursor: pointer;
 }
-input[type="text"] {
+input[type="text"],
+input[type="password"] {
 	padding: 5px;
 	border-radius: 3px;
 	border: 1px #cccccc solid;
