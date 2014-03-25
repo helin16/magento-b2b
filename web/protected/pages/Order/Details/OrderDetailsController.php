@@ -562,14 +562,14 @@ class OrderDetailsController extends BPCPageAbstract
 					SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_USER),
 					SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_KEY)
 					)
-					->shipOrder($order, $shipment, array(), $notificationMsg, true, true);
+					->shipOrder($order, $shipment, array(), $notificationMsg, false, false);
 					
 				//push the status of the order to SHIPPed
 				B2BConnector::getConnector(B2BConnector::CONNECTOR_TYPE_ORDER,
 					SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_WSDL),
 					SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_USER),
 					SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_KEY)
-					)->changeOrderStatus($order, $order->getStatus()->getMageStatus(), $notificationMsg, false);
+					)->changeOrderStatus($order, $order->getStatus()->getMageStatus(), $notificationMsg, true);
 				$order->addComment('An email notification contains shippment information has been sent to customer for: ' . $order->getStatus()->getName(), Comments::TYPE_SYSTEM);
 			}
 			Dao::commitTransaction();
