@@ -30,6 +30,7 @@ abstract class SystemCoreAbstract
 			$base . '/service/',
 			$base . '/utils/',
 			$base . '/utils/connector/',
+			$base . '/utils/connector/courier/',
 			$base . '/utils/connector/magento/',
 			$base . '/utils/connector/magento/Order/',
 			$base . '/utils/html_parser/',

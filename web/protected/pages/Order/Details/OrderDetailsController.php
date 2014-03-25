@@ -529,12 +529,20 @@ class OrderDetailsController extends BPCPageAbstract
 			
 			$result['shipment'] = $shipment->getJson();
 			
+			//add shipment information
 			B2BConnector::getConnector(B2BConnector::CONNECTOR_TYPE_SHIP,
 				SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_WSDL),
 				SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_USER),
 				SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_KEY)
 				)
 				->shipOrder($order, $shipment, array(), $deliveryInstructions, true, true);
+				
+			//push the status of the order to SHIPPed
+			B2BConnector::getConnector(B2BConnector::CONNECTOR_TYPE_ORDER,
+				SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_WSDL),
+				SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_USER),
+				SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_KEY)
+				)->changeOrderStatus($order, $order->getStatus()->getMageStatus(), $deliveryInstructions, false);
 			Dao::commitTransaction();
 		}
 		catch(Exception $ex)
