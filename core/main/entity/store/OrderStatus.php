@@ -16,7 +16,18 @@ class OrderStatus extends InfoEntityAbstract
 	const ID_INSUFFICIENT_STOCK = 6;
 	const ID_PICKED = 7;
 	const ID_SHIPPED = 8;
+	/**
+	 * The name of the status
+	 * 
+	 * @var string
+	 */
 	private $name;
+	/**
+	 * The Magento order status
+	 * 
+	 * @var string
+	 */
+	private $mageStatus = '';
 	/**
 	 * Getter for the name
 	 */
@@ -37,17 +48,40 @@ class OrderStatus extends InfoEntityAbstract
 	    return $this;
 	}
 	/**
+	 * Getter for mageStatus
+	 *
+	 * @return string
+	 */
+	public function getMageStatus() 
+	{
+	    return $this->mageStatus;
+	}
+	/**
+	 * Setter for mageStatus
+	 *
+	 * @param string $value The mageStatus
+	 *
+	 * @return OrderStatus
+	 */
+	public function setMageStatus($value) 
+	{
+	    $this->mageStatus = $value;
+	    return $this;
+	}
+	/**
 	 * createStatus
 	 * 
-	 * @param string $status The name of the status
+	 * @param string $status     The name of the status
+	 * @param string $mageStatus The magento order status
 	 * 
 	 * @return Ambigous <OrderStatus, BaseEntityAbstract>
 	 */
-	public static function createStatus($status)
+	public static function createStatus($status, $mageStatus = '')
 	{
 		$items = FactoryAbastract::dao(__CLASS__)->findByCriteria('name=?', array($status), false, 1, 1);
 		$st = (count($items) === 0 ? new OrderStatus() : $items[0]);
 		$st->setName($status);
+		$st->setMageStatus($mageStatus);
 		FactoryAbastract::dao(__CLASS__)->save($st);
 		return $st;
 	}
@@ -93,9 +127,11 @@ class OrderStatus extends InfoEntityAbstract
 		DaoMap::begin($this, 'ost');
 	
 		DaoMap::setStringType('name', 'varchar', 32);
+		DaoMap::setStringType('mageStatus', 'varchar', 50);
 		parent::__loadDaoMap();
 	
 		DaoMap::createUniqueIndex('name');
+		DaoMap::createIndex('mageStatus');
 		DaoMap::commit();
 	}
 }
