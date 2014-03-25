@@ -192,6 +192,18 @@ class OrderDetailsController extends BPCPageAbstract
 			}
 			
 			FactoryAbastract::service('Order')->save($order);
+			
+			//push the status of the order
+			$notificationMsg = trim(OrderNotificationTemplateControl::getMessage($order->getStatus()->getName(), $order));
+			if($notificationMsg !== '')
+			{
+				B2BConnector::getConnector(B2BConnector::CONNECTOR_TYPE_ORDER,
+					SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_WSDL),
+					SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_USER),
+					SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_KEY)
+					)->changeOrderStatus($order, $order->getStatus()->getMageStatus(), $notificationMsg, true);
+				$order->addComment('An email notification has been sent to customer for: ' . $order->getStatus()->getName(), Comments::TYPE_SYSTEM);
+			}
 			Dao::commitTransaction();
 		}
 		catch(Exception $ex)
@@ -357,6 +369,18 @@ class OrderDetailsController extends BPCPageAbstract
 			$commentString = '['.$commentString.']'.($extraComment !== '' ? ' : '.$extraComment : '');
 			
 			$comment = Comments::addComments($order, $commentString, Comments::TYPE_ACCOUNTING);
+			
+			//notify the customer
+			$notificationMsg = trim(OrderNotificationTemplateControl::getMessage('paid', $order));
+			if($notificationMsg !== '')
+			{
+				B2BConnector::getConnector(B2BConnector::CONNECTOR_TYPE_ORDER,
+					SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_WSDL),
+					SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_USER),
+					SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_KEY)
+					)->changeOrderStatus($order, FactoryAbastract::service('OrderStatus')->get(OrderStatus::ID_PICKED)->getMageStatus(), $notificationMsg, true);
+				$order->addComment('An email notification contains payment checked info has been sent to customer for: ' . $order->getStatus()->getName(), Comments::TYPE_SYSTEM);
+			}
 			Dao::commitTransaction();
 		}
 		catch(Exception $ex)
@@ -530,19 +554,24 @@ class OrderDetailsController extends BPCPageAbstract
 			$result['shipment'] = $shipment->getJson();
 			
 			//add shipment information
-			B2BConnector::getConnector(B2BConnector::CONNECTOR_TYPE_SHIP,
-				SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_WSDL),
-				SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_USER),
-				SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_KEY)
-				)
-				->shipOrder($order, $shipment, array(), $deliveryInstructions, true, true);
-				
-			//push the status of the order to SHIPPed
-			B2BConnector::getConnector(B2BConnector::CONNECTOR_TYPE_ORDER,
-				SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_WSDL),
-				SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_USER),
-				SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_KEY)
-				)->changeOrderStatus($order, $order->getStatus()->getMageStatus(), $deliveryInstructions, false);
+			$notificationMsg = trim(OrderNotificationTemplateControl::getMessage($order->getStatus()->getName(), $order));
+			if($notificationMsg !== '')
+			{
+				B2BConnector::getConnector(B2BConnector::CONNECTOR_TYPE_SHIP,
+					SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_WSDL),
+					SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_USER),
+					SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_KEY)
+					)
+					->shipOrder($order, $shipment, array(), $notificationMsg, true, true);
+					
+				//push the status of the order to SHIPPed
+				B2BConnector::getConnector(B2BConnector::CONNECTOR_TYPE_ORDER,
+					SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_WSDL),
+					SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_USER),
+					SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_KEY)
+					)->changeOrderStatus($order, $order->getStatus()->getMageStatus(), $notificationMsg, false);
+				$order->addComment('An email notification contains shippment information has been sent to customer for: ' . $order->getStatus()->getName(), Comments::TYPE_SYSTEM);
+			}
 			Dao::commitTransaction();
 		}
 		catch(Exception $ex)
