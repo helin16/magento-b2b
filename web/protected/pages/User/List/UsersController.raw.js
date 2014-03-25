@@ -37,19 +37,24 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		jQuery.fancybox({
 			'width'			: '80%',
 			'height'		: '90%',
-			'autoScale'     : true,
+			'autoScale'     : false,
+			'autoDimensions': false,
+			'fitToView'     : false,
+			'autoSize'      : false,
 			'type'			: 'iframe',
-			'href'			: '/useraccount/edit/' + item.id + '.html',
+			'href'			: item ? '/useraccount/edit/' + item.id + '.html' : '/useraccount/add.html',
 			'beforeClose'	: function() {
 				if(!$(tmp.me._resultDivId))
 					return;
-				tmp.userAccount = $$('iframe.fancybox-iframe').first().contentWindow.pageJs._userAccount;
+				if(!$$('iframe.fancybox-iframe').first().contentWindow.pageJs)
+					return;
+				tmp.userAccount = $$('iframe.fancybox-iframe').first().contentWindow.pageJs._user;
 				if(tmp.userAccount) {
-					tmp.itemRow = $(tmp.me._resultDivId).down('.row[useraccount_id=' + row.id + ']');
+					tmp.itemRow = $(tmp.me._resultDivId).down('.row[useraccount_id=' + tmp.userAccount.id + ']');
 					if(tmp.itemRow)
-						tmp.itemRow.replace(tmp.me._getItemRow(item));
+						tmp.itemRow.replace(tmp.me._getItemRow(tmp.userAccount));
 					else
-						$(tmp.me._resultDivId).insert({'top': tmp.me._getItemRow(item) })
+						$(tmp.me._resultDivId).down('.header').insert({'after': tmp.me._getItemRow(tmp.userAccount) })
 				}
 			}
  		});
