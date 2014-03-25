@@ -1,8 +1,12 @@
 <com:TContent ID="MainContent">
 	<com:TCallback ID="getPriceMatchCompanyBtn" onCallBack="Page.getPriceMatchCompanyDetails" />
+	<com:TCallback ID="updatePriceMatchCompanyBtn" onCallBack="Page.updatePriceMatchCompanyDetails" />
+	<com:TCallback ID="addAliasForPriceMatchCompanyBtn" onCallBack="Page.addAliasForPriceMatchCompany" />
+	<com:TCallback ID="deleteAliasForPriceMatchCompanyBtn" onCallBack="Page.deleteAliasForPriceMatchCompany" />
 	<div class="pagewrapper userlist container">
 		<div class="contentDiv">
 			<div class="dataTableWrapper">
+				<div class="dataTable" id="addCompanyDiv"></div>
 				<div class="dataTable" id="resultDiv"></div>
 			</div>
 		</div>
