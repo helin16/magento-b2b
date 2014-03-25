@@ -56,7 +56,7 @@ class ShippmentConnector extends B2BConnector
 		FactoryAbastract::service('Shippment')->save($shippment);
 		
 		//adding the track number
-		$mageTrackId = $this->_connect()->salesOrderShipmentAddTrack($this->_session, $shipmentId, $courierCode, 'Track Number', $shippment->getConNoteNo());
+		$mageTrackId = $this->_connect()->salesOrderShipmentAddTrack($this->_session, $shipmentId, $courierCode, trim($shippment->getCourier()->getName()) .' Track No.', $shippment->getConNoteNo());
 		if(trim($shipmentId) === '')
 			throw new ConnectorException('System Error: failed to add track information to shipment(ID=' . $shippment->getId() . ', MageShipmentId=' . $shipmentId . ') in Magento!');
 		//TODO: maybe we should do something for the magento track id!!!!
