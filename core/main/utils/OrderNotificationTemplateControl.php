@@ -27,7 +27,7 @@ abstract class OrderNotificationTemplateControl
 	}
 	private static function _local_pickup(Order $order)
 	{
-		$msg = '<div style="margin: 10px 0 10px 0;">Thank you for your order, your order(#:' . $order->getOrderNo() . ') is now completed and ready for PICKUP.</div>';
+		$msg = '<div style="margin: 10px 0 10px 0;">Your order(#:' . $order->getOrderNo() . ') is now completed and <b style="color: green">ready for PICKUP.</b></div>';
 		return $msg;
 	}
 	
