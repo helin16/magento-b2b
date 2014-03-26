@@ -8,6 +8,7 @@
  */
 class Courier extends InfoEntityAbstract
 {
+	const ID_LOCAL_PICKUP = 5;
 	/**
 	 * The name of the courier
 	 * 

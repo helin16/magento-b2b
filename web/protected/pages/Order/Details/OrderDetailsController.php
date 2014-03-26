@@ -554,7 +554,8 @@ class OrderDetailsController extends BPCPageAbstract
 			$result['shipment'] = $shipment->getJson();
 			
 			//add shipment information
-			$notificationMsg = trim(OrderNotificationTemplateControl::getMessage($order->getStatus()->getName(), $order));
+			$templateName = (trim($shipment->getCourier()->getId()) === trim(Courier::ID_LOCAL_PICKUP) ? 'local_pickup' : $order->getStatus()->getName());
+			$notificationMsg = trim(OrderNotificationTemplateControl::getMessage($templateName, $order));
 			if($notificationMsg !== '')
 			{
 				B2BConnector::getConnector(B2BConnector::CONNECTOR_TYPE_SHIP,

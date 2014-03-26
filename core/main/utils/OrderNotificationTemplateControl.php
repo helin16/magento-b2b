@@ -25,15 +25,20 @@ abstract class OrderNotificationTemplateControl
 		$msg .= '<div>We have received payment for this order, and our logistics will ship this order out soon!</div>';
 		return $msg;
 	}
+	private static function _local_pickup(Order $order)
+	{
+		$msg = '<div style="margin: 10px 0 10px 0;">Thank you for your order, your order(#:' . $order->getOrderNo() . ') is now completed and ready for PICKUP.</div>';
+		return $msg;
+	}
 	
 	private static function _shipped(Order $order)
 	{
-		$msg = '<div>Thank you for your order, your following order is now complete and shipped.</div>';
+		$msg = '<div>Thank you for your order, your following order is now completed and shipped.</div>';
 		$msg .= '<div>Please find the tracking information below:</div>';
-		$msg .= '<div>';
+		$msg .= '<div style="margin: 10px 0 10px 0;">';
 			$msg .= '<table cellspacing="0" cellpadding="0" border="0" height="100%" width="100%">';
 			$msg .= "<tr>";
-				$msg .= "<td width='25%' style='text-align:right'>Order Number:</td>";
+				$msg .= "<td width='25%'>Order Number:</td>";
 				$msg .= "<td width='*'>" . $order->getOrderNo() . "</td>";
 			$msg .= "</tr>";
 			$shippments = $order->getShippments();
