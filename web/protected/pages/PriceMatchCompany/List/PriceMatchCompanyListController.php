@@ -158,6 +158,11 @@ class PriceMatchCompanyListController extends BPCPageAbstract
 			if(($companyName = trim($param->CallbackParameter->companyName)) === '')
 				throw new Exception('System Error: Company Name is REQUIRED. Cannot be EMPTY');
 
+			$ePMCArray = FactoryAbastract::service('PriceMatchCompany')->findByCriteria('companyName = ? and companyAlias IN ('. implode(',', array_fill(0, count($newAliasValueArray), '?')) .')', array_merge(array($companyName), $newAliasValueArray));
+			$eAliasArray = array_map(create_function('$a', 'return $a->getCompanyAlias();'), $ePMCArray);
+			
+			$newAliasValueArray = array_diff($newAliasValueArray, $eAliasArray);
+			
 			foreach($newAliasValueArray as $newAlias)
 			{
 				if(($newAlias = trim($newAlias)) !== '')

@@ -6,7 +6,7 @@
 	<div class="pagewrapper userlist container">
 		<div class="contentDiv">
 			<div class="dataTableWrapper">
-				<div class="dataTable" id="addCompanyDiv"></div>
+				<div class="dataTable add_new_company_div" id="addCompanyDiv"></div>
 				<div class="dataTable" id="resultDiv"></div>
 			</div>
 		</div>
