@@ -71,7 +71,7 @@ abstract class OrderNotificationTemplateControl
 			$msg .= "<div style='margin: 10px 0 10px 0'>";
 				$msg .= '<table cellspacing="0" cellpadding="0" border="0" height="100%" width="100%">';
 					$msg .= "<thead>";
-						$msg .= "<tr style='background:#000000; color:#ffffff;height:23px;'>";
+						$msg .= "<tr style='background:#eeeeee; height:23px;'>";
 							$msg .= "<td width='*'>Item</td>";
 							$msg .= "<td width='30%'>SKU</td>";
 							$msg .= "<td width='10%' style='text-align:center;'>Qty</td>";
