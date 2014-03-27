@@ -5,7 +5,7 @@ class PriceMatchCompanyListController extends BPCPageAbstract
 	
 	public function __construct()
 	{
-		if(!AccessControl::canAccessUsersPage(Core::getRole()))
+		if(!AccessControl::canAccessPriceMatchPage(Core::getRole()))
 			die('You have no access to this page!');
 		parent::__construct();
 	}
