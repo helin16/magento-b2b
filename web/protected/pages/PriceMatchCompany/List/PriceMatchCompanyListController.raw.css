@@ -1,0 +1,56 @@
+#resultDiv .row {
+	display: table-row;
+}
+
+#resultDiv .row .company_name {
+	width:25%;
+}
+#resultDiv .row .company_alias {
+	width: 74%;
+}
+
+#resultDiv .row .company_name .companyNameDiv .companyNameSpan {
+	display:block;
+	margin-bottom:10px;
+}
+#resultDiv .row .company_alias .single_alias {
+	width:200px;
+	padding-right:12px;
+	display:inline-block;
+}
+
+#resultDiv .row .company_alias .pmc_row {
+	margin-bottom:5px;
+	
+}
+
+#resultDiv .row .company_alias .single_alias:hover,
+{
+	background-color:pink;
+}
+
+#resultDiv .row .company_alias .single_alias_edit {
+	width:90px;
+	cursor:pointer;
+}
+
+#addCompanyDiv {
+	width:200px;
+	margin: 10px 0px 20px 20px;
+	display:block;
+	border:solid 0px;
+	border-radius:5px;
+}
+
+#addCompanyDiv .add_new_company .companyNameDiv .fieldDiv {
+	margin-bottom:10px;
+	display:block;
+} 
+
+#addCompanyDiv .button {
+	margin-top:10px;
+} 
+
+.companyNameDiv .new_single_alias_box .button {
+	margin-left:2px;
+}
