@@ -1,3 +1,4 @@
+<%@MasterClass="Application.layout.BlankLayout"%>
 <com:TContent ID="MainContent">
 	<com:TCallback ID="getPriceMatchCompanyBtn" onCallBack="Page.getPriceMatchCompanyDetails" />
 	<com:TCallback ID="updatePriceMatchCompanyBtn" onCallBack="Page.updatePriceMatchCompanyDetails" />
