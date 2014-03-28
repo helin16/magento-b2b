@@ -8,6 +8,9 @@ abstract class CourierConnector
 	 * @var Courier
 	 */
 	protected $_courier = null;
+	
+	protected $_internalCache = array();
+	
 	/**
 	 * Getting the connector
 	 * 
@@ -32,5 +35,19 @@ abstract class CourierConnector
 	public function __construct(Courier $courier)
 	{
 		$this->_courier = $courier;
+	}
+	
+	public function getCourierInfo(CourierInfoType $courierInfoType)
+	{
+		if(!isset($this->_internalCache[$courierInfoType->getId()]))
+		{	
+			$courierInfoArray = FactoryAbastract::service('CourierInfo')->findByCriteria('courierId = ? and typeId = ?', array($this->_courier->getId(), $courierInfoType->getId()), true, 1,1);
+			if(count($courierInfoArray) === 0)
+				throw new Exception('No ['. $courierInfoType->getName() .'] set for courier '.$this->_courier->getName());
+			
+			$this->_internalCache[$courierInfoType->getId()] = $courierInfoArray[0]->getValue();
+		}
+		
+		return $this->_internalCache[$courierInfoType->getId()];
 	}
 }
