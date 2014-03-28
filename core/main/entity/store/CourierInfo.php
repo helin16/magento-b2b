@@ -31,9 +31,9 @@ class CourierInfo extends InfoAbstract
 	 *
 	 * @return Courier
 	 */
-	public function setCourier(array $value) 
+	public function setCourier(Courier $courier) 
 	{
-	    $this->courier = $value;
+	    $this->courier = $courier;
 	    return $this;
 	}
 	/**
@@ -43,6 +43,7 @@ class CourierInfo extends InfoAbstract
 	public function __loadDaoMap()
 	{
 		DaoMap::begin($this, 'courierinfo');
+		DaoMap::setManyToOne('courier', 'Courier');
 		parent::__loadDaoMap();
 		DaoMap::commit();
 	}
