@@ -22,7 +22,11 @@ class FastWayConnector extends CourierConnector
 		$requestURL = $restURL . $functionName . '/' . $city .  ($frCode !== '' ? '/'.$frCode : '') . '?api_key='.$restApiKey; 
 		
 		$data = ComScriptCURL::readUrl($requestURL);
-		$suburbList = json_decode($data);
+		$resultObject = json_decode($data);
+		
+		$suburbObjectArray = $resultObject->result;
+		
+		return $suburbObjectArray;
 	}
 	
 	

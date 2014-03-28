@@ -5,7 +5,16 @@ require 'bootstrap.php';
 try 
 {
 	$fwc = FastWayConnector::getConnector(FactoryAbastract::service('Courier')->get(3));
-	$fwc->getListOfDeliverySuburbs('xxx');
+	$suburbArray = $fwc->getListOfDeliverySuburbs('MEL');
+	
+	foreach($suburbArray as $suburb)
+	{
+		var_dump('Town :' . $suburb->Town);
+		var_dump('PostCode :' . $suburb->Postcode);
+		var_dump('State :' . $suburb->State);
+		var_dump('Label :' . $suburb->label);
+		var_dump('---------------------');
+	}
 }
 catch(Exception $ex)
 {
