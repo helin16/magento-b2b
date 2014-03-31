@@ -2,24 +2,51 @@
 
 require 'bootstrap.php';
 
+/// List all the Regional Franchises ///
+// try 
+// {
+// 	$fwc = FastWayConnector::getConnector(FactoryAbastract::service('Courier')->get(3));
+// 	var_dump($fwc->getListOfAllRFsByCountry(null, 1));
+
+// }
+// catch(Exception $ex)
+// {
+// 	var_dump($ex->getMessage());
+// }
+///////////////////////////////////////
+
+/// List all the Regional Franchises ///
 try 
 {
 	$fwc = FastWayConnector::getConnector(FactoryAbastract::service('Courier')->get(3));
-	$suburbArray = $fwc->getListOfDeliverySuburbs('MEL');
-	
-	foreach($suburbArray as $suburb)
-	{
-		var_dump('Town :' . $suburb->Town);
-		var_dump('PostCode :' . $suburb->Postcode);
-		var_dump('State :' . $suburb->State);
-		var_dump('Label :' . $suburb->label);
-		var_dump('---------------------');
-	}
+	var_dump($fwc->calculatePriceForSendingParcel('AUK', 'Ahuriri', '3000', 10, '', '','20', true, 'fsdfd'));
+
 }
 catch(Exception $ex)
 {
 	var_dump($ex->getMessage());
 }
+///////////////////////////////////////
+
+
+// try 
+// {
+// 	$fwc = FastWayConnector::getConnector(FactoryAbastract::service('Courier')->get(3));
+// 	$suburbArray = $fwc->getListOfDeliverySuburbs('MEL');
+	
+// 	foreach($suburbArray as $suburb)
+// 	{
+// 		var_dump('Town :' . $suburb->Town);
+// 		var_dump('PostCode :' . $suburb->Postcode);
+// 		var_dump('State :' . $suburb->State);
+// 		var_dump('Label :' . $suburb->label);
+// 		var_dump('---------------------');
+// 	}
+// }
+// catch(Exception $ex)
+// {
+// 	var_dump($ex->getMessage());
+// }
 
 
 
