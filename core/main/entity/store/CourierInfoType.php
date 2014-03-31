@@ -12,6 +12,8 @@ class CourierInfoType extends InfoTypeAbstract
 	
 	const ID_API_KEY = 2;
 	
+	const ID_COUNTRY_CODES = 3;
+	
 	/**
 	 * (non-PHPdoc)
 	 * @see BaseEntity::__loadDaoMap()

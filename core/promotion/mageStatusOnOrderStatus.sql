@@ -17,3 +17,9 @@ insert into courierinfo (`courierId`, `value`, `typeId`, `active`, `created`, `c
 VALUES 
     (3, 'http://api.fastway.org/v3/psc/', 1, 1, NOW(),10, NOW(), 10),
     (3, 'xxx', 2, 1, NOW(), 10, NOW(), 10)    ;
+    
+insert into courierinfotype (`name`, `active`, `created`, `createdById`, `updated`, `updatedById`)
+VALUES ('countryCodes', 1, NOW(), 10, NOW(), 10);    
+    
+insert into courierinfo (`courierId`, `value`, `typeId`, `active`, `created`, `createdById`, `updated`, `updatedById`)
+VALUES (3, '[{"Australia": "1"}, {"New Zealand": "6"}, {"Ireland": "11"}, {"N.Ireland": 11}, {"South Africa": 24}]', 3, 1, NOW(), 10, NOW(), 10);    

@@ -45,9 +45,28 @@ abstract class CourierConnector
 			if(count($courierInfoArray) === 0)
 				throw new Exception('No ['. $courierInfoType->getName() .'] set for courier '.$this->_courier->getName());
 			
-			$this->_internalCache[$courierInfoType->getId()] = $courierInfoArray[0]->getValue();
+			if(($value = trim($courierInfoArray[0]->getValue())) === '')
+				throw new Exception('No Value set for ['. $courierInfoType->getName() .'] for courier '.$this->_courier->getName());
+			
+			$this->_internalCache[$courierInfoType->getId()] = $value;
 		}
 		
 		return $this->_internalCache[$courierInfoType->getId()];
+	}
+	
+	protected function _checkAndFixURL($restURL)
+	{
+		if(($restURL = trim($restURL)) === '')
+			return '';
+		
+		if(!preg_match('/\/$/', $restURL))
+			$restURL = $restURL.'/';
+		return $restURL;
+	}
+	
+	protected function _getJSONDataFromURL($requestURL)
+	{
+		$data = ComScriptCURL::readUrl($requestURL);
+		return json_decode($data);
 	}
 }
