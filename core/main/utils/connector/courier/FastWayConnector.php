@@ -144,6 +144,9 @@ class FastWayConnector extends CourierConnector
 				throw new Exception('Weight (in kg) is not provided. So Length, Width and Height (in cm) MUST BE provided to calculate price');
 		}
 		
+		$allowMultipleRegions = ($allowMultipleRegions === true ? 'true' : 'false');
+		$showProductBox = ($showProductBox === true ? 'true' : 'false');
+		
 		$restURL = $this->_checkAndFixURL($this->getCourierInfo(FactoryAbastract::service('CourierInfoType')->get(CourierInfoType::ID_URL)));
 		$restApiKey = $this->getCourierInfo(FactoryAbastract::service('CourierInfoType')->get(CourierInfoType::ID_API_KEY));
 		
@@ -157,10 +160,17 @@ class FastWayConnector extends CourierConnector
 		if($heightInCm !== '0')
 			$urlArray['HeightInCm'] = $heightInCm;
 		
+		if($allowMultipleRegions === 'true')
+			$urlArray['AllowMultipleRegions'] = $allowMultipleRegions;
+		if($showProductBox === 'true')
+			$urlArray['ShowBoxProduct'] = $showProductBox;
+			
+		
 		$urlArray['api_key'] = $restApiKey;
 		$functionName = 'lookup';
 		
 		$finalURL = $restURL . $functionName .'/'.$rfCode.'/'.$destSuburb. (trim($destPostCode) !== '' ? '/'.$destPostCode : '') .'?' .http_build_query($urlArray);
+		var_dump($finalURL);
 		$data = $this->_getJSONDataFromURL($finalURL);
 		
 		if(isset($data->error) && trim($data->error) !== '')
