@@ -522,17 +522,21 @@ class OrderDetailsController extends BPCPageAbstract
 			
 			$contactName = implode(",", $shippingInfoArray->contactName);
 			$contactNo = implode(",", $shippingInfoArray->contactNo);
-			$street = trim($shippingInfoArray->street[0]);
-			$city = trim($shippingInfoArray->city[0]);
-			$region = trim($shippingInfoArray->region[0]);
-			$country = trim($shippingInfoArray->country[0]);
-			$postCode = trim($shippingInfoArray->postCode[0]);
+			
+			$shippingAddress = new Address();
+			$shippingAddress->setStreet(trim($shippingInfoArray->street[0]))
+				->setCity(trim($shippingInfoArray->city[0]))
+				->setRegion($shippingInfoArray->region[0])
+				->setCountry($shippingInfoArray->country[0])
+				->setPostCode($shippingInfoArray->postCode[0])
+				->setContactName($contactName[0])
+				->setContactNo($contactNo[0]);
+			FactoryAbastract::service('Address')->save($shippingAddress);
+			
 			$noOfCartons = trim($shippingInfoArray->noOfCartons[0]);
 			$consignmentNo = trim($shippingInfoArray->conNoteNo[0]);
 			$estShippingCost = trim($shippingInfoArray->estShippingCost[0]);
 			$deliveryInstructions = (isset($shippingInfoArray->deliveryInstructions) ? implode(", ", $shippingInfoArray->deliveryInstructions) : '');
-			
-			$shippingAddress = $street.', '.$city.', '.$region.', '.$country.' '.$postCode;
 			
 			$shipment = new Shippment();
 			$shipment->setOrder($order);

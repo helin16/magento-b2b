@@ -8,9 +8,6 @@ abstract class CourierConnector
 	 * @var Courier
 	 */
 	protected $_courier = null;
-	
-	protected $_internalCache = array();
-	
 	/**
 	 * Getting the connector
 	 * 
@@ -36,37 +33,27 @@ abstract class CourierConnector
 	{
 		$this->_courier = $courier;
 	}
-	
-	public function getCourierInfo(CourierInfoType $courierInfoType)
+	/**
+	 * Creating a manifest for the delivery
+	 * 
+	 * @param string $userId The id of the user(from the courier) is making the manifest
+	 * 
+	 * @throws Exception
+	 */
+	public function createManifest($userId = '')
 	{
-		if(!isset($this->_internalCache[$courierInfoType->getId()]))
-		{	
-			$courierInfoArray = FactoryAbastract::service('CourierInfo')->findByCriteria('courierId = ? and typeId = ?', array($this->_courier->getId(), $courierInfoType->getId()), true, 1,1);
-			if(count($courierInfoArray) === 0)
-				throw new Exception('No ['. $courierInfoType->getName() .'] set for courier '.$this->_courier->getName());
-			
-			if(($value = trim($courierInfoArray[0]->getValue())) === '')
-				throw new Exception('No Value set for ['. $courierInfoType->getName() .'] for courier '.$this->_courier->getName());
-			
-			$this->_internalCache[$courierInfoType->getId()] = $value;
-		}
-		
-		return $this->_internalCache[$courierInfoType->getId()];
+		throw new Exception("This function(=" . __FUNCTION__ . ") should be overloaded!");
 	}
-	
-	protected function _checkAndFixURL($restURL)
+	/**
+	 * Creating a consignment note for the delivery
+	 * 
+	 * @param Shippment $shippment The Shippment
+	 * @param string $manifestId   The manifest id from the courier
+	 * 
+	 * @throws Exception
+	 */
+	public function createConsignment(Shippment &$shippment, $manifestId = '')
 	{
-		if(($restURL = trim($restURL)) === '')
-			return '';
-		
-		if(!preg_match('/\/$/', $restURL))
-			$restURL = $restURL.'/';
-		return $restURL;
-	}
-	
-	protected function _getJSONDataFromURL($requestURL)
-	{
-		$data = ComScriptCURL::readUrl($requestURL);
-		return json_decode($data);
+		throw new Exception("This function(=" . __FUNCTION__ . ") should be overloaded!");
 	}
 }

@@ -35,9 +35,9 @@ class Shippment extends BaseEntityAbstract
 	/**
 	 * The address of the shipping
 	 * 
-	 * @var string
+	 * @var Address
 	 */
-	private $address;
+	protected $address;
 	/**
 	 * The contact number of the receiver
 	 * 
@@ -163,20 +163,21 @@ class Shippment extends BaseEntityAbstract
 	/**
 	 * Getter for address
 	 *
-	 * @return string
+	 * @return Address
 	 */
 	public function getAddress() 
 	{
+		$this->loadManyToOne('address');
 	    return $this->address;
 	}
 	/**
 	 * Setter for address
 	 *
-	 * @param string $value The address
+	 * @param Address $value The address
 	 *
 	 * @return Shippment
 	 */
-	public function setAddress($value) 
+	public function setAddress(Address $value) 
 	{
 	    $this->address = $value;
 	    return $this;
@@ -333,7 +334,7 @@ class Shippment extends BaseEntityAbstract
 		DaoMap::setManyToOne('courier', 'Courier', 'sh_courier');
 		DaoMap::setIntType('noOfCartons');
 		DaoMap::setStringType('receiver', 'varchar', 100);
-		DaoMap::setStringType('address', 'varchar', 200);
+		DaoMap::setManyToOne('address', 'Address', 'sh_addr');
 		DaoMap::setStringType('contact', 'varchar', 100);
 		DaoMap::setDateType('shippingDate');
 		DaoMap::setStringType('conNoteNo', 'varchar', 100);
