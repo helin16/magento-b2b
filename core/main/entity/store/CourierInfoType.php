@@ -9,11 +9,9 @@
 class CourierInfoType extends InfoTypeAbstract
 {
 	const ID_URL = 1;
-	
 	const ID_API_KEY = 2;
-	
-	const ID_COUNTRY_CODES = 3;
-	
+	const ID_API_URL = 3;
+	const ID_ACCOUNT_ID = 4;
 	/**
 	 * (non-PHPdoc)
 	 * @see BaseEntity::__loadDaoMap()

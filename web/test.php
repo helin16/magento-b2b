@@ -1,6 +1,6 @@
 <?php
 
-require 'bootstrap.php';
+require_once 'bootstrap.php';
 
 /// List all the Regional Franchises ///
 // try 
@@ -19,8 +19,9 @@ require 'bootstrap.php';
 try 
 {
 	$fwc = FastWayConnector::getConnector(FactoryAbastract::service('Courier')->get(3));
-	var_dump($fwc->calculatePriceForSendingParcel('AUK', 'Ahuriri', '3000', 10, '', '','20', true, 'fsdfd'));
-
+	$manifest =$fwc->createManifest();
+	var_dump($manifest);
+	var_dump($fwc->createConsignment(FactoryAbastract::service('Shippment')->get(1), $manifest->ManifestID));
 }
 catch(Exception $ex)
 {
