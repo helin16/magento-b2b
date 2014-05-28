@@ -2,6 +2,7 @@
 
 require_once 'bootstrap.php';
 
+
 /// List all the Regional Franchises ///
 // try 
 // {
@@ -21,7 +22,17 @@ try
 	$fwc = FastWayConnector::getConnector(FactoryAbastract::service('Courier')->get(3));
 	$manifest =$fwc->createManifest();
 	var_dump($manifest);
-	var_dump($fwc->createConsignment(FactoryAbastract::service('Shippment')->get(1), $manifest->ManifestID));
+	$shippment = FactoryAbastract::service('Shippment')->get(1);
+	var_dump('createConsignment: ');
+	var_dump($consignemt = $fwc->createConsignment($shippment, $manifest->ManifestID));
+	var_dump('getConsignments: ');
+	var_dump($fwc->getConsignments($manifest->ManifestID));
+	var_dump('listOpenManifests: ');
+	var_dump($fwc->listOpenManifests());
+	var_dump('closeManifest: ');
+	var_dump($fwc->closeManifest($manifest->ManifestID));
+	var_dump('getTrackingURL: ');
+	var_dump($fwc->getTrackingURL($consignemt->LabelNumbers[0]));
 }
 catch(Exception $ex)
 {

@@ -15,3 +15,5 @@ class CourierModule
 		}
 	}
 }
+
+CourierModule::run();

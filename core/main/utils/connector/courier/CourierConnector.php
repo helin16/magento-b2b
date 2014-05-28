@@ -47,12 +47,34 @@ abstract class CourierConnector
 	/**
 	 * Creating a consignment note for the delivery
 	 * 
-	 * @param Shippment $shippment The Shippment
-	 * @param string $manifestId   The manifest id from the courier
+	 * @param Shippment $shippment  The Shippment
+	 * @param string    $manifestId The manifest id from the courier
 	 * 
 	 * @throws Exception
 	 */
 	public function createConsignment(Shippment &$shippment, $manifestId = '')
+	{
+		throw new Exception("This function(=" . __FUNCTION__ . ") should be overloaded!");
+	}
+	/**
+	 * Closing a manifest
+	 * 
+	 * @param string $manifestId The ID of a manifest
+	 * 
+	 * @throws Exception
+	 */
+	public function closeManifest($manifestId)
+	{
+		throw new Exception("This function(=" . __FUNCTION__ . ") should be overloaded!");
+	}
+	/**
+	 * Getting the tracking url for a label
+	 * 
+	 * @param string $label The lable that we are trying to track
+	 * 
+	 * @return string
+	 */
+	public function getTrackingURL($label)
 	{
 		throw new Exception("This function(=" . __FUNCTION__ . ") should be overloaded!");
 	}

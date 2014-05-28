@@ -34,7 +34,7 @@ class FastWayConnector extends CourierConnector
 		if(count($apiUrls) === 0)
 			throw new ConnectorException('Error from ' . __CLASS__ . ': no api url has been set for courier: ' . $this->_courier->getName());
 		$apiKeys =$this->_courier->getInfo(CourierInfoType::ID_API_KEY);
-		if(count($apiUrls) === 0)
+		if(count($apiKeys) === 0)
 			throw new ConnectorException('Error from ' . __CLASS__ . ': no api key has been set for courier: ' . $this->_courier->getName());
 		$accIds =$this->_courier->getInfo(CourierInfoType::ID_ACCOUNT_ID);
 		if(count($accIds) === 0)
@@ -70,26 +70,27 @@ class FastWayConnector extends CourierConnector
 		list($apiUrl, $apiKey, $accId) = $this->_getAPIInfos();
 		$url = str_replace('{method}', 'fastlabel/addconsignment', trim($apiUrl) );
 		
-		$items = array();
-		foreach($shippment->getOrder()->getOrderItems() as $item)
+		$itemsString = array();
+		foreach($shippment->getOrder()->getOrderItems() as $index => $item)
 		{
-			$items[] = array(
-				'Reference'  => $shippment->getOrder()->getOrderNo()
-				,'Quantity'  => 1
-				,'Weight'    => 20
-				,'Packaging' => 1
-				,'Length'    => ''
-				,'Width'    => ''
-				,'Height'    => ''
-			);
+			$itemString = array();
+			$itemString[] = "Items[$index].Reference=" . $shippment->getOrder()->getOrderNo();
+			$itemString[] = "Items[$index].Quantity=" . 1;
+			$itemString[] = "Items[$index].Weight=" . 1;
+			$itemString[] = "Items[$index].Packaging=" . 1;
+			$itemString[] = "Items[$index].Length=" . '';
+			$itemString[] = "Items[$index].Width=" .  '';
+			$itemString[] = "Items[$index].Height=" .  '';
+			$itemsString[] = implode('&', $itemString);
 		}
 		
 		$emails = $shippment->getOrder()->getInfo(OrderInfoType::ID_CUS_EMAIL);
 		$params = array(
 				'api_key'              => trim($apiKey)
 				,'UserID'              => trim($accId)
+				,'ManifestID'          => trim($manifestId)
 				//receiver's details
-				,'ContactName'         => trim($shippment->getContact())
+				,'ContactName'         => trim($shippment->getReceiver())
 				,'Address1'            => trim($shippment->getOrder()->getShippingAddr()->getStreet())
 				,'Suburb'              => trim($shippment->getOrder()->getShippingAddr()->getCity())
 				,'Postcode'            => trim($shippment->getOrder()->getShippingAddr()->getPostCode())
@@ -97,11 +98,74 @@ class FastWayConnector extends CourierConnector
 				,'ContactMobile'       => trim($shippment->getContact())
 				//instructions
 				,'SpecialInstruction1' => trim($shippment->getDeliveryInstructions())
-				//items
-				,'items'               => $items
+		);
+		$paramString = http_build_query($params) . '&' . implode('&', $itemsString);
+		$result = $this->_getJsonResult(ComScriptCURL::readUrl($url . '?' . $paramString, ComScriptCURL::CURL_TIMEOUT));
+		return $result;
+	}
+	/**
+	 * Getting the list of open manifests
+	 * 
+	 * @return unknown
+	 */
+	public function listOpenManifests()
+	{
+		list($apiUrl, $apiKey, $accId) = $this->_getAPIInfos();
+		$url = str_replace('{method}', 'fastlabel/list-open-manifests', trim($apiUrl) );
+		$params = array(
+				'api_key' => trim($apiKey)
 		);
 		$result = $this->_getJsonResult(ComScriptCURL::readUrl($url, ComScriptCURL::CURL_TIMEOUT, $params));
 		return $result;
+	}
+	/**
+	 * (non-PHPdoc)
+	 * @see CourierConnector::closeManifest()
+	 */
+	public function closeManifest($manifestId)
+	{
+		list($apiUrl, $apiKey, $accId) = $this->_getAPIInfos();
+		$url = str_replace('{method}', 'fastlabel/closemanifest', trim($apiUrl) );
+		$params = array(
+				'api_key'     => trim($apiKey)
+				,'UserID'     => trim($accId)
+				,'ManifestID' => trim($manifestId)
+		);
+		$result = $this->_getJsonResult(ComScriptCURL::readUrl($url, ComScriptCURL::CURL_TIMEOUT, $params));
+		return $result;
+	}
+	/**
+	 * Getting all the consignemts withina manifest
+	 * 
+	 * @param string $manifestId   The ID of a manifest
+	 * @param string $consignemtId The ID of the consignment[when empty, it will get all]
+	 * 
+	 * @return array
+	 */
+	public function getConsignments($manifestId, $consignemtId = '')
+	{
+		list($apiUrl, $apiKey, $accId) = $this->_getAPIInfos();
+		$url = str_replace('{method}', 'fastlabel/listconsignments', trim($apiUrl) );
+		$params = array(
+				'api_key'        => trim($apiKey)
+				,'UserID'        => trim($accId)
+				,'ManifestID'    => trim($manifestId)
+				,'ConsignmentID' => trim($consignemtId)
+		);
+		$result = $this->_getJsonResult(ComScriptCURL::readUrl($url, ComScriptCURL::CURL_TIMEOUT, $params));
+		return $result;
+	}
+	/**
+	 * (non-PHPdoc)
+	 * @see CourierConnector::getTrackingURL()
+	 */
+	public function getTrackingURL($label)
+	{
+		$trackUrls =$this->_courier->getInfo(CourierInfoType::ID_TRACK_URL);
+		if(count($trackUrls) === 0)
+			throw new ConnectorException('Error from ' . __CLASS__ . ': no trackUrls has been set for courier: ' . $this->_courier->getName());
+		$url = str_replace('{label}', trim($label), trim($trackUrls[0]) );
+		return $url;
 	}
 	
 // 	/**
