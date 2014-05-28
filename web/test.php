@@ -19,12 +19,14 @@ require_once 'bootstrap.php';
 /// List all the Regional Franchises ///
 try 
 {
-	$fwc = FastWayConnector::getConnector(FactoryAbastract::service('Courier')->get(3));
+	$fwc = CourierConnector::getConnector(FactoryAbastract::service('Courier')->get(3));
 	$manifest =$fwc->createManifest();
 	var_dump($manifest);
 	$shippment = FactoryAbastract::service('Shippment')->get(1);
 	var_dump('createConsignment: ');
 	var_dump($consignemt = $fwc->createConsignment($shippment, $manifest->ManifestID));
+// 	var_dump('removeManifest: ');
+// 	$fwc->removeManifest($manifest->ManifestID);
 	var_dump('getConsignments: ');
 	var_dump($fwc->getConsignments($manifest->ManifestID));
 	var_dump('listOpenManifests: ');

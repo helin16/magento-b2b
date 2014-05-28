@@ -16,6 +16,12 @@ class Courier extends InfoEntityAbstract
 	 */
 	private $name;
 	/**
+	 * The connector script's name
+	 * 
+	 * @var string
+	 */
+	private $connector;
+	/**
 	 * The courier code for magento to use
 	 * 
 	 * @var string
@@ -46,6 +52,29 @@ class Courier extends InfoEntityAbstract
 	public function setName($value) 
 	{
 	    $this->name = $value;
+	    return $this;
+	}
+	/**
+	 * Getter for connector
+	 *
+	 * @return string
+	 */
+	public function getConnector() 
+	{
+		if(!class_exists($this->connector))
+			throw new CoreException("System Error: " . $this->connector . " does NOT exsits!");
+	    return $this->connector;
+	}
+	/**
+	 * Setter for connector
+	 *
+	 * @param string $value The connector
+	 *
+	 * @return Courier
+	 */
+	public function setConnector($value) 
+	{
+	    $this->connector = $value;
 	    return $this;
 	}
 	/**
@@ -113,6 +142,7 @@ class Courier extends InfoEntityAbstract
 	{
 		DaoMap::begin($this, 'courier');
 		DaoMap::setStringType('name');
+		DaoMap::setStringType('connector');
 		DaoMap::setStringType('code');
 		DaoMap::setOneToMany('shippments', 'Shippment', 'c_shippments');
 		parent::__loadDaoMap();

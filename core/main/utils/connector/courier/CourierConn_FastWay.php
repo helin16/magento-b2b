@@ -1,11 +1,17 @@
 <?php
-class FastWayConnector extends CourierConnector
+class CourierConn_FastWay extends CourierConnector implements CourierConn
 {
 	public function __construct(Courier $courier)
 	{
 		parent::__construct($courier);	
 	}
-	
+	/**
+	 * parsing the result json string from fastway
+	 * 
+	 * @param string $data
+	 * 
+	 * @throws Exception
+	 */
 	private function _getJsonResult($data)
 	{
 		try 
@@ -157,7 +163,7 @@ class FastWayConnector extends CourierConnector
 	}
 	/**
 	 * (non-PHPdoc)
-	 * @see CourierConnector::getTrackingURL()
+	 * @see CourierConn::getTrackingURL()
 	 */
 	public function getTrackingURL($label)
 	{
@@ -166,6 +172,22 @@ class FastWayConnector extends CourierConnector
 			throw new ConnectorException('Error from ' . __CLASS__ . ': no trackUrls has been set for courier: ' . $this->_courier->getName());
 		$url = str_replace('{label}', trim($label), trim($trackUrls[0]) );
 		return $url;
+	}
+	/**
+	 * (non-PHPdoc)
+	 * @see CourierConn::removeManifest()
+	 */
+	public function removeManifest($manifestId)
+	{
+		list($apiUrl, $apiKey, $accId) = $this->_getAPIInfos();
+		$url = str_replace('{method}', 'fastlabel/removemanifest', trim($apiUrl) );
+		$params = array(
+				'api_key'        => trim($apiKey)
+				,'UserID'        => trim($accId)
+				,'ManifestID'    => trim($manifestId)
+		);
+		$result = $this->_getJsonResult(ComScriptCURL::readUrl($url, ComScriptCURL::CURL_TIMEOUT, $params));
+		return $this;
 	}
 	
 // 	/**

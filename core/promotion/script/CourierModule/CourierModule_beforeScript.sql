@@ -12,3 +12,7 @@ insert into `courierinfo` (`courierId`, `typeId`, `value`, `active`, `created`, 
 (3, 5, 'http://www.fastway.com.au/courier-services/track-your-parcel?l={label}', 1, NOW(), 1, NOW(), 1);
 
 ALTER TABLE `shippment` ADD `addressId` INT( 10 ) UNSIGNED NOT NULL DEFAULT '0' AFTER `receiver` ,ADD INDEX ( `addressId` ) ;
+
+ALTER TABLE `courier` ADD `connector` VARCHAR( 50 ) NOT NULL DEFAULT '' AFTER `code` , ADD INDEX ( `connector` );
+update courier set connector = 'CourierConn_Manual';
+update courier set connector = 'CourierConn_FastWay' where id = 3;
