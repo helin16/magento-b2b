@@ -218,6 +218,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 							'html': true,
 							'placement': 'auto'
 						});
+						
 						jQuery('#' + this.id).popover('show');
 					})
 				})
