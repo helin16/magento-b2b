@@ -28,11 +28,11 @@ class Menu extends TTemplateControl
 			$array['priceMatch'] = array('url' => '/pricematch.html', 'name' => 'Price Match');
 		if(AccessControl::canAccessOrderItemsPage(Core::getRole()) )
 			$array['orderitems'] = array('url' => '/orderitems.html', 'name' => 'OrderItems');
-		$html = "<ul class='mainMenu'>";
+		$html = "<ul class='nav navbar-nav'>";
 			foreach($array as $key => $item)
 			{
 				$activeClass = ($pageItem === $key ? 'active' : '');
-				$html .= "<li class='mainMenuItem'><a href='" . $item['url'] . "' class='" . $activeClass . "'>" . $item['name'] . "</a></li>";
+				$html .= "<li class='" . $activeClass . "'><a href='" . $item['url'] . "'>" . $item['name'] . "</a></li>";
 			}
 		$html .= "</ul>";
 		return $html;

@@ -74,9 +74,7 @@ abstract class BPCPageAbstract extends TPage
 	 */
 	protected function _loadPageJsClass()
 	{
-	    $this->getClientScript()->registerScriptFile('jquery', $this->publishFilePath(dirname(__FILE__) . DIRECTORY_SEPARATOR . 'jquery-1.10.1.min.js'));
 	    $this->getClientScript()->registerScriptFile('BPCPageJs', $this->publishFilePath(dirname(__FILE__) . DIRECTORY_SEPARATOR . 'BPCPageAbstract.1.js'));
-	    $this->getClientScript()->registerBeginScript('jquery.noConflict', 'jQuery.noConflict();');
 	    return $this;
 	}
 	/**

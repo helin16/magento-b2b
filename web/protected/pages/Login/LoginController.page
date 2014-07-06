@@ -1,27 +1,26 @@
 <%@MasterClass="Application.layout.BlankLayout"%>
 <com:TContent ID="MainContent">
-	<div class="pagewrapper login container LoginPanel">
-		<section id="content">
-			<div class="form">
-				<h1>Login</h1>
-				<com:TPanel ID='errorDiv' CssClass="errorMsgDiv msgDiv"><com:TLabel id="errorMsg" CssClass="msg"/></com:TPanel>
-				<div>
-					<com:TTextBox id="username" CssClass="username" Attributes.placeholder="Username" Attributes.required="Username required!"/>
-				</div>
-				<div>
-					<com:TTextBox id="password" CssClass="password" Attributes.type="password" Attributes.placeholder="Password" Attributes.required="Password required!"" />
-				</div>
-				<div>
-					<com:TButton Text="Log in" onClick="page.login" />
-					<!--  <a href="#">Lost your password?</a> <a href="#">Register</a> -->
-				</div>
-			</div>
-			<!-- form -->
-			<div class="button">
-				<%$ AppTitle %>
-			</div>
-			<!-- button -->
-		</section>
-		<!-- content -->
-	</div>
+    <div class="container">
+        <div class="form-signin" role="form">
+	        <h3 class="form-group form-signin-heading">Please sign in:</h3>
+	        <div class="form-group input-group input-group-lg" title="Username">
+	            <span class="input-group-addon"><span class="glyphicon glyphicon-user"></span></span>
+	           <com:TTextBox id="username" CssClass="form-control" Attributes.placeholder="Username" Attributes.required="Username required!"/>
+	        </div>
+	        <div class="form-group input-group input-group-lg" title="Password">
+	            <span class="input-group-addon"><span class="glyphicon glyphicon-lock"></span></span>
+	           <com:TTextBox id="password" CssClass="form-control" Attributes.type="password" Attributes.placeholder="Password" Attributes.required="Password required!"" />
+	        </div>
+	        <com:TPanel id='errorDiv' CssClass='form-group input-group' Attributes.role="alert" >
+                <com:TLabel id='errorMsg' CssClass='label label-danger'/>
+            </com:TPanel>
+	        <div class="form-group input-group input-group-lg">
+	           <com:TButton CssClass="btn btn-lg btn-primary btn-block" Text="Log in" onClick="page.login" />
+	        </div>
+	        
+	        <div class="row text-center">
+               <small><%$ AppTitle %></small>
+            </div>
+	     </div>
+    </div>
 </com:TContent>
