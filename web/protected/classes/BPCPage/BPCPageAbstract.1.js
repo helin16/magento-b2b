@@ -1,1 +1,108 @@
-var BPCPageJs=new Class.create();BPCPageJs.prototype={_ajaxRequest:null,callbackIds:{},initialize:function(){},setCallbackId:function(a,b){this.callbackIds[a]=b;return this},getCallbackId:function(a){if(this.callbackIds[a]===undefined||this.callbackIds[a]===null){throw"Callback ID is not set for:"+a}return this.callbackIds[a]},postAjax:function(d,c,e,b){var a={};a.me=this;a.me._ajaxRequest=new Prado.CallbackRequest(d,e);a.me._ajaxRequest.setCallbackParameter(c);a.timeout=(b||30000);if(a.timeout<30000){a.timeout=30000}a.me._ajaxRequest.setRequestTimeOut(a.timeout);a.me._ajaxRequest.dispatch();return a.me._ajaxRequest},abortAjax:function(){if(tmp.me._ajaxRequest!==null){tmp.me._ajaxRequest.abort()}},getResp:function(b,a,d){var c={};c.expectNonJSONResult=(a!==true?false:true);c.result=b;if(c.expectNonJSONResult===true){return c.result}if(!c.result||!c.result.isJSON()){return}c.result=c.result.evalJSON();if(c.result.errors.size()!==0){c.error="Error: \n\n"+c.result.errors.join("\n");if(d===true){throw c.error}else{return alert(c.error)}}return c.result.resultData},getCurrency:function(f,c,b,a,e){var d={};d.decimal=(isNaN(b=Math.abs(b))?2:b);d.dollar=(c==undefined?"$":c);d.decimalPoint=(a==undefined?".":a);d.thousandPoint=(e==undefined?",":e);d.sign=(f<0?"-":"");d.Int=parseInt(f=Math.abs(+f||0).toFixed(d.decimal))+"";d.j=(d.j=d.Int.length)>3?d.j%3:0;return d.dollar+d.sign+(d.j?d.Int.substr(0,d.j)+d.thousandPoint:"")+d.Int.substr(d.j).replace(/(\d{3})(?=\d)/g,"$1"+d.thousandPoint)+(d.decimal?d.decimalPoint+Math.abs(f-d.Int).toFixed(d.decimal).slice(2):"")},keydown:function(c,a,b){if(!((c.which&&c.which==13)||(c.keyCode&&c.keyCode==13))){if(typeof(b)==="function"){b()}return true}if(typeof(a)==="function"){a()}return false}};
+/**
+ * The FrontEndPageAbstract Js file
+ */
+var BPCPageJs = new Class.create();
+BPCPageJs.prototype = {
+		
+	_ajaxRequest: null
+		
+	//the callback ids
+	,callbackIds: {}
+
+	//constructor
+	,initialize: function () {}
+	
+	,setCallbackId: function(key, callbackid) {
+		this.callbackIds[key] = callbackid;
+		return this;
+	}
+	
+	,getCallbackId: function(key) {
+		if(this.callbackIds[key] === undefined || this.callbackIds[key] === null)
+			throw 'Callback ID is not set for:' + key;
+		return this.callbackIds[key];
+	}
+	
+	//posting an ajax request
+	,postAjax: function(callbackId, data, requestProperty, timeout) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.me._ajaxRequest = new Prado.CallbackRequest(callbackId, requestProperty);
+		tmp.me._ajaxRequest.setCallbackParameter(data);
+		tmp.timeout = (timeout || 30000);
+		if(tmp.timeout < 30000) {
+			tmp.timeout = 30000;
+		}
+		tmp.me._ajaxRequest.setRequestTimeOut(tmp.timeout);
+		tmp.me._ajaxRequest.dispatch();
+		return tmp.me._ajaxRequest;
+	}
+	
+	,abortAjax: function() {
+		if(tmp.me._ajaxRequest !== null)
+			tmp.me._ajaxRequest.abort();
+	}
+	
+	//parsing an ajax response
+	,getResp: function (response, expectNonJSONResult, noAlert) {
+		var tmp = {};
+		tmp.expectNonJSONResult = (expectNonJSONResult !== true ? false : true);
+		tmp.result = response;
+		if(tmp.expectNonJSONResult === true)
+			return tmp.result;
+		if(!tmp.result || !tmp.result.isJSON()) {
+			return;
+//			tmp.error = 'Invalid JSON string: ' + tmp.result;
+//			if (noAlert === true)
+//				throw tmp.error;
+//			else 
+//				return alert(tmp.error);
+		}
+		tmp.result = tmp.result.evalJSON();
+		if(tmp.result.errors.size() !== 0) {
+			tmp.error = 'Error: \n\n' + tmp.result.errors.join('\n');
+			if (noAlert === true)
+				throw tmp.error;
+			else 
+				return alert(tmp.error);
+		}
+		return tmp.result.resultData;
+	}
+	//format the currency
+	,getCurrency: function(number, dollar, decimal, decimalPoint, thousandPoint) {
+		var tmp = {};
+		tmp.decimal = (isNaN(decimal = Math.abs(decimal)) ? 2 : decimal);
+		tmp.dollar = (dollar == undefined ? "$" : dollar);
+		tmp.decimalPoint = (decimalPoint == undefined ? "." : decimalPoint);
+		tmp.thousandPoint = (thousandPoint == undefined ? "," : thousandPoint);
+		tmp.sign = (number < 0 ? "-" : "");
+		tmp.Int = parseInt(number = Math.abs(+number || 0).toFixed(tmp.decimal)) + "";
+		tmp.j = (tmp.j = tmp.Int.length) > 3 ? tmp.j % 3 : 0;
+		return tmp.dollar + tmp.sign + (tmp.j ? tmp.Int.substr(0, tmp.j) + tmp.thousandPoint : "") + tmp.Int.substr(tmp.j).replace(/(\d{3})(?=\d)/g, "$1" + tmp.thousandPoint) + (tmp.decimal ? tmp.decimalPoint + Math.abs(number - tmp.Int).toFixed(tmp.decimal).slice(2) : "");
+	}
+	//do key enter
+	,keydown: function (event, enterFunc, nFunc) {
+		//if it's not a enter key, then return true;
+		if(!((event.which && event.which == 13) || (event.keyCode && event.keyCode == 13))) {
+			if(typeof(nFunc) === 'function') {
+				nFunc();
+			}
+			return true;
+		}
+		
+		if(typeof(enterFunc) === 'function') {
+			enterFunc();
+		}
+		return false;
+	}
+	//getting the error message box
+	,getErrBox: function(msg) {
+		return new Element('div', {'class': 'alert alert-danger alert-dismissible', 'role': 'alert'})
+		.insert({'bottom': new Element('button', {'class': 'close', 'data-dismiss': 'alert'})
+			.insert({'bottom': new Element('span', {'aria-hidden': 'true'}).update('&times;') })
+			.insert({'bottom': new Element('span', {'class': 'sr-only'}).update('Close') })
+		})
+		.insert({'bottom': new Element('strong').update('ERROR: ') })
+		.insert({'bottom': msg })
+	}
+};

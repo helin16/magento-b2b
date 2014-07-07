@@ -124,6 +124,18 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					if(tmp.result.pageStats.pageNumber < tmp.result.pageStats.totalPages)
 						tmp.resultDiv.insert({'bottom': tmp.me._getNextPageBtn().addClassName('paginWrapper') });
 					
+					tmp.resultDiv.getElementsBySelector('.newPopover').each(function(item) {
+						item.removeClassName('newPopover');
+						tmp.rowData = item.up('.list-group-item').retrieve('data');
+						jQuery('#' + item.id).popover({
+							'container': 'body',
+							'title': 'Shipping Address for: ' + tmp.rowData.orderNo,
+							'content':  tmp.me._getAddrDiv(tmp.rowData.address.shipping),
+							'html': true,
+							'placement': 'auto'
+						})
+					})
+					
 				} catch (e) {
 					alert(e);
 				}
@@ -148,14 +160,20 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 	,_getAddrDiv: function(addr) {
 		var tmp = {};
 		tmp.me = this;
-		return '<dl class="dl-horizontal">' +
-					'<dt>Contact Name:</dt>' + 
-					'<dd>' + addr.contactName + '</dt>' + 
-					'<dt>Contact No.:</dt>' +
-					'<dd>' + addr.contactName + '</dt>' + 
-					'<dt>Address:</dt>' + 
-					'<dd>' + addr.full + '</dt>' +
-				'</dl>'
+		return '<div class="dl-horizontal">' +
+					'<div class="row">' +
+						'<div class="col-xs-3"><strong>Name:</strong></div>' + 
+						'<div class="col-xs-9">' + addr.contactName + '</div>' + 
+					'</div>' +
+					'<div class="row">' +
+						'<div class="col-xs-3"><strong>Phone:</strong></div>' + 
+						'<div class="col-xs-9">' + addr.contactNo + '</div>' + 
+					'</div>' +
+					'<div class="row">' +
+						'<div class="col-xs-3"><strong>Address:</strong></div>' + 
+						'<div class="col-xs-9">' + addr.full + '</div>' + 
+					'</div>' +
+				'</div>'
 		;
 	}
 	
@@ -208,19 +226,8 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 						tmp.me._openDetailPage(row);
 					})
 				})
-				.insert({'bottom': new Element('span', {'id': 'shipping-btn-' + row.id, 'class': 'btn btn-default pull-right visible-xs visible-sm visible-md visible-lg'})
+				.insert({'bottom': new Element('span', {'id': 'shipping-btn-' + row.id, 'class': 'btn btn-default pull-right visible-xs visible-sm visible-md visible-lg newPopover'})
 					.update('<span class="glyphicon glyphicon-plane" title="Click to See Shipping"></span>')
-					.observe('click', function() {
-						jQuery('#' + this.id).popover({
-							'container': 'body',
-							'title': 'Shipping Address for: ' + row.orderNo,
-							'content':  tmp.me._getAddrDiv(row.address.shipping),
-							'html': true,
-							'placement': 'auto'
-						});
-						
-						jQuery('#' + this.id).popover('show');
-					})
 				})
 			})
 			.insert({'bottom': new Element('div').update('<span class="glyphicon glyphicon-user" title="Customer Name"></span>: ' + tmp.custName) })
@@ -291,21 +298,21 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.me = this;
 		tmp.isTitle = (isTitle || false);
 		
-		tmp.row = new Element('li', {'class': 'list-group-item' + (tmp.isTitle === true ? ' disabled' : ''), 'order_id' : row.id}).store('data', row)
+		tmp.row = new Element('div', {'class': 'list-group-item ' + (tmp.isTitle === true ? 'disabled' : 'order_item'), 'order_id' : row.id}).store('data', row)
 			.insert({'bottom': new Element('div', {'class': 'row'})
-				.insert({'bottom': new Element('span', {'class': 'col-sm-5 col-xs-9 orderInfo'}).update(
+				.insert({'bottom': new Element('div', {'class': 'col-sm-4 col-xs-9 orderInfo'}).update(
 					tmp.isTitle ? row.orderNo : tmp.me._getOrderInfoCell(row)
 				) })
-				.insert({'bottom': new Element('span', {'class': 'col-sm-1 col-xs-3 status', 'order_status': row.status.name}).update(
+				.insert({'bottom': new Element('div', {'class': 'col-sm-2 col-xs-3 status col-middle', 'order_status': row.status.name}).update(
 						row.status ? row.status.name : ''
 				) })
-				.insert({'bottom': new Element('span', {'class': 'col-sm-2 hidden-xs payment text-right'}).update(
+				.insert({'bottom': new Element('div', {'class': 'col-sm-2 hidden-xs payment text-right'}).update(
 					tmp.isTitle ? 'Payments' : tmp.me._getPaymentCell(row)
 				) })		
-				.insert({'bottom': new Element('span', {'class': 'col-sm-2 hidden-xs purchasing text-right'}).update(
+				.insert({'bottom': new Element('div', {'class': 'col-sm-2 hidden-xs purchasing text-right'}).update(
 						tmp.isTitle ? 'Purchasing' : tmp.me._getPurchasingCell(row)
 				) })
-				.insert({'bottom': new Element('span', {'class': 'col-sm-2 hidden-xs warehouse text-right'}).update(
+				.insert({'bottom': new Element('div', {'class': 'col-sm-2 hidden-xs warehouse text-right'}).update(
 						tmp.isTitle ? 'Warehouse' : tmp.me._getWarehouseCell(row)
 				) })
 			});

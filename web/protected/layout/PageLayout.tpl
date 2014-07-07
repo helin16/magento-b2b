@@ -26,13 +26,12 @@
         <nav class="navbar navbar-default navbar-inverse navbar-static-top header" role="navigation">
             <com:Application.layout.Header.Header ID="Header" />
         </nav>
-        <div class="content container">
+        <div class="pageContent container">
             <com:TContentPlaceHolder ID="MainContent" />
         </div>
 		<nav class="footer" role="navigation">
 			<com:Application.layout.Footer.Footer ID="Footer" />
 		</nav>
-        </div>
     </com:TForm>
 </body>
 </html>

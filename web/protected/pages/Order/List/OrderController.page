@@ -3,11 +3,11 @@
 	<com:Application.controls.chosen.Chosen />
 	<com:TCallback ID="getOrdersBtn" onCallBack="Page.getOrders" />
 	<div class="row">
-	   <div class="col-md-10">
+	   <div class="col-md-9">
 	       <div class="panel panel-default searchPanel">
 	           <div class="panel-heading">
 	               <label for="showSearch">Show Search Criteria?</label>
-	               <input type="checkbox" id="showSearch" onclick="$(this).up('.searchPanel').down('.panel-body').toggle();" checked/>
+	               <input type="checkbox" id="showSearch" onclick="$(this).up('.searchPanel').down('.panel-body').toggle();"/>
 	           </div>
 	           <div class="panel-body" role="form" id='searchDiv' style="display: none;">
 	               <div class='row'>
@@ -61,10 +61,10 @@
 			     <div class="panel-heading">
                    <span id='total_no_of_items'>0</span> Orders Found!
                  </div>
-                 <ul class="list-group" id="resultDiv"></ul>
+                 <div class="list-group" id="resultDiv"></div>
 			</div>
 	   </div>
-	   <div class="col-md-2">
+	   <div class="col-md-3">
 	       <com:Application.controls.latest_eta_box.LatestETAPanel />
 	   </div>
 	</div>

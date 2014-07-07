@@ -2,7 +2,5 @@
 <com:TContent ID="MainContent">
     <com:Application.controls.fancybox.FancyBox />
     <com:TCallback ID="saveUserBtn" OnCallback="Page.saveUser" />
-	<div class="pagewrapper userdetails container">
-		<div class="contentDiv" id="savePanel"></div>
-    </div>
+	<div class="container" id="savePanel"></div>
 </com:TContent>

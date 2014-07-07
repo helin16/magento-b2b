@@ -1,3 +1,18 @@
+/* vertical alignment styles */
+.v-top {
+    vertical-align:top;
+}
+.v-middle {
+    vertical-align:middle;
+}
+.v-bottom {
+    vertical-align:bottom;
+}
+
+.pageContent {
+	min-height: 500px;
+}
+
 .form-signin {
 	margin: 0 auto;
     max-width: 330px;
@@ -10,4 +25,31 @@
     padding: 10px 0;
     height: 60px;
     width: 100%;
+}
+
+.list-group-item.header {
+	font-weight: bold;
+}
+
+.order_item [order_status] {
+	min-height: 80px;
+}
+.order_item [order_status="INSUFFICIENT STOCK"] {
+	background-color: yellow;
+	color: black;
+}
+.order_item [order_status="ETA"],
+.order_item [order_status="STOCK CHECKED"] {
+	background-color: orange;
+	color: white;
+}
+.order_item [order_status="PICKED"],
+.order_item [order_status="SHIPPED"] {
+	background-color: green;
+	color: white;
+}
+.order_item [order_status="CANCELLED"],
+.order_item [order_status="ON HOLD"] {
+	background-color: red;
+	color: white;
 }

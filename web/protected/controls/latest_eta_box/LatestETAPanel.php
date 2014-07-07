@@ -41,7 +41,7 @@ class LatestETAPanel extends TTemplateControl
 		{
 			$js = 'if(typeof(LatestETAPanel) !== "undefined" && pageJs) {';
 				$js .= 'var lepJs = new LatestETAPanel(pageJs); ';
-				$js .= 'lepJs.resultDiv = "' . $this->latest_eta_result_div->getClientID() . '";';
+				$js .= 'lepJs.resultDiv = "dtw_eta_' . $this->getId() . '";';
 				$js .= 'lepJs.callBackId = "'.$this->getLatestEtaBtn->getUniqueID().'";';
 				$js .= 'lepJs.setPagination('.$this->pageNumber.', '.$this->pageSize.');';
 				$js .= 'lepJs.loadLatestETA();';
