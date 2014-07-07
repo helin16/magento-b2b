@@ -39,7 +39,7 @@ class PriceMatchController extends BPCPageAbstract
 		
 		$js = parent::_getEndJs();
 		// Setup the dnd listeners.
-		$js .= 'pageJs.dropShowDiv.dropDiv = "drop_file";';
+		$js .= 'pageJs.dropShowDiv.dropDiv = "drop_file_div";';
 		$js .= 'pageJs.dropShowDiv.showDiv = "show_file";';
 		$js .= 'pageJs.dropShowDiv.resultDiv = "price_compare";';
 		$js .= 'pageJs.companyNameArray = '.json_encode($companyArray).';';

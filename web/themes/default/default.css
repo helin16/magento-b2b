@@ -53,3 +53,7 @@
 	background-color: red;
 	color: white;
 }
+
+.drop_file_div:hover {
+	border-color: black;
+}

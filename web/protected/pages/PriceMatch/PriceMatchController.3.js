@@ -39,6 +39,18 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		saveAs(tmp.blob, tmp.fileName);
 		return tmp.me;
 	}
+	
+	,genTemplate: function() {
+		var tmp = {};
+		tmp.me = this;
+		tmp.data = [];
+		tmp.data.push(tmp.me.csvFileLineFormat.join(', ') + '\n');
+		tmp.now = new Date();
+		tmp.fileName = 'pricematch_template_' + tmp.now.getFullYear() + '_' + tmp.now.getMonth() + '_' + tmp.now.getDate() + '_' + tmp.now.getHours() + '_' + tmp.now.getMinutes() + '_' + tmp.now.getSeconds() + '.csv';
+		tmp.blob = new Blob(tmp.data, {type: "text/csv;charset=utf-8"});
+		saveAs(tmp.blob, tmp.fileName);
+		return tmp.me;
+	}
 		
 	,parseCSVFile: function(lines) {
 		var tmp = {};
@@ -110,15 +122,11 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		
 		/// clear and reset the total number of lines processed ///
 		tmp.me.totalLines = 0;
-		
 		/// reset the centralized file array ///
 		tmp.me.allFileLineArray = [];
 		
 		tmp.files = evt.dataTransfer.files;
 		tmp.validFiles = [];
-		
-		$(tmp.me.dropShowDiv.showDiv).update('');
-		$(tmp.me.dropShowDiv.resultDiv).update('');
 		
 		for(tmp.i = 0, tmp.f; tmp.f = tmp.files[tmp.i]; tmp.i++) 
 		{
