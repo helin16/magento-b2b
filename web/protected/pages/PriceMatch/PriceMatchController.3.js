@@ -1,1 +1,327 @@
-var PageJs=new Class.create();PageJs.prototype=Object.extend(new BPCPageJs(),{dropShowDiv:{dropDiv:"",showDiv:"",resultDiv:""},_acceptableTypes:["csv"],_fileReader:null,csvSeperator:",",csvFileLineFormat:["sku","price"],csvNewLineSeperator:"\r\n",allFileLineArray:[],companyNameArray:[],totalLines:0,genCSV:function(b){var a={};a.me=this;if(!$(a.me.dropShowDiv.resultDiv)){return a.me}a.data=[];a.i=0;$(a.me.dropShowDiv.resultDiv).getElementsBySelector(".row").each(function(c){a.originalData=c.retrieve("data");a.csvRow=a.originalData.sku+", "+a.originalData.myPrice+", "+a.originalData.minPrice+", "+a.originalData.priceDiff;a.originalData.data.each(function(d){a.csvRow=a.csvRow+", "+(a.i===0?d.company:d.price)});a.csvRow=a.csvRow+"\n";a.data.push(a.csvRow);a.i=a.i*1+1});a.now=new Date();a.fileName="pricematch_"+a.now.getFullYear()+"_"+a.now.getMonth()+"_"+a.now.getDate()+"_"+a.now.getHours()+"_"+a.now.getMinutes()+"_"+a.now.getSeconds()+".csv";a.blob=new Blob(a.data,{type:"text/csv;charset=utf-8"});saveAs(a.blob,a.fileName);return a.me},parseCSVFile:function(a){var b={};b.me=this;b.outputArray=[];b.linesArray=a.split(b.me.csvNewLineSeperator);b.linesArray.each(function(c){c=c.strip();if((c.blank()||c===null||c==="")){}else{b.tmpLineArray={};b.lineArray=c.split(b.me.csvSeperator);for(b.i=0;b.i<b.me.csvFileLineFormat.size();b.i++){b.tmpLineArray[b.me.csvFileLineFormat[b.i]]=(b.lineArray[b.i]!==undefined?b.lineArray[b.i]:"")}b.outputArray.push(b.tmpLineArray)}});return b.outputArray},showAdminCompanies:function(){jQuery.fancybox({width:"80%",height:"90%",autoScale:false,autoDimensions:false,fitToView:false,autoSize:false,type:"iframe",href:"/pricematchcompanies.html",beforeClose:function(){window.location=document.URL}})},initializeFileHandler:function(){var a={};a.me=this;$(a.me.dropShowDiv.dropDiv).observe("dragover",function(b){a.me.handleDragOver(b)}).observe("drop",function(b){a.me.handleFileSelect(b)});return a.me},handleDragOver:function(a){var b={};b.me=this;a.stopPropagation();a.preventDefault();a.dataTransfer.dropEffect="copy"},handleFileSelect:function(a){var b={};b.me=this;a.stopPropagation();a.preventDefault();b.me.totalLines=0;b.me.allFileLineArray=[];b.files=a.dataTransfer.files;b.validFiles=[];$(b.me.dropShowDiv.showDiv).update("");$(b.me.dropShowDiv.resultDiv).update("");for(b.i=0,b.f;b.f=b.files[b.i];b.i++){b.success=((b.extension=b.f.name.split(".").pop())!==""&&b.me._acceptableTypes.indexOf(b.extension.toLowerCase())>-1);if(b.success){b.msgTxt="File Name:"+b.f.name+"Accepted";b.validFiles.push({index:b.i,file:b.f})}else{b.msgTxt=b.f.name+" Error: Only Acceptable File Extension are "+b.me._acceptableTypes.join(", ")}$(b.me.dropShowDiv.showDiv).insert({bottom:new Element("div",{"class":"msgDiv "+(!b.success?"errorMsgDiv":"okMsgDiv"),file_sequence:b.i}).update(new Element("div",{"class":"msg"}).update(b.msgTxt))})}if(b.validFiles.size()===0){alert("NO VALID FILES UPLOADED!!! PLS TRY AGAIN");return}b.allFileLineArray=b.me._readValidCSVFiles(b.validFiles);return b.me},_generatePriceRowForProduct:function(a){var b={};b.me=this;b.ppArray=a;if(b.ppArray.sku===""||b.ppArray.sku===undefined||b.ppArray.sku===null||b.ppArray.sku.blank()){return b.me}b.rowDiv=new Element("div",{"class":"row"}).insert({bottom:new Element("span",{"class":"cell sku "+((b.ppArray.searchURL&&!b.ppArray.searchURL.blank())?"cuspntr":"")}).update(b.ppArray.sku).observe("click",function(){if(b.ppArray.searchURL&&!b.ppArray.searchURL.blank()){window.open(b.ppArray.searchURL.strip())}})}).insert({bottom:new Element("span",{"class":"cell myPrice"}).update(isNaN(b.ppArray.myPrice)?b.ppArray.myPrice:b.me.getCurrency(b.ppArray.myPrice))}).insert({bottom:new Element("span",{"class":"cell priceDiff "+(isNaN(b.ppArray.priceDiff)||b.ppArray.priceDiff==0?"":(b.ppArray.priceDiff>0?"overmin":"undermin"))}).update(isNaN(b.ppArray.priceDiff)?b.ppArray.priceDiff:b.me.getCurrency(b.ppArray.priceDiff))}).insert({bottom:new Element("span",{"class":"cell minPrice"}).update(isNaN(b.ppArray.minPrice)?b.ppArray.minPrice:b.me.getCurrency(b.ppArray.minPrice))});b.ppArray.data.each(function(c){if((c.price.blank()||c.price===""||c.price===null||c.price===undefined)&&(c.priceURL.blank()||c.priceURL===""||c.priceURL===null||c.priceURL===undefined)){b.rowDiv.insert({bottom:new Element("span",{"class":"cell company"}).update(c.company)})}else{b.url=c.priceURL.strip();b.hasUrl=(b.url!==""&&b.url!==null&&b.url!==undefined);b.rowDiv.insert({bottom:new Element("span",{"class":"cell company "+(b.hasUrl===true?"cuspntr":"")}).update(c.price).observe("click",function(){if(!c.priceURL.strip().blank()){window.open(c.priceURL.strip())}})})}});b.rowDiv.store("data",b.ppArray);return b.rowDiv},_checkLastLine:function(c,a){var b={};b.me=this;b.lineNo=c;if(b.lineNo>=b.me.totalLines){$(b.me.dropShowDiv.dropDiv).show();a.remove();$(b.me.dropShowDiv.resultDiv).insert({bottom:new Element("span",{"class":"button"}).update("Output To CSV").observe("click",function(){b.me.genCSV(this)})})}return this},_loadProductLineItems:function(){var a={};a.me=this;$(a.me.dropShowDiv.dropDiv).hide();$(a.me.dropShowDiv.showDiv).update("");a.headerCompanyArray=[];a.me.companyNameArray.each(function(b){a.headerCompanyArray.push({price:"",priceURL:"",company:b})});a.spinBar=new Element("span",{"class":"inlineblock loading"});$(a.me.dropShowDiv.resultDiv).update("").insert({bottom:a.me._generatePriceRowForProduct({sku:"SKU",minPrice:"Min Price",myPrice:"My Price",priceDiff:"Price Diff.",data:a.headerCompanyArray}).addClassName("header")}).insert({after:a.spinBar});a.lineNo=0;a.me.allFileLineArray.each(function(b){b.fileContent.each(function(c){if(c.sku.blank()){a.lineNo=a.lineNo*1+1;a.me._checkLastLine(a.lineNo,a.spinBar);return}a.me.postAjax(a.me.getCallbackId("getAllPricesForProduct"),{sku:c.sku,price:c.price},{onLoading:function(d,e){},onSuccess:function(d,g){try{a.result=a.me.getResp(g,false,true);if(!a.result){return}if(a.result.items.sku!==""&&a.result.items.sku!==undefined&&a.result.items.sku!==null&&!a.result.items.sku.blank()){$(a.me.dropShowDiv.resultDiv).insert({bottom:a.me._generatePriceRowForProduct(a.result.items)})}a.lineNo=a.lineNo*1+1;a.me._checkLastLine(a.lineNo,a.spinBar)}catch(f){alert(f)}}})})});return a.me},_allFileLoadFinished:function(){var a={};a.me=this;if(a.me.allFileLineArray.size()===0){alert("EMPTY FILE(s) UPLOADED!!! PLS TRY AGAIN");return}$(a.me.dropShowDiv.showDiv).insert({bottom:new Element("span",{"class":"button"}).update("Start Load").observe("click",function(){a.me._loadProductLineItems()})});return a.me},_readSingleCSVFile:function(d,b,a){var c={};c.me=this;c.reader=new FileReader();c.reader.onload=function(e){c.contents=e.target.result;c.fileArray=c.me.parseCSVFile(c.contents);$(c.me.dropShowDiv.showDiv).getElementsBySelector("[file_sequence="+d.index+"]")[0].insert({bottom:new Element("div",{"class":"msg"}).update("Loaded Successfully")});$(c.me.dropShowDiv.showDiv).getElementsBySelector("[file_sequence="+d.index+"]")[0].store(c.fileArray);if(c.fileArray.size()>0){c.me.allFileLineArray.push({fileIndex:d.index,fileName:d.file.name,fileContent:c.fileArray});c.me.totalLines=(c.me.totalLines*1)+c.fileArray.size()}b=(b*1)+1;if(a.size()>b){c.me._readSingleCSVFile(a[b],b,a)}else{c.me._allFileLoadFinished()}};c.reader.readAsText(d.file);return c.me},_readValidCSVFiles:function(a){var b={};b.me=this;b.me._readSingleCSVFile(a[0],0,a);return b.me}});
+/**
+ * The page Js file
+ */
+var PageJs = new Class.create();
+PageJs.prototype = Object.extend(new BPCPageJs(), {
+	
+	dropShowDiv: {'dropDiv': '', 'showDiv': '', 'resultDiv': ''}
+	,_acceptableTypes: ['csv']
+	,_fileReader: null
+	,csvSeperator: ','
+	,csvFileLineFormat: ['sku', 'price']
+	,csvNewLineSeperator: '\r\n'
+	,allFileLineArray: []
+	,companyNameArray: []
+	,totalLines: 0
+	
+	,genCSV: function(btn) {
+		var tmp = {};
+		tmp.me = this;
+		if(!$(tmp.me.dropShowDiv.resultDiv))
+			return tmp.me;
+		
+		//collect data
+		tmp.data = [];
+		tmp.i = 0;
+		$(tmp.me.dropShowDiv.resultDiv).getElementsBySelector('.row').each(function(row){
+			tmp.originalData = row.retrieve('data');
+			tmp.csvRow = tmp.originalData.sku + ', ' + tmp.originalData.myPrice + ', ' + tmp.originalData.minPrice + ', ' + tmp.originalData.priceDiff;
+			tmp.originalData.data.each(function(compData) {
+				tmp.csvRow = tmp.csvRow + ', ' + (tmp.i === 0 ? compData.company : compData.price);
+			})
+			tmp.csvRow = tmp.csvRow + '\n';
+			tmp.data.push(tmp.csvRow);
+			tmp.i = tmp.i * 1 + 1;
+		});
+		tmp.now = new Date();
+		tmp.fileName = 'pricematch_' + tmp.now.getFullYear() + '_' + tmp.now.getMonth() + '_' + tmp.now.getDate() + '_' + tmp.now.getHours() + '_' + tmp.now.getMinutes() + '_' + tmp.now.getSeconds() + '.csv';
+		tmp.blob = new Blob(tmp.data, {type: "text/csv;charset=utf-8"});
+		saveAs(tmp.blob, tmp.fileName);
+		return tmp.me;
+	}
+		
+	,parseCSVFile: function(lines) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.outputArray = [];
+		tmp.linesArray = lines.split(tmp.me.csvNewLineSeperator);
+		tmp.linesArray.each(function(line) {
+			line = line.strip();
+			if((line.blank() || line === null || line === ''))
+			{
+			}	
+			else
+			{
+				tmp.tmpLineArray = {};
+				tmp.lineArray = line.split(tmp.me.csvSeperator);
+				for(tmp.i = 0; tmp.i < tmp.me.csvFileLineFormat.size(); tmp.i++)
+					tmp.tmpLineArray[tmp.me.csvFileLineFormat[tmp.i]] = (tmp.lineArray[tmp.i] !== undefined ? tmp.lineArray[tmp.i] : '');
+				
+				tmp.outputArray.push(tmp.tmpLineArray);
+			}	
+		});
+		return tmp.outputArray;
+	}	
+	
+	,showAdminCompanies: function() {
+		jQuery.fancybox({
+			'width'			: '80%',
+			'height'		: '90%',
+			'autoScale'     : false,
+			'autoDimensions': false,
+			'fitToView'     : false,
+			'autoSize'      : false,
+			'type'			: 'iframe',
+			'href'			: '/pricematchcompanies.html',
+			'beforeClose'	: function() {
+				window.location = document.URL;
+			}
+ 		});
+	}
+	
+	,initializeFileHandler: function() {
+		var tmp = {};
+		tmp.me = this;
+		
+		$(tmp.me.dropShowDiv.dropDiv).observe('dragover', function(event) {
+				tmp.me.handleDragOver(event);
+			})
+			.observe('drop', function(event) {
+				tmp.me.handleFileSelect(event);
+			});
+		
+		return tmp.me;
+	}
+
+	,handleDragOver: function(evt) {
+		var tmp = {};
+		tmp.me = this;
+		evt.stopPropagation();
+		evt.preventDefault();
+		
+		evt.dataTransfer.dropEffect = 'copy';
+	}
+	
+	,handleFileSelect: function(evt) {
+		var tmp = {};
+		tmp.me = this;
+		evt.stopPropagation();
+		evt.preventDefault();
+		
+		/// clear and reset the total number of lines processed ///
+		tmp.me.totalLines = 0;
+		
+		/// reset the centralized file array ///
+		tmp.me.allFileLineArray = [];
+		
+		tmp.files = evt.dataTransfer.files;
+		tmp.validFiles = [];
+		
+		$(tmp.me.dropShowDiv.showDiv).update('');
+		$(tmp.me.dropShowDiv.resultDiv).update('');
+		
+		for(tmp.i = 0, tmp.f; tmp.f = tmp.files[tmp.i]; tmp.i++) 
+		{
+			tmp.success = ((tmp.extension = tmp.f.name.split('.').pop()) !== '' && tmp.me._acceptableTypes.indexOf(tmp.extension.toLowerCase()) > -1);
+			if(tmp.success)	
+			{
+				tmp.msgTxt = 'File Name:' + tmp.f.name + 'Accepted';
+				tmp.validFiles.push({'index': tmp.i, 'file': tmp.f});	
+			}	
+			else
+				tmp.msgTxt = tmp.f.name + ' Error: Only Acceptable File Extension are ' + tmp.me._acceptableTypes.join(', ');
+			
+			$(tmp.me.dropShowDiv.showDiv).insert({'bottom':  new Element('div', {'class': 'msgDiv ' + (!tmp.success ? 'errorMsgDiv' : 'okMsgDiv'), 'file_sequence': tmp.i})
+				.update(new Element('div', {'class': 'msg'})
+					.update(tmp.msgTxt)
+				) 
+			});
+		}
+		
+		if(tmp.validFiles.size() === 0)
+		{
+			alert("NO VALID FILES UPLOADED!!! PLS TRY AGAIN");
+			return;	
+		}
+		
+		/// we have found some valid files , so start reading them ///
+		tmp.allFileLineArray = tmp.me._readValidCSVFiles(tmp.validFiles);
+		
+		return tmp.me;
+	}
+	
+	,_generatePriceRowForProduct: function(productPriceArray) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.ppArray = productPriceArray;
+		
+		if(tmp.ppArray.sku === '' || tmp.ppArray.sku === undefined || tmp.ppArray.sku === null || tmp.ppArray.sku.blank())
+			return tmp.me;
+
+		tmp.rowDiv = new Element('div', {'class': 'row'})
+						.insert({'bottom': new Element('span', {'class': 'cell sku ' + ((tmp.ppArray.searchURL && !tmp.ppArray.searchURL.blank()) ? 'cuspntr' : '') }).update(tmp.ppArray.sku)
+							.observe('click', function() {
+								if(tmp.ppArray.searchURL && !tmp.ppArray.searchURL.blank())
+									window.open(tmp.ppArray.searchURL.strip());
+							})	
+						})
+						.insert({'bottom': new Element('span', {'class': 'cell myPrice'}).update(isNaN(tmp.ppArray.myPrice) ? tmp.ppArray.myPrice : tmp.me.getCurrency(tmp.ppArray.myPrice)) })
+						.insert({'bottom': new Element('span', {'class': 'cell priceDiff ' + (isNaN(tmp.ppArray.priceDiff) || tmp.ppArray.priceDiff == 0 ? '' : (tmp.ppArray.priceDiff > 0 ? 'overmin' : "undermin"))}).update(
+								isNaN(tmp.ppArray.priceDiff) ? tmp.ppArray.priceDiff : tmp.me.getCurrency(tmp.ppArray.priceDiff)) 
+						})
+						.insert({'bottom': new Element('span', {'class': 'cell minPrice'}).update(isNaN(tmp.ppArray.minPrice) ? tmp.ppArray.minPrice : tmp.me.getCurrency(tmp.ppArray.minPrice)) });
+		tmp.ppArray.data.each(function(item) {
+			if((item.price.blank() || item.price === '' || item.price === null || item.price === undefined) && (item.priceURL.blank() || item.priceURL === '' || item.priceURL === null || item.priceURL === undefined))
+				tmp.rowDiv.insert({'bottom': new Element('span', {'class': 'cell company'}).update(item.company) }); /// header info ///
+			else
+			{
+				tmp.url = item.priceURL.strip();
+				tmp.hasUrl = (tmp.url !== '' && tmp.url !== null && tmp.url !== undefined);
+				tmp.rowDiv.insert({'bottom': new Element('span', {'class': 'cell company ' + (tmp.hasUrl === true ? 'cuspntr' : '')}).update(item.price)
+					.observe('click', function() {
+						if(!item.priceURL.strip().blank())
+							window.open(item.priceURL.strip());
+					})
+				});
+			}	
+		});
+		tmp.rowDiv.store('data', tmp.ppArray);
+		return tmp.rowDiv;
+	}
+	
+	,_checkLastLine: function (lineNo, spinBar) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.lineNo = lineNo;
+		if(tmp.lineNo >= tmp.me.totalLines)
+		{
+			$(tmp.me.dropShowDiv.dropDiv).show();
+			spinBar.remove();
+			//adding output to excel btn
+			$(tmp.me.dropShowDiv.resultDiv).insert({'bottom': new Element('span', {'class': 'button'})
+				.update('Output To CSV')
+				.observe('click', function(){
+					tmp.me.genCSV(this);
+				})
+			});
+		}
+		return this;
+	}
+	
+	,_loadProductLineItems: function() {
+		var tmp = {};
+		tmp.me = this;
+		
+		$(tmp.me.dropShowDiv.dropDiv).hide();
+		$(tmp.me.dropShowDiv.showDiv).update('');
+		
+		/// Generate the header for the price compare table ///
+		tmp.headerCompanyArray = [];
+		tmp.me.companyNameArray.each(function(cName) {
+			tmp.headerCompanyArray.push({'price': '', 'priceURL': '', 'company': cName});
+		});
+		
+		tmp.spinBar = new Element('span', {"class": "inlineblock loading"});
+		$(tmp.me.dropShowDiv.resultDiv)
+			.update('')
+			.insert({'bottom': tmp.me.
+				_generatePriceRowForProduct({'sku': 'SKU', 'minPrice': 'Min Price', 'myPrice': 'My Price', 'priceDiff': 'Price Diff.', 'data': tmp.headerCompanyArray})
+				.addClassName('header')
+			})
+			.insert({'after': tmp.spinBar});
+		///////////////////////////////////////////////////////////
+		tmp.lineNo = 0;
+		tmp.me.allFileLineArray.each(function(item) {
+			item.fileContent.each(function(line) {
+				if(line.sku.blank())
+				{
+					tmp.lineNo = tmp.lineNo * 1 + 1;
+					tmp.me._checkLastLine(tmp.lineNo, tmp.spinBar);
+					return;
+				}	
+				tmp.me.postAjax(tmp.me.getCallbackId('getAllPricesForProduct'), {'sku': line.sku, 'price': line.price}, {
+					'onLoading': function(sender, param) {}
+					,'onSuccess': function (sender, param) {
+						try 
+						{
+							tmp.result = tmp.me.getResp(param, false, true);
+							if(!tmp.result)
+								return;
+							if(tmp.result.items.sku !== '' && tmp.result.items.sku !== undefined && tmp.result.items.sku !== null && !tmp.result.items.sku.blank())
+								$(tmp.me.dropShowDiv.resultDiv).insert({'bottom': tmp.me._generatePriceRowForProduct(tmp.result.items)});
+							
+							tmp.lineNo = tmp.lineNo * 1 + 1;
+							tmp.me._checkLastLine(tmp.lineNo, tmp.spinBar);
+						} 
+						catch (e) 
+						{
+							alert(e);
+						}
+					}
+				})
+			});
+		});
+		return tmp.me;
+	}
+	
+	/// This function will be triggered when all the file(s) have finished loading ///
+	,_allFileLoadFinished: function() {
+		var tmp = {};
+		tmp.me = this;
+		
+		if(tmp.me.allFileLineArray.size() === 0)
+		{
+			alert("EMPTY FILE(s) UPLOADED!!! PLS TRY AGAIN");
+			return;	
+		}
+		$(tmp.me.dropShowDiv.showDiv).insert({'bottom': new Element('span', {'class': 'button'})
+			.update('Start Load')
+			.observe('click', function() {
+				tmp.me._loadProductLineItems();
+			})
+		});
+		
+		return tmp.me;
+	}
+	
+	/*  This function read one file at a time and checks if this the last file to read,
+	 * 	If not call itself to read the next file, 
+	 * 	If yes show submit button  
+	 */
+	,_readSingleCSVFile: function(file, index, validFiles) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.reader = new FileReader();
+	      
+		tmp.reader.onload = function(event) { 
+			tmp.contents = event.target.result;
+			tmp.fileArray = tmp.me.parseCSVFile(tmp.contents);
+			
+			$(tmp.me.dropShowDiv.showDiv).getElementsBySelector('[file_sequence='+ file.index +']')[0].insert({'bottom': new Element('div', {'class': 'msg'}).update('Loaded Successfully') });
+			$(tmp.me.dropShowDiv.showDiv).getElementsBySelector('[file_sequence='+ file.index +']')[0].store(tmp.fileArray);
+			if(tmp.fileArray.size() > 0)
+			{
+				tmp.me.allFileLineArray.push({'fileIndex': file.index, 'fileName': file.file.name, 'fileContent': tmp.fileArray});
+				tmp.me.totalLines = (tmp.me.totalLines * 1) + tmp.fileArray.size();	
+			}
+			
+			index = (index*1) + 1;
+			if(validFiles.size() > index)
+				tmp.me._readSingleCSVFile(validFiles[index], index, validFiles);
+			else
+				tmp.me._allFileLoadFinished();
+				
+		}
+		tmp.reader.readAsText(file.file);
+		
+		return tmp.me;
+	}
+	
+	,_readValidCSVFiles: function(validFiles) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.me._readSingleCSVFile(validFiles[0], 0, validFiles);
+		return tmp.me;
+	}
+
+});

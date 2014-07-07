@@ -1,40 +1,44 @@
 <com:TContent ID="MainContent">
-	<div class="pagewrapper mepage container">
-		<div class="contentDiv changePassDiv inlineblock">
-			<div class="h_title">Change Password:</div>
-			<div class="h_content">
-			    <com:TCallback ID="changePwdBtn" onCallback="changePwd" />
-				<div class="row">
-					<label for="oldPwd">Old Password:</label>
-					<input id="oldPwd" type="password" placeholder="The current password" change_pass="oldPwd" class="input_field" value=""/>
-				</div>
-				<div class="row">
-					<label for="newPwd">New Password:</label>
-					<input id="newPwd" type="password" placeholder="The new password" change_pass="newPwd" class="input_field" value=""/>
-				</div>
-				<div class="row">
-					<label for="confirmNewPwd">Confirm New Password:</label>
-					<input id="confirmNewPwd" type="password" placeholder="Confirm the new password" change_pass="confirmNewPwd" class="input_field" value=""/>
-				</div>
-				<div class="row">
-					<input type="button" value="Save" class="button" onclick="pageJs.changePwd(this);return false;"/>
+	<div class="row">
+		<div class="col-sm-4">
+			<div class="panel panel-default">
+				<div class="panel-heading">Change Password:</div>
+				<div class="panel-body contentDiv">
+				    <com:TCallback ID="changePwdBtn" onCallback="changePwd" />
+					<div class="form-group">
+						<label for="oldPwd">Old Password:</label>
+						<input id="oldPwd" type="password" placeholder="The current password" change_pass="oldPwd" class="form-control" value="" required/>
+					</div>
+					<div class="form-group">
+						<label for="newPwd">New Password:</label>
+						<input id="newPwd" type="password" placeholder="The new password" change_pass="newPwd" class="form-control" value="" required/>
+					</div>
+					<div class="form-group">
+						<label for="confirmNewPwd">Confirm New Password:</label>
+						<input id="confirmNewPwd" type="password" placeholder="Confirm the new password" change_pass="confirmNewPwd" class="form-control" value="" required/>
+					</div>
+					<div class="form-group">
+						<input id="savPassBtn" type="button" value="Save" class="btn btn-success" data-loading-text="Saving..." onclick="pageJs.changePwd(this);return false;"/>
+					</div>
 				</div>
 			</div>
 		</div>
-		<div class="contentDiv changePerson inlineblock">
-			<div class="h_title">Change Personal Info:</div>
-			<div class="h_content">
-			    <com:TCallback ID="changePersonInfoBtn" onCallback="changePersonInfo" />
-				<div class="row">
-					<label for="firstName">First Name:</label>
-					<input id="firstName" type="text" placeholder="First Name" change_pinfo="firstName" class="input_field" value="<%= Core::getUser()->getPerson()->getFirstName() %>"/>
-				</div>
-				<div class="row">
-					<label for="lastName">Last Name:</label>
-					<input id="lastName" type="text" placeholder="Last Name" change_pinfo="lastName" class="input_field" value="<%= Core::getUser()->getPerson()->getLastName() %>"/>
-				</div>
-				<div class="row">
-					<input type="button" value="Save" class="button" onclick="pageJs.changePInfo(this); return false;"/>
+		<div class="col-sm-4">
+			<div class="panel panel-default">
+				<div class="panel-heading">Change Personal Info:</div>
+				<div class="panel-body contentDiv">
+				    <com:TCallback ID="changePersonInfoBtn" onCallback="changePersonInfo" />
+					<div class="form-group">
+						<label for="firstName">First Name:</label>
+						<input id="firstName" type="text" placeholder="First Name" change_pinfo="firstName" class="form-control" value="<%= Core::getUser()->getPerson()->getFirstName() %>" required/>
+					</div>
+					<div class="form-group">
+						<label for="lastName">Last Name:</label>
+						<input id="lastName" type="text" placeholder="Last Name" change_pinfo="lastName" class="form-control" value="<%= Core::getUser()->getPerson()->getLastName() %>" required/>
+					</div>
+					<div class="form-group">
+						<input id="savePInfoBtn" type="button" value="Save" class="btn btn-success" data-loading-text="Saving..." onclick="pageJs.changePInfo(this); return false;"/>
+					</div>
 				</div>
 			</div>
 		</div>

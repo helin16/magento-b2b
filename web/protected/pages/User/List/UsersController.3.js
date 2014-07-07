@@ -168,6 +168,9 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 						$(tmp.me._totalUserCountId).update(0);
 					}
 				}
+				if(tmp.btn) {
+					jQuery(tmp.btn.id).button('loading');
+				}
 			}
 			,'onSuccess': function(sender, param) {
 				try {
@@ -198,12 +201,12 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					}
 					
 				} catch (e){
-					tmp.resultDiv.up('.panel').down('.panel-body').insert({'bottom': tmp.me.getErrBox(e)})
+					tmp.resultDiv.up('.panel').down('.panel-body').insert({'bottom': tmp.me.getErrBox('Erro:', e).addClassName('alert-danger')})
 				}
 			}
 			,'onComplete': function (sender, params) {
-				if($(tmp.btn)) {
-					$(tmp.btn).removeClassName('disabled').update($(tmp.btn).retrieve('originVal'));
+				if(tmp.btn) {
+					jQuery(tmp.btn.id).button('reset');
 				}
 			}
 		});

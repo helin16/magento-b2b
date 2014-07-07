@@ -43,7 +43,7 @@
 			<url ServiceParameter="PriceMatch.PriceMatchController" pattern="pricematch.html" />
 			
 			<!-- FrontEnd:: Price Match Companypage -->
-			<url ServiceParameter="PriceMatchCompany.List.PriceMatchCompanyListController" pattern="pricematchcompanies.html" />
+			<url ServiceParameter="PriceMatch.Company.List.PriceMatchCompanyListController" pattern="pricematchcompanies.html" />
 			
 			<!-- FrontEnd:: me page -->
 			<url ServiceParameter="User.Me.MeController" pattern="{id}.html" parameters.id="me"/>

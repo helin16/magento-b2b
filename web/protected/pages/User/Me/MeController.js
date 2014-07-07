@@ -1,1 +1,86 @@
-var PageJs=new Class.create();PageJs.prototype=Object.extend(new BPCPageJs(),{_getFormFields:function(b,a){return $(b).up(".contentDiv").getElementsBySelector("["+a+"]")},_collectingFields:function(c,b){var a={};a.me=this;a.data={};a.foundData=false;a.me._getFormFields(c,b).each(function(d){if(!$F(d).blank()){a.foundData=true}a.data[d.readAttribute(b)]=$F(d)});if(a.foundData===true){return a.data}return null},_cleanForm:function(c,b){var a={};a.me=this;a.me._getFormFields(c,b).each(function(d){d.setValue("")});return this},changePwd:function(b){var a={};a.me=this;a.data=a.me._collectingFields(b,"change_pass");if(a.data===null){return}$(b).store("originValue",$F(b)).addClassName("disabled").setValue("Saving...");a.me.postAjax(a.me.getCallbackId("changePwd"),a.data,{onLoading:function(){},onComplete:function(c,f){try{a.result=a.me.getResp(f,false,true);if(a.result.succ){a.me._cleanForm(b,"change_pass");alert("Password changed!")}}catch(d){alert(d)}$(b).setValue($(b).retrieve("originValue")).removeClassName("disabled")}})},changePInfo:function(b){var a={};a.me=this;a.data=a.me._collectingFields(b,"change_pinfo");if(a.data===null){return}$(b).store("originValue",$F(b)).addClassName("disabled").setValue("Saving...");a.me.postAjax(a.me.getCallbackId("changePersonInfo"),a.data,{onLoading:function(){},onComplete:function(c,f){try{a.result=a.me.getResp(f,false,true);if(a.result.succ){alert("Information changed!");location.reload()}}catch(d){alert(d)}$(b).setValue($(b).retrieve("originValue")).removeClassName("disabled")}})}});
+/**
+ * The page Js file
+ */
+var PageJs = new Class.create();
+PageJs.prototype = Object.extend(new BPCPageJs(), {
+	_getFormFields: function(btn, attrName) {
+		return $(btn).up('.contentDiv').getElementsBySelector('[' + attrName + ']');
+	}
+
+	,_collectingFields: function(btn, attrName) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.data = {};
+		tmp.foundData = false;
+		tmp.me._getFormFields(btn, attrName).each(function(item) {
+			if(item.hasAttribute('required') && $F(item).blank()) {
+				item.up('.form-group').addClassName('has-error');
+			} else {
+				item.up('.form-group').removeClassName('has-error');
+				tmp.foundData = true;
+			}
+			tmp.data[item.readAttribute(attrName)] = $F(item);
+		});
+		if(tmp.foundData === true)
+			return tmp.data;
+		return null;
+	}
+
+	,_cleanForm: function(btn, attrName) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.me._getFormFields(btn, attrName).each(function(item) {
+			item.setValue('');
+		});
+		return this;
+	}
+	
+	,changePwd: function(btn) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.data = tmp.me._collectingFields(btn, 'change_pass');
+		if(tmp.data === null)
+			return;
+		
+		jQuery('#' + btn.id).button('loading');
+		tmp.me.postAjax(tmp.me.getCallbackId('changePwd'), tmp.data, {
+			'onLoading': function () {}
+			,'onComplete': function(sender, param) {
+				try{
+					tmp.result = tmp.me.getResp(param, false, true);
+					if(tmp.result.succ) {
+						tmp.me._cleanForm(btn, 'change_pass');
+						$(btn).insert({'before': tmp.me.getErrBox('', 'Password changed!').addClassName('alert-success') });
+					}
+				} catch (e) {
+					$(btn).insert({'before': tmp.me.getErrBox('Error:', e).addClassName('alert-danger') });
+				}
+				jQuery('#' + btn.id).button('reset');
+			}
+		});
+	}
+	
+	,changePInfo: function(btn) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.data = tmp.me._collectingFields(btn, 'change_pinfo');
+		if(tmp.data === null)
+			return;
+		jQuery('#' + btn.id).button('loading');
+		tmp.me.postAjax(tmp.me.getCallbackId('changePersonInfo'), tmp.data, {
+			'onLoading': function () {}
+			,'onComplete': function(sender, param) {
+				try{
+					tmp.result = tmp.me.getResp(param, false, true);
+					if(tmp.result.succ) {
+						$(btn).insert({'before': tmp.me.getErrBox('', 'Information changed!').addClassName('alert-success') });
+						location.reload();
+					}
+				} catch (e) {
+					$(btn).insert({'before': tmp.me.getErrBox('Error:', e).addClassName('alert-danger') });
+				}
+				jQuery('#' + btn.id).button('reset');
+			}
+		});
+	}
+});
