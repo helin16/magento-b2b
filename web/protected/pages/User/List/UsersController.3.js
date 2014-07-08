@@ -201,7 +201,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					}
 					
 				} catch (e){
-					tmp.resultDiv.up('.panel').down('.panel-body').insert({'bottom': tmp.me.getErrBox('Erro:', e).addClassName('alert-danger')})
+					tmp.resultDiv.up('.panel').down('.panel-body').insert({'bottom': tmp.me.getAlertBox('Error:', e).addClassName('alert-danger')})
 				}
 			}
 			,'onComplete': function (sender, params) {

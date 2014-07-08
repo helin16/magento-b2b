@@ -21,8 +21,8 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 
 	,_getFieldDiv: function (title, content) {
 		return new Element('div', {'class': 'form-group'})
-			.insert({'bottom': new Element('label', {'class': 'title'}).update(title) })
-			.insert({'bottom': content.addClassName('form-control') });
+			.insert({'bottom': new Element('label', {'class': 'col-sm-2 control-label'}).update(title) })
+			.insert({'bottom': content.addClassName('form-control').wrap(new Element('div', {'class': 'col-sm-10'})) });
 	}
 	
 	,_getRoleSelBox: function () {
@@ -65,7 +65,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		var tmp = {};
 		tmp.me = this;
 		tmp.data = {'userid': (tmp.me._user ? tmp.me._user.id : '')};
-		tmp.savePanel = $(btn).up('#' + tmp.me._savePanelId);
+		tmp.savePanel = $(tmp.me._savePanelId);
 		//clean up all the error msg
 		tmp.savePanel.getElementsBySelector('.msgDiv').each(function(msg) {
 			msg.remove();
@@ -96,22 +96,21 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			return tmp.me;
 		tmp.me.postAjax(tmp.me.getCallbackId('saveUser'), tmp.data, {
 			'onLoading': function () {
-				$(btn).store('originalValue', $(btn).innerHTML).addClassName('disabled').update('Saving ...');
+				jQuery('#' + btn.id).button('loading');
 			}
 			,'onSuccess': function(sender, param) {
 				try {
 					tmp.result = tmp.me.getResp(param, false, true);
 					if(!tmp.result)
 						return;
-					alert('User Saved Successfully')
+					alert('User Saved Successfully');
 					window.location = tmp.me._editUrl.replace('{uid}', tmp.result.id);
 				} catch (e) {
-					alert(e);
+					$(btn).insert({'before': tmp.me.getAlertBox('Error:', e).addClassName('alert-danger') })
 				}
 			}
 			,'onComplete': function () {
-				if($(btn))
-					$(btn).removeClassName('disabled').update($(btn).retrieve('originalValue'));
+				jQuery('#' + btn.id).button('reset');
 			}
 		});
 		return tmp.me;
@@ -123,39 +122,37 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.firstName = tmp.me._user ? tmp.me._user.person.firstName : '';
 		tmp.lastName = tmp.me._user ? tmp.me._user.person.lastName : '';
 		tmp.username = tmp.me._user ? tmp.me._user.username : '';
-		tmp.newPanel = new Element('div', {'role': 'form'})
-			.insert({'bottom': new Element('div', {'class': 'row'})
-				.insert({'bottom': tmp.me._getFieldDiv('First Name:', new Element('input', {'type':'text', 'save_panel': 'firstName', 'value': tmp.firstName, 'mandatory': 1}) ) })
-				.insert({'bottom': tmp.me._getFieldDiv('Last Name:', new Element('input', {'type':'text', 'save_panel': 'lastName', 'value': tmp.lastName, 'mandatory': 1}) ) })
-				.insert({'bottom': tmp.me._getFieldDiv('Role:', tmp.me._getRoleSelBox()
-						.writeAttribute('save_panel', 'roleid')
-						.writeAttribute("mandatory", true) 
-					) 
-				})
-				.insert({'bottom': tmp.me._getFieldDiv('Username:', new Element('input', {'type':'text', 'save_panel': 'userName', 'value': tmp.username, 'mandatory': 1})  ) })
+		tmp.newPanel = new Element('div', {'class': 'form-horizontal change_form', 'role': 'form'})
+			.insert({'bottom': tmp.me._getFieldDiv('First Name:', new Element('input', {'type':'text', 'save_panel': 'firstName', 'value': tmp.firstName, 'mandatory': 1}) ) })
+			.insert({'bottom': tmp.me._getFieldDiv('Last Name:', new Element('input', {'type':'text', 'save_panel': 'lastName', 'value': tmp.lastName, 'mandatory': 1}) ) })
+			.insert({'bottom': tmp.me._getFieldDiv('Role:', tmp.me._getRoleSelBox()
+					.writeAttribute('save_panel', 'roleid')
+					.writeAttribute("mandatory", true) 
+				) 
 			})
-			.insert({'bottom': new Element('div', {'class': 'row'})
-				.insert({'bottom': tmp.me._getFieldDiv('New Password:', new Element('input', {'type':'password', 'save_panel': 'newpassword', 'password': 'new', 'value': '', 'mandatory': (tmp.me._user ? 0 : 1) }) 
-						.observe('change', function(){
-							tmp.me._chkPassword(this, $(this).up('.row').down('[password=confirm]'));
-						})
-					) 
-				})
-				.insert({'bottom': tmp.me._getFieldDiv('Confirm Password:', new Element('input', {'type':'password', 'password': 'confirm', 'value': ''})
-						.observe('change', function(){
-							tmp.me._chkPassword($(this).up('.row').down('[password=new]'), this);
-						})
-					) 
-				})
-			})
-			.insert({'bottom': new Element('div', {'class': 'row'})
-				.insert({'bottom': new Element('span', {'class': 'btn btn-success'})
-					.update('Save')
-					.observe('click', function(){
-						tmp.me._saveUser(this);
+			.insert({'bottom': tmp.me._getFieldDiv('Username:', new Element('input', {'type':'text', 'save_panel': 'userName', 'value': tmp.username, 'mandatory': 1})  ) })
+			.insert({'bottom': tmp.me._getFieldDiv('New Password:', new Element('input', {'type':'password', 'save_panel': 'newpassword', 'password': 'new', 'value': '', 'mandatory': (tmp.me._user ? 0 : 1) }) 
+					.observe('change', function(){
+						tmp.me._chkPassword(this, $(this).up('.change_form').down('[password=confirm]'));
 					})
-				}) 
+				) 
 			})
+			.insert({'bottom': tmp.me._getFieldDiv('Confirm Password:', new Element('input', {'type':'password', 'password': 'confirm', 'value': ''})
+					.observe('change', function(){
+						tmp.me._chkPassword($(this).up('.change_form').down('[password=new]'), this);
+					})
+				) 
+			})
+			.insert({'bottom': new Element('div', {'class': 'form-group'})
+				.insert({'bottom': new Element('div', {'class': 'col-sm-offset-2 col-sm-10'})
+					.insert({'bottom': new Element('span', {'id': 'saveBtn', 'class': 'btn btn-success', 'data-loading-text': 'Saving...'})
+						.update('Save')
+						.observe('click', function(){
+							tmp.me._saveUser(this);
+						})
+					})
+				})
+			}) 
 			;
 		return tmp.newPanel;
 	}

@@ -20,7 +20,7 @@ class UsersController extends BPCPageAbstract
 	{
 		$js = parent::_getEndJs();
 		$js .= 'pageJs.setHtmlIDs("savePanel")';
-			$js .= '.setCallbackId("saveUser", "' . $this->saveUserBtn->getUniqueId() . '")';
+			$js .= '.setCallbackId("saveUser", "' . $this->saveUserBtn->getUniqueID() . '")';
 			$js .= '.setEditUrl("/useraccount/edit/{uid}.html")';
 			$js .= '.load(' . json_encode($this->_getUser()) . ', ' . json_encode($this->_getRoles()). ')';
 			$js .= ';';

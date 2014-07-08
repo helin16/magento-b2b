@@ -7,334 +7,165 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 	,_addCompanyDivId: ''	
 	,_pageInfo: {'pageNo': 1, 'pageSize': 30}
 	,_searchCriteria: ''
-	
-	,_getFieldDiv: function(title, content) {
-		return new Element('span', {'class': 'fieldDiv'})
-			.insert({'bottom': new Element('span', {'class': 'fieldDiv_title'}).update(title) })
-			.insert({'bottom': new Element('span', {'class': 'fieldDiv_content'}).update(content) });
-	}
-	
-	,_generateEditOptions: function(editSpan) {
+		
+	,_getEditAliasRow: function(aliasData) {
 		var tmp = {};
 		tmp.me = this;
-		
-		tmp.parentRow = $(editSpan).up('.pmc_row');
-		tmp.aliasTextSpan = tmp.parentRow.getElementsBySelector('.single_alias')[0];
-		tmp.aliasText = tmp.aliasTextSpan.innerHTML;
-		tmp.aliasTextSpan.update(new Element('input', {'type': 'text', 'class': 'alias_text_box'}).writeAttribute('value', tmp.aliasText) );
-		$(editSpan).up('.single_alias_option').update('')	
-			.insert({'bottom': new Element('span', {'class': 'button'}).update('Save')
+		tmp.editRow = new Element('div', {'class': 'input-group input-group-sm pmc_row'})
+			.insert({'bottom': new Element('span', {'class': 'input-group-btn', 'title': 'Save'})
+				.insert({'bottom': new Element('span', {'id': 'save_btn_' + aliasData.id, 'class': 'btn btn-success', 'data-loading-text': 'saving...'})
+					.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-floppy-saved'}) })
+				})
 				.observe('click', function() {
-					tmp.newAliasValue = $F($(this).up('.pmc_row').getElementsBySelector('.single_alias .alias_text_box')[0]);
-					tmp.newAliasValue = tmp.newAliasValue.strip();
-					if(tmp.newAliasValue === '' || tmp.newAliasValue === null || tmp.newAliasValue === undefined || !tmp.newAliasValue)
-					{
-						alert('Empty Alias value NOT Accepted');
+					tmp.btn = this;
+					tmp.aliasRow = $(tmp.btn).up('.pmc_row');
+					tmp.newAlias = $F(tmp.aliasRow.down('.aliasValue'));
+					if(tmp.newAlias.blank()) {
+						tmp.aliasRow.addClassName('has-error');
+						tmp.aliasRow.insert({'after': tmp.me.getAlertBox('Error:', 'Alias is required').addClassName('alert-danger') });
 						return;
 					}
 					
-					tmp.aliasObj = $(this).up('.pmc_row').retrieve('data');
-					if(tmp.aliasObj.alias.strip() === tmp.newAliasValue)
-					{
-						$(this).up('.pmc_row').replace(tmp.me._getAliasRow(tmp.aliasObj));
-						return;
-					}	
-					
-					tmp.me.postAjax(tmp.me.getCallbackId('updatePriceMatchCompany'), {'id': tmp.aliasObj.id, 'newAliasValue': tmp.newAliasValue}, {
+					tmp.data = {'id': (aliasData.id || ''), 'newAliasValue': tmp.newAlias, 'companyName': (aliasData.companyName || $F(tmp.aliasRow.up('.company_row').down('.company_name')) ) };
+					tmp.me.postAjax(tmp.me.getCallbackId('updatePriceMatchCompany'), tmp.data, {
 						'onLoading': function (sender, param) {
-							//$(tmp.me.searchBtnId).store('orignValue', $F(tmp.me.searchBtnId)).addClassName('disabled').setValue('searching ...').disabled = true;
+							jQuery(tmp.btn.id).button('loading');
 						}
-						, 'onComplete': function (sender, param) {
-							try 
-							{
+						,'onSuccess': function (sender, param) {
+							try {
 								tmp.result = tmp.me.getResp(param, false, true);
-								window.location = document.URL;
-							} 
-							catch(e) 
-							{
-								alert(e);
+								tmp.companyNameBox = tmp.aliasRow.up('.company_row').down('.company_name');
+								if(tmp.companyNameBox && !tmp.companyNameBox.hasClassName('noborder')) {
+									tmp.companyNameBox.writeAttribute('readOnly', true).addClassName('noborder');
+								}
+								tmp.aliasRow.replace(tmp.me._getAliasRow(tmp.result.item));
+							} catch(e) {
+								tmp.aliasRow.insert({'after': tmp.me.getAlertBox('Error:', e).addClassName('alert-danger') });
 							}
+						}
+						,'onComplete': function (sender, param) {
+							jQuery(tmp.btn.id).button('reset');
 						}
 					});
 				})
 			})
-			.insert({'bottom': new Element('span', {'class': 'button'}).update('Cancel') 
+			.insert({'bottom': new Element('input', {'type': 'text', 'class': 'form-control aliasValue', 'value': (aliasData.companyAlias || '')}) })
+			.insert({'bottom': new Element('span', {'class': 'input-group-btn', 'title': 'Cancel'})
+				.insert({'bottom': new Element('span', {'class': 'btn btn-warning'})
+					.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-floppy-remove'}) })
+				})
 				.observe('click', function() {
-					tmp.aliasObj = $(this).up('.pmc_row').retrieve('data');
-					$(this).up('.pmc_row').replace(tmp.me._getAliasRow(tmp.aliasObj));
+					if(aliasData.id) {
+						$(this).up('.pmc_row').replace(tmp.me._getAliasRow(aliasData));
+					} else {
+						$(this).up('.pmc_row').remove();
+					}
 				})
 			});
+		return tmp.editRow;
 	}
-	
+	/**
+	 * Getting each alias row for the company row
+	 */
 	,_getAliasRow: function(alias) {
 		var tmp = {};
 		tmp.me = this;
 		tmp.id = alias.id;
-		tmp.alias = alias.alias;
-		if(alias && tmp.alias !== '' && tmp.alias !== null && tmp.alias !== undefined) {
-			return new Element('div', {'class': 'row list-group-item'}).store('data', alias)
-				.insert({'bottom': new Element('div', {'class': 'col-xs-2'}).update(tmp.alias) })
-				.insert({'bottom': new Element('div', {'class': 'col-xs-8'}) 
-				
-				})
-				.insert({'bottom': new Element('div', {'class': 'col-xs-2'})
-					.insert({'bottom': new Element('div', {'class': 'btn-group btn-group-sm'})
-						.insert({'bottom': new Element('span', {'class': 'btn btn-default', 'title': 'Edit'}) 
-							.update(new Element('span', {'class': 'glyphicon glyphicon-pencil'}))
-							.observe('click', function() {
-									tmp.me._generateEditOptions(this);
-								})
-						})
-						.insert({'bottom': new Element('span', {'class': 'btn btn-danger', 'title': 'Delete'})
-							.update(new Element('span', {'class': 'glyphicon glyphicon-trash'})) 
-							.observe('click', function() {
-								tmp.confirmation = confirm('Are you sure you want to delete this alias ?');
-								if(tmp.confirmation === false)
-									return;
-								
-								tmp.parentRow = $(this).up('.pmc_row');
-								tmp.parentSpan = $(this).up('.company_alias');
-								tmp.originalData = tmp.parentRow.retrieve('data');
-								
-								tmp.me.postAjax(tmp.me.getCallbackId('deleteAliasForPriceMatchCompany'), {'data': tmp.originalData}, {
-									'onLoading': function (sender, param) {
-										//$(tmp.me.searchBtnId).store('orignValue', $F(tmp.me.searchBtnId)).addClassName('disabled').setValue('searching ...').disabled = true;
-									}
-									, 'onComplete': function (sender, param) {
-										try 
-										{
-											tmp.result = tmp.me.getResp(param, false, true);
-											tmp.parentRow.remove();
-											if(tmp.parentSpan.getElementsBySelector('.pmc_row').size() === 0)
-												tmp.parentSpan.up('.row').remove();
-											
-										} 
-										catch(e) 
-										{
-											//console.debug(e);
-											alert(e);
-										}
-									}
-								});
-							})
-						})
+		tmp.alias = alias.companyAlias;
+		if(tmp.alias && tmp.alias !== '' && tmp.alias !== null && tmp.alias !== undefined) {
+			return new Element('div', {'class': 'input-group input-group-sm pmc_row'})
+				.store('data', alias)
+				.insert({'bottom': new Element('span', {'class': 'input-group-btn', 'title': 'Edit'}) 
+					.insert({'bottom': new Element('span', {'class': 'btn btn-default'}).update(new Element('span', {'class': 'glyphicon glyphicon-pencil'})) })
+					.observe('click', function() {
+						tmp.editBtn = this;
+						tmp.originalRow = $(tmp.editBtn).up('.pmc_row');
+						tmp.editRow = tmp.me._getEditAliasRow(tmp.originalRow.retrieve('data') );
+						tmp.originalRow.replace(tmp.editRow);
+						tmp.editRow.down('.aliasValue').select();
 					})
-				});
-		}
-	}
-	
-	,_showHideAddAliasButton: function(parentDiv) {
-		var tmp = {};
-		tmp.me = this;
-		
-		tmp.parentDiv = parentDiv;
-		tmp.parentDiv.getElementsBySelector('.addNewAliasBtn').each(function(item) {
-			item.remove();	
-		});
-		
-		if(tmp.parentDiv.getElementsBySelector('[newAliasBox]').size() > 0)
-		{
-			tmp.parentDiv.insert({'bottom': new Element('span', {'class': 'button addNewAliasBtn'}).update('Add Alias(s)')
-				.observe('click', function() {
-					tmp.newAliasValueArray = [];
-					tmp.pDiv = $(this).up('[pmc_company_name_container]');
-					
-					tmp.pDiv.getElementsBySelector('.msgDiv').each(function(msgDiv) {
-						msgDiv.remove();	
-					});
-					
-					tmp.addNewAlias = false;
-					tmp.companyNameElement = tmp.pDiv.getElementsBySelector('.companyNameSpan')[0];
-					if(!tmp.companyNameElement.hasAttribute('brand_new_company_name'))
-						tmp.companyName = tmp.companyNameElement.innerHTML;
-					else
-					{
-						tmp.addNewAlias = true;
-						tmp.companyName = $F(tmp.companyNameElement).strip();
-					}
-					
-					if(tmp.companyName === '' || tmp.companyName === null || tmp.companyName === undefined)
-					{
-						tmp.companyNameElement.insert({'before': new Element('div', {'class': 'msgDiv errorMsgDiv'}).update(new Element('div', {'class': 'msg'}).update('Pls Enter Company Name') ) });
-						return;
-					}	
+				})
+				.insert({'bottom': new Element('div', {'class': 'form-control'}).update( tmp.alias ) })
+				.insert({'bottom': new Element('span', {'class': 'input-group-btn', 'title': 'Delete'})
+					.insert({'bottom': new Element('span', {'class': 'btn btn-danger'}).update(new Element('span', {'class': 'glyphicon glyphicon-trash'})) })
+					.observe('click', function() {
+						tmp.confirmation = confirm('Are you sure you want to delete this alias ?');
+						if(tmp.confirmation === false)
+							return;
 						
-					tmp.pDiv.getElementsBySelector('[newAliasBox]').each(function(aliasBox) {
-						if((tmp.newAliasValue = $F(aliasBox).strip()) !== '' && tmp.newAliasValue !== null && tmp.newAliasValue !== undefined)
-							tmp.newAliasValueArray.push(tmp.newAliasValue);
-					});
-					if(tmp.newAliasValueArray.size() === 0)
-					{
-						if(tmp.addNewAlias === false)
-						{
-							tmp.allCompanyData = tmp.pDiv.up('.row').retrieve('allCompanyAliasData');
-							tmp.pDiv.replace(tmp.me._displayCompanyNamePanelForAddEdit(tmp.allCompanyData, tmp.addNewAlias));
-							alert('No New Aliase(s) added!');
-							return;
-						}
-						else
-						{
-							alert('Atleast One Alias needs to be added to Add a Brand New Company!!!');
-							return;
-						}
-					}
-					else
-					{
-						tmp.me.postAjax(tmp.me.getCallbackId('addAliasForPriceMatchCompany'), {'aliasArray': tmp.newAliasValueArray, 'companyName': tmp.companyName}, {
-							'onLoading': function (sender, param) {
-								//$(tmp.me.searchBtnId).store('orignValue', $F(tmp.me.searchBtnId)).addClassName('disabled').setValue('searching ...').disabled = true;
-							}
-							, 'onComplete': function (sender, param) {
-								try 
-								{
+						tmp.aliasRow = $(this).up('.pmc_row');
+						tmp.me.postAjax(tmp.me.getCallbackId('deleteAliasForPriceMatchCompany'), {'data': alias}, {
+							'onLoading': function (sender, param) {}
+							,'onSuccess': function (sender, param) {
+								try {
 									tmp.result = tmp.me.getResp(param, false, true);
-									window.location = document.URL;
-								} 
-								catch(e) 
-								{
-									//console.debug(e);
+									tmp.companyRow = tmp.aliasRow.up('.company_row');
+									tmp.aliasRow.remove();
+									if(tmp.companyRow.getElementsBySelector('.pmc_row').size() === 0)
+										tmp.companyRow.remove();
+									
+								} catch(e) {
 									alert(e);
 								}
 							}
 						});
-					}	
-				})
-			});
-		}	
-		
-		return tmp.me;
-	}
-	
-	,_addNewAliasBox: function(button) {
-		var tmp = {};
-		tmp.me = this;
-		
-		tmp.parentDiv = $(button).up('[pmc_company_name_container]');
-		
-		tmp.parentDiv
-			.insert({'bottom': new Element('div', {'class': 'new_single_alias_box'})
-				.insert({'bottom': new Element('span', {}) 
-					.insert({'bottom': new Element('input', {'type': 'text', 'newAliasBox': 'newAliasBox'}) })
-				})
-				.insert({'bottom': new Element('span', {'class': 'button', 'title': 'Remove This Alias'}).update('-')
-					.observe('click', function() {
-						$(this).up('.new_single_alias_box').remove();
-						tmp.me._showHideAddAliasButton(tmp.parentDiv);
 					})
 				})
-			})	
-			.insert({'bottom': new Element('div', {'class': 'button'}).update('+')
-				.observe('click', function() {
-					tmp.me._addNewAliasBox(this);
-				})
-			});
-		
-		tmp.me._showHideAddAliasButton(tmp.parentDiv);
-		$(button).remove();
+				;
+		}
 	}
-	
-	,_displayCompanyNamePanelForAddEdit: function(item, add) {
+	/**
+	 * Getting the company row
+	 */
+	,_getCompanyRow: function(item) {
 		var tmp = {};
 		tmp.me = this;
-		tmp.add = (add === true) ? true : false;
-		tmp.item = item;
-		
-		tmp.headerDiv = '';
-		
-		if(tmp.add === false)
-			tmp.companyNameContainer = new Element('span', {'class': 'companyNameSpan'}).update(tmp.item.companyName);
-		else
-			tmp.companyNameContainer = tmp.me._getFieldDiv('New Company Name:', new Element('input', {'type': 'text', 'class': 'companyNameSpan', 'brand_new_company_name': 'brand_new_company_name'}));
-		
-		tmp.companyNameDiv = new Element('div', {'class': 'companyNameDiv', 'pmc_company_name_container': 'pmc_company_name_container'})
-								.insert({'bottom': new Element('div', {}) 
-									.insert({'bottom': tmp.companyNameContainer })
-								})
-								.insert({'bottom': new Element('div', {'class': 'button', 'title': 'Add New Alias'}).update('+') 
-									.observe('click', function() {
-										tmp.me._addNewAliasBox(this);
-									})
-								});
-		return tmp.companyNameDiv;
-	}
-		
-	,_generateSingleRowForPriceMatchCompany: function(item) {
-		var tmp = {};
-		tmp.me = this;
-		tmp.item = item;
-		
-		tmp.rowDiv = new Element('div', {'class': 'row list-group-item'});
-		tmp.aliasSpan = new Element('div', {'class': 'col-xs-8 company_alias list-group'});
-		
-		tmp.companyNameDiv = tmp.me._displayCompanyNamePanelForAddEdit(tmp.item, false);
-		
-		tmp.item.companyAliases.each(function(alias) {
-			tmp.aliasSpan.insert({'bottom': tmp.me._getAliasRow(alias) })
+		tmp.aliasCol = new Element('div', {'class': 'col-xs-8 company_alias'});
+		item.companyAliases.each(function(alias) {
+			tmp.aliasCol.insert({'bottom': tmp.me._getAliasRow(alias) })
 		});
-		
-		tmp.rowDiv
+		tmp.aliasCol.insert({'bottom': new Element('botton', {'class': 'btn btn-success btn-xs'})
+			.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-plus-sign'}) }) 
+			.observe('click', function() {
+				$(this).insert({'before': tmp.me._getEditAliasRow({}) });
+			})
+		})
+		tmp.companyName = new Element('input', {'class': 'company_name', 'type': 'text', 'value': item.companyName});
+		if(!item.companyName.blank())
+		{
+			tmp.companyName.writeAttribute('readOnly', true)
+			.addClassName('noborder');
+		}
+		return new Element('div', {'class': 'row list-group-item company_row'})
 			.store('allCompanyAliasData', item)
-			.insert({'bottom': new Element('div', {'class': 'col-xs-4 company_name'}).update(new Element('strong').update(tmp.companyNameDiv)) })
-			.insert({'bottom': tmp.aliasSpan });
-		
-		return tmp.rowDiv;
+			.insert({'bottom': new Element('div', {'class': 'col-xs-4'}).update( tmp.companyName ) })
+			.insert({'bottom': tmp.aliasCol });
 	}
-	
+	/**
+	 * Displaying all the company & aliases
+	 */
 	,displayAllPriceMatchCompany: function() {
 		var tmp = {};
 		tmp.me = this;
-		
-		tmp.me.displayAddCompanyPanel();
-		
 		tmp.me.postAjax(tmp.me.getCallbackId('getPriceMatchCompany'), {'searchCriteria': tmp.me._searchCriteria, 'pagination': tmp.me._pageInfo}, {
-			'onLoading': function (sender, param) {
-				//$(tmp.me.searchBtnId).store('orignValue', $F(tmp.me.searchBtnId)).addClassName('disabled').setValue('searching ...').disabled = true;
-			}
-			, 'onComplete': function (sender, param) {
-				try 
-				{
+			'onLoading': function (sender, param) {}
+			,'onSuccess': function (sender, param) {
+				try {
 					tmp.result = tmp.me.getResp(param, false, true);
 					tmp.result.items.each(function(item) {
-						tmp.row = tmp.me._generateSingleRowForPriceMatchCompany(item);
-						$(tmp.me._resultDivId).insert({'bottom': tmp.row });
+						$(tmp.me._resultDivId).insert({'bottom': tmp.me._getCompanyRow(item) });
 					});
-				} 
-				catch(e) 
-				{
-					//console.debug(e);
+				} catch(e) {
 					alert(e);
 				}
-				
 			}
 		});
-		
 		return tmp.me;
 	}
-	
-	,displayAddCompanyPanel: function() {
+	,newCompany: function() {
 		var tmp = {};
 		tmp.me = this;
-		
-		$(tmp.me._addCompanyDivId).update('');
-		
-		$(tmp.me._addCompanyDivId).insert({'bottom': new Element('span', {'class': 'add_new_company'}) 
-			.insert({'bottom': new Element('span', {'class': 'button'}).update('Add New Company') 
-				.observe('click', function() {
-					tmp.newDiv = tmp.me._displayCompanyNamePanelForAddEdit({}, true);
-					
-					tmp.parentSpan = $(this).up('.add_new_company');
-					tmp.parentDiv = $(this).up('.add_new_company_div');
-					tmp.parentSpan.update(tmp.newDiv);
-					
-					tmp.parentDiv
-						.insert({'bottom': new Element('span', {'class': 'button'}).update('Cancel') 
-							.observe('click', function() {
-								tmp.me.displayAddCompanyPanel();
-							})	
-						});
-				})
-			})
-		});
+		$(tmp.me._resultDivId).insert({'bottom': tmp.me._getCompanyRow({'companyName': '', 'companyAliases': []}) })
+		return this;
 	}
-	
 });

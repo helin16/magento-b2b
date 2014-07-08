@@ -7,7 +7,7 @@
 	<div class="container">
 		<div class="contentDiv">
 			<div class="dataTableWrapper">
-				<div class="btn btn-success" id="addCompanyDiv"></div>
+				<span class="btn btn-success" onClick="pageJs.newCompany();">Add New Company</span>
 				<div class="list-group" id="resultDiv"></div>
 			</div>
 		</div>

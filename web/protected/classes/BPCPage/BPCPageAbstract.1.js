@@ -96,7 +96,7 @@ BPCPageJs.prototype = {
 		return false;
 	}
 	//getting the error message box
-	,getErrBox: function(title, msg) {
+	,getAlertBox: function(title, msg) {
 		return new Element('div', {'class': 'alert alert-dismissible', 'role': 'alert'})
 		.insert({'bottom': new Element('button', {'class': 'close', 'data-dismiss': 'alert'})
 			.insert({'bottom': new Element('span', {'aria-hidden': 'true'}).update('&times;') })

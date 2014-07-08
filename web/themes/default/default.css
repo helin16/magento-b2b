@@ -57,3 +57,6 @@
 .drop_file_div:hover {
 	border-color: black;
 }
+.noborder {
+	border: none;
+}

@@ -50,10 +50,10 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					tmp.result = tmp.me.getResp(param, false, true);
 					if(tmp.result.succ) {
 						tmp.me._cleanForm(btn, 'change_pass');
-						$(btn).insert({'before': tmp.me.getErrBox('', 'Password changed!').addClassName('alert-success') });
+						$(btn).insert({'before': tmp.me.getAlertBox('', 'Password changed!').addClassName('alert-success') });
 					}
 				} catch (e) {
-					$(btn).insert({'before': tmp.me.getErrBox('Error:', e).addClassName('alert-danger') });
+					$(btn).insert({'before': tmp.me.getAlertBox('Error:', e).addClassName('alert-danger') });
 				}
 				jQuery('#' + btn.id).button('reset');
 			}
@@ -73,11 +73,11 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				try{
 					tmp.result = tmp.me.getResp(param, false, true);
 					if(tmp.result.succ) {
-						$(btn).insert({'before': tmp.me.getErrBox('', 'Information changed!').addClassName('alert-success') });
+						$(btn).insert({'before': tmp.me.getAlertBox('', 'Information changed!').addClassName('alert-success') });
 						location.reload();
 					}
 				} catch (e) {
-					$(btn).insert({'before': tmp.me.getErrBox('Error:', e).addClassName('alert-danger') });
+					$(btn).insert({'before': tmp.me.getAlertBox('Error:', e).addClassName('alert-danger') });
 				}
 				jQuery('#' + btn.id).button('reset');
 			}
