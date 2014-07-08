@@ -3,12 +3,100 @@
  */
 var PageJs = new Class.create();
 PageJs.prototype = Object.extend(new BPCPageJs(), {
-	
-	dropShowDiv: {'dropDiv': '', 'showDiv': '', 'resultDiv': ''}
+	id_wrapper: '' //the html id of the wrapper
 	,_acceptableTypes: ['csv']
-	,_fileReader: null
-	,csvSeperator: ','
 	,csvFileLineFormat: ['sku', 'price']
+	,_fileReader: null
+
+	,load: function(id_wrapper) {
+		var tmp = {}
+		tmp.me = this;
+		tmp.me.id_wrapper = id_wrapper;
+		if (window.File && window.FileReader && window.FileList && window.Blob) { //the browser supports file reading api
+			$(tmp.me.id_wrapper).update( tmp.me._getFileUploadDiv() );
+			tmp.me._fileReader = new FileReader();
+		} else {
+			$(tmp.me.id_wrapper).update(tmp.me.getAlertBox('Warning:', 'Your browser does NOT support this feature. pls change and try again').addClassName('alert-warning') );
+		}
+		return tmp.me;
+	}
+
+	,_genTemplate: function() {
+		var tmp = {};
+		tmp.me = this;
+		tmp.data = [];
+		tmp.data.push(tmp.me.csvFileLineFormat.join(', ') + '\n');
+		tmp.now = new Date();
+		tmp.fileName = 'pricematch_template_' + tmp.now.getFullYear() + '_' + tmp.now.getMonth() + '_' + tmp.now.getDate() + '_' + tmp.now.getHours() + '_' + tmp.now.getMinutes() + '_' + tmp.now.getSeconds() + '.csv';
+		tmp.blob = new Blob(tmp.data, {type: "text/csv;charset=utf-8"});
+		saveAs(tmp.blob, tmp.fileName);
+		return tmp.me;
+	}
+	
+	,_getFileUploadDiv: function() {
+		var tmp = {};
+		tmp.me = this;
+		return new Element('div',  {'class': 'panel panel-default drop_file_div', 'title': 'You can drag multiple files here!'})
+			.insert({'bottom': new Element('div', {'class': 'panel-body'})
+				.insert({'bottom': new Element('div', {'class': 'btn-group pull-right'})
+					.insert({'bottom': new Element('span', {'class': 'btn btn-default', 'title': 'Edit Companies'})
+						.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-cog'}) })
+						.observe('click', function(){
+							jQuery.fancybox({
+								'width'			: '90%',
+								'height'		: '90%',
+								'autoScale'     : false,
+								'autoDimensions': false,
+								'fitToView'     : false,
+								'autoSize'      : false,
+								'type'			: 'iframe',
+								'href'			: '/pricematchcompanies.html',
+								'beforeClose'	: function() {
+									window.location = document.URL;
+								}
+					 		});
+						})
+					})
+					.insert({'bottom': new Element('span', {'class': 'btn btn-default', 'title': 'Download Template'})
+						.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-download-alt'}) })
+						.observe('click', function() {
+							tmp.me._genTemplate();
+						})
+					})
+				})
+				.insert({'bottom': new Element('div', {'class': 'form-group'})
+					.insert({'bottom': new Element('label').update('Drop you files here or select your file below:') })
+					.insert({'bottom': new Element('input', {'type': 'file'}) 
+						.observe('change', function(event) {
+							tmp.files = tmp.me._getValidFiles(event.target.files);
+						})
+					})
+					.insert({'bottom': new Element('small').update('ONlY ACCEPT : ' + tmp.me._acceptableTypes.join(', ')) })
+				})
+			})
+		;
+	}
+	
+	,_getValidFiles: function(files) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.files = [];
+		for(tmp.i = 0, tmp.file; tmp.file = files[tmp.i]; tmp.i++) {
+			if(tmp.file.type.match('text/*')) {
+				tmp.files.push(tmp.file);
+			}
+		}
+		return tmp.files;
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	,csvSeperator: ','
 	,csvNewLineSeperator: '\r\n'
 	,allFileLineArray: []
 	,companyNameArray: []
@@ -40,18 +128,6 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		return tmp.me;
 	}
 	
-	,genTemplate: function() {
-		var tmp = {};
-		tmp.me = this;
-		tmp.data = [];
-		tmp.data.push(tmp.me.csvFileLineFormat.join(', ') + '\n');
-		tmp.now = new Date();
-		tmp.fileName = 'pricematch_template_' + tmp.now.getFullYear() + '_' + tmp.now.getMonth() + '_' + tmp.now.getDate() + '_' + tmp.now.getHours() + '_' + tmp.now.getMinutes() + '_' + tmp.now.getSeconds() + '.csv';
-		tmp.blob = new Blob(tmp.data, {type: "text/csv;charset=utf-8"});
-		saveAs(tmp.blob, tmp.fileName);
-		return tmp.me;
-	}
-		
 	,parseCSVFile: function(lines) {
 		var tmp = {};
 		tmp.me = this;
@@ -74,22 +150,6 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		});
 		return tmp.outputArray;
 	}	
-	
-	,showAdminCompanies: function() {
-		jQuery.fancybox({
-			'width'			: '80%',
-			'height'		: '90%',
-			'autoScale'     : false,
-			'autoDimensions': false,
-			'fitToView'     : false,
-			'autoSize'      : false,
-			'type'			: 'iframe',
-			'href'			: '/pricematchcompanies.html',
-			'beforeClose'	: function() {
-				window.location = document.URL;
-			}
- 		});
-	}
 	
 	,initializeFileHandler: function() {
 		var tmp = {};

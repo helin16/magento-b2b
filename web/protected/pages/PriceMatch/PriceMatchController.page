@@ -2,25 +2,5 @@
 	<com:Application.controls.fancybox.FancyBox />
 	<com:Application.controls.jsSaveAs.jsSaveAs />
 	<com:TCallback ID="getAllPricesForProductBtn" OnCallback="getAllPricesForProduct" />
-	<div id="drop_file_div" class="panel panel-default drop_file_div"  title="You can drag multiple files here!">
-		<div class="panel-body">
-			<div class="btn-group pull-right">
-				<span class="btn btn-default" onclick="pageJs.showAdminCompanies();" title="Edit Companies">
-					<span class="glyphicon glyphicon-cog"></span>
-				</span>
-				<span class="btn btn-default pull-right" onclick="pageJs.genTemplate();" title="Download Tamplate">
-					<span class="glyphicon glyphicon-download-alt"></span>					
-				</span>
-			</div>
-			<div class='form-group'>
-				<label>Drop you files here</label>
-				<input type="file" id="exampleInputFile" onChange="pageJs.handleFileSelect(event);">
-			</div>
-			
-			<div id="drop_file" title="You can drag multiple files here!">
-			</div>
-			<div id="show_file"></div>
-			<div id="price_compare" class="dataTable"></div>
-		</div>
-	</div>
+	<div id="price_match_div"></div>
 </com:TContent>
