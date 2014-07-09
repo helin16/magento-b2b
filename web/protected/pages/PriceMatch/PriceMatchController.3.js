@@ -9,11 +9,13 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 	,_fileReader: null
 	,_uploadedData: {}
 	,_html_ids: {'uploadedFileList': 'uploaded_file_list', 'uploadInputDiv': 'upload_input_div', 'resultListDiv': 'result_list_div'}
+	,_companyAliases: {}
 
-	,load: function(id_wrapper) {
+	,load: function(id_wrapper, companyAliases) {
 		var tmp = {}
 		tmp.me = this;
 		tmp.me.id_wrapper = id_wrapper;
+		tmp.me._companyAliases = companyAliases;
 		if (window.File && window.FileReader && window.FileList && window.Blob) { //the browser supports file reading api
 			tmp.me._fileReader = new FileReader();
 			$(tmp.me.id_wrapper).update( tmp.me._getFileUploadDiv() )
@@ -107,7 +109,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			if((tmp.extension = tmp.file.name.split('.').pop()) !== '' && tmp.me._acceptableTypes.indexOf(tmp.extension.toLowerCase()) > -1) {
 				tmp.me._fileReader = new FileReader();
 				tmp.me._fileReader.onload = function(event) {
-					event.target.result.split('\r\n').each(function(line) {
+					event.target.result.replace('\n', '{EOL}').replace('\r', '{EOL}').replace('\r\n', '{EOL}').split('{EOL}').each(function(line) {
 						if(line !== null && !line.blank()) {
 							tmp.cols = [];
 							line.split(',').each(function(col) {
@@ -147,7 +149,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				.insert({'bottom': new Element('span', {'class': 'btn btn-success'})
 					.update('Start')
 					.observe('click', function() {
-						console.debug(tmp.me._uploadedData);
+						tmp.me._loadProductLineItems();
 					})
 				})
 				.insert({'bottom': new Element('span', {'class': 'btn btn-warning pull-right'})
@@ -164,17 +166,20 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 	,genCSV: function(btn) {
 		var tmp = {};
 		tmp.me = this;
-		if(!$(tmp.me.dropShowDiv.resultDiv))
-			return tmp.me;
 		
 		//collect data
 		tmp.data = [];
-		tmp.i = 0;
-		$(tmp.me.dropShowDiv.resultDiv).getElementsBySelector('.row').each(function(row){
+		tmp.headerRow = 'SKU, My Price, Price Diff., Min. Price';
+		$H(tmp.me._companyAliases).each(function(alias){
+			tmp.headerRow = tmp.headerRow + ', ' + alias.key;
+		});
+		tmp.data.push(tmp.headerRow);
+		
+		$(btn).up('.panel').getElementsBySelector('.result_row').each(function(row){
 			tmp.originalData = row.retrieve('data');
 			tmp.csvRow = tmp.originalData.sku + ', ' + tmp.originalData.myPrice + ', ' + tmp.originalData.minPrice + ', ' + tmp.originalData.priceDiff;
-			tmp.originalData.data.each(function(compData) {
-				tmp.csvRow = tmp.csvRow + ', ' + (tmp.i === 0 ? compData.company : compData.price);
+			$H(tmp.me._companyAliases).each(function(alias){
+				tmp.csvRow = tmp.csvRow + ', ' + tmp.me.getCurrency(tmp.originalData.companyPrices[alias.key].price);
 			})
 			tmp.csvRow = tmp.csvRow + '\n';
 			tmp.data.push(tmp.csvRow);
@@ -186,60 +191,103 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		saveAs(tmp.blob, tmp.fileName);
 		return tmp.me;
 	}
+	/**
+	 * Getting a single row of the result table
+	 */
+	,_getProductLineItem: function(listGroupDiv, dataKeyIndex, dataKeys) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.data = tmp.me._uploadedData[dataKeys[dataKeyIndex]];
+		tmp.newRow = new Element('tr', {'class': 'result_row info'})
+			.insert({'bottom': new Element('td').update(tmp.data.sku) })
+			.insert({'bottom': new Element('td').update(tmp.me.getCurrency(tmp.data.price)) })
+			.insert({'bottom': new Element('td',{'colspan': 2}).update('<strong>Loading...</strong>') });
+		tmp.me.postAjax(tmp.me.getCallbackId('getAllPricesForProduct'), {'sku': tmp.data.sku, 'price': tmp.data.price, 'companyAliases': tmp.me._companyAliases}, {
+			'onLoading': function(sender, param) {
+				listGroupDiv.insert({'bottom': tmp.newRow });
+			}
+			,'onSuccess': function (sender, param) {
+				try {
+					tmp.result = tmp.me.getResp(param, false, true);
+					if(!tmp.result || !tmp.result.item)
+						return;
+					
+					tmp.newRow.update('').removeClassName('info').store('data', tmp.result.item)
+						.insert({'bottom': new Element('td').update(tmp.result.item.sku) })
+						.insert({'bottom': new Element('td').update(tmp.me.getCurrency(tmp.result.item.myPrice)) })
+						.insert({'bottom': new Element('td', {'class': 'price_diff' + (tmp.result.item.priceDiff > 0 ? ' over_priced' : '')}).update(tmp.me.getCurrency(tmp.result.item.priceDiff)) })
+						.insert({'bottom': new Element('td', {'class': 'price_min', 'title': 'Min. Price among all Companies'}).update(tmp.me.getCurrency(tmp.result.item.minPrice)) });
+					$H(tmp.me._companyAliases).each(function(alias){
+						tmp.newRow.insert({'bottom': new Element('td').update(
+							tmp.result.item.companyPrices[alias.key].priceURL.blank() ? 
+							new Element('span', {'title': 'No value has been found for "' + alias.key + '" based on sku: ' + tmp.data.sku}).update( tmp.me.getCurrency(tmp.result.item.companyPrices[alias.key].price) ) : 
+							new Element('a', {'href': tmp.result.item.companyPrices[alias.key].priceURL}).update( tmp.me.getCurrency(tmp.result.item.companyPrices[alias.key].price) )
+						) })
+					});
+				}  catch (e) {
+					tmp.newRow.update('').removeClassName('info').addClassName('danger').store('data', tmp.data)
+						.insert({'bottom': new Element('td').update(tmp.data.sku) })
+						.insert({'bottom': new Element('td').update(tmp.me.getCurrency(tmp.data.price)) })
+						.insert({'bottom': new Element('td',{'colspan': 2}).update('<strong>ERROR:</strong>' + e) })
+				}
+			}
+			,'onComplete': function(sender, param) {
+				try {
+					tmp.nextDataKeyIndex = dataKeyIndex * 1 + 1;
+					if(tmp.nextDataKeyIndex >= dataKeys.size()) { //this is the last row
+						tmp.errRows = $(tmp.me.id_wrapper).getElementsBySelector('.result_row.danger');
+						listGroupDiv.up('.panel').removeClassName('panel-danger').addClassName(tmp.errRows.size() > 0 ? 'panel-warning' : 'panel-success').down('.panel-heading').update('')
+							.insert({'bottom': new Element('panel-title').update((tmp.errRows.size() > 0 ? 'All provided rows have been proccessed, but with ' + tmp.errRows.size() + ' error(s)' : 'All provided rows have been proccessed successfully') ) })
+							.insert({'bottom': new Element('span',{'class': 'btn btn-success btn-xs pull-right'})
+								.update('Export To Excel') 
+								.observe('click', function() {
+									tmp.me.genCSV(this);
+								})
+							})
+					} else {
+						tmp.me._getProductLineItem(listGroupDiv, tmp.nextDataKeyIndex, dataKeys);
+					}
+				} catch (e) {
+					alert(e);
+				}
+			}
+		});
+		return tmp.me;
+	}
 	
+	/**
+	 * Getting the result list table
+	 */
 	,_loadProductLineItems: function() {
 		var tmp = {};
 		tmp.me = this;
-		
-		$(tmp.me.dropShowDiv.dropDiv).hide();
-		$(tmp.me.dropShowDiv.showDiv).update('');
-		
-		/// Generate the header for the price compare table ///
-		tmp.headerCompanyArray = [];
-		tmp.me.companyNameArray.each(function(cName) {
-			tmp.headerCompanyArray.push({'price': '', 'priceURL': '', 'company': cName});
+		tmp.keys = [];
+		$H(tmp.me._uploadedData).each(function(data){
+			tmp.keys.push(data.key);
 		});
 		
-		tmp.spinBar = new Element('span', {"class": "inlineblock loading"});
-		$(tmp.me.dropShowDiv.resultDiv)
-			.update('')
-			.insert({'bottom': tmp.me.
-				_generatePriceRowForProduct({'sku': 'SKU', 'minPrice': 'Min Price', 'myPrice': 'My Price', 'priceDiff': 'Price Diff.', 'data': tmp.headerCompanyArray})
-				.addClassName('header')
+		//get header row
+		tmp.theadRow = new Element('tr')
+			.insert({'bottom': new Element('th').update('SKU') })
+			.insert({'bottom': new Element('th').update('My Price') })
+			.insert({'bottom': new Element('th', {'class': 'price_diff'}).update('Price Diff.') })
+			.insert({'bottom': new Element('th', {'class': 'price_min'}).update('Min Price') });
+		$H(tmp.me._companyAliases).each(function(alias){
+			tmp.theadRow.insert({'bottom': new Element('th').update(alias.key) })
+		});
+		
+		$(tmp.me.id_wrapper).update(
+			new Element('div', {'class': 'price_search_result panel panel-danger table-responsive'})
+			.insert({'bottom': new Element('div', {'class': 'panel-heading'})
+				.update('Total of <strong>' + tmp.keys.size() + '</strong> unique row(s) received:') 
+				.insert({'bottom': new Element('strong',{'class': 'pull-right'}).update('please waiting for it to finish') })
 			})
-			.insert({'after': tmp.spinBar});
-		///////////////////////////////////////////////////////////
-		tmp.lineNo = 0;
-		tmp.me.allFileLineArray.each(function(item) {
-			item.fileContent.each(function(line) {
-				if(line.sku.blank())
-				{
-					tmp.lineNo = tmp.lineNo * 1 + 1;
-					tmp.me._checkLastLine(tmp.lineNo, tmp.spinBar);
-					return;
-				}	
-				tmp.me.postAjax(tmp.me.getCallbackId('getAllPricesForProduct'), {'sku': line.sku, 'price': line.price}, {
-					'onLoading': function(sender, param) {}
-					,'onSuccess': function (sender, param) {
-						try 
-						{
-							tmp.result = tmp.me.getResp(param, false, true);
-							if(!tmp.result)
-								return;
-							if(tmp.result.items.sku !== '' && tmp.result.items.sku !== undefined && tmp.result.items.sku !== null && !tmp.result.items.sku.blank())
-								$(tmp.me.dropShowDiv.resultDiv).insert({'bottom': tmp.me._generatePriceRowForProduct(tmp.result.items)});
-							
-							tmp.lineNo = tmp.lineNo * 1 + 1;
-							tmp.me._checkLastLine(tmp.lineNo, tmp.spinBar);
-						} 
-						catch (e) 
-						{
-							alert(e);
-						}
-					}
-				})
-			});
-		});
+			.insert({'bottom': new Element('table', {'class': 'table table-striped'})
+				.insert({'bottom': new Element('thead').update(tmp.theadRow) })
+				.insert({'bottom': tmp.resultList = new Element('tbody') })
+			})
+		);
+		tmp.me._getProductLineItem(tmp.resultList, 0, tmp.keys);
 		return tmp.me;
 	}
 

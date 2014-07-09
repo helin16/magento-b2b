@@ -45,7 +45,7 @@ abstract class HTMLParser
 		return trim($parts['scheme']) . '://' . trim($parts['host']);
 	}
 
-	public static function getPriceListForProduct($productName, &$url = '')
+	public static function getPriceListForProduct($productName)
 	{
 		 if(($productName = trim($productName)) === '')
 		 	throw new Exception("Product name must be provided to get the price list");

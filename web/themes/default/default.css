@@ -60,3 +60,11 @@
 .noborder {
 	border: none;
 }
+
+.price_search_result .price_diff.over_priced {
+	background: red;
+	color: white;
+}
+.price_search_result .price_min {
+	border-right: 3px #aaa solid;
+}
