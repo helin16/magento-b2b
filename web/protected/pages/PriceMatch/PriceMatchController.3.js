@@ -7,14 +7,16 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 	,_acceptableTypes: ['csv']
 	,csvFileLineFormat: ['sku', 'price']
 	,_fileReader: null
+	,_uploadedData: {}
+	,_html_ids: {'uploadedFileList': 'uploaded_file_list', 'uploadInputDiv': 'upload_input_div', 'resultListDiv': 'result_list_div'}
 
 	,load: function(id_wrapper) {
 		var tmp = {}
 		tmp.me = this;
 		tmp.me.id_wrapper = id_wrapper;
 		if (window.File && window.FileReader && window.FileList && window.Blob) { //the browser supports file reading api
-			$(tmp.me.id_wrapper).update( tmp.me._getFileUploadDiv() );
 			tmp.me._fileReader = new FileReader();
+			$(tmp.me.id_wrapper).update( tmp.me._getFileUploadDiv() )
 		} else {
 			$(tmp.me.id_wrapper).update(tmp.me.getAlertBox('Warning:', 'Your browser does NOT support this feature. pls change and try again').addClassName('alert-warning') );
 		}
@@ -64,43 +66,100 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 						})
 					})
 				})
-				.insert({'bottom': new Element('div', {'class': 'form-group'})
+				.insert({'bottom': new Element('div', {'class': 'form-group center-block text-left', 'style': 'width: 50%'})
 					.insert({'bottom': new Element('label').update('Drop you files here or select your file below:') })
-					.insert({'bottom': new Element('input', {'type': 'file'}) 
+					.insert({'bottom': tmp.inputFile = new Element('input', {'type': 'file', 'style': 'display: none;', 'multiple': true}) 
 						.observe('change', function(event) {
-							tmp.files = tmp.me._getValidFiles(event.target.files);
+							tmp.me._readFiles(event.target.files);
 						})
 					})
-					.insert({'bottom': new Element('small').update('ONlY ACCEPT : ' + tmp.me._acceptableTypes.join(', ')) })
+					.insert({'bottom': new Element('div', {'class': 'clearfix'}) })
+					.insert({'bottom': new Element('span', {'class': 'btn btn-success clearfix'})
+						.update('Click to select your file')
+						.observe('click', function(event) {
+							tmp.inputFile.click();
+						})
+					})
+					.insert({'bottom': new Element('div', {'class': 'clearfix'}) })
+					.insert({'bottom': new Element('small').update('ONLY ACCEPT file formats: ' + tmp.me._acceptableTypes.join(', ')) })
 				})
+			})
+			.observe('dragover', function(evt) {
+				evt.stopPropagation();
+				evt.preventDefault();
+				evt.dataTransfer.dropEffect = 'copy';
+			})
+			.observe('drop', function(evt) {
+				evt.stopPropagation();
+				evt.preventDefault();
+				tmp.me._readFiles(evt.dataTransfer.files);
 			})
 		;
 	}
 	
-	,_getValidFiles: function(files) {
+	,_readFiles: function(files) {
 		var tmp = {};
 		tmp.me = this;
-		tmp.files = [];
+		tmp.me._uploadedData = {};
+		tmp.fileLists = new Element('div', {'class': 'list-group'});
 		for(tmp.i = 0, tmp.file; tmp.file = files[tmp.i]; tmp.i++) {
-			if(tmp.file.type.match('text/*')) {
-				tmp.files.push(tmp.file);
+			tmp.fileRow = new Element('div', {'class': 'row'}).update( new Element('div', {'class': 'col-lg-6 col-md-6'}).update(tmp.file.name) );
+			if((tmp.extension = tmp.file.name.split('.').pop()) !== '' && tmp.me._acceptableTypes.indexOf(tmp.extension.toLowerCase()) > -1) {
+				tmp.me._fileReader = new FileReader();
+				tmp.me._fileReader.onload = function(event) {
+					event.target.result.split('\r\n').each(function(line) {
+						if(line !== null && !line.blank()) {
+							tmp.cols = [];
+							line.split(',').each(function(col) {
+								if(col !== null && !col.blank()) {
+									tmp.cols.push(col.strip());
+								}
+							})
+							tmp.key = tmp.cols.join(',');
+							if(tmp.key !== tmp.me.csvFileLineFormat.join(',')) { //this is not the header line
+								tmp.colArray = {};
+								for(tmp.j = 0; tmp.j < tmp.me.csvFileLineFormat.size(); tmp.j++) {
+									tmp.colArray[tmp.me.csvFileLineFormat[tmp.j]] = tmp.cols[tmp.j];
+								}
+								tmp.me._uploadedData[tmp.key] = tmp.colArray;
+							}
+						}
+					})
+				}
+				tmp.me._fileReader.readAsText(tmp.file);
+				tmp.supported = true;
+			} else {
+				tmp.fileRow.insert({'bottom': new Element('div', {'class': 'col-lg-6 col-md-6'}).update(new Element('small').update('Not supported file extension: ' + tmp.extension) )})
+				tmp.supported = false;
 			}
+			tmp.fileLists.insert({'bottom': new Element('div', {'class': 'list-group-item ' + (tmp.supported === true ? 'list-group-item-success' : 'list-group-item-danger')})
+				.insert({'bottom': tmp.fileRow })
+			});
 		}
-		return tmp.files;
+		$(tmp.me.id_wrapper).update(
+			new Element('div', {'class': 'panel panel-default'})
+			.insert({'bottom': new Element('div', {'class': 'panel-heading'})
+				.update('Files Selected:')
+				.insert({'bottom': new Element('small', {'class': 'pull-right'}).update('ONLY ACCEPT file formats: ' + tmp.me._acceptableTypes.join(', ')) })
+			})
+			.insert({'bottom': tmp.fileLists })
+			.insert({'bottom': new Element('div', {'class': 'panel-footer'})
+				.insert({'bottom': new Element('span', {'class': 'btn btn-success'})
+					.update('Start')
+					.observe('click', function() {
+						console.debug(tmp.me._uploadedData);
+					})
+				})
+				.insert({'bottom': new Element('span', {'class': 'btn btn-warning pull-right'})
+					.update('Cancel')
+					.observe('click', function(){
+						$(tmp.me.id_wrapper).update( tmp.me._getFileUploadDiv() );
+					})
+				})
+			})
+		);
+		return tmp.me;
 	}
-	
-	
-	
-	
-	
-	
-	
-	
-	,csvSeperator: ','
-	,csvNewLineSeperator: '\r\n'
-	,allFileLineArray: []
-	,companyNameArray: []
-	,totalLines: 0
 	
 	,genCSV: function(btn) {
 		var tmp = {};
@@ -126,154 +185,6 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.blob = new Blob(tmp.data, {type: "text/csv;charset=utf-8"});
 		saveAs(tmp.blob, tmp.fileName);
 		return tmp.me;
-	}
-	
-	,parseCSVFile: function(lines) {
-		var tmp = {};
-		tmp.me = this;
-		tmp.outputArray = [];
-		tmp.linesArray = lines.split(tmp.me.csvNewLineSeperator);
-		tmp.linesArray.each(function(line) {
-			line = line.strip();
-			if((line.blank() || line === null || line === ''))
-			{
-			}	
-			else
-			{
-				tmp.tmpLineArray = {};
-				tmp.lineArray = line.split(tmp.me.csvSeperator);
-				for(tmp.i = 0; tmp.i < tmp.me.csvFileLineFormat.size(); tmp.i++)
-					tmp.tmpLineArray[tmp.me.csvFileLineFormat[tmp.i]] = (tmp.lineArray[tmp.i] !== undefined ? tmp.lineArray[tmp.i] : '');
-				
-				tmp.outputArray.push(tmp.tmpLineArray);
-			}	
-		});
-		return tmp.outputArray;
-	}	
-	
-	,initializeFileHandler: function() {
-		var tmp = {};
-		tmp.me = this;
-		
-		$(tmp.me.dropShowDiv.dropDiv).observe('dragover', function(event) {
-				tmp.me.handleDragOver(event);
-			})
-			.observe('drop', function(event) {
-				tmp.me.handleFileSelect(event);
-			});
-		
-		return tmp.me;
-	}
-
-	,handleDragOver: function(evt) {
-		var tmp = {};
-		tmp.me = this;
-		evt.stopPropagation();
-		evt.preventDefault();
-		
-		evt.dataTransfer.dropEffect = 'copy';
-	}
-	
-	,handleFileSelect: function(evt) {
-		var tmp = {};
-		tmp.me = this;
-		evt.stopPropagation();
-		evt.preventDefault();
-		
-		/// clear and reset the total number of lines processed ///
-		tmp.me.totalLines = 0;
-		/// reset the centralized file array ///
-		tmp.me.allFileLineArray = [];
-		
-		tmp.files = evt.dataTransfer.files;
-		tmp.validFiles = [];
-		
-		for(tmp.i = 0, tmp.f; tmp.f = tmp.files[tmp.i]; tmp.i++) 
-		{
-			tmp.success = ((tmp.extension = tmp.f.name.split('.').pop()) !== '' && tmp.me._acceptableTypes.indexOf(tmp.extension.toLowerCase()) > -1);
-			if(tmp.success)	
-			{
-				tmp.msgTxt = 'File Name:' + tmp.f.name + 'Accepted';
-				tmp.validFiles.push({'index': tmp.i, 'file': tmp.f});	
-			}	
-			else
-				tmp.msgTxt = tmp.f.name + ' Error: Only Acceptable File Extension are ' + tmp.me._acceptableTypes.join(', ');
-			
-			$(tmp.me.dropShowDiv.showDiv).insert({'bottom':  new Element('div', {'class': 'msgDiv ' + (!tmp.success ? 'errorMsgDiv' : 'okMsgDiv'), 'file_sequence': tmp.i})
-				.update(new Element('div', {'class': 'msg'})
-					.update(tmp.msgTxt)
-				) 
-			});
-		}
-		
-		if(tmp.validFiles.size() === 0)
-		{
-			alert("NO VALID FILES UPLOADED!!! PLS TRY AGAIN");
-			return;	
-		}
-		
-		/// we have found some valid files , so start reading them ///
-		tmp.allFileLineArray = tmp.me._readValidCSVFiles(tmp.validFiles);
-		
-		return tmp.me;
-	}
-	
-	,_generatePriceRowForProduct: function(productPriceArray) {
-		var tmp = {};
-		tmp.me = this;
-		tmp.ppArray = productPriceArray;
-		
-		if(tmp.ppArray.sku === '' || tmp.ppArray.sku === undefined || tmp.ppArray.sku === null || tmp.ppArray.sku.blank())
-			return tmp.me;
-
-		tmp.rowDiv = new Element('div', {'class': 'row'})
-						.insert({'bottom': new Element('span', {'class': 'cell sku ' + ((tmp.ppArray.searchURL && !tmp.ppArray.searchURL.blank()) ? 'cuspntr' : '') }).update(tmp.ppArray.sku)
-							.observe('click', function() {
-								if(tmp.ppArray.searchURL && !tmp.ppArray.searchURL.blank())
-									window.open(tmp.ppArray.searchURL.strip());
-							})	
-						})
-						.insert({'bottom': new Element('span', {'class': 'cell myPrice'}).update(isNaN(tmp.ppArray.myPrice) ? tmp.ppArray.myPrice : tmp.me.getCurrency(tmp.ppArray.myPrice)) })
-						.insert({'bottom': new Element('span', {'class': 'cell priceDiff ' + (isNaN(tmp.ppArray.priceDiff) || tmp.ppArray.priceDiff == 0 ? '' : (tmp.ppArray.priceDiff > 0 ? 'overmin' : "undermin"))}).update(
-								isNaN(tmp.ppArray.priceDiff) ? tmp.ppArray.priceDiff : tmp.me.getCurrency(tmp.ppArray.priceDiff)) 
-						})
-						.insert({'bottom': new Element('span', {'class': 'cell minPrice'}).update(isNaN(tmp.ppArray.minPrice) ? tmp.ppArray.minPrice : tmp.me.getCurrency(tmp.ppArray.minPrice)) });
-		tmp.ppArray.data.each(function(item) {
-			if((item.price.blank() || item.price === '' || item.price === null || item.price === undefined) && (item.priceURL.blank() || item.priceURL === '' || item.priceURL === null || item.priceURL === undefined))
-				tmp.rowDiv.insert({'bottom': new Element('span', {'class': 'cell company'}).update(item.company) }); /// header info ///
-			else
-			{
-				tmp.url = item.priceURL.strip();
-				tmp.hasUrl = (tmp.url !== '' && tmp.url !== null && tmp.url !== undefined);
-				tmp.rowDiv.insert({'bottom': new Element('span', {'class': 'cell company ' + (tmp.hasUrl === true ? 'cuspntr' : '')}).update(item.price)
-					.observe('click', function() {
-						if(!item.priceURL.strip().blank())
-							window.open(item.priceURL.strip());
-					})
-				});
-			}	
-		});
-		tmp.rowDiv.store('data', tmp.ppArray);
-		return tmp.rowDiv;
-	}
-	
-	,_checkLastLine: function (lineNo, spinBar) {
-		var tmp = {};
-		tmp.me = this;
-		tmp.lineNo = lineNo;
-		if(tmp.lineNo >= tmp.me.totalLines)
-		{
-			$(tmp.me.dropShowDiv.dropDiv).show();
-			spinBar.remove();
-			//adding output to excel btn
-			$(tmp.me.dropShowDiv.resultDiv).insert({'bottom': new Element('span', {'class': 'button'})
-				.update('Output To CSV')
-				.observe('click', function(){
-					tmp.me.genCSV(this);
-				})
-			});
-		}
-		return this;
 	}
 	
 	,_loadProductLineItems: function() {
@@ -329,66 +240,6 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				})
 			});
 		});
-		return tmp.me;
-	}
-	
-	/// This function will be triggered when all the file(s) have finished loading ///
-	,_allFileLoadFinished: function() {
-		var tmp = {};
-		tmp.me = this;
-		
-		if(tmp.me.allFileLineArray.size() === 0)
-		{
-			alert("EMPTY FILE(s) UPLOADED!!! PLS TRY AGAIN");
-			return;	
-		}
-		$(tmp.me.dropShowDiv.showDiv).insert({'bottom': new Element('span', {'class': 'button'})
-			.update('Start Load')
-			.observe('click', function() {
-				tmp.me._loadProductLineItems();
-			})
-		});
-		
-		return tmp.me;
-	}
-	
-	/*  This function read one file at a time and checks if this the last file to read,
-	 * 	If not call itself to read the next file, 
-	 * 	If yes show submit button  
-	 */
-	,_readSingleCSVFile: function(file, index, validFiles) {
-		var tmp = {};
-		tmp.me = this;
-		tmp.reader = new FileReader();
-	      
-		tmp.reader.onload = function(event) { 
-			tmp.contents = event.target.result;
-			tmp.fileArray = tmp.me.parseCSVFile(tmp.contents);
-			
-			$(tmp.me.dropShowDiv.showDiv).getElementsBySelector('[file_sequence='+ file.index +']')[0].insert({'bottom': new Element('div', {'class': 'msg'}).update('Loaded Successfully') });
-			$(tmp.me.dropShowDiv.showDiv).getElementsBySelector('[file_sequence='+ file.index +']')[0].store(tmp.fileArray);
-			if(tmp.fileArray.size() > 0)
-			{
-				tmp.me.allFileLineArray.push({'fileIndex': file.index, 'fileName': file.file.name, 'fileContent': tmp.fileArray});
-				tmp.me.totalLines = (tmp.me.totalLines * 1) + tmp.fileArray.size();	
-			}
-			
-			index = (index*1) + 1;
-			if(validFiles.size() > index)
-				tmp.me._readSingleCSVFile(validFiles[index], index, validFiles);
-			else
-				tmp.me._allFileLoadFinished();
-				
-		}
-		tmp.reader.readAsText(file.file);
-		
-		return tmp.me;
-	}
-	
-	,_readValidCSVFiles: function(validFiles) {
-		var tmp = {};
-		tmp.me = this;
-		tmp.me._readSingleCSVFile(validFiles[0], 0, validFiles);
 		return tmp.me;
 	}
 
