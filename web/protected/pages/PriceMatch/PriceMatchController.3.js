@@ -173,7 +173,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		$H(tmp.me._companyAliases).each(function(alias){
 			tmp.headerRow = tmp.headerRow + ', ' + alias.key;
 		});
-		tmp.data.push(tmp.headerRow);
+		tmp.data.push(tmp.headerRow + '\n');
 		
 		$(btn).up('.panel').getElementsBySelector('.result_row').each(function(row){
 			tmp.originalData = row.retrieve('data');
