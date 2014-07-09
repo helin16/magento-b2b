@@ -175,7 +175,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		});
 		tmp.data.push(tmp.headerRow + '\n');
 		
-		$(btn).up('.panel').getElementsBySelector('.result_row').each(function(row){
+		$(btn).up('.panel').getElementsBySelector('.result_row.result-done').each(function(row){
 			tmp.originalData = row.retrieve('data');
 			tmp.csvRow = tmp.originalData.sku + ', ' + tmp.originalData.myPrice + ', ' + tmp.originalData.minPrice + ', ' + tmp.originalData.priceDiff;
 			$H(tmp.me._companyAliases).each(function(alias){
@@ -212,7 +212,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					if(!tmp.result || !tmp.result.item)
 						return;
 					
-					tmp.newRow.update('').removeClassName('info').store('data', tmp.result.item)
+					tmp.newRow.update('').removeClassName('info').addClassName('result-done').store('data', tmp.result.item)
 						.insert({'bottom': new Element('td').update(tmp.result.item.sku) })
 						.insert({'bottom': new Element('td').update(tmp.me.getCurrency(tmp.result.item.myPrice)) })
 						.insert({'bottom': new Element('td', {'class': 'price_diff' + (tmp.result.item.priceDiff > 0 ? ' over_priced' : '')}).update(tmp.me.getCurrency(tmp.result.item.priceDiff)) })
@@ -238,10 +238,21 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 						tmp.errRows = $(tmp.me.id_wrapper).getElementsBySelector('.result_row.danger');
 						listGroupDiv.up('.panel').removeClassName('panel-danger').addClassName(tmp.errRows.size() > 0 ? 'panel-warning' : 'panel-success').down('.panel-heading').update('')
 							.insert({'bottom': new Element('panel-title').update((tmp.errRows.size() > 0 ? 'All provided rows have been proccessed, but with ' + tmp.errRows.size() + ' error(s)' : 'All provided rows have been proccessed successfully') ) })
-							.insert({'bottom': new Element('span',{'class': 'btn btn-success btn-xs pull-right'})
-								.update('Export To Excel') 
-								.observe('click', function() {
-									tmp.me.genCSV(this);
+							.insert({'bottom': new Element('span',{'class': 'btn-group btn-group-sm pull-right'})
+								.insert({'bottom': new Element('span',{'class': 'btn'})
+									.writeAttribute('title', tmp.errRows.size() > 0 ? 'Export Success Rows' : 'Export To Excel')
+									.update(new Element('span', {'class': 'glyphicon glyphicon-save'}))
+									.addClassName(tmp.errRows.size() > 0 ? 'btn-warning' : 'btn-success')
+									.observe('click', function() {
+										tmp.me.genCSV(this);
+									})
+								})
+								.insert({'bottom': new Element('span',{'class': 'btn btn-default'})
+									.writeAttribute('title', 'Start Again')
+									.update(new Element('span', {'class': 'glyphicon glyphicon-repeat'}))
+									.observe('click', function() {
+										window.location = document.URL;
+									})
 								})
 							})
 					} else {
