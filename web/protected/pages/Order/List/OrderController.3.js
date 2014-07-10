@@ -226,8 +226,11 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 						tmp.me._openDetailPage(row);
 					})
 				})
-				.insert({'bottom': new Element('span', {'id': 'shipping-btn-' + row.id, 'class': 'btn btn-default pull-right visible-xs visible-sm visible-md visible-lg newPopover'})
+				.insert({'bottom': new Element('span', {'id': 'shipping-btn-' + row.id, 'class': 'btn btn-default pull-right visible-xs visible-sm visible-md visible-lg newPopover popovershipping'})
 					.update('<span class="glyphicon glyphicon-plane" title="Click to See Shipping"></span>')
+					.observe('click', function(e) {
+						jQuery('.popovershipping').not(this).popover('hide');
+					})
 				})
 			})
 			.insert({'bottom': new Element('div').update('<span class="glyphicon glyphicon-user" title="Customer Name"></span>: ' + tmp.custName) })
