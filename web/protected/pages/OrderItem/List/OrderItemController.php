@@ -30,20 +30,14 @@ class OrderItemController extends BPCPageAbstract
 	 */
 	protected function _getEndJs()
 	{
-		$orderStatusArray = array();
-		foreach((OrderStatus::findAll()) as $os)
-			$orderStatusArray[] = $os->getJson();
-		
 		$js = parent::_getEndJs();
-		$js .= 'pageJs.resultDivId = "resultDiv";';
-		$js .= 'pageJs.searchDivId = "searchDiv";';
-		$js .= 'pageJs.totalNoOfItemsId = "total_no_of_items";';
-		$js .= 'pageJs._infoTypes = {"custName": ' . OrderInfoType::ID_CUS_NAME. ', "custEmail" : ' . OrderInfoType::ID_CUS_EMAIL . ', "qty": ' . OrderInfoType::ID_QTY_ORDERED . '};';
+// 		$js .= 'pageJs._infoTypes = {"custName": ' . OrderInfoType::ID_CUS_NAME. ', "custEmail" : ' . OrderInfoType::ID_CUS_EMAIL . ', "qty": ' . OrderInfoType::ID_QTY_ORDERED . '};';
 		$js .= 'pageJs.setCallbackId("getOrderitems", "' . $this->getOrderItemsBtn->getUniqueID(). '")';
+			$js .= '.init("resultDiv", "searchDiv")';
 			$js .= '.setSearchCriteria(' . json_encode($this->_getViewPreference()) . ')';
-			$js .= '.setToolTipCommentsObj(new TooltipComments(pageJs))';
-			$js .= '.init();';
-		$js .= '$("searchBtn").click();';
+			$js .= '.getSearchCriteria()';
+			$js .= '.getResults(true, ' . DaoQuery::DEFAUTL_PAGE_SIZE . ');';
+// 		$js .= '$("searchBtn").click();';
 		return $js;
 	}
 	/**
@@ -127,7 +121,12 @@ class OrderItemController extends BPCPageAbstract
 			$results['pageStats'] = FactoryAbastract::service('OrderItem')->getPageStats();
 			$results['items'] = array();
 			foreach($orderItems as $item)
-				$results['items'][] = $item->getJson();
+			{
+				$orderItemArray = $item->getJson();
+				$comments = FactoryAbastract::service('Comments')->findByCriteria('entityName = ? and entityId = ?', array('OrderItem', $item->getId()), true, null, DaoQuery::DEFAUTL_PAGE_SIZE, array('created' => 'desc'));
+				$orderItemArray['comments'] = array_map(create_function('$a', 'return $a->getJson();'), $comments); 
+				$results['items'][] = $orderItemArray;
+			}
 		}
 		catch(Exception $ex)
 		{

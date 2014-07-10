@@ -68,3 +68,6 @@
 .price_search_result .price_min {
 	border-right: 3px #aaa solid;
 }
+.popover .popover-content.list-group {
+	padding: 0px;
+} 

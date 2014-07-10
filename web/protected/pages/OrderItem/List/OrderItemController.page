@@ -1,51 +1,69 @@
 <com:TContent ID="MainContent">
 	<com:Application.controls.fancybox.FancyBox />
 	<com:Application.controls.chosen.Chosen />
-	<com:Application.controls.TooltipComments.TooltipComments />
 	<com:TCallback ID="getOrderItemsBtn" onCallBack="Page.getOrderItems" />
-	<div class="pagewrapper login container LoginPanel">
-		<div class="contentDiv">
-			<div class="h_title">Search orders:</div>
-			<div class="h_content">
-				<div id="searchDiv" class="searchDiv">
-					<div class="row">
-						<fieldset class="searchField inlineblock">
-							<label for="orderNo">Order No: </label>
-							<input id='orderNo' type="text" placeholder="Order No" search_field="ord.orderNo" />
-						</fieldset>
-						<fieldset class="searchField inlineblock">
-							<label for="invNo">Inv No: </label>
-							<input id='invNo' type="text" placeholder="Invoice Number" search_field="ord.invNo" />
-						</fieldset>
-						<fieldset class="searchField  inlineblock">
-							<label for="status">Has Ordered: </label>
-							<select search_field="ord_item.isOrdered" class="chosen isordered">
-								<option value=""> </option>
-								<option value="1">YES</option>
-								<option value="0">NO</option>
-							</select>
-						</fieldset>
-					</div>
-					<div class="row">
-						<fieldset class="searchField  inlineblock eta">
-							<label for="status">ETA: </label>
-							<com:TDatePicker Attributes.search_field="ord_item.eta.from" DateFormat="yyyy-MM-dd 00:00:00" Attributes.readonly="true" CssClass="cuspntr" Attributes.placeholder="from"/>	
-							<com:TDatePicker Attributes.search_field="ord_item.eta.to" DateFormat="yyyy-MM-dd 23:59:59" Attributes.readonly="true" CssClass="cuspntr" Attributes.placeholder="to"/>
-						</fieldset>
-						<input id="searchBtn" type="button" value="search" class="button" onclick="pageJs.getSearchCriteria().getResults(true, <%= DaoQuery::DEFAUTL_PAGE_SIZE %>);"/>
-					</div>
-	 			</div>
-			</div>
-		</div>
-		<div class="contentDiv">
-			<div class="h_title"><span id='total_no_of_items'>0</span> Order Items Found!</div>
-			<div class="h_content">
-				<p>Order Items found from the search criteria:</p>
-				<div class="sep"></div>
-				<div class="dataTableWrapper">
-					<div class="dataTable" id="resultDiv"></div>
-				</div>
-			</div>
-		</div>
+	
+	<div class="panel panel-default searchPanel">
+	    <div class="panel-heading">
+	        <label for="showSearch">Show Search Criteria?</label>
+	        <input type="checkbox" id="showSearch" onclick="$(this).up('.searchPanel').down('.panel-body').toggle();"/>
+	    </div>
+	    <div class="panel-body" role="form" id='searchDiv' style="display: none;">
+	    	 <div class='row'>
+	             <div class="col-md-5 col-sm-4">
+	                 <div class="form-group">
+	                 	<label for="orderNo">Order No:</label>
+	                 	<input id='orderNo' type="search" class="form-control input-sm" placeholder="Order No" search_field="ord.orderNo" />
+	                 </div>
+	             </div>
+	             <div class="col-md-5 col-sm-4">
+	                 <div class="form-group">
+	                 	<label for="invNo">Inv No: </label>
+	                 	<input id='invNo' type="search" class="form-control input-sm" placeholder="Invoice Number" search_field="ord.invNo" />
+	                 </div>
+	             </div>
+	             <div class="col-md-2 col-sm-4">
+	                 <div class="form-group">
+	                 	<label for="status">Has Ordered: </label>
+						<select class="form-control input-sm" search_field="ord_item.isOrdered">
+							<option value="">ALL</option>
+							<option value="1">YES</option>
+							<option value="0">NO</option>
+						</select>
+	                 </div>
+	             </div>
+	         </div>
+	         <div class="row">
+	         	<div class="col-xs-1">
+	                <div class="form-group">
+	                    <label for="status">ETA:</label>
+	                </div>
+	         	</div>
+	         	<div class="col-xs-11">
+	                <div class="row">
+	                	<div class="col-xs-6">
+		                	<div class="form-group">
+								<com:TDatePicker Attributes.search_field="ord_item.eta.from" DateFormat="yyyy-MM-dd 00:00:00" Attributes.readonly="true" Attributes.class="form-control input-sm" Attributes.type='datetime' Attributes.placeholder="ETA from"/>	
+			                </div>
+			         	</div>
+			         	<div class="col-xs-6">
+			                <div class="form-group">
+								<com:TDatePicker Attributes.search_field="ord_item.eta.to" DateFormat="yyyy-MM-dd 23:59:59" Attributes.readonly="true" Attributes.class="form-control input-sm" Attributes.type='datetime' Attributes.placeholder="ETA to"/>	
+			                </div>
+			            </div>
+	                </div>
+	         	</div>
+	         </div>
+	         <div class="row">
+	         	<div class="col-xs-12">
+	         		<input type="button" value="search" class="btn btn-primary search_btn searching_btn" onclick="pageJs.getSearchCriteria().getResults(true, <%= DaoQuery::DEFAUTL_PAGE_SIZE %>);" data-loading-text="Searching..."/>
+	         	</div>
+	         </div>
+	    </div>
+	</div>
+	
+	<div class="panel panel-default">
+		<div class="panel-heading"><strong class='total_no_of_items'>0</strong> Order Items Found!</div>
+		<div class="table-responsive" id="resultDiv"></div>
 	</div>
 </com:TContent>
