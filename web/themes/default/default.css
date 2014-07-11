@@ -37,10 +37,10 @@
 }
 .order_item [purchasing],
 .order_item [warehouse] {
-	width: 10%;
+	width: 15%;
 }
 .order_item [payment] {
-	width: 15%;
+	width: 20%;
 }
 .order_item:hover [order_status="INSUFFICIENT STOCK"],
 .order_item [order_status="INSUFFICIENT STOCK"] {
@@ -85,4 +85,17 @@
 }
 .popover .popover-content.list-group {
 	padding: 0px;
-} 
+}
+
+.address-div .dl-horizontal dt {
+	width: 20px;
+}
+.address-div .dl-horizontal dd {
+	margin-left: 30px;
+}
+.order-info-div .dl-horizontal dt {
+	width: 60px;
+}
+.order-info-div .dl-horizontal dd {
+	margin-left: 70px;
+}

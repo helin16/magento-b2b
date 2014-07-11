@@ -99,7 +99,6 @@ class OrderDetailsController extends BPCPageAbstract
 			$js .= '.setCallbackId("getPaymentDetails", "' . $this->getPaymentDetailsBtn->getUniqueID() . '")';
 			$js .= '.setCallbackId("clearETA", "' . $this->clearETABtn->getUniqueID() . '")';
 			$js .= '.setCallbackId("changeIsOrdered", "' . $this->changeIsOrderedBtn->getUniqueID() . '")';
-			$js .= '.setToolTipCommentsObj(new TooltipComments(pageJs))';
 			$js .= '.load("detailswrapper");';
 		return $js;
 	}

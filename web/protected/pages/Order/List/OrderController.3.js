@@ -252,7 +252,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.me = this
 		return new Element('a', {'href': 'javascript: void(0);'})
 			.insert({'bottom': ( !row.passPaymentCheck ? '' : 
-					new Element('span', {'title': (row.totalDue === 0 ? 'Full Paid' : 'Short Paid'), 'class': (row.totalDue === 0 ? 'text-success' : 'text-warning') })
+					new Element('span', {'title': (row.totalDue === 0 ? 'Full Paid' : 'Short Paid'), 'class': (row.totalDue === 0 ? 'text-success' : 'text-danger') })
 						.update(new Element('span', {'class': 'glyphicon ' + (row.totalDue === 0 ? 'glyphicon-ok-sign' : 'glyphicon-warning-sign') }))
 				) })
 				.insert({'bottom': " " })
@@ -275,7 +275,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.stockChkedWIssues = (tmp.statusId_stockchecked_not_passed.indexOf(row.status.id) >= 0);
 		return new Element('div')
 			.insert({'bottom': (!tmp.hasCheckedStock ? '' : 
-				new Element('a', {'href': 'javascript: void(0);', 'class': (!tmp.stockChkedWIssues ? 'text-success' : 'text-warning'), 'title': (!row.stockChkedWIssues ? 'Stock checked' : 'insufficient stock')})
+				new Element('a', {'href': 'javascript: void(0);', 'class': (!tmp.stockChkedWIssues ? 'text-success' : 'text-danger'), 'title': (!row.stockChkedWIssues ? 'Stock checked' : 'insufficient stock')})
 					.update(new Element('span', {'class': 'glyphicon ' + (!tmp.stockChkedWIssues ? 'glyphicon-ok-sign' : 'glyphicon-warning-sign') }))
 					.observe('click', function() {
 						tmp.me._openDetailsPage(row);
@@ -294,7 +294,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.chkedWIssues = (tmp.statusId_whchecked_not_passed.indexOf(row.status.id) >= 0);
 		return new Element('div')
 			.insert({'bottom': (!tmp.hasChecked ? '' : 
-				new Element('a', {'href': 'javascript: void(0);', 'class': (!tmp.chkedWIssues ? 'text-success' : 'text-warning'), 'title': (!row.chkedWIssues ? 'Stock Handled successfully' : 'insufficient stock')})
+				new Element('a', {'href': 'javascript: void(0);', 'class': (!tmp.chkedWIssues ? 'text-success' : 'text-danger'), 'title': (!row.chkedWIssues ? 'Stock Handled successfully' : 'insufficient stock')})
 					.update(new Element('span', {'class': 'glyphicon ' + (!tmp.chkedWIssues ? 'glyphicon-ok-sign' : 'glyphicon-warning-sign') }))
 					.observe('click', function() {
 						tmp.me._openDetailsPage(row);
