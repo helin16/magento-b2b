@@ -61,7 +61,9 @@
 			     <div class="panel-heading">
                    <span id='total_no_of_items'>0</span> Orders Found!
                  </div>
-                 <div class="list-group" id="resultDiv"></div>
+                 <div class="table-responsive">
+	                 <table class="table table-hover" id="resultDiv"></table>
+                 </div>
 			</div>
 	   </div>
 	   <div class="col-md-3">

@@ -110,15 +110,19 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					//reset div
 					if(tmp.reset === true) {
 						tmp.titleRow = {'orderNo': "Order Info.", 'custName': 'Customer Name', 'shippingAddr': 'Shipping Address', 'invNo': 'Invoice No.', 'status': {'name': 'Status'}, 'totalDue': 'Total Due', 'passPaymentCheck': 'Payment Cleared?'};
-						tmp.resultDiv.update(tmp.me._getResultRow(tmp.titleRow, true).addClassName('header'));
+						tmp.resultDiv.update(tmp.me._getResultRow(tmp.titleRow, true).wrap(new Element('thead')));
 					}
 					//remove next page button
 					tmp.resultDiv.getElementsBySelector('.paginWrapper').each(function(item){
 						item.remove();
 					})
+					
+					tmp.tbody = $(tmp.resultDiv).down('tbody');
+					if(!tmp.tbody)
+						$(tmp.resultDiv).insert({'bottom': tmp.tbody = new Element('tbody') });
 					//show all next page items
 					tmp.result.items.each(function(item) {
-						tmp.resultDiv.insert({'bottom': tmp.me._getResultRow(item) });
+						tmp.tbody.insert({'bottom': tmp.me._getResultRow(item) });
 					})
 					//show the next page button
 					if(tmp.result.pageStats.pageNumber < tmp.result.pageStats.totalPages)
@@ -126,13 +130,13 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					
 					tmp.resultDiv.getElementsBySelector('.newPopover').each(function(item) {
 						item.removeClassName('newPopover');
-						tmp.rowData = item.up('.list-group-item').retrieve('data');
+						tmp.rowData = item.up('.order_item').retrieve('data');
 						jQuery('#' + item.id).popover({
 							'container': 'body',
-							'title': 'Shipping Address for: ' + tmp.rowData.orderNo,
-							'content':  tmp.me._getAddrDiv(tmp.rowData.address.shipping),
+							'title': 'Details for: ' + tmp.rowData.orderNo,
+							'content':  jQuery('.popover_content', jQuery('#' + item.id)).html(),
 							'html': true,
-							'placement': 'auto'
+							'placement': 'right'
 						})
 					})
 					
@@ -147,34 +151,34 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 	,_getNextPageBtn: function() {
 		var tmp = {}
 		tmp.me = this;
-		return new Element('li', {'class': 'pagination list-group-item text-center'})
-			.insert({'bottom': new Element('span', {'class': 'btn btn-primary', 'data-loading-text':"Fetching more results ..."}).update('Show More')
-				.observe('click', function() {
-					tmp.me._pagination.pageNo = tmp.me._pagination.pageNo*1 + 1;
-					jQuery(this).button('loading');
-					tmp.me.getResults();
+		return new Element('tfoot')
+			.insert({'bottom': new Element('tr')
+				.insert({'bottom': new Element('td', {'colspan': '5', 'class': 'text-center'})
+					.insert({'bottom': new Element('span', {'class': 'btn btn-primary', 'data-loading-text':"Fetching more results ..."}).update('Show More')
+						.observe('click', function() {
+							tmp.me._pagination.pageNo = tmp.me._pagination.pageNo*1 + 1;
+							jQuery(this).button('loading');
+							tmp.me.getResults();
+						})
+					})
 				})
 			});
 	}
 	
-	,_getAddrDiv: function(addr) {
+	,_getOrderDetailsDiv: function(order) {
 		var tmp = {};
 		tmp.me = this;
-		return '<div class="dl-horizontal">' +
-					'<div class="row">' +
-						'<div class="col-xs-3"><strong>Name:</strong></div>' + 
-						'<div class="col-xs-9">' + addr.contactName + '</div>' + 
-					'</div>' +
-					'<div class="row">' +
-						'<div class="col-xs-3"><strong>Phone:</strong></div>' + 
-						'<div class="col-xs-9">' + addr.contactNo + '</div>' + 
-					'</div>' +
-					'<div class="row">' +
-						'<div class="col-xs-3"><strong>Address:</strong></div>' + 
-						'<div class="col-xs-9">' + addr.full + '</div>' + 
-					'</div>' +
-				'</div>'
-		;
+		tmp.custName = order.infos[tmp.me._infoTypes['custName']][0].value;
+		tmp.custEmail = order.infos[tmp.me._infoTypes['custEmail']][0].value;
+		return new Element('div')
+			.insert({'bottom': new Element('div').update('<span class="glyphicon glyphicon-user" title="Customer Name"></span>: ' + tmp.custName) })
+			.insert({'bottom': new Element('div').update('<span class="glyphicon glyphicon-envelope" title="Customer Email"></span>: <a href="mailto:' + tmp.custEmail + '">' + tmp.custEmail + '</a>') })
+			.insert({'bottom': new Element('div').update('<span class="glyphicon glyphicon-shopping-cart" title="Order Date"></span>: ' + order.orderDate) })
+			.insert({'bottom': new Element('div').update('<strong>Shipping</strong>:') })
+			.insert({'bottom': new Element('div').update('<span class="glyphicon glyphicon-user" title="Customer Name"></span>: ' + order.address.shipping.contactName)	})
+			.insert({'bottom': new Element('div').update('<span class="glyphicon glyphicon-phone-alt" title="Phone"></span>: ' + order.address.contactNo)	})
+			.insert({'bottom': new Element('div').update('<span class="glyphicon glyphicon-map-marker" title="Address"></span>: ' + order.address.full)	})
+			;
 	}
 	
 	,_getTitledDiv: function(title, content) {
@@ -183,7 +187,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			.insert({'bottom': new Element('span', {'class': 'inlineblock divcontent'}).update(content) });
 	}
 	
-	,_openDetailPage: function(row) {
+	,_openDetailsPage: function(row) {
 		var tmp = {};
 		tmp.me = this;
 		jQuery.fancybox({
@@ -200,6 +204,17 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					$(tmp.me.resultDivId).down('.row[order_id=' + row.id + ']').replace(tmp.me._getResultRow($$('iframe.fancybox-iframe').first().contentWindow.pageJs._order));
 			}
  		});
+		return tmp.me;
+	}
+	
+	,_getOpenDetailBtn: function(row) {
+		var tmp = {};
+		tmp.me = this;
+		return new Element('a', {'href': 'javascript: void(0)', 'title': 'Click to view the order'})
+			.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-new-window'}) })
+			.observe('click', function() {
+				tmp.me._openDetailsPage(row);
+			});
 	}
 	
 	,_getOrderInfoCell: function(row) {
@@ -219,41 +234,35 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				tmp.custEmail = row.infos[tmp.me._infoTypes['custEmail']][0].value;
 		}
 		return new Element('div')
-			.insert({'bottom': new Element('div')
-				.insert({'bottom': new Element('a', {'class': 'orderNo', 'href': 'javascript:void(0);'})
-					.update('<strong>' + row.orderNo + '</strong>')
-					.observe('click', function() {
-						tmp.me._openDetailPage(row);
-					})
-				})
-				.insert({'bottom': new Element('span', {'id': 'shipping-btn-' + row.id, 'class': 'btn btn-default pull-right visible-xs visible-sm visible-md visible-lg newPopover popovershipping'})
-					.update('<span class="glyphicon glyphicon-plane" title="Click to See Shipping"></span>')
+			.insert({'bottom':  new Element('span')
+				.insert({'bottom': new Element('a', {'id': 'orderno-btn-' + row.id, 'class': 'orderNo visible-xs visible-sm visible-md visible-lg newPopover popovershipping', 'href': 'javascript:void(0);'})
+					.update(row.orderNo) 
+					.insert({'bottom': new Element('div', {'style': 'display: none;', 'class': 'popover_content'}).update(tmp.me._getOrderDetailsDiv(row)) })
 					.observe('click', function(e) {
 						jQuery('.popovershipping').not(this).popover('hide');
 					})
 				})
 			})
-			.insert({'bottom': new Element('div').update('<span class="glyphicon glyphicon-user" title="Customer Name"></span>: ' + tmp.custName) })
-			.insert({'bottom': new Element('div').update('<span class="glyphicon glyphicon-envelope" title="Customer Email"></span>: <a href="mailto:' + tmp.custEmail + '">' + tmp.custEmail + '</a>') })
-			.insert({'bottom': new Element('div').update('<span class="glyphicon glyphicon-pushpin" title="Order Date"></span>: ' + row.orderDate) })
+			.insert({'bottom': tmp.me._getOpenDetailBtn(row).addClassName('pull-right') })
 		;
 	}
 	
 	,_getPaymentCell: function(row) {
 		var tmp = {};
 		tmp.me = this
-		return new Element('div')
-			.insert({'bottom': tmp.me._getTitledDiv('', 
-					!row.passPaymentCheck ? '': new Element('span', {'class': 'icon'})
-							.addClassName(row.totalDue === 0 ? 'ok' : 'warning').writeAttribute('title', row.totalDue === 0 ? 'Full Paied' : 'Short Paid')
+		return new Element('a', {'href': 'javascript: void(0);'})
+			.insert({'bottom': ( !row.passPaymentCheck ? '' : 
+					new Element('span', {'title': (row.totalDue === 0 ? 'Full Paid' : 'Short Paid'), 'class': (row.totalDue === 0 ? 'text-success' : 'text-warning') })
+						.update(new Element('span', {'class': 'glyphicon ' + (row.totalDue === 0 ? 'glyphicon-ok-sign' : 'glyphicon-warning-sign') }))
 				) })
-				.insert({'bottom': tmp.me._getTitledDiv(new Element('span', {'class': 'icon'}), tmp.me.getCurrency(row.totalDue) ).addClassName('totalDue').writeAttribute('title', 'Total Due Amount:' + tmp.me.getCurrency(row.totalDue)) })
-				.insert({'bottom': !row.passPaymentCheck ? '' : tmp.me._getTitledDiv(new Element('span', {'class': 'icon'}), 
-						new Element('span', {'class': 'tooltipTarget'}).update('payment details').writeAttribute('title', 'click to view payment details')
-							.observe('click', function() {
-								tmp.me._openDetailPage(row);
-							})
-				).addClassName('paymentdetails') });
+				.insert({'bottom': " " })
+				.insert({'bottom': new Element('span')
+					.update(tmp.me.getCurrency(row.totalDue))
+					.writeAttribute('title', 'Total Due Amount:' + tmp.me.getCurrency(row.totalDue))  
+				})
+				.observe('click', function() {
+					tmp.me._openDetailsPage(row);
+				});
 	}
 	
 	,_getPurchasingCell: function(row) {
@@ -265,15 +274,14 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.hasCheckedStock = (tmp.statusId_stockchecked.indexOf(row.status.id) >= 0);
 		tmp.stockChkedWIssues = (tmp.statusId_stockchecked_not_passed.indexOf(row.status.id) >= 0);
 		return new Element('div')
-			.insert({'bottom': tmp.me._getTitledDiv('', 
-					!tmp.hasCheckedStock ? '' : new Element('span', {'class': 'icon'})
-						.addClassName(!tmp.stockChkedWIssues ? 'ok' : 'warning').writeAttribute('title', tmp.stockChkedWIssues ? 'insufficient stock' :'Stocked checked' )
-			) })
-			.insert({'bottom': !tmp.hasCheckedStock ? '' : tmp.me._getTitledDiv(new Element('span', {'class': 'icon'}), new Element('span', {'class': 'tooltipTarget'}).update('view items').writeAttribute('title', 'click to view order items')
+			.insert({'bottom': (!tmp.hasCheckedStock ? '' : 
+				new Element('a', {'href': 'javascript: void(0);', 'class': (!tmp.stockChkedWIssues ? 'text-success' : 'text-warning'), 'title': (!row.stockChkedWIssues ? 'Stock checked' : 'insufficient stock')})
+					.update(new Element('span', {'class': 'glyphicon ' + (!tmp.stockChkedWIssues ? 'glyphicon-ok-sign' : 'glyphicon-warning-sign') }))
 					.observe('click', function() {
-						tmp.me._openDetailPage(row);
+						tmp.me._openDetailsPage(row);
 					})
-			).addClassName('vieworderitems') });
+			 ) })
+			;
 	}
 	
 	,_getWarehouseCell: function(row) {
@@ -285,40 +293,37 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.hasChecked = (tmp.statusId_whchecked.indexOf(row.status.id) >= 0);
 		tmp.chkedWIssues = (tmp.statusId_whchecked_not_passed.indexOf(row.status.id) >= 0);
 		return new Element('div')
-			.insert({'bottom': tmp.me._getTitledDiv('', 
-					!tmp.hasChecked ? '' : new Element('span', {'class': 'icon'})
-						.addClassName(!tmp.chkedWIssues ? 'ok' : 'warning').writeAttribute('title', tmp.chkedWIssues ? 'insufficient stock' : 'Stock Handled successfully!' )
-			) })
-			.insert({'bottom': !tmp.hasChecked ? '' : tmp.me._getTitledDiv(new Element('span', {'class': 'icon'}), new Element('span', {'class': 'tooltipTarget'}).update('view items').writeAttribute('title', 'click to view order items')
+			.insert({'bottom': (!tmp.hasChecked ? '' : 
+				new Element('a', {'href': 'javascript: void(0);', 'class': (!tmp.chkedWIssues ? 'text-success' : 'text-warning'), 'title': (!row.chkedWIssues ? 'Stock Handled successfully' : 'insufficient stock')})
+					.update(new Element('span', {'class': 'glyphicon ' + (!tmp.chkedWIssues ? 'glyphicon-ok-sign' : 'glyphicon-warning-sign') }))
 					.observe('click', function() {
-						tmp.me._openDetailPage(row);
+						tmp.me._openDetailsPage(row);
 					})
-			).addClassName('vieworderitems') });
+			 ) })
+			;
 	}
 		
 	,_getResultRow: function(row, isTitle) {
 		var tmp = {};
 		tmp.me = this;
 		tmp.isTitle = (isTitle || false);
-		
-		tmp.row = new Element('div', {'class': 'list-group-item ' + (tmp.isTitle === true ? 'disabled' : 'order_item'), 'order_id' : row.id}).store('data', row)
-			.insert({'bottom': new Element('div', {'class': 'row'})
-				.insert({'bottom': new Element('div', {'class': 'col-sm-4 col-xs-9 orderInfo'}).update(
-					tmp.isTitle ? row.orderNo : tmp.me._getOrderInfoCell(row)
-				) })
-				.insert({'bottom': new Element('div', {'class': 'col-sm-2 col-xs-3 status col-middle', 'order_status': row.status.name}).update(
-						row.status ? row.status.name : ''
-				) })
-				.insert({'bottom': new Element('div', {'class': 'col-sm-2 hidden-xs payment text-right'}).update(
-					tmp.isTitle ? 'Payments' : tmp.me._getPaymentCell(row)
-				) })		
-				.insert({'bottom': new Element('div', {'class': 'col-sm-2 hidden-xs purchasing text-right'}).update(
-						tmp.isTitle ? 'Purchasing' : tmp.me._getPurchasingCell(row)
-				) })
-				.insert({'bottom': new Element('div', {'class': 'col-sm-2 hidden-xs warehouse text-right'}).update(
-						tmp.isTitle ? 'Warehouse' : tmp.me._getWarehouseCell(row)
-				) })
-			});
+		tmp.row = new Element('tr', {'class': (tmp.isTitle === true ? '' : 'order_item'), 'order_id' : row.id}).store('data', row)
+			.insert({'bottom': new Element('td', {'class': 'orderInfo'}).update(
+				tmp.isTitle ? row.orderNo : tmp.me._getOrderInfoCell(row)
+			) })
+			.insert({'bottom': new Element('td', {'class': 'status col-middle', 'order_status': row.status.name}).update(
+					row.status ? row.status.name : ''
+			) })
+			.insert({'bottom': new Element('td', {'class': 'text-right', 'payment': true}).update(
+				tmp.isTitle ? 'Payments' : tmp.me._getPaymentCell(row)
+			) })		
+			.insert({'bottom': new Element('td', {'class': 'text-center', 'purchasing': true}).update(
+					tmp.isTitle ? 'Purchasing' : tmp.me._getPurchasingCell(row)
+			) })
+			.insert({'bottom': new Element('td', {'class': 'text-center', 'warehouse': true}).update(
+					tmp.isTitle ? 'Warehouse' : tmp.me._getWarehouseCell(row)
+			) })
+		;
 		return tmp.row;
 	}
 });

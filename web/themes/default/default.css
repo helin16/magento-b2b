@@ -27,29 +27,44 @@
     width: 100%;
 }
 
+
+#resultDiv thead,
 .list-group-item.header {
 	font-weight: bold;
 }
-
-.order_item [order_status] {
-	min-height: 80px;
+.order_item .orderInfo .orderNo {
+	display: inline !important;
 }
+.order_item [purchasing],
+.order_item [warehouse] {
+	width: 10%;
+}
+.order_item [payment] {
+	width: 15%;
+}
+.order_item:hover [order_status="INSUFFICIENT STOCK"],
 .order_item [order_status="INSUFFICIENT STOCK"] {
 	background-color: yellow;
 	color: black;
 }
 .order_item [order_status="ETA"],
-.order_item [order_status="STOCK CHECKED"] {
+.order_item:hover [order_status="ETA"],
+.order_item [order_status="STOCK CHECKED"],
+.order_item:hover [order_status="STOCK CHECKED"]{
 	background-color: orange;
 	color: white;
 }
 .order_item [order_status="PICKED"],
-.order_item [order_status="SHIPPED"] {
+.order_item:hover [order_status="PICKED"],
+.order_item [order_status="SHIPPED"],
+.order_item:hover [order_status="SHIPPED"] {
 	background-color: green;
 	color: white;
 }
 .order_item [order_status="CANCELLED"],
-.order_item [order_status="ON HOLD"] {
+.order_item:hover [order_status="CANCELLED"],
+.order_item [order_status="ON HOLD"],
+.order_item:hover [order_status="ON HOLD"] {
 	background-color: red;
 	color: white;
 }
