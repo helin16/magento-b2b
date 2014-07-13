@@ -128,15 +128,16 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					if(tmp.result.pageStats.pageNumber < tmp.result.pageStats.totalPages)
 						tmp.resultDiv.insert({'bottom': tmp.me._getNextPageBtn().addClassName('paginWrapper') });
 					
-					tmp.resultDiv.getElementsBySelector('.newPopover').each(function(item) {
+					tmp.resultDiv.getElementsBySelector('.popovershipping.newPopover').each(function(item) {
 						item.removeClassName('newPopover');
 						tmp.rowData = item.up('.order_item').retrieve('data');
 						jQuery('#' + item.id).popover({
 							'container': 'body',
-							'title': 'Details for: ' + tmp.rowData.orderNo,
+							'title': '<div class="row"><div class="col-xs-10">Details for: ' + tmp.rowData.orderNo + '</div><div class="col-xs-2"><a class="pull-right" href="javascript:void(0);" onclick="jQuery(' + "'#" + item.id + "'" + ').popover(' + "'hide'" + ');"><strong>&times;</strong></a></div></div>',
 							'content':  jQuery('.popover_content', jQuery('#' + item.id)).html(),
 							'html': true,
-							'placement': 'right'
+							'placement': 'right',
+							'trigger': 'manual'
 						})
 					})
 					
@@ -234,16 +235,22 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				tmp.custEmail = row.infos[tmp.me._infoTypes['custEmail']][0].value;
 		}
 		return new Element('div')
+			.insert({'bottom': tmp.me._getOpenDetailBtn(row) })
+			.insert({'bottom': ' '})
 			.insert({'bottom':  new Element('span')
 				.insert({'bottom': new Element('a', {'id': 'orderno-btn-' + row.id, 'class': 'orderNo visible-xs visible-sm visible-md visible-lg newPopover popovershipping', 'href': 'javascript:void(0);'})
 					.update(row.orderNo) 
 					.insert({'bottom': new Element('div', {'style': 'display: none;', 'class': 'popover_content'}).update(tmp.me._getOrderDetailsDiv(row)) })
-					.observe('click', function(e) {
+					.observe('click', function() {
+						jQuery(this).popover('show');
 						jQuery('.popovershipping').not(this).popover('hide');
+					})
+					.observe('dblclick', function() {
+						jQuery(this).popover('hide');
+						tmp.me._openDetailsPage(row);
 					})
 				})
 			})
-			.insert({'bottom': tmp.me._getOpenDetailBtn(row).addClassName('pull-right') })
 		;
 	}
 	

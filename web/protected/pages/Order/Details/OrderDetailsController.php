@@ -99,7 +99,8 @@ class OrderDetailsController extends BPCPageAbstract
 			$js .= '.setCallbackId("getPaymentDetails", "' . $this->getPaymentDetailsBtn->getUniqueID() . '")';
 			$js .= '.setCallbackId("clearETA", "' . $this->clearETABtn->getUniqueID() . '")';
 			$js .= '.setCallbackId("changeIsOrdered", "' . $this->changeIsOrderedBtn->getUniqueID() . '")';
-			$js .= '.load("detailswrapper");';
+			$js .= '.init("detailswrapper")';
+			$js .= '.load();';
 		return $js;
 	}
 	/**
@@ -469,29 +470,9 @@ class OrderDetailsController extends BPCPageAbstract
 		
 		$params->ResponseData = StringUtilsAbstract::getJson($results, $errors);
 	}
-	/**
-	 * This function validates the Shipping info received from the JS 
-	 * 
-	 * @param Array $shippingInfoArray
-	 * @param Array $validColumns
-	 * 
-	 * @throws Exception
-	 * @return OrderDetailsController
-	 */
-	private function _validateShppingDetails($shippingInfoArray, $validColumns)
-	{
-		foreach($validColumns as $vc)
-		{
-			if(!isset($shippingInfoArray->$vc))
-				throw new Exception('System Error: Incomplete Shipping Info Details provided!!!');
-			
-			if((!is_array($shippingInfoArray->$vc) || count($shippingInfoArray->$vc) === 0))
-				throw new Exception('System Error: Mandatory Information ['.$vc.'] missing');
-		}
-		return $this;
-	}
 	
 	/**
+	 * updating the shipping details
 	 * 
 	 * @param unknown $sender
 	 * @param unknown $param
@@ -499,83 +480,74 @@ class OrderDetailsController extends BPCPageAbstract
 	public function updateShippingDetails($sender, $params)
 	{
 		$result = $error = $shippingInfoArray = array();
-		$validColumns = array('courierId', 'contactNo', 'contactName', 'street', 'city', 'region', 'country', 'postCode', 'noOfCartons', 'conNoteNo', 'estShippingCost');
-		
 		try 
 		{
 			Dao::beginTransaction();
-			
 			if(!isset($params->CallbackParameter->order) || !($order = Order::get($params->CallbackParameter->order->orderNo)) instanceof Order)
 				throw new Exception('System Error: invalid order passed in!');
-			if(!isset($params->CallbackParameter->shippingInfo))
-				throw new Exception('System Error: invalid Shipping Info Details passed in!');
-			
 			if(!$order->getStatus() instanceof OrderStatus || trim($order->getStatus()->getId()) !== trim(OrderStatus::ID_PICKED))
 				throw new Exception('System Error: Order ['.$order->getOrderNo().'] Is Not is PICKED status. Current status is ['.($order->getStatus() instanceof OrderStatus ? $order->getStatus()->getName() : 'NULL').']');
-			
+			if(!isset($params->CallbackParameter->shippingInfo))
+				throw new Exception('System Error: invalid Shipping Info Details passed in!');
+			$validColumns = array('courierId', 'contactNo', 'contactName', 'street', 'city', 'region', 'country', 'postCode', 'noOfCartons', 'conNoteNo', 'actualShippingCost', 'estShippingCost');
 			$shippingInfoArray = $params->CallbackParameter->shippingInfo;
-			$this->_validateShppingDetails($shippingInfoArray, $validColumns);
+			foreach($validColumns as $col)
+			{
+				if(!isset($shippingInfoArray->$col))
+					throw new Exception('System Error: Incomplete Shipping Info Details(' . $col . ') provided!!!');
+			}
+			if(!($courier = FactoryAbastract::service('Courier')->get($shippingInfoArray->courierId)) instanceof Courier)
+				throw new Exception('Invalid Courier Id [' . $shippingInfoArray->courierId . '] provided');
 			
-			if(!($courier = FactoryAbastract::service('Courier')->get($shippingInfoArray->courierId[0])) instanceof Courier)
-				throw new Exception('Invalid Courier Id ['.$shippingInfoArray->courierId[0].'] provided');
-			
-			$contactName = implode(",", $shippingInfoArray->contactName);
-			$contactNo = implode(",", $shippingInfoArray->contactNo);
-			
-			$shippingAddress = new Address();
-			$shippingAddress->setStreet(trim($shippingInfoArray->street[0]))
-				->setCity(trim($shippingInfoArray->city[0]))
-				->setRegion($shippingInfoArray->region[0])
-				->setCountry($shippingInfoArray->country[0])
-				->setPostCode($shippingInfoArray->postCode[0])
-				->setContactName($contactName[0])
-				->setContactNo($contactNo[0]);
-			FactoryAbastract::service('Address')->save($shippingAddress);
-			
-			$noOfCartons = trim($shippingInfoArray->noOfCartons[0]);
-			$consignmentNo = trim($shippingInfoArray->conNoteNo[0]);
-			$estShippingCost = trim($shippingInfoArray->estShippingCost[0]);
-			$deliveryInstructions = (isset($shippingInfoArray->deliveryInstructions) ? implode(", ", $shippingInfoArray->deliveryInstructions) : '');
-			
-			$shipment = new Shippment();
-			$shipment->setOrder($order);
-			$shipment->setCourier($courier);
-			$shipment->setNoOfCartons($noOfCartons);
-			$shipment->setReceiver($contactName);
-			$shipment->setAddress($shippingAddress);
-			$shipment->setContact($contactNo);
-			$shipment->setShippingDate(new UDate("now"));
-			$shipment->setConNoteNo($consignmentNo);
-			$shipment->setEstShippingCost($estShippingCost);
-			$shipment->setDeliveryInstructions($deliveryInstructions);
-			$shipment->setActive(true);
-			$shipment = FactoryAbastract::dao('Shippment')->save($shipment);
+			$contactName = $shippingInfoArray->contactName;
+			$contactNo = $shippingInfoArray->contactNo;
+			$shippingAddress = Address::create(
+					trim($shippingInfoArray->street), 
+					trim($shippingInfoArray->city), 
+					trim($shippingInfoArray->region), 
+					trim($shippingInfoArray->country), 
+					trim($shippingInfoArray->postCode), 
+					trim($contactName[0]), 
+					trim($contactNo[0])
+			);
+			$shipment = Shippment::create(
+					$shippingAddress, 
+					$courier, 
+					trim($shippingInfoArray->conNoteNo), //$consignmentNo, 
+					new UDate("now"), 
+					$order, 
+					$contactName, 
+					trim($contactNo), // $contactNo = '' , 
+					trim($shippingInfoArray->noOfCartons), //$noOfCartons = 0, 
+					trim($shippingInfoArray->estShippingCost), //$estShippingCost = '0.00', 
+					trim($shippingInfoArray->actualShippingCost), //$actualShippingCost = '0.00', 
+					(isset($shippingInfoArray->deliveryInstructions) ? trim($shippingInfoArray->deliveryInstructions) : '') //$deliveryInstructions = ''
+			);
 			
 			$order->setStatus(FactoryAbastract::service('OrderStatus')->get(OrderStatus::ID_SHIPPED));
 			FactoryAbastract::service('Order')->save($order);
-			
 			$result['shipment'] = $shipment->getJson();
 			
 			//add shipment information
-			$templateName = (trim($shipment->getCourier()->getId()) === trim(Courier::ID_LOCAL_PICKUP) ? 'local_pickup' : $order->getStatus()->getName());
-			$notificationMsg = trim(OrderNotificationTemplateControl::getMessage($templateName, $order));
-			if($notificationMsg !== '')
-			{
-				B2BConnector::getConnector(B2BConnector::CONNECTOR_TYPE_SHIP,
-					SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_WSDL),
-					SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_USER),
-					SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_KEY)
-					)
-					->shipOrder($order, $shipment, array(), $notificationMsg, false, false);
+// 			$templateName = (trim($shipment->getCourier()->getId()) === trim(Courier::ID_LOCAL_PICKUP) ? 'local_pickup' : $order->getStatus()->getName());
+// 			$notificationMsg = trim(OrderNotificationTemplateControl::getMessage($templateName, $order));
+// 			if($notificationMsg !== '')
+// 			{
+// 				B2BConnector::getConnector(B2BConnector::CONNECTOR_TYPE_SHIP,
+// 					SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_WSDL),
+// 					SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_USER),
+// 					SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_KEY)
+// 					)
+// 					->shipOrder($order, $shipment, array(), $notificationMsg, false, false);
 					
-				//push the status of the order to SHIPPed
-				B2BConnector::getConnector(B2BConnector::CONNECTOR_TYPE_ORDER,
-					SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_WSDL),
-					SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_USER),
-					SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_KEY)
-					)->changeOrderStatus($order, $order->getStatus()->getMageStatus(), $notificationMsg, true);
-				$order->addComment('An email notification contains shippment information has been sent to customer for: ' . $order->getStatus()->getName(), Comments::TYPE_SYSTEM);
-			}
+// 				//push the status of the order to SHIPPed
+// 				B2BConnector::getConnector(B2BConnector::CONNECTOR_TYPE_ORDER,
+// 					SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_WSDL),
+// 					SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_USER),
+// 					SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_KEY)
+// 					)->changeOrderStatus($order, $order->getStatus()->getMageStatus(), $notificationMsg, true);
+// 				$order->addComment('An email notification contains shippment information has been sent to customer for: ' . $order->getStatus()->getName(), Comments::TYPE_SYSTEM);
+// 			}
 			Dao::commitTransaction();
 		}
 		catch(Exception $ex)
@@ -585,7 +557,6 @@ class OrderDetailsController extends BPCPageAbstract
 		}
 		
 		$params->ResponseData = StringUtilsAbstract::getJson($result, $error);
-		
 	}
 	
 	public function getPaymentDetailsForOrder($sender, $param)

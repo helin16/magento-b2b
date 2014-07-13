@@ -16,3 +16,6 @@ ALTER TABLE `shippment` ADD `addressId` INT( 10 ) UNSIGNED NOT NULL DEFAULT '0' 
 ALTER TABLE `courier` ADD `connector` VARCHAR( 50 ) NOT NULL DEFAULT '' AFTER `code` , ADD INDEX ( `connector` );
 update courier set connector = 'CourierConn_Manual';
 update courier set connector = 'CourierConn_FastWay' where id = 3;
+
+
+ALTER TABLE `shippment` ADD `actualShippingCost` DOUBLE( 10, 4 ) UNSIGNED NOT NULL DEFAULT '0.0000' AFTER `estShippingCost` , ADD INDEX ( `actualShippingCost` );

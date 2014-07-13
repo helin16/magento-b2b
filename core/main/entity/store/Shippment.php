@@ -61,7 +61,13 @@ class Shippment extends BaseEntityAbstract
 	 * 
 	 * @var number
 	 */
-	private $estShippingCost;
+	private $estShippingCost = '0.00';
+	/**
+	 * The actual shipping cost from courier
+	 * 
+	 * @var number
+	 */
+	private $actualShippingCost = '0.00';
 	/**
 	 * The delivery instruction of the shipping
 	 * 
@@ -74,6 +80,42 @@ class Shippment extends BaseEntityAbstract
 	 * @var string
 	 */
 	private $mageShipmentId = '';
+	/**
+	 * Creating a new shippment
+	 * 
+	 * @param Address $address
+	 * @param Courier $courier
+	 * @param string $consignmentNo
+	 * @param string $shippingDate
+	 * @param Order  $order
+	 * @param string $contactName
+	 * @param string $contactNo
+	 * @param number $noOfCartons
+	 * @param string $estShippingCost      The est shipping cost
+	 * @param string $actualShippingCost   The actual shipping cost
+	 * @param string $deliveryInstructions The delivery instructions
+	 * @param string $mageShipmentId       The magento shippment id
+	 * 
+	 * @return Shippment
+	 */
+	public static function create(Address $address, Courier $courier, $consignmentNo, $shippingDate, Order $order, $contactName, $contactNo = '' , $noOfCartons = 0, $estShippingCost = '0.00', $actualShippingCost = '0.00', $deliveryInstructions = '', $mageShipmentId = '')	
+	{
+		$shipment = new Shippment();
+		$shipment->setAddress($address)
+			->setCourier($courier)
+			->setConNoteNo($consignmentNo)
+			->setOrder($order)
+			->setReceiver($contactName)
+			->setContact($contactNo)
+			->setShippingDate($shippingDate)
+			->setNoOfCartons($noOfCartons)
+			->setEstShippingCost($estShippingCost)
+			->setActualShippingCost($actualShippingCost)
+			->setDeliveryInstructions($deliveryInstructions)
+			->setMageShipmentId($mageShipmentId)
+			->setActive(true);
+		return FactoryAbastract::dao('Shippment')->save($shipment);
+	}
 	/**
 	 * Getter of the courier
 	 * 
@@ -179,7 +221,7 @@ class Shippment extends BaseEntityAbstract
 	 */
 	public function setAddress(Address $value) 
 	{
-	    $this->address = $value;
+	    $this->address = $value; 
 	    return $this;
 	}
 	/**
@@ -267,6 +309,27 @@ class Shippment extends BaseEntityAbstract
 	    return $this;
 	}
 	/**
+	 * Getter for actualShippingCost
+	 *
+	 * @return Double
+	 */
+	public function getActualShippingCost() 
+	{
+	    return $this->actualShippingCost;
+	}
+	/**
+	 * Setter for actualShippingCost
+	 *
+	 * @param Double $value The actualShippingCost
+	 *
+	 * @return Shippment
+	 */
+	public function setActualShippingCost($value) 
+	{
+	    $this->estShippingCost = $value;
+	    return $this;
+	}
+	/**
 	 * Getter for deliveryInstructions
 	 *
 	 * @return string
@@ -317,7 +380,10 @@ class Shippment extends BaseEntityAbstract
 	{
 		$array = array();
 		if(!$this->isJsonLoaded($reset))
+		{
 			$array['courier'] = $this->getCourier()->getJson();
+			$array['address'] = $this->getAddress()->getJson();
+		}
 		
 		return parent::getJson($array, $reset);
 	}
@@ -339,6 +405,7 @@ class Shippment extends BaseEntityAbstract
 		DaoMap::setDateType('shippingDate');
 		DaoMap::setStringType('conNoteNo', 'varchar', 100);
 		DaoMap::setIntType('estShippingCost', 'Double', '10,4');
+		DaoMap::setIntType('actualShippingCost', 'Double', '10,4');
 		DaoMap::setStringType('deliveryInstructions', 'varchar', 255);
 		DaoMap::setStringType('mageShipmentId', 'varchar', 100);
 		

@@ -35,11 +35,9 @@
 .order_item .orderInfo .orderNo {
 	display: inline !important;
 }
+.order_item [payment],
 .order_item [purchasing],
 .order_item [warehouse] {
-	width: 15%;
-}
-.order_item [payment] {
 	width: 20%;
 }
 .order_item:hover [order_status="INSUFFICIENT STOCK"],
@@ -98,4 +96,7 @@
 }
 .order-info-div .dl-horizontal dd {
 	margin-left: 70px;
+}
+dl.dl-condensed {
+	margin-bottom: 0px;
 }

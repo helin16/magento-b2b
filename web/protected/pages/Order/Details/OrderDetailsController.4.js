@@ -65,7 +65,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 	,_getAddressDiv: function(title, addr) {
 		return new Element('div', {'class': 'address-div'})
 			.insert({'bottom': new Element('strong').update(title) })
-			.insert({'bottom': new Element('dl', {'class': 'dl-horizontal'})
+			.insert({'bottom': new Element('dl', {'class': 'dl-horizontal dl-condensed'})
 				.insert({'bottom': new Element('dt')
 					.update(new Element('span', {'class': "glyphicon glyphicon-user", 'title': "Customer Name"}) ) 
 				})
@@ -83,12 +83,33 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				})
 			})
 	}
-
+	/**
+	 * Getting the field Div
+	 */
 	,_getfieldDiv: function(title, content) {
-		return new Element('span', {'class': 'fieldDiv'})
-			.insert({'bottom': new Element('span', {'class': 'fieldDiv_title'}).update(title) })
-			.insert({'bottom': new Element('span', {'class': 'fieldDiv_content'}).update(content) });
+		return new Element('dl', {'class': 'dl-condensed'})
+			.insert({'bottom': new Element('dt').update(title) })
+			.insert({'bottom': new Element('dd').update(content) });
 	}
+	/**
+	 * Getting the form group
+	 */
+	,_getFormGroup: function(title, content) {
+		return new Element('div', {'class': 'form-group'})
+		.insert({'bottom': new Element('label', {'class': 'control-label'}).update(title) })
+		.insert({'bottom': content.addClassName('form-control') });
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	
 	,_getHasStockSel: function(title, selectedValue, changeFunc) {
 		var tmp = {};
@@ -105,18 +126,6 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			}
 		}
 		return tmp.selBox;
-	}
-	
-	,_blockUI: function() {
-//		jQuery.fancybox.helpers.overlay.open();
-		jQuery.fancybox.showLoading();
-		return this;
-	}
-	
-	,_unBlockUI: function () {
-		jQuery.fancybox.hideLoading();
-//		jQuery.fancybox.helpers.overlay.close();
-		return this;
 	}
 	
 	,_clearETA: function(btn, item) {
@@ -430,107 +439,6 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		return this;
 	}
 	
-	,_checkPaidAmount: function(txtBox) {
-		var tmp = {};
-		tmp.me = this;
-		tmp.hasError = false;
-		tmp.paidAmount = $F(txtBox).strip();
-		tmp.paidAmount = tmp.paidAmount.replace(new RegExp('(\\$|\\s|,)', 'g'), '');
-		$(txtBox).value = tmp.paidAmount;
-		
-		$(txtBox).up('.wrapper').getElementsBySelector('.msgDiv').each(function(div) {
-			div.remove();
-		});
-		
-		tmp.extraInfoDiv = $(txtBox).up('.wrapper').down('#extraConfDiv');
-		if(tmp.extraInfoDiv.getElementsBySelector('.fieldDiv').length > 0)
-		{
-			tmp.extraInfoDiv.getElementsBySelector('.fieldDiv').each(function(ec) {
-				ec.remove();
-			});
-		}
-		
-		tmp.paymentMethodElement = $(txtBox).up('.wrapper').down('#paymentMethod');
-		tmp.paymentMethod = $F(tmp.paymentMethodElement).strip();
-		if(tmp.paymentMethod.blank() || tmp.paymentMethod === null || tmp.paymentMethod === '')
-		{
-			tmp.paymentMethodElement.insert({'before': new Element('div', {'class': 'msgDiv errorMsgDiv'}).update(new Element('div', {'class': 'msg'}).update('Payment Method NOT selected') ) });
-			tmp.hasError = true;
-		}	
-		
-		if(tmp.paidAmount === null || tmp.paidAmount.blank() || isNaN(tmp.paidAmount))
-		{
-			$(txtBox).insert({'before': new Element('div', {'class': 'msgDiv errorMsgDiv'}).update(new Element('div', {'class': 'msg'}).update('Paid Amount is NOT valid') ) });
-			tmp.hasError = true;
-		}
-		
-		if(tmp.hasError === true)
-			return;
-		
-		tmp.diff = Math.abs(Math.abs(parseFloat(tmp.paidAmount).toFixed(2)) - Math.abs(parseFloat(tmp.me._order.totalAmount).toFixed(2)));
-		tmp.extraInfoDiv.down('#paidAmtDiff').value = tmp.diff;
-		if(tmp.diff !== 0)
-		{
-			tmp.extraInfoDiv.insert({'bottom': tmp.me._getfieldDiv('Additional Comment', new Element('input', {'type': 'text', 'class': 'extraConf', 'id': 'extraComment'})) })
-						    .insert({'bottom': tmp.me._getfieldDiv('Payment Check',new Element('input', {'type': 'checkbox', 'class': 'extraConf', 'id': 'extraPaymentCheck'})) });
-		}
-		tmp.extraInfoDiv.insert({'bottom': tmp.me._getfieldDiv('', new Element('span', {'class': 'button'}).update('Confirm Payment') 
-									.observe('click', function(){
-										tmp.me._submitPaymentConfirmation(this);
-									})) 
-								});
-	}
-	
-	,_generateSelectionForPaymentMethod: function(pmArray) {
-		var tmp = {};
-		tmp.me = this;
-		if((pmArray instanceof Array && pmArray.length === 0) || !(pmArray instanceof Array))
-			pmArray = tmp.me._paymentMethods;
-		
-		tmp.selBox = new Element('select', {'id': 'paymentMethod', 'class': 'chosen2', 'title_text': 'Select Payment Method', 'dis_search': 'false'})
-						.insert({'bottom': new Element('option', {'value': ''}).update('')  });
-		pmArray.each(function(item) {
-			tmp.selBox.insert({'bottom': new Element('option', {'value': item.id}).update(item.name) });
-		});
-		return tmp.selBox;
-	}
-	
-	,_getFinanceBtns: function() {
-		var tmp = {};
-		tmp.me = this;
-		if(tmp.me._editMode.accounting !== true) {
-			return '';
-		}
-		return new Element('div', {"class": 'wrapper financeBtnWrapper'})
-			.insert({'bottom': tmp.me._getfieldDiv('Payment Method:', tmp.me._generateSelectionForPaymentMethod(tmp.me._paymentMethods)
-					.observe('change', function() {
-						if(((tmp.paymentMethod = $F(this).strip()) !== '' && tmp.paymentMethod !== null && !tmp.paymentMethod.blank())  && 
-						   (tmp.paidAmount = $F($(this).up('.financeBtnWrapper').down('#paidAmount')).strip()) !== '' && (!tmp.paidAmount.blank()) && (tmp.paidAmount !== null))
-						{
-							tmp.me._checkPaidAmount($(this).up('.financeBtnWrapper').down('#paidAmount'));
-						}	
-					})
-			) })
-			.insert({'bottom': tmp.me._getfieldDiv('Paid:',new Element('input', {'type': 'text', 'id': 'paidAmount'})
-				.observe('change', function() {
-					if((tmp.paymentMethod = $F($(this).up('.financeBtnWrapper').down('#paymentMethod')).strip()) !== '' && !tmp.paymentMethod.blank() && tmp.paymentMethod !== null)
-						tmp.me._checkPaidAmount(this);
-					else 
-					{
-						$(this).up('.financeBtnWrapper').getElementsBySelector('.msgDiv').each(function(item) {
-							item.remove();
-						});
-						$(this).up('.financeBtnWrapper').down('#extraConfDiv').getElementsBySelector('.fieldDiv').each(function(item) {
-							item.remove();
-						});
-					}	
-				})
-			) })
-			.insert({'bottom': new Element('span', {'id': 'extraConfDiv'}) 
-				.insert({'bottom': new Element('input', {'type': 'hidden', 'id': 'paidAmtDiff'}) })
-			});
-	}		
-	
 	,_collectData: function(colname, attrName) {
 		var tmp = {};
 		tmp.me = this;
@@ -680,10 +588,10 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		return new Element('div', {'class': 'list-group-item comments_row'})
 			.store('data', comments)
 			.insert({'bottom': new Element('div', {'class': 'row'})
-				.insert({'bottom': new Element('span', {'class': 'col-xs-2 created'}).update(new Element('small').update(comments.created) ) })
-				.insert({'bottom': new Element('span', {'class': 'col-xs-2 creator'}).update(new Element('small').update(comments.creator) ) })
-				.insert({'bottom': new Element('span', {'class': 'col-xs-1 type'}).update(new Element('small').update(comments.type) ) })
-				.insert({'bottom': new Element('span', {'class': 'col-xs-7 comments'}).update(comments.comments) })
+				.insert({'bottom': new Element('span', {'class': 'hidden-xs col-sm-1 col-md-2 col-lg-1 created'}).update(new Element('small').update(comments.created) ) })
+				.insert({'bottom': new Element('span', {'class': 'col-xs-4 col-sm-2 col-md-2 col-lg-1 creator'}).update(new Element('small').update(comments.creator + '<div class="visible-xs hidden-sm hidden-md hidden-lg">@ ' + comments.created + '</div>') ) })
+				.insert({'bottom': new Element('span', {'class': 'hidden-xs col-sm-2 col-md-2 col-lg-1 type'}).update(new Element('small').update(comments.type) ) })
+				.insert({'bottom': new Element('span', {'class': 'col-xs-8 col-sm-7 col-md-6 col-lg-9 comments'}).update(comments.comments) })
 			});
 	}
 	/**
@@ -713,7 +621,6 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					}
 					if(!tmp.result)
 						return;
-					
 					//remove the pagination btn
 					if($$('.new-page-btn-div').size() > 0) {
 						$$('.new-page-btn-div').each(function(item){
@@ -802,152 +709,12 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 	,_getCourierList: function () {
 		var tmp = {};
 		tmp.me = this;
-		tmp.courierSelect = new Element('select', {'class': 'chosen', 'title_text': 'Select Post Option', 'dis_search': 'false'})
+		tmp.courierSelect = new Element('select')
 			.insert({'bottom': new Element('option', {'value': ''}).update('') });
 		tmp.me._couriers.each(function(courier) {
 			tmp.courierSelect.insert({'bottom': new Element('option', {'value': courier.id}).update(courier.name) });
 		});
 		return tmp.courierSelect;
-	}
-	
-	,_checkAndSubmitShippingOptions: function(button) {
-		var tmp = {};
-		tmp.me = this;
-		
-		tmp.hasErr = false;
-		tmp.finalShippingDataArray = {};
-		
-		tmp.shippingDiv = $(button).up('#shippingInfoDiv');
-		tmp.shippingDiv.getElementsBySelector('.msgDiv').each(function(errorDiv) {
-			errorDiv.remove();
-		});
-		
-		tmp.shippingDiv.getElementsBySelector('.shipmentInfo').each(function(item) {
-			tmp.insertData = false;
-			tmp.itemValue = $F(item).strip();
-			if(item.readAttribute('mandatory') === 'true')
-			{	
-				if(tmp.itemValue === null || !tmp.itemValue || tmp.itemValue === '' || tmp.itemValue.blank())
-				{
-					item.insert({'before': new Element('div', {'class': 'msgDiv errorMsgDiv'}).update(new Element('div', {'class': 'msg'}).update(item.readAttribute('displayValue') + ' is Mandatory!') ) });
-					tmp.hasErr = true;
-				}
-				else
-				{
-					if(item.hasAttribute('amount') && item.readAttribute('amount') === 'true')
-					{
-						tmp.itemValue = tmp.itemValue.replace(new RegExp('(\\$|\\s|,)', 'g'), '');
-						$(item).value = tmp.itemValue;
-						if(isNaN(tmp.itemValue))
-						{
-							item.insert({'before': new Element('div', {'class': 'msgDiv errorMsgDiv'}).update(new Element('div', {'class': 'msg'}).update(item.readAttribute('displayValue') + ' is Not Valid!') ) });
-							tmp.hasErr = true;
-						}
-						else
-							tmp.insertData = true;
-					}
-					else
-						tmp.insertData = true;
-				}
-			}
-			else
-				tmp.insertData = true;
-			
-			if(tmp.insertData === true && tmp.hasErr === false)
-			{
-				if(!(item.readAttribute('dataType') in tmp.finalShippingDataArray))
-					tmp.finalShippingDataArray[item.readAttribute('dataType')] = [];
-				
-				tmp.finalShippingDataArray[item.readAttribute('dataType')].push(tmp.itemValue);
-			}
-		});
-		
-		if(tmp.hasErr === true)
-			return;
-		
-		tmp.btn = $(button);
-		tmp.me.postAjax(tmp.me.getCallbackId('updateShippingInfo'), {'shippingInfo': tmp.finalShippingDataArray, 'order': tmp.me._order}, {
-			'onLoading': function (sender, param) {
-				tmp.btn.addClassName('disabled').update('Saving ...');
-				tmp.me._blockUI();
-			}
-			,'onSuccess': function (sender, param) {
-				try {
-					tmp.result = tmp.me.getResp(param, false, true);
-					if(!tmp.result)
-						return;
-					alert('Saved Successfully!');
-					window.location = document.URL;
-				} 
-				catch (e) {
-					alert(e);
-				}
-			},
-			'onComplete': function(sender, param) {
-				if(tmp.btn)
-					tmp.btn.removeClassName('disabled').update('submit');
-				tmp.me._unblockUI();
-			}
-		});
-	}
-	
-	/* Generating the EDITABLE Shipping Info Receiver and Courier details. Function is used by _getShippingRow() */
-	,_generateShippingReceiverInfoDetailsForEdit: function() {
-		var tmp = {};
-		tmp.me = this;
-		return new Element('div', {'class': 'row'})
-			.insert({'bottom': new Element('span', {'class': 'courier'})
-				.insert({'bottom': tmp.me._getfieldDiv('Courier:', tmp.me._getCourierList().addClassName('shipmentInfo')
-																				   .writeAttribute('dataType', 'courierId')
-																				   .writeAttribute('displayValue', 'Courier Info')
-																				   .writeAttribute('mandatory', 'true')
-																				   
-					) })
-			})
-			.insert({'bottom': new Element('span', {'class': 'contactName'})
-				.insert({'bottom': tmp.me._getfieldDiv('Contact Name:', new Element('input', {'type': 'text', 'dataType': 'contactName', 'displayValue': 'Contact Name', 'class': 'shipmentInfo'}).writeAttribute('value', tmp.me._order.address.shipping.contactName) ) })
-			})
-			.insert({'bottom': new Element('span', {'class': 'contactNo'})
-				.insert({'bottom': tmp.me._getfieldDiv('Contact No:', new Element('input', {'type': 'text', 'dataType': 'contactNo', 'displayValue': 'Contact No', 'class': 'shipmentInfo'}).writeAttribute('value', tmp.me._order.address.shipping.contactNo) ) })
-			});
-	}
-	
-	/* Generating the EDITABLE Shipping Address Info details. Function is used by _getShippingRow() */
-	,_generateShippingAddressDetailsForEdit: function() {
-		var tmp = {};
-		tmp.me = this;
-		return new Element('div', {'class': 'row'})
-				.insert({'bottom': new Element('span', {'class': 'street'})
-					.insert({'bottom': tmp.me._getfieldDiv('Street:', new Element('input', {'type': 'text', 'mandatory': 'true', 'dataType': 'street', 'displayValue': 'Street', 'class': 'shipmentInfo'}).writeAttribute('value', tmp.me._order.address.shipping.street) ) })
-				})
-				.insert({'bottom': new Element('span', {'class': 'city'})
-					.insert({'bottom': tmp.me._getfieldDiv('City:', new Element('input', {'type': 'text', 'mandatory': 'true', 'dataType': 'city', 'displayValue': 'City', 'class': 'shipmentInfo'}).writeAttribute('value', tmp.me._order.address.shipping.city) ) })
-				})
-				.insert({'bottom': new Element('span', {'class': 'region'})
-					.insert({'bottom': tmp.me._getfieldDiv('Region:', new Element('input', {'type': 'text', 'mandatory': 'true', 'dataType': 'region', 'displayValue': 'Region', 'class': 'shipmentInfo'}).writeAttribute('value', tmp.me._order.address.shipping.region) ) })
-				})
-				.insert({'bottom': new Element('span', {'class': 'country'})
-					.insert({'bottom': tmp.me._getfieldDiv('Country:', new Element('input', {'type': 'text', 'mandatory': 'true', 'dataType': 'country', 'displayValue': 'Counter', 'class': 'shipmentInfo'}).writeAttribute('value', tmp.me._order.address.shipping.country) ) })
-				})
-				.insert({'bottom': new Element('span', {'class': 'postCode'})
-					.insert({'bottom': tmp.me._getfieldDiv('Post Code:', new Element('input', {'type': 'text', 'mandatory': 'true', 'dataType': 'postCode', 'displayValue': 'Post Code', 'class': 'shipmentInfo'}).writeAttribute('value', tmp.me._order.address.shipping.postCode) ) })
-				});
-	}
-	
-	/* Generating the EDITABLE Other Shipping Info details. Function is used by _getShippingRow() */
-	,_generateOtherShippingDetailsForEdit: function() {
-		var tmp = {};
-		tmp.me = this;
-		return new Element('div', {'class': 'row'}) 
-				.insert({'bottom': new Element('span', {'class': 'noOfCartons'})
-					.insert({'bottom': tmp.me._getfieldDiv('No Of Carton(s):', new Element('input', {'type': 'text', 'mandatory': 'true', 'dataType': 'noOfCartons', 'displayValue': 'No Of Carton', 'class': 'shipmentInfo'}) ) })
-				})
-				.insert({'bottom': new Element('span', {'class': 'consignmentNo'})
-					.insert({'bottom': tmp.me._getfieldDiv('Consignment No:', new Element('input', {'type': 'text', 'mandatory': 'true', 'dataType': 'conNoteNo', 'displayValue': 'Consignment No', 'class': 'shipmentInfo'}) ) })
-				})
-				.insert({'bottom': new Element('span', {'class': 'estShippingCost'})
-					.insert({'bottom': tmp.me._getfieldDiv('Estimated Shipping Cost', new Element('input', {'type': 'text', 'mandatory': 'true', 'amount': 'true', 'dataType': 'estShippingCost', 'displayValue': 'Est Shipping Cost', 'class': 'shipmentInfo number'}) ) })
-				});
 	}
 	,_getLatestPaymentMethod: function() {
 		var tmp = {};
@@ -995,8 +762,8 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.me = this;
 		return new Element('div', {'class': 'panel panel-default'}) 
 			.insert({'bottom': new Element('div', {'class': 'panel-heading'} ).update('Comments') })
-			.insert({'bottom': new Element('div', {'id': tmp.me._commentsDiv.resultDivId, 'class': 'list-group'}) })
-			.insert({'bottom': new Element('div', {'class': 'list-group-item new_comments_wrapper'})
+			.insert({'bottom': new Element('small', {'id': tmp.me._commentsDiv.resultDivId, 'class': 'list-group'}) })
+			.insert({'bottom': new Element('small', {'class': 'list-group-item new_comments_wrapper'})
 				.insert({'bottom': new Element('div', {'class': 'row'})
 					.insert({'bottom': new Element('div', {'class': 'col-xs-2'}).update('<strong>New Comments:</strong>') })
 					.insert({'bottom': new Element('div', {'class': 'col-xs-10'})
@@ -1065,57 +832,170 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			});
 	}
 	/**
+	 * Marking a form group to has-error
+	 */
+	,_markFormGroupError: function(input, errMsg) {
+		var tmp = {}
+		tmp.me = this;
+		if(input.up('.form-group')) {
+			input.up('.form-group').addClassName('has-error');
+			if(!input.id)
+				input.id = 'input_' + String.fromCharCode(65 + Math.floor(Math.random() * 26)) + Date.now();
+			jQuery('#' + input.id).tooltip({
+				'trigger': 'manual'
+				,'placement': 'auto'
+				,'container': 'body'
+				,'placement': 'bottom'
+				,'html': true
+				,'title': errMsg
+			})
+			.tooltip('show')
+			.change(function() {
+				tmp.input = jQuery(this);
+				tmp.input.parent('.form-group').removeClass('has-error');
+				tmp.input.tooltip('hide').tooltip('destroy').show();
+			})
+		}
+		return tmp.me;
+	}
+	/**
+	 * Check and save the shipment
+	 */
+	,_checkAndSubmitShippingOptions: function(button) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.hasErr = false;
+		tmp.finalShippingDataArray = {};
+		tmp.shippingDiv = $(button).up('.save_shipping_panel');
+		//clear all error msgs
+		tmp.shippingDiv.getElementsBySelector('.alert.alert-danger.alert-dismissible').each(function(item) { item.remove(); });
+		//collect information
+		tmp.shippingDiv.getElementsBySelector('[save_shipping]').each(function(item) {
+			tmp.itemValue = $F(item).strip();
+			if(item.hasAttribute('required')) {	
+				if(tmp.itemValue.blank()) {
+					tmp.me._markFormGroupError(item, 'Required!');
+					tmp.hasErr = true;
+				}
+			}
+			
+			if (item.hasClassName('validate_number') ) {
+				if (tmp.me.getValueFromCurrency(tmp.itemValue).match(/^\d+(\.\d{1,2})?$/) === null) {
+					tmp.me._markFormGroupError(item, 'Invalid number provided!');
+					tmp.hasErr = true;
+				} else {
+					tmp.value = tmp.me.getValueFromCurrency(tmp.itemValue);
+				}
+			} 
+			tmp.finalShippingDataArray[item.readAttribute('save_shipping')] = tmp.itemValue;
+		});
+		if(tmp.hasErr === true)
+			return;
+		tmp.me.postAjax(tmp.me.getCallbackId('updateShippingInfo'), {'shippingInfo': tmp.finalShippingDataArray, 'order': tmp.me._order}, {
+			'onLoading': function (sender, param) {
+				jQuery('#' + button.id).button('loading');
+			}
+			,'onSuccess': function (sender, param) {
+				try {
+					tmp.result = tmp.me.getResp(param, false, true);
+					if(!tmp.result)
+						return;
+					alert('Saved Successfully!');
+					window.location = document.URL;
+				} catch (e) {
+					$(button).insert({'before': tmp.me.getAlertBox('ERROR: ', e).addClassName('alert-danger') });
+				}
+			},
+			'onComplete': function(sender, param) {
+				jQuery('#' + button.id).button('reset');
+			}
+		});
+	}
+	/**
 	 * Getting the shippment row
 	 */
 	,_getShippmentRow: function() {
 		var tmp = {};
 		tmp.me = this;
-		tmp.shipmentRow = '';
+		tmp.shipmentListDiv = tmp.newShipmentDiv = null;
 		if(tmp.me._order.status.id * 1 === tmp.me.order_status_picked && tmp.me._editMode.warehouse === true) {
-			tmp.shipmentRow = new Element('div', {'class': 'shippingWrapper', 'id': 'shippingInfoDiv'})
-				.insert({'bottom': new Element('div', {'class': 'row header'}).update('Receiver Info') })
-				.insert({'bottom': tmp.me._generateShippingReceiverInfoDetailsForEdit() })
-				.insert({'bottom': new Element('div', {'class': 'row header'}).update('Shipping Address Info') })
-				.insert({'bottom': tmp.me._generateShippingAddressDetailsForEdit() })
-				.insert({'bottom': new Element('div', {'class': 'row header'}).update('Other Shipping Details') })
-				.insert({'bottom': tmp.me._generateOtherShippingDetailsForEdit() })
+			tmp.newShipmentDiv = new Element('div', {'class': 'panel-body save_shipping_panel'})
 				.insert({'bottom': new Element('div', {'class': 'row'})
-					.insert({'bottom': tmp.me._getfieldDiv('Delivery Instruction:', new Element('textarea', {'mandatory': 'false', 'dataType': 'deliveryInstructions', 'class': 'shipmentInfo'}) ).addClassName('deliveryIns') })
-					.insert({'bottom': new Element('span', {'class': 'submitShipping fieldDiv'})
-						.insert({'bottom': new Element('span', {'class': 'button'}).update('Save')
-								.observe('click', function() {
-									tmp.me._checkAndSubmitShippingOptions(this);
-								})
+					.insert({'bottom': new Element('div', {'class': 'col-sm-2'})
+						.insert({'bottom': tmp.me._getFormGroup('Contact Name:', new Element('input', {'type': 'text', 'save_shipping': 'contactName', 'required': true, 'class': 'input-sm', 'value': tmp.me._order.address.shipping.contactName}) ) })
+					})
+					.insert({'bottom': new Element('div', {'class': 'col-sm-2'})
+						.insert({'bottom': tmp.me._getFormGroup('Contact No:', new Element('input', {'type': 'tel', 'save_shipping': 'contactNo', 'required': true, 'class': 'input-sm', 'value': tmp.me._order.address.shipping.contactNo}) ) })
+					})
+					.insert({'bottom': new Element('div', {'class': 'col-sm-2 bg-info'})
+						.insert({'bottom': tmp.me._getFormGroup('Courier:', tmp.me._getCourierList().writeAttribute('save_shipping', 'courierId').writeAttribute('required', true) ) })
+					})
+					.insert({'bottom': new Element('div', {'class': 'col-sm-2 bg-info'})
+						.insert({'bottom': tmp.me._getFormGroup('No Of Carton(s):', new Element('input', {'type': 'number', 'required': true, 'save_shipping': 'noOfCartons', 'class': 'input-sm validate_number', 'value': '1'}) ) })
+					})
+					.insert({'bottom': new Element('div', {'class': 'col-sm-2 bg-info'})
+						.insert({'bottom': tmp.me._getFormGroup('Consignment No:', new Element('input', {'type': 'text', 'required': true, 'save_shipping': 'conNoteNo', 'class': 'input-sm'}) ) })
+					})
+					.insert({'bottom': new Element('div', {'class': 'col-sm-2 bg-info'})
+						.insert({'bottom': tmp.me._getFormGroup('Est. Shipping Cost', new Element('input', {'type': 'text', 'required': true, 'save_shipping': 'actualShippingCost', 'class': 'input-sm validate_number'}) ) })
+						.insert({'bottom': new Element('input', {'type': 'hidden', 'save_shipping': 'estShippingCost', 'class': 'input-sm'}) })
+					})
+				})
+				.insert({'bottom': new Element('div', {'class': 'row'}) 
+					.insert({'bottom': new Element('div', {'class': 'col-sm-4'})
+						.insert({'bottom': tmp.me._getFormGroup('Street:', new Element('input', {'type': 'text', 'required': true, 'save_shipping': 'street', 'class': 'input-sm', 'value': tmp.me._order.address.shipping.street}) ) })
+					})
+					.insert({'bottom': new Element('div', {'class': 'col-sm-2'})
+						.insert({'bottom': tmp.me._getFormGroup('City:', new Element('input', {'type': 'text', 'required': true, 'save_shipping': 'city', 'class': 'input-sm', 'value': tmp.me._order.address.shipping.city}) ) })
+					})
+					.insert({'bottom': new Element('div', {'class': 'col-sm-2'})
+						.insert({'bottom': tmp.me._getFormGroup('State:', new Element('input', {'type': 'text', 'required': true, 'save_shipping': 'region', 'class': 'input-sm', 'value': tmp.me._order.address.shipping.region}) ) })
+					})
+					.insert({'bottom': new Element('div', {'class': 'col-sm-2'})
+						.insert({'bottom': tmp.me._getFormGroup('Country:', new Element('input', {'type': 'text', 'required': true, 'save_shipping': 'country', 'class': 'input-sm', 'value': tmp.me._order.address.shipping.country}) ) })
+					})
+					.insert({'bottom': new Element('div', {'class': 'col-sm-2'})
+						.insert({'bottom': tmp.me._getFormGroup('Post Code:', new Element('input', {'type': 'text', 'required': true, 'save_shipping': 'postCode', 'class': 'input-sm', 'value': tmp.me._order.address.shipping.postCode}) ) })
+					})
+				})
+				.insert({'bottom': new Element('div', {'class': 'row'}) 
+					.insert({'bottom': new Element('div', {'class': 'col-sm-12'})
+						.insert({'bottom': tmp.me._getFormGroup('Delivery Instruction:', new Element('textarea', {'save_shipping': 'deliveryInstructions', 'class': 'input-sm'}) ) })
+					})
+					.insert({'bottom': new Element('div', {'class': 'col-sm-12'})
+						.insert({'bottom': new Element('span', {'id': 'shipping_save_btn', 'class': 'btn btn-primary', 'data-loading-text': 'Saving...'}).update('Save')
+							.observe('click', function() {
+								tmp.me._checkAndSubmitShippingOptions(this);
+							})
 						})
 					})
-				});
-		} else if(tmp.me._order.shippment.length > 0) {
-			tmp.shippingInfos = tmp.me._order.shippment;
-			if(!tmp.shippingInfos instanceof Array || tmp.shippingInfos.length === 0)
-				tmp.shippingInfos = tmp.me._order.shippment;
-			
-			tmp.finalReturnDiv = new Element('div', {'class': 'viewShipping'});
+				})
+				;
+		}
+		
+		if(tmp.me._order.shippments.size() > 0) {
+			tmp.shippingInfos = tmp.me._order.shippments;
+			tmp.shipmentListDiv = new Element('small', {'class': 'viewShipping list-group'});
 			tmp.shippingInfos.each(function(item) {
-				tmp.finalReturnDiv.insert({'bottom': new Element('div', {'class': 'row'}) 
-					.insert({'bottom': tmp.me._getfieldDiv('Receiver:', item.receiver).addClassName('receiver') })
-					.insert({'bottom': tmp.me._getfieldDiv('Contact No:', (item.contact)).addClassName('contactNo') })
-					.insert({'bottom': tmp.me._getfieldDiv('Courier:', (item.courier.name)).addClassName('courier') })
-					.insert({'bottom': tmp.me._getfieldDiv('Shipping Address:', item.address).addClassName('shippingAddr') })
+				tmp.shipmentListDiv.insert({'bottom': new Element('div', {'class': 'list-group-item'})
+					.insert({'bottom': new Element('div', {'class': 'row'}) 
+						.insert({'bottom': tmp.me._getfieldDiv('Date:', item.shippingDate).wrap(new Element('div', {'class': 'col-xs-6 col-sm-2'})) })
+						.insert({'bottom': tmp.me._getfieldDiv('Est./Act.', tmp.me.getCurrency(item.estShippingCost) + ' / ' + tmp.me.getCurrency(item.actualShippingCost)).writeAttribute('title', 'Estimated Shipping Cost VS. Actual Shipping Cost').wrap(new Element('div', {'class': 'col-xs-6 col-sm-2'})) })
+						.insert({'bottom': tmp.me._getfieldDiv('Receiver:', item.receiver).wrap(new Element('div', {'class': 'col-xs-6 col-sm-2'})) })
+						.insert({'bottom': tmp.me._getfieldDiv('Contact No:', (item.contact)).wrap(new Element('div', {'class': 'col-xs-6 col-sm-2'})) })
+						.insert({'bottom': tmp.me._getfieldDiv('Courier:', (item.courier.name)).wrap(new Element('div', {'class': 'col-xs-3 col-sm-1'}))})
+						.insert({'bottom': tmp.me._getfieldDiv('Con. No:', item.conNoteNo).writeAttribute('title', 'Consignment Note Number').wrap(new Element('div', {'class': 'col-xs-6 col-sm-2'})) })
+						.insert({'bottom': tmp.me._getfieldDiv('Cartons:', item.noOfCartons).writeAttribute('title', 'No Of Cartons Send On This Shipment').wrap(new Element('div', {'class': 'col-xs-3 col-sm-1'})) })
+						.insert({'bottom': tmp.me._getfieldDiv('Shipping Address:', '<small><em>' + item.address.full + '</em></small>').wrap(new Element('div', {'class': 'col-xs-12 col-sm-6'})) })
+						.insert({'bottom':  tmp.me._getfieldDiv('Delivery Instructions:', item.deliveryInstructions).wrap(new Element('div', {'class': 'col-xs-12 col-xs-6'}))})
+					})
 				})
-				.insert({'bottom': new Element('div', {'class': 'row'})
-					.insert({'bottom': tmp.me._getfieldDiv('No Of Cartons:', item.noOfCartons).addClassName('noOfCartons') })
-					.insert({'bottom': tmp.me._getfieldDiv('Est Shipping Cost:', tmp.me.getCurrency(item.estShippingCost)).addClassName('estShippingCost') })
-					.insert({'bottom': tmp.me._getfieldDiv('Consignment No:', item.conNoteNo).addClassName('consignmentNo') })
-					.insert({'bottom': tmp.me._getfieldDiv('Shipping Date:', item.shippingDate).addClassName('shippingDate') })
-				})
-				.insert({'bottom': new Element('div', {'class': 'row'})
-					.insert({'bottom':  tmp.me._getfieldDiv('Delivery Instructions:', item.deliveryInstructions).addClassName('deliveryIns') })
-				});
-				tmp.shipmentRow = tmp.finalReturnDiv.insert({'bottom': tmp.returnDiv});
 			});
 		}
-		return new Element('div', {'class': 'panel panel-default'})
-			.insert({'bottom': new Element('div', {'class': 'panel-body'}).update(tmp.shipmentRow) });
+		return (tmp.shipmentListDiv === null && tmp.newShipmentDiv === null) ? '' : new Element('div', {'class': 'panel panel-default'})
+			.insert({'bottom': new Element('div', {'class': 'panel-heading'}).update('Shipping') })
+			.insert({'bottom': tmp.newShipmentDiv })
+			.insert({'bottom': tmp.shipmentListDiv });
 	}
 	/**
 	 * Getting the address panel
@@ -1143,14 +1023,12 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			})
 			.insert({'bottom': new Element('div', {'class': 'panel-body'})
 				.insert({'bottom': new Element('div', {'class': 'row'})
-					.insert({'bottom': new Element('div', {'class': 'row'})
-						.insert({'bottom': new Element('div', {'class': 'col-sm-6'})
-							.insert({'bottom': new Element('strong').update('Customer: ') }) 
-							.insert({'bottom': tmp.custName }) 
-						})
-						.insert({'bottom': new Element('div', {'class': 'col-sm-5 text-right'})
-							.insert({'bottom': new Element('a', {'href': 'mailto:' + tmp.custEmail}).update(tmp.custEmail) })
-						})
+					.insert({'bottom': new Element('div', {'class': 'col-sm-6'})
+						.insert({'bottom': new Element('strong').update('Customer: ') }) 
+						.insert({'bottom': tmp.custName }) 
+					})
+					.insert({'bottom': new Element('div', {'class': 'col-sm-6'})
+						.insert({'bottom': new Element('a', {'href': 'mailto:' + tmp.custEmail}).update(tmp.custEmail) })
 					})
 				})
 				.insert({'bottom': new Element('div', {'class': 'row'})
@@ -1158,27 +1036,6 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					.insert({'bottom': tmp.me._getAddressDiv("Billing Address: ", tmp.me._order.address.billing).addClassName('col-xs-6') })
 				 })
 			});
-	}
-	,_getSummaryRow: function() {
-		var tmp = {};
-		tmp.me = this;
-		return new Element('div', {'class': 'panel panel-default'})
-			.insert({'bottom': new Element('div', {'class': 'panel-body'})
-				.insert({'bottom': new Element('div', {'class': 'viewRow'})
-					.insert({'bottom': tmp.me._getfieldDiv('Shipping', tmp.me._order.infos[9][0].value).addClassName('shippingMethod') })
-					.insert({'bottom': tmp.me._getfieldDiv('Magento Payment Method', tmp.me._order.infos[6][0].value).addClassName('magePaymentMethod') })
-					.insert({'bottom': tmp.me._getfieldDiv('Last Payment Method', new Element("span", {"id": "lastPaymentMethod"})
-							.update(new Element('img'))
-						).addClassName('lastPaymentMethod') 
-					})
-					.insert({'bottom': tmp.me._getfieldDiv('Total Amount', tmp.me.getCurrency(tmp.me._order.totalAmount)).addClassName('totalAmount') })
-					.insert({'bottom': tmp.me._getfieldDiv('Total Paid', tmp.me.getCurrency(tmp.me._order.totalPaid)).addClassName('totalPaid') })
-					.insert({'bottom': tmp.me._getfieldDiv('Total Due', tmp.me.getCurrency(tmp.me._order.totalDue)).addClassName('totalDue') })
-				})
-				.insert({'bottom': new Element('div', {'class': 'rowWrapper'})
-					.insert({'bottom': new Element('div', {'class': 'financeBtns'}).update( tmp.me._getFinanceBtns()) })
-				})
-			})
 	}
 	/**
 	 * Getting the order information panel
@@ -1194,31 +1051,111 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			})
 			.insert({'bottom': new Element('div', {'class': 'panel-body'})
 				.insert({'bottom': new Element('div', {'class': 'row'})
-					.insert({'bottom': new Element('div', {'class': 'col-sm-4 text-right'}).update('<strong><small>Shipping:</small></strong>') })
-					.insert({'bottom': new Element('div', {'class': 'col-sm-8'}).update('<em><small>' + tmp.me._order.infos[9][0].value + '</small></em>') })
+					.insert({'bottom': new Element('div', {'class': 'col-xs-4 text-right'}).update('<strong><small>Shipping:</small></strong>') })
+					.insert({'bottom': new Element('div', {'class': 'col-xs-8'}).update('<em><small>' + tmp.me._order.infos[9][0].value + '</small></em>') })
 				})
 				.insert({'bottom': new Element('div', {'class': 'row'})
-					.insert({'bottom': new Element('div', {'class': 'col-sm-4 text-right'}).update('<strong><small>Mage Payment:</small></strong>') })
-					.insert({'bottom': new Element('div', {'class': 'col-sm-8'}).update(tmp.me._order.infos[6][0].value) })
+					.insert({'bottom': new Element('div', {'class': 'col-xs-4 text-right'}).update('<strong><small>Mage Payment:</small></strong>') })
+					.insert({'bottom': new Element('div', {'class': 'col-xs-8'}).update(tmp.me._order.infos[6][0].value) })
 				})
 				.insert({'bottom': new Element('div', {'class': 'row'})
-					.insert({'bottom': new Element('div', {'class': 'col-sm-4 text-right'}).update('<strong><small>Total Amount:</small></strong>') })
-					.insert({'bottom': new Element('div', {'class': 'col-sm-8'}).update( tmp.me.getCurrency(tmp.me._order.totalAmount) ) })
+					.insert({'bottom': new Element('div', {'class': 'col-xs-4 text-right'}).update('<strong><small>Total Amount:</small></strong>') })
+					.insert({'bottom': new Element('div', {'class': 'col-xs-8'}).update( tmp.me.getCurrency(tmp.me._order.totalAmount) ) })
 				})
 				.insert({'bottom': new Element('div', {'class': 'row'})
-					.insert({'bottom': new Element('div', {'class': 'col-sm-4 text-right'}).update('<strong><small>Total Paid:</small></strong>') })
-					.insert({'bottom': new Element('div', {'class': 'col-sm-8'}).update( tmp.me.getCurrency(tmp.me._order.totalAmount) ) })
+					.insert({'bottom': new Element('div', {'class': 'col-xs-4 text-right'}).update('<strong><small>Total Paid:</small></strong>') })
+					.insert({'bottom': new Element('div', {'class': 'col-xs-8'}).update( tmp.me.getCurrency(tmp.me._order.totalAmount) ) })
 				})
 				.insert({'bottom': new Element('div', {'class': 'row'})
-					.insert({'bottom': new Element('div', {'class': 'col-sm-4 text-right'}).update('<strong><small>Total Due:</small></strong>') })
-					.insert({'bottom': new Element('div', {'class': 'col-sm-8'}).update( tmp.me.getCurrency(tmp.me._order.totalDue) ) })
+					.insert({'bottom': new Element('div', {'class': 'col-xs-4 text-right'}).update('<strong><small>Total Due:</small></strong>') })
+					.insert({'bottom': new Element('div', {'class': 'col-xs-8'}).update( tmp.me.getCurrency(tmp.me._order.totalDue) ) })
 				})
 			});
 	}
 	/**
-	 * load the js
+	 * bind Change EVENT to current box for currency formating
 	 */
-	,load: function(resultdiv) {
+	,_currencyInputChanged: function(inputBox) {
+		var tmp = {};
+		tmp.me = this;
+		if($F(inputBox).blank()) {
+			return false;
+		}
+		tmp.inputValue = tmp.me.getValueFromCurrency($F(inputBox));
+		if(tmp.inputValue.match(/^\d+(\.\d{1,2})?$/) === null) {
+			tmp.me._markFormGroupError(inputBox, 'Invalid currency format provided!');
+			return false;
+		}
+		$(inputBox).value = tmp.me.getCurrency(tmp.inputValue);
+		return true;
+	}
+	/**
+	 * Get Payment Row
+	 */
+	,_getPaymentRow: function() {
+		var tmp = {};
+		tmp.me = this;
+		if(tmp.me._editMode.accounting !== true) {
+			return '';
+		}
+		
+		tmp.clearConfirmPanel = function(inputBox) {
+			$(inputBox).up('.panel_row_confirm_panel').getElementsBySelector('.after_select_method').each(function(item) { item.remove(); })
+		}
+		tmp.selBox = new Element('select', {'class': 'input-sm', 'payment_field': 'payment_method_id'})
+			.insert({'bottom': new Element('option', {'value': ''}).update('')  })
+			.observe('change', function() {
+				tmp.clearConfirmPanel(this);
+				$(this).up('.panel_row_confirm_panel').down('[payment_field=paidAmount]').select();
+			})
+		tmp.me._paymentMethods.each(function(item) {
+			tmp.selBox.insert({'bottom': new Element('option', {'value': item.id}).update(item.name) });
+		});
+		
+		tmp.paymentDiv = new Element('div', {"class": 'panel panel-default payment_row_panel'})
+			.insert({'bottom': new Element('div', {"class": 'panel-heading'}).update('Payments') })
+			.insert({'bottom': new Element('div', {"class": 'panel-body panel_row_confirm_panel'})
+				.insert({'bottom': new Element('div', {"class": 'row'})
+					.insert({'bottom': new Element('div', {"class": 'col-xs-6 col-sm-2'})
+						.insert({'bottom': tmp.me._getFormGroup('Method:', tmp.selBox) })
+					})
+					.insert({'bottom': new Element('div', {"class": 'col-xs-6 col-sm-2'})
+						.insert({'bottom': tmp.me._getFormGroup('Paid:',new Element('input', {'type': 'text', 'payment_field': 'paidAmount', 'class': 'input-sm'})
+							.observe('change', function() {
+								if(tmp.me._currencyInputChanged(this) === false) {
+									return;
+								}
+								tmp.clearConfirmPanel(this); //clear all after_select_method
+								tmp.wrapperDiv = $(this).up('.panel_row_confirm_panel').down('.row');
+								tmp.paymentCheckBox = new Element('input', {'type': 'checkbox', 'class': 'input-sm', 'payment_field': 'paymentChecked'});
+								//if paid amount is different from total amount 
+								if(Math.abs(Math.abs(parseFloat(tmp.me.getValueFromCurrency($F(this))).toFixed(2)) - Math.abs(parseFloat(tmp.me.getValueFromCurrency(tmp.me._order.totalAmount)).toFixed(2))) !== 0) {
+									tmp.wrapperDiv.insert({'bottom': new Element('div', {"class": 'after_select_method col-xs-12 col-sm-4'})
+										.insert({'bottom': tmp.me._getFormGroup('Comments:', new Element('input', {'type': 'text', 'class': 'after_select_method input-sm', 'payment_field': 'extraComments'}) ) })
+									})
+									.insert({'bottom': new Element('div', {"class": 'after_select_method col-xs-6 col-sm-2'})
+										.insert({'bottom': tmp.me._getFormGroup('Pass?', tmp.paymentCheckBox.show() ) })
+									})
+								} else {
+									tmp.wrapperDiv.insert({'bottom': tmp.paymentCheckBox.hide().addClassName('after_select_method').writeAttribute('checked', true) })
+								}
+								tmp.wrapperDiv.insert({'bottom': new Element('div', {"class": 'after_select_method col-xs-6 col-sm-2'})
+									.insert({'bottom': new Element('span', {'class': 'btn btn-primary after_select_method'}).update('Confirm') 
+										.observe('click', function(){
+											tmp.me._submitPaymentConfirmation(this);
+										}) 
+									}) 
+								});
+							})
+						) })
+					})
+				})
+			})
+		;
+		return tmp.paymentDiv;
+	}	
+	
+	,init: function(resultdiv) {
 		var tmp = {};
 		tmp.me = this;
 		tmp.me._resultDivId = resultdiv;
@@ -1233,14 +1170,22 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				})
 			})
 			.insert({'bottom': tmp.me._getPartsTable() })   	//getting the parts row
-			.insert({'bottom': tmp.me._getSummaryRow() })   	//getting the summray row
+			.insert({'bottom': tmp.me._getPaymentRow() })   	//getting the payment row
 			.insert({'bottom': tmp.me._getShippmentRow() }) 	//getting the EDITABLE shippment row
 			.insert({'bottom': tmp.me._getEmptyCommentsDiv() }) //getting the comments row
 		);
+		return this;
+	}
+	/**
+	 * load the js
+	 */
+	,load: function() {
+		var tmp = {};
+		tmp.me = this;
 		//load the comments after
 		tmp.me._getComments(true)
-			._loadChosen()
-			._getLatestPaymentMethod();
+			._loadChosen();
+//			._getLatestPaymentMethod();
 		return this;
 	}
 });

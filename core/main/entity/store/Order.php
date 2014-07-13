@@ -456,12 +456,12 @@ class Order extends InfoEntityAbstract
 		    }
 		    $array['status'] = $this->getStatus() instanceof OrderStatus ? $this->getStatus()->getJson() : array();
 		    
-		    $array['shippment'] = array();
+		    $array['shippments'] = array();
 		    foreach($this->getShippments() as $shippment)
 		    {
 		    	if(!$shippment instanceof Shippment)
 		    		continue;
-		    	$array['shippment'][] = $shippment->getJson();
+		    	$array['shippments'][] = $shippment->getJson();
 		    }
 	    }
 	    return parent::getJson($array, $reset);

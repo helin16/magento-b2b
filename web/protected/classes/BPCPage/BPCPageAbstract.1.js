@@ -80,6 +80,12 @@ BPCPageJs.prototype = {
 		tmp.j = (tmp.j = tmp.Int.length) > 3 ? tmp.j % 3 : 0;
 		return tmp.dollar + tmp.sign + (tmp.j ? tmp.Int.substr(0, tmp.j) + tmp.thousandPoint : "") + tmp.Int.substr(tmp.j).replace(/(\d{3})(?=\d)/g, "$1" + tmp.thousandPoint) + (tmp.decimal ? tmp.decimalPoint + Math.abs(number - tmp.Int).toFixed(tmp.decimal).slice(2) : "");
 	}
+	/**
+	 * Getting the absolute value from currency
+	 */
+	,getValueFromCurrency: function(currency) {
+		return currency.replace(' ', '').replace('$', '').replace(',', '');
+	}
 	//do key enter
 	,keydown: function (event, enterFunc, nFunc) {
 		//if it's not a enter key, then return true;
