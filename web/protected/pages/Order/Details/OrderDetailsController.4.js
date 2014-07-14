@@ -14,20 +14,6 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 	,infoType_custName : 1
 	,infoType_custEmail : 2
 	,order_status_picked: 7
-	,comment_type_warehouse: 'WAREHOUSE'
-	,comment_type_purchasing: 'PURCHASING'	
-	,_tooltipObj: null //the tooltip object
-	,_commentsTypeIds: {} //the comments object
-	
-	,setToolTipCommentsObj: function(tooltipObj) {
-		this._tooltipObj = tooltipObj;
-		return this;
-	}
-	
-	,setCommentsTypeIds: function (commentsTypeIds) {
-		this._commentsTypeIds = commentsTypeIds;
-		return this;
-	}
 	
 	,setEditMode: function(editPurchasing, editWH, editAcc, editStatus) {
 		this._editMode.purchasing = (editPurchasing || false);
@@ -99,35 +85,263 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		.insert({'bottom': new Element('label', {'class': 'control-label'}).update(title) })
 		.insert({'bottom': content.addClassName('form-control') });
 	}
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	,_getHasStockSel: function(title, selectedValue, changeFunc) {
+	/**
+	 * Collecting data from attrName
+	 */
+	,_collectData: function(attrName, groupIndexName) {
 		var tmp = {};
-		tmp.selBox = new Element('select', {'class': 'hasStock'})
-			.insert({'bottom': new Element('option', {'value': ''}).update(title)})
-			.insert({'bottom': new Element('option', {'value': 'Y'}).update('YES')})
-			.insert({'bottom': new Element('option', {'value': 'N'}).update('NO')})
-			.observe('change', changeFunc);
-		if(!selectedValue.blank()) {
-			tmp.options = tmp.selBox.getElementsBySelector('option');
-			for( tmp.i = 0 ; tmp.i < tmp.options.size(); tmp.i++ ) {
-				if(tmp.options[tmp.i].value === selectedValue)
-					tmp.options[tmp.i].selected = true;
+		tmp.me = this;
+		tmp.groupIndexName =  (groupIndexName || null);
+		tmp.data = {};
+		tmp.hasError = false;
+		$$('[' + attrName + ']').each(function(item) {
+			tmp.fieldName = item.readAttribute(attrName);
+			if(item.hasAttribute('required') && $F(item).blank()) {
+				tmp.me._markFormGroupError(item, 'This is requried');
+				tmp.hasError = true;
+				return;
 			}
-		}
-		return tmp.selBox;
+			
+			tmp.value = item.readAttribute('type') !== 'checkbox' ? $F(item).strip() : $(item).checked;
+			if(item.hasAttribute('validate_currency') || item.hasAttribute('validate_number')) {
+				if (tmp.me.getValueFromCurrency(tmp.itemValue).match(/^\d+(\.\d{1,2})?$/) === null) {
+					tmp.me._markFormGroupError(item, (item.hasAttribute('validate_currency') ? item.readAttribute('validate_currency') : item.hasAttribute('validate_number')));
+					tmp.hasErr = true;
+					return;
+				} else {
+					tmp.value = item.hasAttribute('validate_currency') ? tmp.me.getValueFromCurrency(tmp.itemValue) : tmp.me.getValueFromCurrency(tmp.itemValue);
+				}
+			}
+			//getting tehdata
+			if(tmp.groupIndexName) {
+				if(!tmp.data[tmp.groupIndexName])
+					tmp.data[tmp.groupIndexName] = {};
+				tmp.data[tmp.fieldName][tmp.fieldName] = tmp.itemValue;
+			} else {
+				tmp.data[tmp.fieldName] = tmp.itemValue;
+			}
+		});
+		return (tmp.hasError === true ? null : tmp.data);
 	}
-	
+	/**
+	 * Ajax: check and submit payment
+	 */
+	,_submitPaymentConfirmation: function(button) {
+		var tmp = {};
+		tmp.me = this;
+		
+		tmp.date = tmp.me._collectData('payment_field', attrName);
+		
+		//validate the mandatory fields
+		tmp.exception = '';
+		if(tmp.paidAmount === null || tmp.paidAmount.blank() || isNaN(tmp.paidAmount))
+			tmp.exception += 'Paid Amount is NOT valid\n';
+		if(tmp.paymentMethod === null || tmp.paidAmount.blank())
+			tmp.exception += 'Payment Method is NOT selected\n';
+		if(!tmp.exception.blank()) {
+			alert(tmp.exception);
+			return this;
+		}	
+		
+		tmp.amtDiff = Math.abs($F(tmp.confDiv.down('#paidAmtDiff')));
+		tmp.hasErr = false;
+		if(tmp.amtDiff !== 0) {
+			tmp.confDiv.getElementsBySelector('.extraConf').each(function(item){
+				if(item.readAttribute('type') === 'text') {
+					tmp.extraComment = $F(item).strip();
+					if(tmp.extraComment.blank() || tmp.extraComment === null) {
+						item.insert({'before': new Element('div', {'class': 'msgDiv errorMsgDiv'}).update(new Element('div', {'class': 'msg'}).update('Additional Comment is Mandatory!') ) });
+						tmp.hasErr = true;
+					}
+				}
+				if(item.readAttribute('type') === 'checkbox') {
+					if(!item.checked || item.checked === false || item.checked === null) {
+						item.insert({'before': new Element('div', {'class': 'msgDiv errorMsgDiv'}).update(new Element('div', {'class': 'msg'}).update('Pls Select The Payment Check Box') ) });
+						tmp.hasErr = true;
+					}
+				}
+			});
+		}
+		
+		if(tmp.hasErr === true)
+			return this;
+		
+		tmp.me.postAjax(tmp.me.getCallbackId('confirmPayment'), {'paidAmt': tmp.paidAmount, 'paymentMethod': tmp.paymentMethod, 'amtDiff': tmp.amtDiff, 'extraComment': tmp.extraComment, 'order': tmp.me._order}, {
+			'onLoading': function (sender, param) { 
+				$(button).store('originValue', $(button).innerHTML).addClassName('disabled').update('saving ...');
+			}
+			,'onSuccess': function (sender, param) {
+				try {
+					tmp.result = tmp.me.getResp(param, false, true);
+					alert('Saved Successfully!');
+					window.location = document.URL;
+				} 
+				catch (e) {
+					alert(e);
+				}
+			},
+			'onComplete': function (sender, param) {
+				if($(button))
+					$(button).update($(button).retrieve('originValue')).removeClassName('disabled');
+			}
+		});
+		
+		return this;
+	}
+	/**
+	 * Getting the comments row
+	 */
+	,_getCommentsRow: function(comments) {
+		return new Element('tr', {'class': 'comments_row'})
+			.store('data', comments)
+			.insert({'bottom': new Element('td', {'class': 'created', 'width': '15%'}).update(new Element('small').update(comments.created) ) })
+			.insert({'bottom': new Element('td', {'class': 'creator', 'width': '15%'}).update(new Element('small').update(comments.creator) ) })
+			.insert({'bottom': new Element('td', {'class': 'type', 'width': '10%'}).update(new Element('small').update(comments.type) ) })
+			.insert({'bottom': new Element('td', {'class': 'comments', 'width': 'auto'}).update(comments.comments) })
+			;
+	}
+	/**
+	 * Ajax: getting the comments into the comments div
+	 */
+	,_getComments: function (reset, btn) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.reset = (reset || false);
+		if(tmp.reset === true) {
+			$(tmp.me._commentsDiv.resultDivId).update('');
+		}
+		tmp.me.postAjax(tmp.me.getCallbackId('getComments'), {'pagination': tmp.me._commentsDiv.pagination, 'order': tmp.me._order, 'type': tmp.me._commentsDiv.type}, {
+			'onLoading': function (sender, param) {
+				if(tmp.reset === true) {
+					$(tmp.me._commentsDiv.resultDivId).update(new Element('img', {'src': '/themes/default/images/loading_big.gif'}));
+				}
+				if(btn) {
+					jQuery('#' + btn.id).button('loading');
+				}
+			}
+			,'onSuccess': function (sender, param) {
+				try {
+					tmp.result = tmp.me.getResp(param, false, true);
+					if(tmp.reset === true) {
+						$(tmp.me._commentsDiv.resultDivId).update(tmp.me._getCommentsRow({'type': 'Type', 'creator': 'WHO', 'created': 'WHEN', 'comments': 'COMMENTS'}).addClassName('header').wrap( new Element('thead') ) );
+					}
+					if(!tmp.result)
+						return;
+					//remove the pagination btn
+					if($$('.new-page-btn-div').size() > 0) {
+						$$('.new-page-btn-div').each(function(item){
+							item.remove();
+						})
+					}
+					//add each item
+					tmp.tbody = $(tmp.me._commentsDiv.resultDivId).down('tbody');
+					if(!tmp.tbody) {
+						$(tmp.me._commentsDiv.resultDivId).insert({'bottom': tmp.tbody = new Element('tbody') }) 
+					}
+					//add new data
+					tmp.result.items.each(function(item) {
+						tmp.tbody.insert({'bottom': tmp.me._getCommentsRow(item) });
+					})
+					//who new pagination btn
+					if(tmp.result.pagination.pageNumber < tmp.result.pagination.totalPages) {
+						tmp.tbody.insert({'bottom': new Element('tr', {'class': 'new-page-btn-div'})
+							.insert({'bottom': new Element('td', {'colspan': 4})
+								.insert({'bottom': new Element('span', {'id': 'comments_get_more_btn', 'class': 'btn btn-primary', 'data-loading-text': 'Getting More ...'})
+									.update('Get More Comments')
+									.observe('click', function(){
+										tmp.me._commentsDiv.pagination.pageNo = tmp.me._commentsDiv.pagination.pageNo * 1 + 1;
+										tmp.me._getComments(false, this);
+									})
+								})
+							})
+						})
+					}
+				} catch (e) {
+					$(tmp.me._commentsDiv.resultDivId).insert({'bottom': tmp.me.getAlertBox('ERROR: ', e).addClassName('alert-danger') });
+				}
+			}
+			,'onComplete': function(sender, param) {
+				if(btn) {
+					jQuery('#' + btn.id).button('reset');
+				}
+			}
+		})
+		return this;
+	}
+	/**
+	 * Ajax: adding a comments to this order
+	 */
+	,_addComments: function(btn) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.commentsBox = $(btn).up('.new_comments_wrapper').down('[new_comments=comments]');
+		tmp.comments = $F(tmp.commentsBox);
+		if(tmp.comments.blank())
+			return this;
+		tmp.me.postAjax(tmp.me.getCallbackId('addComments'), {'comments': tmp.comments, 'order': tmp.me._order}, {
+			'onLoading': function(sender, param) {
+				jQuery('#' + btn.id).button('loading');
+			}
+			,'onSuccess': function (sender, param) {
+				try {
+					tmp.result = tmp.me.getResp(param, false, true);
+					if(!tmp.result) {
+						return;
+					}
+					tmp.tbody = $(tmp.me._commentsDiv.resultDivId).down('tbody');
+					if(!tmp.tbody)
+						$(tmp.me._commentsDiv.resultDivId).insert({'bottom': tmp.tbody = new Element('tbody') });
+					tmp.tbody.insert({'top': tmp.me._getCommentsRow(tmp.result)})
+					tmp.commentsBox.setValue('');
+				} catch (e) {
+					alert(e);
+				}
+			}
+			,'onComplete': function () {
+				jQuery('#' + btn.id).button('reset');
+			}
+		})
+		return this;
+	}
+	/**
+	 * Getting a empty comments div
+	 */
+	,_getEmptyCommentsDiv: function() {
+		var tmp = {};
+		tmp.me = this;
+		return new Element('div', {'class': 'panel panel-default'}) 
+			.insert({'bottom': new Element('div', {'class': 'panel-heading'} ).update('Comments') })
+			.insert({'bottom': new Element('div', {'class': 'table-responsive'})
+				.insert({'bottom': new Element('table', {'id': tmp.me._commentsDiv.resultDivId, 'class': 'table table-hover table-condensed'}) })
+			})
+			.insert({'bottom': new Element('div', {'class': 'panel-body new_comments_wrapper'})
+				.insert({'bottom': new Element('div', {'class': 'row'})
+					.insert({'bottom': new Element('div', {'class': 'col-xs-2'}).update('<strong>New Comments:</strong>') })
+					.insert({'bottom': new Element('div', {'class': 'col-xs-10'})
+						.insert({'bottom': new Element('div', {'class': 'input-group'})
+							.insert({'bottom': new Element('input', {'class': 'form-control', 'type': 'text', 'new_comments': 'comments', 'placeholder': 'add more comments to this order'})
+								.observe('keydown', function(event) {
+									tmp.me.keydown(event, function() {
+										$(event.currentTarget).up('.new_comments_wrapper').down('[new_comments=btn]').click();
+									});
+								})
+							})
+							.insert({'bottom': new Element('span', {'class': 'input-group-btn'})
+								.insert({'bottom': new Element('span', {'id': 'add_new_comments_btn', 'new_comments': 'btn', 'class': 'btn btn-primary', 'data-loading-text': 'saving...'})
+									.update('add')
+									.observe('click', function() {
+										tmp.me._addComments(this);
+									})
+								})
+							})
+						})
+					})
+				})
+			});
+	}
+	/**
+	 * Ajax: clearing the ETA
+	 */
 	,_clearETA: function(btn, item) {
 		var tmp = {};
 		tmp.me = this;
@@ -139,10 +353,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			return tmp.me;
 		}
 		tmp.me.postAjax(tmp.me.getCallbackId('clearETA'), {'item_id': item.id, 'comments': tmp.reason}, {
-			'onLoading': function (sender, param) {
-				$(btn).store('originValue', $(btn).innerHTML).addClassName('disabled').update('...');
-				tmp.me._blockUI();
-			}
+			'onLoading': function (sender, param) { }
 			,'onSuccess': function(sender, param) {
 				try {
 					tmp.result = tmp.me.getResp(param, false, true);
@@ -154,87 +365,58 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					alert(e);
 				}
 			}
-			,'onComplete': function(sender, param) {
-				if($(btn))
-					$(btn).removeClassName('disabled').update($(btn).retrieve('originValue'));
-				tmp.me._unblockUI();
-			}
+			,'onComplete': function(sender, param) {}
 		});
 		return tmp.me;
 	}
-	
-	,_getClearETABtn: function (item) {
-		var tmp = {};
-		tmp.me = this;
-		if(item.eta === '0001-01-01 00:00:00')
-			return;
-		tmp.newDiv = new Element('span', {'class': 'button'})
-			.update('clear ETA')
-			.observe('click', function() {
-				tmp.me._clearETA(this, item);
-			});
-		return tmp.newDiv;
-	}
-	
-	,_changeIsOrdered: function(btn, orderItem) {
-		var tmp = {};
-		tmp.me = this;
-		tmp.isOrdered = $(btn).checked
-		if(!confirm('You are going to change this order item to be: ' + (tmp.isOrdered === true ? 'ORDERED' : 'NOT ORDERED') ))
-			return false;
-		tmp.me.postAjax(tmp.me.getCallbackId('changeIsOrdered'), {'item_id': orderItem.id, 'isOrdered': tmp.isOrdered}, {
-			'onLoading': function (sender, param) {
-				tmp.me._blockUI();
-			}
-			,'onSuccess': function(sender, param) {
-				try {
-					tmp.result = tmp.me.getResp(param, false, true);
-					if(!tmp.result)
-						return;
-					alert('IsOrdered flag changed Successfully!');
-					window.location = document.URL;
-				} catch (e) {
-					alert(e);
-				}
-			}
-			,'onComplete': function(sender, param) {
-				tmp.me._unblockUI();
-			}
-		});
-		return true;
-	}
-	
+	/**
+	 * Getting the purchasing cell
+	 */
 	,_getPurchasingCell: function(orderItem) {
 		var tmp = {};
 		tmp.me = this;
-		tmp.hasStock = (orderItem.eta === '' ? '' : (orderItem.eta === '0001-01-01 00:00:00' ? 'Y' : 'N'));
+		tmp.hasStock = (orderItem.eta === '' ? '' : (orderItem.eta === '0001-01-01 00:00:00' ? true : false));
 		tmp.isOrdered = (orderItem.isOrdered === false ? false : true);
-		
+		//displaying only
 		if(tmp.me._editMode.purchasing === false) {
-			tmp.newDiv = new Element('div', {'class': 'order_item_details'});
+			tmp.newDiv = new Element('small');
 			if(tmp.hasStock === '')
-				return tmp.newDiv.update('N/A');
-			return tmp.newDiv
-				.insert({'bottom': tmp.me._getfieldDiv('hasStock?: ', tmp.hasStock) })
-				.insert({'bottom': tmp.me._getfieldDiv('ETA: ', orderItem.eta) })
-				.insert({'bottom': tmp.me._getfieldDiv('Is Ordered: ', new Element('input', {'type': 'checkbox', 'checked': tmp.isOrdered})
+				return tmp.newDiv.update('Not Checked');
+			
+			tmp.newDiv.insert({'bottom': new Element('div', {'class': tmp.hasStock ? 'text-success' : 'text-danger'})
+				.insert({'bottom': new Element('strong').update('hasStock? ') })
+				.insert({'bottom': new Element('span', {'class': 'glyphicon ' + (tmp.hasStock ? 'glyphicon-ok-circle' : 'glyphicon-remove-circle')}) })
+				.insert({'bottom': new Element('a', {'href': 'javascript: void(0);', 'class': 'text-muted pull-right', 'title': 'comments'})
+					.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-comment'}) })
+				})
+			});
+			if(tmp.hasStock === false) {
+				tmp.newDiv.insert({'bottom': new Element('div')
+					.insert({'bottom': new Element('strong').update('ETA: ') })
+					.insert({'bottom': new Element('span')
+						.insert({'bottom': new Element('small').update(orderItem.eta + ' ') })
+						.insert({'bottom': new Element('a', {'href': 'javascript: void(0);', 'class': 'text-danger', 'title': 'clear ETA'})
+							.update(new Element('span', {'class': 'glyphicon glyphicon-remove'}))
+							.observe('click', function() {
+								tmp.me._clearETA(this, orderItem);
+							})
+						})
+					})
+				})
+				.insert({'bottom': new Element('div')
+					.insert({'bottom': new Element('strong').update('Is Ordered: ') })
+					.insert({'bottom': new Element('input', {'type': 'checkbox', 'checked': tmp.isOrdered})
 						.observe('change', function(event) {
 							return tmp.me._changeIsOrdered(this, orderItem);
 						})
-					) 
-				})
-				.insert({'bottom': tmp.me._getfieldDiv('Comments: ', new Element('span', {'class': 'comment cuspntr', 'tooltipcomments_entity': 'OrderItem', 'tooltipcomments_entityid': orderItem.id, 'tooltipcomments_commentstype': tmp.me._commentsTypeIds.purchasing})
-						.update('show') 
-						.observe('mouseover', function(event) {
-							tmp.me._tooltipObj._getComments(this, event);
-						})
-					) 
-				})
-				.insert({'bottom': tmp.me._getClearETABtn(orderItem) });
+					})
+				});
+			}
+			return tmp.newDiv;
 		}
 		
 		tmp.getEditDiv = function(hasStock, eta) {
-			tmp.etaBox = new Element('input', {'type': 'text', 'placeholder': 'ETA:', 'update_order_item': 'eta', 'id': 'order_item_' + orderItem.id, 'readonly': true, 'value': eta ? eta : ''});
+			tmp.etaBox = new Element('input', {'type': 'text', 'placeholder': 'ETA:', 'update_order_item_purchase': 'eta', 'order_item_id': 'order_item_' + orderItem.id, 'readonly': true, 'value': eta ? eta : ''});
 			tmp.returnDiv = new Element('div')
 				.insert({'bottom': tmp.me._getfieldDiv('ETA:', tmp.etaBox) })
 				.insert({'bottom': tmp.me._getfieldDiv('Comments: ', new Element('input', {'update_order_item': 'comments', 'placeholder': 'The reason'})) })
@@ -288,221 +470,41 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		
 		return tmp.returnDiv;
 	}
-	
-	,_getWarehouseCell: function(orderItem) {
+	/**
+	 * Getting each product row
+	 */
+	,_getProductRow: function(orderItem, isTitleRow) {
 		var tmp = {};
 		tmp.me = this;
-		if(tmp.me._editMode.warehouse === false || tmp.me._order.status.id * 1 === tmp.me.order_status_picked) {
-			return new Element('div', {'class': 'order_item_details'})
-				.insert({'bottom': tmp.me._getfieldDiv('Picked?: ', orderItem.isPicked ? 'Y' : 'N') })
-				.insert({'bottom': tmp.me._getfieldDiv('Comments: ', new Element('span', {'class': 'comment cuspntr', 'tooltipcomments_entity': 'OrderItem', 'tooltipcomments_entityid': orderItem.id, 'tooltipcomments_commentstype': tmp.me._commentsTypeIds.warehouse})
-						.update('show') 
-						.observe('mouseover', function(event) {
-							tmp.me._tooltipObj._getComments(this, event);
-						})
-					) 
-				});
-		}
-		tmp.func = function() {
-			//remove error msg
-			$(this).up('.cell').getElementsBySelector('.msgDiv').each(function(msg){
-				msg.remove();
-			});
-			
-			if($F(this) === 'N') {
-				$(this).up('.operationDiv').update(new Element('div')
-					.insert({'bottom': tmp.me._getfieldDiv('Comments: ', new Element('input', {'pick_order_item': 'comments', 'placeholder': 'The reason'})) })
-					.insert({'bottom': new Element('a', {'href': 'javascript: void(0);'}).update('cancel')
-						.observe('click', function() {
-							$(this).up('.operationDiv').update(tmp.me._getHasStockSel('Is Picked?', '', tmp.func));
-						})
-					})
-					.insert({'bottom': new Element('input', {'type': 'hidden', 'pick_order_item': 'isPicked', 'value': $F(this)}) })
-				);
-			} else {
-				$(this).up('.operationDiv').insert({'bottom': new Element('input', {'type': 'hidden', 'pick_order_item': 'isPicked', 'value': $F(this)}) });
-			}
-		};
-		return tmp.me._getHasStockSel('Is Picked?', '', tmp.func).wrap(new Element('div', {'class': 'operationDiv'}));
+		tmp.isTitle = (isTitleRow || false);
+		tmp.tag = (tmp.isTitle === true ? 'th' : 'td');
+		return new Element('tr', {'class': (tmp.isTitle === true ? '' : 'productRow'), 'order_item_id': orderItem.id})
+			.store('data', orderItem)
+			.insert({'bottom': new Element(tmp.tag, {'class': 'productName'}).update(orderItem.product.name + (tmp.isTitle === true ?  '' : "<div><small><strong>SKU: </strong>" + orderItem.product.sku + '</small></div>')) })
+			.insert({'bottom': new Element(tmp.tag, {'class': 'uprice'}).update(tmp.isTitle === true ? orderItem.unitPrice : tmp.me.getCurrency(orderItem.unitPrice)) })
+			.insert({'bottom': new Element(tmp.tag, {'class': 'qty'}).update(orderItem.qtyOrdered) })
+			.insert({'bottom': new Element(tmp.tag, {'class': 'tprice'}).update(tmp.isTitle === true ? orderItem.totalPrice : tmp.me.getCurrency(orderItem.totalPrice)) })
+			.insert({'bottom': new Element(tmp.tag, {'class': 'purchasing'}).update(tmp.isTitle === true ? 'Purchasing' : tmp.me._getPurchasingCell(orderItem)) })
+			.insert({'bottom': new Element(tmp.tag, {'class': 'warehouse'}).update(tmp.isTitle === true ? 'Warehouse' : tmp.me._getWarehouseCell(orderItem)) });
 	}
 	
-	,_changeOrderStatus: function(selBox) {
-		var tmp = {};
-		tmp.me = this;
-		tmp.msg = 'About to change the status of this order?\n Continue?';
-		if(confirm(tmp.msg)) {
-			tmp.comments = '';
-			while(tmp.comments !== null && tmp.comments.blank()) {
-				tmp.comments = window.prompt("Please Type in the reason for changing:");
-			}
-			//user has cancelled the input
-			if(tmp.comments === null) {
-				$(selBox).replace(tmp.me._getOrderStatus());
-				return this;
-			}
-			
-			tmp.me.postAjax(tmp.me.getCallbackId('changeOrderStatus'), {'order': tmp.me._order, 'orderStatusId': $F(selBox), 'comments': tmp.comments}, {
-				'onLoading': function (sender, param) { 
-					tmp.me._blockUI();
-					$(selBox).disabled = true; 
-				}
-				,'onSuccess': function (sender, param) {
-					try {
-						tmp.result = tmp.me.getResp(param, false, true);
-						alert('Saved Successfully!');
-						window.location = document.URL;
-					} catch (e) {
-						alert(e);
-						$(selBox).disabled = false;
-						$(selBox).replace(tmp.me._getOrderStatus());
-					}
-				}
-				,'onComplete': function(sender, param) {
-					tmp.me._unblockUI();
-				}
-			});
-			return this;
-		}
-		$(selBox).replace(tmp.me._getOrderStatus());
-		return this;
-	}
-	
-	,_submitPaymentConfirmation: function(button) {
-		var tmp = {};
-		tmp.me = this;
-		tmp.paidAmount = $F($(button).up('.wrapper').down('#paidAmount'));
-		tmp.paymentMethod = $F($(button).up('.wrapper').down('#paymentMethod'));
-		tmp.confDiv = $(button).up('#extraConfDiv');
-		tmp.extraComment = '';
-		
-		//removing error msgs
-		$(button).up('.wrapper').getElementsBySelector('.msgDiv').each(function(div) {
-			div.remove();
-		});
-		
-		//validate the mandatory fields
-		tmp.exception = '';
-		if(tmp.paidAmount === null || tmp.paidAmount.blank() || isNaN(tmp.paidAmount))
-			tmp.exception += 'Paid Amount is NOT valid\n';
-		if(tmp.paymentMethod === null || tmp.paidAmount.blank())
-			tmp.exception += 'Payment Method is NOT selected\n';
-		if(!tmp.exception.blank()) {
-			alert(tmp.exception);
-			return this;
-		}	
-		
-		tmp.amtDiff = Math.abs($F(tmp.confDiv.down('#paidAmtDiff')));
-		tmp.hasErr = false;
-		if(tmp.amtDiff !== 0) {
-			tmp.confDiv.getElementsBySelector('.extraConf').each(function(item){
-				if(item.readAttribute('type') === 'text') {
-					tmp.extraComment = $F(item).strip();
-					if(tmp.extraComment.blank() || tmp.extraComment === null) {
-						item.insert({'before': new Element('div', {'class': 'msgDiv errorMsgDiv'}).update(new Element('div', {'class': 'msg'}).update('Additional Comment is Mandatory!') ) });
-						tmp.hasErr = true;
-					}
-				}
-				if(item.readAttribute('type') === 'checkbox') {
-					if(!item.checked || item.checked === false || item.checked === null) {
-						item.insert({'before': new Element('div', {'class': 'msgDiv errorMsgDiv'}).update(new Element('div', {'class': 'msg'}).update('Pls Select The Payment Check Box') ) });
-						tmp.hasErr = true;
-					}
-				}
-			});
-		}
-		
-		if(tmp.hasErr === true)
-			return this;
-		
-		tmp.me.postAjax(tmp.me.getCallbackId('confirmPayment'), {'paidAmt': tmp.paidAmount, 'paymentMethod': tmp.paymentMethod, 'amtDiff': tmp.amtDiff, 'extraComment': tmp.extraComment, 'order': tmp.me._order}, {
-			'onLoading': function (sender, param) { 
-				$(button).store('originValue', $(button).innerHTML).addClassName('disabled').update('saving ...');
-				tmp.me._blockUI();
-			}
-			,'onSuccess': function (sender, param) {
-				try {
-					tmp.result = tmp.me.getResp(param, false, true);
-					alert('Saved Successfully!');
-					window.location = document.URL;
-				} 
-				catch (e) {
-					alert(e);
-				}
-			},
-			'onComplete': function (sender, param) {
-				if($(button))
-					$(button).update($(button).retrieve('originValue')).removeClassName('disabled');
-				tmp.me._unblockUI();
-			}
-		});
-		
-		return this;
-	}
-	
-	,_collectData: function(colname, attrName) {
-		var tmp = {};
-		tmp.me = this;
-		tmp.data = [];
-		tmp.hasError = false;
-		$(tmp.me._resultDivId).getElementsBySelector('.productRow .' + colname).each(function(cell) {
-			//remove msg divs
-			cell.getElementsBySelector('.msgDiv').each(function(div) {
-				div.remove();
-			});
-			
-			//check whether the user has made a change
-			tmp.fields = cell.getElementsBySelector('[' + attrName + ']');
-			if(tmp.fields.size() === 0) {
-				cell.insert({'top': new Element('div', {'class': 'msgDiv errorMsgDiv'}).update(new Element('div', {'class': 'msg'}).update('Pls Select One!') ) });
-				tmp.hasError = true;
-			} else {
-				//check if we have any empty data
-				tmp.orderItem = cell.up('.row').retrieve('data');
-				tmp.attrData = {'orderItem': tmp.orderItem};
-				
-				tmp.fields.each(function(field) {
-					tmp.fieldName = field.readAttribute(attrName);
-					if(field.readAttribute('type') !== 'checkbox')
-						tmp.value = $F(field);
-					else
-						tmp.value = $(field).checked;
-					
-					if((typeof tmp.value == 'string') && tmp.value.blank()) {
-						field.insert({'before': new Element('div', {'class': 'msgDiv errorMsgDiv'}).update(new Element('div', {'class': 'msg'}).update(tmp.fieldName + ' Required!') ) });
-						tmp.hasError = true;
-					} else {
-						if(!tmp.attrData[colname])
-							tmp.attrData[colname] = {};
-						tmp.attrData[colname][tmp.fieldName] = tmp.value;
-					}
-				})
-				tmp.data.push(tmp.attrData);
-			}
-			
-		});
-		return (tmp.hasError === true ? null : tmp.data);
-	}
-	
+	/**
+	 * Getting the purchasing submit btns
+	 */
 	,_getPurchasingBtns: function() {
 		var tmp = {};
 		tmp.me = this;
-		if (tmp.me._editMode.purchasing === false)
-			return '';
-		
+		if(tmp.me._editMode.purchasing === false)
+			return;
 		return new Element('div')
-			.insert({'bottom': new Element('span', {'class': 'button'})
+			.insert({'bottom': new Element('span', {'class': 'btn btn-primary', 'data-loading-text': 'Saving...'})
 				.update('submit')
 				.observe('click', function() {
 					tmp.btn = this;
-					tmp.data = tmp.me._collectData('purchasing', 'update_order_item');
-					if(tmp.data === null) {
-						alert('Error Occurred, pls scroll up to see details!');
-						return;
-					}
+					tmp.data = tmp.me._collectData('update_order_item');
 					tmp.me.postAjax(tmp.me.getCallbackId('updateOrder'), {'items': tmp.data, 'order': tmp.me._order, 'for': 'purchasing'}, {
 						'onLoading': function(sender, param) {
 							tmp.btn.addClassName('disabled').update('Saving ...');
-							tmp.me._blockUI();
 						},
 						'onSuccess': function(sender, param) {
 							try {
@@ -518,293 +520,10 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 						'onComplete': function(sender, param) {
 							if(tmp.btn)
 								tmp.btn.removeClassName('disabled').update('submit');
-							tmp.me._unblockUI();
 						}
 					});
 				})
 			});
-	}
-	
-	,_getWHBtns: function() {
-		var tmp = {};
-		tmp.me = this;
-		if(tmp.me._editMode.warehouse === false || tmp.me._order.status.id * 1 === tmp.me.order_status_picked)
-			return '';
-		
-		return new Element('div')
-			.insert({'bottom': new Element('span', {'class': 'button'})
-				.update('submit')
-				.observe('click', function() {
-					tmp.btn = this;
-					tmp.data = tmp.me._collectData('warehouse', 'pick_order_item');
-					if(tmp.data === null) {
-						alert('Error Occurred, pls scroll up to see details!');
-						return;
-					} 
-					
-					//check all mandatory fields
-					tmp.hasError = false;
-					tmp.finalOrderItemArray = [];
-					tmp.data.each(function(item) {
-						if(item.warehouse.isPicked === 'N' && (!item.warehouse.comments || item.warehouse.comments === null || item.warehouse.comments.strip() === '')) {
-							alert('Error Occurred, pls scroll up to see details!');
-							tmp.hasError = true;
-							return;
-						}
-						tmp.finalOrderItemArray.push(item);
-					});
-					if(tmp.hasError === true)
-						return;
-					
-					tmp.me.postAjax(tmp.me.getCallbackId('updateOIForWH'), {'orderItems': tmp.finalOrderItemArray, 'order': tmp.me._order}, {
-						'onLoading': function (sender, param) {
-							tmp.btn.addClassName('disabled').update('Saving ...');
-							tmp.me._blockUI();
-						}
-						,'onSuccess': function (sender, param) {
-							try {
-								tmp.result = tmp.me.getResp(param, false, true);
-								if(!tmp.result)
-									return;
-								alert('Saved Successfully!');
-								window.location = document.URL;
-							} catch (e) {
-								alert(e);
-							}
-						},
-						'onComplete': function(sender, param) {
-							if(tmp.btn)
-								tmp.btn.removeClassName('disabled').update('submit');
-							tmp.me._unblockUI();
-						}
-					});							
-				})
-			});
-	}
-	/**
-	 * Getting the comments row
-	 */
-	,_getCommentsRow: function(comments) {
-		return new Element('div', {'class': 'list-group-item comments_row'})
-			.store('data', comments)
-			.insert({'bottom': new Element('div', {'class': 'row'})
-				.insert({'bottom': new Element('span', {'class': 'hidden-xs col-sm-1 col-md-2 col-lg-1 created'}).update(new Element('small').update(comments.created) ) })
-				.insert({'bottom': new Element('span', {'class': 'col-xs-4 col-sm-2 col-md-2 col-lg-1 creator'}).update(new Element('small').update(comments.creator + '<div class="visible-xs hidden-sm hidden-md hidden-lg">@ ' + comments.created + '</div>') ) })
-				.insert({'bottom': new Element('span', {'class': 'hidden-xs col-sm-2 col-md-2 col-lg-1 type'}).update(new Element('small').update(comments.type) ) })
-				.insert({'bottom': new Element('span', {'class': 'col-xs-8 col-sm-7 col-md-6 col-lg-9 comments'}).update(comments.comments) })
-			});
-	}
-	/**
-	 * Ajax: getting the comments into the comments div
-	 */
-	,_getComments: function (reset, btn) {
-		var tmp = {};
-		tmp.me = this;
-		tmp.reset = (reset || false);
-		if(tmp.reset === true) {
-			$(tmp.me._commentsDiv.resultDivId).update('');
-		}
-		tmp.me.postAjax(tmp.me.getCallbackId('getComments'), {'pagination': tmp.me._commentsDiv.pagination, 'order': tmp.me._order, 'type': tmp.me._commentsDiv.type}, {
-			'onLoading': function (sender, param) {
-				if(tmp.reset === true) {
-					$(tmp.me._commentsDiv.resultDivId).update(new Element('img', {'src': '/themes/default/images/loading_big.gif'}));
-				}
-				if(btn) {
-					jQuery('#' + btn.id).button('loading');
-				}
-			}
-			,'onSuccess': function (sender, param) {
-				try {
-					tmp.result = tmp.me.getResp(param, false, true);
-					if(tmp.reset === true) {
-						$(tmp.me._commentsDiv.resultDivId).update(tmp.me._getCommentsRow({'type': 'Type', 'creator': 'WHO', 'created': 'WHEN', 'comments': 'COMMENTS'}).addClassName('header'));
-					}
-					if(!tmp.result)
-						return;
-					//remove the pagination btn
-					if($$('.new-page-btn-div').size() > 0) {
-						$$('.new-page-btn-div').each(function(item){
-							item.remove();
-						})
-					}
-					//add new data
-					tmp.result.items.each(function(item) {
-						$(tmp.me._commentsDiv.resultDivId).insert({'bottom': tmp.me._getCommentsRow(item) });
-					})
-					//who new pagination btn
-					if(tmp.result.pagination.pageNumber < tmp.result.pagination.totalPages) {
-						$(tmp.me._commentsDiv.resultDivId).insert({'bottom': new Element('div', {'class': 'list-group-item new-page-btn-div'})
-							.insert({'bottom': new Element('span', {'id': 'comments_get_more_btn', 'class': 'btn btn-primary', 'data-loading-text': 'Getting More ...'})
-								.update('Get More Comments')
-								.observe('click', function(){
-									tmp.me._commentsDiv.pagination.pageNo = tmp.me._commentsDiv.pagination.pageNo * 1 + 1;
-									tmp.me._getComments(false, this);
-								})
-							})
-						})
-					}
-				} catch (e) {
-					$(tmp.me._commentsDiv.resultDivId).insert({'bottom': tmp.me.getAlertBox('ERROR: ', e).addClassName('alert-danger') });
-					console.error(e);
-				}
-			}
-			,'onComplete': function(sender, param) {
-				if(btn) {
-					jQuery('#' + btn.id).button('reset');
-				}
-			}
-		})
-		return this;
-	}
-	
-	,_addComments: function(btn) {
-		var tmp = {};
-		tmp.me = this;
-		tmp.commentsBox = $(btn).up('.new_comments_wrapper').down('[new_comments=comments]');
-		tmp.comments = $F(tmp.commentsBox);
-		if(tmp.comments.blank())
-			return this;
-		tmp.me.postAjax(tmp.me.getCallbackId('addComments'), {'comments': tmp.comments, 'order': tmp.me._order}, {
-			'onLoading': function(sender, param) {
-				jQuery('#' + btn.id).button('loading');
-			}
-			,'onSuccess': function (sender, param) {
-				try {
-					tmp.result = tmp.me.getResp(param, false, true);
-					if(!tmp.result) {
-						return;
-					}
-					$(tmp.me._commentsDiv.resultDivId).down('.comments_row.header').insert({'after': tmp.me._getCommentsRow(tmp.result)})
-					tmp.commentsBox.setValue('');
-				} catch (e) {
-					alert(e);
-				}
-			}
-			,'onComplete': function () {
-				jQuery('#' + btn.id).button('reset');
-			}
-		})
-		return this;
-	}
-	
-	,_getOrderStatus: function () {
-		var tmp = {}
-		tmp.me = this;
-		if(tmp.me._editMode.status !== true)
-			return tmp.me._order.status.name;
-		tmp.selBox = new Element('select')
-			.observe('change', function(){
-				tmp.me._changeOrderStatus(this);
-			});
-		tmp.me._orderStatuses.each(function(status) {
-			tmp.opt = new Element('option', {'value': status.id}).update(status.name);
-			if(status.id === tmp.me._order.status.id)
-				tmp.opt.writeAttribute('selected', true);
-			tmp.selBox.insert({'bottom':  tmp.opt});
-		})
-		return tmp.selBox;
-	}
-	
-	/// this function generates a select box populating all the courier infos ///
-	,_getCourierList: function () {
-		var tmp = {};
-		tmp.me = this;
-		tmp.courierSelect = new Element('select')
-			.insert({'bottom': new Element('option', {'value': ''}).update('') });
-		tmp.me._couriers.each(function(courier) {
-			tmp.courierSelect.insert({'bottom': new Element('option', {'value': courier.id}).update(courier.name) });
-		});
-		return tmp.courierSelect;
-	}
-	,_getLatestPaymentMethod: function() {
-		var tmp = {};
-		tmp.me = this;
-		tmp.insertPoint = $(tmp.me._resultDivId).down('#lastPaymentMethod');
-		tmp.me.postAjax(tmp.me.getCallbackId('getPaymentDetails'), {'order': tmp.me._order}, {
-			'onLoading': function (sender, param) { /*$(selBox).disabled = true;*/ }
-			,'onSuccess': function (sender, param) {
-				try {
-					tmp.result = tmp.me.getResp(param, false, true);
-					if(tmp.result && tmp.result.items.length > 0)
-					{
-						tmp.lastPaymentMethod = tmp.result.items[0].method.name;
-						tmp.insertPoint.update(tmp.lastPaymentMethod);
-					}
-					else
-						tmp.insertPoint.update('N/A');
-				} 
-				catch (e) {
-					alert(e);
-				}
-			}
-		});
-		return tmp.me;
-	}
-	/**
-	 * initialize all chose selection box
-	 */ 
-	,_loadChosen: function () {
-		$$(".chosen").each(function(item) {
-			item.store('chosen', new Chosen(item, {
-				no_results_text: "Oops, nothing found!",
-				placeholder_text_single: ((titleText = $(item).readAttribute('title_text').strip()) !== '' ? titleText : 'Select Post Option'),
-				disable_search: ((titleText = $(item).readAttribute('dis_search').strip()) === 'true' ? true : false),
-				width: "100%"
-			}) );
-		});
-		return this;
-	}
-	/**
-	 * Getting a empty comments div
-	 */
-	,_getEmptyCommentsDiv: function() {
-		var tmp = {};
-		tmp.me = this;
-		return new Element('div', {'class': 'panel panel-default'}) 
-			.insert({'bottom': new Element('div', {'class': 'panel-heading'} ).update('Comments') })
-			.insert({'bottom': new Element('small', {'id': tmp.me._commentsDiv.resultDivId, 'class': 'list-group'}) })
-			.insert({'bottom': new Element('small', {'class': 'list-group-item new_comments_wrapper'})
-				.insert({'bottom': new Element('div', {'class': 'row'})
-					.insert({'bottom': new Element('div', {'class': 'col-xs-2'}).update('<strong>New Comments:</strong>') })
-					.insert({'bottom': new Element('div', {'class': 'col-xs-10'})
-						.insert({'bottom': new Element('div', {'class': 'input-group'})
-							.insert({'bottom': new Element('input', {'class': 'form-control', 'type': 'text', 'new_comments': 'comments', 'placeholder': 'add more comments to this order'})
-								.observe('keydown', function(event) {
-									tmp.me.keydown(event, function() {
-										$(event.currentTarget).up('.new_comments_wrapper').down('[new_comments=btn]').click();
-									});
-								})
-							})
-							.insert({'bottom': new Element('span', {'class': 'input-group-btn'})
-								.insert({'bottom': new Element('span', {'id': 'add_new_comments_btn', 'new_comments': 'btn', 'class': 'btn btn-primary', 'data-loading-text': 'saving...'})
-									.update('add')
-									.observe('click', function() {
-										tmp.me._addComments(this);
-									})
-								})
-							})
-						})
-					})
-				})
-			});
-	}
-	/**
-	 * Getting each product row
-	 */
-	,_getProductRow: function(orderItem, isTitleRow) {
-		var tmp = {};
-		tmp.me = this;
-		tmp.isTitle = (isTitleRow || false);
-		tmp.tag = (tmp.isTitle === true ? 'th' : 'td');
-		return new Element('tr', {'class': (tmp.isTitle === true ? '' : 'productRow'), 'order_item_id': orderItem.id})
-			.store('data', orderItem)
-			.insert({'bottom': new Element(tmp.tag, {'class': 'sku'}).update(orderItem.product.sku) })
-			.insert({'bottom': new Element(tmp.tag, {'class': 'productName'}).update(orderItem.product.name) })
-			.insert({'bottom': new Element(tmp.tag, {'class': 'uprice'}).update(tmp.isTitle === true ? orderItem.unitPrice : tmp.me.getCurrency(orderItem.unitPrice)) })
-			.insert({'bottom': new Element(tmp.tag, {'class': 'qty'}).update(orderItem.qtyOrdered) })
-			.insert({'bottom': new Element(tmp.tag, {'class': 'tprice'}).update(tmp.isTitle === true ? orderItem.totalPrice : tmp.me.getCurrency(orderItem.totalPrice)) })
-			.insert({'bottom': new Element(tmp.tag, {'class': 'purchasing'}).update(tmp.isTitle === true ? 'Purchasing' : tmp.me._getPurchasingCell(orderItem)) })
-			.insert({'bottom': new Element(tmp.tag, {'class': 'warehouse'}).update(tmp.isTitle === true ? 'Warehouse' : tmp.me._getWarehouseCell(orderItem)) });
 	}
 	/**
 	 * Getting the parts panel
@@ -812,23 +531,25 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 	,_getPartsTable: function () {
 		var tmp = {};
 		tmp.me = this;
-		tmp.productListDiv = new Element('table', {'class': 'table table-hover table-condensed'})
+		//header row
+		tmp.productListDiv = new Element('table', {'class': 'table table-hover table-condensed order_change_details_table'})
 			.insert({'bottom': tmp.me._getProductRow({'product': {'sku': 'SKU', 'name': 'Product Name'}, 'unitPrice': 'Unit Price', 'qtyOrdered': 'Qty', 'totalPrice': 'Total Price'}, true)
 				.wrap( new Element('thead') )
 			});
 		
+		// tbody
 		tmp.productListDiv.insert({'bottom': tmp.tbody = new Element('tbody')  });
 		tmp.me._orderItems.each(function(orderItem) {
 			tmp.tbody.insert({'bottom': tmp.me._getProductRow(orderItem) });
 		});
-		tmp.btnsRow = tmp.me._getProductRow({'product': {'sku': '', 'name': ''}, 'unitPrice': '', 'qtyOrdered':  '', 'totalPrice': ''}, true)
-			.addClassName('submitBtns');
-		tmp.btnsRow.down('.purchasing').update(tmp.me._getPurchasingBtns());
-		tmp.btnsRow.down('.warehouse').update(tmp.me._getWHBtns() );
-		
+		// tfoot
+		tmp.tfoot = new Element('tfoot').update(tmp.me._getProductRow({'product': {'sku': '', 'name': ''}, 'unitPrice': '', 'qtyOrdered':  '', 'totalPrice': ''}, true).addClassName('submitBtns'))
+		tmp.tfoot.down('.purchasing').update(tmp.me._getPurchasingBtns() );
+		tmp.tfoot.down('.warehouse').update(tmp.me._getWHBtns() );
+		tmp.productListDiv.insert({'bottom':tmp.tfoot });
 		return new Element('div', {'class': 'panel panel-default'})
 			.insert({'bottom': new Element('div', {'class': 'panel-body table-responsive'})
-				.insert({'bottom': tmp.productListDiv.insert({'bottom': tmp.btnsRow }) })
+				.insert({'bottom':  tmp.productListDiv})
 			});
 	}
 	/**
@@ -1154,7 +875,9 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		;
 		return tmp.paymentDiv;
 	}	
-	
+	/**
+	 * initialising the doms
+	 */
 	,init: function(resultdiv) {
 		var tmp = {};
 		tmp.me = this;
@@ -1184,8 +907,242 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.me = this;
 		//load the comments after
 		tmp.me._getComments(true)
-			._loadChosen();
 //			._getLatestPaymentMethod();
 		return this;
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	,_getHasStockSel: function(title, selectedValue, changeFunc) {
+		var tmp = {};
+		tmp.selBox = new Element('select', {'class': 'hasStock'})
+			.insert({'bottom': new Element('option', {'value': ''}).update(title)})
+			.insert({'bottom': new Element('option', {'value': 'Y'}).update('YES')})
+			.insert({'bottom': new Element('option', {'value': 'N'}).update('NO')})
+			.observe('change', changeFunc);
+		if(!selectedValue.blank()) {
+			tmp.options = tmp.selBox.getElementsBySelector('option');
+			for( tmp.i = 0 ; tmp.i < tmp.options.size(); tmp.i++ ) {
+				if(tmp.options[tmp.i].value === selectedValue)
+					tmp.options[tmp.i].selected = true;
+			}
+		}
+		return tmp.selBox;
+	}
+	
+	,_changeIsOrdered: function(btn, orderItem) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.isOrdered = $(btn).checked;
+		if(!confirm('You are going to change this order item to be: ' + (tmp.isOrdered === true ? 'ORDERED' : 'NOT ORDERED') ))
+			return false;
+		tmp.me.postAjax(tmp.me.getCallbackId('changeIsOrdered'), {'item_id': orderItem.id, 'isOrdered': tmp.isOrdered}, {
+			'onLoading': function (sender, param) {}
+			,'onSuccess': function(sender, param) {
+				try {
+					tmp.result = tmp.me.getResp(param, false, true);
+					if(!tmp.result)
+						return;
+					alert('IsOrdered flag changed Successfully!');
+					window.location = document.URL;
+				} catch (e) {
+					alert(e);
+				}
+			}
+			,'onComplete': function(sender, param) {}
+		});
+		return true;
+	}
+	
+	,_getWarehouseCell: function(orderItem) {
+		var tmp = {};
+		tmp.me = this;
+		if(tmp.me._editMode.warehouse === false || tmp.me._order.status.id * 1 === tmp.me.order_status_picked) {
+			return new Element('div', {'class': 'order_item_details'})
+				.insert({'bottom': tmp.me._getfieldDiv('Picked?: ', orderItem.isPicked ? 'Y' : 'N') })
+				.insert({'bottom': tmp.me._getfieldDiv('Comments: ', 'show'	)
+				});
+		}
+		tmp.func = function() {
+			//remove error msg
+			$(this).up('.cell').getElementsBySelector('.msgDiv').each(function(msg){
+				msg.remove();
+			});
+			
+			if($F(this) === 'N') {
+				$(this).up('.operationDiv').update(new Element('div')
+					.insert({'bottom': tmp.me._getfieldDiv('Comments: ', new Element('input', {'pick_order_item': 'comments', 'placeholder': 'The reason'})) })
+					.insert({'bottom': new Element('a', {'href': 'javascript: void(0);'}).update('cancel')
+						.observe('click', function() {
+							$(this).up('.operationDiv').update(tmp.me._getHasStockSel('Is Picked?', '', tmp.func));
+						})
+					})
+					.insert({'bottom': new Element('input', {'type': 'hidden', 'pick_order_item': 'isPicked', 'value': $F(this)}) })
+				);
+			} else {
+				$(this).up('.operationDiv').insert({'bottom': new Element('input', {'type': 'hidden', 'pick_order_item': 'isPicked', 'value': $F(this)}) });
+			}
+		};
+		return tmp.me._getHasStockSel('Is Picked?', '', tmp.func).wrap(new Element('div', {'class': 'operationDiv'}));
+	}
+	
+	,_changeOrderStatus: function(selBox) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.msg = 'About to change the status of this order?\n Continue?';
+		if(confirm(tmp.msg)) {
+			tmp.comments = '';
+			while(tmp.comments !== null && tmp.comments.blank()) {
+				tmp.comments = window.prompt("Please Type in the reason for changing:");
+			}
+			//user has cancelled the input
+			if(tmp.comments === null) {
+				$(selBox).replace(tmp.me._getOrderStatus());
+				return this;
+			}
+			
+			tmp.me.postAjax(tmp.me.getCallbackId('changeOrderStatus'), {'order': tmp.me._order, 'orderStatusId': $F(selBox), 'comments': tmp.comments}, {
+				'onLoading': function (sender, param) { 
+					$(selBox).disabled = true; 
+				}
+				,'onSuccess': function (sender, param) {
+					try {
+						tmp.result = tmp.me.getResp(param, false, true);
+						alert('Saved Successfully!');
+						window.location = document.URL;
+					} catch (e) {
+						alert(e);
+						$(selBox).disabled = false;
+						$(selBox).replace(tmp.me._getOrderStatus());
+					}
+				}
+				,'onComplete': function(sender, param) {
+				}
+			});
+			return this;
+		}
+		$(selBox).replace(tmp.me._getOrderStatus());
+		return this;
+	}
+	
+	,_getWHBtns: function() {
+		var tmp = {};
+		tmp.me = this;
+		if(tmp.me._editMode.warehouse === false || tmp.me._order.status.id * 1 === tmp.me.order_status_picked)
+			return '';
+		
+		return new Element('div')
+			.insert({'bottom': new Element('span', {'class': 'button'})
+				.update('submit')
+				.observe('click', function() {
+					tmp.btn = this;
+					tmp.data = tmp.me._collectData('warehouse', 'pick_order_item');
+					if(tmp.data === null) {
+						alert('Error Occurred, pls scroll up to see details!');
+						return;
+					} 
+					
+					//check all mandatory fields
+					tmp.hasError = false;
+					tmp.finalOrderItemArray = [];
+					tmp.data.each(function(item) {
+						if(item.warehouse.isPicked === 'N' && (!item.warehouse.comments || item.warehouse.comments === null || item.warehouse.comments.strip() === '')) {
+							alert('Error Occurred, pls scroll up to see details!');
+							tmp.hasError = true;
+							return;
+						}
+						tmp.finalOrderItemArray.push(item);
+					});
+					if(tmp.hasError === true)
+						return;
+					
+					tmp.me.postAjax(tmp.me.getCallbackId('updateOIForWH'), {'orderItems': tmp.finalOrderItemArray, 'order': tmp.me._order}, {
+						'onLoading': function (sender, param) {
+							tmp.btn.addClassName('disabled').update('Saving ...');
+						}
+						,'onSuccess': function (sender, param) {
+							try {
+								tmp.result = tmp.me.getResp(param, false, true);
+								if(!tmp.result)
+									return;
+								alert('Saved Successfully!');
+								window.location = document.URL;
+							} catch (e) {
+								alert(e);
+							}
+						},
+						'onComplete': function(sender, param) {
+							if(tmp.btn)
+								tmp.btn.removeClassName('disabled').update('submit');
+						}
+					});							
+				})
+			});
+	}
+	,_getOrderStatus: function () {
+		var tmp = {}
+		tmp.me = this;
+		if(tmp.me._editMode.status !== true)
+			return tmp.me._order.status.name;
+		tmp.selBox = new Element('select')
+			.observe('change', function(){
+				tmp.me._changeOrderStatus(this);
+			});
+		tmp.me._orderStatuses.each(function(status) {
+			tmp.opt = new Element('option', {'value': status.id}).update(status.name);
+			if(status.id === tmp.me._order.status.id)
+				tmp.opt.writeAttribute('selected', true);
+			tmp.selBox.insert({'bottom':  tmp.opt});
+		})
+		return tmp.selBox;
+	}
+	
+	/// this function generates a select box populating all the courier infos ///
+	,_getCourierList: function () {
+		var tmp = {};
+		tmp.me = this;
+		tmp.courierSelect = new Element('select')
+			.insert({'bottom': new Element('option', {'value': ''}).update('') });
+		tmp.me._couriers.each(function(courier) {
+			tmp.courierSelect.insert({'bottom': new Element('option', {'value': courier.id}).update(courier.name) });
+		});
+		return tmp.courierSelect;
+	}
+	,_getLatestPaymentMethod: function() {
+		var tmp = {};
+		tmp.me = this;
+		tmp.insertPoint = $(tmp.me._resultDivId).down('#lastPaymentMethod');
+		tmp.me.postAjax(tmp.me.getCallbackId('getPaymentDetails'), {'order': tmp.me._order}, {
+			'onLoading': function (sender, param) { /*$(selBox).disabled = true;*/ }
+			,'onSuccess': function (sender, param) {
+				try {
+					tmp.result = tmp.me.getResp(param, false, true);
+					if(tmp.result && tmp.result.items.length > 0)
+					{
+						tmp.lastPaymentMethod = tmp.result.items[0].method.name;
+						tmp.insertPoint.update(tmp.lastPaymentMethod);
+					}
+					else
+						tmp.insertPoint.update('N/A');
+				} 
+				catch (e) {
+					alert(e);
+				}
+			}
+		});
+		return tmp.me;
 	}
 });

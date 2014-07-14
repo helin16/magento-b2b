@@ -100,3 +100,24 @@
 dl.dl-condensed {
 	margin-bottom: 0px;
 }
+
+table.table thead td {
+	font-weight: bold;
+}
+.order_change_details_table [order_item_id] > .purchasing,
+.order_change_details_table [order_item_id] > .warehouse {
+	width: 25%;
+}
+.order_change_details_table [order_item_id] > .purchasing,
+.order_change_details_table [order_item_id]:hover > .purchasing {
+	background: #D9EDF7;
+}
+.order_change_details_table [order_item_id] > .uprice,
+.order_change_details_table [order_item_id] > .tprice {
+	width: 10%;
+	text-align: right;
+}
+.order_change_details_table [order_item_id] > .qty {
+	width: 5%;
+	text-align: center;
+}
