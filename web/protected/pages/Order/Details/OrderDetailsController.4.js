@@ -99,15 +99,13 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			if(item.hasAttribute('required') && $F(item).blank()) {
 				tmp.me._markFormGroupError(item, 'This is requried');
 				tmp.hasError = true;
-				return;
 			}
 			
-			tmp.value = item.readAttribute('type') !== 'checkbox' ? $F(item).strip() : $(item).checked;
+			tmp.itemValue = item.readAttribute('type') !== 'checkbox' ? $F(item).strip() : $(item).checked;
 			if(item.hasAttribute('validate_currency') || item.hasAttribute('validate_number')) {
 				if (tmp.me.getValueFromCurrency(tmp.itemValue).match(/^\d+(\.\d{1,2})?$/) === null) {
 					tmp.me._markFormGroupError(item, (item.hasAttribute('validate_currency') ? item.readAttribute('validate_currency') : item.hasAttribute('validate_number')));
 					tmp.hasErr = true;
-					return;
 				} else {
 					tmp.value = item.hasAttribute('validate_currency') ? tmp.me.getValueFromCurrency(tmp.itemValue) : tmp.me.getValueFromCurrency(tmp.itemValue);
 				}
@@ -116,7 +114,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			if(tmp.groupIndexName) {
 				if(!tmp.data[tmp.groupIndexName])
 					tmp.data[tmp.groupIndexName] = {};
-				tmp.data[tmp.fieldName][tmp.fieldName] = tmp.itemValue;
+				tmp.data[tmp.groupIndexName][tmp.fieldName] = tmp.itemValue;
 			} else {
 				tmp.data[tmp.fieldName] = tmp.itemValue;
 			}
@@ -370,6 +368,43 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		return tmp.me;
 	}
 	/**
+	 * Getting the edit call for purchasing
+	 */
+	,_getPurchasingEditCell: function(orderItem) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.hasStock = (orderItem.eta === '' ? '' : (orderItem.eta === '0001-01-01 00:00:00' ? true : false));
+		tmp.isOrdered = (orderItem.isOrdered === false ? false : true);
+		if(tmp.me._editMode.purchasing === false) {
+			return;
+		}
+		tmp.selBoxDiv = tmp.me._getfieldDiv('Has Stock?',
+			new Element('select', {'class': 'form-control input-sm', 'update_order_item_purchase': 'hasStock', 'required': true, 'order_item_purchase_id': orderItem.id})
+				.insert({'bottom': new Element('option', {'value': ' '}).update('Not Checked')})
+				.insert({'bottom': new Element('option', {'value': '1'}).update('Yes')})
+				.insert({'bottom': new Element('option', {'value': '0'}).update('No')})
+				.observe('change', function() {
+					tmp.editPanel = $(this).up('.update_order_item_purchase_div');
+					tmp.editPanel.getElementsBySelector('.no-stock-div').each(function(item) { item.remove(); });
+					if($F(this) === '0') {
+						tmp.editPanel.insert({'bottom': tmp.me._getfieldDiv('ETA:', 
+							tmp.etaBox = new Element('input', {'class': 'form-control input-sm', 'type': 'datetime', 'update_order_item_purchase': 'eta', 'order_item_purchase_id': orderItem.id, 'required': true})
+						).addClassName('no-stock-div dl-horizontal form-group') })
+						.insert({'bottom': tmp.me._getfieldDiv('Has Ordered?',
+							new Element('input', {'class': 'input-sm', 'type': 'checkbox', 'update_order_item_purchase': 'isOrdered', 'order_item_purchase_id': orderItem.id}) 
+						).addClassName('no-stock-div dl-horizontal form-group') })
+						.insert({'bottom': tmp.me._getfieldDiv('Comments:', 
+							new Element('input', {'class': 'form-control input-sm', 'type': 'text', 'update_order_item_purchase': 'comments', 'order_item_purchase_id': orderItem.id, 'required': true})
+						).addClassName('no-stock-div dl-horizontal form-group') });
+						
+						tmp.me._signRandID(tmp.etaBox);
+						new Prado.WebUI.TDatePicker({'ID': tmp.etaBox.id, 'InputMode':"TextBox",'Format':"yyyy-MM-dd 17:00:00",'FirstDayOfWeek':1,'CalendarStyle':"default",'FromYear':2009,'UpToYear':2024,'PositionMode':"Bottom"});
+					}
+				})
+		).addClassName('dl-horizontal form-group');
+		return tmp.selBoxDiv.wrap(new Element('small', {'class': 'update_order_item_purchase_div update_order_item_div'}))
+	}
+	/**
 	 * Getting the purchasing cell
 	 */
 	,_getPurchasingCell: function(orderItem) {
@@ -414,61 +449,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			}
 			return tmp.newDiv;
 		}
-		
-		tmp.getEditDiv = function(hasStock, eta) {
-			tmp.etaBox = new Element('input', {'type': 'text', 'placeholder': 'ETA:', 'update_order_item_purchase': 'eta', 'order_item_id': 'order_item_' + orderItem.id, 'readonly': true, 'value': eta ? eta : ''});
-			tmp.returnDiv = new Element('div')
-				.insert({'bottom': tmp.me._getfieldDiv('ETA:', tmp.etaBox) })
-				.insert({'bottom': tmp.me._getfieldDiv('Comments: ', new Element('input', {'update_order_item': 'comments', 'placeholder': 'The reason'})) })
-				.insert({'bottom': tmp.me._getfieldDiv('Is Ordered: ', new Element('input', {'type': 'checkbox', 'update_order_item': 'isOrdered', 'is_ordered': 'is_ordered'}) ) })
-				.insert({'bottom': new Element('a', {'href': 'javascript: void(0);'}).update('cancel')
-					.observe('click', function() {
-						$(this).up('.operationDiv').update(tmp.me._getHasStockSel('Has Stock?', hasStock, tmp.func));
-					})
-				});
-			
-			if(tmp.isOrdered === true)
-				$(tmp.returnDiv).down('[is_ordered]').writeAttribute("checked", "checked");
-			
-			return tmp.returnDiv;
-		};
-		tmp.func = function() {
-			//remove error msg
-			if($(this) && $(this).up('.cell')) {
-				$(this).up('.cell').getElementsBySelector('.msgDiv').each(function(msg){
-					msg.remove();
-				});
-			}
-			
-			if($F(this) === 'N') {
-				$(this).up('.operationDiv').update(tmp.getEditDiv(tmp.hasStock));
-				new Prado.WebUI.TDatePicker({'ID':'order_item_' + orderItem.id,'InputMode':"TextBox",'Format':"yyyy-MM-dd 17:00:00",'FirstDayOfWeek':1,'CalendarStyle':"default",'FromYear':2009,'UpToYear':2024,'PositionMode':"Bottom"});
-			} else {
-				$(this).up('.operationDiv').getElementsBySelector('[update_order_item]').each(function(item) { 
-					item.remove();
-				});
-				if($F(this) === 'Y')
-				{	
-					$(this).up('.operationDiv').insert({'bottom': new Element('input', {'type': 'hidden', 'update_order_item': 'eta', 'value': '0001-01-01 00:00:00'}) });
-					$(this).up('.operationDiv').insert({'bottom': new Element('input', {'type': 'hidden', 'update_order_item': 'isOrdered', 'value': 'false'}) });
-				}	
-			}	
-		};
-		if(tmp.hasStock === 'N') {
-			return new Element('div', {'class': 'operationDiv'}).update(tmp.getEditDiv('', orderItem.eta));
-		}
-		
-		tmp.selBox = tmp.me._getHasStockSel('Has Stock?', tmp.hasStock, tmp.func);
-		tmp.returnDiv = new Element('div', {'class': 'operationDiv'});
-		tmp.returnDiv.insert({'bottom': tmp.selBox});
-		if(tmp.hasStock === 'Y')
-		{
-			tmp.returnDiv
-				.insert({'bottom': new Element('input', {'type': 'hidden', 'update_order_item': 'eta', 'value': '0001-01-01 00:00:00'}) })
-				.insert({'bottom': new Element('input', {'type': 'hidden', 'update_order_item': 'isOrdered', 'value': 'false'}) });
-		}	
-		
-		return tmp.returnDiv;
+		return tmp.me._getPurchasingEditCell(orderItem);
 	}
 	/**
 	 * Getting each product row
@@ -501,10 +482,14 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				.update('submit')
 				.observe('click', function() {
 					tmp.btn = this;
-					tmp.data = tmp.me._collectData('update_order_item');
+					tmp.me._signRandID(tmp.btn);
+					tmp.data = tmp.me._collectData('update_order_item_purchase', 'order_item_purchase_id');
+					console.debug(tmp.data);
+					if(tmp.data === null)
+						return;
 					tmp.me.postAjax(tmp.me.getCallbackId('updateOrder'), {'items': tmp.data, 'order': tmp.me._order, 'for': 'purchasing'}, {
 						'onLoading': function(sender, param) {
-							tmp.btn.addClassName('disabled').update('Saving ...');
+							jQuery('#' + tmp.btn.id).button('loading');
 						},
 						'onSuccess': function(sender, param) {
 							try {
@@ -518,8 +503,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 							}
 						},
 						'onComplete': function(sender, param) {
-							if(tmp.btn)
-								tmp.btn.removeClassName('disabled').update('submit');
+							jQuery('#' + tmp.btn.id).button('reset');
 						}
 					});
 				})
@@ -553,6 +537,14 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			});
 	}
 	/**
+	 * give the input box a random id
+	 */
+	,_signRandID: function(input) {
+		if(!input.id)
+			input.id = 'input_' + String.fromCharCode(65 + Math.floor(Math.random() * 26)) + Date.now();
+		return this;
+	}
+	/**
 	 * Marking a form group to has-error
 	 */
 	,_markFormGroupError: function(input, errMsg) {
@@ -560,8 +552,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.me = this;
 		if(input.up('.form-group')) {
 			input.up('.form-group').addClassName('has-error');
-			if(!input.id)
-				input.id = 'input_' + String.fromCharCode(65 + Math.floor(Math.random() * 26)) + Date.now();
+			tmp.me._signRandID(input);
 			jQuery('#' + input.id).tooltip({
 				'trigger': 'manual'
 				,'placement': 'auto'
@@ -572,9 +563,8 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			})
 			.tooltip('show')
 			.change(function() {
-				tmp.input = jQuery(this);
-				tmp.input.parent('.form-group').removeClass('has-error');
-				tmp.input.tooltip('hide').tooltip('destroy').show();
+				input.up('.form-group').removeClassName('has-error');
+				jQuery(this).tooltip('hide').tooltip('destroy').show();
 			})
 		}
 		return tmp.me;

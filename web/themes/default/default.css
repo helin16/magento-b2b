@@ -97,6 +97,12 @@
 .order-info-div .dl-horizontal dd {
 	margin-left: 70px;
 }
+.update_order_item_div .dl-horizontal dt {
+	width: 80px;
+}
+.update_order_item_div .dl-horizontal dd {
+	margin-left: 90px;
+}
 dl.dl-condensed {
 	margin-bottom: 0px;
 }

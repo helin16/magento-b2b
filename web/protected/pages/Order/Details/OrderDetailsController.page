@@ -13,7 +13,7 @@
 	<com:TCallback ID="getPaymentDetailsBtn" OnCallback="getPaymentDetailsForOrder" />
 	<com:TCallback ID="clearETABtn" OnCallback="clearETA" />
 	<com:TCallback ID="changeIsOrderedBtn" OnCallback="changeIsOrdered" />
-	<div class="pagewrapper orderdetails container">
+	<div class="pagewrapper orderdetails">
 		<div id="detailswrapper" class="contentDiv"></div>
 	</div>
 </com:TContent>
