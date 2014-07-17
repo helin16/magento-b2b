@@ -1,6 +1,5 @@
 <%@MasterClass="Application.layout.BlankLayout"%>
 <com:TContent ID="MainContent">
-	<com:Application.controls.fancybox.FancyBox />
 	<com:Application.controls.chosen.Chosen />
 	<com:TDatePicker Style="display:none;"/>
 	<com:TCallback ID="updateOrderBtn" OnCallback="updateOrder" />

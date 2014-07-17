@@ -113,65 +113,66 @@ class OrderDetailsController extends BPCPageAbstract
 		try
 		{
 			Dao::beginTransaction();
+// 			var_dump($params->CallbackParameter);die;
 			if(!isset($params->CallbackParameter->order) || !($order = Order::get($params->CallbackParameter->order->orderNo)) instanceof Order)
 				throw new Exception('System Error: invalid order passed in!');
-			
 			if(!isset($params->CallbackParameter->for) || ($for = trim($params->CallbackParameter->for)) === '')
 				throw new Exception('System Error: invalid for passed in!');
-			
+			$notifyCustomer = isset($params->CallbackParameter->notifiCustomer) && trim($params->CallbackParameter->notifiCustomer) === '1' ? true : false;
 			if(!$order->canEditBy(Core::getRole()))
 				throw new Exception('You do NOT edit this order as ' . Core::getRole() . '!');
-			
 			$hasETA = false;
 			$allPicked = true;
-			
 			$commentType = ($for === 'purchasing' ? Comments::TYPE_PURCHASING : Comments::TYPE_WAREHOUSE);
-			foreach($params->CallbackParameter->items as $obj)
+			foreach($params->CallbackParameter->items as $orderItemId => $obj)
 			{
-				if(!($orderItem = FactoryAbastract::service('OrderItem')->get($obj->orderItem->id)) instanceof OrderItem)
-					$orderItem = new OrderItem();
-				
-				$orderItem->setQtyOrdered($obj->orderItem->qtyOrdered);
-				$orderItem->setUnitPrice($obj->orderItem->unitPrice);
-				$orderItem->setTotalPrice($obj->orderItem->totalPrice);
-				$orderItem->setOrder($order);
-				$sku = trim($obj->orderItem->product->sku);
-				$orderItem->setProduct(Product::get($sku));
-				
-				$isOrdered = (isset($obj->$for->isOrdered) && ($obj->$for->isOrdered === true || $obj->$for->isOrdered === 'true')) ? true : false;
-				$orderItem->setIsOrdered($isOrdered);
-				
-				FactoryAbastract::service('OrderItem')->save($orderItem);
-				
-				if(!isset($obj->$for))
-					throw new Exception('System Error: ' . $for .' is NOT defined!');
-				$comments = isset($obj->$for->comments) ? trim($obj->$for->comments) : '';
-				if($comments !== '')
-					$orderItem->addComment($comments, $commentType);
-				if(isset($obj->$for->eta))
+				if(!($orderItem = FactoryAbastract::service('OrderItem')->get($orderItemId)) instanceof OrderItem)
+					throw new Exception ("System Error: invalid order item(ID=" . $orderItemId . ')');
+				$sku = $orderItem->getProduct()->getSku();
+				if($for === 'purchasing') //purchasing
 				{
-					$eta = trim($obj->$for->eta);
-					$orderItem->setEta($eta === '' ? null : $eta);
-					if($eta!== '' && $eta !== trim(UDate::zeroDate()))
+					if(($hasStock = (trim($obj->hasStock) === '1' ? true : false)) === true)
 					{
-						$order->addComment('Added ETA[' . $eta . '] for product(SKU=' . $sku .'): ' . $comments, $commentType);
+						$orderItem->setIsOrdered(false);
+						$orderItem->setEta(trim(UDate::zeroDate()));
+					}
+					else
+					{
+						$timeZone = trim(SystemSettings::getSettings(SystemSettings::TYPE_SYSTEM_TIMEZONE));
+						$now = new UDate('now', $timeZone);
+						if(!($eta = new UDate(trim($obj->eta), $timeZone)) instanceof UDate)
+							throw new Exception('ETA(=' . trim($obj->eta) . ') is invalid.');
+						if($eta->beforeOrEqualTo($now))
+							throw new Exception('ETA can NOT be before now = ' . trim($now) . ').');
+						$orderItem->setIsOrdered(trim($obj->hasStock) === '1');
+						$comments = isset($obj->comments) ? trim($obj->comments) : '';
+						$orderItem->setEta(trim($eta));
+						$orderItem->setIsOrdered(trim($obj->isOrdered) === '1');
+						if($comments !== '')
+						{
+							$order->addComment('Added ETA[' . $eta . '] for product(SKU=' . $sku .'): ' . $comments, $commentType);
+							$orderItem->addComment($comments, $commentType);
+						}
 						$hasETA = true;
 					}
+					$orderItem->setIsPicked(false);
 				}
-				
-				if(isset($obj->$for->isPicked))
+				else if ($for === 'warehouse') //warehouse
 				{
-					$picked = (trim($obj->$for->isPicked) === 'Y');
-					$orderItem->setIsPicked($picked);
-					if($picked === false)
+					if(isset($obj->isPicked))
 					{
-						$order->addComment('Picked product(SKU=' . $sku .'): ' . $comments, $commentType);
-						$allPicked = false;
+						$picked = (trim($obj->$for->isPicked) === '1');
+						$orderItem->setIsPicked($picked);
+						if($picked === true)
+							$order->addComment('Picked product(SKU=' . $sku .'): ' . $comments, $commentType);
+						else
+							$allPicked = false;
 					}
 				}
 				FactoryAbastract::service('OrderItem')->save($orderItem);
 			}
 			
+			//push the status of the order
 			$status = trim($order->getStatus());
 			if($for === 'purchasing')
 			{
@@ -189,19 +190,21 @@ class OrderDetailsController extends BPCPageAbstract
 					$order->setStatus(OrderStatus::get(OrderStatus::ID_INSUFFICIENT_STOCK));
 				$order->addComment('Changed from [' . $status . '] to [' . $order->getStatus() . ']', Comments::TYPE_SYSTEM);
 			}
-			
 			FactoryAbastract::service('Order')->save($order);
 			
-			//push the status of the order
-			$notificationMsg = trim(OrderNotificationTemplateControl::getMessage($order->getStatus()->getName(), $order));
-			if($notificationMsg !== '')
+			//notify customer
+			if($notifyCustomer === true)
 			{
-				B2BConnector::getConnector(B2BConnector::CONNECTOR_TYPE_ORDER,
-					SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_WSDL),
-					SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_USER),
-					SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_KEY)
-					)->changeOrderStatus($order, $order->getStatus()->getMageStatus(), $notificationMsg, true);
-				$order->addComment('An email notification has been sent to customer for: ' . $order->getStatus()->getName(), Comments::TYPE_SYSTEM);
+				$notificationMsg = trim(OrderNotificationTemplateControl::getMessage($order->getStatus()->getName(), $order));
+				if($notificationMsg !== '')
+				{
+					B2BConnector::getConnector(B2BConnector::CONNECTOR_TYPE_ORDER,
+						SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_WSDL),
+						SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_USER),
+						SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_KEY)
+						)->changeOrderStatus($order, $order->getStatus()->getMageStatus(), $notificationMsg, true);
+					$order->addComment('An email notification has been sent to customer for: ' . $order->getStatus()->getName(), Comments::TYPE_SYSTEM);
+				}
 			}
 			Dao::commitTransaction();
 		}

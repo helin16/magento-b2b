@@ -91,10 +91,10 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 	,_collectData: function(attrName, groupIndexName) {
 		var tmp = {};
 		tmp.me = this;
-		tmp.groupIndexName =  (groupIndexName || null);
 		tmp.data = {};
 		tmp.hasError = false;
 		$$('[' + attrName + ']').each(function(item) {
+			tmp.groupIndexName =  (item.readAttribute(groupIndexName) || null);
 			tmp.fieldName = item.readAttribute(attrName);
 			if(item.hasAttribute('required') && $F(item).blank()) {
 				tmp.me._markFormGroupError(item, 'This is requried');
@@ -110,7 +110,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					tmp.value = item.hasAttribute('validate_currency') ? tmp.me.getValueFromCurrency(tmp.itemValue) : tmp.me.getValueFromCurrency(tmp.itemValue);
 				}
 			}
-			//getting tehdata
+			//getting the data
 			if(tmp.groupIndexName) {
 				if(!tmp.data[tmp.groupIndexName])
 					tmp.data[tmp.groupIndexName] = {};
@@ -367,6 +367,24 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		});
 		return tmp.me;
 	}
+	,_getPurchasingEditCelPanel: function(orderItem, editPanel) {
+		var tmp = {};
+		tmp.me = this;
+		editPanel.insert({'bottom': tmp.me._getfieldDiv('ETA:', 
+			tmp.etaBox = new Element('input', {'class': 'form-control input-sm datepicker', 'type': 'datetime', 'value': orderItem.eta, 'update_order_item_purchase': 'eta', 'order_item_purchase_id': orderItem.id, 'required': true})
+		).addClassName('no-stock-div dl-horizontal form-group') })
+		.insert({'bottom': tmp.me._getfieldDiv('Has Ordered?',
+			new Element('input', {'class': 'input-sm', 'type': 'checkbox', 'update_order_item_purchase': 'isOrdered', 'order_item_purchase_id': orderItem.id, 'checked': orderItem.isOrdered}) 
+		).addClassName('no-stock-div dl-horizontal form-group') })
+		.insert({'bottom': tmp.me._getfieldDiv('Comments:', 
+			new Element('input', {'class': 'form-control input-sm', 'type': 'text', 'update_order_item_purchase': 'comments', 'order_item_purchase_id': orderItem.id, 'required': true})
+		).addClassName('no-stock-div dl-horizontal form-group') });
+		tmp.me._signRandID(tmp.etaBox);
+		try {
+			new Prado.WebUI.TDatePicker({'ID': tmp.etaBox.id, 'InputMode':"TextBox",'Format':"yyyy-MM-dd 17:00:00",'FirstDayOfWeek':1,'CalendarStyle':"default",'FromYear':2009,'UpToYear':2024,'PositionMode':"Bottom"});
+		} catch(e) {}
+		return tmp.me;
+	}
 	/**
 	 * Getting the edit call for purchasing
 	 */
@@ -378,31 +396,24 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		if(tmp.me._editMode.purchasing === false) {
 			return;
 		}
-		tmp.selBoxDiv = tmp.me._getfieldDiv('Has Stock?',
+		tmp.editCellPanel = new Element('small', {'class': 'update_order_item_purchase_div update_order_item_div'});
+		tmp.editCellPanel.insert({'bottom': tmp.me._getfieldDiv('Has Stock?',
 			new Element('select', {'class': 'form-control input-sm', 'update_order_item_purchase': 'hasStock', 'required': true, 'order_item_purchase_id': orderItem.id})
 				.insert({'bottom': new Element('option', {'value': ' '}).update('Not Checked')})
-				.insert({'bottom': new Element('option', {'value': '1'}).update('Yes')})
-				.insert({'bottom': new Element('option', {'value': '0'}).update('No')})
+				.insert({'bottom': new Element('option', {'value': '1'}).update('Yes').writeAttribute('selected', tmp.hasStock) })
+				.insert({'bottom': new Element('option', {'value': '0'}).update('No').writeAttribute('selected', !tmp.hasStock)})
 				.observe('change', function() {
 					tmp.editPanel = $(this).up('.update_order_item_purchase_div');
 					tmp.editPanel.getElementsBySelector('.no-stock-div').each(function(item) { item.remove(); });
 					if($F(this) === '0') {
-						tmp.editPanel.insert({'bottom': tmp.me._getfieldDiv('ETA:', 
-							tmp.etaBox = new Element('input', {'class': 'form-control input-sm', 'type': 'datetime', 'update_order_item_purchase': 'eta', 'order_item_purchase_id': orderItem.id, 'required': true})
-						).addClassName('no-stock-div dl-horizontal form-group') })
-						.insert({'bottom': tmp.me._getfieldDiv('Has Ordered?',
-							new Element('input', {'class': 'input-sm', 'type': 'checkbox', 'update_order_item_purchase': 'isOrdered', 'order_item_purchase_id': orderItem.id}) 
-						).addClassName('no-stock-div dl-horizontal form-group') })
-						.insert({'bottom': tmp.me._getfieldDiv('Comments:', 
-							new Element('input', {'class': 'form-control input-sm', 'type': 'text', 'update_order_item_purchase': 'comments', 'order_item_purchase_id': orderItem.id, 'required': true})
-						).addClassName('no-stock-div dl-horizontal form-group') });
-						
-						tmp.me._signRandID(tmp.etaBox);
-						new Prado.WebUI.TDatePicker({'ID': tmp.etaBox.id, 'InputMode':"TextBox",'Format':"yyyy-MM-dd 17:00:00",'FirstDayOfWeek':1,'CalendarStyle':"default",'FromYear':2009,'UpToYear':2024,'PositionMode':"Bottom"});
+						tmp.me._getPurchasingEditCelPanel(orderItem, tmp.editPanel);
 					}
 				})
-		).addClassName('dl-horizontal form-group');
-		return tmp.selBoxDiv.wrap(new Element('small', {'class': 'update_order_item_purchase_div update_order_item_div'}))
+			).addClassName('dl-horizontal form-group')
+		})
+		if(tmp.hasStock === false)
+			tmp.me._getPurchasingEditCelPanel(orderItem, tmp.editCellPanel);
+		return tmp.editCellPanel;
 	}
 	/**
 	 * Getting the purchasing cell
@@ -418,15 +429,16 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			if(tmp.hasStock === '')
 				return tmp.newDiv.update('Not Checked');
 			
-			tmp.newDiv.insert({'bottom': new Element('div', {'class': tmp.hasStock ? 'text-success' : 'text-danger'})
+			tmp.newDiv.insert({'bottom': new Element('span', {'class': tmp.hasStock ? 'text-success' : 'text-danger'})
 				.insert({'bottom': new Element('strong').update('hasStock? ') })
 				.insert({'bottom': new Element('span', {'class': 'glyphicon ' + (tmp.hasStock ? 'glyphicon-ok-circle' : 'glyphicon-remove-circle')}) })
-				.insert({'bottom': new Element('a', {'href': 'javascript: void(0);', 'class': 'text-muted pull-right', 'title': 'comments'})
+				.insert({'bottom': new Element('a', {'href': 'javascript: void(0);', 'class': 'text-muted pull-right popover-comments', 'title': 'comments', 'comments-type': 'purchasing', 'comments-entity-id': orderItem.id})
 					.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-comment'}) })
 				})
 			});
 			if(tmp.hasStock === false) {
-				tmp.newDiv.insert({'bottom': new Element('div')
+				tmp.newDiv.insert({'bottom': new Element('span').update('&nbsp;&nbsp;') })
+				.insert({'bottom': new Element('span')
 					.insert({'bottom': new Element('strong').update('ETA: ') })
 					.insert({'bottom': new Element('span')
 						.insert({'bottom': new Element('small').update(orderItem.eta + ' ') })
@@ -438,7 +450,8 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 						})
 					})
 				})
-				.insert({'bottom': new Element('div')
+				.insert({'bottom': new Element('span').update('&nbsp;&nbsp;') })
+				.insert({'bottom': new Element('span')
 					.insert({'bottom': new Element('strong').update('Is Ordered: ') })
 					.insert({'bottom': new Element('input', {'type': 'checkbox', 'checked': tmp.isOrdered})
 						.observe('change', function(event) {
@@ -484,7 +497,6 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					tmp.btn = this;
 					tmp.me._signRandID(tmp.btn);
 					tmp.data = tmp.me._collectData('update_order_item_purchase', 'order_item_purchase_id');
-					console.debug(tmp.data);
 					if(tmp.data === null)
 						return;
 					tmp.me.postAjax(tmp.me.getCallbackId('updateOrder'), {'items': tmp.data, 'order': tmp.me._order, 'for': 'purchasing'}, {
@@ -896,9 +908,30 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		var tmp = {};
 		tmp.me = this;
 		//load the comments after
-		tmp.me._getComments(true)
+		tmp.me._getComments(true);
+		$$('.datepicker').each(function(item) {
+			new Prado.WebUI.TDatePicker({'ID': item.id, 'InputMode':"TextBox",'Format':"yyyy-MM-dd 17:00:00",'FirstDayOfWeek':1,'CalendarStyle':"default",'FromYear':2009,'UpToYear':2024,'PositionMode':"Bottom"});
+		});
+		jQuery('.popover-comments').click(function(){
+			tmp.item = jQuery(this);
+//			if(jQuery(this).data('popover') === null) {
+				jQuery.ajax({
+					type: 'GET',
+					dataType: "json",
+					url: '/ajax/getComments',
+					data: {'entity': 'OrderItem', 'entityId': tmp.item.attr('comments-entity-Id'), 'type': tmp.item.attr('comments-type') },
+					success: function(d) {
+						jQuery(this).popover({
+							'title': 'comments',
+							'html': true,
+							'content': 'test'
+						}).popover('show');
+					}
+				})
+//			}
+		});
 //			._getLatestPaymentMethod();
-		return this;
+		return tmp.me;
 	}
 	
 	
