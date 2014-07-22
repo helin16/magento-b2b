@@ -14,30 +14,6 @@ class OrderDetailsController extends BPCPageAbstract
 	 */
 	public $menuItem = 'order';
 	/**
-	 * The order that we are viewing
-	 * 
-	 * @var Order
-	 */
-	public $order = null;
-	/**
-	 * constructor
-	 */
-	public function __construct()
-	{
-		parent::__construct();
-	}
-	/**
-	 * (non-PHPdoc)
-	 * @see BPCPageAbstract::onLoad()
-	 */
-	public function onLoad($param)
-	{
-		parent::onLoad($param);
-		if(!$this->isPostBack && !$this->isCallBack)
-		{
-		}
-	}
-	/**
 	 * Getting The end javascript
 	 *
 	 * @return string
@@ -46,9 +22,7 @@ class OrderDetailsController extends BPCPageAbstract
 	{
 		if(!($order = FactoryAbastract::service('Order')->get($this->Request['orderId'])) instanceof Order)
 			die('Invalid Order!');
-		
 		$js = parent::_getEndJs();
-		
 		$orderItems = $courierArray = $paymentMethodArray = array();
 		foreach($order->getOrderItems() as $orderItem)
 			$orderItems[] = $orderItem->getJson();
@@ -56,12 +30,8 @@ class OrderDetailsController extends BPCPageAbstract
 		if($order->canEditBy(Core::getRole()))
 		{
 			$statusEdit = ($order->canEditBy(FactoryAbastract::service('Role')->get(Role::ID_STORE_MANAGER)) || $order->canEditBy(FactoryAbastract::service('Role')->get(Role::ID_SYSTEM_ADMIN))) ? 'true' : 'false';
-			if(in_array(trim(Core::getRole()->getId()), array(Role::ID_SYSTEM_ADMIN, Role::ID_STORE_MANAGER)))
-			{	
-				$purchaseEdit = ($order->canEditBy(FactoryAbastract::service('Role')->get(Role::ID_PURCHASING))) ? 'true' : 'false';
-				$warehouseEdit = ($order->canEditBy(FactoryAbastract::service('Role')->get(Role::ID_WAREHOUSE))) ? 'true' : 'false';
-				$accounEdit = ($order->canEditBy(FactoryAbastract::service('Role')->get(Role::ID_ACCOUNTING))) ? 'true' : 'false';
-			}
+			if(in_array(intval(Core::getRole()->getId()), array(Role::ID_SYSTEM_ADMIN, Role::ID_STORE_MANAGER)))
+				$purchaseEdit = $warehouseEdit = $accounEdit = 'true';
 			else
 			{
 				if(trim(Core::getRole()->getId()) === trim(Role::ID_PURCHASING))
@@ -72,20 +42,11 @@ class OrderDetailsController extends BPCPageAbstract
 					$accounEdit = 'true';
 			}
 		}
-		
-		$orderStatuses = array();
-		foreach(OrderStatus::findAll() as $status)
-			$orderStatuses[] = $status->getJson();
-		
-		foreach(Courier::findAll() as $courier)
-			$courierArray[] = $courier->getJson();
-		
-		foreach(PaymentMethod::findAll(true) as $paymentMethod)
-			$paymentMethodArray[] = $paymentMethod->getJson();
-		
+		$orderStatuses = array_map(create_function('$a', 'return $a->getJson();'), OrderStatus::findAll());
+		$courierArray = array_map(create_function('$a', 'return $a->getJson();'), Courier::findAll());
+		$paymentMethodArray = array_map(create_function('$a', 'return $a->getJson();'), PaymentMethod::findAll());
 		$js .= 'pageJs';
 			$js .= '.setCallbackId("updateOrder", "' . $this->updateOrderBtn->getUniqueID() . '")';
-			$js .= '.setCallbackId("getComments", "' . $this->getCommentsBtn->getUniqueID() . '")';
 			$js .= '.setCallbackId("addComments", "' . $this->addCommentsBtn->getUniqueID() . '")';
 			$js .= '.setCallbackId("confirmPayment", "' . $this->confirmPaymentBtn->getUniqueID() . '")';
 			$js .= '.setCallbackId("changeOrderStatus", "' . $this->changeOrderStatusBtn->getUniqueID() . '")';
@@ -98,6 +59,8 @@ class OrderDetailsController extends BPCPageAbstract
 			$js .= '.setOrder('. json_encode($order->getJson()) . ', ' . json_encode($orderItems) . ', ' . json_encode($orderStatuses) . ')';
 			$js .= '.setCourier('. json_encode($courierArray) . ')';
 			$js .= '.setPaymentMethods('. json_encode($paymentMethodArray) . ')';
+			$js .= '.setCommentType("'. Comments::TYPE_PURCHASING . '", "' . Comments::TYPE_WAREHOUSE . '")';
+			$js .= '.setOrderStatusIds(['. OrderStatus::ID_NEW . ', ' . OrderStatus::ID_INSUFFICIENT_STOCK . '], ['. OrderStatus::ID_ETA . ', ' . OrderStatus::ID_STOCK_CHECKED_BY_PURCHASING . '])';
 			$js .= '.init("detailswrapper")';
 			$js .= '.load();';
 		return $js;
@@ -113,23 +76,23 @@ class OrderDetailsController extends BPCPageAbstract
 		try
 		{
 			Dao::beginTransaction();
-// 			var_dump($params->CallbackParameter);die;
 			if(!isset($params->CallbackParameter->order) || !($order = Order::get($params->CallbackParameter->order->orderNo)) instanceof Order)
 				throw new Exception('System Error: invalid order passed in!');
 			if(!isset($params->CallbackParameter->for) || ($for = trim($params->CallbackParameter->for)) === '')
 				throw new Exception('System Error: invalid for passed in!');
-			$notifyCustomer = isset($params->CallbackParameter->notifiCustomer) && trim($params->CallbackParameter->notifiCustomer) === '1' ? true : false;
+			$notifyCustomer = isset($params->CallbackParameter->notifyCustomer) && intval($params->CallbackParameter->notifyCustomer) === 1 ? true : false;
 			if(!$order->canEditBy(Core::getRole()))
 				throw new Exception('You do NOT edit this order as ' . Core::getRole() . '!');
 			$hasETA = false;
 			$allPicked = true;
-			$commentType = ($for === 'purchasing' ? Comments::TYPE_PURCHASING : Comments::TYPE_WAREHOUSE);
+			$commentType = ($for === Comments::TYPE_PURCHASING ? Comments::TYPE_PURCHASING : Comments::TYPE_WAREHOUSE);
 			foreach($params->CallbackParameter->items as $orderItemId => $obj)
 			{
 				if(!($orderItem = FactoryAbastract::service('OrderItem')->get($orderItemId)) instanceof OrderItem)
 					throw new Exception ("System Error: invalid order item(ID=" . $orderItemId . ')');
 				$sku = $orderItem->getProduct()->getSku();
-				if($for === 'purchasing') //purchasing
+				$comments = isset($obj->comments) ? trim($obj->comments) : '';
+				if($for === Comments::TYPE_PURCHASING) //purchasing
 				{
 					if(($hasStock = (trim($obj->hasStock) === '1' ? true : false)) === true)
 					{
@@ -143,9 +106,8 @@ class OrderDetailsController extends BPCPageAbstract
 						if(!($eta = new UDate(trim($obj->eta), $timeZone)) instanceof UDate)
 							throw new Exception('ETA(=' . trim($obj->eta) . ') is invalid.');
 						if($eta->beforeOrEqualTo($now))
-							throw new Exception('ETA can NOT be before now = ' . trim($now) . ').');
+							throw new Exception('ETA can NOT be before now(=' . trim($now) . ').');
 						$orderItem->setIsOrdered(trim($obj->hasStock) === '1');
-						$comments = isset($obj->comments) ? trim($obj->comments) : '';
 						$orderItem->setEta(trim($eta));
 						$orderItem->setIsOrdered(trim($obj->isOrdered) === '1');
 						if($comments !== '')
@@ -157,16 +119,24 @@ class OrderDetailsController extends BPCPageAbstract
 					}
 					$orderItem->setIsPicked(false);
 				}
-				else if ($for === 'warehouse') //warehouse
+				else if ($for === Comments::TYPE_WAREHOUSE) //warehouse
 				{
 					if(isset($obj->isPicked))
 					{
-						$picked = (trim($obj->$for->isPicked) === '1');
+						$picked = (trim($obj->isPicked) === '1');
 						$orderItem->setIsPicked($picked);
-						if($picked === true)
-							$order->addComment('Picked product(SKU=' . $sku .'): ' . $comments, $commentType);
+						$order->addComment(($picked ? '' : 'NOT ') . 'Picked product(SKU=' . $sku .'): ' . $comments, $commentType);
+						$orderItem->addComment($comments, $commentType);
+						if($picked === true) //clear ETA
+						{
+							$orderItem->setIsOrdered(false);
+							$orderItem->setEta(trim(UDate::zeroDate()));
+						}
 						else
+						{
+							$orderItem->setEta('');
 							$allPicked = false;
+						}
 					}
 				}
 				FactoryAbastract::service('OrderItem')->save($orderItem);
@@ -174,7 +144,7 @@ class OrderDetailsController extends BPCPageAbstract
 			
 			//push the status of the order
 			$status = trim($order->getStatus());
-			if($for === 'purchasing')
+			if($for === Comments::TYPE_PURCHASING)
 			{
 				if($hasETA === true)
 					$order->setStatus(OrderStatus::get(OrderStatus::ID_ETA));
@@ -182,7 +152,7 @@ class OrderDetailsController extends BPCPageAbstract
 					$order->setStatus(OrderStatus::get(OrderStatus::ID_STOCK_CHECKED_BY_PURCHASING));
 				$order->addComment('Changed from [' . $status . '] to [' . $order->getStatus() . ']', Comments::TYPE_SYSTEM);
 			}
-			if($for === 'warehouse')
+			if($for === Comments::TYPE_WAREHOUSE)
 			{
 				if($allPicked === true)
 					$order->setStatus(OrderStatus::get(OrderStatus::ID_PICKED));
@@ -217,60 +187,6 @@ class OrderDetailsController extends BPCPageAbstract
 	}
 	/**
 	 * 
-	 * @param Comments $comments
-	 * @return multitype:string
-	 */
-	private function _formatComments(Comments $comments)
-	{
-		$array = array();
-		$created = new UDate($comments->getCreated());
-		$created->setTimeZone(SystemSettings::getSettings(SystemSettings::TYPE_SYSTEM_TIMEZONE));
-		$array['created'] = trim($created);
-		$array['creator'] = trim($comments->getCreatedBy()->getPerson());
-		$array['comments'] = trim($comments->getComments());
-		$array['type'] = trim($comments->getType());
-		return $array;
-	}
-	/**
-	 * 
-	 * @param unknown $sender
-	 * @param unknown $params
-	 */
-	public function getComments($sender, $params)
-	{
-		$results = $errors = array();
-		try
-		{
-			Dao::beginTransaction();
-			if(!isset($params->CallbackParameter->order) || !($order = Order::get($params->CallbackParameter->order->orderNo)) instanceof Order)
-				throw new Exception('System Error: invalid order passed in!');
-			$type = isset($params->CallbackParameter->type) ? trim($params->CallbackParameter->type) : '';
-			$pageNo = 1;
-			$pageSize = DaoQuery::DEFAUTL_PAGE_SIZE;
-			if(isset($params->CallbackParameter->pagination))
-			{
-				$pageNo = isset($params->CallbackParameter->pagination->pageNo) ? trim($params->CallbackParameter->pagination->pageNo) : $pageNo;
-				$pageSize = isset($params->CallbackParameter->pagination->pageSize) ? trim($params->CallbackParameter->pagination->pageSize) : $pageSize;
-			}
-			$items = array();
-			$pageStats = array();
-			$commentsArray = $order->getComment($type, $pageNo, $pageSize, array('`comm`.id' => 'desc'), $pageStats);
-			foreach($commentsArray as $comments)
-				$items[] = $this->_formatComments($comments);
-			
-			$results['items'] = $items;
-			$results['pagination'] = $pageStats;
-			Dao::commitTransaction();
-		}
-		catch(Exception $ex)
-		{
-			Dao::rollbackTransaction();
-			$errors[] = $ex->getMessage();
-		}
-		$params->ResponseData = StringUtilsAbstract::getJson($results, $errors);
-	}
-	/**
-	 * 
 	 * @param unknown $sender
 	 * @param unknown $params
 	 */
@@ -285,7 +201,7 @@ class OrderDetailsController extends BPCPageAbstract
 			if(!isset($params->CallbackParameter->comments) || ($comments = trim($params->CallbackParameter->comments)) === '')
 				throw new Exception('System Error: invalid comments passed in!');
 			$comment = Comments::addComments($order, $comments, Comments::TYPE_NORMAL);
-			$results = $this->_formatComments($comment);
+			$results = $comment->getJson();
 			Dao::commitTransaction();
 		}
 		catch(Exception $ex)
@@ -393,86 +309,6 @@ class OrderDetailsController extends BPCPageAbstract
 		
 		$params->ResponseData = StringUtilsAbstract::getJson($results, $errors);
 	}
-	
-	/**
-	 * 
-	 * @param unknown $sender
-	 * @param unknown $params
-	 * @throws Exception
-	 */
-	public function updateOrderItemForWarehouse($sender, $params)
-	{
-		$results = $errors = array();
-		$counter = 0;
-		$allItemsPicked = true;
-		
-		try 
-		{
-			Dao::beginTransaction();
-			
-			if(!isset($params->CallbackParameter->order) || !($order = Order::get($params->CallbackParameter->order->orderNo)) instanceof Order)
-				throw new Exception('System Error: invalid order passed in!');
-			if(!isset($params->CallbackParameter->orderItems) || !is_array($orderItemArray = $params->CallbackParameter->orderItems) || count($orderItemArray) === 0)
-				throw new Exception('System Error: invalid order items passed in!');
-			
-			foreach($orderItemArray as $oi)
-			{
-				if(!($orderItem = FactoryAbastract::service('OrderItem')->get($oi->orderItem->id)) instanceof OrderItem)
-					throw new Exception('System Error: invalid order item with id ['.$oi->orderItem->id.'] passed in!');
-				
-				$pickedComment = '';
-				if(!isset($oi->warehouse->isPicked) || (($isPicked = trim($oi->warehouse->isPicked)) === 'N' && (!isset($oi->warehouse->comments) || ($pickedComment = trim($oi->warehouse->comments)) === '')))
-					throw new Exception('System Error: isPicked information not passed in OR isPicked is false but no comments have been provided');
-
-				$isPicked = ($isPicked === 'Y' ? true : false);
-				$sku = $orderItem->getProduct()->getSku();
-				if($isPicked === false)
-				{
-					$comment = Comments::addComments($orderItem, $pickedComment, Comments::TYPE_WAREHOUSE);
-					$order->addComment('product(SKU=' . $sku .') is NOT picked: ' . $pickedComment, Comments::TYPE_WAREHOUSE);
-					$this->_formatComments($comment);
-					$results[$counter]['comment'] = $comment;
-					$allItemsPicked = false;
-				}
-				else
-				{
-					if(($eta = trim($orderItem->getETA())) !== '' && $eta !== trim(UDate::zeroDate()) )
-					{
-						$orderItem->setETA(Udate::zeroDate());
-						$comment = Comments::addComments($orderItem, 'Clearing ETA automatcally, as it is now picked', Comments::TYPE_WAREHOUSE);
-						$order->addComment('Clearing ETA automatcally for product(SKU=' . $sku .'), as it is now picked', Comments::TYPE_WAREHOUSE);
-						$this->_formatComments($comment);
-						$results[$counter]['comment'] = $comment;
-					}
-				}
-				$orderItem->setIsPicked($isPicked);
-				FactoryAbastract::service('OrderItem')->save($orderItem);
-				$results[$counter]['orderItem'] = $orderItem;
-				$results[$counter]['comment'] = array();
-				
-				$counter++;
-			}
-			
-			$newStatus = null;
-			if($allItemsPicked === true)
-				$newStatus = FactoryAbastract::service('OrderStatus')->get(OrderStatus::ID_PICKED);
-			else
-				$newStatus = FactoryAbastract::service('OrderStatus')->get(OrderStatus::ID_INSUFFICIENT_STOCK);
-			
-			$order->setStatus($newStatus);
-			FactoryAbastract::service('Order')->save($order);
-			
-			Dao::commitTransaction();
-		}
-		catch(Exception $ex)
-		{
-			Dao::rollbackTransaction();
-			$errors[] = $ex->getMessage();
-		}
-		
-		$params->ResponseData = StringUtilsAbstract::getJson($results, $errors);
-	}
-	
 	/**
 	 * updating the shipping details
 	 * 
@@ -594,17 +430,30 @@ class OrderDetailsController extends BPCPageAbstract
 				$comments = '';
 				
 			Dao::beginTransaction();
+			
+			//saving the order item
 			$item->setETA(UDate::zeroDate());
 			$item->addComment('Clearing the ETA: ' . $comments);
-				
 			$order = $item->getOrder();
 			$sku = $item->getProduct()->getSku();
-				
 			$order->addComment('Clearing the ETA for product (' . $sku . '): ' . $comments, Comments::TYPE_PURCHASING);
 			FactoryAbastract::service('OrderItem')->save($item);
-				
+			
+			//check to see whether we need to update the order as well
+			$allChecked = true;
+			foreach($order->getOrderItems() as $orderItems)
+			{
+				if(trim($orderItems->getETA()) !== trim(UDate::zeroDate()))
+					$allChecked = false;
+			}
+			if($allChecked === true)
+			{
+				$order->addComment('Auto Push this order status from [' . $order->getStatus() . '] to [' . OrderStatus::ID_ETA . '], as the last ETA cleared', Comments::TYPE_SYSTEM);
+				$order->setStatus(OrderStatus::get(OrderStatus::ID_STOCK_CHECKED_BY_PURCHASING));
+			}
+			FactoryAbastract::service('Order')->save($order);
+			
 			$results = $item->getJson();
-				
 			Dao::commitTransaction();
 		}
 		catch(Exception $ex)

@@ -44,19 +44,19 @@ class AjaxController extends TService
   		if(!isset($params['entityId']) || !isset($params['entity']) || ($entityId = trim($params['entityId'])) === '' || ($entity = trim($params['entity'])) === '')
   			throw  new Exception('SYSTEM ERROR: INCOMPLETE DATA PROVIDED');
   		
-  		$pageSize = (isset($params['pageSize']) && ($pageSize = trim($params['pageSize'])) !== '' ? $pageSize : 1);
-  		$pageNo = (isset($params['pageNo']) && ($pageNo = trim($params['pageNo'])) !== '' ? $pageNo : DaoQuery::DEFAUTL_PAGE_SIZE);
-  		$orderBy = array(); //TODO: need to figure out a way to pass in the order by params
+  		$pageSize = (isset($params['pageSize']) && ($pageSize = trim($params['pageSize'])) !== '' ? $pageSize : DaoQuery::DEFAUTL_PAGE_SIZE);
+  		$pageNo = (isset($params['pageNo']) && ($pageNo = trim($params['pageNo'])) !== '' ? $pageNo : 1);
+  		$orderBy = (isset($params['orderBy']) ? $params['orderBy'] : array('created' => 'desc'));
   		
   		$where ='entityName = ? and entityId = ?';
-  		$params = array($entity, $entityId);
-  		if(isset($params['type']) && ($commentType = $params['type']) !== '')
+  		$sqlParams = array($entity, $entityId);
+  		if(isset($params['type']) && ($commentType = trim($params['type'])) !== '')
   		{
   			$where .= 'and type = ?';
-  			$params[] = trim($commentType);
+  			$sqlParams[] = trim($commentType);
   		}
   		$returnArray = json_encode(array());
-  		$commentsArray = FactoryAbastract::service('Comments')->findByCriteria($where, $params, true, $pageSize, $pageNo, $orderBy);
+  		$commentsArray = FactoryAbastract::service('Comments')->findByCriteria($where, $sqlParams, true, $pageNo, $pageSize, $orderBy);
   		$results = array();
   		$results['items'] = array_map(create_function('$a', 'return $a->getJson();'), $commentsArray);
   		$results['pageStats'] = FactoryAbastract::service('Comments')->getPageStats();

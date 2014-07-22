@@ -3,7 +3,6 @@
 	<com:Application.controls.chosen.Chosen />
 	<com:TDatePicker Style="display:none;"/>
 	<com:TCallback ID="updateOrderBtn" OnCallback="updateOrder" />
-	<com:TCallback ID="getCommentsBtn" OnCallback="getComments" />
 	<com:TCallback ID="addCommentsBtn" OnCallback="addComments" />
 	<com:TCallback ID="changeOrderStatusBtn" OnCallback="changeOrderStatus" />
 	<com:TCallback ID="confirmPaymentBtn" OnCallback="confirmPayment" />

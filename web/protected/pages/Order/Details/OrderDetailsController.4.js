@@ -10,16 +10,28 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 	,_resultDivId: '' //the result div id
 	,_couriers: []	
 	,_editMode: {'purchasing': false, 'warehouse': false, 'accounting': false, 'status': false} //the edit mode for purchasing and warehouse
-	,_commentsDiv: {'pagination': {'pageSize': 5, 'pageNo': 1}, 'resultDivId': 'comments_result_div', 'type': ''} //the pagination for the comments
+	,_commentsDiv: {'pagination': {'pageSize': 5, 'pageNo': 1}, 'resultDivId': 'comments_result_div', 'types': {'purchasing': '', 'warehouse': ''}} //the pagination for the comments
 	,infoType_custName : 1
 	,infoType_custEmail : 2
-	,order_status_picked: 7
+	,orderStatusIds: {'warehouseCanEdit': [], 'purchaseCanEdit': [] }
 	
 	,setEditMode: function(editPurchasing, editWH, editAcc, editStatus) {
 		this._editMode.purchasing = (editPurchasing || false);
 		this._editMode.warehouse = (editWH || false);
 		this._editMode.accounting = (editAcc || false);
 		this._editMode.status = (editStatus || false);
+		return this;
+	}
+	
+	,setCommentType: function (purchasing, warehouse) {
+		this._commentsDiv.types.purchasing = purchasing;
+		this._commentsDiv.types.warehouse = warehouse;
+		return this;
+	}
+	
+	,setOrderStatusIds: function (purchasing, warehouse) {
+		this.orderStatusIds.purchaseCanEdit = purchasing;
+		this.orderStatusIds.warehouseCanEdit = warehouse;
 		return this;
 	}
 		
@@ -193,7 +205,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		return new Element('tr', {'class': 'comments_row'})
 			.store('data', comments)
 			.insert({'bottom': new Element('td', {'class': 'created', 'width': '15%'}).update(new Element('small').update(comments.created) ) })
-			.insert({'bottom': new Element('td', {'class': 'creator', 'width': '15%'}).update(new Element('small').update(comments.creator) ) })
+			.insert({'bottom': new Element('td', {'class': 'creator', 'width': '15%'}).update(new Element('small').update(comments.createdBy.person.fullname) ) })
 			.insert({'bottom': new Element('td', {'class': 'type', 'width': '10%'}).update(new Element('small').update(comments.type) ) })
 			.insert({'bottom': new Element('td', {'class': 'comments', 'width': 'auto'}).update(comments.comments) })
 			;
@@ -208,22 +220,21 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		if(tmp.reset === true) {
 			$(tmp.me._commentsDiv.resultDivId).update('');
 		}
-		tmp.me.postAjax(tmp.me.getCallbackId('getComments'), {'pagination': tmp.me._commentsDiv.pagination, 'order': tmp.me._order, 'type': tmp.me._commentsDiv.type}, {
-			'onLoading': function (sender, param) {
-				if(tmp.reset === true) {
-					$(tmp.me._commentsDiv.resultDivId).update(new Element('img', {'src': '/themes/default/images/loading_big.gif'}));
-				}
+		tmp.ajax = new Ajax.Request('/ajax/getComments', {
+			method:'get'
+			,parameters: {'entity': 'Order', 'entityId': tmp.me._order.id, 'orderBy': {'created':'desc'}, 'pageNo': tmp.me._commentsDiv.pagination.pageNo, 'pageSize': tmp.me._commentsDiv.pagination.pageSize}
+			,onLoading: function() {
 				if(btn) {
 					jQuery('#' + btn.id).button('loading');
 				}
 			}
-			,'onSuccess': function (sender, param) {
+			,onSuccess: function(transport) {
 				try {
-					tmp.result = tmp.me.getResp(param, false, true);
+					tmp.result = transport.responseText.evalJSON() || {};
 					if(tmp.reset === true) {
-						$(tmp.me._commentsDiv.resultDivId).update(tmp.me._getCommentsRow({'type': 'Type', 'creator': 'WHO', 'created': 'WHEN', 'comments': 'COMMENTS'}).addClassName('header').wrap( new Element('thead') ) );
+						$(tmp.me._commentsDiv.resultDivId).update(tmp.me._getCommentsRow({'type': 'Type', 'createdBy': {'person': {'fullname': 'WHO'}}, 'created': 'WHEN', 'comments': 'COMMENTS'}).addClassName('header').wrap( new Element('thead') ) );
 					}
-					if(!tmp.result)
+					if(!tmp.result || !tmp.result.items)
 						return;
 					//remove the pagination btn
 					if($$('.new-page-btn-div').size() > 0) {
@@ -241,7 +252,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 						tmp.tbody.insert({'bottom': tmp.me._getCommentsRow(item) });
 					})
 					//who new pagination btn
-					if(tmp.result.pagination.pageNumber < tmp.result.pagination.totalPages) {
+					if(tmp.result.pageStats.pageNumber < tmp.result.pageStats.totalPages) {
 						tmp.tbody.insert({'bottom': new Element('tr', {'class': 'new-page-btn-div'})
 							.insert({'bottom': new Element('td', {'colspan': 4})
 								.insert({'bottom': new Element('span', {'id': 'comments_get_more_btn', 'class': 'btn btn-primary', 'data-loading-text': 'Getting More ...'})
@@ -258,12 +269,12 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					$(tmp.me._commentsDiv.resultDivId).insert({'bottom': tmp.me.getAlertBox('ERROR: ', e).addClassName('alert-danger') });
 				}
 			}
-			,'onComplete': function(sender, param) {
+			,onComplete: function() {
 				if(btn) {
 					jQuery('#' + btn.id).button('reset');
 				}
 			}
-		})
+		});
 		return this;
 	}
 	/**
@@ -367,18 +378,29 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		});
 		return tmp.me;
 	}
+	/**
+	 * Getting the edit cell panel for purchasing
+	 * 
+	 * @param orderItem The orderItem object
+	 * @param editPanel The edit panel element
+	 * 
+	 * @return PageJs
+	 */
 	,_getPurchasingEditCelPanel: function(orderItem, editPanel) {
 		var tmp = {};
 		tmp.me = this;
 		editPanel.insert({'bottom': tmp.me._getfieldDiv('ETA:', 
-			tmp.etaBox = new Element('input', {'class': 'form-control input-sm datepicker', 'type': 'datetime', 'value': orderItem.eta, 'update_order_item_purchase': 'eta', 'order_item_purchase_id': orderItem.id, 'required': true})
-		).addClassName('no-stock-div dl-horizontal form-group') })
+				tmp.etaBox = new Element('input', {'class': 'form-control input-sm datepicker', 'type': 'datetime', 'value': orderItem.eta, 'update_order_item_purchase': 'eta', 'order_item_id': orderItem.id, 'required': true})
+			).addClassName('no-stock-div dl-horizontal form-group') 
+		})
 		.insert({'bottom': tmp.me._getfieldDiv('Has Ordered?',
-			new Element('input', {'class': 'input-sm', 'type': 'checkbox', 'update_order_item_purchase': 'isOrdered', 'order_item_purchase_id': orderItem.id, 'checked': orderItem.isOrdered}) 
-		).addClassName('no-stock-div dl-horizontal form-group') })
+				new Element('input', {'class': 'input-sm', 'type': 'checkbox', 'update_order_item_purchase': 'isOrdered', 'order_item_id': orderItem.id, 'checked': orderItem.isOrdered}) 
+			).addClassName('no-stock-div dl-horizontal form-group') 
+		})
 		.insert({'bottom': tmp.me._getfieldDiv('Comments:', 
-			new Element('input', {'class': 'form-control input-sm', 'type': 'text', 'update_order_item_purchase': 'comments', 'order_item_purchase_id': orderItem.id, 'required': true})
-		).addClassName('no-stock-div dl-horizontal form-group') });
+				new Element('input', {'class': 'form-control input-sm', 'type': 'text', 'update_order_item_purchase': 'comments', 'order_item_id': orderItem.id, 'required': true})
+			).addClassName('no-stock-div dl-horizontal form-group') 
+		});
 		tmp.me._signRandID(tmp.etaBox);
 		try {
 			new Prado.WebUI.TDatePicker({'ID': tmp.etaBox.id, 'InputMode':"TextBox",'Format':"yyyy-MM-dd 17:00:00",'FirstDayOfWeek':1,'CalendarStyle':"default",'FromYear':2009,'UpToYear':2024,'PositionMode':"Bottom"});
@@ -387,6 +409,10 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 	}
 	/**
 	 * Getting the edit call for purchasing
+	 * 
+	 * @param orderItem The orderItem object
+	 * 
+	 * @return Element
 	 */
 	,_getPurchasingEditCell: function(orderItem) {
 		var tmp = {};
@@ -398,10 +424,10 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		}
 		tmp.editCellPanel = new Element('small', {'class': 'update_order_item_purchase_div update_order_item_div'});
 		tmp.editCellPanel.insert({'bottom': tmp.me._getfieldDiv('Has Stock?',
-			new Element('select', {'class': 'form-control input-sm', 'update_order_item_purchase': 'hasStock', 'required': true, 'order_item_purchase_id': orderItem.id})
+			new Element('select', {'class': 'form-control input-sm', 'update_order_item_purchase': 'hasStock', 'required': true, 'order_item_id': orderItem.id})
 				.insert({'bottom': new Element('option', {'value': ' '}).update('Not Checked')})
-				.insert({'bottom': new Element('option', {'value': '1'}).update('Yes').writeAttribute('selected', tmp.hasStock) })
-				.insert({'bottom': new Element('option', {'value': '0'}).update('No').writeAttribute('selected', !tmp.hasStock)})
+				.insert({'bottom': new Element('option', {'value': '1'}).update('Yes').writeAttribute('selected', tmp.hasStock === true) })
+				.insert({'bottom': new Element('option', {'value': '0'}).update('No').writeAttribute('selected', tmp.hasStock === false)})
 				.observe('change', function() {
 					tmp.editPanel = $(this).up('.update_order_item_purchase_div');
 					tmp.editPanel.getElementsBySelector('.no-stock-div').each(function(item) { item.remove(); });
@@ -416,6 +442,32 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		return tmp.editCellPanel;
 	}
 	/**
+	 * Ajax: change isOrdered Flag
+	 */
+	,_changeIsOrdered: function(btn, orderItem) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.isOrdered = $(btn).checked;
+		if(!confirm('You are going to change this order item to be: ' + (tmp.isOrdered === true ? 'ORDERED' : 'NOT ORDERED') ))
+			return false;
+		tmp.me.postAjax(tmp.me.getCallbackId('changeIsOrdered'), {'item_id': orderItem.id, 'isOrdered': tmp.isOrdered}, {
+			'onLoading': function (sender, param) {}
+			,'onSuccess': function(sender, param) {
+				try {
+					tmp.result = tmp.me.getResp(param, false, true);
+					if(!tmp.result)
+						return;
+					alert('IsOrdered flag changed Successfully!');
+					window.location = document.URL;
+				} catch (e) {
+					alert(e);
+				}
+			}
+			,'onComplete': function(sender, param) {}
+		});
+		return true;
+	}
+	/**
 	 * Getting the purchasing cell
 	 */
 	,_getPurchasingCell: function(orderItem) {
@@ -424,7 +476,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.hasStock = (orderItem.eta === '' ? '' : (orderItem.eta === '0001-01-01 00:00:00' ? true : false));
 		tmp.isOrdered = (orderItem.isOrdered === false ? false : true);
 		//displaying only
-		if(tmp.me._editMode.purchasing === false) {
+		if(tmp.me._editMode.purchasing === false || tmp.me.orderStatusIds.purchaseCanEdit.indexOf(tmp.me._order.status.id * 1) < 0) {
 			tmp.newDiv = new Element('small');
 			if(tmp.hasStock === '')
 				return tmp.newDiv.update('Not Checked');
@@ -432,7 +484,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			tmp.newDiv.insert({'bottom': new Element('span', {'class': tmp.hasStock ? 'text-success' : 'text-danger'})
 				.insert({'bottom': new Element('strong').update('hasStock? ') })
 				.insert({'bottom': new Element('span', {'class': 'glyphicon ' + (tmp.hasStock ? 'glyphicon-ok-circle' : 'glyphicon-remove-circle')}) })
-				.insert({'bottom': new Element('a', {'href': 'javascript: void(0);', 'class': 'text-muted pull-right popover-comments', 'title': 'comments', 'comments-type': 'purchasing', 'comments-entity-id': orderItem.id})
+				.insert({'bottom': new Element('a', {'href': 'javascript: void(0);', 'class': 'text-muted pull-right popover-comments', 'title': 'comments', 'comments-type': tmp.me._commentsDiv.types.purchasing, 'comments-entity-id': orderItem.id})
 					.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-comment'}) })
 				})
 			});
@@ -464,6 +516,49 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		}
 		return tmp.me._getPurchasingEditCell(orderItem);
 	}
+	,_getWarehouseEditCell: function(orderItem) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.isPicked = (orderItem.isPicked === true);
+		tmp.editCellPanel = new Element('small', {'class': 'update_order_item_warehouse_div update_order_item_div'});
+		tmp.editcommentsDiv = tmp.me._getfieldDiv('Comments:', 
+					new Element('input', {'class': 'form-control input-sm', 'type': 'text', 'update_order_item_warehouse': 'comments', 'order_item_id': orderItem.id, 'required': true})
+			).addClassName('no-stock-div dl-horizontal form-group');
+		
+		tmp.editCellPanel.insert({'bottom': tmp.me._getfieldDiv('Picked?',
+			new Element('select', {'class': 'form-control input-sm', 'update_order_item_warehouse': 'isPicked', 'order_item_id': orderItem.id})
+				.insert({'bottom': new Element('option', {'value': '1'}).update('Yes').writeAttribute('selected', tmp.isPicked === true) })
+				.insert({'bottom': new Element('option', {'value': '0'}).update('No').writeAttribute('selected', tmp.isPicked === false)})
+				.observe('change', function() {
+					tmp.editPanel = $(this).up('.update_order_item_warehouse_div');
+					tmp.editPanel.getElementsBySelector('.no-stock-div').each(function(item) { item.remove(); });
+					if($F(this) === '0') {
+						tmp.editCellPanel.insert({'bottom': tmp.editcommentsDiv});
+					}
+				})
+			).addClassName('dl-horizontal form-group')
+		})
+		if(tmp.isPicked === false)
+			tmp.editCellPanel.insert({'bottom': tmp.editcommentsDiv});
+		return tmp.editCellPanel;
+	}
+	/**
+	 * Getting the warehouse cell for an orderItem
+	 */
+	,_getWarehouseCell: function(orderItem) {
+		var tmp = {};
+		tmp.me = this;
+		if(tmp.me._editMode.warehouse === false || tmp.me.orderStatusIds.warehouseCanEdit.indexOf(tmp.me._order.status.id * 1) < 0) {
+			return new Element('small').insert({'bottom': new Element('span', {'class': tmp.hasStock ? 'text-success' : 'text-danger'})
+				.insert({'bottom': new Element('strong').update('Picked? ') })
+				.insert({'bottom': new Element('span', {'class': 'glyphicon ' + (tmp.hasStock ? 'glyphicon-ok-circle' : 'glyphicon-remove-circle')}) })
+				.insert({'bottom': new Element('a', {'href': 'javascript: void(0);', 'class': 'text-muted pull-right popover-comments', 'title': 'comments', 'comments-type': tmp.me._commentsDiv.types.warehouse, 'comments-entity-id': orderItem.id})
+					.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-comment'}) })
+				})
+			});
+		}
+		return tmp.me._getWarehouseEditCell(orderItem);
+	}
 	/**
 	 * Getting each product row
 	 */
@@ -481,43 +576,87 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			.insert({'bottom': new Element(tmp.tag, {'class': 'purchasing'}).update(tmp.isTitle === true ? 'Purchasing' : tmp.me._getPurchasingCell(orderItem)) })
 			.insert({'bottom': new Element(tmp.tag, {'class': 'warehouse'}).update(tmp.isTitle === true ? 'Warehouse' : tmp.me._getWarehouseCell(orderItem)) });
 	}
-	
+	/**
+	 * Ajax: update order item and order
+	 */
+	,_updateOrderItems: function(btn, items, forType, notifyCustomer) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.notifyCustomer = (notifyCustomer || false);
+		tmp.btn = $(btn);
+		tmp.me._signRandID(tmp.btn);
+		tmp.me.postAjax(tmp.me.getCallbackId('updateOrder'), {'items': items, 'order': tmp.me._order, 'for': forType, 'notifyCustomer': tmp.notifyCustomer}, {
+			'onLoading': function(sender, param) {
+				jQuery('#' + tmp.btn.id).button('loading');
+			},
+			'onSuccess': function(sender, param) {
+				try {
+					tmp.result = tmp.me.getResp(param, false, true);
+					if(!tmp.result)
+						return;
+					alert('Saved Successfully!');
+					window.location = document.URL;
+				} catch (e) {
+					alert(e);
+				}
+			},
+			'onComplete': function(sender, param) {
+				jQuery('#' + tmp.btn.id).button('reset');
+			}
+		});
+		return tmp.me;
+	}
 	/**
 	 * Getting the purchasing submit btns
 	 */
 	,_getPurchasingBtns: function() {
 		var tmp = {};
 		tmp.me = this;
-		if(tmp.me._editMode.purchasing === false)
+		if(tmp.me._editMode.purchasing === false || tmp.me.orderStatusIds.purchaseCanEdit.indexOf(tmp.me._order.status.id * 1) < 0)
 			return;
-		return new Element('div')
-			.insert({'bottom': new Element('span', {'class': 'btn btn-primary', 'data-loading-text': 'Saving...'})
-				.update('submit')
-				.observe('click', function() {
-					tmp.btn = this;
-					tmp.me._signRandID(tmp.btn);
-					tmp.data = tmp.me._collectData('update_order_item_purchase', 'order_item_purchase_id');
-					if(tmp.data === null)
-						return;
-					tmp.me.postAjax(tmp.me.getCallbackId('updateOrder'), {'items': tmp.data, 'order': tmp.me._order, 'for': 'purchasing'}, {
-						'onLoading': function(sender, param) {
-							jQuery('#' + tmp.btn.id).button('loading');
-						},
-						'onSuccess': function(sender, param) {
-							try {
-								tmp.result = tmp.me.getResp(param, false, true);
-								if(!tmp.result)
-									return;
-								alert('Saved Successfully!');
-								window.location = document.URL;
-							} catch (e) {
-								alert(e);
-							}
-						},
-						'onComplete': function(sender, param) {
-							jQuery('#' + tmp.btn.id).button('reset');
-						}
-					});
+		return new Element('div', {'class': 'row'})
+			.insert({'bottom': new Element('span', {'class': 'col-xs-7', 'title': 'Notify Customer?'})
+				.insert({'bottom': new Element('label', {'for': 'notify-customer-purchasing'}).update('Notify Cust.?') })
+				.insert({'bottom': tmp.notifyCustBox = new Element('input', {'type': 'checkbox', 'id': 'notify-customer-purchasing'}) })
+			})
+			.insert({'bottom': new Element('span', {'class': 'col-xs-5', 'title': 'Notify Customer?'})
+				.insert({'bottom': new Element('span', {'class': 'btn btn-primary', 'data-loading-text': 'Saving...'})
+					.update('submit')
+					.observe('click', function() {
+						tmp.btn = this;
+						tmp.me._signRandID(tmp.btn);
+						tmp.data = tmp.me._collectData('update_order_item_purchase', 'order_item_id');
+						if(tmp.data === null)
+							return;
+						tmp.me._updateOrderItems(tmp.btn, tmp.data, tmp.me._commentsDiv.types.purchasing, tmp.notifyCustBox.checked);
+					})
+				})
+			});
+	}
+	/**
+	 * Getting the warehouse submit btns
+	 */
+	,_getWHBtns: function() {
+		var tmp = {};
+		tmp.me = this;
+		if(tmp.me._editMode.warehouse === false || tmp.me.orderStatusIds.warehouseCanEdit.indexOf(tmp.me._order.status.id * 1) < 0)
+			return '';
+		
+		return new Element('div', {'class': 'row'})
+				.insert({'bottom': new Element('span', {'class': 'col-xs-7', 'title': 'Notify Customer?'})
+				.insert({'bottom': new Element('label', {'for': 'notify-customer-purchasing'}).update('Notify Cust.?') })
+				.insert({'bottom': tmp.notifyCustBox = new Element('input', {'type': 'checkbox', 'id': 'notify-customer-purchasing'}) })
+			})
+			.insert({'bottom': new Element('span', {'class': 'col-xs-5', 'title': 'Notify Customer?'})
+				.insert({'bottom': new Element('span', {'class': 'btn btn-primary', 'data-loading-text': 'Saving...'})
+					.update('submit')
+					.observe('click', function() {
+						tmp.btn = this;
+						tmp.data = tmp.me._collectData('update_order_item_warehouse', 'order_item_id');
+						if(tmp.data === null)
+							return; 
+						tmp.me._updateOrderItems(tmp.btn, tmp.data, tmp.me._commentsDiv.types.warehouse, tmp.notifyCustBox.checked);
+					})
 				})
 			});
 	}
@@ -721,6 +860,67 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			.insert({'bottom': tmp.shipmentListDiv });
 	}
 	/**
+	 * Ajax: change Order Status
+	 */
+	,_changeOrderStatus: function(selBox) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.msg = 'About to change the status of this order?\n Continue?';
+		if(confirm(tmp.msg)) {
+			tmp.comments = '';
+			while(tmp.comments !== null && tmp.comments.blank()) {
+				tmp.comments = window.prompt("Please Type in the reason for changing:");
+			}
+			//user has cancelled the input
+			if(tmp.comments === null) {
+				$(selBox).replace(tmp.me._getOrderStatus());
+				return this;
+			}
+			
+			tmp.me.postAjax(tmp.me.getCallbackId('changeOrderStatus'), {'order': tmp.me._order, 'orderStatusId': $F(selBox), 'comments': tmp.comments}, {
+				'onLoading': function (sender, param) { 
+					$(selBox).disabled = true; 
+				}
+				,'onSuccess': function (sender, param) {
+					try {
+						tmp.result = tmp.me.getResp(param, false, true);
+						alert('Saved Successfully!');
+						window.location = document.URL;
+					} catch (e) {
+						alert(e);
+						$(selBox).disabled = false;
+						$(selBox).replace(tmp.me._getOrderStatus());
+					}
+				}
+				,'onComplete': function(sender, param) {
+				}
+			});
+			return this;
+		}
+		$(selBox).replace(tmp.me._getOrderStatus());
+		return this;
+	}
+	/**
+	 * Getting the order status dropdown list
+	 */
+	,_getOrderStatus: function () {
+		var tmp = {}
+		tmp.me = this;
+		if(tmp.me._editMode.status !== true)
+			return tmp.me._order.status.name;
+		tmp.selBox = new Element('select')
+			.observe('change', function(){
+				tmp.me._changeOrderStatus(this);
+			});
+		tmp.me._orderStatuses.each(function(status) {
+			tmp.opt = new Element('option', {'value': status.id}).update(status.name);
+			if(status.id === tmp.me._order.status.id)
+				tmp.opt.writeAttribute('selected', true);
+			tmp.selBox.insert({'bottom':  tmp.opt});
+		})
+		return tmp.selBox;
+	}
+	/**
 	 * Getting the address panel
 	 */
 	,_getAddressPanel: function() {
@@ -818,63 +1018,67 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 	,_getPaymentRow: function() {
 		var tmp = {};
 		tmp.me = this;
-		if(tmp.me._editMode.accounting !== true) {
+		if(tmp.me._editMode.accounting !== true)
 			return '';
-		}
-		
-		tmp.clearConfirmPanel = function(inputBox) {
-			$(inputBox).up('.panel_row_confirm_panel').getElementsBySelector('.after_select_method').each(function(item) { item.remove(); })
-		}
-		tmp.selBox = new Element('select', {'class': 'input-sm', 'payment_field': 'payment_method_id'})
-			.insert({'bottom': new Element('option', {'value': ''}).update('')  })
-			.observe('change', function() {
-				tmp.clearConfirmPanel(this);
-				$(this).up('.panel_row_confirm_panel').down('[payment_field=paidAmount]').select();
-			})
-		tmp.me._paymentMethods.each(function(item) {
-			tmp.selBox.insert({'bottom': new Element('option', {'value': item.id}).update(item.name) });
-		});
 		
 		tmp.paymentDiv = new Element('div', {"class": 'panel panel-default payment_row_panel'})
 			.insert({'bottom': new Element('div', {"class": 'panel-heading'}).update('Payments') })
-			.insert({'bottom': new Element('div', {"class": 'panel-body panel_row_confirm_panel'})
-				.insert({'bottom': new Element('div', {"class": 'row'})
-					.insert({'bottom': new Element('div', {"class": 'col-xs-6 col-sm-2'})
-						.insert({'bottom': tmp.me._getFormGroup('Method:', tmp.selBox) })
+			.insert({'bottom': tmp.paymentDivBody = new Element('div', {"class": 'panel-body panel_row_confirm_panel'}) });
+		
+		tmp.clearConfirmPanel = function(paymentMethodBox, paidMountBox) {
+			if($F(paidMountBox).blank() || tmp.me._currencyInputChanged(paidMountBox) !== true) {
+//				tmp.paymentDiv.getElementsBySelector('.after_select_method').each(function(item) { item.remove(); });
+//				tmp.me._markFormGroupError(paidMountBox, 'Invalid currency format provided!');
+				$(paidMountBox).select();
+				return;
+			}
+			//if paid amount is different from total amount 
+			tmp.paymentCheckBox = new Element('input', {'type': 'checkbox', 'class': 'input-sm', 'payment_field': 'paymentChecked'});
+			tmp.wrapperDiv = tmp.paymentDivBody.down('.row');
+			if(Math.abs(Math.abs(parseFloat(tmp.me.getValueFromCurrency($F(paidMountBox))).toFixed(2)) - Math.abs(parseFloat(tmp.me.getValueFromCurrency(tmp.me._order.totalAmount)).toFixed(2))) !== 0) {
+				tmp.wrapperDiv.insert({'bottom': new Element('div', {"class": 'after_select_method col-xs-12 col-sm-4'})
+						.insert({'bottom': tmp.me._getFormGroup('Comments:', new Element('input', {'type': 'text', 'class': 'after_select_method input-sm', 'payment_field': 'extraComments'}) ) })
 					})
-					.insert({'bottom': new Element('div', {"class": 'col-xs-6 col-sm-2'})
-						.insert({'bottom': tmp.me._getFormGroup('Paid:',new Element('input', {'type': 'text', 'payment_field': 'paidAmount', 'class': 'input-sm'})
-							.observe('change', function() {
-								if(tmp.me._currencyInputChanged(this) === false) {
-									return;
-								}
-								tmp.clearConfirmPanel(this); //clear all after_select_method
-								tmp.wrapperDiv = $(this).up('.panel_row_confirm_panel').down('.row');
-								tmp.paymentCheckBox = new Element('input', {'type': 'checkbox', 'class': 'input-sm', 'payment_field': 'paymentChecked'});
-								//if paid amount is different from total amount 
-								if(Math.abs(Math.abs(parseFloat(tmp.me.getValueFromCurrency($F(this))).toFixed(2)) - Math.abs(parseFloat(tmp.me.getValueFromCurrency(tmp.me._order.totalAmount)).toFixed(2))) !== 0) {
-									tmp.wrapperDiv.insert({'bottom': new Element('div', {"class": 'after_select_method col-xs-12 col-sm-4'})
-										.insert({'bottom': tmp.me._getFormGroup('Comments:', new Element('input', {'type': 'text', 'class': 'after_select_method input-sm', 'payment_field': 'extraComments'}) ) })
-									})
-									.insert({'bottom': new Element('div', {"class": 'after_select_method col-xs-6 col-sm-2'})
-										.insert({'bottom': tmp.me._getFormGroup('Pass?', tmp.paymentCheckBox.show() ) })
-									})
-								} else {
-									tmp.wrapperDiv.insert({'bottom': tmp.paymentCheckBox.hide().addClassName('after_select_method').writeAttribute('checked', true) })
-								}
-								tmp.wrapperDiv.insert({'bottom': new Element('div', {"class": 'after_select_method col-xs-6 col-sm-2'})
-									.insert({'bottom': new Element('span', {'class': 'btn btn-primary after_select_method'}).update('Confirm') 
-										.observe('click', function(){
-											tmp.me._submitPaymentConfirmation(this);
-										}) 
-									}) 
-								});
-							})
-						) })
+					.insert({'bottom': new Element('div', {"class": 'after_select_method col-xs-6 col-sm-2'})
+						.insert({'bottom': tmp.me._getFormGroup('Pass?', tmp.paymentCheckBox.show() ) })
 					})
-				})
+			} else {
+				tmp.paymentDiv.getElementsBySelector('.after_select_method').each(function(item) { item.remove(); });
+				tmp.wrapperDiv.insert({'bottom': tmp.paymentCheckBox.hide().addClassName('after_select_method').writeAttribute('checked', true) })
+			}
+			tmp.wrapperDiv.insert({'bottom': new Element('div', {"class": 'after_select_method col-xs-6 col-sm-2'})
+				.insert({'bottom': new Element('span', {'class': 'btn btn-primary after_select_method'}).update('Confirm') 
+					.observe('click', function(){
+						tmp.me._submitPaymentConfirmation(this);
+					}) 
+				}) 
+			});
+		}
+		
+		//getting the Payment method selection box
+		tmp.selBox = new Element('select', {'class': 'input-sm', 'payment_field': 'payment_method_id'})
+			.insert({'bottom': new Element('option', {'value': ''}).update('')  })
+			.observe('change', function() {
+				tmp.clearConfirmPanel(this, tmp.paymentDiv.down('[payment_field=paidAmount]'));
+			});
+		tmp.me._paymentMethods.each(function(item) {
+			tmp.selBox.insert({'bottom': new Element('option', {'value': item.id}).update(item.name) });
+		});
+		//getting the paidbox
+		tmp.paidBox = new Element('input', {'type': 'text', 'payment_field': 'paidAmount', 'class': 'input-sm'})
+			.observe('change', function() {
+				tmp.clearConfirmPanel(tmp.selBox, this); //clear all after_select_method
+			});
+		
+		//insert the content
+		tmp.paymentDivBody.insert({'bottom': new Element('div', {"class": 'row'})
+			.insert({'bottom': new Element('div', {"class": 'col-xs-6 col-sm-2'})
+				.insert({'bottom': tmp.me._getFormGroup('Method:', tmp.selBox) })
 			})
-		;
+			.insert({'bottom': new Element('div', {"class": 'col-xs-6 col-sm-2'})
+				.insert({'bottom': tmp.me._getFormGroup('Paid:', tmp.paidBox) })
+			})
+		});
 		return tmp.paymentDiv;
 	}	
 	/**
@@ -913,22 +1117,37 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			new Prado.WebUI.TDatePicker({'ID': item.id, 'InputMode':"TextBox",'Format':"yyyy-MM-dd 17:00:00",'FirstDayOfWeek':1,'CalendarStyle':"default",'FromYear':2009,'UpToYear':2024,'PositionMode':"Bottom"});
 		});
 		jQuery('.popover-comments').click(function(){
-			tmp.item = jQuery(this);
-//			if(jQuery(this).data('popover') === null) {
+			tmp.me._signRandID($(this));
+			tmp.item = jQuery(this).removeAttr('title').addClass('visible-lg visible-md visible-sm visible-xs');
+			if(!tmp.item.hasClass('popover-loaded')) {
 				jQuery.ajax({
 					type: 'GET',
 					dataType: "json",
 					url: '/ajax/getComments',
 					data: {'entity': 'OrderItem', 'entityId': tmp.item.attr('comments-entity-Id'), 'type': tmp.item.attr('comments-type') },
-					success: function(d) {
-						jQuery(this).popover({
-							'title': 'comments',
+					success: function(result) {
+						tmp.newDiv = 'N/A';
+						if(result.items && result.items.length > 0) {
+							tmp.newDiv = '<div class="list-group">';
+							jQuery.each(result.items, function(index, comments) {
+								tmp.newDiv += '<div class="list-group-item">';
+									tmp.newDiv += '<span class="badge">' + comments.type + '</span>';
+									tmp.newDiv += '<strong class="list-group-item-heading"><small>' + comments.createdBy.person.fullname + '</small></strong>: ';
+									tmp.newDiv += '<p><small><em> @ ' + comments.created + '</em></small><br /><small>' + comments.comments + '</small></p>';
+								tmp.newDiv += '</div>';
+							})
+							tmp.newDiv += '</div>';
+						}
+						tmp.item.popover({
 							'html': true,
-							'content': 'test'
+							'placement': 'left',
+							'title': '<div class="row" style="min-width: 200px;"><div class="col-xs-10">Comments:</div><div class="col-xs-2"><a class="pull-right" href="javascript:void(0);" onclick="jQuery(' + "'#" + tmp.item.attr('id') + "'" + ').popover(' + "'hide'" + ');"><strong>&times;</strong></a></div></div>',
+							'content': tmp.newDiv
 						}).popover('show');
+						tmp.item.addClass('popover-loaded');
 					}
 				})
-//			}
+			}
 		});
 //			._getLatestPaymentMethod();
 		return tmp.me;
@@ -966,172 +1185,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		return tmp.selBox;
 	}
 	
-	,_changeIsOrdered: function(btn, orderItem) {
-		var tmp = {};
-		tmp.me = this;
-		tmp.isOrdered = $(btn).checked;
-		if(!confirm('You are going to change this order item to be: ' + (tmp.isOrdered === true ? 'ORDERED' : 'NOT ORDERED') ))
-			return false;
-		tmp.me.postAjax(tmp.me.getCallbackId('changeIsOrdered'), {'item_id': orderItem.id, 'isOrdered': tmp.isOrdered}, {
-			'onLoading': function (sender, param) {}
-			,'onSuccess': function(sender, param) {
-				try {
-					tmp.result = tmp.me.getResp(param, false, true);
-					if(!tmp.result)
-						return;
-					alert('IsOrdered flag changed Successfully!');
-					window.location = document.URL;
-				} catch (e) {
-					alert(e);
-				}
-			}
-			,'onComplete': function(sender, param) {}
-		});
-		return true;
-	}
 	
-	,_getWarehouseCell: function(orderItem) {
-		var tmp = {};
-		tmp.me = this;
-		if(tmp.me._editMode.warehouse === false || tmp.me._order.status.id * 1 === tmp.me.order_status_picked) {
-			return new Element('div', {'class': 'order_item_details'})
-				.insert({'bottom': tmp.me._getfieldDiv('Picked?: ', orderItem.isPicked ? 'Y' : 'N') })
-				.insert({'bottom': tmp.me._getfieldDiv('Comments: ', 'show'	)
-				});
-		}
-		tmp.func = function() {
-			//remove error msg
-			$(this).up('.cell').getElementsBySelector('.msgDiv').each(function(msg){
-				msg.remove();
-			});
-			
-			if($F(this) === 'N') {
-				$(this).up('.operationDiv').update(new Element('div')
-					.insert({'bottom': tmp.me._getfieldDiv('Comments: ', new Element('input', {'pick_order_item': 'comments', 'placeholder': 'The reason'})) })
-					.insert({'bottom': new Element('a', {'href': 'javascript: void(0);'}).update('cancel')
-						.observe('click', function() {
-							$(this).up('.operationDiv').update(tmp.me._getHasStockSel('Is Picked?', '', tmp.func));
-						})
-					})
-					.insert({'bottom': new Element('input', {'type': 'hidden', 'pick_order_item': 'isPicked', 'value': $F(this)}) })
-				);
-			} else {
-				$(this).up('.operationDiv').insert({'bottom': new Element('input', {'type': 'hidden', 'pick_order_item': 'isPicked', 'value': $F(this)}) });
-			}
-		};
-		return tmp.me._getHasStockSel('Is Picked?', '', tmp.func).wrap(new Element('div', {'class': 'operationDiv'}));
-	}
-	
-	,_changeOrderStatus: function(selBox) {
-		var tmp = {};
-		tmp.me = this;
-		tmp.msg = 'About to change the status of this order?\n Continue?';
-		if(confirm(tmp.msg)) {
-			tmp.comments = '';
-			while(tmp.comments !== null && tmp.comments.blank()) {
-				tmp.comments = window.prompt("Please Type in the reason for changing:");
-			}
-			//user has cancelled the input
-			if(tmp.comments === null) {
-				$(selBox).replace(tmp.me._getOrderStatus());
-				return this;
-			}
-			
-			tmp.me.postAjax(tmp.me.getCallbackId('changeOrderStatus'), {'order': tmp.me._order, 'orderStatusId': $F(selBox), 'comments': tmp.comments}, {
-				'onLoading': function (sender, param) { 
-					$(selBox).disabled = true; 
-				}
-				,'onSuccess': function (sender, param) {
-					try {
-						tmp.result = tmp.me.getResp(param, false, true);
-						alert('Saved Successfully!');
-						window.location = document.URL;
-					} catch (e) {
-						alert(e);
-						$(selBox).disabled = false;
-						$(selBox).replace(tmp.me._getOrderStatus());
-					}
-				}
-				,'onComplete': function(sender, param) {
-				}
-			});
-			return this;
-		}
-		$(selBox).replace(tmp.me._getOrderStatus());
-		return this;
-	}
-	
-	,_getWHBtns: function() {
-		var tmp = {};
-		tmp.me = this;
-		if(tmp.me._editMode.warehouse === false || tmp.me._order.status.id * 1 === tmp.me.order_status_picked)
-			return '';
-		
-		return new Element('div')
-			.insert({'bottom': new Element('span', {'class': 'button'})
-				.update('submit')
-				.observe('click', function() {
-					tmp.btn = this;
-					tmp.data = tmp.me._collectData('warehouse', 'pick_order_item');
-					if(tmp.data === null) {
-						alert('Error Occurred, pls scroll up to see details!');
-						return;
-					} 
-					
-					//check all mandatory fields
-					tmp.hasError = false;
-					tmp.finalOrderItemArray = [];
-					tmp.data.each(function(item) {
-						if(item.warehouse.isPicked === 'N' && (!item.warehouse.comments || item.warehouse.comments === null || item.warehouse.comments.strip() === '')) {
-							alert('Error Occurred, pls scroll up to see details!');
-							tmp.hasError = true;
-							return;
-						}
-						tmp.finalOrderItemArray.push(item);
-					});
-					if(tmp.hasError === true)
-						return;
-					
-					tmp.me.postAjax(tmp.me.getCallbackId('updateOIForWH'), {'orderItems': tmp.finalOrderItemArray, 'order': tmp.me._order}, {
-						'onLoading': function (sender, param) {
-							tmp.btn.addClassName('disabled').update('Saving ...');
-						}
-						,'onSuccess': function (sender, param) {
-							try {
-								tmp.result = tmp.me.getResp(param, false, true);
-								if(!tmp.result)
-									return;
-								alert('Saved Successfully!');
-								window.location = document.URL;
-							} catch (e) {
-								alert(e);
-							}
-						},
-						'onComplete': function(sender, param) {
-							if(tmp.btn)
-								tmp.btn.removeClassName('disabled').update('submit');
-						}
-					});							
-				})
-			});
-	}
-	,_getOrderStatus: function () {
-		var tmp = {}
-		tmp.me = this;
-		if(tmp.me._editMode.status !== true)
-			return tmp.me._order.status.name;
-		tmp.selBox = new Element('select')
-			.observe('change', function(){
-				tmp.me._changeOrderStatus(this);
-			});
-		tmp.me._orderStatuses.each(function(status) {
-			tmp.opt = new Element('option', {'value': status.id}).update(status.name);
-			if(status.id === tmp.me._order.status.id)
-				tmp.opt.writeAttribute('selected', true);
-			tmp.selBox.insert({'bottom':  tmp.opt});
-		})
-		return tmp.selBox;
-	}
 	
 	/// this function generates a select box populating all the courier infos ///
 	,_getCourierList: function () {
