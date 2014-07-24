@@ -84,7 +84,9 @@ BPCPageJs.prototype = {
 	 * Getting the absolute value from currency
 	 */
 	,getValueFromCurrency: function(currency) {
-		return currency.replace(' ', '').replace('$', '').replace(',', '');
+		if(!currency)
+			return '';
+		return currency.replace(/\s*/g, '').replace(/\$/g, '').replace(/,/g, '');
 	}
 	//do key enter
 	,keydown: function (event, enterFunc, nFunc) {

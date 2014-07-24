@@ -45,6 +45,7 @@ class OrderDetailsController extends BPCPageAbstract
 		$orderStatuses = array_map(create_function('$a', 'return $a->getJson();'), OrderStatus::findAll());
 		$courierArray = array_map(create_function('$a', 'return $a->getJson();'), Courier::findAll());
 		$paymentMethodArray = array_map(create_function('$a', 'return $a->getJson();'), PaymentMethod::findAll());
+		$payments = array_map(create_function('$a', 'return $a->getJson();'), $order->getPayments());
 		$js .= 'pageJs';
 			$js .= '.setCallbackId("updateOrder", "' . $this->updateOrderBtn->getUniqueID() . '")';
 			$js .= '.setCallbackId("addComments", "' . $this->addCommentsBtn->getUniqueID() . '")';
@@ -61,6 +62,7 @@ class OrderDetailsController extends BPCPageAbstract
 			$js .= '.setPaymentMethods('. json_encode($paymentMethodArray) . ')';
 			$js .= '.setCommentType("'. Comments::TYPE_PURCHASING . '", "' . Comments::TYPE_WAREHOUSE . '")';
 			$js .= '.setOrderStatusIds(['. OrderStatus::ID_NEW . ', ' . OrderStatus::ID_INSUFFICIENT_STOCK . '], ['. OrderStatus::ID_ETA . ', ' . OrderStatus::ID_STOCK_CHECKED_BY_PURCHASING . '])';
+			$js .= '.setPayments('. json_encode($payments) . ')';
 			$js .= '.init("detailswrapper")';
 			$js .= '.load();';
 		return $js;
@@ -252,53 +254,61 @@ class OrderDetailsController extends BPCPageAbstract
 	public function confirmPayment($sender, $params)
 	{
 		$results = $errors = array();
-		$commentString = "";
-		
 		try 
 		{
-			Dao::beginTransaction();
+			Dao::beginTransaction(); 
 			if(!isset($params->CallbackParameter->order) || !($order = Order::get($params->CallbackParameter->order->orderNo)) instanceof Order)
 				throw new Exception('System Error: invalid order passed in!');
-			if(!isset($params->CallbackParameter->paidAmt) || ($paidAmount = trim($params->CallbackParameter->paidAmt)) === '' || !is_numeric($paidAmount))
+			if(!isset($params->CallbackParameter->payment) || !isset($params->CallbackParameter->payment->paidAmount) || ($paidAmount = StringUtilsAbstract::getValueFromCurrency(trim($params->CallbackParameter->payment->paidAmount))) === '' || !is_numeric($paidAmount))
 				throw new Exception('System Error: invalid Paid Amount passed in!');
-			if(!isset($params->CallbackParameter->paymentMethod) || ($paymentMethodId = trim($params->CallbackParameter->paymentMethod)) === '' || !($paymentMethod = FactoryAbastract::dao('PaymentMethod')->findById($paymentMethodId)) instanceof PaymentMethod)
+			if(!isset($params->CallbackParameter->payment->payment_method_id) || ($paymentMethodId = trim($params->CallbackParameter->payment->payment_method_id)) === '' || !($paymentMethod = FactoryAbastract::dao('PaymentMethod')->findById($paymentMethodId)) instanceof PaymentMethod)
 				throw new Exception('System Error: invalid Payment Method passed in!');
-			if(!isset($params->CallbackParameter->amtDiff) || ($amountDiff = trim($params->CallbackParameter->amtDiff)) === '' || !is_numeric($amountDiff))
-				throw new Exception('System Error: Invalid Amount Difference passed in!');
-			if(!isset($params->CallbackParameter->extraComment))
+			if(!isset($params->CallbackParameter->payment->extraComments))
 				throw new Exception('System Error: Invalid Extra Comment passed in!');
-			if(($extraComment = trim($params->CallbackParameter->extraComment)) === '' && $amountDiff !== '0')
-				throw new Exception('Additional Comment is Mandatory as the Paid Amount is not mathcing with the Total Amount!');
-			
+			$amtDiff = trim(abs(StringUtilsAbstract::getValueFromCurrency($order->getTotalAmount()) - $paidAmount));
+			if(($extraComment = trim($params->CallbackParameter->payment->extraComments)) === '' && $amtDiff !== '0') 
+				throw new Exception('Additional Comment is Mandatory as the Paid Amount is not mathcing with the Total Amount!'); 
+			$notifyCust = (isset($params->CallbackParameter->payment->extraComments) && intval($params->CallbackParameter->payment->notifyCust) === 1) ? true : false;
+			//save the payment
 			$payment = new Payment();
 			$payment->setOrder($order);
 			$payment->setMethod($paymentMethod);
 			$payment->setValue($paidAmount);
 			$payment->setActive(true);
 			FactoryAbastract::dao('Payment')->save($payment);
-			
- 			$order->setTotalPaid($paidAmount);
+			//update the order
+			$totalPaidAmount = 0;
+			foreach($order->getPayments() as $payment)
+				$totalPaidAmount = $totalPaidAmount * 1 + $payment->getValue() * 1;
+ 			$order->setTotalPaid($totalPaidAmount);
  			$order->setPassPaymentCheck(true);
  			FactoryAbastract::service('Order')->save($order);
-			
-			$commentString = "Total Amount Due was $" . number_format($order->getTotalAmount(), 2, '.', ',') . ". And total amount paid is $" . number_format($paidAmount, 2, '.', ',') . ". Payment Method is " . $paymentMethod->getName();
-			if(($amtDiff = $order->getTotalAmount() - $paidAmount) === 0)
-				$commentString = "Amount is fully paid.".$commentString.". Payment method is ".$paymentMethod->getName();
-			$commentString = '['.$commentString.']'.($extraComment !== '' ? ' : '.$extraComment : '');
-			
-			$comment = Comments::addComments($order, $commentString, Comments::TYPE_ACCOUNTING);
+			//add the comments
+			$commentString = "Total Amount Due was " . StringUtilsAbstract::getCurrency($order->getTotalAmount()) . ". And total amount paid is " . StringUtilsAbstract::getCurrency($paidAmount) . ". Payment Method is " . $paymentMethod->getName();
+			if($amtDiff === '0')
+				$commentString = "Amount is fully paid." . $commentString . ". Payment method is " . $paymentMethod->getName();
+			$commentString .= '[' . $commentString . ']' . ($extraComment !== '' ? ' : '.$extraComment : '');
+			Comments::addComments($order, $commentString, Comments::TYPE_ACCOUNTING);
+			Comments::addComments($payment, $commentString, Comments::TYPE_ACCOUNTING);
 			
 			//notify the customer
-			$notificationMsg = trim(OrderNotificationTemplateControl::getMessage('paid', $order));
-			if($notificationMsg !== '')
+			if($notifyCust === true)
 			{
-				B2BConnector::getConnector(B2BConnector::CONNECTOR_TYPE_ORDER,
-					SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_WSDL),
-					SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_USER),
-					SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_KEY)
-					)->changeOrderStatus($order, FactoryAbastract::service('OrderStatus')->get(OrderStatus::ID_PICKED)->getMageStatus(), $notificationMsg, true);
-				$order->addComment('An email notification contains payment checked info has been sent to customer for: ' . $order->getStatus()->getName(), Comments::TYPE_SYSTEM);
+				$notificationMsg = trim(OrderNotificationTemplateControl::getMessage('paid', $order));
+				if($notificationMsg !== '')
+				{
+					B2BConnector::getConnector(B2BConnector::CONNECTOR_TYPE_ORDER,
+						SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_WSDL),
+						SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_USER),
+						SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_KEY)
+						)->changeOrderStatus($order, FactoryAbastract::service('OrderStatus')->get(OrderStatus::ID_PICKED)->getMageStatus(), $notificationMsg, true);
+					$comments = 'An email notification contains payment checked info has been sent to customer for: ' . $order->getStatus()->getName();
+					Comments::addComments($order, $comments, Comments::TYPE_SYSTEM);
+					Comments::addComments($payment, $comments, Comments::TYPE_SYSTEM);
+				}
 			}
+			
+			$results['item'] = $payment->getJson();
 			Dao::commitTransaction();
 		}
 		catch(Exception $ex)

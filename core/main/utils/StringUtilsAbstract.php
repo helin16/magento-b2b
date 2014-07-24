@@ -33,4 +33,26 @@ abstract class StringUtilsAbstract
 	{
 		return $preFix . trim(md5($salt . Core::getUser() . trim(new UDate())));
 	}
+	/**
+	 * getting the value from currency string
+	 * 
+	 * @param string $currencyValue The currency string
+	 * 
+	 * @return double
+	 */
+	public static function getValueFromCurrency($currencyValue)
+	{
+		return str_replace('$', '', str_replace(',', '', str_replace(' ', '', trim($currencyValue))));
+	}
+	/**
+	 * format the value into currency
+	 * 
+	 * @param string $currencyValue The currency string
+	 * 
+	 * @return double
+	 */
+	public static function getCurrency($currencyValue, $prefix = '$', $decimal = '.', $thousand = ',')
+	{
+		return $prefix . number_format($currencyValue, 2, $decimal, $thousand);
+	}
 }

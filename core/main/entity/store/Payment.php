@@ -86,7 +86,10 @@ class Payment extends BaseEntityAbstract
 	{
 		$array = array();
 		if(!$this->isJsonLoaded($reset))
+		{
 			$array['method'] = $this->getMethod()->getJson();
+			$array['createdBy'] = $this->getCreatedBy()->getJson();
+		}
 		return parent::getJson($array, $reset);
 	}
 	

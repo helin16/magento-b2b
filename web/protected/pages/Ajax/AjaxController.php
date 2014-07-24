@@ -22,15 +22,16 @@ class AjaxController extends TService
   		if(!isset($this->Request['method']) || ($method = trim($this->Request['method'])) === '' || !method_exists($this, ($method = '_' .$method)))
   			die (BPCPageAbstract::show404Page('Invalid request',"No method passed in."));
   		
+  		$content = '';
 		try
 		{
-			echo $this->$method($_REQUEST);
+			$content .= $this->$method($_REQUEST);
 		} 
 		catch (Exception $ex)
 		{
-			echo $ex->getMessage();
+			$content .= $ex->getMessage();
 		}
-		die();
+		$this->getResponse()->write($content);
   	}
 	/**
 	 * Getting the comments for an entity
