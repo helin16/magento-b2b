@@ -61,7 +61,7 @@ class OrderDetailsController extends BPCPageAbstract
 			$js .= '.setCourier('. json_encode($courierArray) . ')';
 			$js .= '.setPaymentMethods('. json_encode($paymentMethodArray) . ')';
 			$js .= '.setCommentType("'. Comments::TYPE_PURCHASING . '", "' . Comments::TYPE_WAREHOUSE . '")';
-			$js .= '.setOrderStatusIds(['. OrderStatus::ID_NEW . ', ' . OrderStatus::ID_INSUFFICIENT_STOCK . '], ['. OrderStatus::ID_ETA . ', ' . OrderStatus::ID_STOCK_CHECKED_BY_PURCHASING . '])';
+			$js .= '.setOrderStatusIds(['. OrderStatus::ID_NEW . ', ' . OrderStatus::ID_INSUFFICIENT_STOCK . '], ['. OrderStatus::ID_ETA . ', ' . OrderStatus::ID_STOCK_CHECKED_BY_PURCHASING . '], ['. OrderStatus::ID_PICKED . '])';
 			$js .= '.setPayments('. json_encode($payments) . ')';
 			$js .= '.init("detailswrapper")';
 			$js .= '.load();';
@@ -92,6 +92,7 @@ class OrderDetailsController extends BPCPageAbstract
 			{
 				if(!($orderItem = FactoryAbastract::service('OrderItem')->get($orderItemId)) instanceof OrderItem)
 					throw new Exception ("System Error: invalid order item(ID=" . $orderItemId . ')');
+				$commentString = "";
 				$sku = $orderItem->getProduct()->getSku();
 				$comments = isset($obj->comments) ? trim($obj->comments) : '';
 				if($for === Comments::TYPE_PURCHASING) //purchasing
@@ -100,6 +101,7 @@ class OrderDetailsController extends BPCPageAbstract
 					{
 						$orderItem->setIsOrdered(false);
 						$orderItem->setEta(trim(UDate::zeroDate()));
+						$commentString = 'product(SKU=' . $sku .') marked as in stock';
 					}
 					else
 					{
@@ -114,8 +116,7 @@ class OrderDetailsController extends BPCPageAbstract
 						$orderItem->setIsOrdered(trim($obj->isOrdered) === '1');
 						if($comments !== '')
 						{
-							$order->addComment('Added ETA[' . $eta . '] for product(SKU=' . $sku .'): ' . $comments, $commentType);
-							$orderItem->addComment($comments, $commentType);
+							$commentString = 'Added ETA[' . $eta . '] for product(SKU=' . $sku .'): ' . $comments;
 						}
 						$hasETA = true;
 					}
@@ -123,24 +124,24 @@ class OrderDetailsController extends BPCPageAbstract
 				}
 				else if ($for === Comments::TYPE_WAREHOUSE) //warehouse
 				{
-					if(isset($obj->isPicked))
+					$picked = (trim($obj->isPicked) === '1') ? true : false;
+					$orderItem->setIsPicked($picked);
+					$commentString = ($picked ? '' : 'NOT ') . 'Picked product(SKU=' . $sku .'): ' . $comments;
+					if($picked === true) //clear ETA
 					{
-						$picked = (trim($obj->isPicked) === '1');
-						$orderItem->setIsPicked($picked);
-						$order->addComment(($picked ? '' : 'NOT ') . 'Picked product(SKU=' . $sku .'): ' . $comments, $commentType);
-						$orderItem->addComment($comments, $commentType);
-						if($picked === true) //clear ETA
-						{
-							$orderItem->setIsOrdered(false);
-							$orderItem->setEta(trim(UDate::zeroDate()));
-						}
-						else
-						{
-							$orderItem->setEta('');
-							$allPicked = false;
-						}
+						$orderItem->setIsOrdered(false);
+						$orderItem->setEta(trim(UDate::zeroDate()));
+					}
+					else
+					{
+						$orderItem->setEta('');
+						$allPicked = false;
 					}
 				}
+				
+				$commentString .= ($notifyCustomer === true ? ' !!!NOTIFICATION SENT TO CUSTOMER!!! ' : '');
+				$order->addComment($commentString, $commentType);
+				$orderItem->addComment($commentString, $commentType);
 				FactoryAbastract::service('OrderItem')->save($orderItem);
 			}
 			
@@ -154,7 +155,7 @@ class OrderDetailsController extends BPCPageAbstract
 					$order->setStatus(OrderStatus::get(OrderStatus::ID_STOCK_CHECKED_BY_PURCHASING));
 				$order->addComment('Changed from [' . $status . '] to [' . $order->getStatus() . ']', Comments::TYPE_SYSTEM);
 			}
-			if($for === Comments::TYPE_WAREHOUSE)
+			else if($for === Comments::TYPE_WAREHOUSE)
 			{
 				if($allPicked === true)
 					$order->setStatus(OrderStatus::get(OrderStatus::ID_PICKED));
