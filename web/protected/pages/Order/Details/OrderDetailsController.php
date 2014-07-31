@@ -269,7 +269,7 @@ class OrderDetailsController extends BPCPageAbstract
 			$amtDiff = trim(abs(StringUtilsAbstract::getValueFromCurrency($order->getTotalAmount()) - $paidAmount));
 			if(($extraComment = trim($params->CallbackParameter->payment->extraComments)) === '' && $amtDiff !== '0') 
 				throw new Exception('Additional Comment is Mandatory as the Paid Amount is not mathcing with the Total Amount!'); 
-			$notifyCust = (isset($params->CallbackParameter->payment->extraComments) && intval($params->CallbackParameter->payment->notifyCust) === 1) ? true : false;
+			$notifyCust = (isset($params->CallbackParameter->payment->notifyCust) && intval($params->CallbackParameter->payment->notifyCust) === 1) ? true : false;
 			//save the payment
 			$payment = new Payment();
 			$payment->setOrder($order);
@@ -338,39 +338,35 @@ class OrderDetailsController extends BPCPageAbstract
 				throw new Exception('System Error: Order ['.$order->getOrderNo().'] Is Not is PICKED status. Current status is ['.($order->getStatus() instanceof OrderStatus ? $order->getStatus()->getName() : 'NULL').']');
 			if(!isset($params->CallbackParameter->shippingInfo))
 				throw new Exception('System Error: invalid Shipping Info Details passed in!');
-			$validColumns = array('courierId', 'contactNo', 'contactName', 'street', 'city', 'region', 'country', 'postCode', 'noOfCartons', 'conNoteNo', 'actualShippingCost', 'estShippingCost');
-			$shippingInfoArray = $params->CallbackParameter->shippingInfo;
-			foreach($validColumns as $col)
-			{
-				if(!isset($shippingInfoArray->$col))
-					throw new Exception('System Error: Incomplete Shipping Info Details(' . $col . ') provided!!!');
-			}
-			if(!($courier = FactoryAbastract::service('Courier')->get($shippingInfoArray->courierId)) instanceof Courier)
-				throw new Exception('Invalid Courier Id [' . $shippingInfoArray->courierId . '] provided');
+			$shippingInfo = $params->CallbackParameter->shippingInfo;
+			if(!($courier = FactoryAbastract::service('Courier')->get($shippingInfo->courierId)) instanceof Courier)
+				throw new Exception('Invalid Courier Id [' . $shippingInfo->courierId . '] provided');
+			$notifyCust = (isset($shippingInfo->notifyCust) && intval($shippingInfo->notifyCust) === 1) ? true : false;
+				
 			
-			$contactName = $shippingInfoArray->contactName;
-			$contactNo = $shippingInfoArray->contactNo;
+			$contactName = $shippingInfo->contactName;
+			$contactNo = $shippingInfo->contactNo;
 			$shippingAddress = Address::create(
-					trim($shippingInfoArray->street), 
-					trim($shippingInfoArray->city), 
-					trim($shippingInfoArray->region), 
-					trim($shippingInfoArray->country), 
-					trim($shippingInfoArray->postCode), 
-					trim($contactName[0]), 
-					trim($contactNo[0])
+					trim($shippingInfo->street), 
+					trim($shippingInfo->city), 
+					trim($shippingInfo->region), 
+					trim($shippingInfo->country), 
+					trim($shippingInfo->postCode), 
+					trim($contactName), 
+					trim($contactNo)
 			);
 			$shipment = Shippment::create(
 					$shippingAddress, 
 					$courier, 
-					trim($shippingInfoArray->conNoteNo), //$consignmentNo, 
-					new UDate("now"), 
-					$order, 
+					trim($shippingInfo->conNoteNo), //$consignmentNo, 
+					new UDate(), 
+					$order,
 					$contactName, 
 					trim($contactNo), // $contactNo = '' , 
-					trim($shippingInfoArray->noOfCartons), //$noOfCartons = 0, 
-					trim($shippingInfoArray->estShippingCost), //$estShippingCost = '0.00', 
-					trim($shippingInfoArray->actualShippingCost), //$actualShippingCost = '0.00', 
-					(isset($shippingInfoArray->deliveryInstructions) ? trim($shippingInfoArray->deliveryInstructions) : '') //$deliveryInstructions = ''
+					trim($shippingInfo->noOfCartons), //$noOfCartons = 0, 
+					'0', //$estShippingCost = '0.00',  //TODO:: need to fetch this from the order
+					trim($shippingInfo->actualShippingCost), //$actualShippingCost = '0.00', 
+					(isset($shippingInfo->deliveryInstructions) ? trim($shippingInfo->deliveryInstructions) : '') //$deliveryInstructions = ''
 			);
 			
 			$order->setStatus(FactoryAbastract::service('OrderStatus')->get(OrderStatus::ID_SHIPPED));
@@ -378,25 +374,28 @@ class OrderDetailsController extends BPCPageAbstract
 			$result['shipment'] = $shipment->getJson();
 			
 			//add shipment information
-// 			$templateName = (trim($shipment->getCourier()->getId()) === trim(Courier::ID_LOCAL_PICKUP) ? 'local_pickup' : $order->getStatus()->getName());
-// 			$notificationMsg = trim(OrderNotificationTemplateControl::getMessage($templateName, $order));
-// 			if($notificationMsg !== '')
-// 			{
-// 				B2BConnector::getConnector(B2BConnector::CONNECTOR_TYPE_SHIP,
-// 					SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_WSDL),
-// 					SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_USER),
-// 					SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_KEY)
-// 					)
-// 					->shipOrder($order, $shipment, array(), $notificationMsg, false, false);
-					
-// 				//push the status of the order to SHIPPed
-// 				B2BConnector::getConnector(B2BConnector::CONNECTOR_TYPE_ORDER,
-// 					SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_WSDL),
-// 					SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_USER),
-// 					SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_KEY)
-// 					)->changeOrderStatus($order, $order->getStatus()->getMageStatus(), $notificationMsg, true);
-// 				$order->addComment('An email notification contains shippment information has been sent to customer for: ' . $order->getStatus()->getName(), Comments::TYPE_SYSTEM);
-// 			}
+			if($notifyCust === true)
+			{
+				$templateName = (trim($shipment->getCourier()->getId()) === trim(Courier::ID_LOCAL_PICKUP) ? 'local_pickup' : $order->getStatus()->getName());
+				$notificationMsg = trim(OrderNotificationTemplateControl::getMessage($templateName, $order));
+				if($notificationMsg !== '')
+				{
+					B2BConnector::getConnector(B2BConnector::CONNECTOR_TYPE_SHIP,
+						SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_WSDL),
+						SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_USER),
+						SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_KEY)
+						)
+						->shipOrder($order, $shipment, array(), $notificationMsg, false, false);
+						
+					//push the status of the order to SHIPPed
+					B2BConnector::getConnector(B2BConnector::CONNECTOR_TYPE_ORDER,
+						SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_WSDL),
+						SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_USER),
+						SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_KEY)
+						)->changeOrderStatus($order, $order->getStatus()->getMageStatus(), $notificationMsg, true);
+					$order->addComment('An email notification contains shippment information has been sent to customer for: ' . $order->getStatus()->getName(), Comments::TYPE_SYSTEM);
+				}
+			}
 			Dao::commitTransaction();
 		}
 		catch(Exception $ex)

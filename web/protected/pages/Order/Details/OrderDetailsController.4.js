@@ -699,32 +699,10 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 	,_checkAndSubmitShippingOptions: function(button) {
 		var tmp = {};
 		tmp.me = this;
-		tmp.hasErr = false;
-		tmp.finalShippingDataArray = {};
 		tmp.shippingDiv = $(button).up('.save_shipping_panel');
 		//clear all error msgs
-		tmp.shippingDiv.getElementsBySelector('.alert.alert-danger.alert-dismissible').each(function(item) { item.remove(); });
-		//collect information
-		tmp.shippingDiv.getElementsBySelector('[save_shipping]').each(function(item) {
-			tmp.itemValue = $F(item).strip();
-			if(item.hasAttribute('required')) {	
-				if(tmp.itemValue.blank()) {
-					tmp.me._markFormGroupError(item, 'Required!');
-					tmp.hasErr = true;
-				}
-			}
-			
-			if (item.hasClassName('validate_number') ) {
-				if (tmp.me.getValueFromCurrency(tmp.itemValue).match(/^\d+(\.\d{1,2})?$/) === null) {
-					tmp.me._markFormGroupError(item, 'Invalid number provided!');
-					tmp.hasErr = true;
-				} else {
-					tmp.value = tmp.me.getValueFromCurrency(tmp.itemValue);
-				}
-			} 
-			tmp.finalShippingDataArray[item.readAttribute('save_shipping')] = tmp.itemValue;
-		});
-		if(tmp.hasErr === true)
+		tmp.finalShippingDataArray = tmp.me._collectData('save_shipping');
+		if(tmp.finalShippingDataArray === null)
 			return;
 		tmp.me.postAjax(tmp.me.getCallbackId('updateShippingInfo'), {'shippingInfo': tmp.finalShippingDataArray, 'order': tmp.me._order}, {
 			'onLoading': function (sender, param) {
@@ -738,7 +716,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					alert('Saved Successfully!');
 					window.location = document.URL;
 				} catch (e) {
-					$(button).insert({'before': tmp.me.getAlertBox('ERROR: ', e).addClassName('alert-danger') });
+					$(button).up('.row').insert({'bottom': tmp.me.getAlertBox('ERROR: ', e).addClassName('alert-danger col-xs-12') });
 				}
 			},
 			'onComplete': function(sender, param) {
@@ -778,7 +756,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		if(tmp.me._editMode.warehouse === false || tmp.me.orderStatusIds.canAddShipment.indexOf(tmp.me._order.status.id * 1) < 0)
 			return tmp.shipmentDiv;
 		
-		tmp.shipmentDivBody = new Element('div', {'class': 'panel-body'})
+		tmp.shipmentDivBody = new Element('div', {'class': 'panel-body save_shipping_panel'})
 		.insert({'bottom': new Element('div', {'class': 'row'})
 			.insert({'bottom': new Element('div', {'class': 'col-sm-2'})
 				.insert({'bottom': tmp.me._getFormGroup('Contact Name:', new Element('input', {'type': 'text', 'save_shipping': 'contactName', 'required': true, 'class': 'input-sm', 'value': tmp.me._order.address.shipping.contactName}) ) })
@@ -791,7 +769,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			})
 			.insert({'bottom': new Element('div', {'class': 'col-sm-2 bg-info'})
 				.insert({'bottom': tmp.me._getFormGroup('Carton(s):', 
-						new Element('input', {'type': 'number', 'required': true, 'save_shipping': 'noOfCartons', 'class': 'input-sm validate_number', 'value': '1'})
+						new Element('input', {'type': 'number', 'required': true, 'save_shipping': 'noOfCartons', 'class': 'input-sm', 'validate_number': 'Only accept whole number!'})
 						.observe('change', function() {
 							tmp.inputBox = this;
 							tmp.inputValue = $F(tmp.inputBox).strip();
@@ -799,7 +777,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 								tmp.me._markFormGroupError(tmp.inputBox, 'Only accept whole number!');
 								return false;
 							}
-							tmp.inputBox = tmp.inputValue
+							tmp.inputBox.value = tmp.inputValue;
 						})
 				) })
 			})
@@ -809,8 +787,11 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				})
 			})
 			.insert({'bottom': new Element('div', {'class': 'col-sm-2 bg-info'})
-				.insert({'bottom': tmp.me._getFormGroup('Cost($)', new Element('input', {'type': 'text', 'required': true, 'save_shipping': 'actualShippingCost', 'class': 'input-sm validate_currency'}) ) 
-					.writeAttribute('title', 'The actual cost of this shipping')
+				.insert({'bottom': tmp.me._getFormGroup('Cost($)', new Element('input', {'type': 'text', 'required': true, 'save_shipping': 'actualShippingCost', 'class': 'input-sm', 'validate_currency': 'Invalid currency provided'})
+					.observe('change', function() {
+						tmp.me._currencyInputChanged(this);
+					})
+				) .writeAttribute('title', 'The actual cost of this shipping')
 				})
 			})
 		})
@@ -833,10 +814,10 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		})
 		.insert({'bottom': new Element('div', {'class': 'row'}) 
 			.insert({'bottom': new Element('div', {'class': 'col-sm-8'})
-				.insert({'bottom': tmp.me._getFormGroup('Delivery Instruction:', new Element('textarea', {'save_shipping': 'deliveryInstructions', 'class': 'input-sm', 'rows': 1}) ) })
+				.insert({'bottom': tmp.me._getFormGroup('Delivery Instruction:', new Element('textarea', {'save_shipping': 'deliveryInstructions', 'class': 'input-sm', 'rows': 2}) ) })
 			})
-			.insert({'bottom': new Element('div', {'class': 'col-sm-8'})
-				.insert({'bottom': tmp.me._getFormGroup('Notify Cust?', new Element('textarea', {'save_shipping': 'deliveryInstructions', 'class': 'input-sm', 'rows': 1}) ) })
+			.insert({'bottom': new Element('div', {'class': 'col-sm-2'})
+				.insert({'bottom': tmp.me._getFormGroup('Notify Cust?', new Element('input', {'type': 'checkbox', 'save_shipping': 'notifyCust', 'class': 'input-sm'}) ) })
 			})
 			.insert({'bottom': new Element('div', {'class': 'col-sm-2'})
 				.insert({'bottom': tmp.me._getFormGroup('&nbsp;', new Element('span', {'id': 'shipping_save_btn', 'class': 'btn btn-primary', 'data-loading-text': 'Saving...'}).update('Save')
