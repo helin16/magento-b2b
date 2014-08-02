@@ -177,8 +177,8 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			.insert({'bottom': new Element('div').update('<span class="glyphicon glyphicon-shopping-cart" title="Order Date"></span>: ' + order.orderDate) })
 			.insert({'bottom': new Element('div').update('<strong>Shipping</strong>:') })
 			.insert({'bottom': new Element('div').update('<span class="glyphicon glyphicon-user" title="Customer Name"></span>: ' + order.address.shipping.contactName)	})
-			.insert({'bottom': new Element('div').update('<span class="glyphicon glyphicon-phone-alt" title="Phone"></span>: ' + order.address.contactNo)	})
-			.insert({'bottom': new Element('div').update('<span class="glyphicon glyphicon-map-marker" title="Address"></span>: ' + order.address.full)	})
+			.insert({'bottom': new Element('div').update('<span class="glyphicon glyphicon-phone-alt" title="Phone"></span>: ' + order.address.shipping.contactNo)	})
+			.insert({'bottom': new Element('div').update('<span class="glyphicon glyphicon-map-marker" title="Address"></span>: ' + order.address.shipping.full)	})
 			;
 	}
 	
