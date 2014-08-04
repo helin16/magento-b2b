@@ -264,10 +264,11 @@ class OrderDetailsController extends BPCPageAbstract
 				throw new Exception('System Error: invalid Paid Amount passed in!');
 			if(!isset($params->CallbackParameter->payment->payment_method_id) || ($paymentMethodId = trim($params->CallbackParameter->payment->payment_method_id)) === '' || !($paymentMethod = FactoryAbastract::dao('PaymentMethod')->findById($paymentMethodId)) instanceof PaymentMethod)
 				throw new Exception('System Error: invalid Payment Method passed in!');
-			if(!isset($params->CallbackParameter->payment->extraComments))
-				throw new Exception('System Error: Invalid Extra Comment passed in!');
+			$extraComment = '';
+			if(!isset($params->CallbackParameter->payment->extraComments) || ($extraComment = trim($params->CallbackParameter->payment->extraComments)) === '')
+				$extraComment = '';
 			$amtDiff = trim(abs(StringUtilsAbstract::getValueFromCurrency($order->getTotalAmount()) - $paidAmount));
-			if(($extraComment = trim($params->CallbackParameter->payment->extraComments)) === '' && $amtDiff !== '0') 
+			if($extraComment === '' && $amtDiff !== '0') 
 				throw new Exception('Additional Comment is Mandatory as the Paid Amount is not mathcing with the Total Amount!'); 
 			$notifyCust = (isset($params->CallbackParameter->payment->notifyCust) && intval($params->CallbackParameter->payment->notifyCust) === 1) ? true : false;
 			//save the payment
