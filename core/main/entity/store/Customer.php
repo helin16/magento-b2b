@@ -259,8 +259,8 @@ class Customer extends BaseEntityAbstract
 		$email = trim($email);
 		$isFromB2B = ($isFromB2B === true);
 		$class =__CLASS__;
-		$objects = FactoryAbastract::dao($class)->findByCriteria('name = ? and contactNo = ? and email = ?', array($name, $contactNo, $email), true, 1, 1, array() );
-		if(count($objects) > 0 )
+		$objects = FactoryAbastract::dao($class)->findByCriteria('email = ?', array($email), true, 1, 1, array() );
+		if(count($objects) > 0 && $email !== '')
 			$obj = $objects[0];
 		else
 			$obj = new $class();

@@ -54,6 +54,17 @@ class OrderConnector extends B2BConnector
 					$billingAddr = $o->getBillingAddr();
 					Log::logging(0, get_class($this), 'Found order from DB, ID = ' . $o->getId(), self::LOG_TYPE, '$index = ' . $index, __FUNCTION__);
 				}
+				
+				$customer = Customer::create(
+						isset($order->customer_firstname) ? trim($order->customer_firstname) . ' ' . trim($order->customer_lastname) : '', 
+						'', 
+						trim($order->customer_email), 
+						$this->_createAddr($order->shipping_address, $shippingAddr),
+						true,
+						'',
+						$this->_createAddr($order->billing_address, $billingAddr),
+						trim($order->customer_id)
+				);
 	
 				$o->setOrderNo(trim($order->increment_id))
 					->setOrderDate(trim($orderDate))
@@ -61,13 +72,15 @@ class OrderConnector extends B2BConnector
 					->setStatus((strtolower($status) === 'canceled' ? OrderStatus::get(OrderStatus::ID_CANCELLED) : OrderStatus::get(OrderStatus::ID_NEW)))
 					->setTotalPaid($totalPaid)
 					->setIsFromB2B(true)
-					->setShippingAddr($this->_createAddr($order->shipping_address, $shippingAddr))
-					->setBillingAddr($this->_createAddr($order->billing_address, $billingAddr));
+					->setShippingAddr($customer->getShippingAddress())
+					->setBillingAddr($customer->getBillingAddress())
+					->setCustomer($customer)
+					;
 				FactoryAbastract::dao('Order')->save($o);
 				Log::logging(0, get_class($this), 'Saved the order, ID = ' . $o->getId(), self::LOG_TYPE, '$index = ' . $index, __FUNCTION__);
 	
 				//create order info
-				$this->_createOrderInfo($o, OrderInfoType::get(OrderInfoType::ID_CUS_NAME), isset($order->customer_firstname) ? trim($order->customer_firstname) . ' ' . trim($order->customer_lastname) : '')
+				$this->_createOrderInfo($o, OrderInfoType::get(OrderInfoType::ID_CUS_NAME), trim($customer->getName()))
 					->_createOrderInfo($o, OrderInfoType::get(OrderInfoType::ID_CUS_EMAIL), trim($order->customer_email))
 					->_createOrderInfo($o, OrderInfoType::get(OrderInfoType::ID_QTY_ORDERED), intval(trim($order->total_qty_ordered)))
 					->_createOrderInfo($o, OrderInfoType::get(OrderInfoType::ID_MAGE_ORDER_STATUS), trim($order->status))
