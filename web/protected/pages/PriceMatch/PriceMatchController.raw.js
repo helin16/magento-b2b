@@ -29,7 +29,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		var tmp = {};
 		tmp.me = this;
 		tmp.data = [];
-		tmp.data.push(tmp.me.csvFileLineFormat.join(', ') + '\n');
+		tmp.data.push(tmp.me.csvFileLineFormat.join(', ') + "\n");
 		tmp.now = new Date();
 		tmp.fileName = 'pricematch_template_' + tmp.now.getFullYear() + '_' + tmp.now.getMonth() + '_' + tmp.now.getDate() + '_' + tmp.now.getHours() + '_' + tmp.now.getMinutes() + '_' + tmp.now.getSeconds() + '.csv';
 		tmp.blob = new Blob(tmp.data, {type: "text/csv;charset=utf-8"});
@@ -109,7 +109,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			if((tmp.extension = tmp.file.name.split('.').pop()) !== '' && tmp.me._acceptableTypes.indexOf(tmp.extension.toLowerCase()) > -1) {
 				tmp.me._fileReader = new FileReader();
 				tmp.me._fileReader.onload = function(event) {
-					event.target.result.replace('\n', '{EOL}').replace('\r', '{EOL}').replace('\r\n', '{EOL}').split('{EOL}').each(function(line) {
+					event.target.result.split(/\r\n|\n|\r/).each(function(line) {
 						if(line !== null && !line.blank()) {
 							tmp.cols = [];
 							line.split(',').each(function(col) {
