@@ -75,6 +75,12 @@ class Order extends InfoEntityAbstract
 	 */
 	protected $orderItems;
 	/**
+	 * The customer of this order
+	 * 
+	 * @var Customer
+	 */
+	protected $customer;
+	/**
 	 * Wether the order passed the payment check
 	 * 
 	 * @var bool
@@ -385,6 +391,28 @@ class Order extends InfoEntityAbstract
 	    return $this;
 	}
 	/**
+	 * Getter for customer
+	 *
+	 * @return Customer
+	 */
+	public function getCustomer() 
+	{
+		$this->loadManyToOne('customer');
+	    return $this->customer;
+	}
+	/**
+	 * Setter for customer
+	 *
+	 * @param unkown $value The customer
+	 *
+	 * @return Order
+	 */
+	public function setCustomer($value) 
+	{
+	    $this->customer = $value;
+	    return $this;
+	}
+	/**
 	 * Getting the order by order no
 	 * 
 	 * @param string $orderNo
@@ -476,6 +504,7 @@ class Order extends InfoEntityAbstract
 		DaoMap::setStringType('orderNo');
 		DaoMap::setStringType('invNo');
 		DaoMap::setDateType('orderDate');
+		DaoMap::setManyToOne('customer', 'Customer', 'o_cust');
 		DaoMap::setIntType('totalAmount', 'Double', '10,4');
 		DaoMap::setIntType('totalPaid', 'Double', '10,4');
 		DaoMap::setBoolType('passPaymentCheck');
