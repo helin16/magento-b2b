@@ -28,6 +28,8 @@ class Menu extends TTemplateControl
 			$array['priceMatch'] = array('url' => '/pricematch.html', 'name' => 'Price Match');
 		if(AccessControl::canAccessOrderItemsPage(Core::getRole()) )
 			$array['orderitems'] = array('url' => '/orderitems.html', 'name' => 'OrderItems');
+		if(AccessControl::canAccessProductsPage(Core::getRole()) )
+			$array['products'] = array('url' => '/products.html', 'name' => 'Products');
 		$html = "<ul class='nav navbar-nav'>";
 			foreach($array as $key => $item)
 			{
