@@ -22,10 +22,8 @@
 			
 			<!-- FrontEnd:: order list page -->
 			<url ServiceParameter="Order.List.OrderController" pattern="order.html" />
-			
 			<!-- FrontEnd:: order print page -->
 			<url ServiceParameter="Order.Print.OrderPrintController" pattern="print/order/{orderId}.html" parameters.orderId="\d+"/>
-			
 			<!-- FrontEnd:: order details page -->
 			<url ServiceParameter="Order.Details.OrderDetailsController" pattern="orderdetails/{orderId}.html" parameters.orderId="\d+"/>
 			
@@ -34,20 +32,20 @@
 			
 			<!-- FrontEnd:: user page -->
 			<url ServiceParameter="User.List.UsersController" pattern="users.html" />
-			
 			<!-- FrontEnd:: user edit page -->
 			<url ServiceParameter="User.Details.UsersController" pattern="/useraccount/{action}.html" parameters.action="add"/>
 			<url ServiceParameter="User.Details.UsersController" pattern="/useraccount/{action}/{id}.html" parameters.action="edit" parameters.id="\d+"/>
 			
-			<!-- FrontEnd:: Price Match page -->
-			<url ServiceParameter="PriceMatch.PriceMatchController" pattern="pricematch.html" />
-			
-			<!-- FrontEnd:: Price Match Companypage -->
-			<url ServiceParameter="PriceMatch.Company.List.PriceMatchCompanyListController" pattern="pricematchcompanies.html" />
-			
 			<!-- FrontEnd:: me page -->
 			<url ServiceParameter="User.Me.MeController" pattern="{id}.html" parameters.id="me"/>
 			
+			<!-- FrontEnd:: Price Match page -->
+			<url ServiceParameter="PriceMatch.PriceMatchController" pattern="pricematch.html" />
+			<!-- FrontEnd:: Price Match Companypage -->
+			<url ServiceParameter="PriceMatch.Company.List.PriceMatchCompanyListController" pattern="pricematchcompanies.html" />
+			
+			<!-- FrontEnd:: order list page -->
+			<url ServiceParameter="Product.List.ProductController" pattern="products.html" />
 			
 			<!-- asset service -->
 			<url ServiceId="asset" ServiceParameter="" pattern="asset/{method}" parameters.method="get" />
