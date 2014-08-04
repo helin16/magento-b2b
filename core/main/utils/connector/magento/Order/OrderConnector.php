@@ -63,7 +63,7 @@ class OrderConnector extends B2BConnector
 						true,
 						'',
 						$this->_createAddr($order->billing_address, $billingAddr),
-						trim($order->customer_id)
+						0 //trim($order->customer_id)
 				);
 	
 				$o->setOrderNo(trim($order->increment_id))
