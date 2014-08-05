@@ -1,17 +1,51 @@
-<%@MasterClass="Application.layout.BlankLayout"%>
 <com:TContent ID="MainContent">
-	<com:Application.controls.chosen.Chosen />
-	<com:TDatePicker Style="display:none;"/>
-	<com:TCallback ID="updateOrderBtn" OnCallback="updateOrder" />
-	<com:TCallback ID="addCommentsBtn" OnCallback="addComments" />
-	<com:TCallback ID="changeOrderStatusBtn" OnCallback="changeOrderStatus" />
-	<com:TCallback ID="confirmPaymentBtn" OnCallback="confirmPayment" />
-	<com:TCallback ID="updateOIForWHBtn" OnCallback="updateOrderItemForWarehouse" />
-	<com:TCallback ID="updateShippingInfoBtn" OnCallback="updateShippingDetails" />
-	<com:TCallback ID="getPaymentDetailsBtn" OnCallback="getPaymentDetailsForOrder" />
-	<com:TCallback ID="clearETABtn" OnCallback="clearETA" />
-	<com:TCallback ID="changeIsOrderedBtn" OnCallback="changeIsOrdered" />
-	<div class="pagewrapper orderdetails">
-		<div id="detailswrapper" class="contentDiv"></div>
+	<com:TCallback ID="getProductsBtn" OnCallback="getProducts" />
+	<div class="pagewrapper productlistwraper container">
+		<div class="panel panel-default" id="searchPanel">
+			<div class="panel-heading">
+				<label for="showSearch">Show Search Criteria?</label>
+				<input id="showSearch" type="checkbox" onclick="$(this).up('#searchPanel').down('.panel-body').toggle();">
+			</div>
+			<div class="panel-body search-panel" style="display: none;">
+				<div class="row">
+					<div class="col-sm-4">
+						<div class="form-group form-group-sm">
+                           <label>SKU:</label>
+                           <input type="text" search_field="pro.sku" placeholder="The SKU of the product" class="form-control input-sm">
+                       </div>
+					</div>
+					<div class="col-sm-4">
+						<div class="form-group form-group-sm">
+                           <label>Name:</label>
+                           <input type="text" search_field="pro.name" placeholder="The name of the product" class="form-control input-sm">
+                       </div>
+					</div>
+					<div class="col-sm-2">
+						<div class="form-group form-group-sm">
+                           <label>Active:</label>
+                           <select search_field="pro.active" class="form-control input-sm">
+                           		<option value="1">YES</option>
+                           		<option value="0">NO</option>
+                           		<option value=" ">All</option>
+                           </select>
+                       </div>
+					</div>
+					<div class="col-sm-2">
+						<div class="form-group form-group-sm">
+                           <label>&nbsp;</label>
+						   <span id="searchBtn" class="btn btn-primary form-control inpu-sm" data-loading-text="searching ..." onclick="pageJs.getSearchCriteria().getResults(true, <%= $this->pageSize %>);" >Search</span>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="panel panel-default">
+			<div class="panel-heading">
+				Found <label id="total-found-count">0</label> Products:
+			</div>
+			<small class="table-responsive">
+                <table class="table table-hover" id="productlist"></table>
+               </small>
+		</div> 
 	</div>
 </com:TContent>
