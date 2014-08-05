@@ -179,7 +179,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			tmp.originalData = row.retrieve('data');
 			tmp.csvRow = tmp.originalData.sku + ', ' + tmp.originalData.myPrice + ', ' + tmp.originalData.minPrice + ', ' + tmp.originalData.priceDiff;
 			$H(tmp.me._companyAliases).each(function(alias){
-				tmp.csvRow = tmp.csvRow + ', ' + tmp.me.getCurrency(tmp.originalData.companyPrices[alias.key].price);
+				tmp.csvRow = tmp.csvRow + ', ' + tmp.me.getCurrency(tmp.originalData.companyPrices[alias.key].price, '$', 2, '.', '');
 			})
 			tmp.csvRow = tmp.csvRow + '\n';
 			tmp.data.push(tmp.csvRow);
