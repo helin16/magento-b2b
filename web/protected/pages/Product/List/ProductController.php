@@ -31,8 +31,8 @@ class ProductController extends BPCPageAbstract
 	protected function _getEndJs()
 	{
 		$js = parent::_getEndJs();
-		$js .= "pageJs.setCallbackId('getProductList', '" . $this->getProductsBtn->getUniqueID() . "')";
-		$js .= ".setHTMLIds('productlist', 'searchPanel', 'total-found-count')";
+		$js .= "pageJs.setCallbackId('getProductList', '" . $this->getProductsBtn->getUniqueID() . "');";
+		$js .= "pageJs.setHTMLIds('productlist', 'searchPanel', 'total-found-count')";
 		$js .= ";";
 		$js .= '$("searchBtn").click();';
 		return $js;
