@@ -40,8 +40,8 @@ LatestETAPanel.prototype = {
 		.insert({'bottom': new Element("em", {"class": "list-group-item-text eta"}).update(row.eta) })
 		.observe('click', function() {
 			jQuery.fancybox({
-				'width'			: '80%',
-				'height'		: '90%',
+				'width'			: '95%',
+				'height'		: '95%',
 				'autoScale'     : true,
 				'type'			: 'iframe',
 				'href'			: '/orderdetails/' + row.orderId + '.html'
