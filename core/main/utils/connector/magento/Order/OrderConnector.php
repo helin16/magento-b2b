@@ -167,6 +167,9 @@ class OrderConnector extends B2BConnector
 	 */
 	private function _createItem(Order $order, $itemObj)
 	{
+		$productXml = CatelogConnector::getConnector(B2BConnector::CONNECTOR_TYPE_CATELOG, SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_WSDL), SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_USER), SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_KEY))
+			->getProductInfo(trim($itemObj->sku));
+		$product = Product::create(trim($productXml->sku), trim($productXml->name), trim($productXml->product_id), trim($productXml->price), 1, true);
 		return OrderItem::create($order,
 				Product::create(trim($itemObj->sku), trim($itemObj->name), trim($itemObj->product_id)),
 				trim($itemObj->price),
