@@ -201,8 +201,8 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			'type'			: 'iframe',
 			'href'			: '/orderdetails/' + row.id + '.html',
 			'beforeClose'	    : function() {
-				if($(tmp.me.resultDivId).down('.row[order_id=' + row.id + ']'))
-					$(tmp.me.resultDivId).down('.row[order_id=' + row.id + ']').replace(tmp.me._getResultRow($$('iframe.fancybox-iframe').first().contentWindow.pageJs._order));
+				if($(tmp.me.resultDivId).down('.order_item[order_id=' + row.id + ']'))
+					$(tmp.me.resultDivId).down('.order_item[order_id=' + row.id + ']').replace(tmp.me._getResultRow($$('iframe.fancybox-iframe').first().contentWindow.pageJs._order));
 			}
  		});
 		return tmp.me;
