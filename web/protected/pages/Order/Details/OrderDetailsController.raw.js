@@ -111,7 +111,6 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.data = {};
 		tmp.hasError = false;
 		$$('[' + attrName + ']').each(function(item) {
-			tmp.groupIndexName =  (item.readAttribute(groupIndexName) || null);
 			tmp.fieldName = item.readAttribute(attrName);
 			if(item.hasAttribute('required') && $F(item).blank()) {
 				tmp.me._markFormGroupError(item, 'This is requried');
@@ -724,6 +723,17 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			}
 		});
 	}
+	/// this function generates a select box populating all the courier infos ///
+	,_getCourierList: function () {
+		var tmp = {};
+		tmp.me = this;
+		tmp.courierSelect = new Element('select')
+			.insert({'bottom': new Element('option', {'value': ''}).update('') });
+		tmp.me._couriers.each(function(courier) {
+			tmp.courierSelect.insert({'bottom': new Element('option', {'value': courier.id}).update(courier.name) });
+		});
+		return tmp.courierSelect;
+	}
 	/**
 	 * Getting the shippment row
 	 */
@@ -1144,32 +1154,5 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			}
 		});
 		return tmp.me;
-	}
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	/// this function generates a select box populating all the courier infos ///
-	,_getCourierList: function () {
-		var tmp = {};
-		tmp.me = this;
-		tmp.courierSelect = new Element('select')
-			.insert({'bottom': new Element('option', {'value': ''}).update('') });
-		tmp.me._couriers.each(function(courier) {
-			tmp.courierSelect.insert({'bottom': new Element('option', {'value': courier.id}).update(courier.name) });
-		});
-		return tmp.courierSelect;
 	}
 });
