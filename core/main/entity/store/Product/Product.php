@@ -27,7 +27,7 @@ class Product extends InfoEntityAbstract
 	 */
 	private $mageId = '';
 	/**
-	 * The unit price for this product
+	 * The unit price for this product exclude GST
 	 * 
 	 * @var double
 	 */

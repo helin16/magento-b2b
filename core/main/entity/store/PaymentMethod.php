@@ -1,4 +1,11 @@
 <?php
+/**
+ * Entity for PaymentMethod
+ *
+ * @package    Core
+ * @subpackage Entity
+ * @author     lhe<helin16@gmail.com>
+ */
 class PaymentMethod extends BaseEntityAbstract
 {
 	/**

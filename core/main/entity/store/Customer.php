@@ -1,4 +1,11 @@
 <?php
+/**
+ * Entity for Customer
+ *
+ * @package    Core
+ * @subpackage Entity
+ * @author     lhe<helin16@gmail.com>
+ */
 class Customer extends BaseEntityAbstract
 {
 	/**
@@ -48,7 +55,7 @@ class Customer extends BaseEntityAbstract
 	 *
 	 * @var bool
 	 */
-	private $isFromB2B;
+	private $isFromB2B = false;
 	/**
 	 * Getter for name
 	 *
@@ -263,11 +270,13 @@ class Customer extends BaseEntityAbstract
 		if(count($objects) > 0 && $email !== '')
 			$obj = $objects[0];
 		else
+		{
 			$obj = new $class();
+			$obj->setIsFromB2B($isFromB2B);
+		}
 		$obj->setName($name)
 			->setDescription(trim($description))
 			->setContactNo($contactNo)
-			->setIsFromB2B($isFromB2B)
 			->setEmail($email)
 			->setBillingAddress($billingAddr)
 			->setShippingAddress($shippingAddr)
@@ -309,6 +318,7 @@ class Customer extends BaseEntityAbstract
 		DaoMap::setManyToOne('billingAddress', 'Address');
 		DaoMap::setManyToOne('shippingAddress', 'Address');
 		DaoMap::setIntType('mageId');
+		DaoMap::setBoolType('isFromB2B');
 		parent::__loadDaoMap();
 		
 		DaoMap::createIndex('name');
