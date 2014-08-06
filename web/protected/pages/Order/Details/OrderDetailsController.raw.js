@@ -111,6 +111,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.data = {};
 		tmp.hasError = false;
 		$$('[' + attrName + ']').each(function(item) {
+			tmp.groupIndexName = groupIndexName ? item.readAttribute(groupIndexName) : null;
 			tmp.fieldName = item.readAttribute(attrName);
 			if(item.hasAttribute('required') && $F(item).blank()) {
 				tmp.me._markFormGroupError(item, 'This is requried');
