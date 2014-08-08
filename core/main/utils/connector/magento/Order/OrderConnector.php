@@ -59,10 +59,10 @@ class OrderConnector extends B2BConnector
 						isset($order->customer_firstname) ? trim($order->customer_firstname) . ' ' . trim($order->customer_lastname) : '', 
 						'', 
 						trim($order->customer_email), 
-						$this->_createAddr($order->shipping_address, $shippingAddr),
+						$this->_createAddr($order->billing_address, $billingAddr),
 						true,
 						'',
-						$this->_createAddr($order->billing_address, $billingAddr),
+						$this->_createAddr($order->shipping_address, $shippingAddr),
 						isset($order->customer_id) ? trim($order->customer_id) : 0
 				);
 	
