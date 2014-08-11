@@ -451,6 +451,14 @@ abstract class BaseEntityAbstract
     }
     public function postSave() {
     }
+    public static function getAll($activeOnly = true, $pageNo = null, $pageSize = DaoQuery::DEFAUTL_PAGE_SIZE, $orderBy = array())
+    {
+    	return FactoryAbastract::dao(get_called_class())->findAll($activeOnly, $pageNo, $pageSize, $orderBy);
+    }
+    public static function getAllByCriteria($criteria, $params = array(), $activeOnly = true, $pageNo = null, $pageSize = DaoQuery::DEFAUTL_PAGE_SIZE, $orderBy = array())
+    {
+    	return FactoryAbastract::dao(get_called_class())->findByCriteria($criteria, $params, $activeOnly, $pageNo, $pageSize, $orderBy);
+    }
 }
 
 ?>
