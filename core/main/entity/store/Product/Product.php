@@ -51,6 +51,12 @@ class Product extends InfoEntityAbstract
 	 */
 	private $shortDescription = '';
 	/**
+	 * The asset id of the full description
+	 * 
+	 * @var string
+	 */
+	private $fullDescAssetId = '';
+	/**
 	 * Getter for sku
 	 *
 	 * @return string
