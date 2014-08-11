@@ -14,6 +14,7 @@ class SystemSettings extends BaseEntityAbstract
 	const TYPE_B2B_SOAP_TIMEZONE = 'b2b_soap_timezone';
 	const TYPE_B2B_SOAP_LAST_IMPORT_TIME = 'b2b_soap_last_import_time';
 	const TYPE_SYSTEM_TIMEZONE = 'system_timezone';
+	const TYPE_ASSET_ROOT_DIR = 'asset_root_dir';
 	/**
 	 * The value of the setting
 	 * 

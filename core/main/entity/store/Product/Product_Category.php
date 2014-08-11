@@ -1,0 +1,140 @@
+<?php
+/**
+ * Entity for Product_Category
+ *
+ * @package    Core
+ * @subpackage Entity
+ * @author     lhe<helin16@gmail.com>
+ */
+class Product_Category extends BaseEntityAbstract
+{
+	/**
+	 * The category
+	 * 
+	 * @var ProductCategory
+	 */
+	protected $category;
+	/**
+	 * The product
+	 * 
+	 * @var Product
+	 */
+	protected $product;
+	/**
+	 * Getter for category
+	 *
+	 * @return ProductCategory
+	 */
+	public function getCategory() 
+	{
+		$this->loadManyToOne('category');
+	    return $this->category;
+	}
+	/**
+	 * Setter for category
+	 *
+	 * @param ProductCategory $value The category
+	 *
+	 * @return Product_Category
+	 */
+	public function setCategory(ProductCategory $value) 
+	{
+	    $this->category = $value;
+	    return $this;
+	}
+	/**
+	 * Getter for product
+	 *
+	 * @return 
+	 */
+	public function getProduct() 
+	{
+		$this->loadManyToOne('product');
+	    return $this->product;
+	}
+	/**
+	 * Setter for product
+	 *
+	 * @param Product $value The product
+	 *
+	 * @return SupplierCode
+	 */
+	public function setProduct(Product $value) 
+	{
+	    $this->product = $value;
+	    return $this;
+	}
+	/**
+	 * Creating a supplier code
+	 * 
+	 * @param Product  $product
+	 * @param Supplier $supplier
+	 * 
+	 * @return SupplierCode
+	 */
+	public static function create(Product $product, ProductCategory $category)
+	{
+		$class = __CLASS__;
+		self::remove($product, $category);
+		FactoryAbastract::dao($class)->deleteByCriteria('productId = ? and supplierId = ?', array($product->getId(), $category->getId()));
+		$obj = new $class();
+		$obj->setProduct($product)
+			->setCategory($category);
+		return FactoryAbastract::dao($class)->save($obj);
+	}
+	/**
+	 * Getting all products from a category
+	 * 
+	 * @param ProductCategory $category
+	 * @param string          $activeOnly
+	 * @param int             $pageNo
+	 * @param int             $pageSize
+	 * @param array           $orderBy
+	 * 
+	 * @return Ambigous <multitype:, multitype:BaseEntityAbstract >
+	 */
+	public static function getProducts(ProductCategory $category, $activeOnly = true, $pageNo = null, $pageSize = DaoQuery::DEFAUTL_PAGE_SIZE, $orderBy = array())
+	{
+		return FactoryAbastract::dao(__CLASS__)->findByCriteria('categoryId = ?', array($category->getId(), $category->getId()), $activeOnly, $pageNo, $pageSize, $orderBy);
+	}
+	/**
+	 * Getting all products from a category
+	 * 
+	 * @param Product $category
+	 * @param string  $activeOnly
+	 * @param int     $pageNo
+	 * @param int     $pageSize
+	 * @param array   $orderBy
+	 * 
+	 * @return Ambigous <multitype:, multitype:BaseEntityAbstract >
+	 */
+	public static function getCategories(Product $product, $activeOnly = true, $pageNo = null, $pageSize = DaoQuery::DEFAUTL_PAGE_SIZE, $orderBy = array())
+	{
+		return FactoryAbastract::dao(__CLASS__)->findByCriteria('productId = ?', array($product->getId(), $category->getId()), $activeOnly, $pageNo, $pageSize, $orderBy);
+	}
+	/**
+	 * removing the relationship
+	 * 
+	 * @param Product         $product
+	 * @param ProductCategory $category
+	 */
+	public static function remove(Product $product, ProductCategory $category)
+	{
+		FactoryAbastract::dao(__CLASS__)->deleteByCriteria('productId = ? and supplierId = ?', array($product->getId(), $category->getId()));
+	}
+	/**
+	 * (non-PHPdoc)
+	 * @see HydraEntity::__loadDaoMap()
+	 */
+	public function __loadDaoMap()
+	{
+		DaoMap::begin($this, 'pro_cat');
+	
+		DaoMap::setManyToOne('category', 'ProductCategory', 'pro_cat_cate');
+		DaoMap::setManyToOne('product', 'Product', 'pro_cat_pro');
+		parent::__loadDaoMap();
+		DaoMap::createIndex('category');
+		DaoMap::createIndex('product');
+		DaoMap::commit();
+	}
+}

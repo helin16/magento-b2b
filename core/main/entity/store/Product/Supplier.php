@@ -1,12 +1,12 @@
 <?php
 /**
- * Entity for Manufacturer
+ * Entity for Supplier
  *
  * @package    Core
  * @subpackage Entity
  * @author     lhe<helin16@gmail.com>
  */
-class Manufacturer extends BaseEntityAbstract
+class Supplier extends BaseEntityAbstract
 {
 	/**
 	 * The name of this Manufacturer
@@ -155,7 +155,7 @@ class Manufacturer extends BaseEntityAbstract
 			->setDescription(trim($description))
 			->setMageId($mageId);
 		FactoryAbastract::dao(get_class($obj))->save($obj);
-		$comments = $class . '(ID=' . $obj->getId() . ')' . (count($objects) > 0 ? 'updated' : 'created') . ($isFromB2B === true ? ' via B2B' : '') . ' with (name=' . $name . ', mageId=' . $mageId . ')';
+		$comments = $class  . '(ID=' . $obj->getId() . ')' . (count($objects) > 0 ? 'updated' : 'created') . ($isFromB2B === true ? ' via B2B' : '') . ' with (name=' . $name . ', mageId=' . $mageId . ')';
 		if($isFromB2B === true)
 			Comments::addComments($obj, $comments, Comments::TYPE_SYSTEM);
 		Log::LogEntity($obj, $comments, Log::TYPE_SYSTEM, '', $class . '::' . __FUNCTION__);
@@ -175,7 +175,7 @@ class Manufacturer extends BaseEntityAbstract
 		DaoMap::setBoolType('isFromB2B');
 		parent::__loadDaoMap();
 	
-		DaoMap::createUniqueIndex('name');
+		DaoMap::createIndex('name');
 		DaoMap::createIndex('isFromB2B');
 		DaoMap::createIndex('mageId');
 	

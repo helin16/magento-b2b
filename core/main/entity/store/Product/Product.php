@@ -27,11 +27,11 @@ class Product extends InfoEntityAbstract
 	 */
 	private $mageId = '';
 	/**
-	 * The unit price for this product exclude GST
+	 * The quantity that we are ordering from supplier
 	 * 
-	 * @var double
+	 * @var int
 	 */
-	private $price = '0.0000';
+	private $stockOnOrder = 0;
 	/**
 	 * The quantity we have
 	 * 
@@ -44,6 +44,12 @@ class Product extends InfoEntityAbstract
 	 * @var bool
 	 */
 	private $isFromB2B = false;
+	/**
+	 * The short description
+	 * 
+	 * @var string
+	 */
+	private $shortDescription = '';
 	/**
 	 * Getter for sku
 	 *
@@ -108,24 +114,24 @@ class Product extends InfoEntityAbstract
 	    return $this;
 	}
 	/**
-	 * Getter for price
+	 * Getter for stockOnOrder
 	 *
 	 * @return 
 	 */
-	public function getPrice() 
+	public function getStockOnOrder() 
 	{
-	    return $this->price;
+	    return $this->stockOnOrder;
 	}
 	/**
-	 * Setter for price
+	 * Setter for stockOnOrder
 	 *
-	 * @param double $value The price
+	 * @param double $value The stockOnOrder
 	 *
 	 * @return Product
 	 */
-	public function setPrice($value) 
+	public function setStockOnOrder($value) 
 	{
-	    $this->price = $value;
+	    $this->stockOnOrder = $value;
 	    return $this;
 	}
 	/**
@@ -171,18 +177,62 @@ class Product extends InfoEntityAbstract
 		return $this;
 	}
 	/**
+	 * Getter for shortDescription
+	 *
+	 * @return 
+	 */
+	public function getShortDescription() 
+	{
+	    return $this->shortDescription;
+	}
+	/**
+	 * Setter for shortDescription
+	 *
+	 * @param string $value The shortDescription
+	 *
+	 * @return Product
+	 */
+	public function setShortDescription($value) 
+	{
+	    $this->shortDescription = $value;
+	    return $this;
+	}
+	/**
+	 * Getter for fullDescAssetId
+	 *
+	 * @return 
+	 */
+	public function getFullDescAssetId() 
+	{
+	    return $this->fullDescAssetId;
+	}
+	/**
+	 * Setter for fullDescAssetId
+	 *
+	 * @param string $value The fullDescAssetId
+	 *
+	 * @return Product
+	 */
+	public function setFullDescAssetId($value) 
+	{
+	    $this->fullDescAssetId = $value;
+	    return $this;
+	}
+	/**
 	 * Creating the product based on sku
 	 * 
 	 * @param string $sku           The sku of the product
 	 * @param string $name          The name of the product
 	 * @param string $mageProductId The magento id of the product
-	 * @param double $price         The unit price of the product
 	 * @param int    $stockOnHand   The total quantity on hand for this product
+	 * @param int    $stockOnOrder  The total quantity on order from supplier for this product
 	 * @param bool   $isFromB2B     Whether this product is created via B2B?
+	 * @param string $shortDescr    The short description of the product
+	 * @param string $fullDescr     The assetId of the full description asset of the product
 	 * 
 	 * @return Ambigous <Product, Ambigous, NULL, BaseEntityAbstract>
 	 */
-	public static function create($sku, $name, $mageProductId = '', $price = null, $stockOnHand = null, $isFromB2B = false)
+	public static function create($sku, $name, $mageProductId = '', $stockOnHand = null, $stockOnOrder = null, $isFromB2B = false, $shortDescr = '', $fullDescr = '')
 	{
 		if(!($product = self::get($sku)) instanceof Product)
 			$product = new Product();
@@ -193,14 +243,32 @@ class Product extends InfoEntityAbstract
 		
 		if(trim($product->getId()) === '')
 		{
-			$product->setIsFromB2B($isFromB2B);
-			if($price !== null && is_numeric($price))
-				$product->setPrice($price);
-			if($stockOnHand !== null)
+			$product->setIsFromB2B($isFromB2B)
+				->setShortDescription($shortDescr);
+			if($stockOnOrder !== null && is_numeric($stockOnOrder))
+				$product->setStockOnOrder(intval($stockOnOrder));
+			if($stockOnHand !== null && is_numeric($stockOnHand))
 				$product->setStockOnHand(intval($stockOnHand));
+			if (($$fullDescr = trim($fullDescr)) !== '')
+			{
+				$asset = Asset::registerAsset('full_desc_' . $sku, $fullDescr);
+				$product->setFullDescAssetId(trim($asset->getAssetId()));
+			}
 		}
 		FactoryAbastract::dao(get_called_class())->save($product);
 		return $product;
+	}
+	/**
+	 * Adding a product image to the product
+	 * 
+	 * @param Asset $asset The asset object that reprents the image
+	 * 
+	 * @return Product
+	 */
+	public function addImage(Asset $asset)
+	{
+		ProductImage::create($this, $asset);
+		return $this;
 	}
 	/**
 	 * Getting the product via sku
@@ -229,20 +297,24 @@ class Product extends InfoEntityAbstract
 	public function __loadDaoMap()
 	{
 		DaoMap::begin($this, 'pro');
-		DaoMap::setStringType('sku', 'varchar', 100);
-		DaoMap::setStringType('name', 'varchar', 255);
-		DaoMap::setStringType('mageId', 'varchar', 20);
-		DaoMap::setIntType('price', 'double', '10,4');
+		DaoMap::setStringType('sku', 'varchar', 50);
+		DaoMap::setStringType('name', 'varchar', 100);
+		DaoMap::setStringType('mageId', 'varchar', 10);
 		DaoMap::setIntType('stockOnHand');
+		DaoMap::setIntType('stockOnOrder');
 		DaoMap::setBoolType('isFromB2B');
+		DaoMap::setStringType('shortDescription', 'varchar', 255);
+		DaoMap::setStringType('fullDescAssetId', 'varchar', 100);
 		parent::__loadDaoMap();
 		
 		DaoMap::createUniqueIndex('sku');
 		DaoMap::createIndex('name');
 		DaoMap::createIndex('mageId');
-		DaoMap::createIndex('price');
 		DaoMap::createIndex('stockOnHand');
+		DaoMap::createIndex('stockOnOrder');
 		DaoMap::createIndex('isFromB2B');
+		DaoMap::createIndex('shortDescription');
+		DaoMap::createIndex('fullDescAssetId');
 		DaoMap::commit();
 	}
 }

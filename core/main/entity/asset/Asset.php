@@ -27,6 +27,12 @@ class Asset extends BaseEntityAbstract
 	 */
 	private $path;
 	/**
+	 * The cach of the assets
+	 * 
+	 * @var array
+	 */
+	private static $_cache = array();
+	/**
 	 * getter assetId
 	 *
 	 * @return string
@@ -117,6 +123,122 @@ class Asset extends BaseEntityAbstract
 	public function __toString()
 	{
 	    return '/assets/get/?id=' . $assetId;
+	}
+	/**
+	 * Getting the root path of the asset files
+	 * 
+	 * @return Ambigous <string, multitype:>
+	 */
+	public static function getRootPath()
+	{
+		return SystemSettings::getSettings(SystemSettings::TYPE_ASSET_ROOT_DIR);
+	}
+	/**
+	 * Register a file with the Asset server and get its asset id
+	 *
+	 * @param string $filename The name of the file
+	 * @param string $data     The data within that file we are trying to save
+	 *
+	 * @return string 32 char MD5 hash
+	 */
+	public static function registerAsset($filename, $dataOrFile)
+	{
+		if(!is_string($dataOrFile) && (!is_file($dataOrFile)))
+			throw new CoreException(__CLASS__ . '::' . __FUNCTION__ . '() will ONLY take string to save!');
+		 
+		$assetId = md5($filename . '::' . Core::getUser()->getId() .  '::' . microtime());
+		$path = self::_getSmartPath($assetId);
+		self::_copyToAssetFolder($path, $dataOrFile);
+		$class = __CLASS__;
+		$asset = new $class();
+		$asset->setFilename($filename)
+			->setAssetId($assetId)
+			->setMimeType(StringUtilsAbstract::getMimeType($filename))
+			->setPath($path);
+		FactoryAbastract::dao($class)->save($asset);
+		//add asset into cache
+		$assetId = trim(trim($asset->getAssetId()));
+		self::$_cache[$assetId] = $asset;
+		return self::$_cache[$assetId];
+	}
+	/**
+	 * Getting the smart parth
+	 *
+	 * @param string $assetId The asset id
+	 *
+	 * @return string
+	 */
+	private static function _getSmartPath($assetId)
+	{
+		$now = new UDate();
+		$year = $now->format('Y');
+		if(!is_dir($yearDir = trim(self::getRootPath() .DIRECTORY_SEPARATOR . $year)))
+		{
+			mkdir($yearDir);
+			chmod($yearDir, 0777);
+		}
+		$month = $now->format('m');
+		if(!is_dir($monthDir = trim($yearDir .DIRECTORY_SEPARATOR . $month)))
+		{
+			mkdir($monthDir);
+			chmod($monthDir, 0777);
+		}
+		return $monthDir . DIRECTORY_SEPARATOR . $assetId;
+	}
+	/**
+	 * Remove an asset from the content server
+	 *
+	 * @param array $assetIds The assetids of the content
+	 *
+	 * @return bool
+	 */
+	public static function removeAssets($assetIds)
+	{
+		if(count($assetIds) === 0)
+			return $this;
+		$class = __CLASS__;
+		$where = "assetId in (" . implode(', ', array_fill(0, count($assetIds), '?')) . ")";
+		$params = $assetIds;
+		foreach(FactoryAbastract::dao($class)->findByCriteria($where, $assetIds) as $asset)
+		{
+			// Remove the file from the NAS server
+			unlink($asset->getPath());
+			unset(self::$_cache[trim($asset->getAssetId())]);
+		}
+		// Delete the item from the database
+		FactoryAbastract::dao($class)->updateByCriteria('set active = ?', $where, array_merge(array(0), $params));
+		return $this;
+	}
+	/**
+	 * copy the provided file or data into the new path
+	 *
+	 * @param string $filename   The new filename
+	 * @param string $dataOrFile the file or data
+	 *
+	 * @return number|boolean
+	 */
+	private static function _copyToAssetFolder($newFile, $dataOrFile)
+	{
+		if(!is_file($dataOrFile))
+			return file_put_contents($newFile, $dataOrFile);
+		return rename($dataOrFile, $newFile);
+	}
+	/**
+	 * Getting the Asset object
+	 *
+	 * @param string $assetId The assetid of the content
+	 *
+	 * @return Ambigous <unknown, array(HydraEntity), Ambigous, multitype:, string, multitype:Ambigous <multitype:, multitype:NULL boolean number string mixed > >
+	 */
+	public static function getAsset($assetId)
+	{
+		$assetId = trim($assetId);
+		if(!self::$_cache[$assetId])
+		{
+			$content = FactoryAbastract::dao($class)->findByCriteria('assetId = ?', array($assetId), false, 1, 1);
+			self::$_cache[$assetId] = count($content) === 0 ? null : $content[0];
+		}
+		return self::$_cache[$assetId];
 	}
 	/**
 	 * (non-PHPdoc)
