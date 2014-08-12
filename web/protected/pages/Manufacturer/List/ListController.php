@@ -13,7 +13,7 @@ class ListController extends BPCPageAbstract
 	 * (non-PHPdoc)
 	 * @see BPCPageAbstract::$menuItem
 	 */
-	public $menuItem = 'manufactures';
+	public $menuItem = 'manufacturers';
 	/**
 	 * constructor
 	 */
@@ -23,6 +23,16 @@ class ListController extends BPCPageAbstract
 		if(!AccessControl::canAccessProductsPage(Core::getRole()))
 			die('You do NOT have access to this page');
 	}
+	/**
+     * (non-PHPdoc)
+     * @see TPage::onPreInit()
+     */
+    public function onPreInit($param)
+    {
+        parent::onPreInit($param);
+        if(isset($_REQUEST['blanklayout']) && trim($_REQUEST['blanklayout']) === '1')
+        	$this->getPage()->setMasterClass("Application.layout.BlankLayout");
+    }
 	/**
 	 * Getting The end javascript
 	 *

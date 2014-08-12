@@ -47,6 +47,9 @@
 			<!-- FrontEnd:: order list page -->
 			<url ServiceParameter="Product.List.ProductController" pattern="products.html" />
 			
+			<!-- FrontEnd:: order list page -->
+			<url ServiceParameter="Manufacturer.List.ListController" pattern="manufacturers.html" />
+			
 			<!-- asset service -->
 			<url ServiceId="asset" ServiceParameter="" pattern="asset/{method}" parameters.method="get" />
 			
