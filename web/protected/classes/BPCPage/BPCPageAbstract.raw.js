@@ -3,8 +3,9 @@
  */
 var BPCPageJs = new Class.create();
 BPCPageJs.prototype = {
+	modalId: 'page_modal_box_id'
 		
-	_ajaxRequest: null
+	,_ajaxRequest: null
 		
 	//the callback ids
 	,callbackIds: {}
@@ -181,5 +182,33 @@ BPCPageJs.prototype = {
 			}
 		});
 		return (tmp.hasError === true ? null : tmp.data);
+	}
+	
+	,showModalBox: function(title, content, isSM, footer) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.isSM = (isSM === true ? true : false);
+		tmp.footer = (footer ? footer : null);
+		tmp.newBox = new Element('div', {'class': 'modal', 'tabindex': '-1', 'role': 'dialog', 'aria-hidden': 'true', 'aria-labelledby': 'page-modal-box'})
+			.insert({'bottom': new Element('div', {'class': 'modal-dialog ' + (tmp.isSM === true ? 'modal-sm' : 'modal-lg') })
+				.insert({'bottom': new Element('div', {'class': 'modal-content' })
+					.insert({'bottom': new Element('div', {'class': 'modal-header' })
+						.insert({'bottom': new Element('div', {'class': 'close', 'type': 'button', 'data-dismiss': 'modal'})
+							.insert({'bottom':new Element('span', {'aria-hidden': 'true'}).update('&times;') })
+						})
+						.insert({'bottom': new Element('strong', {'class': 'modal-title', 'id': 'page-modal-box'}).update(title) })
+					})
+					.insert({'bottom': new Element('div', {'class': 'modal-body' }).update(content) })
+					.insert({'bottom': tmp.footer === null ? '' : new Element('div', {'class': 'modal-footer' }).update(tmp.footer) })
+				})
+			});
+		
+		if($(tmp.me.modalId)) {
+			$(tmp.me.modalId).remove();
+		}
+		
+		$$('body')[0].insert({'bottom': tmp.newBox.writeAttribute('id',  tmp.me.modalId)});
+		jQuery('#' + tmp.me.modalId).modal({'show': true, 'target': '#' + tmp.me.modalId});
+		return tmp.me;
 	}
 };

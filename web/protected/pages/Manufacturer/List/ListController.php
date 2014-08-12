@@ -6,9 +6,8 @@
  * @subpackage Controller
  * @author     lhe<helin16@gmail.com>
  */
-class ListController extends BPCPageAbstract
+class ListController extends CRUDPageAbstract
 {
-	public $pageSize = 10;
 	/**
 	 * (non-PHPdoc)
 	 * @see BPCPageAbstract::$menuItem
@@ -22,32 +21,6 @@ class ListController extends BPCPageAbstract
 		parent::__construct();
 		if(!AccessControl::canAccessProductsPage(Core::getRole()))
 			die('You do NOT have access to this page');
-	}
-	/**
-     * (non-PHPdoc)
-     * @see TPage::onPreInit()
-     */
-    public function onPreInit($param)
-    {
-        parent::onPreInit($param);
-        if(isset($_REQUEST['blanklayout']) && trim($_REQUEST['blanklayout']) === '1')
-        	$this->getPage()->setMasterClass("Application.layout.BlankLayout");
-    }
-	/**
-	 * Getting The end javascript
-	 *
-	 * @return string
-	 */
-	protected function _getEndJs()
-	{
-		$js = parent::_getEndJs();
-		$js .= "pageJs.setCallbackId('getItems', '" . $this->getItemsBtn->getUniqueID() . "')";
-		$js .= ".setCallbackId('deleteItems', '" . $this->delItemsBtn->getUniqueID() . "')";
-		$js .= ".setCallbackId('saveItem', '" . $this->saveItemBtn->getUniqueID() . "')";
-		$js .= ".setHTMLIds('item-list', 'searchPanel', 'total-found-count')";
-		$js .= ";";
-		$js .= '$("searchBtn").click();';
-		return $js;
 	}
 	/**
 	 * Getting the orders

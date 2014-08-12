@@ -12,6 +12,7 @@ class Web
 		$autoloadPaths = array(
 			dirname(__FILE__) . '/protected/',
 			dirname(__FILE__) . '/protected/classes/',
+			dirname(__FILE__) . '/protected/classes/CRUDPage/',
 			dirname(__FILE__) . '/protected/classes/BPCPage/',
 		);
 		
