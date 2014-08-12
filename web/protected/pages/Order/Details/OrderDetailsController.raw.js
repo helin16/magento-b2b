@@ -661,39 +661,6 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			});
 	}
 	/**
-	 * give the input box a random id
-	 */
-	,_signRandID: function(input) {
-		if(!input.id)
-			input.id = 'input_' + String.fromCharCode(65 + Math.floor(Math.random() * 26)) + Date.now();
-		return this;
-	}
-	/**
-	 * Marking a form group to has-error
-	 */
-	,_markFormGroupError: function(input, errMsg) {
-		var tmp = {}
-		tmp.me = this;
-		if(input.up('.form-group')) {
-			input.up('.form-group').addClassName('has-error');
-			tmp.me._signRandID(input);
-			jQuery('#' + input.id).tooltip({
-				'trigger': 'manual'
-				,'placement': 'auto'
-				,'container': 'body'
-				,'placement': 'bottom'
-				,'html': true
-				,'title': errMsg
-			})
-			.tooltip('show');
-			$(input).observe('change', function() {
-				input.up('.form-group').removeClassName('has-error');
-				jQuery(this).tooltip('hide').tooltip('destroy').show();
-			});
-		}
-		return tmp.me;
-	}
-	/**
 	 * Check and save the shipment
 	 */
 	,_checkAndSubmitShippingOptions: function(button) {

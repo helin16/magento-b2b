@@ -451,13 +451,80 @@ abstract class BaseEntityAbstract
     }
     public function postSave() {
     }
+    /**
+     * Saving the current entity
+     * 
+     * @return BaseEntityAbstract
+     */
+    public function save() 
+    {
+    	return FactoryAbastract::dao(get_class($this))->save($this);
+    }
+    /**
+     * Find all entities
+     * 
+     * @param string $activeOnly
+     * @param string $pageNo
+     * @param unknown $pageSize
+     * @param unknown $orderBy
+     * 
+     * @return Ambigous <multitype:, multitype:BaseEntityAbstract >
+     */
     public static function getAll($activeOnly = true, $pageNo = null, $pageSize = DaoQuery::DEFAUTL_PAGE_SIZE, $orderBy = array())
     {
     	return FactoryAbastract::dao(get_called_class())->findAll($activeOnly, $pageNo, $pageSize, $orderBy);
     }
+    /**
+     * Find all entities with criterias
+     * 
+     * @param unknown $criteria
+     * @param unknown $params
+     * @param string $activeOnly
+     * @param string $pageNo
+     * @param unknown $pageSize
+     * @param unknown $orderBy
+     * 
+     * @return Ambigous <multitype:, multitype:BaseEntityAbstract >
+     */
     public static function getAllByCriteria($criteria, $params = array(), $activeOnly = true, $pageNo = null, $pageSize = DaoQuery::DEFAUTL_PAGE_SIZE, $orderBy = array())
     {
     	return FactoryAbastract::dao(get_called_class())->findByCriteria($criteria, $params, $activeOnly, $pageNo, $pageSize, $orderBy);
+    }
+    /**
+     * Getting entity with an id
+     * 
+     * @param int $id The id of the entity
+     * 
+     * @return Ambigous <BaseEntityAbstract, NULL, SimpleXMLElement>
+     */
+    public static function get($id)
+    {
+    	return FactoryAbastract::dao(get_called_class())->findById($id);
+    }
+    /**
+     * Updating a table for the search criteria
+     *
+     * @param string $setClause The set clause
+     * @param string $criteria  The where clause
+     * @param array  $params    The parameters
+     *
+     * @return int
+     */
+    public static function updateByCriteria($setClause, $criteria)
+    {
+    	return FactoryAbastract::dao(get_called_class())->updateByCriteria($setClause, $criteria);
+    }
+    /**
+     * delete a table for the search criteria
+     *
+     * @param string   $criteria The where clause
+     * @param array    $params   The parameters
+     *
+     * @return int
+     */
+    public static function deleteByCriteria($criteria, $params = array())
+    {
+    	return FactoryAbastract::dao(get_called_class())->deleteByCriteria($criteria, $params);
     }
 }
 

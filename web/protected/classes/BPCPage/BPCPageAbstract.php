@@ -74,7 +74,11 @@ abstract class BPCPageAbstract extends TPage
 	 */
 	protected function _loadPageJsClass()
 	{
-	    $this->getClientScript()->registerScriptFile('BPCPageJs', $this->publishFilePath(dirname(__FILE__) . DIRECTORY_SEPARATOR . 'BPCPageAbstract.2.js'));
+		$cScripts = self::getLastestJS(__CLASS__);
+		if (isset($cScripts['js']) && ($lastestJs = trim($cScripts['js'])) !== '')
+			$this->getPage()->getClientScript()->registerScriptFile('BPCPageJs', $this->publishFilePath(dirname(__FILE__) . DIRECTORY_SEPARATOR . $lastestJs));
+		if (isset($cScripts['css']) && ($lastestCss = trim($cScripts['css'])) !== '')
+			$this->getPage()->getClientScript()->registerStyleSheetFile('BPCPageCss', $this->publishFilePath(dirname(__FILE__) . DIRECTORY_SEPARATOR . $lastestCss));
 	    return $this;
 	}
 	/**

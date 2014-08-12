@@ -113,4 +113,73 @@ BPCPageJs.prototype = {
 		.insert({'bottom': new Element('strong').update(title) })
 		.insert({'bottom': msg })
 	}
+	/**
+	 * give the input box a random id
+	 */
+	,_signRandID: function(input) {
+		if(!input.id)
+			input.id = 'input_' + String.fromCharCode(65 + Math.floor(Math.random() * 26)) + Date.now();
+		return this;
+	}
+	/**
+	 * Marking a form group to has-error
+	 */
+	,_markFormGroupError: function(input, errMsg) {
+		var tmp = {}
+		tmp.me = this;
+		if(input.up('.form-group')) {
+			input.up('.form-group').addClassName('has-error');
+			tmp.me._signRandID(input);
+			jQuery('#' + input.id).tooltip({
+				'trigger': 'manual'
+				,'placement': 'auto'
+				,'container': 'body'
+				,'placement': 'bottom'
+				,'html': true
+				,'title': errMsg
+			})
+			.tooltip('show');
+			$(input).observe('change', function() {
+				input.up('.form-group').removeClassName('has-error');
+				jQuery(this).tooltip('hide').tooltip('destroy').show();
+			});
+		}
+		return tmp.me;
+	}
+	/**
+	 * Collecting data from attrName
+	 */
+	,_collectFormData: function(container, attrName, groupIndexName) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.data = {};
+		tmp.hasError = false;
+		$(container).getElementsBySelector('[' + attrName + ']').each(function(item) {
+			tmp.groupIndexName = groupIndexName ? item.readAttribute(groupIndexName) : null;
+			tmp.fieldName = item.readAttribute(attrName);
+			if(item.hasAttribute('required') && $F(item).blank()) {
+				tmp.me._markFormGroupError(item, 'This is requried');
+				tmp.hasError = true;
+			}
+			
+			tmp.itemValue = item.readAttribute('type') !== 'checkbox' ? $F(item) : $(item).checked;
+			if(item.hasAttribute('validate_currency') || item.hasAttribute('validate_number')) {
+				if (tmp.me.getValueFromCurrency(tmp.itemValue).match(/^\d+(\.\d{1,2})?$/) === null) {
+					tmp.me._markFormGroupError(item, (item.hasAttribute('validate_currency') ? item.readAttribute('validate_currency') : item.hasAttribute('validate_number')));
+					tmp.hasErr = true;
+				}
+				tmp.value = tmp.me.getValueFromCurrency(tmp.itemValue);
+			}
+			
+			//getting the data
+			if(tmp.groupIndexName !== null && tmp.groupIndexName !== undefined) {
+				if(!tmp.data[tmp.groupIndexName])
+					tmp.data[tmp.groupIndexName] = {};
+				tmp.data[tmp.groupIndexName][tmp.fieldName] = tmp.itemValue;
+			} else {
+				tmp.data[tmp.fieldName] = tmp.itemValue;
+			}
+		});
+		return (tmp.hasError === true ? null : tmp.data);
+	}
 };

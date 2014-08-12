@@ -127,3 +127,10 @@ table.table thead td {
 	width: 5%;
 	text-align: center;
 }
+
+.btn-hide-row .btns {
+	visibility: hidden;
+}
+.btn-hide-row:hover .btns {
+	visibility: visible;
+}
