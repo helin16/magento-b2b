@@ -24,7 +24,7 @@
 		</div>
 		<div class="panel panel-default">
 			<div class="panel-heading">
-				Found <label id="total-found-count">0</label> Manufacturers/Brands:
+				Found <label id="total-found-count">0</label> <%= $this->getFocusEntity() %>:
 			</div>
 			<small class="table-responsive">
                 <table class="table table-hover" id="item-list"></table>

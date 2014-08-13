@@ -37,7 +37,13 @@ class Menu extends TTemplateControl
 				'productcategories' => array('url' => '/productcategories.html', 'name' => 'Product Categories')
 			);
 		if(AccessControl::canAccessUsersPage(Core::getRole()) )
-			$array['users'] = array('url' => '/users.html', 'name' => 'Users');
+		{
+			$array['Systems'] = array(
+					'icon' => '<span class="glyphicon glyphicon-cog"></span>',
+					'users' => array('url' => '/users.html', 'name' => 'Users', 'icon' => '<span class="glyphicon glyphicon-user"></span>'),
+					'systemsettings' => array('url' => '/systemsettings.html', 'name' => 'Settings', 'icon' => '<span class="glyphicon glyphicon-cog"></span>')
+			);
+		}
 		$html = "<ul class='nav navbar-nav'>";
 			foreach($array as $key => $item)
 			{
@@ -45,14 +51,16 @@ class Menu extends TTemplateControl
 				$activeClass = ($pageItem === $key || array_key_exists($pageItem, $item) ? 'active' : '');
 				$html .= "<li class='" . $activeClass . " visible-xs visible-sm visible-md visible-lg'>";
 				$html .= "<a href='" . ($hasNextLevel === true ? '#' : $item['url']) . "' " . ($hasNextLevel === true ? 'class="dropdown-toggle" data-toggle="dropdown"' : '') . ">";
-					$html .= ($hasNextLevel === true ? $key .'<span class="caret"></span>' : $item['name']);
+					$html .= (isset($item['icon']) ? $item['icon'] . ' ' : '') . ($hasNextLevel === true ? $key .'<span class="caret"></span>' : $item['name']);
 				$html .= "</a>";
 					if($hasNextLevel === true)
 					{
 						$html .= "<ul class='dropdown-menu'>";
 						foreach($item as $k => $i)
 						{
-							$html .= "<li class='" . ($pageItem === $k ? 'active' : '') . "'><a href='" . $i['url'] . "'>" . $i['name'] . "</a></li>";
+							if(!isset($i['url']))
+								continue;
+							$html .= "<li class='" . ($pageItem === $k ? 'active' : '') . "'><a href='" . $i['url'] . "'>" . (isset($i['icon']) ? $i['icon'] . ' ' : '') .$i['name'] . "</a></li>";
 						}
 						$html .= "</ul>";
 					}
