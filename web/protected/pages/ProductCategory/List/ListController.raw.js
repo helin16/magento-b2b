@@ -139,22 +139,19 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 			return tmp.newDiv;
 		
 		tmp.levels = category.position.split('|').size();
-		tmp.preString = '';
+		tmp.newDiv = new Element('small');
 		for(tmp.i = 1; tmp.i < tmp.levels; tmp.i = (tmp.i * 1 + 1)) {
-			tmp.preString = tmp.preString + '&nbsp;&nbsp;&nbsp;&nbsp;';
+			tmp.newDiv.insert({'bottom': new Element('span', {'class': 'treegrid-indent'}) });
 		}
-		tmp.newDiv = new Element('small')
-			.insert({'bottom': tmp.preString });
-		
 		if(category.noOfChildren > 0) {
-			tmp.newDiv.insert({'bottom': new Element('a', {'href': 'javascript: void(0);'})
+			tmp.newDiv.insert({'bottom': new Element('a', {'href': 'javascript: void(0);', 'class': 'treegrid-explander'})
 				.update( new Element('span', {'class': 'icon glyphicon glyphicon-plus-sign'}) ) 
 				.observe('click', function(){
 					tmp.me._getChildrenRows(this, category);
 				})
 			});
 		} else {
-			tmp.newDiv.insert({'bottom': '&nbsp;&nbsp;&nbsp;' });
+			tmp.newDiv.insert({'bottom': new Element('span', {'class': 'treegrid-explander'}) });
 		}
 		return tmp.newDiv;
 	}
