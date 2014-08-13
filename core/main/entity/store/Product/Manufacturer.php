@@ -117,17 +117,6 @@ class Manufacturer extends BaseEntityAbstract
 		return $this;
 	}
 	/**
-	 * Getting the customer
-	 *
-	 * @param int $id The id of the customer
-	 *
-	 * @return Ambigous <BaseEntityAbstract, NULL, SimpleXMLElement>
-	 */
-	public static function get($id)
-	{
-		return FactoryAbastract::dao(get_called_class())->findById($id);
-	}
-	/**
 	 * Creating a instance of this
 	 *
 	 * @param string  $name

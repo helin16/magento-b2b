@@ -52,6 +52,18 @@ class ProductCategory extends BaseEntityAbstract
 	 */
 	private $description;
 	/**
+	 * The id of the customer in magento
+	 *
+	 * @var int
+	 */
+	private $mageId = 0;
+	/**
+	 * Whether this order is imported from B2B
+	 *
+	 * @var bool
+	 */
+	private $isFromB2B = false;
+	/**
 	 * Getter for name
 	 *
 	 * @return ProductCategory
@@ -160,6 +172,48 @@ class ProductCategory extends BaseEntityAbstract
 	    return $this;
 	}
 	/**
+	 * Getter for isFromB2B
+	 *
+	 * @return bool
+	 */
+	public function getIsFromB2B()
+	{
+		return (trim($this->isFromB2B) === '1');
+	}
+	/**
+	 * Setter for isFromB2B
+	 *
+	 * @param unkown $value The isFromB2B
+	 *
+	 * @return Order
+	 */
+	public function setIsFromB2B($value)
+	{
+		$this->isFromB2B = $value;
+		return $this;
+	}
+	/**
+	 * Getter for mageId
+	 *
+	 * @return
+	 */
+	public function getMageId()
+	{
+		return $this->mageId;
+	}
+	/**
+	 * Setter for mageId
+	 *
+	 * @param int $value The mageId
+	 *
+	 * @return Customer
+	 */
+	public function setMageId($value)
+	{
+		$this->mageId = $value;
+		return $this;
+	}
+	/**
 	 * (non-PHPdoc)
 	 * @see BaseEntityAbstract::postSave()
 	 */
@@ -225,13 +279,15 @@ class ProductCategory extends BaseEntityAbstract
 	 * 
 	 * @return Ambigous <GenericDAO, BaseEntityAbstract>
 	 */
-	public static function create($name, $description, ProductCategory $parent = null)
+	public static function create($name, $description, ProductCategory $parent = null, $isFromB2B = false, $mageId = 0)
 	{
 		$class = __CLASS__;
 		$category = new $class();
 		$category->setName(trim($name))
 			->setDescription(trim($description))
-			->setParent($parent);
+			->setParent($parent)
+			->setIsFromB2B($isFromB2B)
+			->setMageId($mageId);
 		return FactoryAbastract::dao($class)->save($category);
 	}
 	/**
@@ -246,10 +302,14 @@ class ProductCategory extends BaseEntityAbstract
 		DaoMap::setManyToOne('parent', __CLASS__, 'pro_cate_parent', true);
 		DaoMap::setManyToOne('root', __CLASS__, 'pro_cate_root', true);
 		DaoMap::setStringType('position', 'varchar', 255);
+		DaoMap::setIntType('mageId');
+		DaoMap::setBoolType('isFromB2B');
 		parent::__loadDaoMap();
 		
 		DaoMap::createUniqueIndex('name');
 		DaoMap::createIndex('position');
+		DaoMap::createIndex('isFromB2B');
+		DaoMap::createIndex('mageId');
 		DaoMap::commit();
 	}
 }

@@ -21,7 +21,7 @@ CREATE TABLE `manufacturer` (
   `name` varchar(100) NOT NULL DEFAULT '',
   `description` varchar(255) NOT NULL DEFAULT '',
   `mageId`  int(10) unsigned NOT NULL DEFAULT '0',
-  `isFromB2B` tinyint(1) NOT NULL DEFAULT '1',
+  `isFromB2B` tinyint(1) NOT NULL DEFAULT '0',
   `active` tinyint(1) NOT NULL DEFAULT '1',
   `created` datetime NOT NULL DEFAULT '0001-01-01 00:00:00',
   `createdById` int(10) unsigned NOT NULL DEFAULT '0',
@@ -34,6 +34,7 @@ CREATE TABLE `manufacturer` (
   KEY `updated` (`updated`),
   KEY `updatedById` (`updatedById`),
   KEY `mageId` (`mageId`),
+  KEY `isFromB2B` (`isFromB2B`),
   KEY `name` (`name`),
   KEY `description` (`description`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
@@ -105,7 +106,7 @@ CREATE TABLE `supplier` (
   `name` varchar(100) NOT NULL DEFAULT '',
   `description` varchar(255) NOT NULL DEFAULT '',
   `mageId`  int(10) unsigned NOT NULL DEFAULT '0',
-  `isFromB2B` tinyint(1) NOT NULL DEFAULT '1',
+  `isFromB2B` tinyint(1) NOT NULL DEFAULT '0',
   `active` tinyint(1) NOT NULL DEFAULT '1',
   `created` datetime NOT NULL DEFAULT '0001-01-01 00:00:00',
   `createdById` int(10) unsigned NOT NULL DEFAULT '0',
@@ -118,6 +119,7 @@ CREATE TABLE `supplier` (
   KEY `updated` (`updated`),
   KEY `updatedById` (`updatedById`),
   KEY `mageId` (`mageId`),
+  KEY `isFromB2B` (`isFromB2B`),
   KEY `name` (`name`),
   KEY `description` (`description`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
@@ -152,6 +154,8 @@ CREATE TABLE `productcategory` (
   `rootId` int(10) unsigned NULL DEFAULT NULL,
   `parentId` int(10) unsigned NULL DEFAULT NULL,
   `position` varchar(255) NOT NULL DEFAULT '',
+  `mageId`  int(10) unsigned NOT NULL DEFAULT '0',
+  `isFromB2B` tinyint(1) NOT NULL DEFAULT '0',
   `active` tinyint(1) NOT NULL DEFAULT '1',
   `created` datetime NOT NULL DEFAULT '0001-01-01 00:00:00',
   `createdById` int(10) unsigned NOT NULL DEFAULT '0',
@@ -166,7 +170,9 @@ CREATE TABLE `productcategory` (
   KEY `name` (`name`),
   KEY `rootId` (`rootId`),
   KEY `parentId` (`parentId`),
-  KEY `position` (`position`)
+  KEY `position` (`position`),
+  KEY `mageId` (`mageId`),
+  KEY `isFromB2B` (`isFromB2B`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 
 
