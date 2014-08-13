@@ -167,7 +167,7 @@ class Supplier extends BaseEntityAbstract
 	 */
 	public function __loadDaoMap()
 	{
-		DaoMap::begin($this, 'man');
+		DaoMap::begin($this, 'sup');
 	
 		DaoMap::setStringType('name', 'varchar', 100);
 		DaoMap::setStringType('description', 'varchar', 255);

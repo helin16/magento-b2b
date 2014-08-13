@@ -44,6 +44,10 @@ CRUDPageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.me.postAjax(tmp.me.getCallbackId('getItems'), {'pagination': tmp.me._pagination, 'searchCriteria': tmp.me._searchCriteria}, {
 			'onLoading': function () {
 				jQuery('#' + tmp.me.searchDivId + ' #searchBtn').button('loading');
+				//reset div
+				if(tmp.reset === true) {
+					tmp.resultDiv.update( new Element('tr').update( new Element('td').update( tmp.me.getLoadingImg() ) ) );
+				}
 			}
 			,'onSuccess': function(sender, param) {
 				try{
@@ -72,7 +76,6 @@ CRUDPageJs.prototype = Object.extend(new BPCPageJs(), {
 					if(tmp.result.pageStats.pageNumber < tmp.result.pageStats.totalPages)
 						tmp.resultDiv.insert({'bottom': tmp.me._getNextPageBtn().addClassName('paginWrapper') });
 				} catch (e) {
-					alert(e);
 					tmp.resultDiv.insert({'bottom': tmp.me.getAlertBox('Error', e).addClassName('alert-danger') });
 				}
 			}
@@ -138,16 +141,28 @@ CRUDPageJs.prototype = Object.extend(new BPCPageJs(), {
 	,_deleteItem: function(row) {
 		var tmp = {};
 		tmp.me = this;
+		tmp.row = $(tmp.me.resultDivId).down('tbody').down('.item_row[item_id=' + row.id + ']');
 		tmp.me.postAjax(tmp.me.getCallbackId('deleteItems'), {'ids': [row.id]}, {
-			'onSuccess': function(sender, param) {
+			'onLoading': function () { 
+				if(tmp.row) {
+					tmp.row.hide(); 
+				}
+			}
+			,'onSuccess': function(sender, param) {
 				try{
 					tmp.result = tmp.me.getResp(param, false, true);
 					if(!tmp.result)
 						return;
 					tmp.count = $(tmp.me.totalNoOfItemsId).innerHTML * 1 - 1;
 					$(tmp.me.totalNoOfItemsId).update(tmp.count <= 0 ? 0 : tmp.count);
+					if(tmp.row) {
+						tmp.row.remove();
+					}
 				} catch (e) {
-					alert(e);
+					tmp.me.showModalBox('<span class="text-danger">ERROR</span>', e, true);
+					if(tmp.row) {
+						tmp.row.show();
+					}
 				}
 			}
 		});

@@ -162,5 +162,14 @@ abstract class CRUDPageAbstract extends BPCPageAbstract
 	 *
 	 */
 	public function saveItem($sender, $param){}
+	/**
+	 * getting the focus entity
+	 * 
+	 * @return string
+	 */
+	public function getFocusEntity()
+	{
+		return trim($this->_focusEntity);
+	}
 }
 ?>

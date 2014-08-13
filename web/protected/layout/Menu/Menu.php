@@ -29,7 +29,8 @@ class Menu extends TTemplateControl
 		if(AccessControl::canAccessProductsPage(Core::getRole()) )
 			$array['Products'] = array(
 				'products' => array('url' => '/products.html', 'name' => 'Products'),
-				'manufacturers' => array('url' => '/manufacturers.html', 'name' => 'Manufactures')
+				'manufacturers' => array('url' => '/manufacturers.html', 'name' => 'Manufactures'),
+				'suppliers' => array('url' => '/suppliers.html', 'name' => 'Suppliers')
 			);
 		if(AccessControl::canAccessUsersPage(Core::getRole()) )
 			$array['users'] = array('url' => '/users.html', 'name' => 'Users');
