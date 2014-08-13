@@ -20,12 +20,14 @@ class Menu extends TTemplateControl
 		$pageItem = trim($this->getPage()->menuItem);
 		$array = array(
 			'' => array('url' => '/', 'name' => 'Home')
-			,'order' => array('url' => '/order.html', 'name' => 'Orders')
+			,'Orders' => array(
+				'order' => array('url' => '/order.html', 'name' => 'Orders')
+			)
 		);
 		if(AccessControl::canAccessPriceMatchPage(Core::getRole()) )
 			$array['priceMatch'] = array('url' => '/pricematch.html', 'name' => 'Price Match');
 		if(AccessControl::canAccessOrderItemsPage(Core::getRole()) )
-			$array['orderitems'] = array('url' => '/orderitems.html', 'name' => 'OrderItems');
+			$array['Orders']['orderitems'] = array('url' => '/orderitems.html', 'name' => 'OrderItems');
 		if(AccessControl::canAccessProductsPage(Core::getRole()) )
 			$array['Products'] = array(
 				'products' => array('url' => '/products.html', 'name' => 'Products'),
