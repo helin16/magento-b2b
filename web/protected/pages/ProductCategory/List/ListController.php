@@ -112,5 +112,41 @@ class ListController extends CRUDPageAbstract
 		}
 		$param->ResponseData = StringUtilsAbstract::getJson($results, $errors);
 	}
+	/**
+	 * delete the items
+	 *
+	 * @param unknown $sender
+	 * @param unknown $param
+	 * @throws Exception
+	 *
+	 */
+	public function deleteItems($sender, $param)
+	{
+		$results = $errors = array();
+		try
+		{
+			$class = trim($this->_focusEntity);
+			$ids = isset($param->CallbackParameter->ids) ? $param->CallbackParameter->ids : array();
+			if(count($ids) > 0)
+			{	
+				$parents = array();
+				foreach($ids as $id)
+				{
+					if(!($item = $class::get($id)) instanceof $class)
+						continue;
+					$item->setActive(false)
+						->save();
+					$parents[] = $item->getParent()->getJson();
+				}
+				$class::deleteByCriteria('id in (' . str_repeat('?', count($ids)) . ')', $ids);
+				$results['parents'] = $parents;
+			}
+		}
+		catch(Exception $ex)
+		{
+			$errors[] = $ex->getMessage();
+		}
+		$param->ResponseData = StringUtilsAbstract::getJson($results, $errors);
+	}
 }
 ?>

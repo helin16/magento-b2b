@@ -155,6 +155,44 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		}
 		return tmp.newDiv;
 	}
+	
+	,_deleteItem: function(row) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.row = $(tmp.me.resultDivId).down('tbody').down('.item_row[item_id=' + row.id + ']');
+		tmp.me.postAjax(tmp.me.getCallbackId('deleteItems'), {'ids': [row.id]}, {
+			'onLoading': function () { 
+				if(tmp.row) {
+					tmp.row.hide(); 
+				}
+			}
+			,'onSuccess': function(sender, param) {
+				try{
+					tmp.result = tmp.me.getResp(param, false, true);
+					if(!tmp.result || !tmp.result.parents)
+						return;
+					tmp.count = $(tmp.me.totalNoOfItemsId).innerHTML * 1 - 1;
+					$(tmp.me.totalNoOfItemsId).update(tmp.count <= 0 ? 0 : tmp.count);
+					if(tmp.row) {
+						tmp.row.remove();
+					}
+					//refresh the parents
+					tmp.result.parents.each(function(parent) {
+						tmp.parentRow = $(tmp.me.resultDivId).down('tbody').down('.item_row[item_id=' + parent.id + ']');
+						if(tmp.parentRow) {
+							tmp.parentRow.replace(tmp.me._getResultRow(parent).addClassName('item_row').writeAttribute('item_id', parent.id))
+						}
+					});
+				} catch (e) {
+					tmp.me.showModalBox('<span class="text-danger">ERROR</span>', e, true);
+					if(tmp.row) {
+						tmp.row.show();
+					}
+				}
+			}
+		});
+		return tmp.me;
+	}
 
 	,_getResultRow: function(row, isTitle) {
 		var tmp = {};
@@ -175,7 +213,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 				})
 			});
 		
-		if(row.hasChildren === false) {
+		if(!(row.noOfChildren > 0)) {
 			tmp.btns.insert({'bottom': new Element('span', {'class': 'btn btn-danger', 'title': 'Delete'})
 				.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-trash'}) })
 				.observe('click', function(){
