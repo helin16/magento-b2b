@@ -50,8 +50,9 @@ class ListController extends CRUDPageAbstract
 			}
 			
 			$serachCriteria = isset($param->CallbackParameter->searchCriteria) ? json_decode(json_encode($param->CallbackParameter->searchCriteria), true) : array();
+			$parent = (isset($serachCriteria['parentId']) && ($parent = $class::get($serachCriteria['parentId'])) instanceof $class) ? $parent : null; 
 				
-			$where = array(1);
+			$where = array(!$parent instanceof $class ? 'rootId = id' : 'parentId = ' . $parent->getId());
 			$params = array();
 			if(isset($serachCriteria['pro_cate.name']) && ($name = trim($serachCriteria['pro_cate.name'])) !== '')
 			{

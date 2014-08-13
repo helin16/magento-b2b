@@ -267,6 +267,7 @@ class ProductCategory extends BaseEntityAbstract
 			$array['parent'] = $this->getParent() instanceof $class ? array('id'=> $this->getParent()->getId()) : null;
 			$array['root'] = array('id'=> $this->getRoot()->getId());
 			$array['namePath'] = $this->getNamePath();
+			$array['hasChildren'] = FactoryAbastract::dao(get_class($this))->countByCriteria('parentId = ?', array($this->getId())) > 0;
 		}
 		return parent::getJson($array, $reset);
 	}
