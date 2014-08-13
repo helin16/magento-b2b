@@ -104,6 +104,7 @@ class ListController extends CRUDPageAbstract
 				$item = $class::create($name, $description, $parent);
 			}
 			$results['item'] = $item->getJson();
+			$results['parent'] = ($parent instanceof $class ? $parent->getJson() : null);
 		}
 		catch(Exception $ex)
 		{

@@ -19,18 +19,20 @@ class Menu extends TTemplateControl
 	{
 		$pageItem = trim($this->getPage()->menuItem);
 		$array = array(
-			'' => array('url' => '/', 'name' => 'Home')
+			'' => array('url' => '/', 'name' => 'Home', 'icon' => '<span class="glyphicon glyphicon-home"></span>')
 			,'Orders' => array(
-				'order' => array('url' => '/order.html', 'name' => 'Orders')
+				'icon' => '<span class="glyphicon glyphicon-search"></span>',
+				'order' => array('url' => '/order.html', 'name' => 'Orders', 'icon' => '<span class="glyphicon glyphicon-search"></span>')
 			)
 		);
 		if(AccessControl::canAccessPriceMatchPage(Core::getRole()) )
-			$array['priceMatch'] = array('url' => '/pricematch.html', 'name' => 'Price Match');
+			$array['priceMatch'] = array('url' => '/pricematch.html', 'name' => 'Price Match', 'icon' => '<span class="glyphicon glyphicon-usd"></span>' );
 		if(AccessControl::canAccessOrderItemsPage(Core::getRole()) )
 			$array['Orders']['orderitems'] = array('url' => '/orderitems.html', 'name' => 'OrderItems');
 		if(AccessControl::canAccessProductsPage(Core::getRole()) )
 			$array['Products'] = array(
-				'products' => array('url' => '/products.html', 'name' => 'Products'),
+				'icon' => '<span class="glyphicon glyphicon-th-list"></span>',
+				'products' => array('url' => '/products.html', 'name' => 'Products', 'icon' => '<span class="glyphicon glyphicon-th-list"></span>'),
 				'manufacturers' => array('url' => '/manufacturers.html', 'name' => 'Manufactures'),
 				'suppliers' => array('url' => '/suppliers.html', 'name' => 'Suppliers'),
 				'productcodetypes' => array('url' => '/productcodetypes.html', 'name' => 'Product Code Types'),

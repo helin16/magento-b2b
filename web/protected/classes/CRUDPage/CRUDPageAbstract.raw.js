@@ -110,7 +110,12 @@ CRUDPageJs.prototype = Object.extend(new BPCPageJs(), {
 			return;
 		
 		tmp.me.postAjax(tmp.me.getCallbackId('saveItem'), {'item': tmp.data}, {
-			'onLoading': function () { savePanel.addClassName('item_row').writeAttribute('item_id', tmp.data.id).hide(); }
+			'onLoading': function () {
+				if(tmp.data.id) {
+					savePanel.addClassName('item_row').writeAttribute('item_id', tmp.data.id); 
+				}
+				savePanel.hide();
+			}
 			,'onSuccess': function(sender, param) {
 				try{
 					tmp.result = tmp.me.getResp(param, false, true);
