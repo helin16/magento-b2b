@@ -1,6 +1,6 @@
 <?php
 /**
- * This is the listing page for Supplier
+ * This is the listing page for ProductCodeType
  * 
  * @package    Web
  * @subpackage Controller
@@ -12,8 +12,8 @@ class ListController extends CRUDPageAbstract
 	 * (non-PHPdoc)
 	 * @see BPCPageAbstract::$menuItem
 	 */
-	public $menuItem = 'suppliers';
-	protected $_focusEntity = 'Supplier';
+	public $menuItem = 'productcodetypes';
+	protected $_focusEntity = 'ProductCodeType';
 	/**
 	 * constructor
 	 */
@@ -49,13 +49,13 @@ class ListController extends CRUDPageAbstract
 				
 			$where = array(1);
 			$params = array();
-			if(isset($serachCriteria['sup.name']) && ($name = trim($serachCriteria['sup.name'])) !== '')
+			if(isset($serachCriteria['pro_code_type.name']) && ($name = trim($serachCriteria['pro_code_type.name'])) !== '')
 			{
-				$where[] = 'sup.name like ?';
+				$where[] = 'pro_code_type.name like ?';
 				$params[] = '%' . $name . '%';
 			}
 			$stats = array();
-			$objects = $class::getAllByCriteria(implode(' AND ', $where), $params, false, $pageNo, $pageSize, array('sup.name' => 'asc'), $stats);
+			$objects = $class::getAllByCriteria(implode(' AND ', $where), $params, false, $pageNo, $pageSize, array('pro_code_type.name' => 'asc'), $stats);
 			$results['pageStats'] = $stats;
 			$results['items'] = array();
 			foreach($objects as $obj)
@@ -86,15 +86,18 @@ class ListController extends CRUDPageAbstract
 			$item = (isset($param->CallbackParameter->item->id) && ($item = $class::get($param->CallbackParameter->item->id)) instanceof $class) ? $item : null;
 			$name = trim($param->CallbackParameter->item->name);
 			$description = trim($param->CallbackParameter->item->description);
+			$allowMultiple = (!isset($param->CallbackParameter->item->allowMultiple) || $param->CallbackParameter->item->allowMultiple !== true ? false : true);
+			
 			if($item instanceof $class)
 			{
 				$item->setName($name)
 					->setDescription($description)
+					->setAllowMultiple($allowMultiple)
 					->save();
 			}
 			else
 			{
-				$item = $class::create($name, $description, false);
+				$item = $class::create($name, $description);
 			}
 			$results['item'] = $item->getJson();
 		}

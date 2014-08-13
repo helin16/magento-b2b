@@ -44,8 +44,11 @@
 			<!-- FrontEnd:: Price Match Companypage -->
 			<url ServiceParameter="PriceMatch.Company.List.PriceMatchCompanyListController" pattern="pricematchcompanies.html" />
 			
-			<!-- FrontEnd:: order list page -->
+			<!-- FrontEnd:: product list page -->
 			<url ServiceParameter="Product.List.ProductController" pattern="products.html" />
+			
+			<!-- FrontEnd:: product code type list page -->
+			<url ServiceParameter="ProductCodeType.List.ListController" pattern="productcodetypes.html" />
 			
 			<!-- FrontEnd:: manufacturer list page -->
 			<url ServiceParameter="Manufacturer.List.ListController" pattern="manufacturers.html" />

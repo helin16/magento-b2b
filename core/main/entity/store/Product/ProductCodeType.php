@@ -96,34 +96,19 @@ class ProductCodeType extends BaseEntityAbstract
 	 * 
 	 * @param string $sku           The sku of the product
 	 * @param string $name          The name of the product
-	 * @param string $mageProductId The magento id of the product
-	 * @param int    $stockOnHand   The total quantity on hand for this product
-	 * @param int    $stockOnOrder  The total quantity on order from supplier for this product
-	 * @param bool   $isFromB2B     Whether this product is created via B2B?
-	 * @param string $shortDescr    The short description of the product
-	 * @param string $fullDescr     The assetId of the full description asset of the product
+	 * @param bool   $allowMultiple Whether this product allow to have multiple code of this type
 	 * 
 	 * @return Ambigous <Product, Ambigous, NULL, BaseEntityAbstract>
 	 */
-	public static function create($name, $description = '')
+	public static function create($name, $description = '', $allowMultiple = true)
 	{
 		$class = __CLASS__;
 		$obj = new $class();
 		$obj->setName(trim($name))
-			->setDescription(trim($description));
+			->setDescription(trim($description))
+			->setAllowMultiple($allowMultiple);
 		FactoryAbastract::dao($class)->save($obj);
 		return $obj;
-	}
-	/**
-	 * Getting the type via id
-	 * 
-	 * @param string $sku The sku of the product
-	 * 
-	 * @return Ambigous <NULL, BaseEntityAbstract>
-	 */
-	public static function get($id)
-	{
-		return FactoryAbastract::dao(get_called_class())->findById($id);
 	}
 	/**
 	 * (non-PHPdoc)
