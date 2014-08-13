@@ -447,10 +447,14 @@ abstract class BaseEntityAbstract
         $errorMsgs = array();
         return $errorMsgs;
     }
-    public function preSave() {
-    }
-    public function postSave() {
-    }
+    /**
+     * function before save the entity
+     */
+    public function preSave() {}
+    /**
+     * function after save the entity
+     */
+    public function postSave() {}
     /**
      * Saving the current entity
      * 

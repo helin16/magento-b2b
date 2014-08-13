@@ -50,6 +50,9 @@
 			<!-- FrontEnd:: product code type list page -->
 			<url ServiceParameter="ProductCodeType.List.ListController" pattern="productcodetypes.html" />
 			
+			<!-- FrontEnd:: product category list page -->
+			<url ServiceParameter="ProductCategory.List.ListController" pattern="productcategories.html" />
+			
 			<!-- FrontEnd:: manufacturer list page -->
 			<url ServiceParameter="Manufacturer.List.ListController" pattern="manufacturers.html" />
 			<!-- FrontEnd:: supplier list page -->
