@@ -31,7 +31,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 						.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-remove'}) })
 						.observe('click', function(){
 							if(row.id)
-								$(this).up('.save-item-panel').replace(tmp.me._getResultRow(row));
+								$(this).up('.save-item-panel').replace(tmp.me._getResultRow(row).addClassName('item_row').writeAttribute('item_id', row.id) );
 							else
 								$(this).up('.save-item-panel').remove();
 						})
