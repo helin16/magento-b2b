@@ -35,7 +35,7 @@ class Menu extends TTemplateControl
 				'products' => array('url' => '/products.html', 'name' => 'Products', 'icon' => '<span class="glyphicon glyphicon-th-list"></span>'),
 				'manufacturers' => array('url' => '/manufacturers.html', 'name' => 'Manufactures'),
 				'suppliers' => array('url' => '/suppliers.html', 'name' => 'Suppliers'),
-				'productcodetypes' => array('url' => '/productcodetypes.html', 'name' => 'Product Code Types'),
+				'productcodetypes' => array('url' => '/productcodetypes.html', 'name' => 'Product Code Types', 'icon' => '<span class="glyphicon glyphicon-barcode"></span>'),
 				'productcategories' => array('url' => '/productcategories.html', 'name' => 'Product Categories')
 			);
 		if(AccessControl::canAccessUsersPage(Core::getRole()) )
