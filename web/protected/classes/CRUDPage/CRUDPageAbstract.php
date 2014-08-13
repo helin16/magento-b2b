@@ -9,6 +9,7 @@
 abstract class CRUDPageAbstract extends BPCPageAbstract 
 {
 	public $pageSize = 10;
+	protected $_focusEntity = '';
 	/**
 	 * loading the page js class files
 	 */
@@ -50,14 +51,39 @@ abstract class CRUDPageAbstract extends BPCPageAbstract
 		return $js;
 	}
 	/**
-	 * Getting the orders
+	 * Getting the items
 	 *
 	 * @param unknown $sender
 	 * @param unknown $param
 	 * @throws Exception
 	 *
 	 */
-	public function getItems($sender, $param){}
+	public function getItems($sender, $param)
+	{
+		$results = $errors = array();
+		try
+		{
+			$class = trim($this->_focusEntity);
+			$pageNo = 1;
+			$pageSize = DaoQuery::DEFAUTL_PAGE_SIZE;
+			if(isset($param->CallbackParameter->pagination))
+			{
+				$pageNo = $param->CallbackParameter->pagination->pageNo;
+				$pageSize = $param->CallbackParameter->pagination->pageSize;
+			}
+			$stats = array();
+			$objects = $class::getAll(true, $pageNo, $pageSize, array(), $stats);
+			$results['pageStats'] = $stats;
+			$results['items'] = array();
+			foreach($objects as $obj)
+				$results['items'][] = $obj->getJson();
+		}
+		catch(Exception $ex)
+		{
+			$errors[] = $ex->getMessage();
+		}
+		$param->ResponseData = StringUtilsAbstract::getJson($results, $errors);
+	}
 	/**
 	 * delete the items
 	 *
@@ -66,7 +92,22 @@ abstract class CRUDPageAbstract extends BPCPageAbstract
 	 * @throws Exception
 	 *
 	 */
-	public function deleteItems($sender, $param){}
+	public function deleteItems($sender, $param)
+	{
+		$results = $errors = array();
+		try
+		{
+			$class = trim($this->_focusEntity);
+			$ids = isset($param->CallbackParameter->ids) ? $param->CallbackParameter->ids : array();
+			if(count($ids) > 0)
+				$class::deleteByCriteria('id in (' . str_repeat('?', count($ids)) . ')', $ids);
+		}
+		catch(Exception $ex)
+		{
+			$errors[] = $ex->getMessage();
+		}
+		$param->ResponseData = StringUtilsAbstract::getJson($results, $errors);
+	}
 	/**
 	 * save the items
 	 *

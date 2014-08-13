@@ -13,6 +13,7 @@ class ListController extends CRUDPageAbstract
 	 * @see BPCPageAbstract::$menuItem
 	 */
 	public $menuItem = 'manufacturers';
+	protected $_focusEntity = 'Manufacturer';
 	/**
 	 * constructor
 	 */
@@ -23,7 +24,7 @@ class ListController extends CRUDPageAbstract
 			die('You do NOT have access to this page');
 	}
 	/**
-	 * Getting the orders
+	 * Getting the items
 	 *
 	 * @param unknown $sender
 	 * @param unknown $param
@@ -35,6 +36,7 @@ class ListController extends CRUDPageAbstract
 		$results = $errors = array();
 		try
 		{
+			$class = trim($this->_focusEntity);
 			$pageNo = 1;
 			$pageSize = DaoQuery::DEFAUTL_PAGE_SIZE;
 			if(isset($param->CallbackParameter->pagination))
@@ -52,34 +54,12 @@ class ListController extends CRUDPageAbstract
 				$where[] = 'man.name like ?';
 				$params[] = '%' . $name . '%';
 			}
-			$objects = Manufacturer::getAllByCriteria(implode(' AND ', $where), $params, false, $pageNo, $pageSize, array('man.name' => 'asc'));
-			$results['pageStats'] = FactoryAbastract::service('Product')->getPageStats();
+			$stats = array();
+			$objects = $class::getAllByCriteria(implode(' AND ', $where), $params, false, $pageNo, $pageSize, array('man.name' => 'asc'), $stats);
+			$results['pageStats'] = $stats;
 			$results['items'] = array();
 			foreach($objects as $obj)
 				$results['items'][] = $obj->getJson();
-		}
-		catch(Exception $ex)
-		{
-			$errors[] = $ex->getMessage();
-		}
-		$param->ResponseData = StringUtilsAbstract::getJson($results, $errors);
-	}
-	/**
-	 * delete the items
-	 *
-	 * @param unknown $sender
-	 * @param unknown $param
-	 * @throws Exception
-	 *
-	 */
-	public function deleteItems($sender, $param)
-	{
-		$results = $errors = array();
-		try
-		{
-			$ids = isset($param->CallbackParameter->ids) ? $param->CallbackParameter->ids : array();
-			if(count($ids) > 0)
-				Manufacturer::deleteByCriteria('id in (' . str_repeat('?', count($ids)) . ')', $ids);
 		}
 		catch(Exception $ex)
 		{
@@ -100,20 +80,21 @@ class ListController extends CRUDPageAbstract
 		$results = $errors = array();
 		try
 		{
+			$class = trim($this->_focusEntity);
 			if(!isset($param->CallbackParameter->item))
 				throw new Exception("System Error: no item information passed in!");
-			$item = (isset($param->CallbackParameter->item->id) && ($item = Manufacturer::get($param->CallbackParameter->item->id)) instanceof Manufacturer) ? $item : null;
+			$item = (isset($param->CallbackParameter->item->id) && ($item = Manufacturer::get($param->CallbackParameter->item->id)) instanceof $class) ? $item : null;
 			$name = trim($param->CallbackParameter->item->name);
 			$description = trim($param->CallbackParameter->item->description);
-			if($item instanceof Manufacturer)
+			if($item instanceof $class)
 			{
 				$item->setName($name)
-					->setName($description)
+					->setDescription($description)
 					->save();
 			}
 			else
 			{
-				$item = Manufacturer::create($name, $description, false);
+				$item = $class::create($name, $description, false);
 			}
 			$results['item'] = $item->getJson();
 		}

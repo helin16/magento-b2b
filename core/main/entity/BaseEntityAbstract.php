@@ -463,16 +463,19 @@ abstract class BaseEntityAbstract
     /**
      * Find all entities
      * 
-     * @param string $activeOnly
-     * @param string $pageNo
+     * @param string  $activeOnly
+     * @param string  $pageNo
      * @param unknown $pageSize
      * @param unknown $orderBy
+     * @param array   $stats
      * 
      * @return Ambigous <multitype:, multitype:BaseEntityAbstract >
      */
-    public static function getAll($activeOnly = true, $pageNo = null, $pageSize = DaoQuery::DEFAUTL_PAGE_SIZE, $orderBy = array())
+    public static function getAll($activeOnly = true, $pageNo = null, $pageSize = DaoQuery::DEFAUTL_PAGE_SIZE, $orderBy = array(), &$stats = array())
     {
-    	return FactoryAbastract::dao(get_called_class())->findAll($activeOnly, $pageNo, $pageSize, $orderBy);
+    	$result = FactoryAbastract::dao(get_called_class())->findAll($activeOnly, $pageNo, $pageSize, $orderBy);
+    	$stats = FactoryAbastract::dao(get_called_class())->getPageStats();
+    	return $result;
     }
     /**
      * Find all entities with criterias
@@ -483,12 +486,15 @@ abstract class BaseEntityAbstract
      * @param string $pageNo
      * @param unknown $pageSize
      * @param unknown $orderBy
+     * @param array   $stats
      * 
      * @return Ambigous <multitype:, multitype:BaseEntityAbstract >
      */
-    public static function getAllByCriteria($criteria, $params = array(), $activeOnly = true, $pageNo = null, $pageSize = DaoQuery::DEFAUTL_PAGE_SIZE, $orderBy = array())
+    public static function getAllByCriteria($criteria, $params = array(), $activeOnly = true, $pageNo = null, $pageSize = DaoQuery::DEFAUTL_PAGE_SIZE, $orderBy = array(), &$stats = array())
     {
-    	return FactoryAbastract::dao(get_called_class())->findByCriteria($criteria, $params, $activeOnly, $pageNo, $pageSize, $orderBy);
+    	$result = FactoryAbastract::dao(get_called_class())->findByCriteria($criteria, $params, $activeOnly, $pageNo, $pageSize, $orderBy);
+    	$stats = FactoryAbastract::dao(get_called_class())->getPageStats();
+    	return $result;
     }
     /**
      * Getting entity with an id
