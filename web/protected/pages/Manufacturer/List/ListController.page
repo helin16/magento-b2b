@@ -1,7 +1,4 @@
 <com:TContent ID="MainContent">
-	<com:TCallback ID="getItemsBtn" OnCallback="getItems" />
-	<com:TCallback ID="delItemsBtn" OnCallback="deleteItems" />
-	<com:TCallback ID="saveItemBtn" OnCallback="saveItem" />
 	<div class="pagewrapper item-list-wrapper">
 		<div class="panel panel-default" id="searchPanel">
 			<div class="panel-heading">

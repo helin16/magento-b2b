@@ -8,8 +8,30 @@
  */
 abstract class CRUDPageAbstract extends BPCPageAbstract 
 {
+	/**
+	 * The default page size to get items
+	 * 
+	 * @var int
+	 */
 	public $pageSize = 10;
+	/**
+	 * The focusing entity
+	 * 
+	 * @var string
+	 */
 	protected $_focusEntity = '';
+	/**
+	 * @var TCallback
+	 */
+	private $_getItemsBtn;
+	/**
+	 * @var TCallback
+	 */
+	private $_saveItemsBtn;
+	/**
+	 * @var TCallback
+	 */
+	private $_delItemsBtn;
 	/**
 	 * loading the page js class files
 	 */
@@ -23,6 +45,29 @@ abstract class CRUDPageAbstract extends BPCPageAbstract
 		if (isset($cScripts['css']) && ($lastestCss = trim($cScripts['css'])) !== '')
 			$this->getPage()->getClientScript()->registerStyleSheetFile($thisClass . 'Css', $this->publishFilePath(dirname(__FILE__) . DIRECTORY_SEPARATOR . $lastestCss));
 	    return $this;
+	}
+	/**
+	 * (non-PHPdoc)
+	 * @see TControl::onInit()
+	 */
+	public function onInit($param)
+	{
+		parent::onInit($param);
+	
+		$this->_getItemsBtn = new TCallback();
+		$this->_getItemsBtn->ID = 'getItemsBtn';
+		$this->_getItemsBtn->OnCallback = 'Page.getItems';
+		$this->getControls()->add($this->_getItemsBtn);
+	
+		$this->_saveItemsBtn = new TCallback();
+		$this->_saveItemsBtn->ID = 'saveItemBtn';
+		$this->_saveItemsBtn->OnCallback = 'Page.saveItem';
+		$this->getControls()->add($this->_saveItemsBtn);
+	
+		$this->_delItemsBtn = new TCallback();
+		$this->_delItemsBtn->ID = 'delItemsBtn';
+		$this->_delItemsBtn->OnCallback = 'Page.deleteItems';
+		$this->getControls()->add($this->_delItemsBtn);
 	}
 	/**
 	 * (non-PHPdoc)
@@ -42,12 +87,12 @@ abstract class CRUDPageAbstract extends BPCPageAbstract
 	protected function _getEndJs()
 	{
 		$js = parent::_getEndJs();
-		$js .= "pageJs.setCallbackId('getItems', '" . $this->getItemsBtn->getUniqueID() . "')";
-		$js .= ".setCallbackId('deleteItems', '" . $this->delItemsBtn->getUniqueID() . "')";
-		$js .= ".setCallbackId('saveItem', '" . $this->saveItemBtn->getUniqueID() . "')";
+		$js .= "pageJs.setCallbackId('getItems', '" . $this->_getItemsBtn->getUniqueID() . "')";
+		$js .= ".setCallbackId('deleteItems', '" . $this->_delItemsBtn->getUniqueID() . "')";
+		$js .= ".setCallbackId('saveItem', '" . $this->_saveItemsBtn->getUniqueID() . "')";
 		$js .= ".setHTMLIds('item-list', 'searchPanel', 'total-found-count')";
-		$js .= ";";
-		$js .= '$("searchBtn").click();';
+		$js .= ".getSearchCriteria()";
+		$js .= ".getResults(true, " . $this->pageSize . ")";
 		return $js;
 	}
 	/**
