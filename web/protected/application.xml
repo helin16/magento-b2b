@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<application id="BPCinternal-System" mode="Performance">
+<application id="BPCinternal-System" mode="Debug">
 	<!-- alias definitions and namespace usings <paths> <alias id="myalias" 
 		path="./lib" /> <using namespace="Application.common.*" /> </paths> -->
 
@@ -11,7 +11,7 @@
 
 	<!-- configurations for modules -->
 	<modules>
-		<module id="cache" class="System.Caching.TAPCCache" />
+		<!-- module id="cache" class="System.Caching.TAPCCache" /> -->
 		<module id="Session" class="Application.classes.Session.SessionDb" UseCustomStorage="true" />
 		<module id="security" class="TSecurityManager" EncryptionKey="BPCinternal" ValidationKey="bfb9e1b24ba6308e39495a4a78f35d70" />
 		<module id="request" class="THttpRequest" UrlManager="friendly-url" />
