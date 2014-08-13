@@ -39,6 +39,9 @@
 			<!-- FrontEnd:: me page -->
 			<url ServiceParameter="User.Me.MeController" pattern="{id}.html" parameters.id="me"/>
 			
+			<!-- FrontEnd:: system settings page -->
+			<url ServiceParameter="System.Settings.List.ListController" pattern="systemsettings.html" parameters.id="me"/>
+			
 			<!-- FrontEnd:: Price Match page -->
 			<url ServiceParameter="PriceMatch.PriceMatchController" pattern="pricematch.html" />
 			<!-- FrontEnd:: Price Match Companypage -->

@@ -12,15 +12,15 @@ class ListController extends CRUDPageAbstract
 	 * (non-PHPdoc)
 	 * @see BPCPageAbstract::$menuItem
 	 */
-	public $menuItem = 'manufacturers';
-	protected $_focusEntity = 'Manufacturer';
+	public $menuItem = 'systemsettings';
+	protected $_focusEntity = 'SystemSettings';
 	/**
 	 * constructor
 	 */
 	public function __construct()
 	{
 		parent::__construct();
-		if(!AccessControl::canAccessProductsPage(Core::getRole()))
+		if(!AccessControl::canAccessUsersPage(Core::getRole()))
 			die('You do NOT have access to this page');
 	}
 	/**
@@ -51,11 +51,11 @@ class ListController extends CRUDPageAbstract
 			$params = array();
 			if(isset($serachCriteria['man.name']) && ($name = trim($serachCriteria['man.name'])) !== '')
 			{
-				$where[] = 'man.name like ?';
+				$where[] = 'name like ?';
 				$params[] = '%' . $name . '%';
 			}
 			$stats = array();
-			$objects = $class::getAllByCriteria(implode(' AND ', $where), $params, false, $pageNo, $pageSize, array('man.name' => 'asc'), $stats);
+			$objects = $class::getAllByCriteria(implode(' AND ', $where), $params, false, $pageNo, $pageSize, array('description' => 'asc'), $stats);
 			$results['pageStats'] = $stats;
 			$results['items'] = array();
 			foreach($objects as $obj)
@@ -84,18 +84,11 @@ class ListController extends CRUDPageAbstract
 			if(!isset($param->CallbackParameter->item))
 				throw new Exception("System Error: no item information passed in!");
 			$item = (isset($param->CallbackParameter->item->id) && ($item = $class::get($param->CallbackParameter->item->id)) instanceof $class) ? $item : null;
-			$name = trim($param->CallbackParameter->item->name);
-			$description = trim($param->CallbackParameter->item->description);
-			if($item instanceof $class)
-			{
-				$item->setName($name)
-					->setDescription($description)
-					->save();
-			}
-			else
-			{
-				$item = $class::create($name, $description, false);
-			}
+			$value = trim($param->CallbackParameter->item->value);
+			if(!$item instanceof $class)
+				throw new Exception("System Error: Invalid id passed in");
+			$item->setValue($value)
+				->save();
 			$results['item'] = $item->getJson();
 		}
 		catch(Exception $ex)
