@@ -10,7 +10,17 @@
 					<div class="col-sm-4">
 						<div class="form-group form-group-sm">
                            <label>name:</label>
-                           <input type="text" search_field="sup.name" placeholder="The name of the <%= $this->getFocusEntity() %>" class="form-control input-sm">
+                           <input type="text" search_field="pro_code_type.name" placeholder="The name of the <%= $this->getFocusEntity() %>" class="form-control input-sm">
+                       </div>
+					</div>
+					<div class="col-sm-2">
+						<div class="form-group form-group-sm">
+                           <label>allow multiple:</label>
+                           <select class="form-control input-sm" search_field="pro_code_type.allowMultiple">
+                           		<option value=" ">ALL</option>
+                           		<option value="1">YES</option>
+                           		<option value="0">NO</option>
+                           	</select>
                        </div>
 					</div>
 					<div class="col-sm-2">

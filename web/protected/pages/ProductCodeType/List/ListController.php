@@ -54,6 +54,11 @@ class ListController extends CRUDPageAbstract
 				$where[] = 'pro_code_type.name like ?';
 				$params[] = '%' . $name . '%';
 			}
+			if(isset($serachCriteria['pro_code_type.allowMultiple']) && ($allowMultiple = trim($serachCriteria['pro_code_type.allowMultiple'])) !== '')
+			{
+				$where[] = 'pro_code_type.allowMultiple = ?';
+				$params[] = $allowMultiple;
+			}
 			$stats = array();
 			$objects = $class::getAllByCriteria(implode(' AND ', $where), $params, false, $pageNo, $pageSize, array('pro_code_type.name' => 'asc'), $stats);
 			$results['pageStats'] = $stats;
