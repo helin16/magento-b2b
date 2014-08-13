@@ -126,6 +126,107 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 //		return tmp.me;
 //	}
 	
+	,_saveItem: function(btn, savePanel, attrName) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.data = tmp.me._collectFormData(savePanel, attrName);
+		if(tmp.data === null)
+			return;
+		
+		tmp.me.postAjax(tmp.me.getCallbackId('saveItem'), {'item': tmp.data}, {
+			'onLoading': function () { savePanel.addClassName('item_row').writeAttribute('item_id', tmp.data.id).hide(); }
+			,'onSuccess': function(sender, param) {
+				try{
+					tmp.result = tmp.me.getResp(param, false, true);
+					if(!tmp.result || !tmp.result.item)
+						return;
+					tmp.row = $(tmp.me.resultDivId).down('tbody').down('.item_row[item_id=' + tmp.result.item.id + ']');
+					tmp.newRow = tmp.me._getResultRow(tmp.result.item).addClassName('item_row').writeAttribute('item_id', tmp.result.item.id);
+					if(!tmp.row)
+					{
+						$(tmp.me.resultDivId).down('tbody').insert({'top': tmp.newRow });
+						savePanel.remove();
+						$(tmp.me.totalNoOfItemsId).update($(tmp.me.totalNoOfItemsId).innerHTML * 1 + 1);
+					}
+					else
+					{
+						tmp.row.replace(tmp.newRow);
+					}
+				
+				} catch (e) {
+					tmp.me.showModalBox('<span class="text-danger">ERROR:</span>', e, true);
+					savePanel.show();
+				}
+			}
+		});
+		return tmp.me;
+	}
+	
+	,_deleteItem: function(row) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.row = $(tmp.me.resultDivId).down('tbody').down('.item_row[item_id=' + row.id + ']');
+		tmp.me.postAjax(tmp.me.getCallbackId('deleteItems'), {'ids': [row.id]}, {
+			'onLoading': function () { 
+				if(tmp.row) {
+					tmp.row.hide(); 
+				}
+			}
+			,'onSuccess': function(sender, param) {
+				try{
+					tmp.result = tmp.me.getResp(param, false, true);
+					if(!tmp.result)
+						return;
+					tmp.count = $(tmp.me.totalNoOfItemsId).innerHTML * 1 - 1;
+					$(tmp.me.totalNoOfItemsId).update(tmp.count <= 0 ? 0 : tmp.count);
+					if(tmp.row) {
+						tmp.row.remove();
+					}
+				} catch (e) {
+					tmp.me.showModalBox('<span class="text-danger">ERROR</span>', e, true);
+					if(tmp.row) {
+						tmp.row.show();
+					}
+				}
+			}
+		});
+		return tmp.me;
+	}
+	
+	,_getEditPanel: function(row) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.newDiv = new Element('tr', {'class': 'save-item-panel info'}).store('data', row)
+			.insert({'bottom': new Element('input', {'type': 'hidden', 'save-item-panel': 'id', 'value': row.id ? row.id : ''}) })
+			.insert({'bottom': new Element('td', {'class': 'form-group'})
+				.insert({'bottom': new Element('input', {'required': true, 'class': 'form-control', 'placeholder': 'The SKU of product', 'save-item-panel': 'name', 'value': row.sku ? row.sku : ''}) })
+			})
+			.insert({'bottom': new Element('td', {'class': 'form-group'})
+				.insert({'bottom': new Element('input', {'class': 'form-control', 'placeholder': 'The name of the Product', 'save-item-panel': 'description', 'value': row.name ? row.name : ''}) })
+			})
+			.insert({'bottom': new Element('td', {'class': 'text-right'})
+				.insert({'bottom':  new Element('span', {'class': 'btn-group btn-group-sm'})
+					.insert({'bottom': new Element('span', {'class': 'btn btn-success', 'title': 'Save'})
+						.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-ok'}) })
+						.observe('click', function(){
+							tmp.btn = this;
+							tmp.me._saveItem(tmp.btn, $(tmp.btn).up('.save-item-panel'), 'save-item-panel');
+						})
+					})
+					.insert({'bottom': new Element('span', {'class': 'btn btn-danger', 'title': 'Delete'})
+						.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-remove'}) })
+						.observe('click', function(){
+							if(row.id)
+								$(this).up('.save-item-panel').replace(tmp.me._getResultRow(row).addClassName('item_row').writeAttribute('item_id', row.id));
+							else
+								$(this).up('.save-item-panel').remove();
+						})
+					})
+				})
+			})
+		return tmp.newDiv;
+	}
+	
 	,_getResultRow: function(row, isTitle) {
 		var tmp = {};
 		tmp.me = this;
@@ -136,6 +237,31 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			.insert({'bottom': new Element(tmp.tag, {'class': 'name'}).update(row.name) })
 			.insert({'bottom': new Element(tmp.tag, {'class': 'text-center product_active'}).update(
 				tmp.isTitle === true ? row.active : new Element('input', {'type': 'checkbox', 'checked': row.active}) 
+			) })
+			.insert({'bottom': new Element(tmp.tag, {'class': 'text-right btns col-xs-2'}).update(
+				tmp.isTitle === true ?  
+				(new Element('span', {'class': 'btn btn-primary btn-xs', 'title': 'New'})
+					.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-plus'}) })
+					.insert({'bottom': ' NEW' })
+					.observe('click', function(){
+						$(this).up('thead').insert({'bottom': tmp.me._getEditPanel({}) });
+					})
+				)
+				: (new Element('span', {'class': 'btn-group btn-group-xs'})
+					.insert({'bottom': new Element('span', {'class': 'btn btn-default', 'title': 'Edit'})
+						.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-pencil'}) })
+						.observe('click', function(){
+							$(this).up('.item_row').replace(tmp.me._getEditPanel(row));
+						})
+					})
+					.insert({'bottom': new Element('span', {'class': 'btn btn-danger', 'title': 'Delete'})
+						.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-trash'}) })
+						.observe('click', function(){
+							if(!confirm('Are you sure you want to delete this item?'))
+								return false;
+							tmp.me._deleteItem(row);
+						})
+					}) ) 
 			) })
 		;
 		return tmp.row;
