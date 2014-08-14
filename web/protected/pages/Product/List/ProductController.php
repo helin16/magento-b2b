@@ -10,10 +10,19 @@ class ProductController extends BPCPageAbstract
 {
 	public $pageSize = 30;
 	/**
+	 * @var TCallback
+	 */
+	private $_saveItemsBtn;
+	/**
+	 * @var TCallback
+	 */
+	private $_delItemsBtn;
+	/**
 	 * (non-PHPdoc)
 	 * @see BPCPageAbstract::$menuItem
 	 */
 	public $menuItem = 'products';
+	protected $_focusEntity = 'Product';
 	/**
 	 * constructor
 	 */
@@ -28,10 +37,26 @@ class ProductController extends BPCPageAbstract
 	 *
 	 * @return string
 	 */
+	public function onInit($param)
+	{
+		parent::onInit($param);
+		
+		$this->_saveItemsBtn = new TCallback();
+		$this->_saveItemsBtn->ID = 'saveItemBtn';
+		$this->_saveItemsBtn->OnCallback = 'Page.saveItem';
+		$this->getControls()->add($this->_saveItemsBtn);
+	
+		$this->_delItemsBtn = new TCallback();
+		$this->_delItemsBtn->ID = 'delItemsBtn';
+		$this->_delItemsBtn->OnCallback = 'Page.deleteItems';
+		$this->getControls()->add($this->_delItemsBtn);
+	}
 	protected function _getEndJs()
 	{
 		$js = parent::_getEndJs();
 		$js .= "pageJs.setCallbackId('getProductList', '" . $this->getProductsBtn->getUniqueID() . "');";
+		$js .= "pageJs.setCallbackId('deleteItems', '" . $this->_delItemsBtn->getUniqueID() . "');";
+		$js .= "pageJs.setCallbackId('saveItem', '" . $this->_saveItemsBtn->getUniqueID() . "');";
 		$js .= "pageJs.setHTMLIds('productlist', 'searchPanel', 'total-found-count')";
 		$js .= ";";
 		$js .= '$("searchBtn").click();';
@@ -50,6 +75,7 @@ class ProductController extends BPCPageAbstract
 		$results = $errors = array();
 		try
 		{
+			$class = trim($this->_focusEntity);
 			if(!isset($param->CallbackParameter->searchCriteria) || count($serachCriteria = json_decode(json_encode($param->CallbackParameter->searchCriteria), true)) === 0)
 				throw new Exception('System Error: search criteria not provided!');
 			$pageNo = 1;
@@ -89,5 +115,68 @@ class ProductController extends BPCPageAbstract
 		}
 		$param->ResponseData = StringUtilsAbstract::getJson($results, $errors);
 	}
+	
+	/**
+	 * delete the items
+	 *
+	 * @param unknown $sender
+	 * @param unknown $param
+	 * @throws Exception
+	 *
+	 */
+	public function deleteItems($sender, $param)
+	{
+		$results = $errors = array();
+		try
+		{
+			$class = trim($this->_focusEntity);
+			$ids = isset($param->CallbackParameter->ids) ? $param->CallbackParameter->ids : array();
+			if(count($ids) > 0)
+				$class::deleteByCriteria('id in (' . str_repeat('?', count($ids)) . ')', $ids);
+		}
+		catch(Exception $ex)
+		{
+			$errors[] = $ex->getMessage();
+		}
+		$param->ResponseData = StringUtilsAbstract::getJson($results, $errors);
+	}
+	/**
+	 * save the items
+	 *
+	 * @param unknown $sender
+	 * @param unknown $param
+	 * @throws Exception
+	 *
+	 */
+	public function saveItem($sender, $param)
+	{
+		$results = $errors = array();
+		try
+		{
+			$class = trim($this->_focusEntity);
+			if(!isset($param->CallbackParameter->item))
+				throw new Exception("System Error: no item information passed in!");
+			$item = (isset($param->CallbackParameter->item->id) && ($item = $class::get($param->CallbackParameter->item->id)) instanceof $class) ? $item : null;
+			$sku = trim($param->CallbackParameter->item->sku);
+			$name = trim($param->CallbackParameter->item->name);
+			if($item instanceof $class)
+			{
+				$item->setName($sku)
+				->setDescription($name)
+				->save();
+			}
+			else
+			{
+				$item = $class::create($sku, $name, false);
+			}
+			$results['item'] = $item->getJson();
+		}
+		catch(Exception $ex)
+		{
+			$errors[] = $ex->getMessage();
+		}
+		$param->ResponseData = StringUtilsAbstract::getJson($results, $errors);
+	}
+	
 }
 ?>
