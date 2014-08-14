@@ -196,3 +196,54 @@ CREATE TABLE `product_category` (
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 
 ALTER TABLE `product` DROP `price`, DROP INDEX `price`;
+
+
+
+CREATE TABLE `productpricetype` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `name` varchar(100) NOT NULL DEFAULT '',
+  `description` varchar(255) NOT NULL DEFAULT '',
+  `active` tinyint(1) NOT NULL DEFAULT '1',
+  `created` datetime NOT NULL DEFAULT '0001-01-01 00:00:00',
+  `createdById` int(10) unsigned NOT NULL DEFAULT '0',
+  `updated` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `updatedById` int(10) unsigned NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`),
+  KEY `active` (`active`),
+  KEY `created` (`created`),
+  KEY `createdById` (`createdById`),
+  KEY `updated` (`updated`),
+  KEY `updatedById` (`updatedById`),
+  KEY `name` (`name`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
+insert into `productpricetype` (`id`, `name`, `description`, `active`, `created`, `createdById`, `updated`, `updatedById`) values
+	(1, 'RRP', 'Recommended Retail Price / Normal sales price', 1, NOW(), 10, NOW(), 10),
+	(2, 'Casual Special Price', 'Promotional purpose sepcial price', 1, NOW(), 10, NOW(), 10),
+	(3, 'Special Price Group 1', 'Special Price For Group 1 Customers', 1, NOW(), 10, NOW(), 10),
+	(4, 'Special Price Group 2', 'Special Price For Group 2 Customers', 1, NOW(), 10, NOW(), 10);
+	
+	
+CREATE TABLE `productprice` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `productId` int(10) unsigned NOT NULL DEFAULT '0',
+  `typeId` int(10) unsigned NOT NULL DEFAULT '0',
+  `price` double(10,4) unsigned NOT NULL DEFAULT '0.0000',
+  `start` datetime NOT NULL DEFAULT '0001-01-01 00:00:00',
+  `end` datetime NOT NULL DEFAULT '9999-12-31 23:59:59',
+  `active` tinyint(1) NOT NULL DEFAULT '1',
+  `created` datetime NOT NULL DEFAULT '0001-01-01 00:00:00',
+  `createdById` int(10) unsigned NOT NULL DEFAULT '0',
+  `updated` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `updatedById` int(10) unsigned NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`),
+  KEY `active` (`active`),
+  KEY `created` (`created`),
+  KEY `createdById` (`createdById`),
+  KEY `updated` (`updated`),
+  KEY `updatedById` (`updatedById`),
+  KEY `productId` (`productId`),
+  KEY `typeId` (`typeId`),
+  KEY `price` (`price`),
+  KEY `start` (`start`),
+  KEY `end` (`end`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
