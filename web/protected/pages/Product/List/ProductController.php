@@ -6,17 +6,9 @@
  * @subpackage Controller
  * @author     lhe<helin16@gmail.com>
  */
-class ProductController extends BPCPageAbstract
+class ProductController extends CRUDPageAbstract
 {
-	public $pageSize = 30;
-	/**
-	 * @var TCallback
-	 */
-	private $_saveItemsBtn;
-	/**
-	 * @var TCallback
-	 */
-	private $_delItemsBtn;
+
 	/**
 	 * (non-PHPdoc)
 	 * @see BPCPageAbstract::$menuItem
@@ -32,36 +24,7 @@ class ProductController extends BPCPageAbstract
 		if(!AccessControl::canAccessProductsPage(Core::getRole()))
 			die('You do NOT have access to this page');
 	}
-	/**
-	 * Getting The end javascript
-	 *
-	 * @return string
-	 */
-	public function onInit($param)
-	{
-		parent::onInit($param);
-		
-		$this->_saveItemsBtn = new TCallback();
-		$this->_saveItemsBtn->ID = 'saveItemBtn';
-		$this->_saveItemsBtn->OnCallback = 'Page.saveItem';
-		$this->getControls()->add($this->_saveItemsBtn);
-	
-		$this->_delItemsBtn = new TCallback();
-		$this->_delItemsBtn->ID = 'delItemsBtn';
-		$this->_delItemsBtn->OnCallback = 'Page.deleteItems';
-		$this->getControls()->add($this->_delItemsBtn);
-	}
-	protected function _getEndJs()
-	{
-		$js = parent::_getEndJs();
-		$js .= "pageJs.setCallbackId('getProductList', '" . $this->getProductsBtn->getUniqueID() . "');";
-		$js .= "pageJs.setCallbackId('deleteItems', '" . $this->_delItemsBtn->getUniqueID() . "');";
-		$js .= "pageJs.setCallbackId('saveItem', '" . $this->_saveItemsBtn->getUniqueID() . "');";
-		$js .= "pageJs.setHTMLIds('productlist', 'searchPanel', 'total-found-count')";
-		$js .= ";";
-		$js .= '$("searchBtn").click();';
-		return $js;
-	}
+
 	/**
 	 * Getting the orders
 	 *
@@ -70,7 +33,7 @@ class ProductController extends BPCPageAbstract
 	 * @throws Exception
 	 *
 	 */
-	public function getProducts($sender, $param)
+	public function getItems($sender, $param)
 	{
 		$results = $errors = array();
 		try
@@ -115,31 +78,6 @@ class ProductController extends BPCPageAbstract
 		}
 		$param->ResponseData = StringUtilsAbstract::getJson($results, $errors);
 	}
-	
-	/**
-	 * delete the items
-	 *
-	 * @param unknown $sender
-	 * @param unknown $param
-	 * @throws Exception
-	 *
-	 */
-	public function deleteItems($sender, $param)
-	{
-		$results = $errors = array();
-		try
-		{
-			$class = trim($this->_focusEntity);
-			$ids = isset($param->CallbackParameter->ids) ? $param->CallbackParameter->ids : array();
-			if(count($ids) > 0)
-				$class::deleteByCriteria('id in (' . str_repeat('?', count($ids)) . ')', $ids);
-		}
-		catch(Exception $ex)
-		{
-			$errors[] = $ex->getMessage();
-		}
-		$param->ResponseData = StringUtilsAbstract::getJson($results, $errors);
-	}
 	/**
 	 * save the items
 	 *
@@ -170,6 +108,30 @@ class ProductController extends BPCPageAbstract
 				$item = $class::create($sku, $name, false);
 			}
 			$results['item'] = $item->getJson();
+		}
+		catch(Exception $ex)
+		{
+			$errors[] = $ex->getMessage();
+		}
+		$param->ResponseData = StringUtilsAbstract::getJson($results, $errors);
+	}
+	/**
+	 * delete the items
+	 *
+	 * @param unknown $sender
+	 * @param unknown $param
+	 * @throws Exception
+	 *
+	 */
+	public function deleteItems($sender, $param)
+	{
+		$results = $errors = array();
+		try
+		{
+			$class = trim($this->_focusEntity);
+			$ids = isset($param->CallbackParameter->ids) ? $param->CallbackParameter->ids : array();
+			if(count($ids) > 0)
+				Product::updateByCriteria('active = 0', 'id in (' . implode(', ', $ids) . ')');
 		}
 		catch(Exception $ex)
 		{
