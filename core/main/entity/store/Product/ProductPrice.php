@@ -164,6 +164,7 @@ class ProductPrice extends BaseEntityAbstract
 	 */
 	public static function create(Product $product, ProductPriceType $type, $price, $start = null, $end = null)
 	{
+		FactoryAbastract::dao($class)->updateByCriteria('active = 0', 'productId = ? and typeId = ?', array($product->getId(), $type->getId()));
 		$class = __CLASS__;
 		$obj = new $class();
 		$obj->setProduct($product)
@@ -174,6 +175,73 @@ class ProductPrice extends BaseEntityAbstract
 		if (($end = trim($end)) !== '')
 			$obj->setEnd($end);
 		return FactoryAbastract::dao($class)->save($obj);
+	}
+	/**
+	 * Getting the price object via product or type
+	 * 
+	 * @param Product          $product
+	 * @param ProductPriceType $type
+	 * @param string           $startS
+	 * @param string           $startE
+	 * @param string           $endS
+	 * @param string           $endE
+	 * @param int              $pageNo
+	 * @param int              $pageSize
+	 * @param array            $orderBy
+	 * @throws EntityException
+	 * @return Ambigous <multitype:, multitype:BaseEntityAbstract >
+	 */
+	public static function getPrices(Product $product = null, ProductPriceType $type = null, $startS = '', $startE = '', $endS = '', $endE = '', $pageNo = null, $pageSize = DaoQuery::DEFAUTL_PAGE_SIZE, $orderBy = array())
+	{
+		$class = __CLASS__;
+		if(!$product instanceof Product && !$type instanceof ProductPriceType)
+			throw new EntityException('At least one of them is required for getting the prices: Product or PriceType');
+		$where = array('active = 1');
+		$params = array();
+		if($product instanceof Product)
+		{
+			$where[] = 'productId = ?';
+			$params[] = $product->getId();
+		}
+		if($type instanceof ProductPriceType)
+		{
+			$where[] = 'typeId = ?';
+			$params[] = $type->getId();
+		}
+		if(($startS = trim($startS)) !== '')
+		{
+			$where[] = 'start >= ?';
+			$params[] = $startS;
+		}
+		if(($startE = trim($startE)) !== '')
+		{
+			$where[] = 'start <= ?';
+			$params[] = $startE;
+		}
+		if(($endS = trim($endS)) !== '')
+		{
+			$where[] = 'end >= ?';
+			$params[] = $endS;
+		}
+		if(($endE = trim($endE)) !== '')
+		{
+			$where[] = 'end <= ?';
+			$params[] = $endE;
+		}
+		return FactoryAbastract::dao($class)->findByCriteria(implode(' AND ', $where), $params, true, $pageNo, $pageSize, $orderBy);
+	}
+	/**
+	 * (non-PHPdoc)
+	 * @see BaseEntityAbstract::getJson()
+	 */
+	public function getJson($extra = '', $reset = false)
+	{
+		$array = array();
+		if(!$this->isJsonLoaded($reset))
+		{
+			$array['type'] = $this->getType()->getJson();
+		}
+		return parent::getJson($array, $reset);
 	}
 	/**
 	 * (non-PHPdoc)

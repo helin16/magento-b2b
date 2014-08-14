@@ -277,6 +277,32 @@ class Product extends InfoEntityAbstract
 		return $this;
 	}
 	/**
+	 * Getting the prices
+	 * 
+	 * @return Ambigous <Ambigous, multitype:, multitype:BaseEntityAbstract >
+	 */
+	public function getPrices()
+	{
+		if(!isset($this->_cache['prices']))
+		{
+			$this->_cache['prices'] = ProductPrice::getPrices($this);
+		}
+		return $this->_cache['prices'];
+	}
+	/**
+	 * Getting all the images
+	 * 
+	 * @return multitype:
+	 */
+	public function getImages()
+	{
+		if(!isset($this->_cache['images']))
+		{
+			$this->_cache['images'] = ProductImage::getAllByCriteria('productId = ? ', array($this->getId()));
+		}
+		return $this->_cache['images'];
+	}
+	/**
 	 * Getting the product via sku
 	 * 
 	 * @param string $sku The sku of the product
@@ -287,6 +313,25 @@ class Product extends InfoEntityAbstract
 	{
 		$products = FactoryAbastract::dao(get_called_class())->findByCriteria('sku = ? ', array(trim($sku)), false, 1, 1);
 		return (count($products) === 0 ? null : $products[0]);
+	}
+	/**
+	 * (non-PHPdoc)
+	 * @see BaseEntityAbstract::getJson()
+	 */
+	public function getJson($extra = '', $reset = false)
+	{
+		$array = array();
+		if(!$this->isJsonLoaded($reset))
+		{
+			$prices = array();
+			foreach($this->getPrices() as $price)
+			{
+				$prices[$price->getType()->getId()] = $price->getJson();
+			}
+			$array['prices'] = $prices;
+			$array['images'] = array_map(create_function('$a', 'return $a->getJson();'), $this->getImages());
+		}
+		return parent::getJson($array, $reset);
 	}
 	/**
 	 * (non-PHPdoc)
