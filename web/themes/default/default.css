@@ -134,3 +134,12 @@ table.table thead td {
 .btn-hide-row:hover .btns {
 	visibility: visible;
 }
+
+.treegrid-indent,
+.treegrid-explander{
+    display: inline-block;
+    height: 14px;
+    position: relative;
+    width: 14px;
+    text-align: center;
+}
