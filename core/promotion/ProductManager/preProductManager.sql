@@ -247,3 +247,35 @@ CREATE TABLE `productprice` (
   KEY `start` (`start`),
   KEY `end` (`end`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
+
+
+CREATE TABLE `productstatus` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `name` varchar(100) NOT NULL DEFAULT '',
+  `description` varchar(255) NOT NULL DEFAULT '',
+  `active` tinyint(1) NOT NULL DEFAULT '1',
+  `created` datetime NOT NULL DEFAULT '0001-01-01 00:00:00',
+  `createdById` int(10) unsigned NOT NULL DEFAULT '0',
+  `updated` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `updatedById` int(10) unsigned NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`),
+  KEY `active` (`active`),
+  KEY `created` (`created`),
+  KEY `createdById` (`createdById`),
+  KEY `updated` (`updated`),
+  KEY `updatedById` (`updatedById`),
+  KEY `name` (`name`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
+
+insert into `productstatus` (`id`, `name`, `description`, `active`, `created`, `createdById`, `updated`, `updatedById`) values
+    (1, 'Back Order Only', 'Status for Any Back Order', 1, NOW(), 10, NOW(), 10),
+    (2, 'In Stock', 'For products that we have stock', 1, NOW(), 10, NOW(), 10),
+    (3, 'Pre Order', 'For produts that we have No stock', 1, NOW(), 10, NOW(), 10),
+    (4, 'Ships in 24 Hrs', 'For produts that we have No stock but can ship in 24 hrs', 1, NOW(), 10, NOW(), 10),
+    (5, 'Low Stock', 'For produts that low quantity on stock', 1, NOW(), 10, NOW(), 10);
+
+
+ALTER TABLE `product` ADD `sellOnWeb` TINYINT( 1 ) NOT NULL DEFAULT '0' AFTER `isFromB2B`, add index (`sellOnWeb`);
+ALTER TABLE `product` ADD `statusId` int(10) unsigned NOT NULL DEFAULT '0' AFTER `sellOnWeb`, add index (`statusId`);
+ALTER TABLE `product` ADD `asNewFromDate` datetime NULL DEFAULT null AFTER `statusId`, add index (`asNewFromDate`);
+ALTER TABLE `product` ADD `asNewToDate` datetime NULL DEFAULT null AFTER `asNewFromDate`, add index (`asNewToDate`);

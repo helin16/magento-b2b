@@ -57,6 +57,93 @@ class Product extends InfoEntityAbstract
 	 */
 	private $fullDescAssetId = '';
 	/**
+	 * Marking the product as new from which date
+	 * 
+	 * @var UDate|NULL
+	 */
+	private $asNewFromDate = null;
+	/**
+	 * Marking the product as new to which date
+	 * 
+	 * @var UDate|NULL
+	 */
+	private $asNewToDate = null;
+	/**
+	 * Whether we will sell this product on Web
+	 * 
+	 * @var bool
+	 */
+	private $sellOnWeb = false;
+	/**
+	 * Product status
+	 * 
+	 * @var ProductStatus
+	 */
+	protected $status;
+	/** 
+	 * Getter for asNewFromDate
+	 * 
+	 * @return Ambigous <UDate, NULL>
+	 */
+	public function getAsNewFromDate ()
+	{
+		return $this->asNewFromDate;
+	}
+	/** 
+	 * Setter for asNewFromDate
+	 * 
+	 * @param string $value
+	 * 
+	 * @return Product
+	 */
+	public function setAsNewFromDate($value)
+	{
+		$this->asNewFromDate = $value;
+		return $this;
+	}
+	/** 
+	 * Getter for asNewToDate
+	 * 
+	 * @return Ambigous <UDate, NULL>
+	 */
+	public function getAsNewToDate ()
+	{
+		return $this->asNewToDate;
+	}
+	/** 
+	 * Setter for asNewToDate
+	 * 
+	 * @param string $value
+	 * 
+	 * @return Product
+	 */
+	public function setAsNewToDate($value)
+	{
+		$this->asNewToDate = $value;
+		return $this;
+	}
+	/** 
+	 * Getter for sellOnWeb
+	 * 
+	 * @return boolean
+	 */
+	public function getSellOnWeb ()
+	{
+		return $this->sellOnWeb;
+	}
+	/** 
+	 * Setter for sellOnWeb
+	 * 
+	 * @param bool $value
+	 * 
+	 * @return Product
+	 */
+	public function setSellOnWeb($value)
+	{
+		$this->sellOnWeb = $value;
+		return $this;
+	}
+	/**
 	 * Getter for sku
 	 *
 	 * @return string
@@ -224,6 +311,28 @@ class Product extends InfoEntityAbstract
 	    $this->fullDescAssetId = $value;
 	    return $this;
 	}
+	/** 
+	 * Getter for status
+	 * 
+	 * @return ProductStatus
+	 */
+	public function getStatus ()
+	{
+		$this->loadManyToOne('status');
+		return $this->status;
+	}
+	/** 
+	 * Setter for status
+	 * 
+	 * @param ProductStatus $value
+	 * 
+	 * @return Product
+	 */
+	public function setStatus($value)
+	{
+		$this->status = $value;
+		return $this;
+	}
 	/**
 	 * Creating the product based on sku
 	 * 
@@ -354,6 +463,10 @@ class Product extends InfoEntityAbstract
 		DaoMap::setIntType('stockOnHand');
 		DaoMap::setIntType('stockOnOrder');
 		DaoMap::setBoolType('isFromB2B');
+		DaoMap::setBoolType('sellOnWeb');
+		DaoMap::setManyToOne('status', 'ProductStatus');
+		DaoMap::setDateType('asNewFromDate', 'datetime', true);
+		DaoMap::setDateType('asNewToDate', 'datetime', true);
 		DaoMap::setStringType('shortDescription', 'varchar', 255);
 		DaoMap::setStringType('fullDescAssetId', 'varchar', 100);
 		parent::__loadDaoMap();
@@ -366,6 +479,9 @@ class Product extends InfoEntityAbstract
 		DaoMap::createIndex('isFromB2B');
 		DaoMap::createIndex('shortDescription');
 		DaoMap::createIndex('fullDescAssetId');
+		DaoMap::createIndex('sellOnWeb');
+		DaoMap::createIndex('asNewFromDate');
+		DaoMap::createIndex('asNewToDate');
 		DaoMap::commit();
 	}
 }
