@@ -1,4 +1,5 @@
 <com:TContent ID="MainContent">
+	<com:TCallback ID="getProductsBtn" OnCallback="getProducts" />
 	<div class="pagewrapper productlistwraper container">
 		<div class="panel panel-default" id="searchPanel">
 			<div class="panel-heading">
@@ -43,7 +44,7 @@
 				Found <label id="total-found-count">0</label> Products:
 			</div>
 			<small class="table-responsive">
-                <table class="table table-hover" id="item-list"></table>
+                <table class="table table-hover" id="productlist"></table>
                </small>
 		</div> 
 	</div>

@@ -2,18 +2,129 @@
  * The page Js file
  */
 var PageJs = new Class.create();
-PageJs.prototype = Object.extend(new CRUDPageJs(), {
+PageJs.prototype = Object.extend(new BPCPageJs(), {
+	resultDivId: '' //the html id of the result div
+	,searchDivId: '' //the html id of the search div
+	,totalNoOfItemsId: '' //the html if of the total no of items
+	,_pagination: {'pageNo': 1, 'pageSize': 30} //the pagination details
+	,_searchCriteria: {} //the searching criteria
+	,_infoTypes:{} //the infotype ids
+	,orderStatuses: [] //the order statuses object
 	
-	_getTitleRowData: function() {
-		return {'sku': 'SKU', 'name': 'Product Name', 'active': 'act?'};
+	,setHTMLIds: function(resultDivId, searchDivId, totalNoOfItemsId) {
+		this.resultDivId = resultDivId;
+		this.searchDivId = searchDivId;
+		this.totalNoOfItemsId = totalNoOfItemsId;
+		return this;
 	}
 	
-	,_getEditPanel: function(row) {
+	,getSearchCriteria: function() {
 		var tmp = {};
 		tmp.me = this;
-		///open row.id
-		return tmp.newDiv;
+		if(tmp.me._searchCriteria === null)
+			tmp.me._searchCriteria = {};
+		tmp.nothingTosearch = true;
+		$(tmp.me.searchDivId).getElementsBySelector('[search_field]').each(function(item) {
+			tmp.me._searchCriteria[item.readAttribute('search_field')] = $F(item);
+			if(($F(item) instanceof Array && $F(item).size() > 0) || (typeof $F(item) === 'string' && !$F(item).blank()))
+				tmp.nothingTosearch = false;
+		});
+		if(tmp.nothingTosearch === true)
+			tmp.me._searchCriteria = null;
+		return this;
 	}
+	
+	,getResults: function(reset, pageSize) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.reset = (reset || false);
+		tmp.resultDiv = $(tmp.me.resultDivId);
+		if(tmp.me._searchCriteria === null)
+		{
+			tmp.resultDiv.update(tmp.me.getAlertBox('', 'Nothing to search!').addClassName('alert-warning'));
+			return;
+		}
+		if(tmp.reset === true)
+			tmp.me._pagination.pageNo = 1;
+		tmp.me._pagination.pageSize = (pageSize || tmp.me._pagination.pageSize);
+		tmp.me.postAjax(tmp.me.getCallbackId('getProductList'), {'pagination': tmp.me._pagination, 'searchCriteria': tmp.me._searchCriteria}, {
+			'onLoading': function () {
+				jQuery('#' + tmp.me.searchDivId + ' #searchBtn').button('loading');
+			}
+			,'onSuccess': function(sender, param) {
+				try{
+					tmp.result = tmp.me.getResp(param, false, true);
+					if(!tmp.result)
+						return;
+					$(tmp.me.totalNoOfItemsId).update(tmp.result.pageStats.totalRows);
+					
+					//reset div
+					if(tmp.reset === true) {
+						tmp.titleRow = {'sku': "SKU", 'name': 'Product Name', 'active': 'Act?'};
+						tmp.resultDiv.update(tmp.me._getResultRow(tmp.titleRow, true).wrap(new Element('thead')));
+					}
+					//remove next page button
+					tmp.resultDiv.getElementsBySelector('.paginWrapper').each(function(item){
+						item.remove();
+					})
+					
+					//show all items
+					tmp.tbody = $(tmp.resultDiv).down('tbody');
+					if(!tmp.tbody)
+						$(tmp.resultDiv).insert({'bottom': tmp.tbody = new Element('tbody') });
+					tmp.result.items.each(function(item) {
+						tmp.tbody.insert({'bottom': tmp.me._getResultRow(item) });
+					})
+					//show the next page button
+					if(tmp.result.pageStats.pageNumber < tmp.result.pageStats.totalPages)
+						tmp.resultDiv.insert({'bottom': tmp.me._getNextPageBtn().addClassName('paginWrapper') });
+				} catch (e) {
+					alert(e);
+					tmp.resultDiv.insert({'bottom': tmp.me.getAlertBox('Error', e).addClassName('alert-danger') });
+				}
+			}
+			,'onComplete': function() {
+				jQuery('#' + tmp.me.searchDivId + ' #searchBtn').button('reset');
+			}
+		});
+	}
+	
+	,_getNextPageBtn: function() {
+		var tmp = {}
+		tmp.me = this;
+		return new Element('tfoot')
+			.insert({'bottom': new Element('tr')
+				.insert({'bottom': new Element('td', {'colspan': '5', 'class': 'text-center'})
+					.insert({'bottom': new Element('span', {'class': 'btn btn-primary', 'data-loading-text':"Fetching more results ..."}).update('Show More')
+						.observe('click', function() {
+							tmp.me._pagination.pageNo = tmp.me._pagination.pageNo*1 + 1;
+							jQuery(this).button('loading');
+							tmp.me.getResults();
+						})
+					})
+				})
+			});
+	}
+	
+//	,_openDetailsPage: function(row) {
+//		var tmp = {};
+//		tmp.me = this;
+//		jQuery.fancybox({
+//			'width'			: '95%',
+//			'height'		: '95%',
+//			'autoScale'     : false,
+//			'autoDimensions': false,
+//			'fitToView'     : false,
+//			'autoSize'      : false,
+//			'type'			: 'iframe',
+//			'href'			: '/orderdetails/' + row.id + '.html',
+//			'beforeClose'	    : function() {
+//				if($(tmp.me.resultDivId).down('.row[order_id=' + row.id + ']'))
+//					$(tmp.me.resultDivId).down('.row[order_id=' + row.id + ']').replace(tmp.me._getResultRow($$('iframe.fancybox-iframe').first().contentWindow.pageJs._order));
+//			}
+// 		});
+//		return tmp.me;
+//	}
 	
 	,_getResultRow: function(row, isTitle) {
 		var tmp = {};
@@ -25,31 +136,6 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 			.insert({'bottom': new Element(tmp.tag, {'class': 'name'}).update(row.name) })
 			.insert({'bottom': new Element(tmp.tag, {'class': 'text-center product_active'}).update(
 				tmp.isTitle === true ? row.active : new Element('input', {'type': 'checkbox', 'checked': row.active}) 
-			) })
-			.insert({'bottom': new Element(tmp.tag, {'class': 'text-right btns col-xs-2'}).update(
-				tmp.isTitle === true ?  
-				(new Element('span', {'class': 'btn btn-primary btn-xs', 'title': 'New'})
-					.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-plus'}) })
-					.insert({'bottom': ' NEW' })
-					.observe('click', function(){
-						$(this).up('thead').insert({'bottom': tmp.me._getEditPanel({}) });
-					})
-				)
-				: (new Element('span', {'class': 'btn-group btn-group-xs'})
-					.insert({'bottom': new Element('span', {'class': 'btn btn-default', 'title': 'Edit'})
-						.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-pencil'}) })
-						.observe('click', function(){
-							$(this).up('.item_row').replace(tmp.me._getEditPanel(row));
-						})
-					})
-					.insert({'bottom': new Element('span', {'class': 'btn btn-danger', 'title': 'Delete'})
-						.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-trash'}) })
-						.observe('click', function(){
-							if(!confirm('Are you sure you want to delete this item?'))
-								return false;
-							tmp.me._deleteItem(row);
-						})
-					}) ) 
 			) })
 		;
 		return tmp.row;
