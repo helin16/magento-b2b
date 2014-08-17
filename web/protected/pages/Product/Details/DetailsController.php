@@ -6,13 +6,18 @@
  * @subpackage Controller
  * @author     lhe<helin16@gmail.com>
  */
-class DetailsController extends CRUDPageAbstract
+class DetailsController extends DetailsPageAbstract
 {
 	/**
 	 * (non-PHPdoc)
 	 * @see BPCPageAbstract::$menuItem
 	 */
 	public $menuItem = 'products';
+	/**
+	 * (non-PHPdoc)
+	 * @see BPCPageAbstract::$_focusEntityName
+	 */
+	protected $_focusEntityName = 'Product';
 	/**
 	 * constructor
 	 */

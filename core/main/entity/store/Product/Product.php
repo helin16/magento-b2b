@@ -349,7 +349,7 @@ class Product extends InfoEntityAbstract
 	 */
 	public static function create($sku, $name, $mageProductId = '', $stockOnHand = null, $stockOnOrder = null, $isFromB2B = false, $shortDescr = '', $fullDescr = '')
 	{
-		if(!($product = self::get($sku)) instanceof Product)
+		if(!($product = self::getBySku($sku)) instanceof Product)
 			$product = new Product();
 		$product->setSku(trim($sku))
 			->setName($name);
@@ -418,7 +418,7 @@ class Product extends InfoEntityAbstract
 	 * 
 	 * @return Ambigous <NULL, BaseEntityAbstract>
 	 */
-	public static function get($sku)
+	public static function getBySku($sku)
 	{
 		$products = FactoryAbastract::dao(get_called_class())->findByCriteria('sku = ? ', array(trim($sku)), false, 1, 1);
 		return (count($products) === 0 ? null : $products[0]);

@@ -1,4 +1,5 @@
+<%@MasterClass="Application.layout.BlankLayout"%>
 <com:TContent ID="MainContent">
-	<div class="pagewrapper productdetailswraper">
+	<div class="pagewrapper productdetailswraper item-div">
 	</div>
 </com:TContent>
