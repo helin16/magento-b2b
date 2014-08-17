@@ -4,7 +4,7 @@
 var PageJs = new Class.create();
 PageJs.prototype = Object.extend(new CRUDPageJs(), {
 	_getTitleRowData: function() {
-		return {'description': "Description", 'name': 'Name'};
+		return {'description': "Description", 'name': 'Name', 'contactName': 'Contact Name', 'contactNo': 'Contact Number'};
 	}
 
 	,_getEditPanel: function(row) {
@@ -17,6 +17,12 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 			})
 			.insert({'bottom': new Element('td', {'class': 'form-group'})
 				.insert({'bottom': new Element('input', {'class': 'form-control', 'placeholder': 'Optional - The description of the Supplier', 'save-item-panel': 'description', 'value': row.description ? row.description : ''}) })
+			})
+			.insert({'bottom': new Element('td', {'class': 'form-group'})
+				.insert({'bottom': new Element('input', {'class': 'form-control', 'placeholder': 'Optional - The contact name/person of the Supplier', 'save-item-panel': 'contactName', 'value': row.contactName ? row.contactName : ''}) })
+			})
+			.insert({'bottom': new Element('td', {'class': 'form-group'})
+				.insert({'bottom': new Element('input', {'class': 'form-control', 'placeholder': 'Optional - The contact number of the Supplier', 'save-item-panel': 'contactNo', 'value': row.contactNo ? row.contactNo : ''}) })
 			})
 			.insert({'bottom': new Element('td', {'class': 'text-right'})
 				.insert({'bottom':  new Element('span', {'class': 'btn-group btn-group-sm'})
@@ -49,7 +55,9 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		tmp.row = new Element('tr', {'class': (tmp.isTitle === true ? '' : 'btn-hide-row')}).store('data', row)
 			.insert({'bottom': new Element(tmp.tag, {'class': 'name col-xs-2'}).update(row.name) })
 			.insert({'bottom': new Element(tmp.tag, {'class': 'description'}).update(row.description) })
-			.insert({'bottom': new Element(tmp.tag, {'class': 'text-right btns col-xs-2'}).update(
+			.insert({'bottom': new Element(tmp.tag, {'class': 'contactName col-xs-2'}).update(row.contactName) })
+			.insert({'bottom': new Element(tmp.tag, {'class': 'contactNo col-xs-2'}).update(row.contactNo) })
+			.insert({'bottom': new Element(tmp.tag, {'class': 'text-right btns col-xs-1'}).update(
 				tmp.isTitle === true ?  
 				(new Element('span', {'class': 'btn btn-primary btn-xs', 'title': 'New'})
 					.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-plus'}) })
