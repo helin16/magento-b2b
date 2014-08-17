@@ -143,3 +143,13 @@ table.table thead td {
     width: 14px;
     text-align: center;
 }
+
+.form-group-sm-label label {
+	font-size: 11px;
+	color: #aaa;
+	margin: 0 0 2px 3px;
+}
+
+.datepicker-layer-fixer {
+	z-index: 9999;
+}
