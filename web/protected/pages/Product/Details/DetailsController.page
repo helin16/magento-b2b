@@ -1,5 +1,8 @@
 <%@MasterClass="Application.layout.BlankLayout"%>
 <com:TContent ID="MainContent">
-	<div class="pagewrapper productdetailswraper item-div">
+	<com:Application.controls.RichTextEditor.RichTextEditor />
+	<com:TDatePicker Style="display:none;"/>
+	<com:Application.controls.fancybox.FancyBox />
+	<div class="pagewrapper productdetailswraper" id='item-div'>
 	</div>
 </com:TContent>

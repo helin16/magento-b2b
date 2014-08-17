@@ -480,5 +480,6 @@ insert into `productstatus` (`id`, `name`, `description`, `active`, `created`, `
 
 ALTER TABLE `product` ADD `sellOnWeb` TINYINT( 1 ) NOT NULL DEFAULT '0' AFTER `isFromB2B`, add index (`sellOnWeb`);
 ALTER TABLE `product` ADD `statusId` int(10) unsigned NOT NULL DEFAULT '0' AFTER `sellOnWeb`, add index (`statusId`);
-ALTER TABLE `product` ADD `asNewFromDate` datetime NULL DEFAULT null AFTER `statusId`, add index (`asNewFromDate`);
+ALTER TABLE `product` ADD `manufacturerId` int(10) unsigned NOT NULL DEFAULT '0' AFTER `statusId`, add index (`manufacturerId`);
+ALTER TABLE `product` ADD `asNewFromDate` datetime NULL DEFAULT null AFTER `manufacturerId`, add index (`asNewFromDate`);
 ALTER TABLE `product` ADD `asNewToDate` datetime NULL DEFAULT null AFTER `asNewFromDate`, add index (`asNewToDate`);

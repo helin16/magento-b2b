@@ -16,7 +16,7 @@ DetailsPageJs.prototype = Object.extend(new BPCPageJs(), {
 		return this;
 	}
 	
-	load: function () {
+	,load: function () {
 		var tmp = {};
 		tmp.me = this;
 		$(tmp.me._htmlIds.itemDiv).update(tmp.me._getItemDiv());

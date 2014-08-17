@@ -11,28 +11,9 @@ abstract class DetailsPageAbstract extends BPCPageAbstract
 	/**
 	 * The focusing entity
 	 * 
-	 * @var BaseEntityAbstract
-	 */
-	protected $_focusEntity = null;
-	/**
-	 * The name of the focus entity
-	 * 
 	 * @var string
 	 */
-	protected $_focusEntityName = '';
-	/**
-	 * (non-PHPdoc)
-	 * @see TControl::onInit()
-	 */
-	public function onInit($param)
-	{
-		parent::onInit($param);
-		$class = trim($this->_focusEntityName);
-		if($class === '' || !isset($this->Request['id']) )
-			die('System Error: no id or class passed in');
-		if(!($this->_focusEntity = $class::get($this->Request['id'])) instanceof $class)
-			die('invalid item!');
-	}
+	protected $_focusEntity = null;
 	/**
 	 * loading the page js class files
 	 */
@@ -55,8 +36,14 @@ abstract class DetailsPageAbstract extends BPCPageAbstract
 	protected function _getEndJs()
 	{
 		$js = parent::_getEndJs();
+		$class = trim($this->_focusEntity);
+		if($class === '' || !isset($this->Request['id']) )
+			die('System Error: no id or class passed in');
+		if(!($entity = $class::get($this->Request['id'])) instanceof $class)
+			die('invalid item!');
+		
 		$js .= "pageJs.setHTMLIDs('item-div')";
-		$js .= ".setItem(" . json_encode($this->_focusEntity->getJson()) . ");";
+		$js .= ".setItem(" . json_encode($entity->getJson()) . ");";
 		return $js;
 	}
 	/**

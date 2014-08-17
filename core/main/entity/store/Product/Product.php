@@ -80,6 +80,12 @@ class Product extends InfoEntityAbstract
 	 * @var ProductStatus
 	 */
 	protected $status;
+	/**
+	 * The manufacture /brand of this product
+	 * 
+	 * @var Manufacturer
+	 */
+	protected $manufacturer;
 	/** 
 	 * Getter for asNewFromDate
 	 * 
@@ -333,6 +339,28 @@ class Product extends InfoEntityAbstract
 		$this->status = $value;
 		return $this;
 	}
+	/** 
+	 * Getter for manufacturer
+	 * 
+	 * @return Manufacturer
+	 */
+	public function getManufacturer ()
+	{
+		$this->loadManyToOne('manufacturer');
+		return $this->manufacturer;
+	}
+	/** 
+	 * Setter for manufacturer
+	 * 
+	 * @param Manufacturer $value
+	 * 
+	 * @return Product
+	 */
+	public function setManufacturer(Manufacturer $value = null)
+	{
+		$this->manufacturer = $value;
+		return $this;
+	}
 	/**
 	 * Creating the product based on sku
 	 * 
@@ -347,7 +375,7 @@ class Product extends InfoEntityAbstract
 	 * 
 	 * @return Ambigous <Product, Ambigous, NULL, BaseEntityAbstract>
 	 */
-	public static function create($sku, $name, $mageProductId = '', $stockOnHand = null, $stockOnOrder = null, $isFromB2B = false, $shortDescr = '', $fullDescr = '')
+	public static function create($sku, $name, $mageProductId = '', $stockOnHand = null, $stockOnOrder = null, $isFromB2B = false, $shortDescr = '', $fullDescr = '', Manufacturer $manufacturer = null)
 	{
 		if(!($product = self::getBySku($sku)) instanceof Product)
 			$product = new Product();
@@ -368,6 +396,10 @@ class Product extends InfoEntityAbstract
 			{
 				$asset = Asset::registerAsset('full_desc_' . $sku, $fullDescr);
 				$product->setFullDescAssetId(trim($asset->getAssetId()));
+			}
+			if ($manufacturer instanceof Manufacturer)
+			{
+				$product->setManufacturer($manufacturer);
 			}
 		}
 		FactoryAbastract::dao(get_called_class())->save($product);
@@ -432,12 +464,9 @@ class Product extends InfoEntityAbstract
 		$array = array();
 		if(!$this->isJsonLoaded($reset))
 		{
-			$prices = array();
-			foreach($this->getPrices() as $price)
-			{
-				$prices[$price->getType()->getId()] = $price->getJson();
-			}
-			$array['prices'] = $prices;
+			$array['prices'] = array_map(create_function('$a', 'return $a->getJson();'), $this->getPrices());
+			$array['manufacturer'] = $this->getManufacturer() instanceof Manufacturer ? $this->getManufacturer()->getJson() : null;
+			$array['supplierCodes'] = array_map(create_function('$a', 'return $a->getJson();'), SupplierCode::getAllByCriteria('productId = ?', array($this->getId())));
 			$array['images'] = array_map(create_function('$a', 'return $a->getJson();'), $this->getImages());
 		}
 		return parent::getJson($array, $reset);
@@ -464,7 +493,8 @@ class Product extends InfoEntityAbstract
 		DaoMap::setIntType('stockOnOrder');
 		DaoMap::setBoolType('isFromB2B');
 		DaoMap::setBoolType('sellOnWeb');
-		DaoMap::setManyToOne('status', 'ProductStatus');
+		DaoMap::setManyToOne('status', 'ProductStatus', 'pro_status');
+		DaoMap::setManyToOne('manufacturer', 'Manufacturer', 'pro_man');
 		DaoMap::setDateType('asNewFromDate', 'datetime', true);
 		DaoMap::setDateType('asNewToDate', 'datetime', true);
 		DaoMap::setStringType('shortDescription', 'varchar', 255);
