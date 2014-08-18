@@ -49,7 +49,7 @@ class Menu extends TTemplateControl
 		$html = "<ul class='nav navbar-nav'>";
 			foreach($array as $key => $item)
 			{
-				$hasNextLevel = !isset($item['name']) && count($item) > 0;
+				$hasNextLevel = !isset($item['name']) && is_array($item) && count($item) > 0;
 				$activeClass = ($pageItem === $key || array_key_exists($pageItem, $item) ? 'active' : '');
 				$html .= "<li class='" . $activeClass . " visible-xs visible-sm visible-md visible-lg'>";
 				$html .= "<a href='" . ($hasNextLevel === true ? '#' : $item['url']) . "' " . ($hasNextLevel === true ? 'class="dropdown-toggle" data-toggle="dropdown"' : '') . ">";
@@ -60,7 +60,7 @@ class Menu extends TTemplateControl
 						$html .= "<ul class='dropdown-menu'>";
 						foreach($item as $k => $i)
 						{
-							if(!isset($i['url']))
+							if(is_string($i) || !isset($i['url']))
 								continue;
 							$html .= "<li class='" . ($pageItem === $k ? 'active' : '') . "'><a href='" . $i['url'] . "'>" . (isset($i['icon']) ? $i['icon'] . ' ' : '') .$i['name'] . "</a></li>";
 						}

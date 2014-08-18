@@ -44,7 +44,7 @@ class DetailsController extends DetailsPageAbstract
 		$js .= ".setStatuses(" . json_encode($statuses) . ")";
 		$js .= ".setPriceTypes(" . json_encode($priceTypes) . ")";
 		$js .= ".load()";
-		$js .= ".bindDatePicker();";
+		$js .= ".bindAllEventNObjects();";
 		return $js;
 	}
 }

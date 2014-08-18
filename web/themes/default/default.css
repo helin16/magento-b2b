@@ -128,6 +128,15 @@ table.table thead td {
 	text-align: center;
 }
 
+.thumbnail-holder.btn-hide-row {
+	position:relative;
+}
+.thumbnail-holder.btn-hide-row .btns {
+	position:absolute;
+	bottom: 25px;
+	right: 22px;
+}
+
 .btn-hide-row .btns {
 	visibility: hidden;
 }

@@ -79,7 +79,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 						.insert({'bottom': ' NEW' })
 						.observe('click', function(){
 							$(this).up('.panel').down('.table tbody').insert({'bottom': tmp.me._getListPanelRow({}, selBoxData, titleData, false).addClassName('list-panel-row').writeAttribute('item_id', '') });
-							tmp.me.bindDatePicker();
+							tmp.me._bindDatePicker();
 						})
 					})
 				})
@@ -96,19 +96,72 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		return tmp.newDiv;
 	}
 	
+	,_loadRichTextEditor: function(input) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.me._signRandID(input);
+		console.debug(input);
+		tmp.editor = new TINY.editor.edit('editor',{
+			id: input.id,
+			width: '100%',
+			cssclass: 'tinyeditor',
+			controlclass: 'tinyeditor-control',
+			rowclass: 'tinyeditor-header',
+			dividerclass: 'tinyeditor-divider',
+			controls: ['bold', 'italic', 'underline', 'strikethrough', '|', 'subscript', 'superscript', '|',
+				'orderedlist', 'unorderedlist', '|', 'outdent', 'indent', '|', 'leftalign',
+				'centeralign', 'rightalign', 'blockjustify', '|', 'unformat', '|', 'undo', 'redo', 'n',
+				'font', 'size', 'style', '|', 'image', 'hr', 'link', 'unlink', '|', 'print'],
+			footer: true,
+			fonts: ['Verdana','Arial','Georgia','Trebuchet MS'],
+			xhtml: true,
+			cssfile: 'custom.css',
+			bodyid: 'editor',
+			footerclass: 'tinyeditor-footer',
+			toggle: {text: 'source', activetext: 'wysiwyg', cssclass: 'toggle'},
+			resize: {cssclass: 'resize'}
+		});
+		input.store('editor', tmp.editor);
+		return tmp.me;
+	}
+	
+	,_getRichTextEditor: function(text) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.newDiv = new Element('textarea', {'class': 'rich-text-editor'}).update(text ? text : '');
+		return tmp.newDiv;
+	}
+	
+	,_getFullDescriptionPanel: function(item) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.fullDescriptioAssetId = item.fullDescAssetId ? item.fullDescAssetId : '';
+		tmp.loadFullBtn = tmp.fullDescriptioAssetId.blank() ? tmp.me._getRichTextEditor('') : new Element('span', {'class': 'btn btn-default'}).update('click to load the full description')
+			.observe('click', function(){
+				tmp.newTextarea = tmp.me._getRichTextEditor('');
+				$(this).replace(tmp.newTextarea);
+				tmp.me._loadRichTextEditor(tmp.newTextarea);
+			});
+		tmp.newDiv = tmp.me._getFormGroup('Full Description:', tmp.loadFullBtn);
+		return tmp.newDiv;
+	}
+	
 	,_getSummaryDiv: function (item) {
 		var tmp = {};
 		tmp.me = this;
 		tmp.item = item;
 		tmp.newDiv = new Element('div', {'class': 'panel panel-default'})
 			.insert({'bottom': new Element('div', {'class': 'panel-heading'})
-				.insert({'bottom': new Element('strong').update('Editing :' + tmp.item.name) })
+				.insert({'bottom': new Element('strong').update('Editing: ' + tmp.item.name) })
+				.insert({'bottom': new Element('small', {'class': 'pull-right'}) 
+					.insert({'bottom': new Element('label', {'for': 'showOnWeb_' + tmp.item.id}).update('Show on Web?') })
+					.insert({'bottom': new Element('input', {'id': 'showOnWeb_' + tmp.item.id, 'save-item': 'sellOnWeb', 'type': 'checkbox', 'checked': tmp.item.sellOnWeb}) })
+				})
 			})
 			.insert({'bottom': new Element('div', {'class': 'panel-body'})
 				.insert({'bottom': new Element('div', {'class': 'row'})
 					.insert({'bottom': new Element('div', {'class': 'col-sm-3'}).update(tmp.me._getFormGroup('Name', new Element('input', {'save-item': 'name', 'type': 'text', 'value': tmp.item.name}) ) ) })
 					.insert({'bottom': new Element('div', {'class': 'col-sm-3'}).update(tmp.me._getFormGroup('sku', new Element('input', {'save-item': 'sku', 'type': 'text', 'value': tmp.item.sku}) ) ) })
-					.insert({'bottom': new Element('div', {'class': 'col-sm-2'}).update(tmp.me._getFormGroup('on Web?', new Element('div').update(new Element('input', {'save-item': 'sellOnWeb', 'type': 'checkbox', 'checked': tmp.item.sellOnWeb})) ) ) })
 					.insert({'bottom': new Element('div', {'class': 'col-sm-2'}).update(tmp.me._getFormGroup('Brand/Manf.', 
 							tmp.me._getSelBox(tmp.me._manufacturers, tmp.item.manufacturer ? tmp.item.manufacturer.id : null).writeAttribute('save-item', 'manufacture.id').addClassName('chosen') 
 					) ) })
@@ -116,28 +169,60 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 							tmp.me._getSelBox(tmp.me._statuses, tmp.item.status ? tmp.item.status.id : null).writeAttribute('save-item', 'status.id').addClassName('chosen') 
 					) ) })
 				})
+				.insert({'bottom': new Element('div', {'class': 'row'})
+					.insert({'bottom': new Element('div', {'class': 'col-sm-12'}).update(tmp.me._getFormGroup('Short Description:', new Element('input', {'save-item': 'shortDescription', 'type': 'text', 'value': tmp.item.shortDescription}) ) ) })
+				})
+				.insert({'bottom': new Element('div', {'class': 'row'})
+					.insert({'bottom': new Element('div', {'class': 'col-sm-12'}).update(tmp.me._getFullDescriptionPanel(tmp.item) ) })
+				})
 			});
 		return tmp.newDiv;
 	}
 	
-	,_getFullDescriptionPanel: function(item) {
+	
+	,_loadFancyBox: function(elements) {
 		var tmp = {};
 		tmp.me = this;
-		tmp.checkBoxId = 'show-full-desc-' + item.id;
-		tmp.newDiv = new Element('div', {'class': 'panel panel-default'})
-			.insert({'bottom': new Element('div', {'class': 'panel-heading'})
-				.insert({'bottom': new Element('label', {'for': tmp.checkBoxId}).update('Show Full Descripton:') })
-				.insert({'bottom': new Element('input', {'id': tmp.checkBoxId, 'type': 'checkbox'}) })
+		elements.each(function(item){
+			item.observe('click', function(){
+				tmp.imgs = [];
+				elements.each(function(el){
+					tmp.imgs.push({'href': el.down('img').readAttribute('src')});
+				});
+				jQuery.fancybox(tmp.imgs, {
+					prevEffect	: 'none',
+					nextEffect	: 'none',
+					helpers	: {
+						title	: {
+							type: 'outside'
+						},
+						thumbs	: {
+							width	: 50,
+							height	: 50
+						}
+					}
+				})
 			});
-		return tmp.newDiv;
+		});
+		return this;
 	}
 	
 	,_getImageThumb: function(img) {
 		var tmp = {};
 		tmp.me = this;
-		tmp.newDiv = new Element('div', {'class': 'col-xs-12 col-sm-6 col-md-4'})
-			.insert({'bottom': new Element('a', {'href': img.src, 'class': 'thumbnail fancybox-thumb'})
+		tmp.newDiv = new Element('div', {'class': 'col-xs-12 col-sm-6 col-md-4 thumbnail-holder btn-hide-row'})
+			.insert({'bottom': new Element('a', {'href': 'javascript: void(0)', 'class': 'thumbnail fancybox-thumb', 'ref': 'product_thumbs'})
 				.insert({'bottom': new Element('img', {'data-src': 'holder.js/100%x180', 'src': img.src}) })
+			})
+			.insert({'bottom': new Element('span', {'class': 'btns'})
+				.insert({'bottom': new Element('small', {'class': 'btn btn-danger btn-xs'}) 
+					.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-trash'}) })
+				})
+				.observe('click', function(){
+					if(!confirm('Delete this image?'))
+						return false;
+					$(this).up('.thumbnail-holder').remove();
+				})
 			});
 		return tmp.newDiv;
 	}
@@ -155,9 +240,10 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 				tmp.reader.onload = (function(theFile){
 					return function(e) {
 						// Render thumbnail.
-						$(targetDiv).insert({'bottom': tmp.me._getImageThumb({'src': e.target.result}) });
+						tmp.thumb = tmp.me._getImageThumb({'src': e.target.result});
+						$(targetDiv).insert({'bottom': tmp.thumb });
 						evt.target.value = '';
-						jQuery(".fancybox-thumb").fancybox();
+						tmp.me._loadFancyBox($$('.fancybox-thumb'));
 			        };
 				})(tmp.file);
 				// Read in the image file as a data URL.
@@ -201,14 +287,11 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 						) })
 					})
 				})
-			})
-			.insert({'bottom':new Element('div', {'class': 'row'})
-				.insert({'bottom': new Element('div', {'class': 'col-sm-12'}).update(tmp.me._getFullDescriptionPanel(tmp.me._item)) })
 			});
 		return tmp.newDiv;
 	}
 	
-	,bindDatePicker: function() {
+	,_bindDatePicker: function() {
 		var tmp = {};
 		tmp.me = this;
 		$$('.datepicker').each(function(item){
@@ -216,6 +299,17 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 				tmp.me._signRandID(item);
 				new Prado.WebUI.TDatePicker({'ID': item.id, 'InputMode':"TextBox",'Format':"yyyy-MM-dd 00:00:00",'FirstDayOfWeek':1,'CalendarStyle':"default",'FromYear':2009,'UpToYear':2024,'PositionMode':"Bottom", "ClassName": 'datepicker-layer-fixer'});
 			}
+		});
+		return tmp.me;
+	}
+	
+	,bindAllEventNObjects: function() {
+		var tmp = {};
+		tmp.me = this;
+		tmp.me._bindDatePicker();
+		$$('textarea.rich-text-editor').each(function(item){
+			console.debug(item);
+			tmp.me._loadRichTextEditor(item);
 		});
 		return tmp.me;
 	}
