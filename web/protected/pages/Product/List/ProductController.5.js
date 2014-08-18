@@ -82,7 +82,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 					.insert({'bottom': new Element('span', {'class': 'btn btn-default', 'title': 'Edit'})
 						.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-pencil'}) })
 						.observe('click', function(){
-							$(this).up('.item_row').replace(tmp.me._getEditPanel(row));
+							$(this).up('.item_row').replace(tmp.me.openToolsURL('/product/' + row.id + '.html'));
 						})
 					})
 					.insert({'bottom': new Element('span', {'class': 'btn btn-danger', 'title': 'Delete'})
