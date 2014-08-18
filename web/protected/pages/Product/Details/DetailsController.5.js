@@ -7,26 +7,21 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 	,_suppliers: []
 	,_statuses: []
 	,_priceTypes: []
+	,_codeTypes: []
+	,_productCategories: []
 	
 	,_getFormGroup: function (label, input) {
 		return new Element('div', {'class': 'form-group form-group-sm form-group-sm-label'})
 			.insert({'bottom': new Element('label').update(label) })
 			.insert({'bottom': input.addClassName('form-control') });
 	}
-	,setManufactures: function(manufacturers) {
+	,setPreData: function(manufacturers, suppliers, statuses, priceTypes, codeTypes, productCategories) {
 		this._manufacturers = manufacturers;
-		return this;
-	}
-	,setSuppliers: function(suppliers) {
 		this._suppliers = suppliers;
-		return this;
-	}
-	,setStatuses: function(statuses) {
 		this._statuses = statuses;
-		return this;
-	}
-	,setPriceTypes: function(priceTypes) {
 		this._priceTypes = priceTypes;
+		this._codeTypes = codeTypes;
+		this._productCategories = productCategories;
 		return this;
 	}
 	
@@ -100,10 +95,10 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		var tmp = {};
 		tmp.me = this;
 		tmp.me._signRandID(input);
-		console.debug(input);
 		tmp.editor = new TINY.editor.edit('editor',{
 			id: input.id,
 			width: '100%',
+			height: 100,
 			cssclass: 'tinyeditor',
 			controlclass: 'tinyeditor-control',
 			rowclass: 'tinyeditor-header',
@@ -160,20 +155,27 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 			})
 			.insert({'bottom': new Element('div', {'class': 'panel-body'})
 				.insert({'bottom': new Element('div', {'class': 'row'})
-					.insert({'bottom': new Element('div', {'class': 'col-sm-3'}).update(tmp.me._getFormGroup('Name', new Element('input', {'save-item': 'name', 'type': 'text', 'value': tmp.item.name}) ) ) })
-					.insert({'bottom': new Element('div', {'class': 'col-sm-3'}).update(tmp.me._getFormGroup('sku', new Element('input', {'save-item': 'sku', 'type': 'text', 'value': tmp.item.sku}) ) ) })
-					.insert({'bottom': new Element('div', {'class': 'col-sm-2'}).update(tmp.me._getFormGroup('Brand/Manf.', 
-							tmp.me._getSelBox(tmp.me._manufacturers, tmp.item.manufacturer ? tmp.item.manufacturer.id : null).writeAttribute('save-item', 'manufacture.id').addClassName('chosen') 
-					) ) })
-					.insert({'bottom': new Element('div', {'class': 'col-sm-2'}).update(tmp.me._getFormGroup('Status', 
-							tmp.me._getSelBox(tmp.me._statuses, tmp.item.status ? tmp.item.status.id : null).writeAttribute('save-item', 'status.id').addClassName('chosen') 
-					) ) })
-				})
-				.insert({'bottom': new Element('div', {'class': 'row'})
-					.insert({'bottom': new Element('div', {'class': 'col-sm-12'}).update(tmp.me._getFormGroup('Short Description:', new Element('input', {'save-item': 'shortDescription', 'type': 'text', 'value': tmp.item.shortDescription}) ) ) })
-				})
-				.insert({'bottom': new Element('div', {'class': 'row'})
-					.insert({'bottom': new Element('div', {'class': 'col-sm-12'}).update(tmp.me._getFullDescriptionPanel(tmp.item) ) })
+					.insert({'bottom': new Element('div', {'class': 'col-sm-8'})
+						.insert({'bottom': new Element('div', {'class': 'row'})
+							.insert({'bottom': new Element('div', {'class': 'col-sm-3'}).update(tmp.me._getFormGroup('Name', new Element('input', {'save-item': 'name', 'type': 'text', 'value': tmp.item.name}) ) ) })
+							.insert({'bottom': new Element('div', {'class': 'col-sm-3'}).update(tmp.me._getFormGroup('sku', new Element('input', {'save-item': 'sku', 'type': 'text', 'value': tmp.item.sku}) ) ) })
+							.insert({'bottom': new Element('div', {'class': 'col-sm-2'}).update(tmp.me._getFormGroup('Brand/Manf.', 
+									tmp.me._getSelBox(tmp.me._manufacturers, tmp.item.manufacturer ? tmp.item.manufacturer.id : null).writeAttribute('save-item', 'manufacture.id').addClassName('chosen') 
+							) ) })
+							.insert({'bottom': new Element('div', {'class': 'col-sm-2'}).update(tmp.me._getFormGroup('Status', 
+									tmp.me._getSelBox(tmp.me._statuses, tmp.item.status ? tmp.item.status.id : null).writeAttribute('save-item', 'status.id').addClassName('chosen') 
+							) ) })
+						})
+						.insert({'bottom': new Element('div', {'class': 'row'})
+							.insert({'bottom': new Element('div', {'class': 'col-sm-12'}).update(tmp.me._getFormGroup('Short Description:', new Element('input', {'save-item': 'shortDescription', 'type': 'text', 'value': tmp.item.shortDescription}) ) ) })
+						})
+						.insert({'bottom': new Element('div', {'class': 'row'})
+							.insert({'bottom': new Element('div', {'class': 'col-sm-12'}).update(tmp.me._getFullDescriptionPanel(tmp.item) ) })
+						})
+					})
+					.insert({'bottom': new Element('div', {'class': 'col-sm-4'})
+						.insert({'bottom': tmp.me._getFormGroup('Categories:', new Element('span') ) })
+					})
 				})
 			});
 		return tmp.newDiv;
@@ -279,14 +281,17 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 				})
 				.insert({'bottom': new Element('div', {'class': 'col-sm-8'})
 					.insert({'bottom': tmp.me._getSummaryDiv(tmp.me._item) })
-					.insert({'bottom': new Element('div', {'class': 'row'})
-						.insert({'bottom': new Element('div', {'class': 'col-sm-4'}).update(
-							tmp.me._getListPanel('Suppliers:', tmp.me._item.supplierCodes, {'type': 'Supplier', 'value': 'Code'}, tmp.me._suppliers)
-						) })
-						.insert({'bottom': new Element('div', {'class': 'col-sm-8'}).update(tmp.me._getListPanel('Prices:', tmp.me._item.prices, {'type': 'Type', 'value': 'Price', 'start': 'From', 'end': 'To'}, tmp.me._priceTypes) 
-						) })
-					})
 				})
+			})
+			.insert({'bottom': new Element('div', {'class': 'row'})
+				.insert({'bottom': new Element('div', {'class': 'col-sm-3'}).update(
+					tmp.me._getListPanel('Suppliers:', tmp.me._item.supplierCodes, {'type': 'Supplier', 'value': 'Code'}, tmp.me._suppliers)
+				) })
+				.insert({'bottom': new Element('div', {'class': 'col-sm-3'}).update(
+						tmp.me._getListPanel('Suppliers:', tmp.me._item.supplierCodes, {'type': 'Supplier', 'value': 'Code'}, tmp.me._suppliers)
+				) })
+				.insert({'bottom': new Element('div', {'class': 'col-sm-6'}).update(tmp.me._getListPanel('Prices:', tmp.me._item.prices, {'type': 'Type', 'value': 'Price', 'start': 'From', 'end': 'To'}, tmp.me._priceTypes) 
+				) })
 			});
 		return tmp.newDiv;
 	}
@@ -308,7 +313,6 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		tmp.me = this;
 		tmp.me._bindDatePicker();
 		$$('textarea.rich-text-editor').each(function(item){
-			console.debug(item);
 			tmp.me._loadRichTextEditor(item);
 		});
 		return tmp.me;

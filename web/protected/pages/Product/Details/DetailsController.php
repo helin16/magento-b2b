@@ -39,13 +39,29 @@ class DetailsController extends DetailsPageAbstract
 		$suppliers = array_map(create_function('$a', 'return $a->getJson();'), Supplier::getAll());
 		$statuses = array_map(create_function('$a', 'return $a->getJson();'), ProductStatus::getAll());
 		$priceTypes = array_map(create_function('$a', 'return $a->getJson();'), ProductPriceType::getAll());
-		$js .= "pageJs.setManufactures(" . json_encode($manufacturers) . ")";
-		$js .= ".setSuppliers(" . json_encode($suppliers) . ")";
-		$js .= ".setStatuses(" . json_encode($statuses) . ")";
-		$js .= ".setPriceTypes(" . json_encode($priceTypes) . ")";
+		$codeTypes = array_map(create_function('$a', 'return $a->getJson();'), ProductCodeType::getAll());
+		
+		$categories = array();
+		foreach(ProductCategory::getAllByCriteria('parentId is null', array()) as $category)
+		{
+			$categories[] = $this->_getCategoryJson($category);
+		}
+		$js .= "pageJs.setPreData(" . json_encode($manufacturers) . ", " . json_encode($suppliers) . ", " . json_encode($statuses) . ", " . json_encode($priceTypes) . ", " . json_encode($codeTypes) . "," . json_encode($categories) . ")";
 		$js .= ".load()";
 		$js .= ".bindAllEventNObjects();";
 		return $js;
+	}
+	private function _getCategoryJson(ProductCategory $category)
+	{
+		$categoryJson = $category->getJson();
+		$children = array();
+		$categories = ProductCategory::getAllByCriteria('parentId = ?', array($category->getId()));
+		foreach($categories as $cate)
+		{
+			$children[] = $this->_getCategoryJson($cate);
+		}
+		$categoryJson['children'] = $children;
+		return $categoryJson;
 	}
 }
 ?>
