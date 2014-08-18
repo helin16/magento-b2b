@@ -1,17 +1,7 @@
 <%@MasterClass="Application.layout.BlankLayout"%>
 <com:TContent ID="MainContent">
-	<com:Application.controls.chosen.Chosen />
-	<com:TDatePicker Style="display:none;"/>
-	<com:TCallback ID="updateOrderBtn" OnCallback="updateOrder" />
-	<com:TCallback ID="addCommentsBtn" OnCallback="addComments" />
-	<com:TCallback ID="changeOrderStatusBtn" OnCallback="changeOrderStatus" />
-	<com:TCallback ID="confirmPaymentBtn" OnCallback="confirmPayment" />
-	<com:TCallback ID="updateOIForWHBtn" OnCallback="updateOrderItemForWarehouse" />
-	<com:TCallback ID="updateShippingInfoBtn" OnCallback="updateShippingDetails" />
-	<com:TCallback ID="getPaymentDetailsBtn" OnCallback="getPaymentDetailsForOrder" />
-	<com:TCallback ID="clearETABtn" OnCallback="clearETA" />
-	<com:TCallback ID="changeIsOrderedBtn" OnCallback="changeIsOrdered" />
-	<div class="pagewrapper orderdetails">
-		<div id="detailswrapper" class="contentDiv"></div>
+	<com:Application.controls.HiChart.HiChart />
+	<div class="pagewrapper orderstatics">
+		<div id="statics-div"></div>
 	</div>
 </com:TContent>

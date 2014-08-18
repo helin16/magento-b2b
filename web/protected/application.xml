@@ -63,6 +63,9 @@
 			<!-- FrontEnd:: supplier list page -->
 			<url ServiceParameter="Supplier.List.ListController" pattern="suppliers.html" />
 			
+			<!-- Statics::Order::Trend::Monthly page -->
+			<url ServiceParameter="Statics.Order.MthlyTrend.StaticsController" pattern="/order/mthlytrend.html" />
+			
 			<!-- asset service -->
 			<url ServiceId="asset" ServiceParameter="" pattern="asset/{method}" parameters.method="get" />
 			

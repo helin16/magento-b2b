@@ -536,6 +536,18 @@ abstract class BaseEntityAbstract
     {
     	return FactoryAbastract::dao(get_called_class())->deleteByCriteria($criteria, $params);
     }
+    /**
+     * Count By Criteria
+     * 
+     * @param string   $criteria The where clause
+     * @param array    $params   The parameters
+     * 
+     * @return number
+     */
+    public static function countByCriteria($criteria, $params = array())
+    {
+    	return FactoryAbastract::dao(get_called_class())->countByCriteria($criteria, $params);
+    }
 }
 
 ?>
