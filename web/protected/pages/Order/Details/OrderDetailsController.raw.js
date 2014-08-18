@@ -376,7 +376,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		});
 		tmp.me._signRandID(tmp.etaBox);
 		try {
-			new Prado.WebUI.TDatePicker({'ID': tmp.etaBox.id, 'InputMode':"TextBox",'Format':"yyyy-MM-dd 17:00:00",'FirstDayOfWeek':1,'CalendarStyle':"default",'FromYear':2009,'UpToYear':2024,'PositionMode':"Bottom"});
+			new Prado.WebUI.TDatePicker({'ID': tmp.etaBox.id, 'InputMode':"TextBox",'Format':"yyyy-MM-dd 17:00:00",'FirstDayOfWeek':1,'CalendarStyle':"default",'FromYear':2009,'UpToYear':2024,'PositionMode':"Bottom", "ClassName": 'datepicker-layer-fixer'});
 		} catch(e) {}
 		return tmp.me;
 	}
@@ -1086,7 +1086,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		//load the comments after
 		tmp.me._getComments(true);
 		$$('.datepicker').each(function(item) {
-			new Prado.WebUI.TDatePicker({'ID': item.id, 'InputMode':"TextBox",'Format':"yyyy-MM-dd 17:00:00",'FirstDayOfWeek':1,'CalendarStyle':"default",'FromYear':2009,'UpToYear':2024,'PositionMode':"Bottom"});
+			new Prado.WebUI.TDatePicker({'ID': item.id, 'InputMode':"TextBox",'Format':"yyyy-MM-dd 17:00:00",'FirstDayOfWeek':1,'CalendarStyle':"default",'FromYear':2009,'UpToYear':2024,'PositionMode':"Bottom", "ClassName": 'datepicker-layer-fixer'});
 		});
 		jQuery('.popover-comments').click(function(){
 			tmp.me._signRandID($(this));

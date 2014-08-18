@@ -41,6 +41,18 @@ class UDate
 	    return $date;
 	}
 	/**
+	 * getting a max date object
+	 * 
+	 * @return UDate
+	 */
+	public static function maxDate()
+	{
+	    $date = new UDate();
+	    $date->setDate(9999, 12, 31);
+	    $date->setTime(23, 59, 59);
+	    return $date;
+	}
+	/**
 	 * Magic toString function
 	 * @return string
 	 */

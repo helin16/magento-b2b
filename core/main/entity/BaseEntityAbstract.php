@@ -520,9 +520,9 @@ abstract class BaseEntityAbstract
      *
      * @return int
      */
-    public static function updateByCriteria($setClause, $criteria)
+    public static function updateByCriteria($setClause, $criteria, $params = array())
     {
-    	return FactoryAbastract::dao(get_called_class())->updateByCriteria($setClause, $criteria);
+    	return FactoryAbastract::dao(get_called_class())->updateByCriteria($setClause, $criteria, $params);
     }
     /**
      * delete a table for the search criteria

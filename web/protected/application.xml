@@ -11,7 +11,7 @@
 
 	<!-- configurations for modules -->
 	<modules>
-		<!-- module id="cache" class="System.Caching.TAPCCache" /> -->
+		<!-- <module id="cache" class="System.Caching.TAPCCache" /> -->
 		<module id="Session" class="Application.classes.Session.SessionDb" UseCustomStorage="true" />
 		<module id="security" class="TSecurityManager" EncryptionKey="BPCinternal" ValidationKey="bfb9e1b24ba6308e39495a4a78f35d70" />
 		<module id="request" class="THttpRequest" UrlManager="friendly-url" />
@@ -49,6 +49,8 @@
 			
 			<!-- FrontEnd:: product list page -->
 			<url ServiceParameter="Product.List.ProductController" pattern="products.html" />
+			<!-- FrontEnd:: product details page -->
+			<url ServiceParameter="Product.Details.DetailsController" pattern="product/{id}.html" parameters.id="\d+"/>
 			
 			<!-- FrontEnd:: product code type list page -->
 			<url ServiceParameter="ProductCodeType.List.ListController" pattern="productcodetypes.html" />

@@ -3,9 +3,23 @@
  */
 var PageJs = new Class.create();
 PageJs.prototype = Object.extend(new CRUDPageJs(), {
-	
 	_getTitleRowData: function() {
 		return {'sku': 'SKU', 'name': 'Product Name', 'active': 'act?'};
+	}
+	,openToolsURL: function(url) {
+		var tmp = {};
+		tmp.me = this;
+		jQuery.fancybox({
+			'width'			: '95%',
+			'height'		: '95%',
+			'autoScale'     : false,
+			'autoDimensions': false,
+			'fitToView'     : false,
+			'autoSize'      : false,
+			'type'			: 'iframe',
+			'href'			: url,
+ 		});
+		return tmp.me;
 	}
 	,_getEditPanel: function(row) {
 		var tmp = {};
@@ -17,6 +31,9 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 			})
 			.insert({'bottom': new Element('td', {'class': 'form-group'})
 				.insert({'bottom': new Element('input', {'class': 'form-control', 'placeholder': 'The Product Name of the Product', 'save-item-panel': 'name', 'value': row.name ? row.name : ''}) })
+			})
+			.insert({'bottom': new Element('td', {'class': 'form-group'})
+				.insert({'bottom': new Element('input', {'type': 'checkbox', 'class': 'form-control', 'save-item-panel': 'active', 'checked': row.active}) })
 			})
 			.insert({'bottom': new Element('td', {'class': 'text-right'})
 				.insert({'bottom':  new Element('span', {'class': 'btn-group btn-group-sm'})
@@ -40,6 +57,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 			})
 		return tmp.newDiv;
 	}
+	
 	,_getResultRow: function(row, isTitle) {
 		var tmp = {};
 		tmp.me = this;
@@ -48,9 +66,9 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		tmp.row = new Element('tr', {'class': (tmp.isTitle === true ? '' : 'product_item'), 'product_id' : row.id}).store('data', row)
 			.insert({'bottom': new Element(tmp.tag, {'class': 'sku'}).update(row.sku) })
 			.insert({'bottom': new Element(tmp.tag, {'class': 'name'}).update(row.name) })
-			.insert({'bottom': new Element(tmp.tag, {'class': 'text-center product_active'}).update(
-				tmp.isTitle === true ? row.active : new Element('span', {'class': 'glyphicon glyphicon-ok-sign'}) 
-			) })
+			.insert({'bottom': new Element(tmp.tag, {'class': 'product_active col-xs-1'})
+				.insert({'bottom': (tmp.isTitle === true ? row.active : new Element('input', {'type': 'checkbox', 'disabled': true, 'checked': row.active}) ) })
+			})
 			.insert({'bottom': new Element(tmp.tag, {'class': 'text-right btns col-xs-2'}).update(
 				tmp.isTitle === true ?  
 				(new Element('span', {'class': 'btn btn-primary btn-xs', 'title': 'New'})

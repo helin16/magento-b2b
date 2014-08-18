@@ -86,10 +86,14 @@ class ListController extends CRUDPageAbstract
 			$item = (isset($param->CallbackParameter->item->id) && ($item = $class::get($param->CallbackParameter->item->id)) instanceof $class) ? $item : null;
 			$name = trim($param->CallbackParameter->item->name);
 			$description = trim($param->CallbackParameter->item->description);
+			$contactName = trim($param->CallbackParameter->item->contactName);
+			$contactNo = trim($param->CallbackParameter->item->contactNo);
 			if($item instanceof $class)
 			{
 				$item->setName($name)
 					->setDescription($description)
+					->setContactName($contactName)
+					->setContactNo($contactNo)
 					->save();
 			}
 			else

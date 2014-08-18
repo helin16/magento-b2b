@@ -21,6 +21,24 @@ class Supplier extends BaseEntityAbstract
 	 */
 	private $description = '';
 	/**
+	 * The contact person's name
+	 * 
+	 * @var string
+	 */
+	private $contactName = ''; 
+	/**
+	 * The contact number
+	 * 
+	 * @var string
+	 */
+	private $contactNo = '';
+	/**
+	 * The address
+	 * 
+	 * @var Address
+	 */
+	protected $address = null;
+	/**
 	 * The id of the customer in magento
 	 *
 	 * @var int
@@ -116,6 +134,70 @@ class Supplier extends BaseEntityAbstract
 		$this->mageId = $value;
 		return $this;
 	}
+	/** 
+	 * Getter for contactName
+	 * 
+	 * @return string
+	 */
+	public function getContactName ()
+	{
+		return $this->contactName;
+	}
+	/** 
+	 * Setter for contactName
+	 * 
+	 * @param string $value
+	 * 
+	 * @return Supplier
+	 */
+	public function setContactName($value)
+	{
+		$this->contactName = $value;
+		return $this;
+	}
+	/** 
+	 * Getter for contactNo
+	 * 
+	 * @return string
+	 */
+	public function getContactNo ()
+	{
+		return $this->contactNo;
+	}
+	/** 
+	 * Setter for contactNo
+	 * 
+	 * @param string $value
+	 * 
+	 * @return Supplier
+	 */
+	public function setContactNo($value)
+	{
+		$this->contactNo = $value;
+		return $this;
+	}
+	/** 
+	 * Getter for address
+	 * 
+	 * @return Address
+	 */
+	public function getAddress ()
+	{
+		$this->loadManyToOne('address');
+		return $this->address;
+	}
+	/** 
+	 * Setter for address
+	 * 
+	 * @param Address $value
+	 * 
+	 * @return Supplier
+	 */
+	public function setAddress(Address $value = null)
+	{
+		$this->address = $value;
+		return $this;
+	}
 	/**
 	 * Getting the customer
 	 *
@@ -137,7 +219,7 @@ class Supplier extends BaseEntityAbstract
 	 *
 	 * @return Ambigous <GenericDAO, BaseEntityAbstract>
 	 */
-	public static function create($name, $description = '', $isFromB2B = false, $mageId = 0)
+	public static function create($name, $description = '', $isFromB2B = false, $mageId = 0, $contactName = '', $contactNo = '', Address $addr = null)
 	{
 		$name = trim($name);
 		$description = trim($description);
@@ -149,7 +231,10 @@ class Supplier extends BaseEntityAbstract
 		else
 		{
 			$obj = new $class();
-			$obj->setIsFromB2B($isFromB2B);
+			$obj->setIsFromB2B($isFromB2B)
+				->setContactName(trim($contactName))
+				->setContactNo(trim($contactNo))
+				->setAddress($addr);
 		}
 		$obj->setName($name)
 			->setDescription(trim($description))
@@ -171,6 +256,9 @@ class Supplier extends BaseEntityAbstract
 	
 		DaoMap::setStringType('name', 'varchar', 100);
 		DaoMap::setStringType('description', 'varchar', 255);
+		DaoMap::setStringType('contactName', 'varchar', 100);
+		DaoMap::setStringType('contactNo', 'varchar', 100);
+		DaoMap::setManyToOne('address', 'Address', 'sup_addr', true);
 		DaoMap::setIntType('mageId');
 		DaoMap::setBoolType('isFromB2B');
 		parent::__loadDaoMap();
@@ -178,6 +266,8 @@ class Supplier extends BaseEntityAbstract
 		DaoMap::createIndex('name');
 		DaoMap::createIndex('isFromB2B');
 		DaoMap::createIndex('mageId');
+		DaoMap::createIndex('contactNo');
+		DaoMap::createIndex('contactName');
 	
 		DaoMap::commit();
 	}

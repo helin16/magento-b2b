@@ -57,6 +57,99 @@ class Product extends InfoEntityAbstract
 	 */
 	private $fullDescAssetId = '';
 	/**
+	 * Marking the product as new from which date
+	 * 
+	 * @var UDate|NULL
+	 */
+	private $asNewFromDate = null;
+	/**
+	 * Marking the product as new to which date
+	 * 
+	 * @var UDate|NULL
+	 */
+	private $asNewToDate = null;
+	/**
+	 * Whether we will sell this product on Web
+	 * 
+	 * @var bool
+	 */
+	private $sellOnWeb = false;
+	/**
+	 * Product status
+	 * 
+	 * @var ProductStatus
+	 */
+	protected $status;
+	/**
+	 * The manufacture /brand of this product
+	 * 
+	 * @var Manufacturer
+	 */
+	protected $manufacturer;
+	/** 
+	 * Getter for asNewFromDate
+	 * 
+	 * @return Ambigous <UDate, NULL>
+	 */
+	public function getAsNewFromDate ()
+	{
+		return $this->asNewFromDate;
+	}
+	/** 
+	 * Setter for asNewFromDate
+	 * 
+	 * @param string $value
+	 * 
+	 * @return Product
+	 */
+	public function setAsNewFromDate($value)
+	{
+		$this->asNewFromDate = $value;
+		return $this;
+	}
+	/** 
+	 * Getter for asNewToDate
+	 * 
+	 * @return Ambigous <UDate, NULL>
+	 */
+	public function getAsNewToDate ()
+	{
+		return $this->asNewToDate;
+	}
+	/** 
+	 * Setter for asNewToDate
+	 * 
+	 * @param string $value
+	 * 
+	 * @return Product
+	 */
+	public function setAsNewToDate($value)
+	{
+		$this->asNewToDate = $value;
+		return $this;
+	}
+	/** 
+	 * Getter for sellOnWeb
+	 * 
+	 * @return boolean
+	 */
+	public function getSellOnWeb ()
+	{
+		return $this->sellOnWeb;
+	}
+	/** 
+	 * Setter for sellOnWeb
+	 * 
+	 * @param bool $value
+	 * 
+	 * @return Product
+	 */
+	public function setSellOnWeb($value)
+	{
+		$this->sellOnWeb = $value;
+		return $this;
+	}
+	/**
 	 * Getter for sku
 	 *
 	 * @return string
@@ -224,6 +317,50 @@ class Product extends InfoEntityAbstract
 	    $this->fullDescAssetId = $value;
 	    return $this;
 	}
+	/** 
+	 * Getter for status
+	 * 
+	 * @return ProductStatus
+	 */
+	public function getStatus ()
+	{
+		$this->loadManyToOne('status');
+		return $this->status;
+	}
+	/** 
+	 * Setter for status
+	 * 
+	 * @param ProductStatus $value
+	 * 
+	 * @return Product
+	 */
+	public function setStatus($value)
+	{
+		$this->status = $value;
+		return $this;
+	}
+	/** 
+	 * Getter for manufacturer
+	 * 
+	 * @return Manufacturer
+	 */
+	public function getManufacturer ()
+	{
+		$this->loadManyToOne('manufacturer');
+		return $this->manufacturer;
+	}
+	/** 
+	 * Setter for manufacturer
+	 * 
+	 * @param Manufacturer $value
+	 * 
+	 * @return Product
+	 */
+	public function setManufacturer(Manufacturer $value = null)
+	{
+		$this->manufacturer = $value;
+		return $this;
+	}
 	/**
 	 * Creating the product based on sku
 	 * 
@@ -238,9 +375,9 @@ class Product extends InfoEntityAbstract
 	 * 
 	 * @return Ambigous <Product, Ambigous, NULL, BaseEntityAbstract>
 	 */
-	public static function create($sku, $name, $mageProductId = '', $stockOnHand = null, $stockOnOrder = null, $isFromB2B = false, $shortDescr = '', $fullDescr = '')
+	public static function create($sku, $name, $mageProductId = '', $stockOnHand = null, $stockOnOrder = null, $isFromB2B = false, $shortDescr = '', $fullDescr = '', Manufacturer $manufacturer = null)
 	{
-		if(!($product = self::get($sku)) instanceof Product)
+		if(!($product = self::getBySku($sku)) instanceof Product)
 			$product = new Product();
 		$product->setSku(trim($sku))
 			->setName($name);
@@ -260,6 +397,10 @@ class Product extends InfoEntityAbstract
 				$asset = Asset::registerAsset('full_desc_' . $sku, $fullDescr);
 				$product->setFullDescAssetId(trim($asset->getAssetId()));
 			}
+			if ($manufacturer instanceof Manufacturer)
+			{
+				$product->setManufacturer($manufacturer);
+			}
 		}
 		FactoryAbastract::dao(get_called_class())->save($product);
 		return $product;
@@ -277,16 +418,59 @@ class Product extends InfoEntityAbstract
 		return $this;
 	}
 	/**
+	 * Getting the prices
+	 * 
+	 * @return Ambigous <Ambigous, multitype:, multitype:BaseEntityAbstract >
+	 */
+	public function getPrices()
+	{
+		if(!isset($this->_cache['prices']))
+		{
+			$this->_cache['prices'] = ProductPrice::getPrices($this);
+		}
+		return $this->_cache['prices'];
+	}
+	/**
+	 * Getting all the images
+	 * 
+	 * @return multitype:
+	 */
+	public function getImages()
+	{
+		if(!isset($this->_cache['images']))
+		{
+			$this->_cache['images'] = ProductImage::getAllByCriteria('productId = ? ', array($this->getId()));
+		}
+		return $this->_cache['images'];
+	}
+	/**
 	 * Getting the product via sku
 	 * 
 	 * @param string $sku The sku of the product
 	 * 
 	 * @return Ambigous <NULL, BaseEntityAbstract>
 	 */
-	public static function get($sku)
+	public static function getBySku($sku)
 	{
 		$products = FactoryAbastract::dao(get_called_class())->findByCriteria('sku = ? ', array(trim($sku)), false, 1, 1);
 		return (count($products) === 0 ? null : $products[0]);
+	}
+	/**
+	 * (non-PHPdoc)
+	 * @see BaseEntityAbstract::getJson()
+	 */
+	public function getJson($extra = '', $reset = false)
+	{
+		$array = array();
+		if(!$this->isJsonLoaded($reset))
+		{
+			$array['prices'] = array_map(create_function('$a', 'return $a->getJson();'), $this->getPrices());
+			$array['manufacturer'] = $this->getManufacturer() instanceof Manufacturer ? $this->getManufacturer()->getJson() : null;
+			$array['supplierCodes'] = array_map(create_function('$a', 'return $a->getJson();'), SupplierCode::getAllByCriteria('productId = ?', array($this->getId())));
+			$array['images'] = array_map(create_function('$a', 'return $a->getJson();'), $this->getImages());
+			$array['categories'] = array_map(create_function('$a', '$json = $a->getJson(); return $json["category"];'), Product_Category::getCategories($this));
+		}
+		return parent::getJson($array, $reset);
 	}
 	/**
 	 * (non-PHPdoc)
@@ -309,6 +493,11 @@ class Product extends InfoEntityAbstract
 		DaoMap::setIntType('stockOnHand');
 		DaoMap::setIntType('stockOnOrder');
 		DaoMap::setBoolType('isFromB2B');
+		DaoMap::setBoolType('sellOnWeb');
+		DaoMap::setManyToOne('status', 'ProductStatus', 'pro_status');
+		DaoMap::setManyToOne('manufacturer', 'Manufacturer', 'pro_man');
+		DaoMap::setDateType('asNewFromDate', 'datetime', true);
+		DaoMap::setDateType('asNewToDate', 'datetime', true);
 		DaoMap::setStringType('shortDescription', 'varchar', 255);
 		DaoMap::setStringType('fullDescAssetId', 'varchar', 100);
 		parent::__loadDaoMap();
@@ -321,6 +510,9 @@ class Product extends InfoEntityAbstract
 		DaoMap::createIndex('isFromB2B');
 		DaoMap::createIndex('shortDescription');
 		DaoMap::createIndex('fullDescAssetId');
+		DaoMap::createIndex('sellOnWeb');
+		DaoMap::createIndex('asNewFromDate');
+		DaoMap::createIndex('asNewToDate');
 		DaoMap::commit();
 	}
 }

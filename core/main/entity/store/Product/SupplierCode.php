@@ -112,6 +112,20 @@ class SupplierCode extends BaseEntityAbstract
 	}
 	/**
 	 * (non-PHPdoc)
+	 * @see BaseEntityAbstract::getJson()
+	 */
+	public function getJson($extra = '', $reset = false)
+	{
+		$array = array();
+		if(!$this->isJsonLoaded($reset))
+		{
+			$array['product'] = $this->getProduct() instanceof Product ? array('id'=>$this->getProduct()->getId()) : null;
+			$array['supplier'] = $this->getSupplier() instanceof Supplier ? $this->getSupplier()->getJson() : null;
+		}
+		return parent::getJson($array, $reset);
+	}
+	/**
+	 * (non-PHPdoc)
 	 * @see HydraEntity::__loadDaoMap()
 	 */
 	public function __loadDaoMap()
