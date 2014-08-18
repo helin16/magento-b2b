@@ -145,6 +145,9 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		var tmp = {};
 		tmp.me = this;
 		tmp.item = item;
+		tmp.treePanel = tmp.me._getFormGroup('Categories:',  new Element('div', {'class': 'easyui-panel'}).update(new Element('ul', {'id': 'product_category_tree', 'data-options': 'animate:true, checkbox:true'}) ) );
+		tmp.treePanel.down('.form-control').removeClassName('form-control');
+		
 		tmp.newDiv = new Element('div', {'class': 'panel panel-default'})
 			.insert({'bottom': new Element('div', {'class': 'panel-heading'})
 				.insert({'bottom': new Element('strong').update('Editing: ' + tmp.item.name) })
@@ -174,7 +177,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 						})
 					})
 					.insert({'bottom': new Element('div', {'class': 'col-sm-4'})
-						.insert({'bottom': tmp.me._getFormGroup('Categories:', new Element('span') ) })
+						.insert({'bottom': tmp.treePanel })
 					})
 				})
 			});
@@ -296,6 +299,42 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		return tmp.newDiv;
 	}
 	
+	/**
+	 * Getting each row of the category tree panel
+	 */
+	,_getChildCategoryJson: function(category, selectedCateIds) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.cate = {'text': category.name, 'id': category.id};
+		if(selectedCateIds.indexOf(category.id) >= 0){
+			tmp.cate.checked = true;
+		}
+		if(category.children && category.children.size() > 0) {
+			tmp.cate.children = [];
+			category.children.each(function(child){
+				tmp.cate.children.push( tmp.me._getChildCategoryJson(child, selectedCateIds) );
+			});
+		}
+		return tmp.cate;
+	}
+	
+	,_initTree: function(selector) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.categoies = [];
+		tmp.selectedCateIds = [];
+		tmp.me._item.categories.each(function(cate) {
+			tmp.selectedCateIds.push(cate.id);
+		})
+		tmp.me._productCategories.each(function(category) {
+			tmp.categoies.push(tmp.me._getChildCategoryJson(category, tmp.selectedCateIds));
+		});
+		jQuery(selector).tree({
+			data: tmp.categoies
+		});
+		return tmp.me;
+	}
+	
 	,_bindDatePicker: function() {
 		var tmp = {};
 		tmp.me = this;
@@ -315,6 +354,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		$$('textarea.rich-text-editor').each(function(item){
 			tmp.me._loadRichTextEditor(item);
 		});
+		tmp.me._initTree('#product_category_tree');
 		return tmp.me;
 	}
 });

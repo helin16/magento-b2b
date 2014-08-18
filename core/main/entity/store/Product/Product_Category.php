@@ -95,7 +95,7 @@ class Product_Category extends BaseEntityAbstract
 	 */
 	public static function getProducts(ProductCategory $category, $activeOnly = true, $pageNo = null, $pageSize = DaoQuery::DEFAUTL_PAGE_SIZE, $orderBy = array())
 	{
-		return FactoryAbastract::dao(__CLASS__)->findByCriteria('categoryId = ?', array($category->getId(), $category->getId()), $activeOnly, $pageNo, $pageSize, $orderBy);
+		return FactoryAbastract::dao(__CLASS__)->findByCriteria('categoryId = ?', array($category->getId()), $activeOnly, $pageNo, $pageSize, $orderBy);
 	}
 	/**
 	 * Getting all products from a category
@@ -110,7 +110,7 @@ class Product_Category extends BaseEntityAbstract
 	 */
 	public static function getCategories(Product $product, $activeOnly = true, $pageNo = null, $pageSize = DaoQuery::DEFAUTL_PAGE_SIZE, $orderBy = array())
 	{
-		return FactoryAbastract::dao(__CLASS__)->findByCriteria('productId = ?', array($product->getId(), $category->getId()), $activeOnly, $pageNo, $pageSize, $orderBy);
+		return FactoryAbastract::dao(__CLASS__)->findByCriteria('productId = ?', array($product->getId()), $activeOnly, $pageNo, $pageSize, $orderBy);
 	}
 	/**
 	 * removing the relationship
@@ -121,6 +121,20 @@ class Product_Category extends BaseEntityAbstract
 	public static function remove(Product $product, ProductCategory $category)
 	{
 		FactoryAbastract::dao(__CLASS__)->deleteByCriteria('productId = ? and supplierId = ?', array($product->getId(), $category->getId()));
+	}
+	/**
+	 * (non-PHPdoc)
+	 * @see BaseEntityAbstract::getJson()
+	 */
+	public function getJson($extra = '', $reset = false)
+	{
+		$array = array();
+		if(!$this->isJsonLoaded($reset))
+		{
+			$array['product'] = $this->getProduct() instanceof Product ? array('id' => $this->getProduct()->getId(), 'name' => $this->getProduct()->getName()) : null;
+			$array['category'] = $this->getCategory() instanceof ProductCategory ? array('id' => $this->getCategory()->getId(), 'name' => $this->getCategory()->getName()) : null;
+		}
+		return parent::getJson($array, $reset);
 	}
 	/**
 	 * (non-PHPdoc)
