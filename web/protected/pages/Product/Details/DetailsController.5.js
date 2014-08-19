@@ -123,7 +123,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 	,_getRichTextEditor: function(text) {
 		var tmp = {};
 		tmp.me = this;
-		tmp.newDiv = new Element('textarea', {'class': 'rich-text-editor'}).update(text ? text : '');
+		tmp.newDiv = new Element('textarea', {'class': 'rich-text-editor', 'save-item': 'fullDescription'}).update(text ? text : '');
 		return tmp.newDiv;
 	}
 	
@@ -145,7 +145,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		var tmp = {};
 		tmp.me = this;
 		tmp.item = item;
-		tmp.treePanel = tmp.me._getFormGroup('Categories:',  new Element('div', {'class': 'easyui-panel'}).update(new Element('ul', {'id': 'product_category_tree', 'data-options': 'animate:true, checkbox:true'}) ) );
+		tmp.treePanel = tmp.me._getFormGroup('Categories:',  new Element('div', {'class': 'easyui-panel', 'style': 'overflow: auto; height: 340px; min-width: 200px;'}).update(new Element('ul', {'id': 'product_category_tree', 'data-options': 'animate:true, checkbox:true'}) ) );
 		tmp.treePanel.down('.form-control').removeClassName('form-control');
 		
 		tmp.newDiv = new Element('div', {'class': 'panel panel-default'})
@@ -158,7 +158,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 			})
 			.insert({'bottom': new Element('div', {'class': 'panel-body'})
 				.insert({'bottom': new Element('div', {'class': 'row'})
-					.insert({'bottom': new Element('div', {'class': 'col-sm-8'})
+					.insert({'bottom': new Element('div', {'class': 'col-md-8'})
 						.insert({'bottom': new Element('div', {'class': 'row'})
 							.insert({'bottom': new Element('div', {'class': 'col-sm-3'}).update(tmp.me._getFormGroup('Name', new Element('input', {'save-item': 'name', 'type': 'text', 'value': tmp.item.name}) ) ) })
 							.insert({'bottom': new Element('div', {'class': 'col-sm-3'}).update(tmp.me._getFormGroup('sku', new Element('input', {'save-item': 'sku', 'type': 'text', 'value': tmp.item.sku}) ) ) })
@@ -176,7 +176,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 							.insert({'bottom': new Element('div', {'class': 'col-sm-12'}).update(tmp.me._getFullDescriptionPanel(tmp.item) ) })
 						})
 					})
-					.insert({'bottom': new Element('div', {'class': 'col-sm-4'})
+					.insert({'bottom': new Element('div', {'class': 'col-md-4'})
 						.insert({'bottom': tmp.treePanel })
 					})
 				})
@@ -202,7 +202,6 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 							type: 'outside'
 						},
 						thumbs	: {
-							width	: 50,
 							height	: 50
 						}
 					}
@@ -274,6 +273,19 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		return tmp.newDiv;
 	}
 	
+	/**
+	 * Ajax: saving the item
+	 */
+	,_submitSave: function(btn) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.data = tmp.me._collectFormData($(tmp.me._htmlIds.itemDiv), 'save-item');
+		console.debug(tmp.data);
+		return tmp.me;
+	}
+	/**
+	 * displaying the item
+	 */
 	,_getItemDiv: function() {
 		var tmp = {};
 		tmp.me = this;
@@ -291,10 +303,17 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 					tmp.me._getListPanel('Suppliers:', tmp.me._item.supplierCodes, {'type': 'Supplier', 'value': 'Code'}, tmp.me._suppliers)
 				) })
 				.insert({'bottom': new Element('div', {'class': 'col-sm-3'}).update(
-						tmp.me._getListPanel('Suppliers:', tmp.me._item.supplierCodes, {'type': 'Supplier', 'value': 'Code'}, tmp.me._suppliers)
+						tmp.me._getListPanel('Codes:', tmp.me._item.supplierCodes, {'type': 'Type', 'value': 'Code'}, tmp.me._codeTypes)
 				) })
 				.insert({'bottom': new Element('div', {'class': 'col-sm-6'}).update(tmp.me._getListPanel('Prices:', tmp.me._item.prices, {'type': 'Type', 'value': 'Price', 'start': 'From', 'end': 'To'}, tmp.me._priceTypes) 
 				) })
+			})
+			.insert({'bottom': new Element('div', {'class': 'row'})
+				.insert({'bottom': new Element('span', {'class': 'btn btn-primary pull-right col-sm-2', 'data-loading-text': 'saving ...'}).update('Save')
+					.observe('click', function() {
+						tmp.me._submitSave(this);
+					})
+				})
 			});
 		return tmp.newDiv;
 	}
@@ -317,7 +336,9 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		}
 		return tmp.cate;
 	}
-	
+	/**
+	 * initialising the tree
+	 */
 	,_initTree: function(selector) {
 		var tmp = {};
 		tmp.me = this;
@@ -334,19 +355,24 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		});
 		return tmp.me;
 	}
-	
+	/**
+	 * initialing the js for date picker
+	 */
 	,_bindDatePicker: function() {
 		var tmp = {};
 		tmp.me = this;
 		$$('.datepicker').each(function(item){
 			if(!item.hasClassName('datepicked')) {
 				tmp.me._signRandID(item);
-				new Prado.WebUI.TDatePicker({'ID': item.id, 'InputMode':"TextBox",'Format':"yyyy-MM-dd 00:00:00",'FirstDayOfWeek':1,'CalendarStyle':"default",'FromYear':2009,'UpToYear':2024,'PositionMode':"Bottom", "ClassName": 'datepicker-layer-fixer'});
+				tmp.picker = new Prado.WebUI.TDatePicker({'ID': item.id, 'InputMode':"TextBox",'Format':"yyyy-MM-dd 00:00:00",'FirstDayOfWeek':1,'CalendarStyle':"default",'FromYear':2009,'UpToYear':2024,'PositionMode':"Bottom", "ClassName": 'datepicker-layer-fixer'});
+				item.store('picker', tmp.picker);
 			}
 		});
 		return tmp.me;
 	}
-	
+	/**
+	 * Public: binding all the js events
+	 */
 	,bindAllEventNObjects: function() {
 		var tmp = {};
 		tmp.me = this;
