@@ -64,6 +64,87 @@ class ProductCategory extends BaseEntityAbstract
 	 */
 	private $isFromB2B = false;
 	/**
+	 * Magento:: is_anchor
+	 * 
+	 * @var bool
+	 */
+	private $isAnchor = false;
+	/**
+	 * Magento:: include_in_menu
+	 * 
+	 * @var bool
+	 */
+	private $includeInMenu = false;
+	/**
+	 * Mangento:: url_key
+	 * 
+	 * @var string
+	 */
+	private $urlKey = '';
+	/**
+	 * Getter for isAnchor
+	 *
+	 * @return bool
+	 */
+	public function getIsAnchor() 
+	{
+	    return $this->isAnchor;
+	}
+	/**
+	 * Setter for isAnchor
+	 *
+	 * @param bool $value The isAnchor
+	 *
+	 * @return ProductCategory
+	 */
+	public function setIsAnchor($value) 
+	{
+	    $this->isAnchor = $value;
+	    return $this;
+	}
+	/**
+	 * Getter for includeInMenu
+	 *
+	 * @return bool
+	 */
+	public function getIncludeInMenu() 
+	{
+	    return $this->includeInMenu;
+	}
+	/**
+	 * Setter for includeInMenu
+	 *
+	 * @param bool $value The includeInMenu
+	 *
+	 * @return ProductCategory
+	 */
+	public function setIncludeInMenu($value) 
+	{
+	    $this->includeInMenu = $value;
+	    return $this;
+	}
+	/**
+	 * Getter for urlKey
+	 *
+	 * @return 
+	 */
+	public function getUrlKey() 
+	{
+	    return $this->urlKey;
+	}
+	/**
+	 * Setter for urlKey
+	 *
+	 * @param string $value The urlKey
+	 *
+	 * @return ProductCategory
+	 */
+	public function setUrlKey($value) 
+	{
+	    $this->urlKey = $value;
+	    return $this;
+	}
+	/**
 	 * Getter for name
 	 *
 	 * @return ProductCategory
@@ -306,12 +387,18 @@ class ProductCategory extends BaseEntityAbstract
 		DaoMap::setStringType('position', 'varchar', 255);
 		DaoMap::setIntType('mageId');
 		DaoMap::setBoolType('isFromB2B');
+		DaoMap::setBoolType('isAnchor');
+		DaoMap::setBoolType('includeInMenu');
+		DaoMap::setStringType('urlKey', 'varchar', 50);
 		parent::__loadDaoMap();
 		
 		DaoMap::createUniqueIndex('name');
 		DaoMap::createIndex('position');
 		DaoMap::createIndex('isFromB2B');
 		DaoMap::createIndex('mageId');
+		DaoMap::createIndex('isAnchor');
+		DaoMap::createIndex('includeInMenu');
+		DaoMap::createIndex('urlKey');
 		DaoMap::commit();
 	}
 }
