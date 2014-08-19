@@ -1,50 +1,72 @@
 <com:TContent ID="MainContent">
+<com:Application.controls.fancybox.FancyBox />
 	<div class="pagewrapper productlistwraper container">
-		<div class="panel panel-default" id="searchPanel">
-			<div class="panel-heading">
-				<label for="showSearch">Show Search Criteria?</label>
-				<input id="showSearch" type="checkbox" onclick="$(this).up('#searchPanel').down('.panel-body').toggle();">
-			</div>
-			<div class="panel-body search-panel" style="display: none;">
-				<div class="row">
-					<div class="col-sm-4">
-						<div class="form-group form-group-sm">
-                           <label>SKU:</label>
-                           <input type="text" search_field="pro.sku" placeholder="The SKU of the product" class="form-control input-sm">
-                       </div>
-					</div>
-					<div class="col-sm-4">
-						<div class="form-group form-group-sm">
-                           <label>Name:</label>
-                           <input type="text" search_field="pro.name" placeholder="The name of the product" class="form-control input-sm">
-                       </div>
-					</div>
-					<div class="col-sm-2">
-						<div class="form-group form-group-sm">
-                           <label>Active:</label>
-                           <select search_field="pro.active" class="form-control input-sm">
-                           		<option value="1">YES</option>
-                           		<option value="0">NO</option>
-                           		<option value=" ">All</option>
-                           </select>
-                       </div>
-					</div>
-					<div class="col-sm-2">
-						<div class="form-group form-group-sm">
-                           <label>&nbsp;</label>
-						   <span id="searchBtn" class="btn btn-primary form-control inpu-sm" data-loading-text="searching ..." onclick="pageJs.getSearchCriteria().getResults(true, <%= $this->pageSize %>);" >Search</span>
+		<div class="col-md-9">
+			<div class="panel panel-default" id="searchPanel">
+				<div class="panel-heading">
+					<label for="showSearch">Show Search Criteria?</label>
+					<input id="showSearch" type="checkbox" onclick="$(this).up('#searchPanel').down('.panel-body').toggle();">
+				</div>
+				<div class="panel-body search-panel" style="display: none;">
+					<div class="row">
+						<div class="col-sm-4">
+							<div class="form-group form-group-sm">
+	                           <label>SKU:</label>
+	                           <input type="text" search_field="pro.sku" placeholder="The SKU of the product" class="form-control input-sm">
+	                       </div>
+						</div>
+						<div class="col-sm-4">
+							<div class="form-group form-group-sm">
+	                           <label>Name:</label>
+	                           <input type="text" search_field="pro.name" placeholder="The name of the product" class="form-control input-sm">
+	                       </div>
+						</div>
+						<div class="col-sm-2">
+							<div class="form-group form-group-sm">
+	                           <label>Active:</label>
+	                           <select search_field="pro.active" class="form-control input-sm">
+	                           		<option value="1">YES</option>
+	                           		<option value="0">NO</option>
+	                           		<option value=" ">All</option>
+	                           </select>
+	                       </div>
+						</div>
+						<div class="col-sm-2">
+							<div class="form-group form-group-sm">
+	                           <label>&nbsp;</label>
+							   <span id="searchBtn" class="btn btn-primary form-control inpu-sm" data-loading-text="searching ..." onclick="pageJs.getSearchCriteria().getResults(true, <%= $this->pageSize %>);" >Search</span>
+							</div>
 						</div>
 					</div>
 				</div>
 			</div>
-		</div>
-		<div class="panel panel-default">
-			<div class="panel-heading">
-				Found <label id="total-found-count">0</label> Products:
+			<div class="panel panel-default">
+				<div class="panel-heading">
+					Found <label id="total-found-count">0</label> Products:
+				</div>
+				<small class="table-responsive">
+	                <table class="table table-hover" id="item-list"></table>
+	            </small>
 			</div>
-			<small class="table-responsive">
-                <table class="table table-hover" id="item-list"></table>
-               </small>
+		</div>
+		<div class="col-md-3">
+			<div class="panel panel-default">
+				<div class="panel-heading">
+					Tools 
+				</div>
+  				<a class="list-group-item" href="javascript:void(0);" onclick="pageJs.openToolsURL('/manufacturers.html?blanklayout=1')">
+    				Manufacturer
+  				</a>
+  				<a class="list-group-item" href="javascript:void(0);" onclick="pageJs.openToolsURL('/suppliers.html?blanklayout=1')">
+    				Supplier
+  				</a>
+  				<a class="list-group-item" href="javascript:void(0);" onclick="pageJs.openToolsURL('/productcodetypes.html?blanklayout=1')">
+    				Product Code Type
+  				</a>
+  				<a class="list-group-item" href="javascript:void(0);" onclick="pageJs.openToolsURL('/productcategories.html?blanklayout=1')">
+    				Product Category
+  				</a>
+			</div>
 		</div> 
 	</div>
 </com:TContent>

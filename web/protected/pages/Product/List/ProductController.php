@@ -23,6 +23,14 @@ class ProductController extends CRUDPageAbstract
 		if(!AccessControl::canAccessProductsPage(Core::getRole()))
 			die('You do NOT have access to this page');
 	}
+	/**
+	 * Getting the items
+	 *
+	 * @param unknown $sender
+	 * @param unknown $param
+	 * @throws Exception
+	 *
+	 */
 	public function getItems($sender, $param)
     {
         $results = $errors = array();
@@ -87,11 +95,16 @@ class ProductController extends CRUDPageAbstract
     		$item = (isset($param->CallbackParameter->item->id) && ($item = $class::get($param->CallbackParameter->item->id)) instanceof $class) ? $item : null;
     		$sku = trim($param->CallbackParameter->item->sku);
     		$name = trim($param->CallbackParameter->item->name);
+    		$active = $param->CallbackParameter->item->active !== true ? false : true;
+    		//$active = (!isset($param->CallbackParameter->item->active) || $param->CallbackParameter->item->active !== true ? false : true);
+    			
+    		//var_dump($active);
     		if($item instanceof $class)
     		{
     			$item->setName($sku)
-    			->setDescription($name)
-    			->save();
+	    			->setDescription($name)
+	    			->setActive($active)
+	    			->save();
     		}
     		else
     		{
