@@ -80,6 +80,19 @@ class ProductImage extends BaseEntityAbstract
 		return FactoryAbastract::dao($class)->save($obj);
 	}
 	/**
+	 * delete a product image 
+	 * 
+	 * @param Product $product The product
+	 * @param Asset   $asset   The asset of the image file
+	 * 
+	 * @return ProductImage
+	 */
+	public static function remove(Product $product, Asset $asset)
+	{
+		$class = __CLASS__;
+		FactoryAbastract::dao($class)->deleteByCriteria('productId = ? and imageAssetId = ?', array(trim($product->getId()), trim($asset->getAssetId())));
+	}
+	/**
 	 * (non-PHPdoc)
 	 * @see BaseEntityAbstract::getJson()
 	 */

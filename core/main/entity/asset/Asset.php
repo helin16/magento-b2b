@@ -241,8 +241,9 @@ class Asset extends BaseEntityAbstract
 	 */
 	public static function getAsset($assetId)
 	{
+		$class = __CLASS__;
 		$assetId = trim($assetId);
-		if(!self::$_cache[$assetId])
+		if(!isset(self::$_cache[$assetId]))
 		{
 			$content = FactoryAbastract::dao($class)->findByCriteria('assetId = ?', array($assetId), false, 1, 1);
 			self::$_cache[$assetId] = count($content) === 0 ? null : $content[0];

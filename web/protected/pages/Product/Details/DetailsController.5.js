@@ -6,25 +6,32 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 	_manufacturers: []
 	,_suppliers: []
 	,_statuses: []
-	,_priceTypes: []
-	,_codeTypes: []
-	,_productCategories: []
-	
+	,_priceTypes: []                         //pre defined data: productCodeType
+	,_codeTypes: []                          //pre defined data: productCodeType
+	,_productTreeId: 'product_category_tree' //the html id of the tree
+	,_imgPanelId: 'images_panel'             //the html id of the iamges panel
+	/**
+	 * Getting a form group for forms
+	 */
 	,_getFormGroup: function (label, input) {
 		return new Element('div', {'class': 'form-group form-group-sm form-group-sm-label'})
 			.insert({'bottom': new Element('label').update(label) })
 			.insert({'bottom': input.addClassName('form-control') });
 	}
-	,setPreData: function(manufacturers, suppliers, statuses, priceTypes, codeTypes, productCategories) {
+	/**
+	 * Set some pre defined data before javascript start
+	 */
+	,setPreData: function(manufacturers, suppliers, statuses, priceTypes, codeTypes) {
 		this._manufacturers = manufacturers;
 		this._suppliers = suppliers;
 		this._statuses = statuses;
 		this._priceTypes = priceTypes;
 		this._codeTypes = codeTypes;
-		this._productCategories = productCategories;
 		return this;
 	}
-	
+	/**
+	 * General getting a selection box
+	 */
 	,_getSelBox: function(options, selectedValue) {
 		var tmp = {};
 		tmp.me = this;
@@ -34,7 +41,9 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		});
 		return tmp.selBox;
 	}
-	
+	/**
+	 * Getting the row for function: _getListPanel()
+	 */
 	,_getListPanelRow: function(data, selBoxData, titleData, isTitle) {
 		var tmp = {};
 		tmp.me = this;
@@ -62,7 +71,9 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		tmp.newRow.insert({'bottom': new Element(tmp.tag).update( tmp.isTitle === true ? titleData.value : tmp.inputBoxDiv) });
 		return tmp.newRow;
 	}
-	
+	/**
+	 * General listing panel
+	 */
 	,_getListPanel: function(title, listData, titleData, selBoxData) {
 		var tmp = {};
 		tmp.me = this;
@@ -94,7 +105,9 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		});
 		return tmp.newDiv;
 	}
-	
+	/**
+	 * Loading/Bind js to a textare to load rich Text editor
+	 */
 	,_loadRichTextEditor: function(input) {
 		var tmp = {};
 		tmp.me = this;
@@ -123,19 +136,25 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		input.store('editor', tmp.editor);
 		return tmp.me;
 	}
-	
+	/**
+	 * Ajax: getting the full description from asset
+	 * 
+	 * @TODO!!!!
+	 */
 	,_getRichTextEditor: function(text) {
 		var tmp = {};
 		tmp.me = this;
 		tmp.newDiv = new Element('textarea', {'class': 'rich-text-editor', 'save-item': 'fullDescription'}).update(text ? text : '');
 		return tmp.newDiv;
 	}
-	
+	/**
+	 * Getting the full description panel
+	 */
 	,_getFullDescriptionPanel: function(item) {
 		var tmp = {};
 		tmp.me = this;
 		tmp.fullDescriptioAssetId = item.fullDescAssetId ? item.fullDescAssetId : '';
-		tmp.loadFullBtn = tmp.fullDescriptioAssetId.blank() ? tmp.me._getRichTextEditor('') : new Element('span', {'class': 'btn btn-default'}).update('click to load the full description')
+		tmp.loadFullBtn = !item.id ? tmp.me._getRichTextEditor('') : new Element('span', {'class': 'btn btn-default'}).update('click to show the full description editor')
 			.observe('click', function(){
 				tmp.newTextarea = tmp.me._getRichTextEditor('');
 				$(this).replace(tmp.newTextarea);
@@ -144,7 +163,73 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		tmp.newDiv = tmp.me._getFormGroup('Full Description:', tmp.loadFullBtn);
 		return tmp.newDiv;
 	}
-	
+	/**
+	 * Getting each row of the category tree panel
+	 */
+	,_getChildCategoryJson: function(category, selectedCateIds) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.cate = {'text': category.name, 'id': category.id};
+		if(selectedCateIds.indexOf(category.id) >= 0){
+			tmp.cate.checked = true;
+		}
+		if(category.children && category.children.size() > 0) {
+			tmp.cate.children = [];
+			category.children.each(function(child){
+				tmp.cate.children.push( tmp.me._getChildCategoryJson(child, selectedCateIds) );
+			});
+		}
+		return tmp.cate;
+	}
+	/**
+	 * initialising the tree
+	 */
+	,_initTree: function(categories, selector) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.categoies = [];
+		tmp.selectedCateIds = [];
+		tmp.me._item.categories.each(function(cate) {
+			tmp.selectedCateIds.push(cate.id);
+		})
+		categories.each(function(category) {
+			tmp.categoies.push(tmp.me._getChildCategoryJson(category, tmp.selectedCateIds));
+		});
+		jQuery(selector).tree({
+			data: tmp.categoies
+		});
+		return tmp.me;
+	}
+	/**
+	 * Ajax: getting all categories from server
+	 */
+	,_getCategories: function(resultDiv) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.me.postAjax(tmp.me.getCallbackId('getCategories'), {}, {
+			'onLoading': function (sender, param) {
+				$(resultDiv).update(tmp.me.getLoadingImg());
+			}
+			, 'onSuccess': function (sender, param) {
+				try {
+					tmp.result = tmp.me.getResp(param, false, true);
+					if(!tmp.result || !tmp.result.items)
+						return;
+					tmp.treeDiv = new Element('ul', {'id': tmp.me._productTreeId, 'data-options': 'animate:true, checkbox:true'}) ;
+					$(resultDiv).update(new Element('div', {'class': 'easyui-panel'}).update(tmp.treeDiv) );
+					tmp.me._signRandID(tmp.treeDiv);
+					tmp.me._initTree(tmp.result.items, '#' + tmp.treeDiv.id);
+					$(resultDiv).addClassName('loaded');
+				} catch (e) {
+					$(resultDiv).update(tmp.me.getAlertBox('Error:', e).addClassName('alert-danger'));
+				}
+			}
+		});
+		return tmp.me;
+	}
+	/**
+	 * Getting the product category panel
+	 */
 	,_getCategoryPanel: function(item) {
 		var tmp = {};
 		tmp.me = this;
@@ -154,12 +239,15 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 					.insert({'bottom': new Element('strong').update('Categories: ')	})
 				})
 				.observe('click', function() {
-					$(this).up('.panel').down('.panel-body').toggle();
+					tmp.btn = this;
+					tmp.panelBody = $(tmp.btn).up('.panel').down('.panel-body');
+					if(!tmp.panelBody.hasClassName('loaded')) {
+						tmp.me._getCategories(tmp.panelBody)
+					}
+					tmp.panelBody.toggle();
 				})
 			})
-			.insert({'bottom': new Element('div', {'class': 'panel-body easyui-panel', 'style': 'display: none'})
-				.insert({'bottom': new Element('ul', {'id': 'product_category_tree', 'data-options': 'animate:true, checkbox:true'})  })
-			})
+			.insert({'bottom': new Element('div', {'class': 'panel-body', 'style': 'display: none'}) })
 		return tmp.newDiv;
 	}
 	/**
@@ -173,6 +261,10 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 			.insert({'bottom': new Element('div', {'class': 'panel-heading'})
 				.insert({'bottom': new Element('a', {'href': 'javascript: void(0);', 'title': 'click to show/hide below'})
 					.insert({'bottom': new Element('strong').update('Editing: ' + tmp.item.name) })
+					.insert({'bottom': new Element('small', {'class': 'pull-right'}) 
+						.insert({'bottom': new Element('label', {'for': 'showOnWeb_' + tmp.item.id}).update('Show on Web?') })
+						.insert({'bottom': new Element('input', {'id': 'showOnWeb_' + tmp.item.id, 'save-item': 'sellOnWeb', 'type': 'checkbox', 'checked': tmp.item.sellOnWeb}) })
+					})
 				})
 				.observe('click', function() {
 					$(this).up('.panel').down('.panel-body').toggle();
@@ -183,10 +275,10 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 					.insert({'bottom': new Element('div', {'class': 'col-sm-3'}).update(tmp.me._getFormGroup('Name', new Element('input', {'save-item': 'name', 'type': 'text', 'value': tmp.item.name}) ) ) })
 					.insert({'bottom': new Element('div', {'class': 'col-sm-3'}).update(tmp.me._getFormGroup('sku', new Element('input', {'save-item': 'sku', 'type': 'text', 'value': tmp.item.sku}) ) ) })
 					.insert({'bottom': new Element('div', {'class': 'col-sm-2'}).update(tmp.me._getFormGroup('Brand/Manf.', 
-							tmp.me._getSelBox(tmp.me._manufacturers, tmp.item.manufacturer ? tmp.item.manufacturer.id : null).writeAttribute('save-item', 'manufacture.id').addClassName('chosen') 
+							tmp.me._getSelBox(tmp.me._manufacturers, tmp.item.manufacturer ? tmp.item.manufacturer.id : null).writeAttribute('save-item', 'manufacturerId').addClassName('chosen') 
 					) ) })
 					.insert({'bottom': new Element('div', {'class': 'col-sm-2'}).update(tmp.me._getFormGroup('Status', 
-							tmp.me._getSelBox(tmp.me._statuses, tmp.item.status ? tmp.item.status.id : null).writeAttribute('save-item', 'status.id').addClassName('chosen') 
+							tmp.me._getSelBox(tmp.me._statuses, tmp.item.status ? tmp.item.status.id : null).writeAttribute('save-item', 'statusId').addClassName('chosen') 
 					) ) })
 				})
 				.insert({'bottom': new Element('div', {'class': 'row'})
@@ -232,9 +324,11 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 	,_getImageThumb: function(img) {
 		var tmp = {};
 		tmp.me = this;
-		tmp.newDiv = new Element('div', {'class': 'col-xs-12 col-sm-6 col-md-4 thumbnail-holder btn-hide-row'})
+		tmp.src = img.data ? img.data : img.path;
+		tmp.newDiv = new Element('div', {'class': 'col-xs-12 col-sm-6 col-md-4 thumbnail-holder btn-hide-row product-image', 'active': '1'})
+			.store('data', img) 
 			.insert({'bottom': new Element('a', {'href': 'javascript: void(0)', 'class': 'thumbnail fancybox-thumb', 'ref': 'product_thumbs'})
-				.insert({'bottom': new Element('img', {'data-src': 'holder.js/100%x180', 'src': img.src}) })
+				.insert({'bottom': new Element('img', {'data-src': 'holder.js/100%x180', 'src': tmp.src}) })
 			})
 			.insert({'bottom': new Element('span', {'class': 'btns'})
 				.insert({'bottom': new Element('small', {'class': 'btn btn-danger btn-xs'}) 
@@ -243,9 +337,18 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 				.observe('click', function(){
 					if(!confirm('Delete this image?'))
 						return false;
-					$(this).up('.thumbnail-holder').remove();
+					tmp.imgDiv = $(this).up('.product-image');
+					if(tmp.imgDiv.readAttribute('asset-id').blank()) {
+						tmp.imgDiv.remove();
+					} else {
+						tmp.imgDiv.writeAttribute('active', '0').hide();
+					}
 				})
 			});
+		if(!img.imageAssetId) {
+			tmp.newDiv.writeAttribute('file-name', img.filename)
+				.writeAttribute('asset-id', img.imageAssetId);
+		}
 		return tmp.newDiv;
 	}
 	/**
@@ -264,10 +367,10 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 				tmp.reader.onload = (function(theFile){
 					return function(e) {
 						// Render thumbnail.
-						tmp.thumb = tmp.me._getImageThumb({'src': e.target.result});
+						tmp.thumb = tmp.me._getImageThumb({'data': e.target.result, 'filename': theFile.name});
 						$(targetDiv).insert({'bottom': tmp.thumb });
 						evt.target.value = '';
-						tmp.me._loadFancyBox($$('.fancybox-thumb'));
+						tmp.me._loadFancyBox($(tmp.me._imgPanelId).getElementsBySelector('.fancybox-thumb'));
 			        };
 				})(tmp.file);
 				// Read in the image file as a data URL.
@@ -282,6 +385,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 	,_getImagesPanel: function(item) {
 		var tmp = {};
 		tmp.me = this;
+		tmp.noLocalReader = !(window.File && window.FileReader && window.FileList && window.Blob);
 		tmp.newDiv = new Element('div', {'class': 'panel panel-default'})
 			.insert({'bottom': new Element('div', {'class': 'panel-heading'})
 				.insert({'bottom': new Element('a', {'href': 'javascript: void(0);', 'title': 'click to show/hide content below'})
@@ -290,24 +394,30 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 						$(this).up('.panel').down('.panel-body').toggle();
 					})
 				})
-				.insert({'bottom': new Element('span', {'class': 'pull-right new-btn-panel'})
-					.insert({'bottom': new Element('span', {'class': 'btn btn-primary btn-xs pull-right', 'title': 'New'})
-						.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-plus'}) })
-						.insert({'bottom': ' NEW' })
-						.observe('click', function(){
-							$(this).up('.new-btn-panel').down('.new-images-file').click();
-						})
-					})
-					.insert({'bottom': new Element('input', {'class': 'new-images-file', 'type': 'file', 'multiple': true, 'style': 'display: none'})
-						.observe('change', function(evt) {
-							tmp.panelBody = $(this).up('.panel').down('.panel-body');
-							tmp.me._readImages(evt, tmp.panelBody);
-							tmp.panelBody.show();
-						})
-					})
+				.insert({'bottom': tmp.uploadDiv = new Element('span', {'class': 'pull-right new-btn-panel'}) })
+			})
+			.insert({'bottom': new Element('div', {'id': tmp.me._imgPanelId, 'class': 'panel-body'}) });
+		if(tmp.noLocalReader) {
+			tmp.uploadDiv.update(new Element('span', {'class': 'btn btn-danger btn-xs pull-right', 'title': 'Your browser does NOT support this feature. Pls change browser and try again'})
+				.insert({'bottom': new Element('span', {'class': ' glyphicon glyphicon-exclamation-sign'}) })
+				.insert({'bottom': ' Not Supported'})
+			);
+		} else {
+			tmp.uploadDiv.insert({'bottom': new Element('span', {'class': 'btn btn-primary btn-xs pull-right', 'title': 'New'})
+				.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-plus'}) })
+				.insert({'bottom': ' NEW' })
+				.observe('click', function(){
+					$(this).up('.new-btn-panel').down('.new-images-file').click();
 				})
 			})
-			.insert({'bottom': new Element('div', {'class': 'panel-body'}) });
+			.insert({'bottom': new Element('input', {'class': 'new-images-file', 'type': 'file', 'multiple': true, 'style': 'display: none'})
+				.observe('change', function(evt) {
+					tmp.panelBody = $(this).up('.panel').down('.panel-body');
+					tmp.me._readImages(evt, tmp.panelBody);
+					tmp.panelBody.show();
+				})
+			})
+		}
 		return tmp.newDiv;
 	}
 	/**
@@ -317,16 +427,36 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		var tmp = {};
 		tmp.me = this;
 		tmp.data = tmp.me._collectFormData($(tmp.me._htmlIds.itemDiv), 'save-item');
-		
+		tmp.data.id = tmp.me._item.id;
 		//tricks for fullDescription's editor
-		if($$('[save-item=fullDescription]').size() > 0 && (tmp.fullDescriptionBox = $$('[save-item=fullDescription]').first()))
+		if ($$('[save-item=fullDescription]').size() > 0 && (tmp.fullDescriptionBox = $$('[save-item=fullDescription]').first()))
 		{
 			//sign the value to the textarea
 			tmp.fullDescriptionBox.retrieve('editor').toggle();
 			tmp.fullDescriptionBox.retrieve('editor').toggle();
 			tmp.data['fullDescription'] = $F(tmp.fullDescriptionBox);
 		}
-		console.debug(tmp.data);
+		//get all categories
+		if(jQuery('#' + tmp.me._productTreeId).length >0) {
+			tmp.data.categoryIds = [];
+			tmp.checkedNodes = jQuery('#' + tmp.me._productTreeId).tree('getChecked');
+			for(tmp.i = 0; tmp.i < tmp.checkedNodes.length; tmp.i++)
+				tmp.data.categoryIds.push(tmp.checkedNodes[tmp.i].id);
+		}
+		//get all images
+		tmp.data.images = [];
+		tmp.imgPanel = $(tmp.me._imgPanelId);
+		tmp.imgPanel.getElementsBySelector('.product-image').each(function(element) {
+			tmp.img = element.retrieve('data');
+			tmp.img.imageAssetId = (tmp.img.imageAssetId ? tmp.img.imageAssetId : '');
+			tmp.img.active= (element.readAttribute('active') === '1');
+			tmp.data.images.push(tmp.img);
+		});
+		//submit all data
+		tmp.me.saveItem(btn, tmp.data, function(data){
+			tmp.me.showModalBox('<strong class="text-success">Saved Successfully!</strong>', 'Saved Successfully!', true);
+//			window.location = document.URL; 
+		});
 		return tmp.me;
 	}
 	/**
@@ -356,46 +486,8 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 						})
 					})
 				})
-			})
-		return tmp.newDiv;
-	}
-	
-	/**
-	 * Getting each row of the category tree panel
-	 */
-	,_getChildCategoryJson: function(category, selectedCateIds) {
-		var tmp = {};
-		tmp.me = this;
-		tmp.cate = {'text': category.name, 'id': category.id};
-		if(selectedCateIds.indexOf(category.id) >= 0){
-			tmp.cate.checked = true;
-		}
-		if(category.children && category.children.size() > 0) {
-			tmp.cate.children = [];
-			category.children.each(function(child){
-				tmp.cate.children.push( tmp.me._getChildCategoryJson(child, selectedCateIds) );
 			});
-		}
-		return tmp.cate;
-	}
-	/**
-	 * initialising the tree
-	 */
-	,_initTree: function(selector) {
-		var tmp = {};
-		tmp.me = this;
-		tmp.categoies = [];
-		tmp.selectedCateIds = [];
-		tmp.me._item.categories.each(function(cate) {
-			tmp.selectedCateIds.push(cate.id);
-		})
-		tmp.me._productCategories.each(function(category) {
-			tmp.categoies.push(tmp.me._getChildCategoryJson(category, tmp.selectedCateIds));
-		});
-		jQuery(selector).tree({
-			data: tmp.categoies
-		});
-		return tmp.me;
+		return tmp.newDiv;
 	}
 	/**
 	 * initialing the js for date picker
@@ -422,7 +514,6 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		$$('textarea.rich-text-editor').each(function(item){
 			tmp.me._loadRichTextEditor(item);
 		});
-		tmp.me._initTree('#product_category_tree');
 		return tmp.me;
 	}
 });
