@@ -48,7 +48,7 @@ class ProductImage extends BaseEntityAbstract
 	 */
 	public function getProduct() 
 	{
-		$this->loadManyToOne('product');
+		$this->loadManyToOne('product'); 
 	    return $this->product;
 	}
 	/**
@@ -78,6 +78,19 @@ class ProductImage extends BaseEntityAbstract
 		$obj->setProduct($product)
 			->setImageAssetId(trim($asset->getAssetId()));
 		return FactoryAbastract::dao($class)->save($obj);
+	}
+	/**
+	 * (non-PHPdoc)
+	 * @see BaseEntityAbstract::getJson()
+	 */
+	public function getJson($extra = '', $reset = false)
+	{
+		$array = array();
+		if(!$this->isJsonLoaded($reset))
+		{
+			$array['path'] = (($asset = Asset::getAsset($this->getImageAssetId())) instanceof Asset) ? $asset->getUrl() : null;
+		}
+		return parent::getJson($array, $reset);
 	}
 	/**
 	 * (non-PHPdoc)

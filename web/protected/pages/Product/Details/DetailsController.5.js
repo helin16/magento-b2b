@@ -68,18 +68,22 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		tmp.me = this;
 		tmp.newDiv = new Element('div', {'class': 'panel panel-default'})
 			.insert({'bottom': new Element('div', {'class': 'panel-heading'}) 
-				.insert({'bottom': new Element('strong').update(title) 
-					.insert({'bottom': new Element('span', {'class': 'btn btn-primary btn-xs pull-right', 'title': 'New'})
-						.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-plus'}) })
-						.insert({'bottom': ' NEW' })
-						.observe('click', function(){
-							$(this).up('.panel').down('.table tbody').insert({'bottom': tmp.me._getListPanelRow({}, selBoxData, titleData, false).addClassName('list-panel-row').writeAttribute('item_id', '') });
-							tmp.me._bindDatePicker();
-						})
+				.insert({'bottom': new Element('a', {'href': 'javascript: void(0);', 'title': 'click show/hide content below'})
+					.insert({'bottom': new Element('strong').update(title)})
+					.observe('click', function() {
+						$(this).up('.panel').down('.table-responsive').toggle();
+					})
+				})
+				.insert({'bottom': new Element('span', {'class': 'btn btn-primary btn-xs pull-right', 'title': 'New'})
+					.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-plus'}) })
+					.insert({'bottom': ' NEW' })
+					.observe('click', function(){
+						$(this).up('.panel').down('.table tbody').insert({'bottom': tmp.me._getListPanelRow({}, selBoxData, titleData, false).addClassName('list-panel-row').writeAttribute('item_id', '') });
+						tmp.me._bindDatePicker();
 					})
 				})
 			})
-			.insert({'bottom': new Element('div', {'class': 'table-responsive'}) 
+			.insert({'bottom': new Element('div', {'class': 'table-responsive', 'style': 'display: none'}) 
 				.insert({'bottom': new Element('table', {'class': 'table table-condensed'}) 
 					.insert({'bottom': new Element('thead').update( tmp.me._getListPanelRow(titleData, selBoxData, titleData, true) ) })
 					.insert({'bottom': tmp.listDiv = new Element('tbody') })
@@ -141,50 +145,62 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		return tmp.newDiv;
 	}
 	
+	,_getCategoryPanel: function(item) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.newDiv = new Element('div', {'class': 'panel panel-default'})
+			.insert({'bottom': new Element('div', {'class': 'panel-heading'})
+				.insert({'bottom': new Element('a', {'href': 'javascript: void(0);'})
+					.insert({'bottom': new Element('strong').update('Categories: ')	})
+				})
+				.observe('click', function() {
+					$(this).up('.panel').down('.panel-body').toggle();
+				})
+			})
+			.insert({'bottom': new Element('div', {'class': 'panel-body easyui-panel', 'style': 'display: none'})
+				.insert({'bottom': new Element('ul', {'id': 'product_category_tree', 'data-options': 'animate:true, checkbox:true'})  })
+			})
+		return tmp.newDiv;
+	}
+	/**
+	 * Getting the summary div
+	 */
 	,_getSummaryDiv: function (item) {
 		var tmp = {};
 		tmp.me = this;
 		tmp.item = item;
-		tmp.treePanel = tmp.me._getFormGroup('Categories:',  new Element('div', {'class': 'easyui-panel', 'style': 'overflow: auto; height: 340px; min-width: 200px;'}).update(new Element('ul', {'id': 'product_category_tree', 'data-options': 'animate:true, checkbox:true'}) ) );
-		tmp.treePanel.down('.form-control').removeClassName('form-control');
-		
 		tmp.newDiv = new Element('div', {'class': 'panel panel-default'})
 			.insert({'bottom': new Element('div', {'class': 'panel-heading'})
-				.insert({'bottom': new Element('strong').update('Editing: ' + tmp.item.name) })
-				.insert({'bottom': new Element('small', {'class': 'pull-right'}) 
-					.insert({'bottom': new Element('label', {'for': 'showOnWeb_' + tmp.item.id}).update('Show on Web?') })
-					.insert({'bottom': new Element('input', {'id': 'showOnWeb_' + tmp.item.id, 'save-item': 'sellOnWeb', 'type': 'checkbox', 'checked': tmp.item.sellOnWeb}) })
+				.insert({'bottom': new Element('a', {'href': 'javascript: void(0);', 'title': 'click to show/hide below'})
+					.insert({'bottom': new Element('strong').update('Editing: ' + tmp.item.name) })
+				})
+				.observe('click', function() {
+					$(this).up('.panel').down('.panel-body').toggle();
 				})
 			})
 			.insert({'bottom': new Element('div', {'class': 'panel-body'})
 				.insert({'bottom': new Element('div', {'class': 'row'})
-					.insert({'bottom': new Element('div', {'class': 'col-md-8'})
-						.insert({'bottom': new Element('div', {'class': 'row'})
-							.insert({'bottom': new Element('div', {'class': 'col-sm-3'}).update(tmp.me._getFormGroup('Name', new Element('input', {'save-item': 'name', 'type': 'text', 'value': tmp.item.name}) ) ) })
-							.insert({'bottom': new Element('div', {'class': 'col-sm-3'}).update(tmp.me._getFormGroup('sku', new Element('input', {'save-item': 'sku', 'type': 'text', 'value': tmp.item.sku}) ) ) })
-							.insert({'bottom': new Element('div', {'class': 'col-sm-2'}).update(tmp.me._getFormGroup('Brand/Manf.', 
-									tmp.me._getSelBox(tmp.me._manufacturers, tmp.item.manufacturer ? tmp.item.manufacturer.id : null).writeAttribute('save-item', 'manufacture.id').addClassName('chosen') 
-							) ) })
-							.insert({'bottom': new Element('div', {'class': 'col-sm-2'}).update(tmp.me._getFormGroup('Status', 
-									tmp.me._getSelBox(tmp.me._statuses, tmp.item.status ? tmp.item.status.id : null).writeAttribute('save-item', 'status.id').addClassName('chosen') 
-							) ) })
-						})
-						.insert({'bottom': new Element('div', {'class': 'row'})
-							.insert({'bottom': new Element('div', {'class': 'col-sm-12'}).update(tmp.me._getFormGroup('Short Description:', new Element('input', {'save-item': 'shortDescription', 'type': 'text', 'value': tmp.item.shortDescription}) ) ) })
-						})
-						.insert({'bottom': new Element('div', {'class': 'row'})
-							.insert({'bottom': new Element('div', {'class': 'col-sm-12'}).update(tmp.me._getFullDescriptionPanel(tmp.item) ) })
-						})
-					})
-					.insert({'bottom': new Element('div', {'class': 'col-md-4'})
-						.insert({'bottom': tmp.treePanel })
-					})
+					.insert({'bottom': new Element('div', {'class': 'col-sm-3'}).update(tmp.me._getFormGroup('Name', new Element('input', {'save-item': 'name', 'type': 'text', 'value': tmp.item.name}) ) ) })
+					.insert({'bottom': new Element('div', {'class': 'col-sm-3'}).update(tmp.me._getFormGroup('sku', new Element('input', {'save-item': 'sku', 'type': 'text', 'value': tmp.item.sku}) ) ) })
+					.insert({'bottom': new Element('div', {'class': 'col-sm-2'}).update(tmp.me._getFormGroup('Brand/Manf.', 
+							tmp.me._getSelBox(tmp.me._manufacturers, tmp.item.manufacturer ? tmp.item.manufacturer.id : null).writeAttribute('save-item', 'manufacture.id').addClassName('chosen') 
+					) ) })
+					.insert({'bottom': new Element('div', {'class': 'col-sm-2'}).update(tmp.me._getFormGroup('Status', 
+							tmp.me._getSelBox(tmp.me._statuses, tmp.item.status ? tmp.item.status.id : null).writeAttribute('save-item', 'status.id').addClassName('chosen') 
+					) ) })
+				})
+				.insert({'bottom': new Element('div', {'class': 'row'})
+					.insert({'bottom': new Element('div', {'class': 'col-sm-12'}).update(tmp.me._getFormGroup('Short Description:', new Element('input', {'save-item': 'shortDescription', 'type': 'text', 'value': tmp.item.shortDescription}) ) ) })
+				})
+				.insert({'bottom': new Element('div', {'class': 'row'})
+					.insert({'bottom': new Element('div', {'class': 'col-sm-12'}).update(tmp.me._getFullDescriptionPanel(tmp.item) ) })
 				})
 			});
 		return tmp.newDiv;
 	}
-	
-	
+	/**
+	 * Bind the fancy box
+	 */
 	,_loadFancyBox: function(elements) {
 		var tmp = {};
 		tmp.me = this;
@@ -210,7 +226,9 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		});
 		return this;
 	}
-	
+	/**
+	 * Getting the image thumb
+	 */
 	,_getImageThumb: function(img) {
 		var tmp = {};
 		tmp.me = this;
@@ -230,7 +248,9 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 			});
 		return tmp.newDiv;
 	}
-	
+	/**
+	 * Reading image from local
+	 */
 	,_readImages: function(evt, targetDiv) {
 		var tmp = {};
 		tmp.me = this;
@@ -256,23 +276,40 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		}
 		return tmp.me;
 	}
-	
+	/**
+	 * Getting Image Panels for a product
+	 */
 	,_getImagesPanel: function(item) {
 		var tmp = {};
 		tmp.me = this;
 		tmp.newDiv = new Element('div', {'class': 'panel panel-default'})
 			.insert({'bottom': new Element('div', {'class': 'panel-heading'})
-				.insert({'bottom': new Element('input', {'type': 'file', 'multiple': true})
-					.observe('change', function(evt) {
-						tmp.me._readImages(evt, $(this).up('.panel').down('.panel-body'))
+				.insert({'bottom': new Element('a', {'href': 'javascript: void(0);', 'title': 'click to show/hide content below'})
+					.insert({'bottom': new Element('strong').update('Images: ') })
+					.observe('click', function() {
+						$(this).up('.panel').down('.panel-body').toggle();
+					})
+				})
+				.insert({'bottom': new Element('span', {'class': 'pull-right new-btn-panel'})
+					.insert({'bottom': new Element('span', {'class': 'btn btn-primary btn-xs pull-right', 'title': 'New'})
+						.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-plus'}) })
+						.insert({'bottom': ' NEW' })
+						.observe('click', function(){
+							$(this).up('.new-btn-panel').down('.new-images-file').click();
+						})
+					})
+					.insert({'bottom': new Element('input', {'class': 'new-images-file', 'type': 'file', 'multiple': true, 'style': 'display: none'})
+						.observe('change', function(evt) {
+							tmp.panelBody = $(this).up('.panel').down('.panel-body');
+							tmp.me._readImages(evt, tmp.panelBody);
+							tmp.panelBody.show();
+						})
 					})
 				})
 			})
-			.insert({'bottom': new Element('div', {'class': 'panel-body'})
-			});
+			.insert({'bottom': new Element('div', {'class': 'panel-body'}) });
 		return tmp.newDiv;
 	}
-	
 	/**
 	 * Ajax: saving the item
 	 */
@@ -280,6 +317,15 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		var tmp = {};
 		tmp.me = this;
 		tmp.data = tmp.me._collectFormData($(tmp.me._htmlIds.itemDiv), 'save-item');
+		
+		//tricks for fullDescription's editor
+		if($$('[save-item=fullDescription]').size() > 0 && (tmp.fullDescriptionBox = $$('[save-item=fullDescription]').first()))
+		{
+			//sign the value to the textarea
+			tmp.fullDescriptionBox.retrieve('editor').toggle();
+			tmp.fullDescriptionBox.retrieve('editor').toggle();
+			tmp.data['fullDescription'] = $F(tmp.fullDescriptionBox);
+		}
 		console.debug(tmp.data);
 		return tmp.me;
 	}
@@ -293,28 +339,24 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 			.insert({'bottom': new Element('div', {'class': 'row'})
 				.insert({'bottom': new Element('div', {'class': 'col-sm-4'})
 					.insert({'bottom': tmp.me._getImagesPanel(tmp.me._item) })
+					.insert({'bottom': tmp.me._getCategoryPanel(tmp.me._item) })
 				})
 				.insert({'bottom': new Element('div', {'class': 'col-sm-8'})
-					.insert({'bottom': tmp.me._getSummaryDiv(tmp.me._item) })
-				})
-			})
-			.insert({'bottom': new Element('div', {'class': 'row'})
-				.insert({'bottom': new Element('div', {'class': 'col-sm-3'}).update(
-					tmp.me._getListPanel('Suppliers:', tmp.me._item.supplierCodes, {'type': 'Supplier', 'value': 'Code'}, tmp.me._suppliers)
-				) })
-				.insert({'bottom': new Element('div', {'class': 'col-sm-3'}).update(
-						tmp.me._getListPanel('Codes:', tmp.me._item.supplierCodes, {'type': 'Type', 'value': 'Code'}, tmp.me._codeTypes)
-				) })
-				.insert({'bottom': new Element('div', {'class': 'col-sm-6'}).update(tmp.me._getListPanel('Prices:', tmp.me._item.prices, {'type': 'Type', 'value': 'Price', 'start': 'From', 'end': 'To'}, tmp.me._priceTypes) 
-				) })
-			})
-			.insert({'bottom': new Element('div', {'class': 'row'})
-				.insert({'bottom': new Element('span', {'class': 'btn btn-primary pull-right col-sm-2', 'data-loading-text': 'saving ...'}).update('Save')
-					.observe('click', function() {
-						tmp.me._submitSave(this);
+					.insert({'bottom': new Element('div', {'class': 'row'})
+						.insert({'bottom': tmp.me._getSummaryDiv(tmp.me._item).wrap(new Element('div', {'class': 'col-sm-12'})) })
+						.insert({'bottom': tmp.me._getListPanel('Prices:', tmp.me._item.prices, {'type': 'Type', 'value': 'Price', 'start': 'From', 'end': 'To'}, tmp.me._priceTypes).wrap(new Element('div', {'class': 'col-sm-12'})) })
+						.insert({'bottom': tmp.me._getListPanel('Suppliers:', tmp.me._item.supplierCodes, {'type': 'Supplier', 'value': 'Code'}, tmp.me._suppliers).wrap(new Element('div', {'class': 'col-sm-6'})) })
+						.insert({'bottom': tmp.me._getListPanel('Codes:', tmp.me._item.supplierCodes, {'type': 'Type', 'value': 'Code'}, tmp.me._codeTypes).wrap(new Element('div', {'class': 'col-sm-6'})) })
+					})
+					.insert({'bottom': new Element('div', {'class': 'row'})
+						.insert({'bottom': new Element('span', {'class': 'btn btn-primary pull-right col-sm-4', 'data-loading-text': 'saving ...'}).update('Save')
+							.observe('click', function() {
+								tmp.me._submitSave(this);
+							})
+						})
 					})
 				})
-			});
+			})
 		return tmp.newDiv;
 	}
 	

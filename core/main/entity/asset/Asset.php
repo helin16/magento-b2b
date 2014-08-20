@@ -117,12 +117,21 @@ class Asset extends BaseEntityAbstract
 	    return $this;
 	}
 	/**
+	 * Getting the url of this asset
+	 * 
+	 * @return string
+	 */
+	public function getUrl()
+	{
+		return '/assets/get/?id=' . $assetId;
+	}
+	/**
 	 * (non-PHPdoc)
 	 * @see BaseEntityAbstract::__toString()
 	 */
 	public function __toString()
 	{
-	    return '/assets/get/?id=' . $assetId;
+	    return trim($this->getUrl());
 	}
 	/**
 	 * Getting the root path of the asset files
