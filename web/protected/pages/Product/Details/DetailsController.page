@@ -3,6 +3,7 @@
 	<com:Application.controls.RichTextEditor.RichTextEditor />
 	<com:TDatePicker Style="display:none;"/>
 	<com:Application.controls.fancybox.FancyBox />
+	<com:TCallback ID="getCategoriesBtn" OnCallback="getCategories" />
 	<div class="pagewrapper productdetailswraper" id='item-div'>
 	</div>
 </com:TContent>

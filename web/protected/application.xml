@@ -11,7 +11,7 @@
 
 	<!-- configurations for modules -->
 	<modules>
-		<!-- <module id="cache" class="System.Caching.TAPCCache" /> -->
+		<!-- module id="cache" class="System.Caching.TAPCCache" /-->
 		<module id="Session" class="Application.classes.Session.SessionDb" UseCustomStorage="true" />
 		<module id="security" class="TSecurityManager" EncryptionKey="BPCinternal" ValidationKey="bfb9e1b24ba6308e39495a4a78f35d70" />
 		<module id="request" class="THttpRequest" UrlManager="friendly-url" />
@@ -62,6 +62,9 @@
 			<url ServiceParameter="Manufacturer.List.ListController" pattern="manufacturers.html" />
 			<!-- FrontEnd:: supplier list page -->
 			<url ServiceParameter="Supplier.List.ListController" pattern="suppliers.html" />
+			
+			<!-- Statics::Order::Trend::Monthly page -->
+			<url ServiceParameter="Statics.Order.MthlyTrend.StaticsController" pattern="/statics/order/mthlytrend.html" />
 			
 			<!-- asset service -->
 			<url ServiceId="asset" ServiceParameter="" pattern="asset/{method}" parameters.method="get" />

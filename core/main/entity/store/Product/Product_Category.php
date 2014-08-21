@@ -76,7 +76,6 @@ class Product_Category extends BaseEntityAbstract
 	{
 		$class = __CLASS__;
 		self::remove($product, $category);
-		FactoryAbastract::dao($class)->deleteByCriteria('productId = ? and supplierId = ?', array($product->getId(), $category->getId()));
 		$obj = new $class();
 		$obj->setProduct($product)
 			->setCategory($category);
@@ -120,7 +119,7 @@ class Product_Category extends BaseEntityAbstract
 	 */
 	public static function remove(Product $product, ProductCategory $category)
 	{
-		FactoryAbastract::dao(__CLASS__)->deleteByCriteria('productId = ? and supplierId = ?', array($product->getId(), $category->getId()));
+		FactoryAbastract::dao(__CLASS__)->deleteByCriteria('productId = ? and categoryId = ?', array($product->getId(), $category->getId()));
 	}
 	/**
 	 * (non-PHPdoc)

@@ -474,6 +474,24 @@ class Product extends InfoEntityAbstract
 	}
 	/**
 	 * (non-PHPdoc)
+	 * @see BaseEntityAbstract::preSave()
+	 */
+	public function preSave()
+	{
+		$sku = trim($this->getSku());
+		$where = array('sku = ? ');
+		$params = array($sku);
+		if(($id = trim($this->getId())) !== '')
+		{
+			$where[] = 'id != ?';
+			$params[] = $id;
+		}
+		$exsitingSKU = Product::countByCriteria(implode(' AND ', $where), $params);
+		if($exsitingSKU > 0)
+			throw new EntityException('The SKU(=' . $sku . ') is already exists!' );
+	}
+	/**
+	 * (non-PHPdoc)
 	 * @see BaseEntityAbstract::__toString()
 	 */
 	public function __toString()
