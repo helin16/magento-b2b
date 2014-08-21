@@ -158,9 +158,22 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		tmp.fullDescriptioAssetId = item.fullDescAssetId ? item.fullDescAssetId : '';
 		tmp.loadFullBtn = !item.id ? tmp.me._getRichTextEditor('') : new Element('span', {'class': 'btn btn-default'}).update('click to show the full description editor')
 			.observe('click', function(){
-				tmp.newTextarea = tmp.me._getRichTextEditor('');
-				$(this).replace(tmp.newTextarea);
-				tmp.me._loadRichTextEditor(tmp.newTextarea);
+				tmp.btn = $(this);
+				if(!item.fullDescriptionAsset) {
+					tmp.newTextarea = tmp.me._getRichTextEditor('');
+					$(tmp.btn).replace(tmp.newTextarea);
+					tmp.me._loadRichTextEditor(tmp.newTextarea);
+				} else {
+					jQuery.ajax({
+						type: 'GET',
+						url: item.fullDescriptionAsset.url,
+						success: function(result) {
+							tmp.newTextarea = tmp.me._getRichTextEditor(result);
+							$(tmp.btn).replace(tmp.newTextarea);
+							tmp.me._loadRichTextEditor(tmp.newTextarea);
+						}
+					})
+				}
 			});
 		tmp.newDiv = tmp.me._getFormGroup('Full Description:', tmp.loadFullBtn);
 		return tmp.newDiv;

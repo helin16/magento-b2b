@@ -102,7 +102,6 @@ class DetailsController extends DetailsPageAbstract
 		try
 		{
 			Dao::beginTransaction();
-			var_dump($param->CallbackParameter);
 			$product = !isset($param->CallbackParameter->id) ? new Product() : Product::get(trim($param->CallbackParameter->id));
 			if(!$product instanceof Product)
 				throw new Exception('Invalid Product passed in!');
@@ -123,6 +122,14 @@ class DetailsController extends DetailsPageAbstract
 				->setSellOnWeb($sellOnWeb);
 			if(trim($product->getId()) === '')
 				$product->setIsFromB2B(false);
+			//update full description
+			if(isset($param->CallbackParameter->fullDescription) && ($fullDescription = trim($param->CallbackParameter->fullDescription)) !== '')
+			{
+				if(($fullAsset = Asset::getAsset($product->getFullDescAssetId())) instanceof Asset)
+					Asset::removeAssets(array($fullAsset->getAssetId()));
+				$fullAsset = Asset::registerAsset('full_description_for_product.txt', $fullDescription);
+				$product->setFullDescAssetId($fullAsset->getAssetId());
+			}
 			//update categories
 			if(isset($param->CallbackParameter->categoryIds) && count($categoryIds = $param->CallbackParameter->categoryIds) > 0)
 			{
