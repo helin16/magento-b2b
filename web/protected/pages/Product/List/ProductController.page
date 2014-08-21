@@ -1,7 +1,7 @@
 <com:TContent ID="MainContent">
 <com:Application.controls.fancybox.FancyBox />
 	<div class="pagewrapper productlistwraper container">
-		<div class="col-md-9">
+		<div class="col-md-12">
 			<div class="panel panel-default" id="searchPanel">
 				<div class="panel-heading">
 					<label for="showSearch">Show Search Criteria?</label>
@@ -38,8 +38,18 @@
 							</div>
 						</div>
 					</div>
+				    <div class="row">
+				        <div class="col-xs-12">
+				            <div class="form-group">
+				                <label for="status">Brand: </label>
+				                <select search_field="pro.brand" id="productBrandId" multiple class="chosen"></select>
+				            </div>
+				         </div>
+				    </div>
 				</div>
 			</div>
+		</div>
+		<div class="col-md-6">
 			<div class="panel panel-default">
 				<div class="panel-heading">
 					Found <label id="total-found-count">0</label> Products:
@@ -49,7 +59,7 @@
 	            </small>
 			</div>
 		</div>
-		<div class="col-md-3">
+		<div class="col-md-6">
 			<div class="panel panel-default">
 				<div class="panel-heading">
 					Tools 

@@ -67,7 +67,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 			.insert({'bottom': new Element(tmp.tag, {'class': 'sku'}).update(row.sku) })
 			.insert({'bottom': new Element(tmp.tag, {'class': 'name'}).update(row.name) })
 			.insert({'bottom': new Element(tmp.tag, {'class': 'product_active col-xs-1'})
-				.insert({'bottom': (tmp.isTitle === true ? row.active : new Element('input', {'type': 'checkbox', 'disabled': true, 'checked': row.active}) ) })
+				.insert({'bottom': (tmp.isTitle === true ? row.active : new Element('input', {'type': 'checkbox', 'disabled': false, 'checked': row.active}) ) })
 			})
 			.insert({'bottom': new Element(tmp.tag, {'class': 'text-right btns col-xs-2'}).update(
 				tmp.isTitle === true ?  
@@ -85,8 +85,8 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 							$(this).up('.item_row').replace(tmp.me.openToolsURL('/product/' + row.id + '.html'));
 						})
 					})
-					.insert({'bottom': new Element('span', {'class': 'btn btn-danger', 'title': 'Delete'})
-						.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-trash'}) })
+					.insert({'bottom': new Element('span', {'class': 'btn btn-default', 'title': 'Delete'})
+						.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-cog'}) })
 						.observe('click', function(){
 							if(!confirm('Are you sure you want to delete this item?'))
 								return false;
