@@ -67,7 +67,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 			.insert({'bottom': new Element(tmp.tag, {'class': 'sku'}).update(row.sku) })
 			.insert({'bottom': new Element(tmp.tag, {'class': 'name'}).update(row.name) })
 			.insert({'bottom': new Element(tmp.tag, {'class': 'product_active col-xs-1'})
-				.insert({'bottom': (tmp.isTitle === true ? row.active : new Element('input', {'type': 'checkbox', 'disabled': true, 'checked': row.active}) ) })
+				.insert({'bottom': (tmp.isTitle === true ? row.active : new Element('input', {'type': 'checkbox', 'disabled': false, 'checked': row.active}) ) })
 			})
 			.insert({'bottom': new Element(tmp.tag, {'class': 'text-right btns col-xs-2'}).update(
 				tmp.isTitle === true ?  
