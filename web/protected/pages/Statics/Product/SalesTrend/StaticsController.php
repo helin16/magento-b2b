@@ -12,7 +12,7 @@ class StaticsController extends StaticsPageAbstract
 	 * (non-PHPdoc)
 	 * @see BPCPageAbstract::$menuItem
 	 */
-	public $menuItem = 'statics.order.mthlyTrend';
+	public $menuItem = 'statics.product.salesTrend';
 	/**
 	 * Getting The end javascript
 	 *
@@ -21,6 +21,7 @@ class StaticsController extends StaticsPageAbstract
 	protected function _getEndJs()
 	{
 		$js = parent::_getEndJs();
+		$productIds = (isset($this->_request['productids']) ? explode(', ', trim($this->_request['productids'])) : array());
 		$js .= 'pageJs';
 			$js .= '.load({});';
 		return $js;

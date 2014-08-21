@@ -49,6 +49,7 @@ abstract class StaticsPageAbstract extends BPCPageAbstract
 		$js = parent::_getEndJs();
 		$js .= "pageJs";
 		$js .= ".setCallbackId('getData', '" . $this->_getDataBtn->getUniqueID() . "');";
+		$js .= ".setHTMLIDs('statics-div')";
 		return $js;
 	}
 	/**
