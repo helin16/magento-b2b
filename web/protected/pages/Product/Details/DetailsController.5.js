@@ -79,22 +79,24 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		tmp.me = this;
 		tmp.newDiv = new Element('div', {'class': 'panel panel-default'})
 			.insert({'bottom': new Element('div', {'class': 'panel-heading'}) 
-				.insert({'bottom': new Element('a', {'href': 'javascript: void(0);', 'title': 'click show/hide content below'})
+				.insert({'bottom': new Element('a', {'class': 'toggle-btn', 'href': 'javascript: void(0);', 'title': 'click show/hide content below'})
 					.insert({'bottom': new Element('strong').update(title)})
 					.observe('click', function() {
-						$(this).up('.panel').down('.table-responsive').toggle();
+						$(this).up('.panel').down('.list-div').toggle();
 					})
 				})
 				.insert({'bottom': new Element('span', {'class': 'btn btn-primary btn-xs pull-right', 'title': 'New'})
 					.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-plus'}) })
 					.insert({'bottom': ' NEW' })
 					.observe('click', function(){
-						$(this).up('.panel').down('.table tbody').insert({'bottom': tmp.me._getListPanelRow({}, selBoxData, titleData, false).addClassName('list-panel-row').writeAttribute('item_id', '') });
+						tmp.parentPanel = $(this).up('.panel');
+						tmp.parentPanel.down('.table tbody').insert({'bottom': tmp.me._getListPanelRow({}, selBoxData, titleData, false).addClassName('list-panel-row').writeAttribute('item_id', '') });
+						tmp.parentPanel.down('.list-div').show();
 						tmp.me._bindDatePicker();
 					})
 				})
 			})
-			.insert({'bottom': new Element('div', {'class': 'table-responsive', 'style': 'display: none'}) 
+			.insert({'bottom': new Element('div', {'class': 'list-div table-responsive'}) 
 				.insert({'bottom': new Element('table', {'class': 'table table-condensed'}) 
 					.insert({'bottom': new Element('thead').update( tmp.me._getListPanelRow(titleData, selBoxData, titleData, true) ) })
 					.insert({'bottom': tmp.listDiv = new Element('tbody') })
