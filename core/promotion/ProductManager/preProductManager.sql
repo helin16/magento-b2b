@@ -270,7 +270,7 @@ CREATE TABLE `productcodetype` (
 CREATE TABLE `productimage` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `productId` int(10) unsigned NOT NULL DEFAULT '0',
-  `imageAssetId` varchar(20) NOT NULL DEFAULT '',
+  `imageAssetId` varchar(32) NOT NULL DEFAULT '',
   `active` tinyint(1) NOT NULL DEFAULT '1',
   `created` datetime NOT NULL DEFAULT '0001-01-01 00:00:00',
   `createdById` int(10) unsigned NOT NULL DEFAULT '0',

@@ -238,13 +238,13 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		tmp.newDiv = new Element('div', {'class': 'panel panel-default'})
 			.insert({'bottom': new Element('div', {'class': 'panel-heading'})
 				.insert({'bottom': new Element('a', {'href': 'javascript: void(0);'})
-					.insert({'bottom': new Element('strong').update('Categories: ')	})
+					.insert({'bottom': new Element('strong').update( 'Categories: ' + (tmp.me._item.categories ? tmp.me._item.categories.size() + ' Selected' : ''))	})
 				})
 				.observe('click', function() {
 					tmp.btn = this;
 					tmp.panelBody = $(tmp.btn).up('.panel').down('.panel-body');
 					if(!tmp.panelBody.hasClassName('loaded')) {
-						tmp.me._getCategories(tmp.panelBody)
+						tmp.me._getCategories(tmp.panelBody);
 					}
 					tmp.panelBody.toggle();
 				})
@@ -340,7 +340,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 					if(!confirm('Delete this image?'))
 						return false;
 					tmp.imgDiv = $(this).up('.product-image');
-					if(tmp.imgDiv.readAttribute('asset-id').blank()) {
+					if(tmp.imgDiv.hasAttribute('asset-id')) {
 						tmp.imgDiv.remove();
 					} else {
 						tmp.imgDiv.writeAttribute('active', '0').hide();
@@ -398,7 +398,12 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 				})
 				.insert({'bottom': tmp.uploadDiv = new Element('span', {'class': 'pull-right new-btn-panel'}) })
 			})
-			.insert({'bottom': new Element('div', {'id': tmp.me._imgPanelId, 'class': 'panel-body'}) });
+			.insert({'bottom': tmp.body = new Element('div', {'id': tmp.me._imgPanelId, 'class': 'panel-body'}) });
+		item.images.each(function(img) {
+			if(img.asset)
+				tmp.body.insert({'bottom': tmp.me._getImageThumb({'path': img.asset.url, 'filename': img.asset.filename, 'imageAssetId': img.asset.assetId}) })
+		});
+		
 		if(tmp.noLocalReader) {
 			tmp.uploadDiv.update(new Element('span', {'class': 'btn btn-danger btn-xs pull-right', 'title': 'Your browser does NOT support this feature. Pls change browser and try again'})
 				.insert({'bottom': new Element('span', {'class': ' glyphicon glyphicon-exclamation-sign'}) })

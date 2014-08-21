@@ -143,7 +143,8 @@ class DetailsController extends DetailsPageAbstract
 					{
 						if($image->active === true)
 						{
-							$asset = Asset::registerAsset(trim($image->filename), base64_decode($image->data));
+							$data = explode(',', $image->data);
+							$asset = Asset::registerAsset(trim($image->filename), base64_decode($data[1]));
 							ProductImage::create($product, $asset);
 						}
 						//if it's deactivated one, ignore
@@ -153,7 +154,6 @@ class DetailsController extends DetailsPageAbstract
 					
 					if($image->active === false) {
 						ProductImage::remove($product, $asset);
-						Asset::removeAssets($asset->getAssetId());
 					}
 				}
 			}

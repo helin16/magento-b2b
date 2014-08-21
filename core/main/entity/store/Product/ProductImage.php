@@ -90,7 +90,9 @@ class ProductImage extends BaseEntityAbstract
 	public static function remove(Product $product, Asset $asset)
 	{
 		$class = __CLASS__;
-		FactoryAbastract::dao($class)->deleteByCriteria('productId = ? and imageAssetId = ?', array(trim($product->getId()), trim($asset->getAssetId())));
+		$assetId = trim($asset->getAssetId());
+		FactoryAbastract::dao($class)->deleteByCriteria('productId = ? and imageAssetId = ?', array(trim($product->getId()), $assetId));
+		Asset::removeAssets(array($assetId));
 	}
 	/**
 	 * (non-PHPdoc)
@@ -101,7 +103,7 @@ class ProductImage extends BaseEntityAbstract
 		$array = array();
 		if(!$this->isJsonLoaded($reset))
 		{
-			$array['path'] = (($asset = Asset::getAsset($this->getImageAssetId())) instanceof Asset) ? $asset->getUrl() : null;
+			$array['asset'] = (($asset = Asset::getAsset($this->getImageAssetId())) instanceof Asset) ? $asset->getJson() : null;
 		}
 		return parent::getJson($array, $reset);
 	}
@@ -121,7 +123,7 @@ class ProductImage extends BaseEntityAbstract
 	{
 		DaoMap::begin($this, 'pro_img');
 		DaoMap::setManyToOne('product', 'Product', 'pro_img_pro');
-		DaoMap::setStringType('imageAssetId', 'varchar', 20);
+		DaoMap::setStringType('imageAssetId', 'varchar', 32);
 		parent::__loadDaoMap();
 	
 		DaoMap::createIndex('imageAssetId');

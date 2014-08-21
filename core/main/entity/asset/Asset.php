@@ -123,7 +123,7 @@ class Asset extends BaseEntityAbstract
 	 */
 	public function getUrl()
 	{
-		return '/assets/get/?id=' . $assetId;
+		return '/asset/get/?id=' . trim($this->getAssetId());
 	}
 	/**
 	 * (non-PHPdoc)
@@ -204,19 +204,20 @@ class Asset extends BaseEntityAbstract
 	public static function removeAssets($assetIds)
 	{
 		if(count($assetIds) === 0)
-			return $this;
+			return;
 		$class = __CLASS__;
 		$where = "assetId in (" . implode(', ', array_fill(0, count($assetIds), '?')) . ")";
 		$params = $assetIds;
-		foreach(FactoryAbastract::dao($class)->findByCriteria($where, $assetIds) as $asset)
+		$assets = FactoryAbastract::dao($class)->findByCriteria($where, $assetIds);
+		// Delete the item from the database
+		FactoryAbastract::dao($class)->updateByCriteria('active = ?', $where, array_merge(array(0), $params));
+		foreach($assets as $asset)
 		{
 			// Remove the file from the NAS server
 			unlink($asset->getPath());
 			unset(self::$_cache[trim($asset->getAssetId())]);
 		}
-		// Delete the item from the database
-		FactoryAbastract::dao($class)->updateByCriteria('set active = ?', $where, array_merge(array(0), $params));
-		return $this;
+		return;
 	}
 	/**
 	 * copy the provided file or data into the new path
@@ -249,6 +250,21 @@ class Asset extends BaseEntityAbstract
 			self::$_cache[$assetId] = count($content) === 0 ? null : $content[0];
 		}
 		return self::$_cache[$assetId];
+	}
+	/**
+	 * (non-PHPdoc)
+	 * @see BaseEntityAbstract::getJson()
+	 */
+	public function getJson($extra = '', $reset = false)
+	{
+		$a = array();
+		if(!$this->isJsonLoaded($reset))
+		{
+			$a['url'] = $this->getUrl();
+		}
+		$array = parent::getJson($a, $reset);
+		unset($array['path']);
+		return $array;
 	}
 	/**
 	 * (non-PHPdoc)
