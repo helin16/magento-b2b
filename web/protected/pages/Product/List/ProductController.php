@@ -41,12 +41,13 @@ class ProductController extends CRUDPageAbstract
                 throw new Exception('System Error: search criteria not provided!');
             $pageNo = 1;
             $pageSize = DaoQuery::DEFAUTL_PAGE_SIZE;
+            
             if(isset($param->CallbackParameter->pagination))
             {
                 $pageNo = $param->CallbackParameter->pagination->pageNo;
-                $pageSize = $param->CallbackParameter->pagination->pageSize;
+                $pageSize = $param->CallbackParameter->pagination->pageSize * 3;
             }
-               
+            var_dump($pageSize);
             $where = array(1);
             $params = array();
             if(($sku = trim($serachCriteria['pro.sku'])) !== '')

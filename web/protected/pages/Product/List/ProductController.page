@@ -1,7 +1,7 @@
 <com:TContent ID="MainContent">
 <com:Application.controls.fancybox.FancyBox />
 	<div class="pagewrapper productlistwraper container">
-		<div class="col-md-9">
+		<div class="col-md-12">
 			<div class="panel panel-default" id="searchPanel">
 				<div class="panel-heading">
 					<label for="showSearch">Show Search Criteria?</label>
@@ -40,6 +40,8 @@
 					</div>
 				</div>
 			</div>
+		</div>
+		<div class="col-md-6">
 			<div class="panel panel-default">
 				<div class="panel-heading">
 					Found <label id="total-found-count">0</label> Products:
@@ -49,7 +51,7 @@
 	            </small>
 			</div>
 		</div>
-		<div class="col-md-3">
+		<div class="col-md-6">
 			<div class="panel panel-default">
 				<div class="panel-heading">
 					Tools 
