@@ -85,8 +85,8 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 							$(this).up('.item_row').replace(tmp.me.openToolsURL('/product/' + row.id + '.html'));
 						})
 					})
-					.insert({'bottom': new Element('span', {'class': 'btn btn-danger', 'title': 'Delete'})
-						.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-trash'}) })
+					.insert({'bottom': new Element('span', {'class': 'btn btn-default', 'title': 'Delete'})
+						.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-cog'}) })
 						.observe('click', function(){
 							if(!confirm('Are you sure you want to delete this item?'))
 								return false;
