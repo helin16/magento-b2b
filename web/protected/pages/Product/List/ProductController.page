@@ -42,7 +42,7 @@
 				    <div class="row">
 				        <div class="col-xs-12">
 				            <div class="form-group">
-				                <label for="status">Manufacture: </label>
+				                <label for="manufacture">Manufacture: </label>
 				                <select search_field="pro.brand" id="productBrandId" multiple class="chosen"></select>
 				            </div>
 				         </div>
@@ -50,8 +50,16 @@
 				    <div class="row">
 				        <div class="col-xs-12">
 				            <div class="form-group">
-				                <label for="status">Supplier: </label><br/>
+				                <label for="supplier">Supplier: </label><br/>
 				                <select search_field="pro.supplier" id="productSupplierId" multiple class="chosen"></select>
+				            </div>
+				         </div>
+				    </div>
+				    <div class="row">
+				        <div class="col-xs-12">
+				            <div class="form-group">
+				                <label for="productCategory">Product Category: </label>
+				                <select search_field="pro.productCategory" id="productCategoryId" multiple class="chosen"></select>
 				            </div>
 				         </div>
 				    </div>

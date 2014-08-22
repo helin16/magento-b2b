@@ -5,6 +5,7 @@ var PageJs = new Class.create();
 PageJs.prototype = Object.extend(new CRUDPageJs(), {
 	manufactures: []
 	,suppliers: []
+	,productCategories: []
 	,_getTitleRowData: function() {
 		return {'sku': 'SKU', 'name': 'Product Name', 'active': 'act?'};
 	}
@@ -24,6 +25,16 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		tmp.me = this;
 		tmp.selectionBox = $(tmp.me.searchDivId).down('#productSupplierId');
 		tmp.me.suppliers.each(function(option) {
+			tmp.selectionBox.insert({'bottom': new Element('option',{'value': option.id}).update(option.name) });
+		});
+		return this;
+	}
+	,_loadProductCategories: function(productCategories) {
+		this.productCategories = productCategories;
+		var tmp = {};
+		tmp.me = this;
+		tmp.selectionBox = $(tmp.me.searchDivId).down('#productCategoryId');
+		tmp.me.productCategories.each(function(option) {
 			tmp.selectionBox.insert({'bottom': new Element('option',{'value': option.id}).update(option.name) });
 		});
 		return this;
