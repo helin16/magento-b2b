@@ -28,8 +28,11 @@ class ProductController extends CRUDPageAbstract
 		$manufactureArray = array();
 		foreach (Manufacturer::getAll() as $os)
 			$manufactureArray[] = $os->getJson();
+		foreach (Supplier::getAll() as $os)
+			$supplierArray[] = $os->getJson();
 		$js = parent::_getEndJs();
-		$js .= 'pageJs._loadManufactures('.json_encode($manufactureArray).')';
+		$js .= 'pageJs._loadManufactures('.json_encode($manufactureArray).');';
+		$js .= 'pageJs._loadSuppliers('.json_encode($supplierArray).')';
 		$js .= "._loadChosen()";
 		$js .= ".getResults(true, " . $this->pageSize . ");";
 		return $js;
