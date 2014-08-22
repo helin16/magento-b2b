@@ -115,7 +115,7 @@ class ProductPrice extends BaseEntityAbstract
 	/**
 	 * Getter for start
 	 * 
-	 * @return start
+	 * @return UDate
 	 */
 	public function getStart()
 	{
@@ -164,8 +164,8 @@ class ProductPrice extends BaseEntityAbstract
 	 */
 	public static function create(Product $product, ProductPriceType $type, $price, $start = null, $end = null)
 	{
-		FactoryAbastract::dao($class)->updateByCriteria('active = 0', 'productId = ? and typeId = ?', array($product->getId(), $type->getId()));
 		$class = __CLASS__;
+// 		FactoryAbastract::dao($class)->updateByCriteria('active = 0', 'productId = ? and typeId = ?', array($product->getId(), $type->getId()));
 		$obj = new $class();
 		$obj->setProduct($product)
 			->setType($type)
@@ -245,6 +245,25 @@ class ProductPrice extends BaseEntityAbstract
 	}
 	/**
 	 * (non-PHPdoc)
+	 * @see BaseEntityAbstract::preSave()
+	 */
+	public function preSave()
+	{
+		if($this->getStart()->afterOrEqualTo($this->getEnd()))
+			throw new EntityException('Error: Price(ID=' . $this->getId() . ') start(=' . $this->getStart() . ') must be earlier than end(=' . $this->getEnd() . ')!');
+		
+		$where = 'active = 1 AND productId = :pId AND typeId = :typeId AND ( (start <= :start and :end <= end) or (:start <= start and :end <= end) or (start <= :start and end <= :end) or (:start <= start and end <= :end))';
+		$params = array('pId'=> $this->getProduct()->getId() , 'typeId' => $this->getType()->getId(), 'start' => trim($this->getStart()), 'end' => trim($this->getEnd()));
+		if(($id = trim($this->getId())) !== '')
+		{
+			$where .= ' AND id != :id';
+			$params['id'] = $id;
+		}
+		if(ProductPrice::countByCriteria($where, $params) > 0)
+			throw new EntityException('There is already a price for this product that covers time from "' . $this->getStart() . '" to "' . $this->getEnd() . '"');
+	}
+	/**
+	 * (non-PHPdoc)
 	 * @see BaseEntity::__loadDaoMap()
 	 */
 	public function __loadDaoMap()
@@ -253,7 +272,7 @@ class ProductPrice extends BaseEntityAbstract
 		DaoMap::setManyToOne('product', 'Product', 'pro_price_pro');
 		DaoMap::setManyToOne('type', 'ProductPriceType', 'pro_price_type');
 		DaoMap::setIntType('price', 'double', '10,4');
-		DaoMap::setDateType('start');
+		DaoMap::setDateType('start', 'datetime', false, trim(UDate::zeroDate()));
 		DaoMap::setDateType('end', 'datetime', false, trim(UDate::maxDate()));
 		parent::__loadDaoMap();
 		

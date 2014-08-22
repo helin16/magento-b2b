@@ -148,32 +148,74 @@ class DetailsController extends DetailsPageAbstract
 	}
 	private function _setPrices(Product &$product, $param)
 	{
+		if(isset($param->CallbackParameter->prices) && count($prices = $param->CallbackParameter->prices) > 0)
+		{
+			//delete all price first
+			$deleteIds = array();
+			foreach($prices as $price)
+			{
+				if(trim($price->active) === '0' && isset($price->id))
+					$deleteIds[] = trim($price->id);
+			}
+			if(count($deleteIds) > 0)
+				ProductPrice::updateByCriteria('active = 0', 'id in (' . str_repeat('?', count($deleteIds)) . ')', $deleteIds);
+			//update or create new
+			foreach($prices as $price)
+			{
+				if(isset($price->id) && in_array(trim($price->id), $deleteIds))
+					continue;
+				if(!($type = ProductPriceType::get(trim($price->typeId))) instanceof ProductPriceType)
+					continue;
+				$priceValue = trim($price->value);
+				$start = trim($price->start);
+				$end = trim($price->end);
+				if(!is_numeric(StringUtilsAbstract::getValueFromCurrency($priceValue)))
+					throw new Exception('Invalid price: ' . $priceValue);
+				
+				if(!isset($price->id) || ($id = trim($price->id)) === '')
+				{
+					if(trim($price->active) === '1')
+						ProductPrice::create($product, $type, $priceValue, $start, $end);
+					//if it's deactivated one, ignore
+				}
+				else if (($productPrice = ProductPrice::get($id)) instanceof ProductPrice)
+				{
+					$productPrice
+						->setPrice($priceValue)
+						->setType($type)
+						->setProduct($product)
+						->setStart($start)
+						->setEnd($end)
+						->save();
+				}
+					
+			}
+		}
 		return $this;
 	}
 	private function _setBarcodes(Product &$product, $param)
 	{
-		var_dump($param->CallbackParameter);
-		var_dump($param->CallbackParameter->productCodes);
 		if(isset($param->CallbackParameter->productCodes) && count($productCodes = $param->CallbackParameter->productCodes) > 0)
 		{
 			foreach($productCodes as $code)
 			{
 				if(!($type = ProductCodeType::get(trim($code->typeId))) instanceof ProductCodeType)
 					continue;
+				
 				if(!isset($code->id) || ($id = trim($code->id)) === '')
 				{
 					if(trim($code->active) === '1')
-						$productCode = new ProductCode();
+						ProductCode::create($product, $type, trim($code->value));
 					//if it's deactivated one, ignore
 				}
-				else if (!($productCode = ProductCode::get($id)) instanceof ProductCode)
-					continue;
-					
-				$productCode->setActive(trim($code->active) === '1')
-					->setCode(trim($code->value))
-					->setType($type)
-					->setProduct($product)
-					->save();
+				else if (($productCode = ProductCode::get($id)) instanceof ProductCode)
+				{
+					$productCode->setActive(trim($code->active) === '1')
+						->setCode(trim($code->value))
+						->setType($type)
+						->setProduct($product)
+						->save();
+				}
 			}
 		}
 		return $this;
@@ -189,17 +231,17 @@ class DetailsController extends DetailsPageAbstract
 				if(!isset($code->id) || ($id = trim($code->id)) === '')
 				{
 					if(trim($code->active) === '1')
-						$supplierCode = new SupplierCode();
+						SupplierCode::create($product, $supplier, trim($code->value));
 					//if it's deactivated one, ignore
 				}
-				else if (!($supplierCode = SupplierCode::get($id)) instanceof SupplierCode)
-					continue;
-					
-				$supplierCode->setActive(trim($code->active) === '1')
-					->setCode(trim($code->value))
-					->setSupplier($supplier)
-					->setProduct($product)
-					->save();
+				else if (($supplierCode = SupplierCode::get($id)) instanceof SupplierCode)
+				{
+					$supplierCode->setActive(trim($code->active) === '1')
+						->setCode(trim($code->value))
+						->setSupplier($supplier)
+						->setProduct($product)
+						->save();
+				}
 			}
 		}
 		return $this;
@@ -231,7 +273,10 @@ class DetailsController extends DetailsPageAbstract
 				->setShortDescription($shortDescription)
 				->setStatus($status)
 				->setManufacturer($manufacturer)
-				->setSellOnWeb($sellOnWeb);
+				->setSellOnWeb($sellOnWeb)
+				->setAsNewFromDate(trim($param->CallbackParameter->asNewFromDate))
+				->setAsNewToDate(trim($param->CallbackParameter->asNewToDate))
+				;
 			if(trim($product->getId()) === '')
 				$product->setIsFromB2B(false);
 			$product->save();

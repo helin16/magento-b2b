@@ -323,13 +323,21 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 			})
 			.insert({'bottom': new Element('div', {'class': 'panel-body'})
 				.insert({'bottom': new Element('div', {'class': 'row'})
-					.insert({'bottom': new Element('div', {'class': 'col-sm-3'}).update(tmp.me._getFormGroup('Name', new Element('input', {'save-item': 'name', 'type': 'text', 'value': tmp.item.name}) ) ) })
-					.insert({'bottom': new Element('div', {'class': 'col-sm-3'}).update(tmp.me._getFormGroup('sku', new Element('input', {'save-item': 'sku', 'type': 'text', 'value': tmp.item.sku}) ) ) })
-					.insert({'bottom': new Element('div', {'class': 'col-sm-2'}).update(tmp.me._getFormGroup('Brand/Manf.', 
+					.insert({'bottom': new Element('div', {'class': 'col-sm-4'}).update(tmp.me._getFormGroup('Name', new Element('input', {'save-item': 'name', 'type': 'text', 'value': tmp.item.name ? tmp.item.name : ''}) ) ) })
+					.insert({'bottom': new Element('div', {'class': 'col-sm-4'}).update(tmp.me._getFormGroup('sku', new Element('input', {'save-item': 'sku', 'type': 'text', 'value': tmp.item.sku ? tmp.item.sku : ''}) ) ) })
+					.insert({'bottom': new Element('div', {'class': 'col-sm-4'}).update(tmp.me._getFormGroup('Status', 
+							tmp.me._getSelBox(tmp.me._statuses, tmp.item.status ? tmp.item.status.id : null).writeAttribute('save-item', 'statusId').addClassName('chosen') 
+					) ) })
+				})
+				.insert({'bottom': new Element('div', {'class': 'row'})
+					.insert({'bottom': new Element('div', {'class': 'col-sm-4'}).update(tmp.me._getFormGroup('Brand/Manf.', 
 							tmp.me._getSelBox(tmp.me._manufacturers, tmp.item.manufacturer ? tmp.item.manufacturer.id : null).writeAttribute('save-item', 'manufacturerId').addClassName('chosen') 
 					) ) })
-					.insert({'bottom': new Element('div', {'class': 'col-sm-2'}).update(tmp.me._getFormGroup('Status', 
-							tmp.me._getSelBox(tmp.me._statuses, tmp.item.status ? tmp.item.status.id : null).writeAttribute('save-item', 'statusId').addClassName('chosen') 
+					.insert({'bottom': new Element('div', {'class': 'col-sm-4'}).update(tmp.me._getFormGroup('Web As New Start:', 
+							new Element('input', {'class': 'datepicker', 'save-item': 'asNewFromDate', 'value': (tmp.item.asNewFromDate ? tmp.item.asNewFromDate : '') })  
+					) ) })
+					.insert({'bottom': new Element('div', {'class': 'col-sm-4'}).update(tmp.me._getFormGroup('Web As New End:', 
+							new Element('input', {'class': 'datepicker', 'save-item': 'asNewToDate', 'value': (tmp.item.asNewToDate ? tmp.item.asNewToDate : '') })  
 					) ) })
 				})
 				.insert({'bottom': new Element('div', {'class': 'row'})
