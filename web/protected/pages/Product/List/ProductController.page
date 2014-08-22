@@ -3,12 +3,12 @@
 <com:Application.controls.chosen.Chosen />
 	<div class="pagewrapper productlistwraper container">
 		<div class="col-md-12">
-			<div class="panel panel-default" id="searchPanel">
+			<div class="panel panel-default" id="searchPanel" style="overflow: visible;">
 				<div class="panel-heading">
 					<label for="showSearch">Show Search Criteria?</label>
 					<input id="showSearch" type="checkbox" onclick="$(this).up('#searchPanel').down('.panel-body').toggle();">
 				</div>
-				<div class="panel-body search-panel" id="searchDiv" style="display: none;">
+				<div class="panel-body search-panel" id="searchDiv" style="display: none; overflow: visible;">
 					<div class="row">
 						<div class="col-sm-4">
 							<div class="form-group form-group-sm">
@@ -42,7 +42,15 @@
 				    <div class="row">
 				        <div class="col-xs-12">
 				            <div class="form-group">
-				                <label for="status">Brand: </label>
+				                <label for="status">Manufacture: </label>
+				                <select search_field="pro.brand" id="productBrandId" multiple class="chosen"></select>
+				            </div>
+				         </div>
+				    </div>
+				    <div class="row">
+				        <div class="col-xs-12">
+				            <div class="form-group">
+				                <label for="status">Supplier: </label>
 				                <select search_field="pro.brand" id="productBrandId" multiple class="chosen"></select>
 				            </div>
 				         </div>
