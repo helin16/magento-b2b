@@ -51,24 +51,60 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		tmp.tag = (tmp.isTitle === true ? 'th' : 'td');
 		tmp.typeString = titleData.type.toLowerCase();
 		tmp.valueString = titleData.value.toLowerCase();
+		tmp.randId = 'NEW_' + String.fromCharCode(65 + Math.floor(Math.random() * 26)) + Date.now();
 		
+		tmp.newRow = new Element('tr')
+			.insert({'bottom': new Element(tmp.tag).update(
+					tmp.isTitle === true ? titleData.type : 
+					tmp.me._getSelBox(selBoxData, (data[tmp.typeString] && data[tmp.typeString].id ? data[tmp.typeString].id : ''))
+						.addClassName('form-control input-sm')
+						.writeAttribute('list-panel-row', 'typeId')
+						.writeAttribute('required', true)
+						.writeAttribute('list-item', (data.id ? data.id : tmp.randId))
+						.wrap(new Element('div', {'class': 'form-group'}))
+				)
+			});
+		if(data.id) {
+			tmp.newRow.insert({'bottom': new Element('input', {'type': 'hidden', 'class': 'form-control', 'list-panel-row': 'id', 'value': (data.id) }) 
+				.writeAttribute('list-item', (data.id ? data.id : tmp.randId))
+			});
+		}
+		if(titleData.start) {
+			tmp.newRow.insert({'bottom': new Element(tmp.tag).update( 
+					tmp.isTitle === true ? titleData.start : 
+						new Element('input', {'class': 'form-control input-sm datepicker', 'list-panel-row': 'start', 'value': (data.start ? data.start : ''), 'required': true})
+							.writeAttribute('list-item', (data.id ? data.id : tmp.randId))
+							.wrap(new Element('div', {'class': 'form-group'}))
+				)
+			});
+		}
+		if(titleData.end){
+			tmp.newRow.insert({'bottom': new Element(tmp.tag).update( tmp.isTitle === true ? titleData.end : 
+				new Element('input', {'class': 'form-control input-sm datepicker', 'list-panel-row': 'end', 'value': (data.end ? data.end : ''), 'required': true}) 
+					.writeAttribute('list-item', (data.id ? data.id : tmp.randId))
+					.wrap(new Element('div', {'class': 'form-group'}))
+				) 
+			});
+		}
 		tmp.inputBoxDiv = new Element('div', {'class': 'input-group input-group-sm'})
-			.insert({'bottom': new Element('input', {'type': 'text', 'class': 'form-control', 'list-panel-row': 'value', 'required': true, 'value': (data[tmp.valueString] ? data[tmp.valueString]: '') }) })
+			.insert({'bottom': new Element('input', {'type': 'text', 'class': 'form-control', 'list-panel-row': 'value', 'required': true, 'value': (data[tmp.valueString] ? data[tmp.valueString]: '') })
+				.writeAttribute('list-item', (data.id ? data.id : tmp.randId))
+			})
+			.insert({'bottom': new Element('input', {'type': 'hidden', 'class': 'form-control', 'list-panel-row': 'active', 'value': '1' }) 
+				.writeAttribute('list-item', (data.id ? data.id : tmp.randId))
+			})
 			.insert({'bottom': new Element('span', {'class': 'btn btn-danger input-group-addon'})
 				.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-trash'}) }) 
 				.observe('click', function() {
-					$(this).up('.list-panel-row').remove();
+					if(data.id) {
+						$(this).up('.input-group').down('[list-panel-row=active]').value = '0';
+						$(this).up('.list-panel-row').hide();
+					} else {
+						$(this).up('.list-panel-row').remove();
+					}
 				})
 			});
-		tmp.newRow = new Element('tr')
-			.insert({'bottom': new Element(tmp.tag).update(tmp.isTitle === true ? titleData.type : tmp.me._getSelBox(selBoxData, (data[tmp.typeString] && data[tmp.typeString].id ? data[tmp.typeString].id : '')).addClassName('form-control input-sm').writeAttribute('list-panel-row', 'typeId').writeAttribute('required', true) )});
-		if(titleData.start){
-			tmp.newRow.insert({'bottom': new Element(tmp.tag).update( tmp.isTitle === true ? titleData.start : new Element('input', {'class': 'form-control input-sm datepicker', 'list-panel-row': 'start', 'value': data.start ? data.start : ''}) ) });
-		}
-		if(titleData.end){
-			tmp.newRow.insert({'bottom': new Element(tmp.tag).update( tmp.isTitle === true ? titleData.end : new Element('input', {'class': 'form-control input-sm datepicker', 'list-panel-row': 'end', 'value': data.end ? data.end : ''}) ) });
-		}
-		tmp.newRow.insert({'bottom': new Element(tmp.tag).update( tmp.isTitle === true ? titleData.value : tmp.inputBoxDiv) });
+		tmp.newRow.insert({'bottom': new Element(tmp.tag).update( tmp.isTitle === true ? titleData.value : tmp.inputBoxDiv.wrap(new Element('div', {'class': 'form-group'})) ) });
 		return tmp.newRow;
 	}
 	/**
@@ -414,7 +450,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 			.insert({'bottom': tmp.body = new Element('div', {'id': tmp.me._imgPanelId, 'class': 'panel-body'}) });
 		item.images.each(function(img) {
 			if(img.asset)
-				tmp.body.insert({'bottom': tmp.me._getImageThumb({'path': img.asset.url, 'filename': img.asset.filename, 'imageAssetId': img.asset.assetId}) })
+				tmp.body.insert({'bottom': tmp.me._getImageThumb({'path': img.asset.url, 'filename': img.asset.filename, 'imageAssetId': img.asset.assetId}) });
 		});
 		
 		if(tmp.noLocalReader) {
@@ -447,6 +483,21 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		var tmp = {};
 		tmp.me = this;
 		tmp.data = tmp.me._collectFormData($(tmp.me._htmlIds.itemDiv), 'save-item');
+		if(tmp.data === null)
+			return tmp.me;
+		//get all prices
+		tmp.data.prices = tmp.me._collectFormData($(tmp.me._htmlIds.itemDiv).down('.prices-panel'), 'list-panel-row', 'list-item');
+		if(tmp.data.prices === null)
+			return tmp.me;
+		//get all suppliercode
+		tmp.data.supplierCodes = tmp.me._collectFormData($(tmp.me._htmlIds.itemDiv).down('.suppliers-panel'), 'list-panel-row', 'list-item');
+		if(tmp.data.supplierCodes === null)
+			return tmp.me;
+		//get all suppliercode
+		tmp.data.productCodes = tmp.me._collectFormData($(tmp.me._htmlIds.itemDiv).down('.codes-panel'), 'list-panel-row', 'list-item');
+		if(tmp.data.productCodes === null)
+			return tmp.me;
+		
 		tmp.data.id = tmp.me._item.id;
 		//tricks for fullDescription's editor
 		if ($$('[save-item=fullDescription]').size() > 0 && (tmp.fullDescriptionBox = $$('[save-item=fullDescription]').first()))
@@ -456,6 +507,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 			tmp.fullDescriptionBox.retrieve('editor').toggle();
 			tmp.data['fullDescription'] = $F(tmp.fullDescriptionBox);
 		}
+		
 		//get all categories
 		if(jQuery('#' + tmp.me._productTreeId).length >0) {
 			tmp.data.categoryIds = [];
@@ -494,9 +546,9 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 				.insert({'bottom': new Element('div', {'class': 'col-sm-8'})
 					.insert({'bottom': new Element('div', {'class': 'row'})
 						.insert({'bottom': tmp.me._getSummaryDiv(tmp.me._item).wrap(new Element('div', {'class': 'col-sm-12'})) })
-						.insert({'bottom': tmp.me._getListPanel('Prices:', tmp.me._item.prices, {'type': 'Type', 'value': 'Price', 'start': 'From', 'end': 'To'}, tmp.me._priceTypes).wrap(new Element('div', {'class': 'col-sm-12'})) })
-						.insert({'bottom': tmp.me._getListPanel('Suppliers:', tmp.me._item.supplierCodes, {'type': 'Supplier', 'value': 'Code'}, tmp.me._suppliers).wrap(new Element('div', {'class': 'col-sm-6'})) })
-						.insert({'bottom': tmp.me._getListPanel('Codes:', tmp.me._item.supplierCodes, {'type': 'Type', 'value': 'Code'}, tmp.me._codeTypes).wrap(new Element('div', {'class': 'col-sm-6'})) })
+						.insert({'bottom': tmp.me._getListPanel('Prices:', tmp.me._item.prices, {'type': 'Type', 'value': 'Price', 'start': 'From', 'end': 'To'}, tmp.me._priceTypes).wrap(new Element('div', {'class': 'col-sm-12 prices-panel'})) })
+						.insert({'bottom': tmp.me._getListPanel('Suppliers:', tmp.me._item.supplierCodes, {'type': 'Supplier', 'value': 'Code'}, tmp.me._suppliers).wrap(new Element('div', {'class': 'col-sm-6 suppliers-panel'})) })
+						.insert({'bottom': tmp.me._getListPanel('Codes:', tmp.me._item.productCodes, {'type': 'Type', 'value': 'Code'}, tmp.me._codeTypes).wrap(new Element('div', {'class': 'col-sm-6 codes-panel'})) })
 					})
 					.insert({'bottom': new Element('div', {'class': 'row'})
 						.insert({'bottom': new Element('span', {'class': 'btn btn-primary pull-right col-sm-4', 'data-loading-text': 'saving ...'}).update('Save')

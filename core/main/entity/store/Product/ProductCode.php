@@ -39,11 +39,11 @@ class ProductCode extends BaseEntityAbstract
 	/**
 	 * Setter for product
 	 *
-	 * @param ProductCodeType $value The product
+	 * @param Product $value The product
 	 *
 	 * @return ProductCode
 	 */
-	public function setProduct(ProductCodeType $value)
+	public function setProduct(Product $value)
 	{
 	    $this->product = $value;
 	    return $this;
@@ -69,6 +69,27 @@ class ProductCode extends BaseEntityAbstract
 	{
 	    $this->type = $value;
 	    return $this;
+	}
+	/** 
+	 * Getter for code
+	 * 
+	 * @return string
+	 */
+	public function getCode ()
+	{
+		return $this->code;
+	}
+	/** 
+	 * Setter for code
+	 * 
+	 * @param string $value
+	 * 
+	 * @return ProductCode
+	 */
+	public function setCode($value)
+	{
+		$this->code = $value;
+		return $this;
 	}
 	
 	/**

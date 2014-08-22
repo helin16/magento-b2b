@@ -92,6 +92,118 @@ class DetailsController extends DetailsPageAbstract
 		$categoryJson['children'] = $children;
 		return $categoryJson;
 	}
+	private function _updateFullDescription(Product &$product, $param)
+	{
+		//update full description
+		if(isset($param->CallbackParameter->fullDescription) && ($fullDescription = trim($param->CallbackParameter->fullDescription)) !== '')
+		{
+			if(($fullAsset = Asset::getAsset($product->getFullDescAssetId())) instanceof Asset)
+				Asset::removeAssets(array($fullAsset->getAssetId()));
+			$fullAsset = Asset::registerAsset('full_description_for_product.txt', $fullDescription);
+			$product->setFullDescAssetId($fullAsset->getAssetId());
+		}
+		return $this;
+	}
+	private function _updateCategories(Product &$product, $param)
+	{
+		//update categories
+		if(isset($param->CallbackParameter->categoryIds) && count($categoryIds = $param->CallbackParameter->categoryIds) > 0)
+		{
+			Product_Category::deleteByCriteria('productId = ?', array(trim($product->getId())));
+			foreach($categoryIds as $categoryId)
+			{
+				if(!($category = ProductCategory::get($categoryId)))
+					continue;
+				Product_Category::create($product, $category);
+			}
+		}
+		return $this;
+	}
+	private function _uploadImages(Product &$product, $param)
+	{
+		//upload images
+		if(isset($param->CallbackParameter->images) && count($images = $param->CallbackParameter->images) > 0)
+		{
+			foreach($images as $image)
+			{
+				if(($assetId = trim($image->imageAssetId)) === '')
+				{
+					if($image->active === true)
+					{
+						$data = explode(',', $image->data);
+						$asset = Asset::registerAsset(trim($image->filename), base64_decode($data[1]));
+						ProductImage::create($product, $asset);
+					}
+					//if it's deactivated one, ignore
+				}
+				else if (!($asset = Asset::getAsset($assetId)) instanceof Asset)
+					continue;
+					
+				if($image->active === false) {
+					ProductImage::remove($product, $asset);
+				}
+			}
+		}
+		return $this;
+	}
+	private function _setPrices(Product &$product, $param)
+	{
+		return $this;
+	}
+	private function _setBarcodes(Product &$product, $param)
+	{
+		var_dump($param->CallbackParameter);
+		var_dump($param->CallbackParameter->productCodes);
+		if(isset($param->CallbackParameter->productCodes) && count($productCodes = $param->CallbackParameter->productCodes) > 0)
+		{
+			foreach($productCodes as $code)
+			{
+				if(!($type = ProductCodeType::get(trim($code->typeId))) instanceof ProductCodeType)
+					continue;
+				if(!isset($code->id) || ($id = trim($code->id)) === '')
+				{
+					if(trim($code->active) === '1')
+						$productCode = new ProductCode();
+					//if it's deactivated one, ignore
+				}
+				else if (!($productCode = ProductCode::get($id)) instanceof ProductCode)
+					continue;
+					
+				$productCode->setActive(trim($code->active) === '1')
+					->setCode(trim($code->value))
+					->setType($type)
+					->setProduct($product)
+					->save();
+			}
+		}
+		return $this;
+	}
+	private function _setSupplierCodes(Product &$product, $param)
+	{
+		if(isset($param->CallbackParameter->supplierCodes) && count($supplierCodes = $param->CallbackParameter->supplierCodes) > 0)
+		{
+			foreach($supplierCodes as $code)
+			{
+				if(!($supplier = Supplier::get(trim($code->typeId))) instanceof Supplier)
+					continue;
+				if(!isset($code->id) || ($id = trim($code->id)) === '')
+				{
+					if(trim($code->active) === '1')
+						$supplierCode = new SupplierCode();
+					//if it's deactivated one, ignore
+				}
+				else if (!($supplierCode = SupplierCode::get($id)) instanceof SupplierCode)
+					continue;
+					
+				$supplierCode->setActive(trim($code->active) === '1')
+					->setCode(trim($code->value))
+					->setSupplier($supplier)
+					->setProduct($product)
+					->save();
+			}
+		}
+		return $this;
+	}
 	/**
 	 * (non-PHPdoc)
 	 * @see DetailsPageAbstract::saveItem()
@@ -122,48 +234,14 @@ class DetailsController extends DetailsPageAbstract
 				->setSellOnWeb($sellOnWeb);
 			if(trim($product->getId()) === '')
 				$product->setIsFromB2B(false);
-			//update full description
-			if(isset($param->CallbackParameter->fullDescription) && ($fullDescription = trim($param->CallbackParameter->fullDescription)) !== '')
-			{
-				if(($fullAsset = Asset::getAsset($product->getFullDescAssetId())) instanceof Asset)
-					Asset::removeAssets(array($fullAsset->getAssetId()));
-				$fullAsset = Asset::registerAsset('full_description_for_product.txt', $fullDescription);
-				$product->setFullDescAssetId($fullAsset->getAssetId());
-			}
-			//update categories
-			if(isset($param->CallbackParameter->categoryIds) && count($categoryIds = $param->CallbackParameter->categoryIds) > 0)
-			{
-				Product_Category::deleteByCriteria('productId = ?', array(trim($product->getId())));
-				foreach($categoryIds as $categoryId)
-				{
-					if(!($category = ProductCategory::get($categoryId)))
-						continue;
-					Product_Category::create($product, $category);
-				}
-			}
-			//upload images
-			if(isset($param->CallbackParameter->images) && count($images = $param->CallbackParameter->images) > 0)
-			{
-				foreach($images as $image)
-				{
-					if(($assetId = trim($image->imageAssetId)) === '')
-					{
-						if($image->active === true)
-						{
-							$data = explode(',', $image->data);
-							$asset = Asset::registerAsset(trim($image->filename), base64_decode($data[1]));
-							ProductImage::create($product, $asset);
-						}
-						//if it's deactivated one, ignore
-					}
-					else if (!($asset = Asset::getAsset($assetId)) instanceof Asset)
-						continue;
-					
-					if($image->active === false) {
-						ProductImage::remove($product, $asset);
-					}
-				}
-			}
+			$product->save();
+			
+			$this->_updateFullDescription($product, $param)
+				->_updateCategories($product, $param)
+				->_uploadImages($product, $param)
+				->_setSupplierCodes($product, $param)
+				->_setBarcodes($product, $param)
+				->_setPrices($product, $param);
 			
 			$product->save();
 			Dao::commitTransaction();

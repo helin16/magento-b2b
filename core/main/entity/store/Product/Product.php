@@ -467,6 +467,7 @@ class Product extends InfoEntityAbstract
 			$array['prices'] = array_map(create_function('$a', 'return $a->getJson();'), $this->getPrices());
 			$array['manufacturer'] = $this->getManufacturer() instanceof Manufacturer ? $this->getManufacturer()->getJson() : null;
 			$array['supplierCodes'] = array_map(create_function('$a', 'return $a->getJson();'), SupplierCode::getAllByCriteria('productId = ?', array($this->getId())));
+			$array['productCodes'] = array_map(create_function('$a', 'return $a->getJson();'), ProductCode::getAllByCriteria('productId = ?', array($this->getId())));
 			$array['images'] = array_map(create_function('$a', 'return $a->getJson();'), $this->getImages());
 			$array['categories'] = array_map(create_function('$a', '$json = $a->getJson(); return $json["category"];'), Product_Category::getCategories($this));
 			$array['fullDescriptionAsset'] = (($asset = Asset::getAsset($this->getFullDescAssetId())) instanceof Asset ? $asset->getJson() : null) ;
