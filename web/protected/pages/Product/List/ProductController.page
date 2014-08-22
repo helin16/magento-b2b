@@ -1,5 +1,6 @@
 <com:TContent ID="MainContent">
 <com:Application.controls.fancybox.FancyBox />
+<com:Application.controls.chosen.Chosen />
 	<div class="pagewrapper productlistwraper container">
 		<div class="col-md-12">
 			<div class="panel panel-default" id="searchPanel">
@@ -7,7 +8,7 @@
 					<label for="showSearch">Show Search Criteria?</label>
 					<input id="showSearch" type="checkbox" onclick="$(this).up('#searchPanel').down('.panel-body').toggle();">
 				</div>
-				<div class="panel-body search-panel" style="display: none;">
+				<div class="panel-body search-panel" id="searchDiv" style="display: none;">
 					<div class="row">
 						<div class="col-sm-4">
 							<div class="form-group form-group-sm">
@@ -38,6 +39,14 @@
 							</div>
 						</div>
 					</div>
+				    <div class="row">
+				        <div class="col-xs-12">
+				            <div class="form-group">
+				                <label for="status">Brand: </label>
+				                <select search_field="pro.brand" id="productBrandId" multiple class="chosen"></select>
+				            </div>
+				         </div>
+				    </div>
 				</div>
 			</div>
 		</div>
@@ -56,18 +65,9 @@
 				<div class="panel-heading">
 					Tools 
 				</div>
-  				<a class="list-group-item" href="javascript:void(0);" onclick="pageJs.openToolsURL('/manufacturers.html?blanklayout=1')">
-    				Manufacturer
-  				</a>
-  				<a class="list-group-item" href="javascript:void(0);" onclick="pageJs.openToolsURL('/suppliers.html?blanklayout=1')">
-    				Supplier
-  				</a>
-  				<a class="list-group-item" href="javascript:void(0);" onclick="pageJs.openToolsURL('/productcodetypes.html?blanklayout=1')">
-    				Product Code Type
-  				</a>
-  				<a class="list-group-item" href="javascript:void(0);" onclick="pageJs.openToolsURL('/productcategories.html?blanklayout=1')">
-    				Product Category
-  				</a>
+				<div class="list-item">
+					<iframe id="productTrend" width="100%" height="342" src="/statics/order/mthlytrend.html" scrolling="no" frameborder="0"></iframe>
+				</div>
 			</div>
 		</div> 
 	</div>

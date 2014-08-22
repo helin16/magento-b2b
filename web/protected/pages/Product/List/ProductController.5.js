@@ -3,8 +3,29 @@
  */
 var PageJs = new Class.create();
 PageJs.prototype = Object.extend(new CRUDPageJs(), {
-	_getTitleRowData: function() {
+	manufactures: []
+	,_getTitleRowData: function() {
 		return {'sku': 'SKU', 'name': 'Product Name', 'active': 'act?'};
+	}
+	,_loadManufactures: function(manufactures) {
+		this.manufactures = manufactures;
+		var tmp = {};
+		tmp.me = this;
+		tmp.selectionBox = $(tmp.me.searchDivId).down('#productBrandId');
+		tmp.me.manufactures.each(function(option) {
+			tmp.selectionBox.insert({'bottom': new Element('option',{'value': option.id}).update(option.name) });
+		});
+		return this;
+	}
+	,_loadChosen: function () {
+		$$(".chosen").each(function(item) {
+			item.store('chosen', new Chosen(item, {
+				disable_search_threshold: 10,
+				no_results_text: "Oops, nothing found!",
+				width: "95%"
+			}) );
+		});
+		return this;
 	}
 	,openToolsURL: function(url) {
 		var tmp = {};
@@ -19,6 +40,13 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 			'type'			: 'iframe',
 			'href'			: url,
  		});
+		return tmp.me;
+	}
+	,iframeSrc: function(url){
+		var tmp = {};
+		tmp.me = this;
+	    document.getElementById('productTrend').src = url;
+	    document.getElementById('productTrend').src = document.getElementById('productTrend').src
 		return tmp.me;
 	}
 	,_getEditPanel: function(row) {
@@ -85,12 +113,10 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 							$(this).up('.item_row').replace(tmp.me.openToolsURL('/product/' + row.id + '.html'));
 						})
 					})
-					.insert({'bottom': new Element('span', {'class': 'btn btn-default', 'title': 'Delete'})
+					.insert({'bottom': new Element('span', {'class': 'btn btn-default', 'title': 'Trend'})
 						.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-cog'}) })
 						.observe('click', function(){
-							if(!confirm('Are you sure you want to delete this item?'))
-								return false;
-							tmp.me._deleteItem(row);
+							tmp.me.iframeSrc('/statics/order/mthlytrend.html?productid=' + row.id);
 						})
 					}) ) 
 			) })
