@@ -23,6 +23,17 @@ class ProductController extends CRUDPageAbstract
 		if(!AccessControl::canAccessProductsPage(Core::getRole()))
 			die('You do NOT have access to this page');
 	}
+	protected function _getEndJs()
+	{
+		$manufactureArray = array();
+		foreach (Manufacturer::getAll() as $os)
+			$manufactureArray[] = $os->getJson();
+		$js = parent::_getEndJs();
+		$js .= 'pageJs._loadManufactures('.json_encode($manufactureArray).')';
+		$js .= "._loadChosen()";
+		$js .= ".getResults(true, " . $this->pageSize . ");";
+		return $js;
+	}
 	/**
 	 * Getting the items
 	 *
