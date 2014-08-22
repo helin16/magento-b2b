@@ -64,18 +64,9 @@
 				<div class="panel-heading">
 					Tools 
 				</div>
-  				<a class="list-group-item" href="javascript:void(0);" onclick="pageJs.openToolsURL('/manufacturers.html?blanklayout=1')">
-    				Manufacturer
-  				</a>
-  				<a class="list-group-item" href="javascript:void(0);" onclick="pageJs.openToolsURL('/suppliers.html?blanklayout=1')">
-    				Supplier
-  				</a>
-  				<a class="list-group-item" href="javascript:void(0);" onclick="pageJs.openToolsURL('/productcodetypes.html?blanklayout=1')">
-    				Product Code Type
-  				</a>
-  				<a class="list-group-item" href="javascript:void(0);" onclick="pageJs.openToolsURL('/productcategories.html?blanklayout=1')">
-    				Product Category
-  				</a>
+				<div class="list-item">
+					<iframe id="productTrend" width="100%" height="342" src="/statics/order/mthlytrend.html" scrolling="no" frameborder="0"></iframe>
+				</div>
 			</div>
 		</div> 
 	</div>

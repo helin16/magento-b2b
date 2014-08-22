@@ -47,7 +47,6 @@ class ProductController extends CRUDPageAbstract
                 $pageNo = $param->CallbackParameter->pagination->pageNo;
                 $pageSize = $param->CallbackParameter->pagination->pageSize * 3;
             }
-            var_dump($pageSize);
             $where = array(1);
             $params = array();
             if(($sku = trim($serachCriteria['pro.sku'])) !== '')

@@ -21,6 +21,13 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
  		});
 		return tmp.me;
 	}
+	,iframeSrc: function(url){
+		var tmp = {};
+		tmp.me = this;
+	    document.getElementById('productTrend').src = url;
+	    document.getElementById('productTrend').src = document.getElementById('productTrend').src
+		return tmp.me;
+	}
 	,_getEditPanel: function(row) {
 		var tmp = {};
 		tmp.me = this;
@@ -88,9 +95,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 					.insert({'bottom': new Element('span', {'class': 'btn btn-default', 'title': 'Delete'})
 						.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-cog'}) })
 						.observe('click', function(){
-							if(!confirm('Are you sure you want to delete this item?'))
-								return false;
-							tmp.me._deleteItem(row);
+							tmp.me.iframeSrc('/statics/order/mthlytrend.html?productid=' + row.id);
 						})
 					}) ) 
 			) })
