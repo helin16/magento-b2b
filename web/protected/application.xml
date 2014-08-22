@@ -50,6 +50,7 @@
 			<!-- FrontEnd:: product list page -->
 			<url ServiceParameter="Product.List.ProductController" pattern="products.html" />
 			<!-- FrontEnd:: product details page -->
+			<url ServiceParameter="Product.Details.DetailsController" pattern="product/{id}.html" parameters.id="new"/>
 			<url ServiceParameter="Product.Details.DetailsController" pattern="product/{id}.html" parameters.id="\d+"/>
 			
 			<!-- FrontEnd:: product code type list page -->

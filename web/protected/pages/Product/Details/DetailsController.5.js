@@ -138,9 +138,11 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 					.insert({'bottom': tmp.listDiv = new Element('tbody') })
 				})
 			});
-		listData.each(function(data){
-			tmp.listDiv.insert({'bottom': tmp.me._getListPanelRow(data, selBoxData, titleData, false).addClassName('list-panel-row').writeAttribute('item_id', data.id) });
-		});
+		if(listData) {
+			listData.each(function(data){
+				tmp.listDiv.insert({'bottom': tmp.me._getListPanelRow(data, selBoxData, titleData, false).addClassName('list-panel-row').writeAttribute('item_id', data.id) });
+			});
+		}
 		return tmp.newDiv;
 	}
 	/**
@@ -311,7 +313,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		tmp.newDiv = new Element('div', {'class': 'panel panel-default'})
 			.insert({'bottom': new Element('div', {'class': 'panel-heading'})
 				.insert({'bottom': new Element('a', {'href': 'javascript: void(0);', 'title': 'click to show/hide below'})
-					.insert({'bottom': new Element('strong').update('Editing: ' + tmp.item.name) })
+					.insert({'bottom': new Element('strong').update(tmp.item.name ? 'Editing: ' + tmp.item.name : 'Creating new product: ') })
 					.insert({'bottom': new Element('small', {'class': 'pull-right'}) 
 						.insert({'bottom': new Element('label', {'for': 'showOnWeb_' + tmp.item.id}).update('Show on Web?') })
 						.insert({'bottom': new Element('input', {'id': 'showOnWeb_' + tmp.item.id, 'save-item': 'sellOnWeb', 'type': 'checkbox', 'checked': tmp.item.sellOnWeb}) })
@@ -341,7 +343,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 					) ) })
 				})
 				.insert({'bottom': new Element('div', {'class': 'row'})
-					.insert({'bottom': new Element('div', {'class': 'col-sm-12'}).update(tmp.me._getFormGroup('Short Description:', new Element('input', {'save-item': 'shortDescription', 'type': 'text', 'value': tmp.item.shortDescription}) ) ) })
+					.insert({'bottom': new Element('div', {'class': 'col-sm-12'}).update(tmp.me._getFormGroup('Short Description:', new Element('input', {'save-item': 'shortDescription', 'type': 'text', 'value': tmp.item.shortDescription ? tmp.item.shortDescription : ''}) ) ) })
 				})
 				.insert({'bottom': new Element('div', {'class': 'row'})
 					.insert({'bottom': new Element('div', {'class': 'col-sm-12'}).update(tmp.me._getFullDescriptionPanel(tmp.item) ) })
@@ -456,10 +458,12 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 				.insert({'bottom': tmp.uploadDiv = new Element('span', {'class': 'pull-right new-btn-panel'}) })
 			})
 			.insert({'bottom': tmp.body = new Element('div', {'id': tmp.me._imgPanelId, 'class': 'panel-body'}) });
-		item.images.each(function(img) {
-			if(img.asset)
-				tmp.body.insert({'bottom': tmp.me._getImageThumb({'path': img.asset.url, 'filename': img.asset.filename, 'imageAssetId': img.asset.assetId}) });
-		});
+		if(item.images) {
+			item.images.each(function(img) {
+				if(img.asset)
+					tmp.body.insert({'bottom': tmp.me._getImageThumb({'path': img.asset.url, 'filename': img.asset.filename, 'imageAssetId': img.asset.assetId}) });
+			});
+		}
 		
 		if(tmp.noLocalReader) {
 			tmp.uploadDiv.update(new Element('span', {'class': 'btn btn-danger btn-xs pull-right', 'title': 'Your browser does NOT support this feature. Pls change browser and try again'})
@@ -534,8 +538,10 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		});
 		//submit all data
 		tmp.me.saveItem(btn, tmp.data, function(data){
+			if(!data.url)
+				throw 'System Error: no return product url';
 			tmp.me.showModalBox('<strong class="text-success">Saved Successfully!</strong>', 'Saved Successfully!', true);
-//			window.location = document.URL; 
+			window.location = data.url; 
 		});
 		return tmp.me;
 	}

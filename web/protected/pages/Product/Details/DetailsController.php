@@ -289,12 +289,13 @@ class DetailsController extends DetailsPageAbstract
 				->_setPrices($product, $param);
 			
 			$product->save();
+			$results['url'] = '/product/' . $product->getId() . '.html';
 			Dao::commitTransaction();
 		}
 		catch(Exception $ex)
 		{
 			Dao::rollbackTransaction();
-			$errors[] = $ex->getMessage();
+			$errors[] = $ex->getMessage() . $ex->getTraceAsString();
 		}
 		$param->ResponseData = StringUtilsAbstract::getJson($results, $errors);
 	}
