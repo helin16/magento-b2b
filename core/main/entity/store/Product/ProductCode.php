@@ -39,11 +39,11 @@ class ProductCode extends BaseEntityAbstract
 	/**
 	 * Setter for product
 	 *
-	 * @param ProductCodeType $value The product
+	 * @param Product $value The product
 	 *
 	 * @return ProductCode
 	 */
-	public function setProduct(ProductCodeType $value)
+	public function setProduct(Product $value)
 	{
 	    $this->product = $value;
 	    return $this;
@@ -70,6 +70,27 @@ class ProductCode extends BaseEntityAbstract
 	    $this->type = $value;
 	    return $this;
 	}
+	/** 
+	 * Getter for code
+	 * 
+	 * @return string
+	 */
+	public function getCode ()
+	{
+		return $this->code;
+	}
+	/** 
+	 * Setter for code
+	 * 
+	 * @param string $value
+	 * 
+	 * @return ProductCode
+	 */
+	public function setCode($value)
+	{
+		$this->code = $value;
+		return $this;
+	}
 	
 	/**
 	 * Creating a product code for a product and type
@@ -83,7 +104,7 @@ class ProductCode extends BaseEntityAbstract
 	public static function create(Product $product, ProductCodeType $type, $code)
 	{
 		$class = __CLASS__;
-		$objects = self::getCodes($product, $type, array($product->getId(), $type->getId()), true , 1, 1);
+		$objects = self::getCodes($product, $type, true , 1, 1);
 		if($type->getAllowMultiple() !== true && count($objects) > 0)
 			throw new EntityException('Code Type(=' . $type->getName() . ') NOT allow multiple and there is one for this product already!');
 		$obj = new $class();
@@ -107,6 +128,7 @@ class ProductCode extends BaseEntityAbstract
 	 */
 	public static function getCodes(Product $product, ProductCodeType $type, $activeOnly = true, $pageNo = null, $pageSize = DaoQuery::DEFAUTL_PAGE_SIZE, $orderBy = array())
 	{
+		$class = __CLASS__;
 		return FactoryAbastract::dao($class)->findByCriteria('productId = ? and typeId = ?', array($product->getId(), $type->getId()), $activeOnly , $pageNo, $pageSize, $orderBy);
 	}
 	/**

@@ -7,7 +7,6 @@
  */
 abstract class HTMLParser
 {
-	const URL = 'http://www.staticice.com.au/cgi-bin/search.cgi';
 	const HTML_DOM_OBJECT_NAME = 'simple_html_dom';
 	
 	private static $_cache;
@@ -39,13 +38,13 @@ abstract class HTMLParser
 		return $dom;
 	}
 	
-	public static function getHostUrl()
+	public static function getHostUrl($url)
 	{
-		$parts = parse_url(self::URL);
+		$parts = parse_url($url);
 		return trim($parts['scheme']) . '://' . trim($parts['host']);
 	}
 
-	public static function getPriceListForProduct($productName)
+	public static function getPriceListForProduct($url, $productName)
 	{
 		 if(($productName = trim($productName)) === '')
 		 	throw new Exception("Product name must be provided to get the price list");
@@ -59,7 +58,7 @@ abstract class HTMLParser
 		 		'links' => PHP_INT_MAX,
 				'q'=> $productName
 			);
-			$url = self::URL . '?' . http_build_query($array);
+			$url = $url . '?' . http_build_query($array);
 			$data = self::getWebsite($url);
 			foreach($data->find("tr td a[target]") as $index => $l)
 			{	

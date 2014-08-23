@@ -91,7 +91,7 @@ abstract class CRUDPageAbstract extends BPCPageAbstract
 		$js .= ".setCallbackId('deleteItems', '" . $this->_delItemsBtn->getUniqueID() . "')";
 		$js .= ".setCallbackId('saveItem', '" . $this->_saveItemsBtn->getUniqueID() . "')";
 		$js .= ".setHTMLIds('item-list', 'searchPanel', 'total-found-count')";
-		$js .= ".getSearchCriteria()";
+		$js .= ".getSearchCriteria();";
 		//$js .= ".getResults(true, " . $this->pageSize . ")";
 		return $js;
 	}

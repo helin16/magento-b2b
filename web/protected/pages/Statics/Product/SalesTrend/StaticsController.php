@@ -23,7 +23,7 @@ class StaticsController extends StaticsPageAbstract
 		$js = parent::_getEndJs();
 		$productIds = (isset($this->_request['productids']) ? explode(', ', trim($this->_request['productids'])) : array());
 		$js .= 'pageJs';
-			$js .= '.load({});';
+			$js .= '.load({"productIds": ' . json_encode($productIds) . ' });';
 		return $js;
 	}
 	/**

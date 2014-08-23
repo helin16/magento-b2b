@@ -229,7 +229,7 @@ class Asset extends BaseEntityAbstract
 	 */
 	private static function _copyToAssetFolder($newFile, $dataOrFile)
 	{
-		if(!is_file($dataOrFile))
+		if(!preg_match('#^(\w+/){1,2}\w+\.\w+$#',$dataOrFile) || !is_file($dataOrFile))
 			return file_put_contents($newFile, $dataOrFile);
 		return rename($dataOrFile, $newFile);
 	}

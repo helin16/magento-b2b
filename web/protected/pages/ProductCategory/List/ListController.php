@@ -28,6 +28,16 @@ class ListController extends CRUDPageAbstract
 			die('You do NOT have access to this page');
 	}
 	/**
+	 * (non-PHPdoc)
+	 * @see CRUDPageAbstract::_getEndJs()
+	 */
+	protected function _getEndJs()
+	{
+		$js = parent::_getEndJs();
+		$js .= "pageJs.getResults(true, " . $this->pageSize . ");";
+		return $js;
+	}
+	/**
 	 * Getting the items
 	 *
 	 * @param unknown $sender

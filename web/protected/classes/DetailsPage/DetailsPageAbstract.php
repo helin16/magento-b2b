@@ -56,11 +56,13 @@ abstract class DetailsPageAbstract extends BPCPageAbstract
 		$class = trim($this->_focusEntity);
 		if($class === '' || !isset($this->Request['id']) )
 			die('System Error: no id or class passed in');
-		if(!($entity = $class::get($this->Request['id'])) instanceof $class)
+		if(trim($this->Request['id']) === 'new')
+			$entity = new $class();
+		else if(!($entity = $class::get($this->Request['id'])) instanceof $class)
 			die('invalid item!');
 		
 		$js .= "pageJs.setHTMLIDs('item-div')";
-		$js .= ".setItem(" . json_encode($entity->getJson()) . ")";
+		$js .= ".setItem(" . (trim($entity->getId()) === '' ? '{}' : json_encode($entity->getJson())) . ")";
 		$js .= ".setCallbackId('saveItem', '" . $this->_saveItemBtn->getUniqueID() . "');";
 		return $js;
 	}
