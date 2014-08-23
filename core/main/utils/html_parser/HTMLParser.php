@@ -38,9 +38,9 @@ abstract class HTMLParser
 		return $dom;
 	}
 	
-	public static function getHostUrl()
+	public static function getHostUrl($url)
 	{
-		$parts = parse_url(self::URL);
+		$parts = parse_url($url);
 		return trim($parts['scheme']) . '://' . trim($parts['host']);
 	}
 

@@ -46,9 +46,9 @@ abstract class PriceMatcher
 		);
 		foreach($companyAliases as $key => $value)
 			$finalOutputArray['companyPrices'][$key] = array('price' => 0, 'priceURL' => '');
-			
+		$url = 'http://www.staticice.com.au/cgi-bin/search.cgi';
 		//getting actual values
-		$productPriceArray = HTMLParser::getPriceListForProduct('http://www.staticice.com.au/cgi-bin/search.cgi', $sku);
+		$productPriceArray = HTMLParser::getPriceListForProduct($url, $sku);
 		foreach($productPriceArray as $productPriceInfo)
 		{
 			if(($companyDetails = trim($productPriceInfo['companyDetails'])) === '')
@@ -66,7 +66,7 @@ abstract class PriceMatcher
 						$finalOutputArray['minPrice'] = $price;
 					$finalOutputArray['companyPrices'][$key] = array(
 							'price' => $price
-							,'priceURL' => HTMLParser::getHostUrl() . $productPriceInfo['priceLink']
+							,'priceURL' => HTMLParser::getHostUrl($url) . $productPriceInfo['priceLink']
 					);
 					break;
 				}
