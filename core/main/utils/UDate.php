@@ -53,6 +53,15 @@ class UDate
 	    return $date;
 	}
 	/**
+	 * getting now datetime
+	 * 
+	 * @return UDate
+	 */
+	public static function now($timeZone = 'UTC')
+	{
+	    return new UDate('now', $timeZone);
+	}
+	/**
 	 * Magic toString function
 	 * @return string
 	 */

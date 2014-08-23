@@ -21,9 +21,15 @@ class StaticsController extends StaticsPageAbstract
 	protected function _getEndJs()
 	{
 		$js = parent::_getEndJs();
-		$productIds = (isset($this->_request['productids']) ? explode(', ', trim($this->_request['productids'])) : array());
+		$searchCriteria = array();
+		$searchCriteria['productIds'] = (isset($_REQUEST['productids']) ? explode(',', str_replace(' ', '', $_REQUEST['productids'])) : array());
+		$dateStepBy = (isset($_REQUEST['step']) ? trim($_REQUEST['step']) : '+1 week');
+		$dateFrom = (isset($_REQUEST['from']) ? trim($_REQUEST['from']) : trim(UDate::now()->modify('-10 week')));
+		$dateTo = (isset($_REQUEST['to']) ? trim($_REQUEST['to']) : trim(UDate::now()));
+		$searchCriteria['dateRange'] = array('from' => $dateFrom, 'to' => $dateTo, 'step' => $dateStepBy);
+		$searchCriteria['showPrice'] = (isset($_REQUEST['showprice']) && trim($_REQUEST['showprice']) === '1') ;
 		$js .= 'pageJs';
-			$js .= '.load({"productIds": ' . json_encode($productIds) . ' });';
+			$js .= '.load(' . json_encode($searchCriteria) . ');';
 		return $js;
 	}
 	/**
@@ -35,36 +41,51 @@ class StaticsController extends StaticsPageAbstract
 		$results = $errors = array();
 		try
 		{
-			$timeRange = $this->_getXnames();
+			$dateFrom = trim($param->CallbackParameter->dateRange->from);
+			$dateTo = trim($param->CallbackParameter->dateRange->to);
+			$step = trim($param->CallbackParameter->dateRange->step);
+			$showPrice = $param->CallbackParameter->showPrice;
+			
+			$timeRange = $this->_getXnames($dateFrom, $dateTo, $step);
 			$names = array_keys($timeRange);
+			$productIds = $param->CallbackParameter->productIds;
+			if(count($productIds) === 0)
+			 	$productIds = $this->_topProductIds();
+			
 			$series = array();
-			$series[] = array('name' => 'All', 'data' => $this->_getSeries($timeRange, $timeRange[$names[0]]['from'], $timeRange[$names[count($names) - 1 ]]['to']));
-			foreach(OrderStatus::getAll() as $status)
+			foreach($productIds as $pid)
 			{
-				$series[] = array('name' => $status->getName(), 'data' => $this->_getSeries($timeRange, $timeRange[$names[0]]['from'], $timeRange[$names[count($names) - 1 ]]['to'], array($status->getId())));
+				$data = array_fill(0, count($names), 0);
+				$name = 'Invalid Pid=' . $pid;
+				if(($product = Product::get($pid)) instanceof Product)
+				{
+					$name = $product->getSku();
+					$data = $this->_getSeries($timeRange, $dateFrom, $dateTo, array($product->getId()), $showPrice);
+				}
+				$series[] = array('name' => $name, 'data' => $data);
 			}
-	
+			
 			$results = array(
-				'chart' => array(
-					'type' => 'line'
-				),
-				'title' => array(
-					'text' => 'BPC: Monthly Order Trend',
-					'x'    => -20
-				),
-				'subtitle' => array(
-					'text' => 'This is just order trend from last 12 month',
-					'x'    => -20
-				),
-				'xAxis' => array(
-					'categories' => $names
-				),
-				'yAxis' => array(
+					'chart' => array(
+							'type' => 'line'
+					),
 					'title' => array(
-						'text' => 'No of Orders'
-					)
-				),
-				'series' => $series
+							'text' => 'Product Sales Trend',
+							'x'    => -20
+					),
+					'subtitle' => array(
+							'text' => 'Data is based on date range between "' . $dateFrom . '" to "' . $dateTo . '"',
+							'x'    => -20
+					),
+					'xAxis' => array(
+							'categories' => $names
+					),
+					'yAxis' => array(
+							'title' => array(
+									'text' => $showPrice === true ? 'Order Amount ($)' : 'Ordered Qty'
+							)
+					),
+					'series' => $series
 			);
 		}
 		catch(Exception $ex)
@@ -74,34 +95,40 @@ class StaticsController extends StaticsPageAbstract
 		$param->ResponseData = StringUtilsAbstract::getJson($results, $errors);
 	}
 	
-	private function _getXnames()
+	private function _topProductIds()
+	{
+		$sql = 'select productId, sum(qtyOrdered) `sum` from orderitem where active = 1 group by productId order by `sum` desc limit 10';
+		$result = Dao::getResultsNative($sql);
+		return array_map(create_function('$a', 'return $a["productId"];'), $result);
+	}
+	
+	private function _getXnames($from, $to, $step)
 	{
 		$names = array();
-		$_12mthAgo = new UDate();
-		$_12mthAgo->modify('-12 month');
-		for($i = 0; $i<12; $i++)
-		{
-			$from = new UDate(trim($_12mthAgo->format('Y-m-01 00:00:00')));
-			$to = new UDate(trim($_12mthAgo->modify('+1 month')->format('Y-m-01 00:00:00')));
-			$names[trim($from->format('M/Y'))] = array('from' => trim($from), 'to' => trim($to));
-		}
+		$dateFrom = new UDate(trim($from));
+		$dateTo = new UDate(trim($to));
+		do {
+			$from = new UDate(trim($dateFrom));
+			$to = new UDate(trim($dateFrom->modify($step)));
+			$names[trim($from->format('d/M/y'))] = array('from' => trim($from), 'to' => trim($to));
+		} while($dateFrom->before($dateTo));
 		return $names;
 	}
 	
-	private function _getSeries($groupFrame, $from, $to, $statusId = array())
+	private function _getSeries($groupFrame, $from, $to, array $productIds, $showPrice = false)
 	{
 		$select = array();
 		foreach($groupFrame as $index => $time)
-			$select[] = 'sum(if((created >= "' . $time['from'] . '" && created < "' . $time['to'] . '"), 1 , 0)) `' . $index . '`';
+			$select[] = 'sum(if((created >= "' . $time['from'] . '" && created < "' . $time['to'] . '"), ' . ($showPrice === true ? 'totalPrice' : 'qtyOrdered') . ' , 0)) `' . $index . '`';
 		$where = array('active = 1');
-		if(count($statusId) > 0)
-			$where[] = 'statusId in (' . implode(', ', $statusId) . ')';
-		$sql = "select " . implode(', ', $select) . ' from `order` where ' . implode(' AND ', $where) . ' and created >=? and created < ?';
+		if(count($productIds) > 0)
+			$where[] = 'productId in (' . implode(', ', $productIds) . ')';
+		$sql = "select " . implode(', ', $select) . ' from `orderitem` where ' . implode(' AND ', $where) . ' and created >=? and created <= ?';
 		$row = Dao::getSingleResultNative($sql, array(trim($from), trim($to)), PDO::FETCH_NUM);
 		$return = array();
 		foreach($row as $col)
 		{
-			$return[] = intval($col);
+			$return[] = ($showPrice === true ? (double)$col : intval($col));
 		}
 		return $return;
 	}
