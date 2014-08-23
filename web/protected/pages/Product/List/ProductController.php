@@ -28,8 +28,14 @@ class ProductController extends CRUDPageAbstract
 		$manufactureArray = array();
 		foreach (Manufacturer::getAll() as $os)
 			$manufactureArray[] = $os->getJson();
+		foreach (Supplier::getAll() as $os)
+			$supplierArray[] = $os->getJson();
+		foreach (ProductCategory::getAll() as $os)
+			$productCategoryArray[] = $os->getJson();
 		$js = parent::_getEndJs();
-		$js .= 'pageJs._loadManufactures('.json_encode($manufactureArray).')';
+		$js .= 'pageJs._loadManufactures('.json_encode($manufactureArray).');';
+		$js .= 'pageJs._loadSuppliers('.json_encode($supplierArray).');';
+		$js .= 'pageJs._loadProductCategories('.json_encode($productCategoryArray).')';
 		$js .= "._loadChosen()";
 		$js .= ".getResults(true, " . $this->pageSize . ");";
 		return $js;
@@ -60,6 +66,8 @@ class ProductController extends CRUDPageAbstract
             }
             $where = array(1);
             $params = array();
+            $query = FactoryAbastract::service('Order')->getDao()->getQuery();
+            
             if(($sku = trim($serachCriteria['pro.sku'])) !== '')
             {
                 $where[] = 'pro.sku like ?';
@@ -75,6 +83,7 @@ class ProductController extends CRUDPageAbstract
                 $where[] = 'pro.active = ?';
                 $params[] = $active;
             }
+            
             $objects = FactoryAbastract::service('Product')->findByCriteria(implode(' AND ', $where), $params, false, $pageNo, $pageSize, array('pro.name' => 'asc'));
             $results['pageStats'] = FactoryAbastract::service('Product')->getPageStats();
             $results['items'] = array();
