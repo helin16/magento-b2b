@@ -31,7 +31,7 @@ class PriceMatchController extends BPCPageAbstract
 	 */
 	protected function _getEndJs()
 	{
-		$companyArray = $this->_getAllCompaniesForPriceMatching();
+		$companyArray = PriceMatcher::getAllCompaniesForPriceMatching();
 		if(count(array_keys($companyArray)) === 0)
 			die('No Price Match Company Set up. Please set up the Price Matching companies before using this page!!!!!');
 		
@@ -40,23 +40,6 @@ class PriceMatchController extends BPCPageAbstract
 		$js .= 'pageJs.setCallbackId("getAllPricesForProduct", "' . $this->getAllPricesForProductBtn->getUniqueID() . '")';
 		$js .= '.load("price_match_div", ' . json_encode($companyArray) . ');';
 		return $js;
-	}
-	/**
-	 * Getting all the price match companies
-	 * @return Ambigous <multitype:multitype: , string>
-	 */
-	private function _getAllCompaniesForPriceMatching()
-	{
-		$outputArray = array();
-		foreach(PriceMatchCompany::findAll() as $pmc)
-		{
-			$companyName = trim($pmc->getCompanyName());
-			if(!isset($outputArray[$companyName]))
-				$outputArray[$companyName] = array();
-				
-			$outputArray[$companyName][] = trim($pmc->getCompanyAlias());
-		}
-		return $outputArray;	
 	}
 	
 	public function getAllPricesForProduct($sender, $param)
@@ -74,45 +57,8 @@ class PriceMatchController extends BPCPageAbstract
 			else if(!is_numeric($myPrice = str_replace('$', '', str_replace(',', '', $myPrice) )))
 				throw new Exception('No provided my price is NOT a number(=' . $myPrice . '!');
 			
-			//initialize values
-			$finalOutputArray = array(
-				'sku'             => $sku
-				,'myPrice'        => $myPrice
-				,'minPrice'       => 0
-				,'companyPrices'  => array()
-			);
-			foreach($companyAliases as $key => $value)
-				$finalOutputArray['companyPrices'][$key] = array('price' => 0, 'priceURL' => '');
+			$result['item'] = PriceMatcher::getPrices($companyAliases, $sku, $myPrice);
 			
-			//getting actual values
-			$productPriceArray = HTMLParser::getPriceListForProduct($sku);
-			foreach($productPriceArray as $productPriceInfo)
-			{
-				if(($companyDetails = trim($productPriceInfo['companyDetails'])) === '')
-					continue;
-				
-				$cdArray = explode('|', $companyDetails);
-				$companyURL = (isset($cdArray[count($cdArray) - 2])) ? trim($cdArray[count($cdArray) - 2]) : trim($companyDetails);
-				
-				foreach($companyAliases as $key => $value)
-				{
-					if(in_array(strtolower($companyURL), array_map(create_function('$a', 'return strtolower($a);'), $value)))
-					{	
-						$price = str_replace(' ', '', str_replace('$', '', str_replace(',', '', $productPriceInfo['price']) ) );
-						if($finalOutputArray['minPrice'] == 0 || $finalOutputArray['minPrice'] > $price)
-							$finalOutputArray['minPrice'] = $price;
-						$finalOutputArray['companyPrices'][$key] = array(
-								'price' => $price
-								,'priceURL' => HTMLParser::getHostUrl() . $productPriceInfo['priceLink']
-						);
-						break;
-					}	
-				}	
-			}
-			
-			//return the result
-			$finalOutputArray['priceDiff'] = ($finalOutputArray['myPrice'] - $finalOutputArray['minPrice']);
-			$result['item'] = $finalOutputArray;
 		}
 		catch(Exception $ex)
 		{
