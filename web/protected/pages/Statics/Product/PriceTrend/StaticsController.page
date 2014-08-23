@@ -1,0 +1,7 @@
+<%@MasterClass="Application.layout.BlankLayout"%>
+<com:TContent ID="MainContent">
+	<com:Application.controls.HiChart.HiChart />
+	<div class="pagewrapper orderstatics">
+		<div id="statics-div"></div>
+	</div>
+</com:TContent>
