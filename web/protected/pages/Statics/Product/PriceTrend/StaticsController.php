@@ -47,7 +47,7 @@ class StaticsController extends StaticsPageAbstract
 			 	throw new Exception('Invalid product id=' . $param->CallbackParameter->productId . ' provided');
 			
 			$series = array();
-			$series[] = array('name' => 'unit price', 'data' => $this->_getSeries($product->getId(), $dateFrom, $dateTo));
+			$series[] = array('name' => 'Sales Unit Price', 'data' => $this->_getSeries($product->getId(), $dateFrom, $dateTo));
 			
 			$results = array(
 					'chart' => array(
@@ -73,7 +73,7 @@ class StaticsController extends StaticsPageAbstract
 					),
 					'yAxis' => array(
 						'title' => array(
-								'text' => 'Unit Price($)'
+								'text' => 'Price($)'
 						),
 						'min' => 0
 					),
@@ -93,13 +93,14 @@ class StaticsController extends StaticsPageAbstract
 	
 	private function _getSeries($productId, $from, $to, $type = null)
 	{
-		$sql = 'select unitPrice, created from `orderitem` where active = 1 AND productId = ? AND created >=? and created <= ? order by created asc';
-		$row = Dao::getResultsNative($sql, array(trim($productId), trim($from), trim($to)));
+		$sql = 'select unitPrice, created from `orderitem` where active = 1 AND productId = :pid AND created >=:from and created <= :to order by created asc';
+		$result = Dao::getResultsNative($sql, array('pid' => trim($productId), 'from' => trim($from), 'to' => trim($to)));
 		$return = array();
-		foreach($row as $col)
+		foreach($result as $row)
 		{
-			$created = new UDate(trim($col['created']));
-			$return[] = array('Date.UTC(' . $created->format('Y, m, d, h, i, s') . '), ' . (double)trim($col['unitPrice']));
+			var_dump($row);
+			$created = new UDate(trim($row['created']));
+			$return[] = array($created->format('U') * 1000 , (double)trim($row['unitPrice']));
 		}
 		return $return;
 	}
