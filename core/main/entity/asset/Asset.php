@@ -251,6 +251,12 @@ class Asset extends BaseEntityAbstract
 		}
 		return self::$_cache[$assetId];
 	}
+	
+	public static function readAssetFile($filePath)
+	{
+		return file_get_contents($filePath);
+	}
+	
 	/**
 	 * (non-PHPdoc)
 	 * @see BaseEntityAbstract::getJson()
