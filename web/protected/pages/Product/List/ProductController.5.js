@@ -39,6 +39,14 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		});
 		return this;
 	}
+	,_priceMatching: function(row) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.row = $(tmp.me.resultDivId).down('tbody').down('.item_row[item_id=' + row.id + ']');
+		//tmp.me.postAjax(tmp.me.getCallbackId('deleteItems'), {'ids': [row.id]}, {});
+		//console.debug(row.price);
+		return tmp.me;
+	}
 	,_loadChosen: function () {
 		$$(".chosen").each(function(item) {
 			item.store('chosen', new Chosen(item, {
@@ -49,26 +57,36 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		});
 		return this;
 	}
-	,openToolsURL: function(url) {
+	,openToolsURL: function(url, refreshFunc) {
 		var tmp = {};
 		tmp.me = this;
-		jQuery.fancybox({
-			'width'			: '95%',
-			'height'		: '95%',
-			'autoScale'     : false,
-			'autoDimensions': false,
-			'fitToView'     : false,
-			'autoSize'      : false,
-			'type'			: 'iframe',
-			'href'			: url,
- 		});
+		tmp.options = {
+				'width'			: '95%',
+				'height'		: '95%',
+				'autoScale'     : false,
+				'autoDimensions': false,
+				'fitToView'     : false,
+				'autoSize'      : false,
+				'type'			: 'iframe',
+				'href'			: url
+	 		};
+		if(typeof(refreshFunc) === 'function') {
+			tmp.options.beforeClose = refreshFunc;
+		}
+		jQuery.fancybox(tmp.options);
 		return tmp.me;
 	}
 	,iframeSrc: function(url){
 		var tmp = {};
 		tmp.me = this;
-	    document.getElementById('productTrend').src = url;
-	    document.getElementById('productTrend').src = document.getElementById('productTrend').src
+	    $('productTrend').src = url;
+	    $('productTrend').src = $('productTrend').src;
+		return tmp.me;
+	}
+	,priceMatchResult: function(id){
+		var tmp = {};
+		tmp.me = this;
+		console.debug(id);
 		return tmp.me;
 	}
 	,_getEditPanel: function(row) {
@@ -114,10 +132,19 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		tmp.tag = (tmp.isTitle === true ? 'th' : 'td');
 		tmp.isTitle = (isTitle || false);
 		tmp.row = new Element('tr', {'class': (tmp.isTitle === true ? '' : 'product_item'), 'product_id' : row.id}).store('data', row)
-			.insert({'bottom': new Element(tmp.tag, {'class': 'sku'}).update(row.sku) })
+			.insert({'bottom': new Element(tmp.tag, {'class': 'sku'}).update(row.sku) 
+				.observe('click', function(){
+					tmp.me.priceMatchResult(row.sku);
+					tmp.me.postAjax(tmp.me.getCallbackId('priceMatching'), {'id': row.id}, {});
+				})
+			})
 			.insert({'bottom': new Element(tmp.tag, {'class': 'name'}).update(row.name) })
 			.insert({'bottom': new Element(tmp.tag, {'class': 'product_active col-xs-1'})
-				.insert({'bottom': (tmp.isTitle === true ? row.active : new Element('input', {'type': 'checkbox', 'disabled': false, 'checked': row.active}) ) })
+				.insert({'bottom': (tmp.isTitle === true ? row.active : new Element('input', {'type': 'checkbox', 'disabled': false, 'checked': row.active})
+					.observe('click', function(){
+						tmp.active = $(this).checked;
+					})
+				) })
 			})
 			.insert({'bottom': new Element(tmp.tag, {'class': 'text-right btns col-xs-2'}).update(
 				tmp.isTitle === true ?  
@@ -132,13 +159,18 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 					.insert({'bottom': new Element('span', {'class': 'btn btn-default', 'title': 'Edit'})
 						.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-pencil'}) })
 						.observe('click', function(){
-							$(this).up('.item_row').replace(tmp.me.openToolsURL('/product/' + row.id + '.html'));
+							tmp.me.openToolsURL('/product/' + row.id + '.html',
+								function() {
+									if($(tmp.me.resultDivId).down('.product_item[product_id=' + row.id + ']'))
+										$(tmp.me.resultDivId).down('.product_item[product_id=' + row.id + ']').replace(tmp.me._getResultRow($$('iframe.fancybox-iframe').first().contentWindow.pageJs._item));
+								}
+							)
 						})
 					})
 					.insert({'bottom': new Element('span', {'class': 'btn btn-default', 'title': 'Trend'})
 						.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-cog'}) })
 						.observe('click', function(){
-							tmp.me.iframeSrc('/statics/order/mthlytrend.html?productid=' + row.id);
+							tmp.me.iframeSrc('/statics/product/pricetrend.html?productid=' + row.id);
 						})
 					}) ) 
 			) })

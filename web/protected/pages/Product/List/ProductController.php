@@ -37,6 +37,7 @@ class ProductController extends CRUDPageAbstract
 		$js .= 'pageJs._loadSuppliers('.json_encode($supplierArray).');';
 		$js .= 'pageJs._loadProductCategories('.json_encode($productCategoryArray).')';
 		$js .= "._loadChosen()";
+		$js .= ".setCallbackId('priceMatching', '" . $this->priceMatchingBtn->getUniqueID() . "')";
 		$js .= ".getResults(true, " . $this->pageSize . ");";
 		return $js;
 	}
@@ -118,7 +119,7 @@ class ProductController extends CRUDPageAbstract
     		$active = $param->CallbackParameter->item->active !== true ? false : true;
     		//$active = (!isset($param->CallbackParameter->item->active) || $param->CallbackParameter->item->active !== true ? false : true);
     			
-    		//var_dump($active);
+
     		if($item instanceof $class)
     		{
     			$item->setName($sku)
@@ -131,6 +132,25 @@ class ProductController extends CRUDPageAbstract
     			$item = $class::create($sku, $name, false);
     		}
     		$results['item'] = $item->getJson();
+    	}
+    	catch(Exception $ex)
+    	{
+    		$errors[] = $ex->getMessage();
+    	}
+    	$param->ResponseData = StringUtilsAbstract::getJson($results, $errors);
+    }
+    public function priceMatching($sender, $param)
+    {
+    	$results = $errors = array();
+    	try
+    	{
+    		$id = isset($param->CallbackParameter->id) ? $param->CallbackParameter->id : '';
+    		$product = Product::get($id);
+    		$prices = ProductPrice::getPrices($product, ProductPriceType::get(ProductPriceType::ID_RRP));
+    		$companies = PriceMatcher::getAllCompaniesForPriceMatching();
+    		//var_dump($companies);
+    		$prices = PriceMatcher::getPrices($companies, $product->getSku(), (count($prices)===0 ? 0 : $prices[0]->getPrice()) );
+    		var_dump($prices);
     	}
     	catch(Exception $ex)
     	{

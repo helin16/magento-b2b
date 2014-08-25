@@ -1,6 +1,7 @@
 <com:TContent ID="MainContent">
 <com:Application.controls.fancybox.FancyBox />
 <com:Application.controls.chosen.Chosen />
+<com:TCallback ID="priceMatchingBtn" OnCallback = 'Page.priceMatching' />
 	<div class="pagewrapper productlistwraper">
 		<div class="col-md-12">
 			<div class="panel panel-default" id="searchPanel" style="overflow: visible;">
@@ -71,14 +72,14 @@
 				<div class="panel-heading">
 					Found <label id="total-found-count">0</label> Products:
 				</div>
-				<small class="table-responsive">
+				<div class="table-responsive" style="overflow: auto; height: 800px;">
 	                <table class="table table-hover" id="item-list"></table>
-	            </small>
+	            </div>
 			</div>
 		</div>
 		<div class="col-md-6">
-			<div class="list-item affix hidden-xs hidden-sm" style="">
-				<iframe id="productTrend" width="178%" height="380" src="/statics/order/mthlytrend.html" scrolling="no" frameborder="0"></iframe>
+			<div class="panel panel-default">
+				<iframe id="productTrend" width="100%" height="380" src="/statics/order/mthlytrend.html" scrolling="no" frameborder="0"></iframe>
 			</div>
 		</div> 
 	</div>
