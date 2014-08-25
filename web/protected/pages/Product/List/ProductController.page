@@ -1,7 +1,7 @@
 <com:TContent ID="MainContent">
 <com:Application.controls.fancybox.FancyBox />
 <com:Application.controls.chosen.Chosen />
-	<div class="pagewrapper productlistwraper container">
+	<div class="pagewrapper productlistwraper">
 		<div class="col-md-12">
 			<div class="panel panel-default" id="searchPanel" style="overflow: visible;">
 				<div class="panel-heading">
