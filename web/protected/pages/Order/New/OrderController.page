@@ -1,0 +1,5 @@
+<com:TContent ID="MainContent">
+	<div class="pagewrapper orderdetails">
+		<div id="detailswrapper" class="contentDiv"></div>
+	</div>
+</com:TContent>
