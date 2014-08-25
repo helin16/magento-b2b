@@ -31,7 +31,7 @@
         <nav class="navbar navbar-default navbar-inverse navbar-static-top header" role="navigation">
             <com:Application.layout.Header.Header ID="Header" />
         </nav>
-        <div class="pageContent container">
+        <div class="pageContent container-fluid">
             <com:TContentPlaceHolder ID="MainContent" />
         </div>
 		<nav class="footer" role="navigation">
