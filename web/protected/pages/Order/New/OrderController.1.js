@@ -97,21 +97,21 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.me = this;
 		tmp.isTitle = (isTitleRow || false);
 		tmp.tag = (tmp.isTitle === true ? 'th' : 'td');
-		tmp.row = new Element('tr', {'class': (tmp.isTitle === true ? '' : 'item_row'), 'order_item_id': ''})
+		tmp.row = new Element('tr', {'class': (tmp.isTitle === true ? '' : 'item_row')})
 			.store('data', orderItem)
 			.insert({'bottom': new Element(tmp.tag, {'class': 'productName'})
 				.insert({'bottom': orderItem.product.name })
 			})
-			.insert({'bottom': new Element(tmp.tag, {'class': 'uprice'})
+			.insert({'bottom': new Element(tmp.tag, {'class': 'uprice col-xs-1'})
 				.insert({'bottom': (orderItem.unitPrice) })
 			})
-			.insert({'bottom': new Element(tmp.tag, {'class': 'qty'})
+			.insert({'bottom': new Element(tmp.tag, {'class': 'qty col-xs-1'})
 				.insert({'bottom': (orderItem.qtyOrdered) })
 			})
-			.insert({'bottom': new Element(tmp.tag, {'class': 'tprice'})
+			.insert({'bottom': new Element(tmp.tag, {'class': 'tprice col-xs-1'})
 				.insert({'bottom': (orderItem.totalPrice) })
 			})
-			.insert({'bottom': new Element(tmp.tag, {'class': 'btns qty'}).update(orderItem.btns ? orderItem.btns : '') });
+			.insert({'bottom': new Element(tmp.tag, {'class': 'btns  col-xs-1'}).update(orderItem.btns ? orderItem.btns : '') });
 		if(orderItem.product.sku) {
 			tmp.row.insert({'top': new Element(tmp.tag, {'class': 'productSku'}).update(orderItem.product.sku) });
 		} else {
@@ -287,9 +287,9 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		//get all data
 		tmp.data = {
 			'product': tmp.product, 
-			'unitPrice': tmp.unitPrice, 
+			'unitPrice': tmp.me.getCurrency(tmp.unitPrice), 
 			'qtyOrdered': tmp.qtyOrdered, 
-			'totalPrice': tmp.totalPrice,
+			'totalPrice': tmp.me.getCurrency(tmp.totalPrice),
 			'btns': new Element('span', {'class': 'pull-right'})
 				.insert({'bottom': new Element('span', {'class': 'btn btn-danger btn-xs'})
 				.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-trash'}) })
@@ -379,23 +379,26 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				.wrap( new Element('thead') )
 			});
 		// tbody
-		tmp.productListDiv.insert({'bottom': tmp.tbody = new Element('tbody')
+		tmp.productListDiv.insert({'bottom': tmp.tbody = new Element('tbody', {'style': 'border: 3px #ccc solid;'})
 			.insert({'bottom': tmp.me._getNewProductRow() })
 		});
 		// tfooter
 		tmp.productListDiv.insert({'bottom': tmp.tbody = new Element('tfoot')
 			.insert({'bottom': new Element('tr') 
-				.insert({'bottom': new Element('td', {'colspan': 2, 'rowspan': 3}).update('&nbsp;') }) 
-				.insert({'bottom': new Element('td', {'colspan': 2, 'class': 'text-right'}).update( new Element('strong').update('Total Excl. GST: ') ) }) 
-				.insert({'bottom': new Element('td', {'id': tmp.me._htmlIds.totalPriceExcludeGST}).update( tmp.me.getCurrency(0) ) }) 
+				.insert({'bottom': new Element('td', {'colspan': 2, 'rowspan': 4})
+					.insert({'bottom': tmp.me._getFormGroup( 'Comments:', new Element('textarea', {'save-order': 'comments'}) ) })
+				}) 
+				.insert({'bottom': new Element('td', {'colspan': 2, 'class': 'text-right active'}).update( new Element('strong').update('Total Excl. GST: ') ) }) 
+				.insert({'bottom': new Element('td', {'id': tmp.me._htmlIds.totalPriceExcludeGST, 'class': 'active'}).update( tmp.me.getCurrency(0) ) }) 
+				.insert({'bottom': new Element('td', {'rowspan': 4}).update('&nbsp;') }) 
 			})
 			.insert({'bottom': new Element('tr') 
-				.insert({'bottom': new Element('td', {'colspan': 2, 'class': 'text-right'}).update( new Element('strong').update('Total GST: ') ) }) 
-				.insert({'bottom': new Element('td', {'id': tmp.me._htmlIds.totalPriceGST}).update( tmp.me.getCurrency(0) ) }) 
+				.insert({'bottom': new Element('td', {'colspan': 2, 'class': 'text-right active'}).update( new Element('strong').update('Total GST: ') ) }) 
+				.insert({'bottom': new Element('td', {'id': tmp.me._htmlIds.totalPriceGST, 'class': 'active'}).update( tmp.me.getCurrency(0) ) }) 
 			})
 			.insert({'bottom': new Element('tr') 
-				.insert({'bottom': new Element('td', {'colspan': 2, 'class': 'text-right'}).update( new Element('strong').update('Total Incl. GST: ') ) }) 
-				.insert({'bottom': new Element('td', {'id': tmp.me._htmlIds.totalPriceIncludeGST}).update( tmp.me.getCurrency(0) ) })
+				.insert({'bottom': new Element('td', {'colspan': 2, 'class': 'text-right active'}).update( new Element('strong').update('Total Incl. GST: ') ) }) 
+				.insert({'bottom': new Element('td', {'id': tmp.me._htmlIds.totalPriceIncludeGST, 'class': 'active'}).update( tmp.me.getCurrency(0) ) })
 			})
 		});
 		return new Element('div', {'class': 'panel panel-default'})
