@@ -30,6 +30,7 @@ abstract class BPCPageAbstract extends TPage
 	public function onInit($param)
 	{
 		parent::onInit($param);
+		$this->getForm()->setAttribute('onSubmit', 'return false;');
 	}
 	/**
 	 * (non-PHPdoc)
