@@ -9,16 +9,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
 </com:THead>
 <body>
-    <com:TForm>
+    <com:TForm Attributes.class="main-form">
         <nav class="navbar navbar-default navbar-inverse navbar-static-top header" role="navigation">
             <com:Application.layout.Header.Header ID="Header" />
         </nav>
         <div class="pageContent container-fluid">
             <com:TContentPlaceHolder ID="MainContent" />
         </div>
-		<nav class="footer" role="navigation">
-			<com:Application.layout.Footer.Footer ID="Footer" />
-		</nav>
     </com:TForm>
+	<nav class="footer" role="navigation">
+		<com:Application.layout.Footer.Footer ID="Footer" />
+	</nav>
 </body>
 </html>

@@ -2,6 +2,10 @@ html, body {
 	height: 100%;
 	min-height: 100%;
 }
+.main-form {
+	height: 87%;
+    min-height: 87%;
+}
 
 /* vertical alignment styles */
 .v-top {
@@ -32,6 +36,8 @@ html, body {
     height: 60px;
     width: 100%;
     margin-top: 80px;
+    clear: both;
+    position: relative;
 }
 
 
