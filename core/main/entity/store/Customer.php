@@ -305,6 +305,20 @@ class Customer extends BaseEntityAbstract
 	}
 	/**
 	 * (non-PHPdoc)
+	 * @see BaseEntityAbstract::getJson()
+	 */
+	public function getJson($extra = '', $reset = false)
+	{
+		$array = array();
+		if(!$this->isJsonLoaded($reset))
+		{
+			$array['address']['shipping'] = $this->getShippingAddress() instanceof Address ? $this->getShippingAddress()->getJson() : array();
+			$array['address']['billing'] = $this->getBillingAddress() instanceof Address ? $this->getBillingAddress()->getJson() : array();
+		}
+		return parent::getJson($array, $reset);
+	}
+	/**
+	 * (non-PHPdoc)
 	 * @see HydraEntity::__loadDaoMap()
 	 */
 	public function __loadDaoMap()
