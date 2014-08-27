@@ -2,6 +2,7 @@
 <com:Application.controls.fancybox.FancyBox />
 <com:Application.controls.chosen.Chosen />
 <com:TCallback ID="priceMatchingBtn" OnCallback = 'Page.priceMatching' />
+<com:TCallback ID="toggleItemBtn" OnCallback = 'Page.toggleItem' />
 	<div class="pagewrapper productlistwraper">
 		<div class="col-md-12">
 			<div class="panel panel-default" id="searchPanel" style="overflow: visible;">
@@ -80,6 +81,8 @@
 		<div class="col-md-6">
 			<div class="panel panel-default">
 				<iframe id="productTrend" width="100%" height="380" src="/statics/order/mthlytrend.html" scrolling="no" frameborder="0"></iframe>
+			</div>
+			<div class="panel table-responsive panel-default" id="priceMatchResult" style="display:none;">
 			</div>
 		</div> 
 	</div>

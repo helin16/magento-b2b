@@ -25,19 +25,20 @@ class ProductController extends CRUDPageAbstract
 	}
 	protected function _getEndJs()
 	{
-		$manufactureArray = array();
 		foreach (Manufacturer::getAll() as $os)
 			$manufactureArray[] = $os->getJson();
 		foreach (Supplier::getAll() as $os)
 			$supplierArray[] = $os->getJson();
 		foreach (ProductCategory::getAll() as $os)
 			$productCategoryArray[] = $os->getJson();
+		
 		$js = parent::_getEndJs();
 		$js .= 'pageJs._loadManufactures('.json_encode($manufactureArray).');';
 		$js .= 'pageJs._loadSuppliers('.json_encode($supplierArray).');';
 		$js .= 'pageJs._loadProductCategories('.json_encode($productCategoryArray).')';
 		$js .= "._loadChosen()";
 		$js .= ".setCallbackId('priceMatching', '" . $this->priceMatchingBtn->getUniqueID() . "')";
+		$js .= ".setCallbackId('toggleItem', '" . $this->toggleItemBtn->getUniqueID() . "')";
 		$js .= ".getResults(true, " . $this->pageSize . ");";
 		return $js;
 	}
@@ -105,11 +106,12 @@ class ProductController extends CRUDPageAbstract
      * @throws Exception
      *
      */
-    public function saveItem($sender, $param)
+    public function toggleItem($sender, $param)
     {
     	$results = $errors = array();
     	try
     	{
+    		var_dump($param->CallbackParameter);die;
     		$class = trim($this->_focusEntity);
     		if(!isset($param->CallbackParameter->item))
     			throw new Exception("System Error: no item information passed in!");
@@ -148,9 +150,13 @@ class ProductController extends CRUDPageAbstract
     		$product = Product::get($id);
     		$prices = ProductPrice::getPrices($product, ProductPriceType::get(ProductPriceType::ID_RRP));
     		$companies = PriceMatcher::getAllCompaniesForPriceMatching();
-    		//var_dump($companies);
     		$prices = PriceMatcher::getPrices($companies, $product->getSku(), (count($prices)===0 ? 0 : $prices[0]->getPrice()) );
-    		var_dump($prices);
+    		$myPrice = $prices['myPrice'];
+    		$minPrice = $prices['minPrice'];
+    		$msyPrice = $prices['companyPrices']['MSY'];
+    		$prices['id'] = $id;
+    		$results = $prices;
+    		//echo $prices;
     	}
     	catch(Exception $ex)
     	{

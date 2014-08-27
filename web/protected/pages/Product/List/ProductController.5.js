@@ -39,6 +39,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		});
 		return this;
 	}
+	/*
 	,_priceMatching: function(row) {
 		var tmp = {};
 		tmp.me = this;
@@ -47,6 +48,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		//console.debug(row.price);
 		return tmp.me;
 	}
+	*/
 	,_loadChosen: function () {
 		$$(".chosen").each(function(item) {
 			item.store('chosen', new Chosen(item, {
@@ -83,12 +85,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 	    $('productTrend').src = $('productTrend').src;
 		return tmp.me;
 	}
-	,priceMatchResult: function(id){
-		var tmp = {};
-		tmp.me = this;
-		console.debug(id);
-		return tmp.me;
-	}
+	/*
 	,_getEditPanel: function(row) {
 		var tmp = {};
 		tmp.me = this;
@@ -125,7 +122,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 			})
 		return tmp.newDiv;
 	}
-	
+	*/
 	,_getResultRow: function(row, isTitle) {
 		var tmp = {};
 		tmp.me = this;
@@ -134,8 +131,22 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		tmp.row = new Element('tr', {'class': (tmp.isTitle === true ? '' : 'product_item'), 'product_id' : row.id}).store('data', row)
 			.insert({'bottom': new Element(tmp.tag, {'class': 'sku'}).update(row.sku) 
 				.observe('click', function(){
-					tmp.me.priceMatchResult(row.sku);
-					tmp.me.postAjax(tmp.me.getCallbackId('priceMatching'), {'id': row.id}, {});
+					tmp.me.iframeSrc('/statics/product/pricetrend.html?productid=' + row.id);
+					tmp.me.postAjax(tmp.me.getCallbackId('priceMatching'), {'id': row.id}, {
+						'onSuccess': function(sender, param) {
+							try{
+								tmp.result = tmp.me.getResp(param, false, true);
+								if(!tmp.result)
+									return;
+								
+								tmp.me._displayPriceMatchResult(tmp.result);
+							} catch (e) {
+								alert(e);
+							}
+						}
+						
+					});
+					
 				})
 			})
 			.insert({'bottom': new Element(tmp.tag, {'class': 'name'}).update(row.name) })
@@ -143,6 +154,9 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 				.insert({'bottom': (tmp.isTitle === true ? row.active : new Element('input', {'type': 'checkbox', 'disabled': false, 'checked': row.active})
 					.observe('click', function(){
 						tmp.active = $(this).checked;
+						console.debug(tmp.active);
+						
+						tmp.me.postAjax(tmp.me.getCallbackId('toggleItem'), {'id': row.id, 'active': tmp.active}, {});
 					})
 				) })
 			})
@@ -176,5 +190,55 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 			) })
 		;
 		return tmp.row;
+	}
+	,_displayPriceMatchResult: function(prices) {
+		var tmp = {};
+		tmp.me = this;
+		console.debug(prices);
+		$('priceMatchResult').innerHTML = "";
+		$('priceMatchResult').style.display="inherit";
+		$('priceMatchResult').insert({'bottom': new Element('table', {'class': 'table table-striped'})
+			.insert({'bottom': new Element('thead')
+				.insert({'bottom': new Element('tr')
+					.insert({'bottom': new Element('th').update('SKU') })
+					.insert({'bottom': new Element('th').update('My Price') })
+					.insert({'bottom': new Element('th', {'class': 'price_diff'}).update('Price Diff.') })
+					.insert({'bottom': new Element('th').update('Min Price') })
+					.insert({'bottom': new Element('th').update('') })
+					.insert({'bottom': new Element('th').update('') })
+				})
+			})
+			.insert({'bottom': new Element('tbody')
+				.insert({'bottom': new Element('tr')
+					.insert({'bottom': new Element('td').update(prices.sku) })
+					.insert({'bottom': new Element('td').update(prices.myPrice) })
+					.insert({'bottom': new Element('td', {'class': 'price_diff'}).update(prices.priceDiff) })
+					.insert({'bottom': new Element('td', {'class': 'price_min'}).update(prices.minPrice) })
+					.insert({'bottom': new Element('td') })
+					.insert({'bottom': new Element('td') })
+				})
+			})
+						.insert({'bottom': new Element('thead')
+				.insert({'bottom': new Element('tr')
+					.insert({'bottom': new Element('th').update('CPL') })
+					.insert({'bottom': new Element('th').update('MSY') })
+					.insert({'bottom': new Element('th').update('PC DIY') })
+					.insert({'bottom': new Element('th').update('PCCG') })
+					.insert({'bottom': new Element('th').update('Scorp Tech') })
+					.insert({'bottom': new Element('th').update('Umart') })
+				})
+			})
+			.insert({'bottom': new Element('tbody')
+				.insert({'bottom': new Element('tr')
+				.insert({'bottom': new Element('td').update(prices["companyPrices"]["CPL"]["price"]) })
+				.insert({'bottom': new Element('td').update(prices["companyPrices"]["MSY"]["price"]) })
+				.insert({'bottom': new Element('td').update(prices["companyPrices"]["PC DIY"]["price"]) })
+				.insert({'bottom': new Element('td').update(prices["companyPrices"]["PCCG"]["price"]) })
+				.insert({'bottom': new Element('td').update(prices["companyPrices"]["Scorp Tech"]["price"]) })
+				.insert({'bottom': new Element('td').update(prices["companyPrices"]["Umart"]["price"]) })
+				})
+			})
+		});
+		
 	}
 });
