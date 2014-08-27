@@ -39,16 +39,6 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		});
 		return this;
 	}
-	/*
-	,_priceMatching: function(row) {
-		var tmp = {};
-		tmp.me = this;
-		tmp.row = $(tmp.me.resultDivId).down('tbody').down('.item_row[item_id=' + row.id + ']');
-		//tmp.me.postAjax(tmp.me.getCallbackId('deleteItems'), {'ids': [row.id]}, {});
-		//console.debug(row.price);
-		return tmp.me;
-	}
-	*/
 	,_loadChosen: function () {
 		$$(".chosen").each(function(item) {
 			item.store('chosen', new Chosen(item, {
@@ -85,44 +75,6 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 	    $('productTrend').src = $('productTrend').src;
 		return tmp.me;
 	}
-	/*
-	,_getEditPanel: function(row) {
-		var tmp = {};
-		tmp.me = this;
-		tmp.newDiv = new Element('tr', {'class': 'save-item-panel info'}).store('data', row)
-			.insert({'bottom': new Element('input', {'type': 'hidden', 'save-item-panel': 'id', 'value': row.id ? row.id : ''}) })
-			.insert({'bottom': new Element('td', {'class': 'form-group'})
-				.insert({'bottom': new Element('input', {'required': true, 'class': 'form-control', 'placeholder': 'The SKU of Product', 'save-item-panel': 'sku', 'value': row.sku ? row.sku : ''}) })
-			})
-			.insert({'bottom': new Element('td', {'class': 'form-group'})
-				.insert({'bottom': new Element('input', {'class': 'form-control', 'placeholder': 'The Product Name of the Product', 'save-item-panel': 'name', 'value': row.name ? row.name : ''}) })
-			})
-			.insert({'bottom': new Element('td', {'class': 'form-group'})
-				.insert({'bottom': new Element('input', {'type': 'checkbox', 'class': 'form-control', 'save-item-panel': 'active', 'checked': row.active}) })
-			})
-			.insert({'bottom': new Element('td', {'class': 'text-right'})
-				.insert({'bottom':  new Element('span', {'class': 'btn-group btn-group-sm'})
-					.insert({'bottom': new Element('span', {'class': 'btn btn-success', 'title': 'Save'})
-						.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-ok'}) })
-						.observe('click', function(){
-							tmp.btn = this;
-							tmp.me._saveItem(tmp.btn, $(tmp.btn).up('.save-item-panel'), 'save-item-panel');
-						})
-					})
-					.insert({'bottom': new Element('span', {'class': 'btn btn-danger', 'title': 'Delete'})
-						.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-remove'}) })
-						.observe('click', function(){
-							if(row.id)
-								$(this).up('.save-item-panel').replace(tmp.me._getResultRow(row).addClassName('item_row').writeAttribute('item_id', row.id));
-							else
-								$(this).up('.save-item-panel').remove();
-						})
-					})
-				})
-			})
-		return tmp.newDiv;
-	}
-	*/
 	,_getResultRow: function(row, isTitle) {
 		var tmp = {};
 		tmp.me = this;
@@ -166,7 +118,12 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 					.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-plus'}) })
 					.insert({'bottom': ' NEW' })
 					.observe('click', function(){
-						$(this).up('thead').insert({'bottom': tmp.me._getEditPanel({}) });
+						tmp.me.openToolsURL('/product/' + 'new' + '.html',
+								function() {
+									if($(tmp.me.resultDivId).down('.product_item[product_id=' + row.id + ']'))
+										$(tmp.me.resultDivId).down('.product_item[product_id=' + row.id + ']').replace(tmp.me._getResultRow($$('iframe.fancybox-iframe').first().contentWindow.pageJs._item));
+								}
+							)
 					})
 				)
 				: (new Element('span', {'class': 'btn-group btn-group-xs'})
