@@ -5,6 +5,8 @@ class ProductUpdateConnector extends B2BConnector
 	
 	public function syncProductAndProductCategory()
 	{
+		$cronStartDateTime = UDate::now();
+		
 		$criteria = array("(sku != '' OR mageId != '')");
 		$param = array();
 		
@@ -51,10 +53,22 @@ class ProductUpdateConnector extends B2BConnector
 				}
 			}
 		}
+		
+		$ss = SystemSettings::getSettingsAsObject(SystemSettings::TYPE_PRODUCT_LAST_UPDATED);
+		if($ss instanceof SystemSettings)
+		{
+			$ss->setValue($cronStartDateTime);
+			SystemSettings::save($ss);
+		}
 		Debug::inspect($products); die();
-		//$this->_connect()->call()
 	}
 	
+	/**
+	 * This function generates the ProductData for a product to be used for inser/update of product on Magento
+	 * @param Product $product
+	 * @param unknown $linkedCategories
+	 * @return multitype:string number unknown multitype:number
+	 */
 	private function _generateProductData(Product $product, $linkedCategories)
 	{
 		$productDescription = '';
@@ -80,9 +94,9 @@ class ProductUpdateConnector extends B2BConnector
 				     'visibility' => '4',
 				     'price' => '100',
 				     'tax_class_id' => 1,
-				     'meta_title' => 'Product meta title',
-				     'meta_keyword' => 'Product meta keyword',
-				     'meta_description' => 'Product meta description');
+				     'meta_title' => $productName,
+				     'meta_keyword' => $productName,
+				     'meta_description' => $productDescription);
 	}
 	
 	/**
