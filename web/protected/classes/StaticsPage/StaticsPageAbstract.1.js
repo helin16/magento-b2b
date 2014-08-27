@@ -1,1 +1,47 @@
-var StaticsPageJs=new Class.create();StaticsPageJs.prototype=Object.extend(new BPCPageJs(),{_htmlIds:{resultDivId:""},_searchCriterias:{},setHTMLIDs:function(a){this._htmlIds.resultDivId=a;return this},_drawChart:function(a){var b={};b.me=this;jQuery("#"+b.me._htmlIds.resultDivId).highcharts(a);return b.me},_getData:function(){var a={};a.me=this;a.me.postAjax(a.me.getCallbackId("getData"),a.me._searchCriterias,{onLoading:function(){$(a.me._htmlIds.resultDivId).update(a.me.getLoadingImg())},onSuccess:function(b,d){try{a.result=a.me.getResp(d,false,true);if(!a.result){throw"Syste Error: No result came back!"}a.me._drawChart(a.result)}catch(c){$(a.me._htmlIds.resultDivId).update(a.me.getAlertBox("ERROR:",c).addClassName("alert-danger"))}}});return a.me},load:function(a){this._searchCriterias=a;return this._getData()}});
+/**
+ * The StaticsPageJs file
+ */
+var StaticsPageJs = new Class.create();
+StaticsPageJs.prototype = Object.extend(new BPCPageJs(), {
+	_htmlIds: {'resultDivId': ''}
+	,_searchCriterias: {}
+	
+	,setHTMLIDs: function(resultDivId) {
+		this._htmlIds.resultDivId = resultDivId;
+		return this;
+	}
+	
+	,_drawChart: function(result) {
+		var tmp = {};
+		tmp.me = this;
+		jQuery('#' + tmp.me._htmlIds.resultDivId).highcharts(result);
+		return tmp.me;
+	}
+	
+	,_getData: function() {
+		var tmp = {};
+		tmp.me = this;
+		tmp.me.postAjax(tmp.me.getCallbackId('getData'), tmp.me._searchCriterias, {
+			'onLoading': function() {
+				$(tmp.me._htmlIds.resultDivId).update(tmp.me.getLoadingImg());
+			},
+			'onSuccess': function(sender, param) {
+				try {
+					tmp.result = tmp.me.getResp(param, false, true);
+					if(!tmp.result)
+						throw 'Syste Error: No result came back!';
+					console.debug(tmp.result);
+					tmp.me._drawChart(tmp.result);
+				} catch (e) {
+					$(tmp.me._htmlIds.resultDivId).update(tmp.me.getAlertBox('ERROR:', e).addClassName('alert-danger'));
+				}
+			}
+		});
+		return tmp.me;
+	}
+	
+	,load: function (searchCriterias) {
+		this._searchCriterias = searchCriterias;
+		return this._getData();
+	}
+});

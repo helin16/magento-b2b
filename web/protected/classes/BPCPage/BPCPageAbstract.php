@@ -30,6 +30,7 @@ abstract class BPCPageAbstract extends TPage
 	public function onInit($param)
 	{
 		parent::onInit($param);
+		$this->getForm()->setAttribute('onSubmit', 'return false;');
 	}
 	/**
 	 * (non-PHPdoc)
@@ -61,6 +62,7 @@ abstract class BPCPageAbstract extends TPage
 	public function onPreInit($param)
 	{
 	    parent::onPreInit($param);
+	    $this->_Load3rdPartyJs();
 	    $this->getClientScript()->registerPradoScript('ajax');
 	    $this->_loadPageJsClass();
         $cScripts = self::getLastestJS(get_class($this));
@@ -80,6 +82,17 @@ abstract class BPCPageAbstract extends TPage
 		if (isset($cScripts['css']) && ($lastestCss = trim($cScripts['css'])) !== '')
 			$this->getPage()->getClientScript()->registerStyleSheetFile('BPCPageCss', $this->publishFilePath(dirname(__FILE__) . DIRECTORY_SEPARATOR . $lastestCss));
 	    return $this;
+	}
+	private function _Load3rdPartyJs()
+	{
+		$clientScript = $this->getPage()->getClientScript();
+		$folder = $this->publishFilePath(dirname(__FILE__) . DIRECTORY_SEPARATOR . 'jQuery' . DIRECTORY_SEPARATOR);
+		$clientScript->registerHeadScriptFile('jQuery', $folder . '/jquery-2.1.1.min.js');
+		
+		$folder = $this->publishFilePath(dirname(__FILE__) . DIRECTORY_SEPARATOR . 'Bootstrap' . DIRECTORY_SEPARATOR);
+		$clientScript->registerHeadScriptFile('Bootstrap.js', $folder . '/js/bootstrap.min.js');
+		$clientScript->registerStyleSheetFile('Bootstrap.css', $folder . '/css/bootstrap.min.css');
+		$clientScript->registerStyleSheetFile('Bootstrap.theme.css', $folder . '/bootstrap-theme.min.css');
 	}
 	/**
 	 * Getting the lastest version of Js and Css under the Class'file path

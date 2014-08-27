@@ -22,6 +22,8 @@
 			
 			<!-- FrontEnd:: order list page -->
 			<url ServiceParameter="Order.List.OrderController" pattern="order.html" />
+			<!-- FrontEnd:: order new page -->
+			<url ServiceParameter="Order.New.OrderController" pattern="order/new.html" />
 			<!-- FrontEnd:: order print page -->
 			<url ServiceParameter="Order.Print.OrderPrintController" pattern="print/order/{orderId}.html" parameters.orderId="\d+"/>
 			<!-- FrontEnd:: order details page -->

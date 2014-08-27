@@ -1,0 +1,7 @@
+<com:TContent ID="MainContent">
+	<com:TCallback ID="searchCustomerBtn" onCallback="searchCustomer" />
+	<com:TCallback ID="searchProductBtn" onCallback="searchProduct" />
+	<div class="pagewrapper orderdetails">
+		<div id="detailswrapper" class="contentDiv"></div>
+	</div>
+</com:TContent>

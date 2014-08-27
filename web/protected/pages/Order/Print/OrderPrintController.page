@@ -57,11 +57,11 @@
                                         <span class="bank_details_acc_no"><span class="details_title">ACC:</span>4796 74364</span>
                                     </div>
                                     <div class="shipping_details box">
-                                        <div class="row">
+                                        <div class="print-row">
                                             <span class="inlineblock half"><span class="inlineblock title">Salesperson:</span><span class="inlineblock details"><%= $this->order->getUpdatedBy()->getPerson() %></span></span>
                                             <span class="inlineblock half"><span class="inlineblock title">Payment:</span><span class="inlineblock details"></span></span>
                                         </div>
-                                        <div class="row">
+                                        <div class="print-row">
                                             <span class="inlineblock half"><span class="inlineblock title">Delivery Via:</span><span class="inlineblock details"></span></span>
                                             <span class="inlineblock half"><span class="inlineblock title">comments:</span><span class="inlineblock details"></span></span>
                                         </div>

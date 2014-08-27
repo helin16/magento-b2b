@@ -129,7 +129,11 @@ BPCPageJs.prototype = {
 		var tmp = {}
 		tmp.me = this;
 		if(input.up('.form-group')) {
-			input.up('.form-group').addClassName('has-error');
+			input.store('clearErrFunc', function(btn) {
+				input.up('.form-group').removeClassName('has-error');
+				jQuery('#' + input.id).tooltip('hide').tooltip('destroy').show();
+			})
+			.up('.form-group').addClassName('has-error');
 			tmp.me._signRandID(input);
 			jQuery('#' + input.id).tooltip({
 				'trigger': 'manual'
@@ -140,9 +144,10 @@ BPCPageJs.prototype = {
 				,'title': errMsg
 			})
 			.tooltip('show');
-			$(input).observe('change', function() {
-				input.up('.form-group').removeClassName('has-error');
-				jQuery(this).tooltip('hide').tooltip('destroy').show();
+			$(input).observe('change', function(){
+				tmp.func = $(input).retrieve('clearErrFunc');
+				if(typeof(tmp.func) === 'function')
+					tmp.func();
 			});
 		}
 		return tmp.me;
