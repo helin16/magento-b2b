@@ -15,6 +15,8 @@ class SystemSettings extends BaseEntityAbstract
 	const TYPE_B2B_SOAP_LAST_IMPORT_TIME = 'b2b_soap_last_import_time';
 	const TYPE_SYSTEM_TIMEZONE = 'system_timezone';
 	const TYPE_ASSET_ROOT_DIR = 'asset_root_dir';
+	const TYPE_PRODUCT_LAST_UPDATED = 'product_last_updated';
+	
 	/**
 	 * The value of the setting
 	 * 
@@ -55,6 +57,7 @@ class SystemSettings extends BaseEntityAbstract
 		}
 		return self::$_cache[$type];
 	}
+	
 	/**
 	 * adding a new Settings Object
 	 * 
