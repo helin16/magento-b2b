@@ -7,7 +7,7 @@ class ProductUpdateConnector extends B2BConnector
 	{
 		$cronStartDateTime = UDate::now();
 		
-		$criteria = array("(sku != '' OR mageId != '')");
+		$criteria = array("(sku != '' OR (mageId != '' AND mageId != 0))");
 		$param = array();
 		
 		if(($lastUpdateDateTime = trim(SystemSettings::getSettings(SystemSettings::TYPE_PRODUCT_LAST_UPDATED))) !== '')
@@ -30,37 +30,49 @@ class ProductUpdateConnector extends B2BConnector
 				if(is_array($product_categoryArray) && count($product_categoryArray) > 0)
 					$linkedCategories = array_map(create_function('$a', 'return $a->getCategory()->getMageId();'), $product_categoryArray);
 				
-				if(count($linkedCategories) > 0)
-				{
-					$productData = $this->_generateProductData($product, $linkedCategories);
-					if(($productMageId = trim($product->getMageId())) === '' || $productMageId === '0')
-					{	
-						$attributeSets = $this->_mySoapClient->catalogProductAttributeSetList($session);
-						$attributeSet = current($attributeSets);
-						$productType = 'simple';
-						
-						$this->_mySoapClient->catalogProductCreate($this->_session, $productType, $attributeSet->set_id, $product->getSku(), $productData);
-					}
-					else
-					{
-						// update product on magento
-						$this->_mySoapClient->catalogProductUpdate($this->_session, $productMageId, $productData);
-					}
+				/// if no category is found, set the default to 1 /// 
+				if(count($linkedCategories) <= 0)
+					$linkedCategories = array(1);
+				
+				$productData = $this->_generateProductData($product, $linkedCategories);
+				if(($productMageId = trim($product->getMageId())) === '' || $productMageId === '0')
+				{	
+					$attributeSets = $this->_mySoapClient->catalogProductAttributeSetList($session);
+					$attributeSet = current($attributeSets);
+					$productType = 'simple';
+					
+					$newMageId = $this->_mySoapClient->catalogProductCreate($this->_session, $productType, $attributeSet->set_id, trim($product->getSku()), $productData);
+					if(is_numeric($newMageId))
+						$product->setMageId($newMageId)->save();
+					else 
+						$this->_handle_failed_product($product, $cronStartDateTime);	
 				}
-				else 
+				else
 				{
-					/// no product category linked. skip ????
+					// update product on magento
+					$updated = $this->_mySoapClient->catalogProductUpdate($this->_session, $productMageId, $productData);
+					if($updated === false)
+						$this->_handle_failed_product($product, $cronStartDateTime, "update");
 				}
 			}
 		}
 		
-		$ss = SystemSettings::getSettingsAsObject(SystemSettings::TYPE_PRODUCT_LAST_UPDATED);
-		if($ss instanceof SystemSettings)
-		{
-			$ss->setValue($cronStartDateTime);
-			SystemSettings::save($ss);
-		}
-		Debug::inspect($products); die();
+		SystemSettings::addSettings(SystemSettings::TYPE_PRODUCT_LAST_UPDATED, $cronStartDateTime);
+		//Debug::inspect($products); die();
+	}
+	
+	/**
+	 * 
+	 * @param Product $product
+	 * @param unknown $cronStartDateTime
+	 * @param string $syncType
+	 */
+	private function _handle_failed_product(Product $product, $cronStartDateTime, $syncType = "insert")
+	{
+		$date = new UDate(trim($cronStartDateTime));
+		$date->modify('+1 second');
+		$product->setUpdated($date)->save();
+		Log::LogEntity($product, 'Product Sync failed with Magento. '.$syncType.' operation failed', Log::TYPE_SYSTEM);
 	}
 	
 	/**
@@ -69,7 +81,7 @@ class ProductUpdateConnector extends B2BConnector
 	 * @param unknown $linkedCategories
 	 * @return multitype:string number unknown multitype:number
 	 */
-	private function _generateProductData(Product $product, $linkedCategories)
+	private function _generateProductData(Product $product, Array $linkedCategories)
 	{
 		$productDescription = '';
 		$productDescAssetId = trim($product->getFullDescAssetId());
@@ -80,23 +92,28 @@ class ProductUpdateConnector extends B2BConnector
 				$productDescription = Asset::readAssetFile($assetPath);
 		}
 		
-		$productName = strtolower(str_replace(' ', '-', trim($product->getName())));
+		$price = '0';
+		$productPrices = ProductPrice::getPrices($product, ProductPriceType::get(ProductPriceType::ID_RRP));
+		if(count($productPrices) > 0)
+			$price = $productPrices[0]->getPrice();
+		
+		$urlKey = strtolower(str_replace(' ', '-', trim($product->getName())));
 		
 		return array('categories' => $linkedCategories,
 				     'websites' => array(1),
-				     'name' => $productName,
+				     'name' => trim($product->getName()),
 				     'description' => $productDescription,
 				     'short_description' => trim($product->getShortDescription()),
 				     'weight' => (method_exists($product, 'getWeight') ? trim($product->getWeight()) : '1'),
 				     'status' => trim($product->getStatus()),
-				     'url_key' => $productName,
-				     'url_path' => $productName,
+				     'url_key' => $urlKey,
+				     'url_path' => $urlKey,
 				     'visibility' => '4',
-				     'price' => '100',
+				     'price' => $price,
 				     'tax_class_id' => 1,
-				     'meta_title' => $productName,
-				     'meta_keyword' => $productName,
-				     'meta_description' => $productDescription);
+				     'meta_title' => trim($product->getName()),
+				     'meta_keyword' => trim($product->getSku()),
+				     'meta_description' => trim($product->getShortDescription()));
 	}
 	
 	/**

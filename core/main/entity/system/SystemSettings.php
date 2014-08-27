@@ -58,12 +58,6 @@ class SystemSettings extends BaseEntityAbstract
 		return self::$_cache[$type];
 	}
 	
-	public static function getSettingsAsObject($type)
-	{
-		$settings = FactoryAbastract::dao(__CLASS__)->findByCriteria('type=?', array($type), false, 1, 1);
-		return ((count($settings) > 0) ? $settings[0] : null);
-	}
-	
 	/**
 	 * adding a new Settings Object
 	 * 
