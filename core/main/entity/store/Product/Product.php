@@ -493,7 +493,7 @@ class Product extends InfoEntityAbstract
 	 */
 	public static function getBySku($sku)
 	{
-		$products = FactoryAbastract::dao(get_called_class())->findByCriteria('sku = ? ', array(trim($sku)), false, 1, 1);
+		$products = self::getAllByCriteria('sku = ? ', array(trim($sku)), false, 1, 1);
 		return (count($products) === 0 ? null : $products[0]);
 	}
 	/**
