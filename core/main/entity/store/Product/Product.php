@@ -79,13 +79,13 @@ class Product extends InfoEntityAbstract
 	 * 
 	 * @var ProductStatus
 	 */
-	protected $status;
+	protected $status = null;
 	/**
 	 * The manufacture /brand of this product
 	 * 
 	 * @var Manufacturer
 	 */
-	protected $manufacturer;
+	protected $manufacturer = null;
 	/** 
 	 * Getter for asNewFromDate
 	 * 
@@ -405,6 +405,47 @@ class Product extends InfoEntityAbstract
 		FactoryAbastract::dao(get_called_class())->save($product);
 		return $product;
 	}
+	public static function getProducts($sku, $name, array $supplierIds = array(), array $manufacturerIds = array(), array $categoryIds = array(), array $statusIds = array(), $active = null, $pageNo = null, $pageSize = DaoQuery::DEFAUTL_PAGE_SIZE, $orderBy = array(), &$stats = array())
+	{
+		$where = array(1);
+		$params = array();
+		if(($sku = trim($sku)) !== '')
+		{
+			$where[] = 'pro.sku like ?';
+			$params[] = $sku . '%';
+		}
+		if(($name = trim($name)) !== '')
+		{
+			$where[] = 'pro.name like ?';
+			$params[] = $name . '%';
+		}
+		if(($active = trim($active)) !== '')
+		{
+			$where[] = 'pro.active = ?';
+			$params[] = intval($active);
+		}
+		if(count($manufacturerIds) > 0)
+		{
+			$where[] = 'pro.manufacturerId in (' . str_repeat('?', count($manufacturerIds)) . ')';
+			$params = array_merge($params, $manufacturerIds);
+		}
+		if(count($statusIds) > 0)
+		{
+			$where[] = 'pro.statusId in (' . str_repeat('?', count($statusIds)) . ')';
+			$params = array_merge($params, $statusIds);
+		}
+		if(count($supplierIds) > 0)
+		{
+			$where[] = ' = ?';
+			$params[] = $active;
+		}
+		if(count($categoryIds) > 0)
+		{
+			$where[] = ' = ?';
+			$params[] = $active;
+		}
+		return Product::getAllByCriteria(implode(' AND ', $where), $params, false, $pageNo, $pageSize, $orderBy, $stats);
+	}
 	/**
 	 * Adding a product image to the product
 	 * 
@@ -514,8 +555,8 @@ class Product extends InfoEntityAbstract
 		DaoMap::setIntType('stockOnOrder');
 		DaoMap::setBoolType('isFromB2B');
 		DaoMap::setBoolType('sellOnWeb');
-		DaoMap::setManyToOne('status', 'ProductStatus', 'pro_status');
-		DaoMap::setManyToOne('manufacturer', 'Manufacturer', 'pro_man');
+		DaoMap::setManyToOne('status', 'ProductStatus', 'pro_status', true);
+		DaoMap::setManyToOne('manufacturer', 'Manufacturer', 'pro_man', true);
 		DaoMap::setDateType('asNewFromDate', 'datetime', true);
 		DaoMap::setDateType('asNewToDate', 'datetime', true);
 		DaoMap::setStringType('shortDescription', 'varchar', 255);

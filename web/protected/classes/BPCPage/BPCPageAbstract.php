@@ -20,7 +20,7 @@ abstract class BPCPageAbstract extends TPage
 	public function __construct()
 	{
 	    parent::__construct();
-	    if(!Core::getUser() instanceof UserAccount)
+	     if(!Core::getUser() instanceof UserAccount && get_class($this) !== 'LoginController')
 	    	$this->getResponse()->Redirect('/login.html');
 	}
 	/**
@@ -30,7 +30,8 @@ abstract class BPCPageAbstract extends TPage
 	public function onInit($param)
 	{
 		parent::onInit($param);
-		$this->getForm()->setAttribute('onSubmit', 'return false;');
+		if(get_class($this) !== 'LoginController')
+			$this->getForm()->setAttribute('onSubmit', 'return false;');
 	}
 	/**
 	 * (non-PHPdoc)

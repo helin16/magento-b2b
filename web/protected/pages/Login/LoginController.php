@@ -6,7 +6,7 @@
  * @subpackage Controller
  * @author     lhe<helin16@gmail.com>
  */
-class LoginController extends TPage
+class LoginController extends BPCPageAbstract
 {
 	public function onLoad($param)
 	{

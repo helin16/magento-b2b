@@ -7,7 +7,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 	,suppliers: []
 	,productCategories: []
 	,_getTitleRowData: function() {
-		return {'sku': 'SKU', 'name': 'Product Name', 'active': 'act?'};
+		return {'sku': 'SKU', 'name': 'Product Name', 'manufacturer' : {'name': 'Brand'}, 'supplierCodes': [{'supplier': {'name': 'Supplier'}, 'code': ''}],  'active': 'act?'};
 	}
 	,_loadManufactures: function(manufactures) {
 		this.manufactures = manufactures;
@@ -75,6 +75,15 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 	    $('productTrend').src = $('productTrend').src;
 		return tmp.me;
 	}
+	,_getSupplierCodes: function(supplierCodes, isTitle) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.supplierCodeString = [];
+		supplierCodes.each(function(suppliercode) {
+			tmp.supplierCodeString.push(isTitle === true ? 'Supplier' : '<abbr title="Code: '  + suppliercode.code + '">' + suppliercode.supplier.name + '</abbr>');
+		})
+		return tmp.supplierCodeString.join(', ');
+	}
 	,_getResultRow: function(row, isTitle) {
 		var tmp = {};
 		tmp.me = this;
@@ -82,37 +91,21 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		tmp.isTitle = (isTitle || false);
 		tmp.row = new Element('tr', {'class': (tmp.isTitle === true ? '' : 'product_item'), 'product_id' : row.id}).store('data', row)
 			.insert({'bottom': new Element(tmp.tag, {'class': 'sku'}).update(row.sku) 
-				.observe('click', function(){
-					tmp.me.iframeSrc('/statics/product/pricetrend.html?productid=' + row.id);
-					tmp.me.postAjax(tmp.me.getCallbackId('priceMatching'), {'id': row.id}, {
-						'onSuccess': function(sender, param) {
-							try{
-								tmp.result = tmp.me.getResp(param, false, true);
-								if(!tmp.result)
-									return;
-								
-								tmp.me._displayPriceMatchResult(tmp.result);
-							} catch (e) {
-								alert(e);
-							}
-						}
-						
-					});
-					
-				})
 			})
 			.insert({'bottom': new Element(tmp.tag, {'class': 'name'}).update(row.name) })
+			.insert({'bottom': new Element(tmp.tag, {'class': 'manufacturer'}).update(row.manufacturer ? row.manufacturer.name : '') })
+			.insert({'bottom': new Element(tmp.tag, {'class': 'supplier col-xs-2'}).update(
+					row.supplierCodes ? tmp.me._getSupplierCodes(row.supplierCodes, isTitle) : ''
+			) })
 			.insert({'bottom': new Element(tmp.tag, {'class': 'product_active col-xs-1'})
 				.insert({'bottom': (tmp.isTitle === true ? row.active : new Element('input', {'type': 'checkbox', 'disabled': false, 'checked': row.active})
 					.observe('click', function(){
 						tmp.active = $(this).checked;
-						console.debug(tmp.active);
-						
 						tmp.me.postAjax(tmp.me.getCallbackId('toggleItem'), {'id': row.id, 'active': tmp.active}, {});
 					})
 				) })
 			})
-			.insert({'bottom': new Element(tmp.tag, {'class': 'text-right btns col-xs-2'}).update(
+			.insert({'bottom': new Element(tmp.tag, {'class': 'text-right btns col-xs-1'}).update(
 				tmp.isTitle === true ?  
 				(new Element('span', {'class': 'btn btn-primary btn-xs', 'title': 'New'})
 					.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-plus'}) })
@@ -142,6 +135,19 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 						.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-cog'}) })
 						.observe('click', function(){
 							tmp.me.iframeSrc('/statics/product/pricetrend.html?productid=' + row.id);
+							tmp.me.postAjax(tmp.me.getCallbackId('priceMatching'), {'id': row.id}, {
+								'onSuccess': function(sender, param) {
+									try{
+										tmp.result = tmp.me.getResp(param, false, true);
+										if(!tmp.result)
+											return;
+										
+										tmp.me._displayPriceMatchResult(tmp.result);
+									} catch (e) {
+										alert(e);
+									}
+								}
+							});
 						})
 					}) ) 
 			) })
@@ -151,7 +157,6 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 	,_displayPriceMatchResult: function(prices) {
 		var tmp = {};
 		tmp.me = this;
-		console.debug(prices);
 		$('priceMatchResult').innerHTML = "";
 		$('priceMatchResult').style.display="inherit";
 		$('priceMatchResult').insert({'bottom': new Element('table', {'class': 'table table-striped'})

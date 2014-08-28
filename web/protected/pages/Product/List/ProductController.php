@@ -66,35 +66,17 @@ class ProductController extends CRUDPageAbstract
                 $pageNo = $param->CallbackParameter->pagination->pageNo;
                 $pageSize = $param->CallbackParameter->pagination->pageSize * 3;
             }
-            $where = array(1);
-            $params = array();
-            $query = FactoryAbastract::service('Order')->getDao()->getQuery();
             
-            if(($sku = trim($serachCriteria['pro.sku'])) !== '')
-            {
-                $where[] = 'pro.sku like ?';
-                $params[] = $sku . '%';
-            }
-            if(($name = trim($serachCriteria['pro.name'])) !== '')
-            {
-                $where[] = 'pro.name like ?';
-                $params[] = $name . '%';
-            }
-            if(($active = trim($serachCriteria['pro.active'])) !== '')
-            {
-                $where[] = 'pro.active = ?';
-                $params[] = $active;
-            }
-            
-            $objects = FactoryAbastract::service('Product')->findByCriteria(implode(' AND ', $where), $params, false, $pageNo, $pageSize, array('pro.name' => 'asc'));
-            $results['pageStats'] = FactoryAbastract::service('Product')->getPageStats();
+            $stats = array();
+            $objects = Product::getProducts(trim($serachCriteria['pro.sku']), trim($serachCriteria['pro.name']), array(), array(), array(), array(), trim($serachCriteria['pro.active']), $pageNo, $pageSize, array('pro.name' => 'asc'), $stats);
+            $results['pageStats'] = $stats;
             $results['items'] = array();
             foreach($objects as $obj)
                 $results['items'][] = $obj->getJson();
         }
         catch(Exception $ex)
         {
-            $errors[] = $ex->getMessage();
+            $errors[] = $ex->getMessage() . $ex->getTraceAsString();
         }
         $param->ResponseData = StringUtilsAbstract::getJson($results, $errors);
     }
@@ -111,27 +93,14 @@ class ProductController extends CRUDPageAbstract
     	$results = $errors = array();
     	try
     	{
-    		var_dump($param->CallbackParameter);die;
     		$class = trim($this->_focusEntity);
-    		if(!isset($param->CallbackParameter->item))
-    			throw new Exception("System Error: no item information passed in!");
-    		$item = (isset($param->CallbackParameter->item->id) && ($item = $class::get($param->CallbackParameter->item->id)) instanceof $class) ? $item : null;
-    		$sku = trim($param->CallbackParameter->item->sku);
-    		$name = trim($param->CallbackParameter->item->name);
-    		$active = $param->CallbackParameter->item->active !== true ? false : true;
-    		//$active = (!isset($param->CallbackParameter->item->active) || $param->CallbackParameter->item->active !== true ? false : true);
-    			
-
+    		$product = Product::get($param->CallbackParameter->id);
+    		$item = (isset($param->CallbackParameter->id) && ($item = $class::get($param->CallbackParameter->id)) instanceof $class) ? $item : null;
+    		$active = $param->CallbackParameter->active;
     		if($item instanceof $class)
     		{
-    			$item->setName($sku)
-	    			->setDescription($name)
-	    			->setActive($active)
+    			$item->setActive($active)
 	    			->save();
-    		}
-    		else
-    		{
-    			$item = $class::create($sku, $name, false);
     		}
     		$results['item'] = $item->getJson();
     	}
