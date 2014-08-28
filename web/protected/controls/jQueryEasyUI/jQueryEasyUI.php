@@ -6,7 +6,7 @@
  * @subpackage controls
  * @author     lhe<helin16@gmail.com>
  */
-class JQueryEasyUI extends TClientScript
+class jQueryEasyUI extends TClientScript
 {
 	/**
 	 * (non-PHPdoc)
