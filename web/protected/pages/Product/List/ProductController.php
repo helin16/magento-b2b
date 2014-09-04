@@ -70,7 +70,8 @@ class ProductController extends CRUDPageAbstract
             }
             
             $stats = array();
-            $objects = Product::getProducts(trim($serachCriteria['pro.sku']), trim($serachCriteria['pro.name']), array(), array(), array(), array(), trim($serachCriteria['pro.active']), $pageNo, $pageSize, array('pro.name' => 'asc'), $stats);
+            var_dump($serachCriteria['pro.manufacturerIds']);
+            $objects = Product::getProducts(trim($serachCriteria['pro.sku']), trim($serachCriteria['pro.name']), $serachCriteria['pro.supplierIds'], $serachCriteria['pro.manufacturerIds'], $serachCriteria['pro.productCategoryIds'], array(), trim($serachCriteria['pro.active']), $pageNo, $pageSize, array('pro.name' => 'asc'), $stats);
             $results['pageStats'] = $stats;
             $results['items'] = array();
             foreach($objects as $obj)
