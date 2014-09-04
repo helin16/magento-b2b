@@ -85,6 +85,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 				});
 			})
 		});
+
 		return this;
 	}
 	,_getSupplierCodes: function(supplierCodes, isTitle) {
