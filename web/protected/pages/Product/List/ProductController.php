@@ -37,9 +37,11 @@ class ProductController extends CRUDPageAbstract
 		$js .= 'pageJs._loadSuppliers('.json_encode($supplierArray).');';
 		$js .= 'pageJs._loadProductCategories('.json_encode($productCategoryArray).')';
 		$js .= "._loadChosen()";
+		$js .= "._bindSearchKey()";
 		$js .= ".setCallbackId('priceMatching', '" . $this->priceMatchingBtn->getUniqueID() . "')";
 		$js .= ".setCallbackId('toggleItem', '" . $this->toggleItemBtn->getUniqueID() . "')";
 		$js .= ".getResults(true, " . $this->pageSize . ");";
+		$js .= '$("searchBtn").click();';
 		return $js;
 	}
 	/**

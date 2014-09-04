@@ -75,6 +75,18 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 	    $('productTrend').src = $('productTrend').src;
 		return tmp.me;
 	}
+	,_bindSearchKey: function() {
+		var tmp = {}
+		tmp.me = this;
+		$('searchDiv').getElementsBySelector('[search_field]').each(function(item) {
+			item.observe('keydown', function(event) {
+				tmp.me.keydown(event, function() {
+					$(tmp.me.searchDivId).down('#searchBtn').click();
+				});
+			})
+		});
+		return this;
+	}
 	,_getSupplierCodes: function(supplierCodes, isTitle) {
 		var tmp = {};
 		tmp.me = this;
@@ -92,7 +104,32 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		tmp.row = new Element('tr', {'class': (tmp.isTitle === true ? '' : 'product_item'), 'product_id' : row.id}).store('data', row)
 			.insert({'bottom': new Element(tmp.tag, {'class': 'sku'}).update(row.sku) 
 			})
-			.insert({'bottom': new Element(tmp.tag, {'class': 'name'}).update(row.name) })
+			.insert({'bottom': new Element(tmp.tag, {'class': 'name'}).update(row.name) 
+				.observe('click', function(){
+					tmp.me.iframeSrc('/statics/product/pricetrend.html?productid=' + row.id);
+					tmp.me.postAjax(tmp.me.getCallbackId('priceMatching'), {'id': row.id}, {
+						'onSuccess': function(sender, param) {
+							try{
+								tmp.result = tmp.me.getResp(param, false, true);
+								if(!tmp.result)
+									return;
+								
+								tmp.me._displayPriceMatchResult(tmp.result);
+							} catch (e) {
+								alert(e);
+							}
+						}
+					});
+				})
+				.observe('dblclick', function(){
+					tmp.me.openToolsURL('/product/' + row.id + '.html',
+						function() {
+							if($(tmp.me.resultDivId).down('.product_item[product_id=' + row.id + ']'))
+								$(tmp.me.resultDivId).down('.product_item[product_id=' + row.id + ']').replace(tmp.me._getResultRow($$('iframe.fancybox-iframe').first().contentWindow.pageJs._item));
+						}
+					)
+				})
+			})
 			.insert({'bottom': new Element(tmp.tag, {'class': 'manufacturer'}).update(row.manufacturer ? row.manufacturer.name : '') })
 			.insert({'bottom': new Element(tmp.tag, {'class': 'supplier col-xs-2'}).update(
 					row.supplierCodes ? tmp.me._getSupplierCodes(row.supplierCodes, isTitle) : ''
@@ -176,11 +213,10 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 					.insert({'bottom': new Element('td').update(prices.myPrice) })
 					.insert({'bottom': new Element('td', {'class': 'price_diff'}).update(prices.priceDiff) })
 					.insert({'bottom': new Element('td', {'class': 'price_min'}).update(prices.minPrice) })
-					.insert({'bottom': new Element('td') })
-					.insert({'bottom': new Element('td') })
 				})
 			})
-						.insert({'bottom': new Element('thead')
+
+			.insert({'bottom': new Element('thead')
 				.insert({'bottom': new Element('tr')
 					.insert({'bottom': new Element('th').update('CPL') })
 					.insert({'bottom': new Element('th').update('MSY') })
@@ -201,6 +237,5 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 				})
 			})
 		});
-		
 	}
 });
