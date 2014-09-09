@@ -1,6 +1,7 @@
 <com:TContent ID="MainContent">
 	<com:TCallback ID="searchCustomerBtn" onCallback="searchCustomer" />
 	<com:TCallback ID="searchProductBtn" onCallback="searchProduct" />
+	<com:TCallback ID="saveOrderBtn" onCallback="saveOrder" />
 	<div class="pagewrapper orderdetails">
 		<div id="detailswrapper" class="contentDiv"></div>
 	</div>

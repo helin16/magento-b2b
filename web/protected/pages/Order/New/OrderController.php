@@ -29,11 +29,18 @@ class OrderController extends BPCPageAbstract
 	protected function _getEndJs()
 	{
 		$js = parent::_getEndJs();
+		
+		$paymentMethods =  array_map(create_function('$a', 'return $a->getJson();'), PaymentMethod::getAll());
+		$shippingMethods =  array_map(create_function('$a', 'return $a->getJson();'), Courier::getAll());
+		$customer = (isset($_REQUEST['customerid']) && ($customer = Customer::get(trim($_REQUEST['customerid']))) instanceof Customer) ? $customer->getJson() : null;
 		$js .= "pageJs";
 			$js .= ".setHTMLIDs('detailswrapper')";
 			$js .= ".setCallbackId('searchCustomer', '" . $this->searchCustomerBtn->getUniqueID() . "')";
 			$js .= ".setCallbackId('searchProduct', '" . $this->searchProductBtn->getUniqueID() . "')";
-			$js .= ".init();";
+			$js .= ".setCallbackId('saveOrder', '" . $this->saveOrderBtn->getUniqueID() . "')";
+			$js .= ".setPaymentMethods(" . json_encode($paymentMethods) . ")";
+			$js .= ".setShippingMethods(" . json_encode($shippingMethods) . ")";
+			$js .= ".init(" . json_encode($customer) . ");";
 		return $js;
 	}
 	/**
@@ -87,6 +94,28 @@ class OrderController extends BPCPageAbstract
 				$items[] = $product->getJson();
 			}
 			$results['items'] = $items;
+		}
+		catch(Exception $ex)
+		{
+			$errors[] = $ex->getMessage();
+		}
+		$param->ResponseData = StringUtilsAbstract::getJson($results, $errors);
+	}
+	/**
+	 * saveOrder
+	 *
+	 * @param unknown $sender
+	 * @param unknown $param
+	 * 
+	 * @throws Exception
+	 *
+	 */
+	public function saveOrder($sender, $param)
+	{
+		$results = $errors = array();
+		try
+		{
+			var_dump($param->CallbackParameter);
 		}
 		catch(Exception $ex)
 		{
