@@ -3,6 +3,7 @@
 <com:Application.controls.chosen.Chosen />
 <com:TCallback ID="priceMatchingBtn" OnCallback = 'Page.priceMatching' />
 <com:TCallback ID="toggleItemBtn" OnCallback = 'Page.toggleItem' />
+<com:TCallback ID="getCategoriesBtn" OnCallback="getCategories" />
 	<div class="pagewrapper productlistwraper">
 		<div class="col-md-12">
 			<div class="panel panel-default" id="searchPanel" style="overflow: visible;">
@@ -41,30 +42,26 @@
 							</div>
 						</div>
 					</div>
-				    <div class="row">
-				        <div class="col-xs-12">
-				            <div class="form-group">
+					
+					<div class="row">
+						<div class="col-sm-6">
+	                        <div class="form-group form-group-sm">
 				                <label for="manufacture">Manufacture: </label>
 				                <select search_field="pro.manufacturerIds" id="productBrandId" multiple class="chosen"></select>
-				            </div>
-				         </div>
-				    </div>
-				    <div class="row">
-				        <div class="col-xs-12">
-				            <div class="form-group">
+	                        </div>
+	                        <div class="form-group form-group-sm">
 				                <label for="supplier">Supplier: </label><br/>
 				                <select search_field="pro.supplierIds" id="productSupplierId" multiple class="chosen"></select>
-				            </div>
-				         </div>
-				    </div>
-				    <div class="row">
-				        <div class="col-xs-12">
-				            <div class="form-group">
+	                        </div>
+						</div>
+						
+						<div class="col-sm-6">
+							<div class="form-group form-group-sm">
 				                <label for="productCategory">Product Category: </label>
 				                <select search_field="pro.productCategoryIds" id="productCategoryId" multiple class="chosen"></select>
-				            </div>
-				         </div>
-				    </div>
+	                       </div>
+						</div>
+					</div>
 				</div>
 			</div>
 		</div>
