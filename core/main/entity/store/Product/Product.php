@@ -412,12 +412,12 @@ class Product extends InfoEntityAbstract
 		if(($sku = trim($sku)) !== '')
 		{
 			$where[] = 'pro.sku like ?';
-			$params[] = $sku . '%';
+			$params[] = '%' . $sku . '%';
 		}
 		if(($name = trim($name)) !== '')
 		{
 			$where[] = 'pro.name like ?';
-			$params[] = $name . '%';
+			$params[] = '%' . $name . '%';
 		}
 		if(($active = trim($active)) !== '')
 		{

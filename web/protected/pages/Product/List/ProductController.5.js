@@ -14,6 +14,9 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		this._item = item;
 		return this;
 	}
+	/**
+	 * Load the manufacturers
+	 */
 	,_loadManufactures: function(manufactures) {
 		this.manufactures = manufactures;
 		var tmp = {};
@@ -24,6 +27,9 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		});
 		return this;
 	}
+	/**
+	 * Load the suppliers
+	 */
 	,_loadSuppliers: function(suppliers) {
 		this.suppliers = suppliers;
 		var tmp = {};
@@ -34,16 +40,9 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		});
 		return this;
 	}
-	,_loadProductCategories: function(productCategories) {
-		this.productCategories = productCategories;
-		var tmp = {};
-		tmp.me = this;
-		tmp.selectionBox = $(tmp.me.searchDivId).down('#productCategoryId');
-		tmp.me.productCategories.each(function(option) {
-			tmp.selectionBox.insert({'bottom': new Element('option',{'value': option.id}).update(option.name) });
-		});
-		return this;
-	}
+	/**
+	 * initiating the chosen input
+	 */
 	,_loadChosen: function () {
 		$$(".chosen").each(function(item) {
 			item.store('chosen', new Chosen(item, {
@@ -54,32 +53,9 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		});
 		return this;
 	}
-	,openToolsURL: function(url, refreshFunc) {
-		var tmp = {};
-		tmp.me = this;
-		tmp.options = {
-				'width'			: '95%',
-				'height'		: '95%',
-				'autoScale'     : false,
-				'autoDimensions': false,
-				'fitToView'     : false,
-				'autoSize'      : false,
-				'type'			: 'iframe',
-				'href'			: url
-	 		};
-		if(typeof(refreshFunc) === 'function') {
-			tmp.options.beforeClose = refreshFunc;
-		}
-		jQuery.fancybox(tmp.options);
-		return tmp.me;
-	}
-	,iframeSrc: function(url){
-		var tmp = {};
-		tmp.me = this;
-	    $('productTrend').src = url;
-	    $('productTrend').src = $('productTrend').src;
-		return tmp.me;
-	}
+	/**
+	 * Binding the search key
+	 */
 	,_bindSearchKey: function() {
 		var tmp = {}
 		tmp.me = this;
@@ -90,94 +66,11 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 				});
 			})
 		});
-
 		return this;
 	}
-	,_getChildCategoryJson: function(category, selectedCateIds) {
-		var tmp = {};
-		tmp.me = this;
-		tmp.cate = {'text': category.name, 'id': category.id};
-		if(selectedCateIds.indexOf(category.id) >= 0){
-			tmp.cate.checked = true;
-		}
-		if(category.children && category.children.size() > 0) {
-			tmp.cate.children = [];
-			category.children.each(function(child){
-				tmp.cate.children.push( tmp.me._getChildCategoryJson(child, selectedCateIds) );
-			});
-		}
-		return tmp.cate;
-	}
 	/**
-	 * initialising the tree
+	 * Getting the supplier codes for display result list per row
 	 */
-	,_initTree: function(categories, selector) {
-		var tmp = {};
-		tmp.me = this;
-		tmp.me._item.categories= {};
-		tmp.categoies = [];
-		tmp.selectedCateIds = [];
-		tmp.me._item.categories.each(function(cate) {
-			tmp.selectedCateIds.push(cate.id);
-		})
-		categories.each(function(category) {
-			tmp.categoies.push(tmp.me._getChildCategoryJson(category, tmp.selectedCateIds));
-		});
-		jQuery(selector).tree({
-			data: tmp.categoies
-		});
-		return tmp.me;
-	}
-	/**
-	 * Ajax: getting all categories from server
-	 */
-	,_getCategories: function(resultDiv) {
-		var tmp = {};
-		tmp.me = this;
-		tmp.me.postAjax(tmp.me.getCallbackId('getCategories'), {}, {
-			'onLoading': function (sender, param) {
-				$(resultDiv).update(tmp.me.getLoadingImg());
-			}
-			, 'onSuccess': function (sender, param) {
-				try {
-					tmp.result = tmp.me.getResp(param, false, true);
-					if(!tmp.result || !tmp.result.items)
-						return;
-					tmp.treeDiv = new Element('ul', {'id': tmp.me._productTreeId, 'data-options': 'animate:true, checkbox:true'}) ;
-					$(resultDiv).update(new Element('div', {'class': 'easyui-panel'}).update(tmp.treeDiv) );
-					tmp.me._signRandID(tmp.treeDiv);
-					tmp.me._initTree(tmp.result.items, '#' + tmp.treeDiv.id);
-					$(resultDiv).addClassName('loaded');
-				} catch (e) {
-					$(resultDiv).update(tmp.me.getAlertBox('Error:', e).addClassName('alert-danger'));
-				}
-			}
-		});
-		return tmp.me;
-	}
-	/**
-	 * Getting the product category panel
-	 */
-	,_getCategoryPanel: function(item) {
-		var tmp = {};
-		tmp.me = this;
-		tmp.newDiv = new Element('div', {'class': 'panel panel-default'})
-			.insert({'bottom': new Element('div', {'class': 'panel-heading'})
-				.insert({'bottom': new Element('a', {'href': 'javascript: void(0);'})
-					.insert({'bottom': new Element('strong').update( 'Categories: ' + (tmp.me._item.categories ? tmp.me._item.categories.size() + ' Selected' : ''))	})
-				})
-				.observe('click', function() {
-					tmp.btn = this;
-					tmp.panelBody = $(tmp.btn).up('.panel').down('.panel-body');
-					if(!tmp.panelBody.hasClassName('loaded')) {
-						tmp.me._getCategories(tmp.panelBody);
-					}
-					tmp.panelBody.toggle();
-				})
-			})
-			.insert({'bottom': new Element('div', {'class': 'panel-body', 'style': 'display: none'}) })
-		return tmp.newDiv;
-	}
 	,_getSupplierCodes: function(supplierCodes, isTitle) {
 		var tmp = {};
 		tmp.me = this;
@@ -187,111 +80,64 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		})
 		return tmp.supplierCodeString.join(', ');
 	}
+	/**
+	 * Displaying the selected product 
+	 */
+	,_displaySelectedProduct: function(item) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.me.iframeSrc('/statics/product/pricetrend.html?productid=' + item.id);
+		tmp.me.postAjax(tmp.me.getCallbackId('priceMatching'), {'id': item.id}, {
+			'onSuccess': function(sender, param) {
+				try{
+					tmp.result = tmp.me.getResp(param, false, true);
+					if(!tmp.result)
+						return;
+					tmp.me._displayPriceMatchResult(tmp.result);
+				} catch (e) {
+					tmp.me.showModalBox('Error', e, true);
+				}
+			}
+		});
+		return tmp.me;
+	}
+	/**
+	 * Getting each row for displaying the result list
+	 */
 	,_getResultRow: function(row, isTitle) {
 		var tmp = {};
 		tmp.me = this;
-		//tmp.me._item = tmp.me;
-		//console.debug(tmp.me_get);
 		tmp.tag = (tmp.isTitle === true ? 'th' : 'td');
 		tmp.isTitle = (isTitle || false);
 		tmp.row = new Element('tr', {'class': (tmp.isTitle === true ? '' : 'product_item'), 'product_id' : row.id}).store('data', row)
-			.observe('click', function(){
-				if(document.getElementsByClassName("product_item item_row active")[0])
-					document.getElementsByClassName("product_item item_row active")[0].removeClassName('active')
-				this.addClassName('active')
-			})
-			.insert({'bottom': new Element(tmp.tag, {'class': 'sku'}).update(row.sku) 
-				.observe('click', function(){
-					//tmp.me._getCategories(this);
-				})
-			})
-			//.insert({'bottom': tmp.me._getCategoryPanel(tmp.me._item) })
-			.insert({'bottom': new Element(tmp.tag, {'class': 'name'}).update(row.name) 
-				.observe('click', function(){
-					tmp.me.iframeSrc('/statics/product/pricetrend.html?productid=' + row.id);
-					
-					tmp.me.postAjax(tmp.me.getCallbackId('priceMatching'), {'id': row.id}, {
-						'onSuccess': function(sender, param) {
-							try{
-								tmp.result = tmp.me.getResp(param, false, true);
-								if(!tmp.result)
-									return;
-								
-								tmp.me._displayPriceMatchResult(tmp.result);
-							} catch (e) {
-								alert(e);
-							}
-						}
-					});
-				})
-				.observe('dblclick', function(){
-					tmp.me.openToolsURL('/product/' + row.id + '.html',
-						function() {
-							if($(tmp.me.resultDivId).down('.product_item[product_id=' + row.id + ']'))
-								$(tmp.me.resultDivId).down('.product_item[product_id=' + row.id + ']').replace(tmp.me._getResultRow($$('iframe.fancybox-iframe').first().contentWindow.pageJs._item));
-						}
-					)
-				})
-			})
-			.insert({'bottom': new Element(tmp.tag, {'class': 'manufacturer'}).update(row.manufacturer ? row.manufacturer.name : '') })
+			.insert({'bottom': new Element(tmp.tag, {'class': 'sku', 'title': row.name}).update(row.sku) })
+			.insert({'bottom': new Element(tmp.tag, {'class': 'manufacturer col-xs-2'}).update(row.manufacturer ? row.manufacturer.name : '') })
 			.insert({'bottom': new Element(tmp.tag, {'class': 'supplier col-xs-2'}).update(
 					row.supplierCodes ? tmp.me._getSupplierCodes(row.supplierCodes, isTitle) : ''
 			) })
 			.insert({'bottom': new Element(tmp.tag, {'class': 'product_active col-xs-1'})
-				.insert({'bottom': (tmp.isTitle === true ? row.active : new Element('input', {'type': 'checkbox', 'disabled': false, 'checked': row.active})
-					.observe('click', function(){
-						tmp.active = $(this).checked;
-						tmp.me.postAjax(tmp.me.getCallbackId('toggleItem'), {'id': row.id, 'active': tmp.active}, {});
-					})
-				) })
+				.insert({'bottom': (tmp.isTitle === true ? row.active : new Element('input', {'type': 'checkbox', 'disabled': true, 'checked': row.active}) ) })
+			});
+		if(tmp.isTitle === false) {
+			tmp.row.observe('click', function(){
+				//remove all active class
+				$(tmp.me.resultDivId).getElementsBySelector('.product_item.active').each(function(item){
+					item.removeClassName('active');
+				});
+				//mark this one as active
+				$(this).addClassName('active');
+				//display details of the selected item
+				tmp.me._displaySelectedProduct(row);
 			})
-			.insert({'bottom': new Element(tmp.tag, {'class': 'text-right btns col-xs-1'}).update(
-				tmp.isTitle === true ?  
-				(new Element('span', {'class': 'btn btn-primary btn-xs', 'title': 'New'})
-					.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-plus'}) })
-					.insert({'bottom': ' NEW' })
-					.observe('click', function(){
-						tmp.me.openToolsURL('/product/' + 'new' + '.html',
-								function() {
-									if($(tmp.me.resultDivId).down('.product_item[product_id=' + row.id + ']'))
-										$(tmp.me.resultDivId).down('.product_item[product_id=' + row.id + ']').replace(tmp.me._getResultRow($$('iframe.fancybox-iframe').first().contentWindow.pageJs._item));
-								}
-							)
-					})
+			.observe('dblclick', function(){
+				tmp.me.openToolsURL('/product/' + row.id + '.html',
+					function() {
+						if($(tmp.me.resultDivId).down('.product_item[product_id=' + row.id + ']'))
+							$(tmp.me.resultDivId).down('.product_item[product_id=' + row.id + ']').replace(tmp.me._getResultRow($$('iframe.fancybox-iframe').first().contentWindow.pageJs._item));
+					}
 				)
-				: (new Element('span', {'class': 'btn-group btn-group-xs'})
-					.insert({'bottom': new Element('span', {'class': 'btn btn-default', 'title': 'Edit'})
-						.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-pencil'}) })
-						.observe('click', function(){
-							tmp.me.openToolsURL('/product/' + row.id + '.html',
-								function() {
-									if($(tmp.me.resultDivId).down('.product_item[product_id=' + row.id + ']'))
-										$(tmp.me.resultDivId).down('.product_item[product_id=' + row.id + ']').replace(tmp.me._getResultRow($$('iframe.fancybox-iframe').first().contentWindow.pageJs._item));
-								}
-							)
-						})
-					})
-					.insert({'bottom': new Element('span', {'class': 'btn btn-default', 'title': 'Trend'})
-						.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-cog'}) })
-						.observe('click', function(){
-							tmp.me.iframeSrc('/statics/product/pricetrend.html?productid=' + row.id);
-							tmp.me.postAjax(tmp.me.getCallbackId('priceMatching'), {'id': row.id}, {
-								'onSuccess': function(sender, param) {
-									try{
-										tmp.result = tmp.me.getResp(param, false, true);
-										if(!tmp.result)
-											return;
-										
-										tmp.me._displayPriceMatchResult(tmp.result);
-									} catch (e) {
-										alert(e);
-									}
-								}
-							});
-						})
-					}) ) 
-			) })
-		;
+			})
+		}
 		return tmp.row;
 	}
 	,_displayPriceMatchResult: function(prices) {
@@ -306,8 +152,6 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 					.insert({'bottom': new Element('th').update('My Price') })
 					.insert({'bottom': new Element('th', {'class': 'price_diff'}).update('Price Diff.') })
 					.insert({'bottom': new Element('th').update('Min Price') })
-					.insert({'bottom': new Element('th').update('') })
-					.insert({'bottom': new Element('th').update('') })
 				})
 			})
 			.insert({'bottom': new Element('tbody')

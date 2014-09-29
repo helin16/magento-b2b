@@ -23,6 +23,10 @@ class ProductController extends CRUDPageAbstract
 		if(!AccessControl::canAccessProductsPage(Core::getRole()))
 			die('You do NOT have access to this page');
 	}
+	/**
+	 * (non-PHPdoc)
+	 * @see CRUDPageAbstract::_getEndJs()
+	 */
 	protected function _getEndJs()
 	{
 		foreach (Manufacturer::getAll() as $os)
@@ -33,9 +37,8 @@ class ProductController extends CRUDPageAbstract
 			$productCategoryArray[] = $os->getJson();
 		
 		$js = parent::_getEndJs();
-		$js .= 'pageJs._loadManufactures('.json_encode($manufactureArray).');';
-		$js .= 'pageJs._loadSuppliers('.json_encode($supplierArray).');';
-		$js .= 'pageJs._loadProductCategories('.json_encode($productCategoryArray).')';
+		$js .= 'pageJs._loadManufactures('.json_encode($manufactureArray).')';
+		$js .= '._loadSuppliers('.json_encode($supplierArray).')';
 		$js .= "._loadChosen()";
 		$js .= "._bindSearchKey()";
 		$js .= ".setCallbackId('priceMatching', '" . $this->priceMatchingBtn->getUniqueID() . "')";
@@ -48,6 +51,12 @@ class ProductController extends CRUDPageAbstract
 		$js .= '$("searchBtn").click();';
 		return $js;
 	}
+	/**
+	 * Getting the categories
+	 * 
+	 * @param unknown $sender
+	 * @param unknown $param
+	 */
 	public function getCategories($sender, $param)
 	{
 		$results = $errors = array();
@@ -67,6 +76,13 @@ class ProductController extends CRUDPageAbstract
 		}
 		$param->ResponseData = StringUtilsAbstract::getJson($results, $errors);
 	}
+	/**
+	 * Getting the category json array
+	 * 
+	 * @param ProductCategory $category
+	 * 
+	 * @return multitype:multitype:NULL
+	 */
 	private function _getCategoryJson(ProductCategory $category)
 	{
 		$categoryJson = $category->getJson();
@@ -79,6 +95,14 @@ class ProductController extends CRUDPageAbstract
 		$categoryJson['children'] = $children;
 		return $categoryJson;
 	}
+	/**
+	 * Updating the full description of the product
+	 * 
+	 * @param Product $product
+	 * @param unknown $param
+	 * 
+	 * @return ProductController
+	 */
 	private function _updateFullDescription(Product &$product, $param)
 	{
 		//update full description
