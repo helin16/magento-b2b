@@ -23,10 +23,6 @@ class ProductController extends CRUDPageAbstract
 		if(!AccessControl::canAccessProductsPage(Core::getRole()))
 			die('You do NOT have access to this page');
 	}
-	/**
-	 * (non-PHPdoc)
-	 * @see CRUDPageAbstract::_getEndJs()
-	 */
 	protected function _getEndJs()
 	{
 		foreach (Manufacturer::getAll() as $os)
@@ -37,26 +33,25 @@ class ProductController extends CRUDPageAbstract
 			$productCategoryArray[] = $os->getJson();
 		
 		$js = parent::_getEndJs();
-		$js .= 'pageJs._loadManufactures('.json_encode($manufactureArray).')';
-		$js .= '._loadSuppliers('.json_encode($supplierArray).')';
+		$js .= 'try{';
+		$js .= 'pageJs._loadManufactures('.json_encode($manufactureArray).');';
+		$js .= 'pageJs._loadSuppliers('.json_encode($supplierArray).');';
+		$js .= "pageJs.setCallbackId('getCategories', '" . $this->getCategoriesBtn->getUniqueID() . "')";
 		$js .= "._loadChosen()";
 		$js .= "._bindSearchKey()";
+		
+		$js .= "._getCategoryPanel()";
+		
 		$js .= ".setCallbackId('priceMatching', '" . $this->priceMatchingBtn->getUniqueID() . "')";
 		$js .= ".setCallbackId('toggleItem', '" . $this->toggleItemBtn->getUniqueID() . "')";
-		$js .= ".setCallbackId('getCategories', '" . $this->getCategoriesBtn->getUniqueID() . "')";
 		$class = trim($this->_focusEntity);
 		$entity = new $class();
 		$js .= ".setItem(" . (trim($entity->getId()) === '' ? '{}' : json_encode($entity->getJson())) . ")";
 		$js .= ".getResults(true, " . $this->pageSize . ");";
 		$js .= '$("searchBtn").click();';
+		$js .= '} catch(e){console.error(e)}';
 		return $js;
 	}
-	/**
-	 * Getting the categories
-	 * 
-	 * @param unknown $sender
-	 * @param unknown $param
-	 */
 	public function getCategories($sender, $param)
 	{
 		$results = $errors = array();
@@ -76,13 +71,6 @@ class ProductController extends CRUDPageAbstract
 		}
 		$param->ResponseData = StringUtilsAbstract::getJson($results, $errors);
 	}
-	/**
-	 * Getting the category json array
-	 * 
-	 * @param ProductCategory $category
-	 * 
-	 * @return multitype:multitype:NULL
-	 */
 	private function _getCategoryJson(ProductCategory $category)
 	{
 		$categoryJson = $category->getJson();
@@ -95,14 +83,6 @@ class ProductController extends CRUDPageAbstract
 		$categoryJson['children'] = $children;
 		return $categoryJson;
 	}
-	/**
-	 * Updating the full description of the product
-	 * 
-	 * @param Product $product
-	 * @param unknown $param
-	 * 
-	 * @return ProductController
-	 */
 	private function _updateFullDescription(Product &$product, $param)
 	{
 		//update full description
@@ -141,7 +121,7 @@ class ProductController extends CRUDPageAbstract
             }
             
             $stats = array();
-            $objects = Product::getProducts(trim($serachCriteria['pro.sku']), trim($serachCriteria['pro.name']), is_null($serachCriteria['pro.supplierIds']) ? array() : $serachCriteria['pro.supplierIds'], is_null($serachCriteria['pro.manufacturerIds']) ? array() : $serachCriteria['pro.manufacturerIds'], is_null($serachCriteria['pro.productCategoryIds']) ? array() : $serachCriteria['pro.productCategoryIds'], array(), trim($serachCriteria['pro.active']), $pageNo, $pageSize, array('pro.name' => 'asc'), $stats);
+            $objects = Product::getProducts(trim($serachCriteria['pro.sku']), trim($serachCriteria['pro.name']), is_null($serachCriteria['pro.supplierIds']) ? array() : $serachCriteria['pro.supplierIds'], is_null($serachCriteria['pro.manufacturerIds']) ? array() : $serachCriteria['pro.manufacturerIds'], !isset($serachCriteria['pro.productCategoryIds']) ? array() : $serachCriteria['pro.productCategoryIds'], array(), trim($serachCriteria['pro.active']), $pageNo, $pageSize, array('pro.name' => 'asc'), $stats);
             $results['pageStats'] = $stats;
             $results['items'] = array();
             foreach($objects as $obj)
