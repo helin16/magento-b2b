@@ -8,7 +8,7 @@
  */
 class ProductCategory extends BaseEntityAbstract
 {
-	const POSITION_SEPARATOR = '|';
+	const POSITION_SEPARATOR = '/';
 	/**
 	 * has the parent of the category changed
 	 * 
@@ -327,10 +327,7 @@ class ProductCategory extends BaseEntityAbstract
 			$ids = explode(self::POSITION_SEPARATOR, trim($this->getPosition()));
 			$names = array();
 			foreach($ids as $id)
-			{
-				$cate = FactoryAbastract::dao(get_class($this))->findById($id);
-				$names[] = $cate->getName();
-			}
+				$names[] =  self::get($id)->getName();
 			$this->_namePathCache = implode(self::POSITION_SEPARATOR, $names);
 		}
 		return trim($this->_namePathCache);

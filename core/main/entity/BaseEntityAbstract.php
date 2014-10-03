@@ -548,6 +548,15 @@ abstract class BaseEntityAbstract
     {
     	return FactoryAbastract::dao(get_called_class())->countByCriteria($criteria, $params);
     }
+    /**
+     * Getting the DaoQuery
+     * 
+     * @return DaoQuery
+     */
+    public static function getQuery()
+    {
+    	return FactoryAbastract::dao(get_called_class())->getQuery();
+    }
 }
 
 ?>

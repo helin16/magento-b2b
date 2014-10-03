@@ -30,7 +30,6 @@ StaticsPageJs.prototype = Object.extend(new BPCPageJs(), {
 					tmp.result = tmp.me.getResp(param, false, true);
 					if(!tmp.result)
 						throw 'Syste Error: No result came back!';
-					console.debug(tmp.result);
 					tmp.me._drawChart(tmp.result);
 				} catch (e) {
 					$(tmp.me._htmlIds.resultDivId).update(tmp.me.getAlertBox('ERROR:', e).addClassName('alert-danger'));

@@ -24,7 +24,7 @@ class StaticsController extends StaticsPageAbstract
 		$searchCriteria = array();
 		$searchCriteria['productId'] = (isset($_REQUEST['productid']) ? trim($_REQUEST['productid']) : '');
 		
-		$dateFrom = (isset($_REQUEST['from']) ? trim($_REQUEST['from']) : trim(UDate::now()->modify('-12 month')));
+		$dateFrom = (isset($_REQUEST['from']) ? trim($_REQUEST['from']) : trim(UDate::now()->modify('-11 month')));
 		$dateTo = (isset($_REQUEST['to']) ? trim($_REQUEST['to']) : trim(UDate::now()));
 		$searchCriteria['dateRange'] = array('from' => $dateFrom, 'to' => $dateTo);
 		$js .= 'pageJs';
@@ -98,7 +98,6 @@ class StaticsController extends StaticsPageAbstract
 		$return = array();
 		foreach($result as $row)
 		{
-			var_dump($row);
 			$created = new UDate(trim($row['created']));
 			$return[] = array($created->format('U') * 1000 , (double)trim($row['unitPrice']));
 		}

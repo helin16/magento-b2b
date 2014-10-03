@@ -86,6 +86,62 @@ class Product extends InfoEntityAbstract
 	 * @var Manufacturer
 	 */
 	protected $manufacturer = null;
+	/**
+	 * the supplier codes
+	 * 
+	 * @var array
+	 */
+	protected $supplierCodes = array();
+	/**
+	 * The product_categories
+	 * 
+	 * @var array
+	 */
+	protected $categories = array();
+	/**
+	 * Getter for categories
+	 *
+	 * @return array()
+	 */
+	public function getCategories() 
+	{
+		$this->loadOneToMany('categories');
+	    return $this->categories;
+	}
+	/**
+	 * Setter for categories
+	 *
+	 * @param unkown $value The categories
+	 *
+	 * @return Product
+	 */
+	public function setCategories($value) 
+	{
+	    $this->categories = $value;
+	    return $this;
+	}
+	/**
+	 * Getter for supplierCodes
+	 *
+	 * @return array
+	 */
+	public function getSupplierCodes() 
+	{
+		$this->loadOneToMany('supplierCodes');
+	    return $this->supplierCodes;
+	}
+	/**
+	 * Setter for supplierCodes
+	 *
+	 * @param unkown $value The supplierCodes
+	 *
+	 * @return Product
+	 */
+	public function setSupplierCodes($value) 
+	{
+	    $this->supplierCodes = $value;
+	    return $this;
+	}
 	/** 
 	 * Getter for asNewFromDate
 	 * 
@@ -362,91 +418,6 @@ class Product extends InfoEntityAbstract
 		return $this;
 	}
 	/**
-	 * Creating the product based on sku
-	 * 
-	 * @param string $sku           The sku of the product
-	 * @param string $name          The name of the product
-	 * @param string $mageProductId The magento id of the product
-	 * @param int    $stockOnHand   The total quantity on hand for this product
-	 * @param int    $stockOnOrder  The total quantity on order from supplier for this product
-	 * @param bool   $isFromB2B     Whether this product is created via B2B?
-	 * @param string $shortDescr    The short description of the product
-	 * @param string $fullDescr     The assetId of the full description asset of the product
-	 * 
-	 * @return Ambigous <Product, Ambigous, NULL, BaseEntityAbstract>
-	 */
-	public static function create($sku, $name, $mageProductId = '', $stockOnHand = null, $stockOnOrder = null, $isFromB2B = false, $shortDescr = '', $fullDescr = '', Manufacturer $manufacturer = null)
-	{
-		if(!($product = self::getBySku($sku)) instanceof Product)
-			$product = new Product();
-		$product->setSku(trim($sku))
-			->setName($name);
-		if(($mageProductId = trim($mageProductId)) !== "")
-			$product->setMageId($mageProductId);
-		
-		if(trim($product->getId()) === '')
-		{
-			$product->setIsFromB2B($isFromB2B)
-				->setShortDescription($shortDescr);
-			if($stockOnOrder !== null && is_numeric($stockOnOrder))
-				$product->setStockOnOrder(intval($stockOnOrder));
-			if($stockOnHand !== null && is_numeric($stockOnHand))
-				$product->setStockOnHand(intval($stockOnHand));
-			if (($$fullDescr = trim($fullDescr)) !== '')
-			{
-				$asset = Asset::registerAsset('full_desc_' . $sku, $fullDescr);
-				$product->setFullDescAssetId(trim($asset->getAssetId()));
-			}
-			if ($manufacturer instanceof Manufacturer)
-			{
-				$product->setManufacturer($manufacturer);
-			}
-		}
-		FactoryAbastract::dao(get_called_class())->save($product);
-		return $product;
-	}
-	public static function getProducts($sku, $name, array $supplierIds = array(), array $manufacturerIds = array(), array $categoryIds = array(), array $statusIds = array(), $active = null, $pageNo = null, $pageSize = DaoQuery::DEFAUTL_PAGE_SIZE, $orderBy = array(), &$stats = array())
-	{
-		$where = array(1);
-		$params = array();
-		if(($sku = trim($sku)) !== '')
-		{
-			$where[] = 'pro.sku like ?';
-			$params[] = '%' . $sku . '%';
-		}
-		if(($name = trim($name)) !== '')
-		{
-			$where[] = 'pro.name like ?';
-			$params[] = '%' . $name . '%';
-		}
-		if(($active = trim($active)) !== '')
-		{
-			$where[] = 'pro.active = ?';
-			$params[] = intval($active);
-		}
-		if(count($manufacturerIds) > 0)
-		{
-			$where[] = 'pro.manufacturerId in (' . str_repeat('?', count($manufacturerIds)) . ')';
-			$params = array_merge($params, $manufacturerIds);
-		}
-		if(count($statusIds) > 0)
-		{
-			$where[] = 'pro.statusId in (' . str_repeat('?', count($statusIds)) . ')';
-			$params = array_merge($params, $statusIds);
-		}
-		if(count($supplierIds) > 0)
-		{
-			$where[] = ' = ?';
-			$params[] = $active;
-		}
-		if(count($categoryIds) > 0)
-		{
-			$where[] = ' = ?';
-			$params[] = $active;
-		}
-		return Product::getAllByCriteria(implode(' AND ', $where), $params, false, $pageNo, $pageSize, $orderBy, $stats);
-	}
-	/**
 	 * Adding a product image to the product
 	 * 
 	 * @param Asset $asset The asset object that reprents the image
@@ -483,18 +454,6 @@ class Product extends InfoEntityAbstract
 			$this->_cache['images'] = ProductImage::getAllByCriteria('productId = ? ', array($this->getId()));
 		}
 		return $this->_cache['images'];
-	}
-	/**
-	 * Getting the product via sku
-	 * 
-	 * @param string $sku The sku of the product
-	 * 
-	 * @return Ambigous <NULL, BaseEntityAbstract>
-	 */
-	public static function getBySku($sku)
-	{
-		$products = self::getAllByCriteria('sku = ? ', array(trim($sku)), false, 1, 1);
-		return (count($products) === 0 ? null : $products[0]);
 	}
 	/**
 	 * (non-PHPdoc)
@@ -561,6 +520,8 @@ class Product extends InfoEntityAbstract
 		DaoMap::setDateType('asNewToDate', 'datetime', true);
 		DaoMap::setStringType('shortDescription', 'varchar', 255);
 		DaoMap::setStringType('fullDescAssetId', 'varchar', 100);
+		DaoMap::setOneToMany('supplierCodes', 'SupplierCode', 'pro_sup_code');
+		DaoMap::setOneToMany('categories', 'Product_Category', 'pro_cate');
 		parent::__loadDaoMap();
 		
 		DaoMap::createUniqueIndex('sku');
@@ -575,5 +536,119 @@ class Product extends InfoEntityAbstract
 		DaoMap::createIndex('asNewFromDate');
 		DaoMap::createIndex('asNewToDate');
 		DaoMap::commit();
+	}
+	/**
+	 * Getting the product via sku
+	 *
+	 * @param string $sku The sku of the product
+	 *
+	 * @return Ambigous <NULL, BaseEntityAbstract>
+	 */
+	public static function getBySku($sku)
+	{
+		$products = self::getAllByCriteria('sku = ? ', array(trim($sku)), false, 1, 1);
+		return (count($products) === 0 ? null : $products[0]);
+	}
+	/**
+	 * Creating the product based on sku
+	 *
+	 * @param string $sku           The sku of the product
+	 * @param string $name          The name of the product
+	 * @param string $mageProductId The magento id of the product
+	 * @param int    $stockOnHand   The total quantity on hand for this product
+	 * @param int    $stockOnOrder  The total quantity on order from supplier for this product
+	 * @param bool   $isFromB2B     Whether this product is created via B2B?
+	 * @param string $shortDescr    The short description of the product
+	 * @param string $fullDescr     The assetId of the full description asset of the product
+	 *
+	 * @return Ambigous <Product, Ambigous, NULL, BaseEntityAbstract>
+	 */
+	public static function create($sku, $name, $mageProductId = '', $stockOnHand = null, $stockOnOrder = null, $isFromB2B = false, $shortDescr = '', $fullDescr = '', Manufacturer $manufacturer = null)
+	{
+		if(!($product = self::getBySku($sku)) instanceof Product)
+			$product = new Product();
+		$product->setSku(trim($sku))
+		->setName($name);
+		if(($mageProductId = trim($mageProductId)) !== "")
+			$product->setMageId($mageProductId);
+	
+		if(trim($product->getId()) === '')
+		{
+			$product->setIsFromB2B($isFromB2B)
+			->setShortDescription($shortDescr);
+			if($stockOnOrder !== null && is_numeric($stockOnOrder))
+				$product->setStockOnOrder(intval($stockOnOrder));
+			if($stockOnHand !== null && is_numeric($stockOnHand))
+				$product->setStockOnHand(intval($stockOnHand));
+			if (($$fullDescr = trim($fullDescr)) !== '')
+			{
+				$asset = Asset::registerAsset('full_desc_' . $sku, $fullDescr);
+				$product->setFullDescAssetId(trim($asset->getAssetId()));
+			}
+			if ($manufacturer instanceof Manufacturer)
+			{
+				$product->setManufacturer($manufacturer);
+			}
+		}
+		FactoryAbastract::dao(get_called_class())->save($product);
+		return $product;
+	}
+	/**
+	 * Finding the products with different params
+	 * 
+	 * @param unknown $sku
+	 * @param unknown $name
+	 * @param array $supplierIds
+	 * @param array $manufacturerIds
+	 * @param array $categoryIds
+	 * @param array $statusIds
+	 * @param string $active
+	 * @param string $pageNo
+	 * @param unknown $pageSize
+	 * @param unknown $orderBy
+	 * @param unknown $stats
+	 * 
+	 * @return Ambigous <Ambigous, multitype:, multitype:BaseEntityAbstract >
+	 */
+	public static function getProducts($sku, $name, array $supplierIds = array(), array $manufacturerIds = array(), array $categoryIds = array(), array $statusIds = array(), $active = null, $pageNo = null, $pageSize = DaoQuery::DEFAUTL_PAGE_SIZE, $orderBy = array(), &$stats = array())
+	{
+		$where = array(1);
+		$params = array();
+		if(($sku = trim($sku)) !== '')
+		{
+			$where[] = 'pro.sku like ?';
+			$params[] = '%' . $sku . '%';
+		}
+		if(($name = trim($name)) !== '')
+		{
+			$where[] = 'pro.name like ?';
+			$params[] = '%' . $name . '%';
+		}
+		if(($active = trim($active)) !== '')
+		{
+			$where[] = 'pro.active = ?';
+			$params[] = intval($active);
+		}
+		if(count($manufacturerIds) > 0)
+		{
+			$where[] = 'pro.manufacturerId in (' . str_repeat('?', count($manufacturerIds)) . ')';
+			$params = array_merge($params, $manufacturerIds);
+		}
+		if(count($statusIds) > 0)
+		{
+			$where[] = 'pro.statusId in (' . str_repeat('?', count($statusIds)) . ')';
+			$params = array_merge($params, $statusIds);
+		}
+		if(count($supplierIds) > 0)
+		{
+			self::getQuery()->eagerLoad('Product.supplierCodes', 'inner join', 'pro_sup_code', 'pro_sup_code.supplierId in (' . str_repeat('?', count($supplierIds)) . ')');
+			$params = array_merge($params, $supplierIds);
+		}
+		if(count($categoryIds) > 0)
+		{
+			self::getQuery()->eagerLoad('Product.categories', 'inner join', 'pro_cate', 'pro_cate.categoryId in (' . str_repeat('?', count($categoryIds)) . ')');
+			$params = array_merge($params, $categoryIds);
+		}
+		return Product::getAllByCriteria(implode(' AND ', $where), $params, false, $pageNo, $pageSize, $orderBy, $stats);
 	}
 }
