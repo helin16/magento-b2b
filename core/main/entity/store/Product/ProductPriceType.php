@@ -25,6 +25,34 @@ class ProductPriceType extends BaseEntityAbstract
 	 */
 	private $description = '';
 	/**
+	 * Whether the price will be applied to a time period
+	 * 
+	 * @var bool
+	 */
+	private $needTime = false;
+	/** 
+	 * Getter for needTime
+	 * 
+	 * @return boolean
+	 */
+	public function getNeedTime ()
+	{
+		return $this->needTime;
+	}
+	/** 
+	 * 
+	 * Setter for needTime
+	 * 
+	 * @param bool $value
+	 * 
+	 * @return ProductPriceType
+	 */
+	public function setNeedTime($value)
+	{
+		$this->needTime = $value;
+		return $this;
+	}
+	/**
 	 * Getter for name
 	 *
 	 * @return string
@@ -99,9 +127,11 @@ class ProductPriceType extends BaseEntityAbstract
 		DaoMap::begin($this, 'pro_price_type');
 		DaoMap::setStringType('name', 'varchar', 100);
 		DaoMap::setStringType('description', 'varchar', 255);
+		DaoMap::setBoolType('needTime');
 		parent::__loadDaoMap();
 		
 		DaoMap::createUniqueIndex('name');
+		DaoMap::createIndex('needTime');
 		DaoMap::commit();
 	}
 }

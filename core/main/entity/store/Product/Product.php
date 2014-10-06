@@ -631,23 +631,23 @@ class Product extends InfoEntityAbstract
 		}
 		if(count($manufacturerIds) > 0)
 		{
-			$where[] = 'pro.manufacturerId in (' . str_repeat('?', count($manufacturerIds)) . ')';
+			$where[] = 'pro.manufacturerId in (' . implode(',', array_fill(0, count($manufacturerIds), '?')) . ')';
 			$params = array_merge($params, $manufacturerIds);
 		}
 		if(count($statusIds) > 0)
 		{
-			$where[] = 'pro.statusId in (' . str_repeat('?', count($statusIds)) . ')';
+			$where[] = 'pro.statusId in (' . implode(',', array_fill(0, count($statusIds), '?')) . ')';
 			$params = array_merge($params, $statusIds);
 		}
 		if(count($supplierIds) > 0)
 		{
-			self::getQuery()->eagerLoad('Product.supplierCodes', 'inner join', 'pro_sup_code', 'pro.id = pro_sup_code.productId and pro_sup_code.supplierId in (' . str_repeat('?', count($supplierIds)) . ')');
-			$params = array_merge($params, $supplierIds);
+			self::getQuery()->eagerLoad('Product.supplierCodes', 'inner join', 'pro_sup_code', 'pro.id = pro_sup_code.productId and pro_sup_code.supplierId in (' . implode(',', array_fill(0, count($supplierIds), '?')) . ')');
+			$params = array_merge($supplierIds, $params);
 		}
 		if(count($categoryIds) > 0)
 		{
-			self::getQuery()->eagerLoad('Product.categories', 'inner join', 'pro_cate', 'pro.id = pro_cate.productId and pro_cate.categoryId in (' . str_repeat('?', count($categoryIds)) . ')');
-			$params = array_merge($params, $categoryIds);
+			self::getQuery()->eagerLoad('Product.categories', 'inner join', 'pro_cate', 'pro.id = pro_cate.productId and pro_cate.categoryId in (' . implode(',', array_fill(0, count($categoryIds), '?')) . ')');
+			$params = array_merge($categoryIds, $params);
 		}
 		return Product::getAllByCriteria(implode(' AND ', $where), $params, false, $pageNo, $pageSize, $orderBy, $stats);
 	}

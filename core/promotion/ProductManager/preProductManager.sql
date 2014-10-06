@@ -594,6 +594,7 @@ CREATE TABLE `productpricetype` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `name` varchar(100) NOT NULL DEFAULT '',
   `description` varchar(255) NOT NULL DEFAULT '',
+  `needTime` tinyint(1) NOT NULL DEFAULT '0',
   `active` tinyint(1) NOT NULL DEFAULT '1',
   `created` datetime NOT NULL DEFAULT '0001-01-01 00:00:00',
   `createdById` int(10) unsigned NOT NULL DEFAULT '0',
@@ -605,13 +606,14 @@ CREATE TABLE `productpricetype` (
   KEY `createdById` (`createdById`),
   KEY `updated` (`updated`),
   KEY `updatedById` (`updatedById`),
-  KEY `name` (`name`)
+  KEY `name` (`name`),
+  KEY `needTime` (`needTime`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
-insert into `productpricetype` (`id`, `name`, `description`, `active`, `created`, `createdById`, `updated`, `updatedById`) values
-	(1, 'RRP', 'Recommended Retail Price / Normal sales price', 1, NOW(), 10, NOW(), 10),
-	(2, 'Casual Special Price', 'Promotional purpose sepcial price', 1, NOW(), 10, NOW(), 10),
-	(3, 'Special Price Group 1', 'Special Price For Group 1 Customers', 1, NOW(), 10, NOW(), 10),
-	(4, 'Special Price Group 2', 'Special Price For Group 2 Customers', 1, NOW(), 10, NOW(), 10);
+insert into `productpricetype` (`id`, `name`, `description`, `needTime`, `active`, `created`, `createdById`, `updated`, `updatedById`) values
+	(1, 'Retail Price', 'Recommended Retail Price / Normal sales price', 0, 1, NOW(), 10, NOW(), 10),
+	(2, 'Casual Special Price', 'Promotional purpose sepcial price',1,  1, NOW(), 10, NOW(), 10),
+	(3, 'Special Price Group 1', 'Special Price For Group 1 Customers',0,  1, NOW(), 10, NOW(), 10),
+	(4, 'Special Price Group 2', 'Special Price For Group 2 Customers',0,  1, NOW(), 10, NOW(), 10);
 	
 	
 CREATE TABLE `productprice` (

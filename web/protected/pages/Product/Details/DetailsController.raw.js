@@ -44,7 +44,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 	/**
 	 * Getting the row for function: _getListPanel()
 	 */
-	,_getListPanelRow: function(data, selBoxData, titleData, isTitle) {
+	,_getListPanelRow: function(data, selBoxData, titleData, isTitle, selBoxChangeFunc) {
 		var tmp = {};
 		tmp.me = this;
 		tmp.isTitle = (isTitle || false);
@@ -61,6 +61,10 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 						.writeAttribute('list-panel-row', 'typeId')
 						.writeAttribute('required', true)
 						.writeAttribute('list-item', (data.id ? data.id : tmp.randId))
+						.observe('change', function(event) {
+							if(typeof(selBoxChangeFunc) === 'function')
+								selBoxChangeFunc(event);
+						})
 						.wrap(new Element('div', {'class': 'form-group'}))
 				)
 			});
@@ -72,7 +76,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		if(titleData.start) {
 			tmp.newRow.insert({'bottom': new Element(tmp.tag).update( 
 					tmp.isTitle === true ? titleData.start : 
-						new Element('input', {'class': 'form-control input-sm datepicker', 'list-panel-row': 'start', 'value': (data.start ? data.start : ''), 'required': true})
+						new Element('input', {'class': 'form-control input-sm datepicker', 'list-panel-row': 'start', 'value': (data.start ? data.start : ''), 'required': true, 'disabled': true, 'value': '0001-01-01 00:00:00'})
 							.writeAttribute('list-item', (data.id ? data.id : tmp.randId))
 							.wrap(new Element('div', {'class': 'form-group'}))
 				)
@@ -80,7 +84,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		}
 		if(titleData.end){
 			tmp.newRow.insert({'bottom': new Element(tmp.tag).update( tmp.isTitle === true ? titleData.end : 
-				new Element('input', {'class': 'form-control input-sm datepicker', 'list-panel-row': 'end', 'value': (data.end ? data.end : ''), 'required': true}) 
+				new Element('input', {'class': 'form-control input-sm datepicker', 'list-panel-row': 'end', 'value': (data.end ? data.end : ''), 'required': true, 'disabled': true, 'value': '9999-12-31 23:59:59'}) 
 					.writeAttribute('list-item', (data.id ? data.id : tmp.randId))
 					.wrap(new Element('div', {'class': 'form-group'}))
 				) 
@@ -110,7 +114,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 	/**
 	 * General listing panel
 	 */
-	,_getListPanel: function(title, listData, titleData, selBoxData) {
+	,_getListPanel: function(title, listData, titleData, selBoxData, selBoxChangeFunc) {
 		var tmp = {};
 		tmp.me = this;
 		tmp.newDiv = new Element('div', {'class': 'panel panel-default'})
@@ -126,7 +130,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 					.insert({'bottom': ' NEW' })
 					.observe('click', function(){
 						tmp.parentPanel = $(this).up('.panel');
-						tmp.parentPanel.down('.table tbody').insert({'bottom': tmp.me._getListPanelRow({}, selBoxData, titleData, false).addClassName('list-panel-row').writeAttribute('item_id', '') });
+						tmp.parentPanel.down('.table tbody').insert({'bottom': tmp.me._getListPanelRow({}, selBoxData, titleData, false, selBoxChangeFunc).addClassName('list-panel-row').writeAttribute('item_id', '') });
 						tmp.parentPanel.down('.list-div').show();
 						tmp.me._bindDatePicker();
 					})
@@ -134,13 +138,13 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 			})
 			.insert({'bottom': new Element('div', {'class': 'list-div table-responsive'}) 
 				.insert({'bottom': new Element('table', {'class': 'table table-condensed'}) 
-					.insert({'bottom': new Element('thead').update( tmp.me._getListPanelRow(titleData, selBoxData, titleData, true) ) })
+					.insert({'bottom': new Element('thead').update( tmp.me._getListPanelRow(titleData, selBoxData, titleData, true, selBoxChangeFunc) ) })
 					.insert({'bottom': tmp.listDiv = new Element('tbody') })
 				})
 			});
 		if(listData) {
 			listData.each(function(data){
-				tmp.listDiv.insert({'bottom': tmp.me._getListPanelRow(data, selBoxData, titleData, false).addClassName('list-panel-row').writeAttribute('item_id', data.id) });
+				tmp.listDiv.insert({'bottom': tmp.me._getListPanelRow(data, selBoxData, titleData, false, selBoxChangeFunc).addClassName('list-panel-row').writeAttribute('item_id', data.id) });
 			});
 		}
 		return tmp.newDiv;
@@ -562,7 +566,25 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 				.insert({'bottom': new Element('div', {'class': 'col-sm-8'})
 					.insert({'bottom': new Element('div', {'class': 'row'})
 						.insert({'bottom': tmp.me._getSummaryDiv(tmp.me._item).wrap(new Element('div', {'class': 'col-sm-12'})) })
-						.insert({'bottom': tmp.me._getListPanel('Prices:', tmp.me._item.prices, {'type': 'Type', 'value': 'Price', 'start': 'From', 'end': 'To'}, tmp.me._priceTypes).wrap(new Element('div', {'class': 'col-sm-12 prices-panel'})) })
+						.insert({'bottom': tmp.me._getListPanel('Prices:', tmp.me._item.prices, {'type': 'Type', 'value': 'Price', 'start': 'From', 'end': 'To'}, tmp.me._priceTypes, function(e){
+							tmp.selectedPriceType = null;
+							tmp.selBox = e.target;
+							tmp.me._priceTypes.each(function(priceObj) {
+								if(priceObj.id === $F(tmp.selBox))
+									tmp.selectedPriceType = priceObj;
+							});
+							tmp.selRow = $(tmp.selBox).up('.list-panel-row');
+							tmp.startBox = tmp.selRow.down('[list-panel-row="start"]');
+							tmp.endBox = tmp.selRow.down('[list-panel-row="end"]');
+							if(tmp.selectedPriceType !== null && tmp.selectedPriceType.needTime === false) {
+								tmp.startBox.writeAttribute('disabled', true).writeAttribute('value', '0001-01-01 00:00:00');
+								tmp.endBox.writeAttribute('disabled', true).writeAttribute('value', '9999-12-31 23:59:59');
+								tmp.selRow.down('[list-panel-row="value"]').select();
+							} else {
+								tmp.endBox.writeAttribute('disabled', false).writeAttribute('value', '');
+								tmp.startBox.writeAttribute('disabled', false).writeAttribute('value', '').select();
+							}
+						}).wrap(new Element('div', {'class': 'col-sm-12 prices-panel'})) })
 						.insert({'bottom': tmp.me._getListPanel('Suppliers:', tmp.me._item.supplierCodes, {'type': 'Supplier', 'value': 'Code'}, tmp.me._suppliers).wrap(new Element('div', {'class': 'col-sm-6 suppliers-panel'})) })
 						.insert({'bottom': tmp.me._getListPanel('Codes:', tmp.me._item.productCodes, {'type': 'Type', 'value': 'Code'}, tmp.me._codeTypes).wrap(new Element('div', {'class': 'col-sm-6 codes-panel'})) })
 					})

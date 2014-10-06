@@ -6,6 +6,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 	manufactures: []
 	,suppliers: []
 	,productCategories: []
+	,productStatuses: []
 	,_productTreeId: 'product_category_tree' //the html id of the tree
 	,_htmlIDs: {'infoPanel': 'product-info-panel'} //the html ids
 	,_getTitleRowData: function() {
@@ -24,6 +25,19 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		tmp.me = this;
 		tmp.selectionBox = $(tmp.me.searchDivId).down('[search_field="pro.manufacturerIds"]');
 		tmp.me.manufactures.each(function(option) {
+			tmp.selectionBox.insert({'bottom': new Element('option',{'value': option.id}).update(option.name) });
+		});
+		return this;
+	}
+	/**
+	 * Load the _loadProductStatuses
+	 */
+	,_loadProductStatuses: function(productStatuses) {
+		this.productStatuses = productStatuses;
+		var tmp = {};
+		tmp.me = this;
+		tmp.selectionBox = $(tmp.me.searchDivId).down('[search_field="pro.productStatusIds"]');
+		tmp.me.productStatuses.each(function(option) {
 			tmp.selectionBox.insert({'bottom': new Element('option',{'value': option.id}).update(option.name) });
 		});
 		return this;
