@@ -290,6 +290,7 @@ class DetailsController extends DetailsPageAbstract
 			
 			$product->save();
 			$results['url'] = '/product/' . $product->getId() . '.html';
+			$results['item'] = $product->getJson();
 			Dao::commitTransaction();
 		}
 		catch(Exception $ex)

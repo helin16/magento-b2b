@@ -540,6 +540,8 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		tmp.me.saveItem(btn, tmp.data, function(data){
 			if(!data.url)
 				throw 'System Error: no return product url';
+			tmp.me._item = data.item;
+			tmp.me.refreshParentWindow();
 			tmp.me.showModalBox('<strong class="text-success">Saved Successfully!</strong>', 'Saved Successfully!', true);
 			window.location = data.url; 
 		});
@@ -601,5 +603,15 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 			tmp.me._loadRichTextEditor(item);
 		});
 		return tmp.me;
+	}
+	,refreshParentWindow: function() {
+		var tmp = {};
+		tmp.me = this;
+		if(!window.opener)
+			return;
+		tmp.parentWindow = window.opener;
+		tmp.row = $(tmp.parentWindow.document.body).down('#' + tmp.parentWindow.pageJs.resultDivId + ' .product_item[product_id=' + tmp.me._item.id + ']');
+		if(tmp.row)
+			tmp.row.replace(tmp.parentWindow.pageJs._getResultRow(tmp.me._item));
 	}
 });
