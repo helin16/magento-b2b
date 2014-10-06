@@ -60,12 +60,10 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 	 * initiating the chosen input
 	 */
 	,_loadChosen: function () {
-		$$(".chosen").each(function(item) {
-			item.store('chosen', new Chosen(item, {
+		jQuery(".chosen").chosen({
 				disable_search_threshold: 10,
 				no_results_text: "Oops, nothing found!",
 				width: "95%"
-			}) );
 		});
 		return this;
 	}
@@ -206,9 +204,12 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		$(tmp.me.resultDivId).up('.list-panel').removeClassName('col-lg-12').addClassName('col-lg-4');
 		return tmp.me._showProductInfoOnRightPanel(item);
 	}
+	/**
+	 * open the product details page
+	 */
 	,_openProductDetails: function(product) {
 		var tmp = {};
-		tmp.newWindow = window.open('/product/' + product.id + '.html', 'Product Details for: ' + product.sku, 'location=no, menubar=no, status=no, titlebar=no, fullscreen=no, toolbar=no, height=600, width=800');
+		tmp.newWindow = window.open('/product/' + product.id + '.html', 'Product Details for: ' + product.sku, 'location=no, menubar=no, status=no, titlebar=no, fullscreen=yes, toolbar=no');
 		tmp.newWindow.focus();
 	}
 	/**
@@ -220,21 +221,23 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		tmp.tag = (tmp.isTitle === true ? 'th' : 'td');
 		tmp.isTitle = (isTitle || false);
 		tmp.row = new Element('tr', {'class': (tmp.isTitle === true ? '' : 'product_item'), 'product_id' : row.id}).store('data', row)
-			.insert({'bottom': new Element(tmp.tag)
-				.insert({'bottom': new Element('input', {'type': 'checkbox', 'class': 'product-selected'})
-					.observe('click', function(){
-						tmp.checked = this.checked;
-						if(tmp.isTitle === true) {
-							$(tmp.me.resultDivId).getElementsBySelector('.product_item .product-selected').each(function(el){
-								el.checked = tmp.checked;
-							});
-						}
+			.insert({'bottom': new Element(tmp.tag, {'class': 'sku', 'title': row.name})
+				.insert({'bottom': new Element('span', {'style': 'margin: 0 5px 0 0;'})
+					.insert({'bottom': new Element('input', {'type': 'checkbox', 'class': 'product-selected'})
+						.observe('click', function(){
+							tmp.checked = this.checked;
+							if(tmp.isTitle === true) {
+								$(tmp.me.resultDivId).getElementsBySelector('.product_item .product-selected').each(function(el){
+									el.checked = tmp.checked;
+								});
+							}
+						})
 					})
 				})
+				.insert({'bottom':tmp.isTitle === true ? row.sku : new Element('a', {'href': 'javascript: void(0);', 'class': 'sku-link'})
+					.update(row.sku)
+				}) 
 			})
-			.insert({'bottom': new Element(tmp.tag, {'class': 'sku', 'title': row.name}).update(tmp.isTitle === true ? row.sku : new Element('a', {'href': 'javascript: void(0);', 'class': 'sku-link'})
-				.update(row.sku)
-			) })
 			.insert({'bottom': new Element(tmp.tag, {'class': 'manufacturer col-xs-2'}).update(row.manufacturer ? row.manufacturer.name : '') })
 			.insert({'bottom': new Element(tmp.tag, {'class': 'supplier col-xs-2'}).update(
 					row.supplierCodes ? tmp.me._getSupplierCodes(row.supplierCodes, isTitle) : ''

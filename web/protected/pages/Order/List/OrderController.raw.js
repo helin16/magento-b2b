@@ -12,12 +12,10 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 	,orderStatuses: [] //the order statuses object
 	
 	,_loadChosen: function () {
-		$$(".chosen").each(function(item) {
-			item.store('chosen', new Chosen(item, {
-				disable_search_threshold: 10,
-				no_results_text: "Oops, nothing found!",
-				width: "95%"
-			}) );
+		jQuery(".chosen").chosen({
+			disable_search_threshold: 10,
+			no_results_text: "Oops, nothing found!",
+			width: "95%"
 		});
 		return this;
 	}
