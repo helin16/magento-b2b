@@ -641,12 +641,12 @@ class Product extends InfoEntityAbstract
 		}
 		if(count($supplierIds) > 0)
 		{
-			self::getQuery()->eagerLoad('Product.supplierCodes', 'inner join', 'pro_sup_code', 'pro_sup_code.supplierId in (' . str_repeat('?', count($supplierIds)) . ')');
+			self::getQuery()->eagerLoad('Product.supplierCodes', 'inner join', 'pro_sup_code', 'pro.id = pro_sup_code.productId and pro_sup_code.supplierId in (' . str_repeat('?', count($supplierIds)) . ')');
 			$params = array_merge($params, $supplierIds);
 		}
 		if(count($categoryIds) > 0)
 		{
-			self::getQuery()->eagerLoad('Product.categories', 'inner join', 'pro_cate', 'pro_cate.categoryId in (' . str_repeat('?', count($categoryIds)) . ')');
+			self::getQuery()->eagerLoad('Product.categories', 'inner join', 'pro_cate', 'pro.id = pro_cate.productId and pro_cate.categoryId in (' . str_repeat('?', count($categoryIds)) . ')');
 			$params = array_merge($params, $categoryIds);
 		}
 		return Product::getAllByCriteria(implode(' AND ', $where), $params, false, $pageNo, $pageSize, $orderBy, $stats);
