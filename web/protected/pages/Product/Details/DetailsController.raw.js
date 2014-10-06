@@ -633,7 +633,10 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 			return;
 		tmp.parentWindow = window.opener;
 		tmp.row = $(tmp.parentWindow.document.body).down('#' + tmp.parentWindow.pageJs.resultDivId + ' .product_item[product_id=' + tmp.me._item.id + ']');
-		if(tmp.row)
+		if(tmp.row) {
 			tmp.row.replace(tmp.parentWindow.pageJs._getResultRow(tmp.me._item));
+			if(tmp.row.hasClassName('success'))
+				tmp.row.addClassName('success');
+		}
 	}
 });
