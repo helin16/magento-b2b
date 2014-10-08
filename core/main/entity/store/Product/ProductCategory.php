@@ -334,6 +334,15 @@ class ProductCategory extends BaseEntityAbstract
 	}
 	/**
 	 * (non-PHPdoc)
+	 * @see BaseEntityAbstract::preSave()
+	 */
+	public function preSave()
+	{
+		if(($mageId = trim($this->getMageId())) !== '' && self::countByCriteria('mageId = ? and id != ?', array($mageId, trim($this->getId()))) > 0)
+			throw new Exception('mageId(=' . $mageId . ') has existed already!');
+	}
+	/**
+	 * (non-PHPdoc)
 	 * @see BaseEntityAbstract::getJson()
 	 */
 	public function getJson($extra = '', $reset = false)
@@ -349,27 +358,6 @@ class ProductCategory extends BaseEntityAbstract
 			$array['noOfProducts'] = Product_Category::countByCriteria('categoryId = ? and active = 1', array($this->getId()));
 		}
 		return parent::getJson($array, $reset);
-	}
-	/**
-	 * Creating a category
-	 * 
-	 * @param string          $name
-	 * @param string          $description
-	 * @param ProductCategory $parent
-	 * 
-	 * @return Ambigous <GenericDAO, BaseEntityAbstract>
-	 */
-	public static function create($name, $description, ProductCategory $parent = null, $isFromB2B = false, $mageId = 0)
-	{
-		$class = __CLASS__;
-		$category = new $class();
-		$category->setName(trim($name))
-			->setDescription(trim($description))
-			->setParent($parent)
-			->setIsFromB2B($isFromB2B)
-			->setMageId($mageId)
-			->save();
-		return $category;
 	}
 	/**
 	 * (non-PHPdoc)
@@ -398,5 +386,38 @@ class ProductCategory extends BaseEntityAbstract
 		DaoMap::createIndex('includeInMenu');
 		DaoMap::createIndex('urlKey');
 		DaoMap::commit();
+	}
+	/**
+	 * Creating a category
+	 *
+	 * @param string          $name
+	 * @param string          $description
+	 * @param ProductCategory $parent
+	 *
+	 * @return Ambigous <GenericDAO, BaseEntityAbstract>
+	 */
+	public static function create($name, $description, ProductCategory $parent = null, $isFromB2B = false, $mageId = 0)
+	{
+		$class = __CLASS__;
+		$category = new $class();
+		$category->setName(trim($name))
+			->setDescription(trim($description))
+			->setParent($parent)
+			->setIsFromB2B($isFromB2B)
+			->setMageId($mageId)
+			->save();
+		return $category;
+	}
+	/**
+	 * Getting the product category by mage id
+	 * 
+	 * @param unknown $mageId
+	 * 
+	 * @return Ambigous <NULL, BaseEntityAbstract>
+	 */
+	public static function getByMageId($mageId)
+	{
+		$categories = self::getAllByCriteria('mageId = ?', array(trim($mageId)), false, 1, 1);
+		return count($categories) === 0 ? null : $categories[0];
 	}
 }
