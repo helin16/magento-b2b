@@ -15,12 +15,12 @@ Abstract class AccessControl
 				case Role::ID_STORE_MANAGER:
 				case Role::ID_SYSTEM_ADMIN:
 					{
-						self::$_cache['accessOrderStatusIds'][$role->getId()] = array_map(create_function('$a', 'return intval($a->getId());'), FactoryAbastract::service('OrderStatus')->findByCriteria('id not in(?,?) ', array(OrderStatus::ID_CANCELLED, OrderStatus::ID_SHIPPED)));
+						self::$_cache['accessOrderStatusIds'][$role->getId()] = array_map(create_function('$a', 'return intval($a->getId());'), OrderStatus::getAllByCriteria('id not in(?,?) ', array(OrderStatus::ID_CANCELLED, OrderStatus::ID_SHIPPED)));
 						break;
 					}
 				case Role::ID_ACCOUNTING:
 					{
-						self::$_cache['accessOrderStatusIds'][$role->getId()] = array_map(create_function('$a', 'return intval($a->getId());'), FactoryAbastract::service('OrderStatus')->findByCriteria('id not in(?,?) ', array(OrderStatus::ID_CANCELLED, OrderStatus::ID_SHIPPED)));
+						self::$_cache['accessOrderStatusIds'][$role->getId()] = array_map(create_function('$a', 'return intval($a->getId());'), OrderStatus::getAllByCriteria('id not in(?,?) ', array(OrderStatus::ID_CANCELLED, OrderStatus::ID_SHIPPED)));
 						break;
 					}
 				case Role::ID_PURCHASING:

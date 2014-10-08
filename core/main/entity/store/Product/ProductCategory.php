@@ -305,7 +305,7 @@ class ProductCategory extends BaseEntityAbstract
 		$position = (!$this->getParent() instanceof $class ? $this->getId() : $this->getParent()->getPosition() . self::POSITION_SEPARATOR . $this->getId());
 		$this->setRoot($root)
 			->setPosition($position);
-		FactoryAbastract::dao($class)->updateByCriteria('rootId = ?, position = ? ', 'id = ?', array($root->getId(), trim($position), $this->getId()));
+		self::updateByCriteria('rootId = ?, position = ? ', 'id = ?', array($root->getId(), trim($position), $this->getId()));
 	}
 	/**
 	 * (non-PHPdoc)
@@ -345,8 +345,8 @@ class ProductCategory extends BaseEntityAbstract
 			$array['parent'] = $this->getParent() instanceof $class ? array('id'=> $this->getParent()->getId()) : null;
 			$array['root'] = array('id'=> $this->getRoot()->getId());
 			$array['namePath'] = $this->getNamePath();
-			$array['noOfChildren'] = FactoryAbastract::dao(get_class($this))->countByCriteria('parentId = ? and active = 1', array($this->getId()));
-			$array['noOfProducts'] = FactoryAbastract::dao('Product_Category')->countByCriteria('categoryId = ? and active = 1', array($this->getId()));
+			$array['noOfChildren'] = self::countByCriteria('parentId = ? and active = 1', array($this->getId()));
+			$array['noOfProducts'] = Product_Category::countByCriteria('categoryId = ? and active = 1', array($this->getId()));
 		}
 		return parent::getJson($array, $reset);
 	}
@@ -367,8 +367,9 @@ class ProductCategory extends BaseEntityAbstract
 			->setDescription(trim($description))
 			->setParent($parent)
 			->setIsFromB2B($isFromB2B)
-			->setMageId($mageId);
-		return FactoryAbastract::dao($class)->save($category);
+			->setMageId($mageId)
+			->save();
+		return $category;
 	}
 	/**
 	 * (non-PHPdoc)

@@ -163,8 +163,8 @@ class Asset extends BaseEntityAbstract
 		$asset->setFilename($filename)
 			->setAssetId($assetId)
 			->setMimeType(StringUtilsAbstract::getMimeType($filename))
-			->setPath($path);
-		FactoryAbastract::dao($class)->save($asset);
+			->setPath($path)
+			->save();
 		//add asset into cache
 		$assetId = trim(trim($asset->getAssetId()));
 		self::$_cache[$assetId] = $asset;
@@ -208,9 +208,9 @@ class Asset extends BaseEntityAbstract
 		$class = __CLASS__;
 		$where = "assetId in (" . implode(', ', array_fill(0, count($assetIds), '?')) . ")";
 		$params = $assetIds;
-		$assets = FactoryAbastract::dao($class)->findByCriteria($where, $assetIds);
+		$assets = self::getAllByCriteria($where, $assetIds);
 		// Delete the item from the database
-		FactoryAbastract::dao($class)->updateByCriteria('active = ?', $where, array_merge(array(0), $params));
+		self::updateByCriteria('active = ?', $where, array_merge(array(0), $params));
 		foreach($assets as $asset)
 		{
 			// Remove the file from the NAS server
@@ -246,7 +246,7 @@ class Asset extends BaseEntityAbstract
 		$assetId = trim($assetId);
 		if(!isset(self::$_cache[$assetId]))
 		{
-			$content = FactoryAbastract::dao($class)->findByCriteria('assetId = ?', array($assetId), false, 1, 1);
+			$content = self::getAllByCriteria('assetId = ?', array($assetId), false, 1, 1);
 			self::$_cache[$assetId] = count($content) === 0 ? null : $content[0];
 		}
 		return self::$_cache[$assetId];

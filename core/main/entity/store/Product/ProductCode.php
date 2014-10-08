@@ -110,8 +110,8 @@ class ProductCode extends BaseEntityAbstract
 		$obj = new $class();
 		$obj->setProduct($product)
 			->setType($type)
-			->setCode(trim($code));
-		FactoryAbastract::dao($class)->save($obj);
+			->setCode(trim($code))
+			->save();
 		return $obj;
 	}
 	/**
@@ -126,10 +126,9 @@ class ProductCode extends BaseEntityAbstract
 	 * 
 	 * @return Ambigous <multitype:, multitype:BaseEntityAbstract >
 	 */
-	public static function getCodes(Product $product, ProductCodeType $type, $activeOnly = true, $pageNo = null, $pageSize = DaoQuery::DEFAUTL_PAGE_SIZE, $orderBy = array())
+	public static function getCodes(Product $product, ProductCodeType $type, $activeOnly = true, $pageNo = null, $pageSize = DaoQuery::DEFAUTL_PAGE_SIZE, $orderBy = array(), &$stats = array())
 	{
-		$class = __CLASS__;
-		return FactoryAbastract::dao($class)->findByCriteria('productId = ? and typeId = ?', array($product->getId(), $type->getId()), $activeOnly , $pageNo, $pageSize, $orderBy);
+		return self::getAllByCriteria('productId = ? and typeId = ?', array($product->getId(), $type->getId()), $activeOnly , $pageNo, $pageSize, $orderBy, $stats);
 	}
 	/**
 	 * (non-PHPdoc)

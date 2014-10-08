@@ -108,7 +108,7 @@ class Role extends BaseEntityAbstract
 	    		case Role::ID_STORE_MANAGER:
 	    		case Role::ID_ACCOUNTING:
     			{
-    				return array_map(create_function('$a', 'return $a->getId();'), FactoryAbastract::dao('OrderStatus')->findAll());
+    				return array_map(create_function('$a', 'return $a->getId();'), OrderStatus::getAll());
     			}
 	    		case Role::ID_SYSTEM_ADMIN:
     			{

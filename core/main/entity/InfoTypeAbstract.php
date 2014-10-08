@@ -45,7 +45,7 @@ class InfoTypeAbstract extends BaseEntityAbstract
 	{
 		if(!isset(self::$_cache[$typeId]))
 		{
-			self::$_cache[$typeId] = FactoryAbastract::dao(get_called_class())->findById($typeId);
+			self::$_cache[$typeId] = self::get($typeId);
 		}
 		return self::$_cache[$typeId];
 	}

@@ -132,7 +132,7 @@ class Manufacturer extends BaseEntityAbstract
 		$description = trim($description);
 		$isFromB2B = ($isFromB2B === true);
 		$class =__CLASS__;
-		$objects = FactoryAbastract::dao($class)->findByCriteria('name = ?', array($name), true, 1, 1, array() );
+		$objects = self::getAllByCriteria('name = ?', array($name), true, 1, 1);
 		if(count($objects) > 0 && $name !== '')
 			$obj = $objects[0];
 		else
@@ -142,8 +142,8 @@ class Manufacturer extends BaseEntityAbstract
 		}
 		$obj->setName($name)
 			->setDescription(trim($description))
-			->setMageId($mageId);
-		FactoryAbastract::dao(get_class($obj))->save($obj);
+			->setMageId($mageId)
+			->save();
 		$comments = $class . '(ID=' . $obj->getId() . ')' . (count($objects) > 0 ? 'updated' : 'created') . ($isFromB2B === true ? ' via B2B' : '') . ' with (name=' . $name . ', mageId=' . $mageId . ')';
 		if($isFromB2B === true)
 			Comments::addComments($obj, $comments, Comments::TYPE_SYSTEM);

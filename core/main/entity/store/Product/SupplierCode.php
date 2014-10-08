@@ -103,12 +103,12 @@ class SupplierCode extends BaseEntityAbstract
 	public static function create(Product $product, Supplier $supplier, $code)
 	{
 		$class = __CLASS__;
-		$objects = FactoryAbastract::dao($class)->findByCriteria('productId = ? and supplierId = ? and code like ?', array($product->getId(), $supplier->getId(), trim($code)), true, 1, 1);
+		$objects = self::getAllByCriteria('productId = ? and supplierId = ? and code like ?', array($product->getId(), $supplier->getId(), trim($code)), true, 1, 1);
 		$obj = (count($objects) > 0 ? $objects[0] : new $class());
-		$obj->setProduct($product)
+		return $obj->setProduct($product)
 			->setSupplier($supplier)
-			->setCode(trim($code));
-		return FactoryAbastract::dao($class)->save($obj);
+			->setCode(trim($code))
+			->save();
 	}
 	/**
 	 * (non-PHPdoc)

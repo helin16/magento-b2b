@@ -101,7 +101,7 @@ class Shippment extends BaseEntityAbstract
 	public static function create(Address $address, Courier $courier, $consignmentNo, $shippingDate, Order $order, $contactName, $contactNo = '' , $noOfCartons = 0, $estShippingCost = '0.00', $actualShippingCost = '0.00', $deliveryInstructions = '', $mageShipmentId = '')	
 	{
 		$shipment = new Shippment();
-		$shipment->setAddress($address)
+		return $shipment->setAddress($address)
 			->setCourier($courier)
 			->setConNoteNo($consignmentNo)
 			->setOrder($order)
@@ -113,8 +113,8 @@ class Shippment extends BaseEntityAbstract
 			->setActualShippingCost($actualShippingCost)
 			->setDeliveryInstructions($deliveryInstructions)
 			->setMageShipmentId($mageShipmentId)
-			->setActive(true);
-		return FactoryAbastract::dao('Shippment')->save($shipment);
+			->setActive(true)
+			->save();
 	}
 	/**
 	 * Getter of the courier

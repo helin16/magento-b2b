@@ -43,7 +43,7 @@ class OrderConnector extends B2BConnector
 				$totalPaid = (!isset($order->total_paid) ? 0 : trim($order->total_paid));
 	
 				$shippingAddr = $billingAddr = null;
-				if(!($o = Order::get(trim($order->increment_id))) instanceof Order)
+				if(!($o = Order::getByOrderNo(trim($order->increment_id))) instanceof Order)
 				{
 					$o = new Order();
 					Log::logging(0, get_class($this), 'Found no order from DB, create new', self::LOG_TYPE, '$index = ' . $index, __FUNCTION__);
@@ -75,8 +75,7 @@ class OrderConnector extends B2BConnector
 					->setShippingAddr($customer->getShippingAddress())
 					->setBillingAddr($customer->getBillingAddress())
 					->setCustomer($customer)
-					;
-				FactoryAbastract::dao('Order')->save($o);
+					->save();
 				Log::logging(0, get_class($this), 'Saved the order, ID = ' . $o->getId(), self::LOG_TYPE, '$index = ' . $index, __FUNCTION__);
 	
 				//create order info

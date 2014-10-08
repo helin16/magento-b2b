@@ -78,8 +78,9 @@ class Product_Category extends BaseEntityAbstract
 		self::remove($product, $category);
 		$obj = new $class();
 		$obj->setProduct($product)
-			->setCategory($category);
-		return FactoryAbastract::dao($class)->save($obj);
+			->setCategory($category)
+			->save();
+		return $obj;
 	}
 	/**
 	 * Getting all products from a category
@@ -89,12 +90,13 @@ class Product_Category extends BaseEntityAbstract
 	 * @param int             $pageNo
 	 * @param int             $pageSize
 	 * @param array           $orderBy
+	 * @param array           $stats
 	 * 
 	 * @return Ambigous <multitype:, multitype:BaseEntityAbstract >
 	 */
-	public static function getProducts(ProductCategory $category, $activeOnly = true, $pageNo = null, $pageSize = DaoQuery::DEFAUTL_PAGE_SIZE, $orderBy = array())
+	public static function getProducts(ProductCategory $category, $activeOnly = true, $pageNo = null, $pageSize = DaoQuery::DEFAUTL_PAGE_SIZE, $orderBy = array(), &$stats = array())
 	{
-		return FactoryAbastract::dao(__CLASS__)->findByCriteria('categoryId = ?', array($category->getId()), $activeOnly, $pageNo, $pageSize, $orderBy);
+		return self::getAllByCriteria('categoryId = ?', array($category->getId()), $activeOnly, $pageNo, $pageSize, $orderBy, $stats);
 	}
 	/**
 	 * Getting all products from a category
@@ -104,12 +106,13 @@ class Product_Category extends BaseEntityAbstract
 	 * @param int     $pageNo
 	 * @param int     $pageSize
 	 * @param array   $orderBy
+	 * @param array   $stats
 	 * 
 	 * @return Ambigous <multitype:, multitype:BaseEntityAbstract >
 	 */
-	public static function getCategories(Product $product, $activeOnly = true, $pageNo = null, $pageSize = DaoQuery::DEFAUTL_PAGE_SIZE, $orderBy = array())
+	public static function getCategories(Product $product, $activeOnly = true, $pageNo = null, $pageSize = DaoQuery::DEFAUTL_PAGE_SIZE, $orderBy = array(), &$stats = array())
 	{
-		return FactoryAbastract::dao(__CLASS__)->findByCriteria('productId = ?', array($product->getId()), $activeOnly, $pageNo, $pageSize, $orderBy);
+		return self::getAllByCriteria('productId = ?', array($product->getId()), $activeOnly, $pageNo, $pageSize, $orderBy, $stats);
 	}
 	/**
 	 * removing the relationship
@@ -119,7 +122,7 @@ class Product_Category extends BaseEntityAbstract
 	 */
 	public static function remove(Product $product, ProductCategory $category)
 	{
-		FactoryAbastract::dao(__CLASS__)->deleteByCriteria('productId = ? and categoryId = ?', array($product->getId(), $category->getId()));
+		self::deleteByCriteria('productId = ? and categoryId = ?', array($product->getId(), $category->getId()));
 	}
 	/**
 	 * (non-PHPdoc)

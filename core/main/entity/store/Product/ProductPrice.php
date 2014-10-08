@@ -165,7 +165,6 @@ class ProductPrice extends BaseEntityAbstract
 	public static function create(Product $product, ProductPriceType $type, $price, $start = null, $end = null)
 	{
 		$class = __CLASS__;
-// 		FactoryAbastract::dao($class)->updateByCriteria('active = 0', 'productId = ? and typeId = ?', array($product->getId(), $type->getId()));
 		$obj = new $class();
 		$obj->setProduct($product)
 			->setType($type)
@@ -174,7 +173,7 @@ class ProductPrice extends BaseEntityAbstract
 			$obj->setStart($start);
 		if (($end = trim($end)) !== '')
 			$obj->setEnd($end);
-		return FactoryAbastract::dao($class)->save($obj);
+		return $obj->save();
 	}
 	/**
 	 * Getting the price object via product or type
@@ -191,7 +190,7 @@ class ProductPrice extends BaseEntityAbstract
 	 * @throws EntityException
 	 * @return Ambigous <multitype:, multitype:BaseEntityAbstract >
 	 */
-	public static function getPrices(Product $product = null, ProductPriceType $type = null, $startS = '', $startE = '', $endS = '', $endE = '', $pageNo = null, $pageSize = DaoQuery::DEFAUTL_PAGE_SIZE, $orderBy = array())
+	public static function getPrices(Product $product = null, ProductPriceType $type = null, $startS = '', $startE = '', $endS = '', $endE = '', $pageNo = null, $pageSize = DaoQuery::DEFAUTL_PAGE_SIZE, $orderBy = array(), &$stats = array())
 	{
 		$class = __CLASS__;
 		if(!$product instanceof Product && !$type instanceof ProductPriceType)
@@ -228,7 +227,7 @@ class ProductPrice extends BaseEntityAbstract
 			$where[] = 'end <= ?';
 			$params[] = $endE;
 		}
-		return FactoryAbastract::dao($class)->findByCriteria(implode(' AND ', $where), $params, true, $pageNo, $pageSize, $orderBy);
+		return self::getAllByCriteria(implode(' AND ', $where), $params, true, $pageNo, $pageSize, $orderBy, $stats);
 	}
 	/**
 	 * (non-PHPdoc)

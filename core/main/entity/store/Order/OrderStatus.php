@@ -78,23 +78,12 @@ class OrderStatus extends InfoEntityAbstract
 	 */
 	public static function createStatus($status, $mageStatus = '')
 	{
-		$items = FactoryAbastract::dao(__CLASS__)->findByCriteria('name=?', array($status), false, 1, 1);
+		$items = self::getAllByCriteria('name=?', array($status), false, 1, 1);
 		$st = (count($items) === 0 ? new OrderStatus() : $items[0]);
-		$st->setName($status);
-		$st->setMageStatus($mageStatus);
-		FactoryAbastract::dao(__CLASS__)->save($st);
+		$st->setName($status)
+			->setMageStatus($mageStatus)
+			->save();
 		return $st;
-	}
-	/**
-	 * getStatus
-	 * 
-	 * @param string $status The name of the status
-	 * 
-	 * @return Ambigous <OrderStatus, BaseEntityAbstract>
-	 */
-	public static function get($statusId)
-	{
-		return FactoryAbastract::dao(__CLASS__)->findById($statusId);
 	}
 	/**
 	 * get all statuses
@@ -106,9 +95,9 @@ class OrderStatus extends InfoEntityAbstract
 	 * 
 	 * @return Ambigous <multitype:, multitype:BaseEntityAbstract >
 	 */
-	public static function findAll($searchActiveOnly = true, $pageNo = null, $pageSize = DaoQuery::DEFAUTL_PAGE_SIZE, $orderBy = array())
+	public static function findAll($searchActiveOnly = true, $pageNo = null, $pageSize = DaoQuery::DEFAUTL_PAGE_SIZE, $orderBy = array(), &$stats = array())
 	{
-		return FactoryAbastract::dao(__CLASS__)->findAll($searchActiveOnly, $pageNo, $pageSize, $orderBy);
+		return self::getAll($searchActiveOnly, $pageNo, $pageSize, $orderBy, $stats);
 	}
 	/**
 	 * (non-PHPdoc)

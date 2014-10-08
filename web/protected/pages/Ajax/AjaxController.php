@@ -57,10 +57,11 @@ class AjaxController extends TService
   			$sqlParams[] = trim($commentType);
   		}
   		$returnArray = json_encode(array());
-  		$commentsArray = FactoryAbastract::service('Comments')->findByCriteria($where, $sqlParams, true, $pageNo, $pageSize, $orderBy);
+  		$stats = array();
+  		$commentsArray = Comments::getAllByCriteria($where, $sqlParams, true, $pageNo, $pageSize, $orderBy, $stats);
   		$results = array();
   		$results['items'] = array_map(create_function('$a', 'return $a->getJson();'), $commentsArray);
-  		$results['pageStats'] = FactoryAbastract::service('Comments')->getPageStats();
+  		$results['pageStats'] = $stats;
   		return json_encode($results);
   	}
 

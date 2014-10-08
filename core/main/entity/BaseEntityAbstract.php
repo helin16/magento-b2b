@@ -411,8 +411,8 @@ abstract class BaseEntityAbstract
     		$where .= ' AND type = ?';
     		$params[] = $type;
     	}
-    	$results = FactoryAbastract::dao('Comments')->findByCriteria($where, $params, true, $pageNo, $pageSize, $orderBy);
-    	$pageStats = FactoryAbastract::dao('Comments')->getPageStats();
+    	$stats = array();
+    	$results = Comments::getAllByCriteria($where, $params, true, $pageNo, $pageSize, $orderBy, $stats);
     	return $results;
     }
     /**
@@ -556,6 +556,32 @@ abstract class BaseEntityAbstract
     public static function getQuery()
     {
     	return FactoryAbastract::dao(get_called_class())->getQuery();
+    }
+    /**
+     * Add a join table record for many to many relationship
+     *
+     * @param BaseEntityAbstract $leftEntity  The left entity
+     * @param BaseEntityAbstract $rightEntity The right entity
+     *
+     * @return int
+     */
+    public function saveManyToManyJoin(BaseEntityAbstract &$leftEntity, BaseEntityAbstract $rightEntity)
+    {
+    	FactoryAbastract::dao(get_called_class())->saveManyToManyJoin($leftEntity, $rightEntity);
+    	return $leftEntity;
+    }
+    /**
+     * Remove a join table record for many to many relationship
+     *
+     * @param BaseEntityAbstract $leftEntity  The left entity
+     * @param BaseEntityAbstract $rightEntity The right entity
+     *
+     * @return int
+     */
+    public function deleteManyToManyJoin(BaseEntityAbstract &$leftEntity, BaseEntityAbstract $rightEntity)
+    {
+    	FactoryAbastract::dao(get_called_class())->deleteManyToManyJoin($leftEntity, $rightEntity);
+    	return $leftEntity;
     }
 }
 

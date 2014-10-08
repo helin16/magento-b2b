@@ -82,7 +82,7 @@ class InfoEntityAbstract extends BaseEntityAbstract
 		else 
 		{
 			//check whether we have one already
-			$infos = FactoryAbastract::dao($class)->findByCriteria(strtolower(get_class($this)).'Id = ? and value = ? and typeId = ?', array($this->getId(), trim($typeId), trim($value)), true, 1 , 1);
+			$infos = self::getAllByCriteria(strtolower(get_class($this)).'Id = ? and value = ? and typeId = ?', array($this->getId(), trim($typeId), trim($value)), true, 1 , 1);
 			if(count($infos) > 0)
 				return $this;
 			//create new
@@ -106,7 +106,7 @@ class InfoEntityAbstract extends BaseEntityAbstract
 		if(!isset(DaoMap::$map[strtolower(get_class($this))]['infos']) || ($class = trim(DaoMap::$map[strtolower(get_class($this))]['infos']['class'])) === '')
 			throw new EntityException('You can NOT get information from a entity' . get_class($this) . ', setup the relationship first!');
 		
-		FactoryAbastract::dao($class)->updateByCriteria('active = 0', 'typeId = ? and entityId = ?', array($typeId, $this->getId()));
+		self::updateByCriteria('active = 0', 'typeId = ? and entityId = ?', array($typeId, $this->getId()));
 		unset($this->_cache[$typeId]);
 		return $this;
 	}

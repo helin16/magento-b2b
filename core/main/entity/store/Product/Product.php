@@ -590,8 +590,7 @@ class Product extends InfoEntityAbstract
 				$product->setManufacturer($manufacturer);
 			}
 		}
-		FactoryAbastract::dao(get_called_class())->save($product);
-		return $product;
+		return $product->save();
 	}
 	/**
 	 * Finding the products with different params

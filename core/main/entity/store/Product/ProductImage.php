@@ -76,8 +76,9 @@ class ProductImage extends BaseEntityAbstract
 		$class = __CLASS__;
 		$obj = new $class;
 		$obj->setProduct($product)
-			->setImageAssetId(trim($asset->getAssetId()));
-		return FactoryAbastract::dao($class)->save($obj);
+			->setImageAssetId(trim($asset->getAssetId()))
+			->save();
+		return $obj;
 	}
 	/**
 	 * delete a product image 
@@ -89,9 +90,8 @@ class ProductImage extends BaseEntityAbstract
 	 */
 	public static function remove(Product $product, Asset $asset)
 	{
-		$class = __CLASS__;
 		$assetId = trim($asset->getAssetId());
-		FactoryAbastract::dao($class)->deleteByCriteria('productId = ? and imageAssetId = ?', array(trim($product->getId()), $assetId));
+		self::deleteByCriteria('productId = ? and imageAssetId = ?', array(trim($product->getId()), $assetId));
 		Asset::removeAssets(array($assetId));
 	}
 	/**

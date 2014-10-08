@@ -215,14 +215,14 @@ class Log extends BaseEntityAbstract
 	{
 		$className = __CLASS__;
 		$log = new $className();
-		$log->setTransId(self::getTransKey());
-		$log->setEntityId($entityId);
-		$log->setEntityName($entityName);
-		$log->setMsg($msg);
-		$log->settype($type);
-		$log->setComments($comments);
-		$log->setFuncName($funcName);
-		FactoryAbastract::dao($className)->save($log);
+		return $log->setTransId(self::getTransKey())
+			->setEntityId($entityId)
+			->setEntityName($entityName)
+			->setMsg($msg)
+			->settype($type)
+			->setComments($comments)
+			->setFuncName($funcName)
+			->save();
 	}
 	/**
 	 * Getting the transid

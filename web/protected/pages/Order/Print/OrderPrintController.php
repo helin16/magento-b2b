@@ -28,7 +28,7 @@ class OrderPrintController extends BPCPageAbstract
 		parent::onLoad($param);
 		if(!$this->isPostBack)
 		{
-			$this->order = FactoryAbastract::service('Order')->get($this->Request['orderId']);
+			$this->order = Order::get($this->Request['orderId']);
 			if(!$this->order instanceof Order)
 				die('Invalid Order!');
 		}

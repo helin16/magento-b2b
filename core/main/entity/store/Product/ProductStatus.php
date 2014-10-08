@@ -74,9 +74,9 @@ class ProductStatus extends BaseEntityAbstract
 	{
 		$class = __CLASS__;
 		$obj = new $class();
-		$obj->setName(trim($name))
-			->setDescription(trim($description));
-		return FactoryAbastract::dao($class)->save($obj);
+		return $obj->setName(trim($name))
+			->setDescription(trim($description))
+			->save();
 	}
 	/**
 	 * (non-PHPdoc)

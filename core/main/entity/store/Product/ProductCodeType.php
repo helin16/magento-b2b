@@ -106,8 +106,8 @@ class ProductCodeType extends BaseEntityAbstract
 		$obj = new $class();
 		$obj->setName(trim($name))
 			->setDescription(trim($description))
-			->setAllowMultiple($allowMultiple);
-		FactoryAbastract::dao($class)->save($obj);
+			->setAllowMultiple($allowMultiple)
+			->save();
 		return $obj;
 	}
 	/**
