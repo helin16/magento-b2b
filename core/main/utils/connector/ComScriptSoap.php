@@ -44,7 +44,7 @@ class ComScriptSoap
 	{
 		if($options === null)
 			$options = array('exceptions' => true, 'encoding'=>'utf-8', 'compression' => SOAP_COMPRESSION_ACCEPT | SOAP_COMPRESSION_GZIP);
-		$options = array_merge($options, array('proxy_host' => "proxy.bytecraft.internal",'proxy_port' => 3128));
+// 		$options = array_merge($options, array('proxy_host' => "proxy.bytecraft.internal",'proxy_port' => 3128));
 		$this->_client = new SoapClient($wsdl, $options);
 	}
 	/**
