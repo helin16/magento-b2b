@@ -140,7 +140,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 							$H(prices["companyPrices"]).each(function(price){
 								tmp.tbody.insert({'bottom': new Element('tr')
 									.insert({'bottom': new Element('td').update(price.key) })
-									.insert({'bottom': new Element('td').update(tmp.me.getCurrency(price.value.price)) })
+									.insert({'bottom': new Element('td').update(price.value.priceURL && !price.value.priceURL.blank() ? new Element('a', {'href': price.value.priceURL, 'target': '__blank'}).update(tmp.me.getCurrency(price.value.price)) : tmp.me.getCurrency(price.value.price)) })
 								})
 							});
 							tmp.me.showModalBox('Min Price Details: ', tmp.table, false);
