@@ -99,7 +99,7 @@ class CatelogConnector extends B2BConnector
 				Log::logging(0, get_class($this), 'getting ProductCategory(mageId=' . $mageId . ')', self::LOG_TYPE, '', __FUNCTION__);
 				
 				$productCategory = ProductCategory::getByMageId($mageId);
-				$category = $connector->catalogCategoryInfo($mageId);
+				$category = $this->catalogCategoryInfo($mageId);
 				$description = isset($category->description) ? trim($category->description) : trim($category->name);
 				if(!$productCategory instanceof ProductCategory)
 				{
