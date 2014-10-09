@@ -155,7 +155,7 @@ class Asset extends BaseEntityAbstract
 		if(!is_string($dataOrFile) && (!is_file($dataOrFile)))
 			throw new CoreException(__CLASS__ . '::' . __FUNCTION__ . '() will ONLY take string to save!');
 		 
-		$assetId = md5($filename . '::' . Core::getUser()->getId() .  '::' . microtime());
+		$assetId = md5($filename . '::' . microtime());
 		$path = self::_getSmartPath($assetId);
 		self::_copyToAssetFolder($path, $dataOrFile);
 		$class = __CLASS__;

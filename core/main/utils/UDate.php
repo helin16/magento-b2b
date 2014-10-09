@@ -48,7 +48,7 @@ class UDate
 	public static function maxDate()
 	{
 	    $date = new UDate();
-	    $date->setDate(9999, 12, 31);
+	    $date->setDate(31, 12, 9999);
 	    $date->setTime(23, 59, 59);
 	    return $date;
 	}

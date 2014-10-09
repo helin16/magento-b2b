@@ -41,7 +41,7 @@ class InfoTypeAbstract extends BaseEntityAbstract
 	 * 
 	 * @return InfoTypeAbstract
 	 */
-	public static function get($typeId)
+	public static function getFromCache($typeId)
 	{
 		if(!isset(self::$_cache[$typeId]))
 		{

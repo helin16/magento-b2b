@@ -456,6 +456,81 @@ class Product extends InfoEntityAbstract
 		return $this->_cache['images'];
 	}
 	/**
+	 * adding the category to this product
+	 * 
+	 * @param ProductCategory $category
+	 * 
+	 * @return Product
+	 */
+	public function addCategory(ProductCategory $category)
+	{
+		Product_Category::create($this, $category);
+		return $this;
+	}
+	/**
+	 * removing the category to this product
+	 *
+	 * @param ProductCategory $category
+	 *
+	 * @return Product
+	 */
+	public function removeCategory(ProductCategory $category)
+	{
+		Product_Category::remove($this, $category);
+		return $this;
+	}
+	/**
+	 * clearing all the categories to this product
+	 *
+	 * @param ProductCategory $category
+	 *
+	 * @return Product
+	 */
+	public function clearAllCategory()
+	{
+		Product_Category::deleteByCriteria('productId = ?', array($this->getId()));
+		return $this;
+	}
+	/**
+	 * Adding a price to a product
+	 * 
+	 * @param ProductPriceType $type
+	 * @param number           $value
+	 * @param string           $fromDate
+	 * @param string           $toDate
+	 * 
+	 * @return Product
+	 */
+	public function addPrice(ProductPriceType $type, $value, $fromDate = null, $toDate = null)
+	{
+		ProductPrice::create($this, $type, $value, $fromDate, $toDate);
+		return $this;
+	}
+	/**
+	 * removing the price
+	 * 
+	 * @param ProductPriceType $type
+	 * 
+	 * @return Product
+	 */
+	public function removePrice(ProductPriceType $type)
+	{
+		ProductPrice::updateByCriteria('active = 0', 'productId = ? and typeId = ?', array($this->getId(), $type->getId()));
+		return $this;
+	}
+	/**
+	 * removing the prices
+	 *
+	 * @param ProductPriceType $type
+	 *
+	 * @return Product
+	 */
+	public function clearAllPrice()
+	{
+		ProductPrice::updateByCriteria('active = 0', 'productId = ?', array($this->getId()));
+		return $this;
+	}
+	/**
 	 * (non-PHPdoc)
 	 * @see BaseEntityAbstract::getJson()
 	 */

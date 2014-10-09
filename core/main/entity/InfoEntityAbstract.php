@@ -71,7 +71,7 @@ class InfoEntityAbstract extends BaseEntityAbstract
 			throw new EntityException('You can NOT get information from a entity' . get_class($this) . ', setup the relationship first!');
 		
 		$InfoTypeClass = $class . 'Type';
-		$infoType = $InfoTypeClass::get($typeId);
+		$infoType = $InfoTypeClass::getFromCache($typeId);
 		if($overRideValue === true)
 		{
 			//clear all info
@@ -82,7 +82,7 @@ class InfoEntityAbstract extends BaseEntityAbstract
 		else 
 		{
 			//check whether we have one already
-			$infos = self::getAllByCriteria(strtolower(get_class($this)).'Id = ? and value = ? and typeId = ?', array($this->getId(), trim($typeId), trim($value)), true, 1 , 1);
+			$infos = $class::getAllByCriteria(strtolower(get_class($this)).'Id = ? and value = ? and typeId = ?', array($this->getId(), trim($typeId), trim($value)), true, 1 , 1);
 			if(count($infos) > 0)
 				return $this;
 			//create new
