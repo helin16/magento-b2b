@@ -194,6 +194,7 @@ class CatelogConnector extends B2BConnector
 					->setFullDescAssetId(trim($asset->getAssetId()))
 					->setIsFromB2B(true)
 					->setStatus(ProductStatus::get($statusId))
+					->setSellOnWeb(true)
 					->setManufacturer($this->getManufacturerName(trim($additionAttrs['manufacturer'])))
 					->save()
 					->clearAllPrice()
