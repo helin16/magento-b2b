@@ -75,7 +75,8 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 	 */
 	,_loadChosen: function () {
 		jQuery(".chosen").chosen({
-				disable_search_threshold: 10,
+				search_contains: true,
+				inherit_select_classes: true,
 				no_results_text: "Oops, nothing found!",
 				width: "95%"
 		});
