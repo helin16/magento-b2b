@@ -161,8 +161,6 @@ abstract class StringUtilsAbstract
 				default :
 			}
 		}
-		if(function_exists("mime_content_type"))
-			$fileSuffix = mime_content_type($filename);
 		return isset($fileSuffix[0]) ? "unknown/" . trim($fileSuffix[0], ".") : "text/plain";
 	}
 }
