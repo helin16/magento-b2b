@@ -173,6 +173,8 @@ class CatelogConnector extends B2BConnector
 				$mageId = trim($pro->product_id);
 				$sku = trim($pro->sku);
 				$pro = $this->getProductInfo($sku, $this->getInfoAttributes());
+				if(is_null($pro) || !isset($pro->additional_attributes))
+					continue;
 				$additionAttrs = $this->_getAttributeFromAdditionAttr($pro->additional_attributes);
 				
 				$name = trim($additionAttrs['name']);

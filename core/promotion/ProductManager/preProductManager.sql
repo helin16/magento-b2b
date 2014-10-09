@@ -490,3 +490,6 @@ ALTER TABLE `product` ADD `statusId` int(10) unsigned NULL DEFAULT NULL AFTER `s
 ALTER TABLE `product` ADD `manufacturerId` int(10) unsigned NULL DEFAULT NULL AFTER `statusId`, add index (`manufacturerId`);
 ALTER TABLE `product` ADD `asNewFromDate` datetime NULL DEFAULT null AFTER `manufacturerId`, add index (`asNewFromDate`);
 ALTER TABLE `product` ADD `asNewToDate` datetime NULL DEFAULT null AFTER `asNewFromDate`, add index (`asNewToDate`);
+
+insert into `productinfotype` (`id`, `name`, `active`, `created`, `createdById`, `updated`, `updatedById`) values
+     (2, 'Weight',  1, NOW(), 10, NOW(), 10);
