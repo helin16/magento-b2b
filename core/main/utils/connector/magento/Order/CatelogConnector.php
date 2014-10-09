@@ -225,7 +225,6 @@ class CatelogConnector extends B2BConnector
 			catch(Exception $ex)
 			{
 				Dao::rollbackTransaction();
-				throw $ex;
 			}
 		}
 		return $this;
