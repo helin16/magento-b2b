@@ -8,7 +8,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 	,productCategories: []
 	,productStatuses: []
 	,_productTreeId: 'product_category_tree' //the html id of the tree
-	,_htmlIDs: {'infoPanel': 'product-info-panel'} //the html ids
+	,_showRightPanel: false
 	,_getTitleRowData: function() {
 		return {'sku': 'SKU', 'name': 'Product Name', 'manufacturer' : {'name': 'Brand'}, 'supplierCodes': [{'supplier': {'name': 'Supplier'}, 'code': ''}],  'active': 'act?'};
 	}
@@ -154,26 +154,26 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 	,_getInfoPanel: function(product) {
 		var tmp = {};
 		tmp.me = this;
-		return new Element('div', {'id': tmp.me._htmlIDs.infoPanel})
-			.insert({'bottom': new Element('div', {'class': 'col-lg-6'})
+		return new Element('div', {'id': 'info_panel_' + product.id})
+			.insert({'bottom': new Element('div', {'class': 'col-md-6'})
 				.insert({'bottom': new Element('div', {'class': 'panel panel-default price-match-div'})
 					.insert({'bottom': new Element('div', {'class': 'panel-heading'}).update('<strong>Price Match</strong>') })
 					.insert({'bottom': new Element('div', {'class': 'panel-body price-match-listing'}).update(tmp.me.getLoadingImg()) })
 				})
 			})
-			.insert({'bottom': new Element('div', {'class': 'col-lg-6'})
+			.insert({'bottom': new Element('div', {'class': 'col-md-6'})
 				.insert({'bottom': new Element('div', {'class': 'panel panel-default price-trend-div'})
 					.insert({'bottom': new Element('div', {'class': 'panel-body'})
 						.insert({'bottom': new Element('iframe', {'frameborder': '0', 'scrolling': 'auto', 'width': '100%', 'height': '400px'}) })
 					})
 				})
 			})
-			.insert({'bottom': new Element('div', {'class': 'col-lg-6'})
+			.insert({'bottom': new Element('div', {'class': 'col-md-6'})
 				.insert({'bottom': new Element('div', {'class': 'panel panel-default'})
 					.insert({'bottom': new Element('div', {'class': 'panel-body'}).update('<h4>Reserved for Next Phase of Developing</h4>')})
 				})
 			})
-			.insert({'bottom': new Element('div', {'class': 'col-lg-6'})
+			.insert({'bottom': new Element('div', {'class': 'col-md-6'})
 				.insert({'bottom': new Element('div', {'class': 'panel panel-default'})
 					.insert({'bottom': new Element('div', {'class': 'panel-body'}).update('<h4>Reserved for Next Phase of Developing</h4>')})
 				})
@@ -182,25 +182,34 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 	,_showProductInfoOnRightPanel: function(product) {
 		var tmp = {};
 		tmp.me = this;
-		tmp.infoPanel = $(tmp.me._htmlIDs.infoPanel);
-		if(!tmp.infoPanel)
-			$(tmp.me.resultDivId).up('.list-panel').insert({'after': tmp.me._getInfoPanel(product).wrap(new Element('div').addClassName('col-lg-8')) });
-		$(tmp.me._htmlIDs.infoPanel).down('.price-trend-div iframe').writeAttribute('src', '/statics/product/pricetrend.html?productid=' + product.id);
+		tmp.infoPanel = tmp.me._getInfoPanel(product);
+		tmp.infoPanel.down('.price-trend-div iframe').writeAttribute('src', '/statics/product/pricetrend.html?productid=' + product.id);
 		tmp.me.postAjax(tmp.me.getCallbackId('priceMatching'), {'id': product.id}, {
 			'onLoading': function() {
-				$(tmp.me._htmlIDs.infoPanel).down('.price-match-div .price-match-listing').replace(new Element('div', {'class': 'panel-body price-match-listing'}).update(tmp.me.getLoadingImg()));
+				tmp.infoPanel.down('.price-match-div .price-match-listing').replace(new Element('div', {'class': 'panel-body price-match-listing'}).update(tmp.me.getLoadingImg()));
 			}
 			,'onSuccess': function(sender, param) {
 				try{
 					tmp.result = tmp.me.getResp(param, false, true);
 					if(!tmp.result)
 						return;
-					$(tmp.me._htmlIDs.infoPanel).down('.price-match-div .price-match-listing').replace(tmp.me._displayPriceMatchResult(tmp.result));
+					if($('info_panel_' + product.id))
+						$('info_panel_' + product.id).down('.price-match-div .price-match-listing').replace(tmp.me._displayPriceMatchResult(tmp.result));
 				} catch (e) {
 					tmp.me.showModalBox('Error', e, true);
 				}
 			}
 		});
+		return tmp.infoPanel;
+	}
+	,deSelectProduct: function() {
+		var tmp = {};
+		tmp.me = this;
+		jQuery('.product_item.success', jQuery('#' + tmp.me.resultDivId)).removeClass('success').popover('hide');
+		$(tmp.me.resultDivId).up('.list-panel').removeClassName('col-xs-4').addClassName('col-xs-12');
+		jQuery('.product_name', jQuery('#' + tmp.me.resultDivId)).show();
+		jQuery('.btns', jQuery('#' + tmp.me.resultDivId)).show();
+		tmp.me._showRightPanel = false;
 		return tmp.me;
 	}
 	/**
@@ -209,15 +218,31 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 	,_displaySelectedProduct: function(item) {
 		var tmp = {};
 		tmp.me = this;
-		//remove all active class
-		jQuery('.product_item.success', jQuery('#' + tmp.me.resultDivId)).removeClass('success');
-		//mark this one as active
-		jQuery('[product_id="' + item.id + '"]', jQuery('#' + tmp.me.resultDivId)).addClass('success');
-		jQuery('.product_name', jQuery('#' + tmp.me.resultDivId)).remove();
-		jQuery('.btns', jQuery('#' + tmp.me.resultDivId)).remove();
+		$(tmp.me.resultDivId).up('.list-panel').removeClassName('col-xs-12').addClassName('col-xs-4');
+		jQuery('.product_name', jQuery('#' + tmp.me.resultDivId)).hide();
+		jQuery('.btns', jQuery('#' + tmp.me.resultDivId)).hide();
+		tmp.me._showRightPanel = true;
 		
-		$(tmp.me.resultDivId).up('.list-panel').removeClassName('col-lg-12').addClassName('col-lg-4');
-		return tmp.me._showProductInfoOnRightPanel(item);
+		//remove all active class
+		jQuery('.product_item.success', jQuery('#' + tmp.me.resultDivId)).removeClass('success').popover('hide');
+		//mark this one as active
+		tmp.selectedRow = jQuery('[product_id="' + item.id + '"]', jQuery('#' + tmp.me.resultDivId))
+			.addClass('success');
+		if(!tmp.selectedRow.hasClass('popover-loaded')) {
+			tmp.selectedRow.popover({
+				'title'    : '<div class="row"><div class="col-xs-10">Details for: ' + item.sku + '</div><div class="col-xs-2"><a class="pull-right" href="javascript:void(0);" onclick="pageJs.deSelectProduct();"><strong>&times;</strong></a></div></div>',
+				'html'     : true, 
+				'placement': 'right', 
+				'container': 'body', 
+				'trigger'  : 'manual', 
+				'viewport' : {"selector": "body", "padding": 80 },
+				'content'  : function() { return tmp.me._showProductInfoOnRightPanel(item).wrap(new Element('div')).innerHTML; }, 
+				'template' : '<div class="popover" role="tooltip" style="max-width: none;"><div class="arrow"></div><h3 class="popover-title"></h3><div class="popover-content"></div></div>'
+			})
+			.addClass('popover-loaded');
+		}
+		tmp.selectedRow.popover('toggle');
+		return tmp.me;
 	}
 	/**
 	 * open the product details page
@@ -235,7 +260,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		tmp.me = this;
 		tmp.tag = (tmp.isTitle === true ? 'th' : 'td');
 		tmp.isTitle = (isTitle || false);
-		tmp.row = new Element('tr', {'class': (tmp.isTitle === true ? '' : 'product_item'), 'product_id' : row.id}).store('data', row)
+		tmp.row = new Element('tr', {'class': 'visible-xs visible-md visible-lg visible-sm ' + (tmp.isTitle === true ? '' : 'product_item'), 'product_id' : row.id}).store('data', row)
 			.insert({'bottom': new Element(tmp.tag, {'class': 'sku', 'title': row.name})
 				.insert({'bottom': new Element('span', {'style': 'margin: 0 5px 0 0;'})
 					.insert({'bottom': new Element('input', {'type': 'checkbox', 'class': 'product-selected'})
@@ -253,16 +278,15 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 					.update(row.sku)
 				}) 
 			})
+			.insert({'bottom': new Element(tmp.tag, {'class': 'product_name hidden-xs hidden-sm', 'style': (tmp.me._showRightPanel ? 'display: none' : '')}).update(row.name) })
 			.insert({'bottom': new Element(tmp.tag, {'class': 'manufacturer col-xs-2'}).update(row.manufacturer ? row.manufacturer.name : '') })
 			.insert({'bottom': new Element(tmp.tag, {'class': 'supplier col-xs-2'}).update(
 					row.supplierCodes ? tmp.me._getSupplierCodes(row.supplierCodes, isTitle) : ''
 			) })
 			.insert({'bottom': new Element(tmp.tag, {'class': 'product_active col-xs-1'})
 				.insert({'bottom': (tmp.isTitle === true ? row.active : new Element('input', {'type': 'checkbox', 'disabled': true, 'checked': row.active}) ) })
-			});
-		if(!$(tmp.me._htmlIDs.infoPanel)) {
-			tmp.row.down('.sku').insert({'after': new Element(tmp.tag, {'class': 'product_name'}).update(row.name) });
-			tmp.row.insert({'bottom': tmp.isTitle === true ? '' : new Element(tmp.tag, {'class': 'btns'})
+			})
+			.insert({'bottom': tmp.isTitle === true ? '' : new Element(tmp.tag, {'class': 'btns hidden-xs hidden-sm', 'style': (tmp.me._showRightPanel ? 'display: none' : '')})
 				.insert({'bottom': new Element('span', {'class': 'btn btn-primary btn-xs'})
 					.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-pencil'}) })
 				})
@@ -270,7 +294,6 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 					tmp.me._openProductDetails(row);
 				})
 			});
-		} 
 		if(tmp.isTitle === false) {
 			tmp.row.down('.sku-link').observe('click', function(){
 				//display details of the selected item
