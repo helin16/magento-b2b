@@ -692,7 +692,7 @@ class Product extends InfoEntityAbstract
 		if(trim($product->getId()) === '')
 		{
 			$product->setIsFromB2B($isFromB2B)
-			->setShortDescription($shortDescr);
+				->setShortDescription($shortDescr);
 			if($stockOnOrder !== null && is_numeric($stockOnOrder))
 				$product->setStockOnOrder(intval($stockOnOrder));
 			if($stockOnHand !== null && is_numeric($stockOnHand))
