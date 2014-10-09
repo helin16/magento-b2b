@@ -6,15 +6,37 @@ class CatelogConnector extends B2BConnector
 		return $this->_connect()->catalogProductList ($this->_session);
 	}
 	/**
+	 * Getting the attribute information 
+	 * 
+	 * @param unknown $mageAttrId
+	 * 
+	 * @return array
+	 */
+	public function getProductAttributeOptions($mageAttrId)
+	{
+		return $this->_connect()->catalogProductAttributeOptions($this->_session, $mageAttrId); 
+	}
+	/**
+	 * Getting the product attributes list
+	 * 
+	 * @param int $mageSetId
+	 * 
+	 * @return array
+	 */
+	public function getProductAttributeList($mageSetId)
+	{
+		return $this->_connect()->catalogProductAttributeList($this->_session, $mageSetId); 
+	}
+	/**
 	 * Getting information for the product
 	 *
 	 * @param string $sku The product sku
 	 *
 	 * @return array
 	 */
-	public function getProductInfo($sku)
+	public function getProductInfo($sku, $attributes = array())
 	{
-		return $this->_connect()->catalogProductInfo($this->_session, $sku);
+		return $this->_connect()->catalogProductInfo($this->_session, $sku, null, $attributes);
 	}
 	/**
 	 * Getting the product category tree
@@ -108,6 +130,33 @@ class CatelogConnector extends B2BConnector
 		}
 		return $this;
 	}
+	public function getInfoAttributes()
+	{
+		$attributeName = array('name', 'manufacturer', 'man_code', 'news_from_date', 'news_to_date', 'price', 'short_description', 'supplier', 'description', 'weight', 'status', 'special_price', 'special_from_date', 'special_to_date');
+		$attributes = new stdclass();
+		$attributes->additional_attributes = $attributeName;
+		return $attributes;
+	}
+	public function getManufacturerName($mageManuValue)
+	{
+		$options = $this->getProductAttributeOptions('manufacturer');
+		if(count($options) === 0)
+			return;
+		
+		foreach($options as $option)
+		{
+			if(trim($option->value) === trim($mageManuValue))
+				return Manufacturer::create(trim($option->label), trim($option->label), true, trim($mageManuValue));
+		}
+		throw new Exception('No manufacture found with value(=' . $mageManuValue . '!');
+	}
+	private function _getAttributeFromAdditionAttr($attrArray)
+	{
+		$array = array();
+		foreach($attrArray as $attr)
+			$array[trim($attr->key)] = trim($attr->value);
+		return $array;
+	}
 	/**
 	 * import all products
 	 * 
@@ -121,18 +170,20 @@ class CatelogConnector extends B2BConnector
 			try
 			{
 				Dao::beginTransaction();
-				$sku = trim($pro->sku);
-				$pro = $this->getProductInfo($sku);
-				$name = trim($pro->name);
-				$short_description = trim($pro->short_description);
-				$description = trim($pro->description);
-				$weight = trim($pro->weight);
-				$statusId = trim($pro->status);
 				$mageId = trim($pro->product_id);
-				$price = trim($pro->price);
-				$specialPrice = isset($pro->special_price) ? trim($pro->special_price) : '';
-				$specialPrice_From = isset($pro->special_from_date) ? trim($pro->special_from_date) : null;
-				$specialPrice_To = isset($pro->special_to_date) ? trim($pro->special_to_date) : null;
+				$sku = trim($pro->sku);
+				$pro = $this->getProductInfo($sku, $this->getInfoAttributes());
+				$additionAttrs = $this->_getAttributeFromAdditionAttr($pro->additional_attributes);
+				
+				$name = trim($additionAttrs['name']);
+				$short_description = trim($additionAttrs['short_description']);
+				$description = trim($additionAttrs['description']);
+				$weight = trim($additionAttrs['weight']);
+				$statusId = trim($additionAttrs['status']);
+				$price = trim($additionAttrs['price']);
+				$specialPrice = isset($additionAttrs['special_price']) ? trim($additionAttrs['special_price']) : '';
+				$specialPrice_From = isset($additionAttrs['special_from_date']) ? trim($additionAttrs['special_from_date']) : null;
+				$specialPrice_To = isset($additionAttrs['special_to_date']) ? trim($additionAttrs['special_to_date']) : null;
 			
 				if(!($product = Product::getBySku($sku)) instanceof Product)
 					$product = Product::create($sku, $name);
@@ -143,13 +194,19 @@ class CatelogConnector extends B2BConnector
 					->setFullDescAssetId(trim($asset->getAssetId()))
 					->setIsFromB2B(true)
 					->setStatus(ProductStatus::get($statusId))
+					->setManufacturer($this->getManufacturerName(trim($additionAttrs['manufacturer'])))
 					->save()
 					->clearAllPrice()
 					->addPrice(ProductPriceType::get(ProductPriceType::ID_RRP), $price)
 					->addInfo(ProductInfoType::ID_WEIGHT, $weight);
+				
 				if($specialPrice !== '')
 					$product->addPrice(ProductPriceType::get(ProductPriceType::ID_CASUAL_SPECIAL), $specialPrice, $specialPrice_From, $specialPrice_To);
-				if(isset($pro->category_ids) && count($pro->category_ids) > 0)
+				
+				if(isset($additionAttrs['supplier']) && ($supplierName = trim($additionAttrs['supplier'])) !== '')
+					$product->addSupplier(Supplier::create($supplierName, $supplierName, true));
+				
+				if(isset($pro->categories) && count($pro->categories) > 0)
 				{
 					$product->clearAllCategory();
 					foreach($pro->category_ids as $cateMageId)
@@ -160,7 +217,6 @@ class CatelogConnector extends B2BConnector
 					}
 				}
 				Dao::commitTransaction();
-				die;
 			}
 			catch(Exception $ex)
 			{

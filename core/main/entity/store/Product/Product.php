@@ -531,6 +531,48 @@ class Product extends InfoEntityAbstract
 		return $this;
 	}
 	/**
+	 * Adding a supplier
+	 * 
+	 * @param Supplier $supplier
+	 * @param string   $supplierCode
+	 * 
+	 * @return Product
+	 */
+	public function addSupplier(Supplier $supplier, $supplierCode = 'NA')
+	{
+		SupplierCode::create($this, $supplier, $supplierCode);
+		return $this;
+	}
+	/**
+	 * removing the suppler
+	 *
+	 * @param ProductPriceType $type
+	 *
+	 * @return Product
+	 */
+	public function removeSupplier(Supplier $supplier, $supplierCode = '')
+	{
+		$where = 'productId = ? and suplierId = ?';
+		$params = array($this->getId(), $supplier->getId());
+		if(trim($supplierCode) !== '')
+		{
+			$where .= ' AND code like = ?';
+			$params[] = trim($supplierCode);
+		}
+		SupplierCode::updateByCriteria('active = 0', $where, $params);
+		return $this;
+	}
+	/**
+	 * removing all the suppliers
+	 * 
+	 * @return Product
+	 */
+	public function clearSuppliers()
+	{
+		SupplierCode::updateByCriteria('active = 0', 'productId = ?', array($this->getId()));
+		return $this;
+	}
+	/**
 	 * (non-PHPdoc)
 	 * @see BaseEntityAbstract::getJson()
 	 */

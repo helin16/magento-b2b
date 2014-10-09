@@ -30,7 +30,6 @@ abstract class SystemCoreAbstract
 			$base . '/entity/store/Tools/',
 			$base . '/entity/system/',
 			$base . '/exception/',
-			$base . '/service/',
 			$base . '/utils/',
 			$base . '/utils/connector/',
 			$base . '/utils/connector/courier/',
