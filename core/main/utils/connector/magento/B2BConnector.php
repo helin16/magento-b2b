@@ -118,7 +118,7 @@ abstract class B2BConnector
 	protected function _connect()
 	{
 		if(($this->_session = trim($this->_session)) === '')
-			$this->_session = $this->_soapClient->login($this->_apiUser, $this->_apikey);
+			$this->_session = $this->_soapClient->login($this->_apiUser, $this->_apiKey);
 		return $this->_soapClient;
 	}
 }
