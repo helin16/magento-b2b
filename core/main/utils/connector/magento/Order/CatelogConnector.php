@@ -169,14 +169,15 @@ class CatelogConnector extends B2BConnector
 		{
 			try
 			{
-				Dao::beginTransaction();
 				$mageId = trim($pro->product_id);
 				$sku = trim($pro->sku);
 				$pro = $this->getProductInfo($sku, $this->getInfoAttributes());
 				if(is_null($pro) || !isset($pro->additional_attributes))
 					continue;
-				$additionAttrs = $this->_getAttributeFromAdditionAttr($pro->additional_attributes);
 				
+				Dao::beginTransaction();
+				
+				$additionAttrs = $this->_getAttributeFromAdditionAttr($pro->additional_attributes);
 				$name = trim($additionAttrs['name']);
 				$short_description = trim($additionAttrs['short_description']);
 				$description = trim($additionAttrs['description']);
