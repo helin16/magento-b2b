@@ -28,6 +28,24 @@ abstract class B2BConnector
 	 */
 	public static $_cache;
 	/**
+	 * The WSDL for the soapclient
+	 * 
+	 * @var string
+	 */
+	private $_wsdl;
+	/**
+	 * The user for the soapclient
+	 * 
+	 * @var string
+	 */
+	private $_apiUser;
+	/**
+	 * The key for the soapclient
+	 * 
+	 * @var string
+	 */
+	private $_apiKey;
+	/**
 	 * Getting a B2BConnector
 	 * 
 	 * @param string $type    The type of the connector
@@ -58,11 +76,41 @@ abstract class B2BConnector
 	 */
 	public function __construct($wsdl, $apiUser, $apiKey)
 	{
+		$this->_wsdl = trim($wsdl);
+		$this->_apiUser = trim($apiUser);
+		$this->_apiKey = trim($apiKey);
 		$options = array('exceptions' => true, 'encoding'=>'utf-8', 'compression' => SOAP_COMPRESSION_ACCEPT | SOAP_COMPRESSION_GZIP);
 // 		$options = array_merge($options, array('proxy_host' => "proxy.bytecraft.internal", 'proxy_port' => 3128));
 		$this->_soapClient = ComScriptSoap::getScript($wsdl, $options);
 		$this->_apiUser = $apiUser;
 		$this->_apikey = $apiKey;
+	}
+	/**
+	 * Getting the wsdl
+	 * 
+	 * @return string
+	 */
+	protected function _getWSDL()
+	{
+		return trim($this->_wsdl);
+	}
+	/**
+	 * Getting the api user
+	 * 
+	 * @return string
+	 */
+	protected function _getApiUser()
+	{
+		return trim($this->_apiUser);
+	}
+	/**
+	 * Getting the api key
+	 * 
+	 * @return string
+	 */
+	protected function _getApiKey()
+	{
+		return trim($this->_apiKey);
 	}
 	/**
 	 * start the session for soap
