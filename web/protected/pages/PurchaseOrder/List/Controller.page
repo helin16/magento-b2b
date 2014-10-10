@@ -1,7 +1,6 @@
 <com:TContent ID="MainContent">
 <com:Application.controls.fancybox.FancyBox />
 <com:Application.controls.chosen.Chosen />
-<com:TCallback ID="priceMatchingBtn" OnCallback = 'Page.priceMatching' />
 	<div class="pagewrapper productlistwraper">
 		<div class="col-xs-12">
 			<div class="panel panel-default" id="searchPanel">
@@ -9,10 +8,10 @@
 					<label for="showSearch">Show Search Criteria?</label>
 					<input id="showSearch" type="checkbox" onclick="$(this).up('#searchPanel').down('.panel-body').toggle();">
 					<span class="pull-right">
-						<span id="searchBtn" class="btn btn-primary btn-sm" data-loading-text="searching ..." onclick="pageJs.getSearchCriteria().deSelectProduct().getResults(true, <%= $this->pageSize %>);" >Search</span>
+						<span id="searchBtn" class="btn btn-primary btn-sm" data-loading-text="searching ..." onclick="pageJs.getSearchCriteria().getResults(true, <%= $this->pageSize %>);" >Search</span>
 					</span>
 				</div>
-				<div class="panel-body search-panel" id="searchDiv" style="display: none; ">
+				<div class="panel-body search-panel" id="searchDiv" style="display: none; overflow: visible;">
 					<div class="row">
 						<div class="col-md-4">
 							<div class="form-group form-group-sm input-group">
@@ -78,7 +77,7 @@
 					Found <label id="total-found-count">0</label> Products:
 				</div>
 				<div class="table-responsive">
-	                <table class="table table-hover table-striped" id="item-list"></table>
+	                <table class="table table-hover" id="item-list"></table>
 	            </div>
 			</div>
 		</div>

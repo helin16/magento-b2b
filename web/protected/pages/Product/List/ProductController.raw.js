@@ -7,14 +7,9 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 	,suppliers: []
 	,productCategories: []
 	,productStatuses: []
-	,_productTreeId: 'product_category_tree' //the html id of the tree
 	,_showRightPanel: false
 	,_getTitleRowData: function() {
 		return {'sku': 'SKU', 'name': 'Product Name', 'manufacturer' : {'name': 'Brand'}, 'supplierCodes': [{'supplier': {'name': 'Supplier'}, 'code': ''}],  'active': 'act?'};
-	}
-	,setItem: function(item) {
-		this._item = item;
-		return this;
 	}
 	/**
 	 * Load the manufacturers
@@ -230,14 +225,14 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 			.addClass('success');
 		if(!tmp.selectedRow.hasClass('popover-loaded')) {
 			tmp.selectedRow.popover({
-				'title'    : '<div class="row"><div class="col-xs-10">Details for: ' + item.sku + '</div><div class="col-xs-2"><a class="pull-right" href="javascript:void(0);" onclick="pageJs.deSelectProduct();"><strong>&times;</strong></a></div></div>',
+				'title'    : '<div class="row"><div class="col-xs-10">Details for: ' + item.sku + '</div><div class="col-xs-2"><span class="btn btn-danger pull-right btn-sm" onclick="pageJs.deSelectProduct();"><span class="glyphicon glyphicon-remove"></span></span></div></div>',
 				'html'     : true, 
 				'placement': 'right', 
 				'container': 'body', 
 				'trigger'  : 'manual', 
-				'viewport' : {"selector": "body", "padding": 80 },
+				'viewport' : {"selector": ".list-panel", "padding": 0 },
 				'content'  : function() { return tmp.me._showProductInfoOnRightPanel(item).wrap(new Element('div')).innerHTML; }, 
-				'template' : '<div class="popover" role="tooltip" style="max-width: none;"><div class="arrow"></div><h3 class="popover-title"></h3><div class="popover-content"></div></div>'
+				'template' : '<div class="popover" role="tooltip" style="max-width: none; z-index: 0;"><div class="arrow"></div><h3 class="popover-title"></h3><div class="popover-content"></div></div>'
 			})
 			.addClass('popover-loaded');
 		}

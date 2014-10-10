@@ -1,26 +1,30 @@
 <?php
 /**
- * This is the ProductController
+ * This is the PurchaseOrder List
  * 
  * @package    Web
  * @subpackage Controller
  * @author     lhe<helin16@gmail.com>
  */
-class ProductController extends CRUDPageAbstract
+class Controller extends CRUDPageAbstract
 {
 	/**
 	 * (non-PHPdoc)
 	 * @see BPCPageAbstract::$menuItem
 	 */
-	public $menuItem = 'products';
-	protected $_focusEntity = 'Product';
+	public $menuItem = 'purchaseorders';
+	/**
+	 * (non-PHPdoc)
+	 * @see CRUDPageAbstract::$_focusEntity
+	 */
+	protected $_focusEntity = 'PurchaseOrder';
 	/**
 	 * constructor
 	 */
 	public function __construct()
 	{
 		parent::__construct();
-		if(!AccessControl::canAccessProductsPage(Core::getRole()))
+		if(!AccessControl::canAccessPurcahseOrdersPage(Core::getRole()))
 			die('You do NOT have access to this page');
 	}
 	/**
@@ -29,46 +33,11 @@ class ProductController extends CRUDPageAbstract
 	 */
 	protected function _getEndJs()
 	{
-		$manufactureArray = $supplierArray = $statuses = $productCategoryArray = array();
-		foreach (Manufacturer::getAll() as $os)
-			$manufactureArray[] = $os->getJson();
-		foreach (Supplier::getAll() as $os)
-			$supplierArray[] = $os->getJson();
-		foreach (ProductStatus::getAll() as $os)
-			$statuses[] = $os->getJson();
-		foreach (ProductCategory::getAll() as $os)
-			$productCategoryArray[] = $os->getJson();
 		
 		$js = parent::_getEndJs();
-		$js .= 'pageJs._loadManufactures('.json_encode($manufactureArray).')';
-		$js .= '._loadSuppliers('.json_encode($supplierArray).')';
-		$js .= '._loadCategories('.json_encode($productCategoryArray).')';
-		$js .= '._loadProductStatuses('.json_encode($statuses).')';
-		$js .= "._loadChosen()";
-		$js .= "._bindSearchKey()";
-		$js .= ".setCallbackId('priceMatching', '" . $this->priceMatchingBtn->getUniqueID() . "')";
+		$js .= 'pageJs';
 		$js .= ".getResults(true, " . $this->pageSize . ");";
 		return $js;
-	}
-	/**
-	 * Updating the full description of the product
-	 * 
-	 * @param Product $product
-	 * @param unknown $param
-	 * 
-	 * @return ProductController
-	 */
-	private function _updateFullDescription(Product &$product, $param)
-	{
-		//update full description
-		if(isset($param->CallbackParameter->fullDescription) && ($fullDescription = trim($param->CallbackParameter->fullDescription)) !== '')
-		{
-			if(($fullAsset = Asset::getAsset($product->getFullDescAssetId())) instanceof Asset)
-				Asset::removeAssets(array($fullAsset->getAssetId()));
-			$fullAsset = Asset::registerAsset('full_description_for_product.txt', $fullDescription);
-			$product->setFullDescAssetId($fullAsset->getAssetId());
-		}
-		return $this;
 	}
 	/**
 	 * Getting the items
@@ -111,34 +80,6 @@ class ProductController extends CRUDPageAbstract
             $errors[] = $ex->getMessage() . $ex->getTraceAsString();
         }
         $param->ResponseData = StringUtilsAbstract::getJson($results, $errors);
-    }
-    /**
-     * Getting price matching information
-     * 
-     * @param unknown $sender
-     * @param unknown $param
-     */
-    public function priceMatching($sender, $param)
-    {
-    	$results = $errors = array();
-    	try
-    	{
-    		$id = isset($param->CallbackParameter->id) ? $param->CallbackParameter->id : '';
-    		$product = Product::get($id);
-    		$prices = ProductPrice::getPrices($product, ProductPriceType::get(ProductPriceType::ID_RRP));
-    		$companies = PriceMatcher::getAllCompaniesForPriceMatching();
-    		$prices = PriceMatcher::getPrices($companies, $product->getSku(), (count($prices)===0 ? 0 : $prices[0]->getPrice()) );
-    		$myPrice = $prices['myPrice'];
-    		$minPrice = $prices['minPrice'];
-    		$msyPrice = $prices['companyPrices']['MSY'];
-    		$prices['id'] = $id;
-    		$results = $prices;
-    	}
-    	catch(Exception $ex)
-    	{
-    		$errors[] = $ex->getMessage();
-    	}
-    	$param->ResponseData = StringUtilsAbstract::getJson($results, $errors);
     }
 }
 ?>
