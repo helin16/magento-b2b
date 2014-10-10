@@ -493,3 +493,62 @@ ALTER TABLE `product` ADD `asNewToDate` datetime NULL DEFAULT null AFTER `asNewF
 
 insert into `productinfotype` (`id`, `name`, `active`, `created`, `createdById`, `updated`, `updatedById`) values
      (2, 'Weight',  1, NOW(), 10, NOW(), 10);
+     
+     
+CREATE TABLE `purchaseorder` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `purchaseOrderNo` varchar(50) NOT NULL DEFAULT '',
+  `supplierId` int(10) unsigned NOT NULL DEFAULT '0',
+  `supplierRefNo` varchar(100) NOT NULL DEFAULT '',
+  `status` varchar(20) NOT NULL DEFAULT '',
+  `supplierContactId` int(10) unsigned NOT NULL DEFAULT '0',
+  `orderDate` datetime NOT NULL DEFAULT '0001-01-01 00:00:00',
+  `totalAmount` double(10,4) unsigned NOT NULL DEFAULT '0.0000',
+  `totalPaid` double(10,4) unsigned NOT NULL DEFAULT '0.0000',
+  `active` tinyint(1) NOT NULL DEFAULT '1',
+  `created` datetime NOT NULL DEFAULT '0001-01-01 00:00:00',
+  `createdById` int(10) unsigned NOT NULL DEFAULT '0',
+  `updated` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `updatedById` int(10) unsigned NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `purchaseOrderNo` (`purchaseOrderNo`),
+  KEY `status` (`status`),
+  KEY `supplierId` (`supplierId`),
+  KEY `supplierRefNo` (`supplierRefNo`),
+  KEY `supplierContactId` (`supplierContactId`),
+  KEY `orderDate` (`orderDate`),
+  KEY `totalAmount` (`totalAmount`),
+  KEY `totalPaid` (`totalPaid`),
+  KEY `active` (`active`),
+  KEY `created` (`created`),
+  KEY `createdById` (`createdById`),
+  KEY `updated` (`updated`),
+  KEY `updatedById` (`updatedById`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
+
+     
+ CREATE TABLE `purchaseorderitem` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `purchaseOrderId` int(10) unsigned NOT NULL DEFAULT '0',
+  `productId` int(10) unsigned NOT NULL DEFAULT '0',
+  `qty` int(10) unsigned NOT NULL DEFAULT '0',
+  `unitPrice` double(10,4) unsigned NOT NULL DEFAULT '0.0000',
+  `totalPrice` double(10,4) unsigned NOT NULL DEFAULT '0.0000',
+  `supplierItemCode` varchar(50) NOT NULL DEFAULT '',
+  `description` varchar(255) NOT NULL DEFAULT '',
+  `active` tinyint(1) NOT NULL DEFAULT '1',
+  `created` datetime NOT NULL DEFAULT '0001-01-01 00:00:00',
+  `createdById` int(10) unsigned NOT NULL DEFAULT '0',
+  `updated` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `updatedById` int(10) unsigned NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`),
+  KEY `purchaseOrderId` (`purchaseOrderId`),
+  KEY `productId` (`productId`),
+  KEY `supplierItemCode` (`supplierItemCode`),
+  KEY `qty` (`qty`),
+  KEY `active` (`active`),
+  KEY `created` (`created`),
+  KEY `createdById` (`createdById`),
+  KEY `updated` (`updated`),
+  KEY `updatedById` (`updatedById`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
