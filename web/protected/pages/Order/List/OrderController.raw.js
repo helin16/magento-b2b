@@ -98,6 +98,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				jQuery('#searchBtn').button('loading');
 				jQuery('.popovershipping').popover('hide');
 				if(tmp.reset === true) {
+					$(tmp.me.totalNoOfItemsId).update('0');
 					$(tmp.me.resultDivId).update('').insert({'after': new Element('div', {'class': 'panel-body'}).update(tmp.me.getLoadingImg()) });
 				}
 			}
