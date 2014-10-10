@@ -15,26 +15,31 @@
 					<div class="row">
 						<div class="col-md-4">
 							<div class="form-group form-group-sm input-group">
-	                           <label class="input-group-addon">SKU:</label>
-	                           <input type="text" search_field="pro.sku" placeholder="The SKU of the product" class="form-control input-sm">
+	                           <label class="input-group-addon">PO No.:</label>
+	                           <input type="text" search_field="po.purchaseOrderNo" placeholder="The Purchase Order Number" class="form-control input-sm">
 	                       </div>
 						</div>
 						<div class="col-md-4">
 							<div class="form-group form-group-sm input-group">
-	                           <label class="input-group-addon">Name:</label>
-	                           <input type="text" search_field="pro.name" placeholder="The name of the product" class="form-control input-sm">
+	                           <label class="input-group-addon">Supplier Ref:</label>
+	                           <input type="text" search_field="pro.supplierRefNo" placeholder="The refrerence number from the supplier" class="form-control input-sm">
 	                       </div>
 						</div>
-						<div class="col-md-2">
-                            <div class="form-group form-group-sm input-group">
-                               <label class="input-group-addon">Active:</label>
-                               <select search_field="pro.active" class="form-control input-sm">
-                                    <option value="1">YES</option>
-                                    <option value="0">NO</option>
-                                    <option value=" ">All</option>
-                               </select>
-                           </div>
-                        </div>
+						<div class="col-md-4">
+							<div class="form-group form-group-sm input-group">
+	                           <label class="input-group-addon">Order Date:</label>
+	                           <input type="text" search_field="pro.orderDate_from" placeholder="The order date - from" class="form-control input-sm">
+	                           <input type="text" search_field="pro.orderDate_to" placeholder="The order date - to" class="form-control input-sm">
+	                       </div>
+						</div>
+						<div class="col-md-4">
+	                        <div class="form-group form-group-sm input-group">
+				                <label class="input-group-addon">Suppliers: </label>
+				                <div class="form-control" style="padding: 0px; height: 100%;">
+				                	<select search_field="pro.supplierIds" multiple class="chosen"></select>
+		                        </div>
+	                        </div>
+						</div>
 						<div class="col-md-2">
 							<div class="form-group form-group-sm input-group">
 	                           <label class="input-group-addon">Status:</label>
@@ -43,30 +48,6 @@
                                 </div>
 	                       </div>
 						</div>
-						<div class="col-md-4">
-							<div class="form-group form-group-sm input-group">
-				                <label class="input-group-addon">Manufacturers: </label>
-				                <div class="form-control" style="padding: 0px; height: 100%;">
-					                <select search_field="pro.manufacturerIds" multiple class="chosen"></select>
-				                </div>
-	                        </div>
-                        </div>
-                        <div class="col-md-4">
-	                        <div class="form-group form-group-sm input-group">
-				                <label class="input-group-addon">Suppliers: </label>
-				                <div class="form-control" style="padding: 0px; height: 100%;">
-				                	<select search_field="pro.supplierIds" multiple class="chosen"></select>
-		                        </div>
-	                        </div>
-						</div>
-                        <div class="col-md-4">
-	                        <div class="form-group form-group-sm input-group">
-				                <label class="input-group-addon">Categories: </label>
-				                <div class="form-control" style="padding: 0px; height: 100%;">
-				                	<select search_field="pro.productCategoryIds" multiple class="chosen"></select>
-		                        </div>
-	                        </div>
-						</div>
 					</div>
 				</div>
 			</div>
@@ -74,7 +55,7 @@
 		<div class="col-xs-12 list-panel">
 			<div class="panel panel-default">
 				<div class="panel-heading">
-					Found <label id="total-found-count">0</label> Products:
+					Found <label id="total-found-count">0</label> Purchase Orders:
 				</div>
 				<div class="table-responsive">
 	                <table class="table table-hover" id="item-list"></table>

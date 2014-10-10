@@ -26,7 +26,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		$('searchDiv').getElementsBySelector('[search_field]').each(function(item) {
 			item.observe('keydown', function(event) {
 				tmp.me.keydown(event, function() {
-					$(tmp.me.searchDivId).down('#searchBtn').click();
+					$('searchBtn').click();
 				});
 			})
 		});
@@ -87,7 +87,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.reset = (reset || false);
 		if(tmp.me._searchCriteria === null)
 		{
-			alert('Nothing to search!');
+			tmp.me.showModalBox('Warning', 'Nothing to search!', true);
 			return;
 		}
 		if(tmp.reset === true)
@@ -95,7 +95,11 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.me._pagination.pageSize = (pageSize || tmp.me._pagination.pageSize);
 		tmp.me.postAjax(tmp.me.getCallbackId('getOrders'), {'pagination': tmp.me._pagination, 'searchCriteria': tmp.me._searchCriteria}, {
 			'onLoading': function () {
-				jQuery('#' + tmp.me.searchDivId + ' #searchBtn').button('loading');
+				jQuery('#searchBtn').button('loading');
+				jQuery('.popovershipping').popover('hide');
+				if(tmp.reset === true) {
+					$(tmp.me.resultDivId).update('').insert({'after': new Element('div', {'class': 'panel-body'}).update(tmp.me.getLoadingImg()) });
+				}
 			}
 			,'onSuccess': function(sender, param) {
 				try{
@@ -140,9 +144,13 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					})
 					
 				} catch (e) {
-					alert(e);
+					tmp.me.showModalBox('Error', e, true);
 				}
-				jQuery('#' + tmp.me.searchDivId + ' #searchBtn').button('reset');
+			}
+			,'onComplete': function() {
+				jQuery('#searchBtn').button('reset');
+				if($(tmp.me.resultDivId).up('.panel').down('.panel-body'))
+					$(tmp.me.resultDivId).up('.panel').down('.panel-body').remove();
 			}
 		});
 	}
@@ -313,10 +321,13 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.me = this;
 		tmp.isTitle = (isTitle || false);
 		tmp.row = new Element('tr', {'class': (tmp.isTitle === true ? '' : 'order_item'), 'order_id' : row.id}).store('data', row)
-			.insert({'bottom': new Element('td', {'class': 'orderInfo'}).update(
+			.insert({'bottom': new Element('td', {'class': 'orderInfo  col-xs-2'}).update(
 				tmp.isTitle ? row.orderNo : tmp.me._getOrderInfoCell(row)
 			) })
-			.insert({'bottom': new Element('td', {'class': 'status col-middle', 'order_status': row.status.name}).update(
+			.insert({'bottom': new Element('td', {'class': 'order-date'}).update(
+					tmp.isTitle === true ? 'Order Date' : tmp.me.loadUTCTime(row.orderDate).toLocaleFormat('%d/%b/%Y')
+			) })
+			.insert({'bottom': new Element('td', {'class': 'status col-middle col-xs-2', 'order_status': row.status.name}).update(
 					row.status ? row.status.name : ''
 			) })
 			.insert({'bottom': new Element('td', {'class': 'text-right', 'payment': true}).update(
