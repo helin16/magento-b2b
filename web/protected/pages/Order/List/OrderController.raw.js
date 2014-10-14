@@ -327,7 +327,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				tmp.isTitle ? row.orderNo : tmp.me._getOrderInfoCell(row)
 			) })
 			.insert({'bottom': new Element('td', {'class': 'order-date'}).update(
-					tmp.isTitle === true ? 'Order Date' : tmp.orderDate.getDate() + '/' + (tmp.orderDate.getMonth() * + 1) + '/' + tmp.orderDate.getFullYear();
+					tmp.isTitle === true ? 'Order Date' : tmp.orderDate.getDate() + '/' + (tmp.orderDate.getMonth() * 1 + 1) + '/' + tmp.orderDate.getFullYear();
 			) })
 			.insert({'bottom': new Element('td', {'class': 'status col-middle col-xs-2', 'order_status': row.status.name}).update(
 					row.status ? row.status.name : ''
