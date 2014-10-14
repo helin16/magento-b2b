@@ -145,6 +145,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					})
 					
 				} catch (e) {
+					console.error(e);
 					tmp.me.showModalBox('Error', e, true);
 				}
 			}
@@ -321,13 +322,12 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		var tmp = {};
 		tmp.me = this;
 		tmp.isTitle = (isTitle || false);
-		tmp.orderDate = tmp.me.loadUTCTime(row.orderDate);
 		tmp.row = new Element('tr', {'class': (tmp.isTitle === true ? '' : 'order_item'), 'order_id' : row.id}).store('data', row)
 			.insert({'bottom': new Element('td', {'class': 'orderInfo  col-xs-2'}).update(
 				tmp.isTitle ? row.orderNo : tmp.me._getOrderInfoCell(row)
 			) })
 			.insert({'bottom': new Element('td', {'class': 'order-date'}).update(
-					tmp.isTitle === true ? 'Order Date' : (tmp.orderDate.getDate() + '/' + (tmp.orderDate.getMonth() * 1 + 1) + '/' + tmp.orderDate.getFullYear())
+					tmp.isTitle === true ? 'Order Date' : tmp.me.loadUTCTime(row.orderDate).toLocaleDateString()
 			) })
 			.insert({'bottom': new Element('td', {'class': 'status col-middle col-xs-2', 'order_status': row.status.name}).update(
 					row.status ? row.status.name : ''
