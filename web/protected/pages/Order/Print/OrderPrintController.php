@@ -28,7 +28,7 @@ class OrderPrintController extends BPCPageAbstract
 		parent::onLoad($param);
 		if(!$this->isPostBack)
 		{
-			$this->order = FactoryAbastract::service('Order')->get($this->Request['orderId']);
+			$this->order = Order::get($this->Request['orderId']);
 			if(!$this->order instanceof Order)
 				die('Invalid Order!');
 		}
@@ -92,7 +92,7 @@ class OrderPrintController extends BPCPageAbstract
 	}
 	private function _getPaymentSummaryRow($title, $content, $class='')
 	{
-		$html = '<div class="row ' . $class . '">';
+		$html = '<div class="print-row ' . $class . '">';
 			$html .= '<span class="details_title inlineblock">';
 				$html .= $title;
 			$html .= '</span>';

@@ -14,6 +14,9 @@ class SystemSettings extends BaseEntityAbstract
 	const TYPE_B2B_SOAP_TIMEZONE = 'b2b_soap_timezone';
 	const TYPE_B2B_SOAP_LAST_IMPORT_TIME = 'b2b_soap_last_import_time';
 	const TYPE_SYSTEM_TIMEZONE = 'system_timezone';
+	const TYPE_ASSET_ROOT_DIR = 'asset_root_dir';
+	const TYPE_PRODUCT_LAST_UPDATED = 'product_last_updated';
+	
 	/**
 	 * The value of the setting
 	 * 
@@ -49,11 +52,12 @@ class SystemSettings extends BaseEntityAbstract
 	{
 		if(!isset(self::$_cache[$type]))
 		{
-			$settings = FactoryAbastract::dao(__CLASS__)->findByCriteria('type=?', array($type), false, 1, 1);
+			$settings = self::getAllByCriteria('type = ?', array($type), false, 1, 1);
 			self::$_cache[$type] = trim(count($settings) === 0 ? '' : $settings[0]->getValue());
 		}
 		return self::$_cache[$type];
 	}
+	
 	/**
 	 * adding a new Settings Object
 	 * 
@@ -62,12 +66,12 @@ class SystemSettings extends BaseEntityAbstract
 	public static function addSettings($type, $value)
 	{
 		$class = __CLASS__;
-		$settings = FactoryAbastract::dao($class)->findByCriteria('type=?', array($type), false, 1, 1);
+		$settings = self::getAllByCriteria('type=?', array($type), false, 1, 1);
 		$setting = ((count($settings) === 0 ? new $class() : $settings[0]));
-		$setting->setType($type);
-		$setting->setValue($value);
-		$setting->setActive(true);
-		FactoryAbastract::dao($class)->save($setting);
+		$setting->setType($type)
+			->setValue($value)
+			->setActive(true)
+			->save();
 		self::$_cache[$type] = $value;
 	}
 	/**
@@ -77,7 +81,9 @@ class SystemSettings extends BaseEntityAbstract
 	 */
 	public static function removeSettings($type)
 	{
-		FactoryAbastract::dao(__CLASS__)->updateByCriteria('set active = 0', 'type = ?', array($type));
+		self::updateByCriteria('set active = 0', 'type = ?', array($type));
+		self::$_cache[$type] = null;
+		array_filter(self::$_cache);
 	}
 	/**
 	 * Getter for value

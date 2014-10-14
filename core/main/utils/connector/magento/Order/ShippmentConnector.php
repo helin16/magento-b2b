@@ -52,8 +52,8 @@ class ShippmentConnector extends B2BConnector
 			throw new ConnectorException('System Error: failed to create a shipment in Magento!');
 		
 		//record the magento shipment id now
-		$shippment->setMageShipmentId($shipmentId);
-		FactoryAbastract::service('Shippment')->save($shippment);
+		$shippment->setMageShipmentId($shipmentId)
+			->save();
 		
 		//adding the track number
 		$mageTrackId = $this->_connect()->salesOrderShipmentAddTrack($this->_session, $shipmentId, $courierCode, trim($shippment->getCourier()->getName()) .' Track No.', $shippment->getConNoteNo());

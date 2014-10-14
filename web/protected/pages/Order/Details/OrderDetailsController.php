@@ -20,7 +20,7 @@ class OrderDetailsController extends BPCPageAbstract
 	 */
 	protected function _getEndJs()
 	{
-		if(!($order = FactoryAbastract::service('Order')->get($this->Request['orderId'])) instanceof Order)
+		if(!($order = Order::get($this->Request['orderId'])) instanceof Order)
 			die('Invalid Order!');
 		$js = parent::_getEndJs();
 		$orderItems = $courierArray = $paymentMethodArray = array();
@@ -29,7 +29,7 @@ class OrderDetailsController extends BPCPageAbstract
 		$purchaseEdit = $warehouseEdit = $accounEdit = $statusEdit = 'false';
 		if($order->canEditBy(Core::getRole()))
 		{
-			$statusEdit = ($order->canEditBy(FactoryAbastract::service('Role')->get(Role::ID_STORE_MANAGER)) || $order->canEditBy(FactoryAbastract::service('Role')->get(Role::ID_SYSTEM_ADMIN))) ? 'true' : 'false';
+			$statusEdit = ($order->canEditBy(Role::get(Role::ID_STORE_MANAGER)) || $order->canEditBy(Role::get(Role::ID_SYSTEM_ADMIN))) ? 'true' : 'false';
 			if(in_array(intval(Core::getRole()->getId()), array(Role::ID_SYSTEM_ADMIN, Role::ID_STORE_MANAGER)))
 				$purchaseEdit = $warehouseEdit = $accounEdit = 'true';
 			else
@@ -78,7 +78,7 @@ class OrderDetailsController extends BPCPageAbstract
 		try
 		{
 			Dao::beginTransaction();
-			if(!isset($params->CallbackParameter->order) || !($order = Order::get($params->CallbackParameter->order->orderNo)) instanceof Order)
+			if(!isset($params->CallbackParameter->order) || !($order = Order::getByOrderNo($params->CallbackParameter->order->orderNo)) instanceof Order)
 				throw new Exception('System Error: invalid order passed in!');
 			if(!isset($params->CallbackParameter->for) || ($for = trim($params->CallbackParameter->for)) === '')
 				throw new Exception('System Error: invalid for passed in!');
@@ -90,7 +90,7 @@ class OrderDetailsController extends BPCPageAbstract
 			$commentType = ($for === Comments::TYPE_PURCHASING ? Comments::TYPE_PURCHASING : Comments::TYPE_WAREHOUSE);
 			foreach($params->CallbackParameter->items as $orderItemId => $obj)
 			{
-				if(!($orderItem = FactoryAbastract::service('OrderItem')->get($orderItemId)) instanceof OrderItem)
+				if(!($orderItem = OrderItem::get($orderItemId)) instanceof OrderItem)
 					throw new Exception ("System Error: invalid order item(ID=" . $orderItemId . ')');
 				$commentString = "";
 				$sku = $orderItem->getProduct()->getSku();
@@ -141,8 +141,8 @@ class OrderDetailsController extends BPCPageAbstract
 				
 				$commentString .= ($notifyCustomer === true ? ' !!!NOTIFICATION SENT TO CUSTOMER!!! ' : '');
 				$order->addComment($commentString, $commentType);
-				$orderItem->addComment($commentString, $commentType);
-				FactoryAbastract::service('OrderItem')->save($orderItem);
+				$orderItem->addComment($commentString, $commentType)
+					->save();
 			}
 			
 			//push the status of the order
@@ -163,7 +163,7 @@ class OrderDetailsController extends BPCPageAbstract
 					$order->setStatus(OrderStatus::get(OrderStatus::ID_INSUFFICIENT_STOCK));
 				$order->addComment('Changed from [' . $status . '] to [' . $order->getStatus() . ']', Comments::TYPE_SYSTEM);
 			}
-			FactoryAbastract::service('Order')->save($order);
+			$order->save();
 			
 			//notify customer
 			if($notifyCustomer === true)
@@ -199,7 +199,7 @@ class OrderDetailsController extends BPCPageAbstract
 		try
 		{
 			Dao::beginTransaction();
-			if(!isset($params->CallbackParameter->order) || !($order = Order::get($params->CallbackParameter->order->orderNo)) instanceof Order)
+			if(!isset($params->CallbackParameter->order) || !($order = Order::getByOrderNo($params->CallbackParameter->order->orderNo)) instanceof Order)
 				throw new Exception('System Error: invalid order passed in!');
 			if(!isset($params->CallbackParameter->comments) || ($comments = trim($params->CallbackParameter->comments)) === '')
 				throw new Exception('System Error: invalid comments passed in!');
@@ -225,7 +225,7 @@ class OrderDetailsController extends BPCPageAbstract
 		try
 		{
 			Dao::beginTransaction();
-			if(!isset($params->CallbackParameter->order) || !($order = Order::get($params->CallbackParameter->order->orderNo)) instanceof Order)
+			if(!isset($params->CallbackParameter->order) || !($order = Order::getByOrderNo($params->CallbackParameter->order->orderNo)) instanceof Order)
 				throw new Exception('System Error: invalid order passed in!');
 			if(!isset($params->CallbackParameter->orderStatusId) || !($orderStatus = OrderStatus::get($params->CallbackParameter->orderStatusId)) instanceof OrderStatus)
 				throw new Exception('System Error: invalid orderStatus passed in!');
@@ -234,8 +234,8 @@ class OrderDetailsController extends BPCPageAbstract
 			
 			$oldStatus = $order->getStatus();
 			$order->setStatus($orderStatus);
-			$order->addComment('change Status from [' . $oldStatus. '] to [' . $order->getStatus() . ']: ' . $comments, Comments::TYPE_NORMAL);
-			FactoryAbastract::service('Order')->save($order);
+			$order->addComment('change Status from [' . $oldStatus. '] to [' . $order->getStatus() . ']: ' . $comments, Comments::TYPE_NORMAL)
+				->save();
 			Dao::commitTransaction();
 		}
 		catch(Exception $ex)
@@ -258,11 +258,11 @@ class OrderDetailsController extends BPCPageAbstract
 		try 
 		{
 			Dao::beginTransaction(); 
-			if(!isset($params->CallbackParameter->order) || !($order = Order::get($params->CallbackParameter->order->orderNo)) instanceof Order)
+			if(!isset($params->CallbackParameter->order) || !($order = Order::getByOrderNo($params->CallbackParameter->order->orderNo)) instanceof Order)
 				throw new Exception('System Error: invalid order passed in!');
 			if(!isset($params->CallbackParameter->payment) || !isset($params->CallbackParameter->payment->paidAmount) || ($paidAmount = StringUtilsAbstract::getValueFromCurrency(trim($params->CallbackParameter->payment->paidAmount))) === '' || !is_numeric($paidAmount))
 				throw new Exception('System Error: invalid Paid Amount passed in!');
-			if(!isset($params->CallbackParameter->payment->payment_method_id) || ($paymentMethodId = trim($params->CallbackParameter->payment->payment_method_id)) === '' || !($paymentMethod = FactoryAbastract::dao('PaymentMethod')->findById($paymentMethodId)) instanceof PaymentMethod)
+			if(!isset($params->CallbackParameter->payment->payment_method_id) || ($paymentMethodId = trim($params->CallbackParameter->payment->payment_method_id)) === '' || !($paymentMethod = PaymentMethod::get($paymentMethodId)) instanceof PaymentMethod)
 				throw new Exception('System Error: invalid Payment Method passed in!');
 			$extraComment = '';
 			if(!isset($params->CallbackParameter->payment->extraComments) || ($extraComment = trim($params->CallbackParameter->payment->extraComments)) === '')
@@ -273,18 +273,18 @@ class OrderDetailsController extends BPCPageAbstract
 			$notifyCust = (isset($params->CallbackParameter->payment->notifyCust) && intval($params->CallbackParameter->payment->notifyCust) === 1) ? true : false;
 			//save the payment
 			$payment = new Payment();
-			$payment->setOrder($order);
-			$payment->setMethod($paymentMethod);
-			$payment->setValue($paidAmount);
-			$payment->setActive(true);
-			FactoryAbastract::dao('Payment')->save($payment);
+			$payment->setOrder($order)
+				->setMethod($paymentMethod)
+				->setValue($paidAmount)
+				->setActive(true)
+				->save();
 			//update the order
 			$totalPaidAmount = 0;
 			foreach($order->getPayments() as $payment)
 				$totalPaidAmount = $totalPaidAmount * 1 + $payment->getValue() * 1;
- 			$order->setTotalPaid($totalPaidAmount);
- 			$order->setPassPaymentCheck(true);
- 			FactoryAbastract::service('Order')->save($order);
+ 			$order->setTotalPaid($totalPaidAmount)
+ 				->setPassPaymentCheck(true)
+ 				->save();
 			//add the comments
 			$commentString = ($amtDiff === '0' ? 'FULLY PAID' : '') . '[Total Amount Due was ' . StringUtilsAbstract::getCurrency($order->getTotalAmount()) . ". And total amount paid is " . StringUtilsAbstract::getCurrency($paidAmount) . ". Payment Method is " . $paymentMethod->getName() . ']: ' . ($extraComment !== '' ? ' : ' . $extraComment : '');
 			Comments::addComments($order, $commentString, Comments::TYPE_ACCOUNTING);
@@ -300,7 +300,7 @@ class OrderDetailsController extends BPCPageAbstract
 						SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_WSDL),
 						SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_USER),
 						SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_KEY)
-						)->changeOrderStatus($order, FactoryAbastract::service('OrderStatus')->get(OrderStatus::ID_PICKED)->getMageStatus(), $notificationMsg, true);
+						)->changeOrderStatus($order, OrderStatus::get(OrderStatus::ID_PICKED)->getMageStatus(), $notificationMsg, true);
 					$comments = 'An email notification contains payment checked info has been sent to customer for: ' . $order->getStatus()->getName();
 					Comments::addComments($order, $comments, Comments::TYPE_SYSTEM);
 					Comments::addComments($payment, $comments, Comments::TYPE_SYSTEM);
@@ -330,14 +330,14 @@ class OrderDetailsController extends BPCPageAbstract
 		try 
 		{
 			Dao::beginTransaction();
-			if(!isset($params->CallbackParameter->order) || !($order = Order::get($params->CallbackParameter->order->orderNo)) instanceof Order)
+			if(!isset($params->CallbackParameter->order) || !($order = Order::getByOrderNo($params->CallbackParameter->order->orderNo)) instanceof Order)
 				throw new Exception('System Error: invalid order passed in!');
 			if(!$order->getStatus() instanceof OrderStatus || trim($order->getStatus()->getId()) !== trim(OrderStatus::ID_PICKED))
 				throw new Exception('System Error: Order ['.$order->getOrderNo().'] Is Not is PICKED status. Current status is ['.($order->getStatus() instanceof OrderStatus ? $order->getStatus()->getName() : 'NULL').']');
 			if(!isset($params->CallbackParameter->shippingInfo))
 				throw new Exception('System Error: invalid Shipping Info Details passed in!');
 			$shippingInfo = $params->CallbackParameter->shippingInfo;
-			if(!($courier = FactoryAbastract::service('Courier')->get($shippingInfo->courierId)) instanceof Courier)
+			if(!($courier = Courier::get($shippingInfo->courierId)) instanceof Courier)
 				throw new Exception('Invalid Courier Id [' . $shippingInfo->courierId . '] provided');
 			$notifyCust = (isset($shippingInfo->notifyCust) && intval($shippingInfo->notifyCust) === 1) ? true : false;
 				
@@ -367,8 +367,8 @@ class OrderDetailsController extends BPCPageAbstract
 					(isset($shippingInfo->deliveryInstructions) ? trim($shippingInfo->deliveryInstructions) : '') //$deliveryInstructions = ''
 			);
 			
-			$order->setStatus(FactoryAbastract::service('OrderStatus')->get(OrderStatus::ID_SHIPPED));
-			FactoryAbastract::service('Order')->save($order);
+			$order->setStatus(OrderStatus::get(OrderStatus::ID_SHIPPED))
+				->save();
 			$result['shipment'] = $shipment->getJson();
 			
 			//add shipment information
@@ -412,10 +412,10 @@ class OrderDetailsController extends BPCPageAbstract
 		{
 			$result['items'] = array();
 			
-			if(!isset($param->CallbackParameter->order) || !($order = Order::get($param->CallbackParameter->order->orderNo)) instanceof Order)
+			if(!isset($param->CallbackParameter->order) || !($order = Order::getByOrderNo($param->CallbackParameter->order->orderNo)) instanceof Order)
 				throw new Exception('System Error: invalid order passed in!');
 			
-			$paymentArray = FactoryAbastract::service('Payment')->findByCriteria('orderId = ?', array($order->getId()), true, null, DaoQuery::DEFAUTL_PAGE_SIZE, array("py.updated" => "desc"));
+			$paymentArray = Payment::getAllByCriteria('orderId = ?', array($order->getId()), true, null, DaoQuery::DEFAUTL_PAGE_SIZE, array("py.updated" => "desc"));
 			foreach($paymentArray as $payment)
 				$result['items'][] = $payment->getJson();	
 		}
@@ -431,7 +431,7 @@ class OrderDetailsController extends BPCPageAbstract
 		$results = $errors = array();
 		try
 		{
-			if(!isset($param->CallbackParameter->item_id) || !($item = FactoryAbastract::service('OrderItem')->get($param->CallbackParameter->item_id)) instanceof OrderItem)
+			if(!isset($param->CallbackParameter->item_id) || !($item = OrderItem::get($param->CallbackParameter->item_id)) instanceof OrderItem)
 				throw new Exception('System Error: invalid order item provided!');
 				
 			if(!isset($param->CallbackParameter->comments) || ($comments = trim($param->CallbackParameter->comments)) === '')
@@ -440,12 +440,12 @@ class OrderDetailsController extends BPCPageAbstract
 			Dao::beginTransaction();
 			
 			//saving the order item
-			$item->setETA(UDate::zeroDate());
-			$item->addComment('Clearing the ETA: ' . $comments);
+			$item->setETA(UDate::zeroDate())
+				->addComment('Clearing the ETA: ' . $comments);
 			$order = $item->getOrder();
 			$sku = $item->getProduct()->getSku();
 			$order->addComment('Clearing the ETA for product (' . $sku . '): ' . $comments, Comments::TYPE_PURCHASING);
-			FactoryAbastract::service('OrderItem')->save($item);
+			$item->save();
 			
 			//check to see whether we need to update the order as well
 			$allChecked = true;
@@ -459,7 +459,7 @@ class OrderDetailsController extends BPCPageAbstract
 				$order->addComment('Auto Push this order status from [' . $order->getStatus() . '] to [' . OrderStatus::ID_ETA . '], as the last ETA cleared', Comments::TYPE_SYSTEM);
 				$order->setStatus(OrderStatus::get(OrderStatus::ID_STOCK_CHECKED_BY_PURCHASING));
 			}
-			FactoryAbastract::service('Order')->save($order);
+			$order->save();
 			
 			$results = $item->getJson();
 			Dao::commitTransaction();
@@ -478,7 +478,7 @@ class OrderDetailsController extends BPCPageAbstract
 		$results = $errors = array();
 		try
 		{
-			if(!isset($param->CallbackParameter->item_id) || !($item = FactoryAbastract::service('OrderItem')->get($param->CallbackParameter->item_id)) instanceof OrderItem)
+			if(!isset($param->CallbackParameter->item_id) || !($item = OrderItem::get($param->CallbackParameter->item_id)) instanceof OrderItem)
 				throw new Exception('System Error: invalid order item provided!');
 		
 			if(!isset($param->CallbackParameter->isOrdered))
@@ -493,7 +493,7 @@ class OrderDetailsController extends BPCPageAbstract
 			$sku = $item->getProduct()->getSku();
 		
 			$order->addComment('Changing the isOrdered for product (sku=' . $sku . ') to be : ' . ($setIsOrdered === 1 ? 'ORDERED' : 'NOT ORDERED'), Comments::TYPE_PURCHASING);
-			FactoryAbastract::service('OrderItem')->save($item);
+			$item->save();
 		
 			$results = $item->getJson();
 		

@@ -124,6 +124,11 @@ class UserAccount extends BaseEntityAbstract
         $this->roles = $Roles;
         return $this;
     }
+    /**
+     * Clear all the roles
+     * 
+     * @return UserAccount
+     */
     public function clearRoles()
     {
     	if(trim($this->getId()) === '')
@@ -132,18 +137,33 @@ class UserAccount extends BaseEntityAbstract
     		$this->removeRole($role);
     	return $this;
     }
+    /**
+     * Adding a role
+     * 
+     * @param Role $role
+     * 
+     * @throws CoreException
+     * @return UserAccount
+     */
     public function addRole(Role $role)
     {
     	if(trim($this->getId()) === '')
     		throw new CoreException('Save this useraccount first!');
-    	Dao::saveManyToManyJoin(new DaoQuery(get_class($role)), get_class($this), $role->getId(), $this->getId());
+    	self::saveManyToManyJoin($role, $this);
     	return $this;
     }
+    /**
+     * Deleting the role
+     * 
+     * @param Role $role
+     * 
+     * @return UserAccount
+     */
     public function removeRole(Role $role)
     {
     	if(trim($this->getId()) === '')
     		return $this;
-    	Dao::deleteManyToManyJoin(new DaoQuery(get_class($role)), get_class($this), $role->getId(), $this->getId());
+    	self::deleteManyToManyJoin($role, $this);
     	return $this;
     }
     /**
@@ -187,7 +207,47 @@ class UserAccount extends BaseEntityAbstract
         DaoMap::createIndex('password');
         DaoMap::commit();
     }
-     
+    /**
+     * Getting UserAccount
+     *
+     * @param string  $username The username string
+     * @param string  $password The password string
+     *
+     * @throws AuthenticationException
+     * @throws Exception
+     * @return Ambigous <BaseEntityAbstract>|NULL
+     */
+    public static function getUserByUsernameAndPassword($username, $password, $noHashPass = false)
+    {
+    	self::getQuery()->eagerLoad('UserAccount.roles', DaoQuery::DEFAULT_JOIN_TYPE, 'r');
+    	$userAccounts = self::getAllByCriteria("`UserName` = :username AND `Password` = :password", array('username' => $username, 'password' => ($noHashPass === true ? $password : sha1($password))), true, 1, 2);
+    	if(count($userAccounts) === 1)
+    		return $userAccounts[0];
+    	else if(count($userAccounts) > 1)
+    		throw new AuthenticationException("Multiple Users Found!Contact you administrator!");
+    	else
+    		throw new AuthenticationException("No User Found!");
+    }
+    /**
+     * Getting UserAccount by username
+     *
+     * @param string $username    The username string
+     *
+     * @throws AuthenticationException
+     * @throws Exception
+     * @return Ambigous <BaseEntityAbstract>|NULL
+     */
+    public static function getUserByUsername($username)
+    {
+    	self::getQuery()->eagerLoad('UserAccount.roles', DaoQuery::DEFAULT_JOIN_TYPE, 'r');
+    	$userAccounts = self::getAllByCriteria("`UserName` = :username  AND r.id != :roleId", array('username' => $username), true, 1, 2);
+    	if(count($userAccounts) === 1)
+    		return $userAccounts[0];
+    	else if(count($userAccounts) > 1)
+    		throw new AuthenticationException("Multiple Users Found!Contact you administrator!");
+    	else
+    		throw new AuthenticationException("No User Found!");
+    }
 }
 
 ?>

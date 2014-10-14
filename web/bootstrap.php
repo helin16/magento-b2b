@@ -13,6 +13,9 @@ class Web
 			dirname(__FILE__) . '/protected/',
 			dirname(__FILE__) . '/protected/classes/',
 			dirname(__FILE__) . '/protected/classes/BPCPage/',
+			dirname(__FILE__) . '/protected/classes/CRUDPage/',
+			dirname(__FILE__) . '/protected/classes/DetailsPage/',
+			dirname(__FILE__) . '/protected/classes/StaticsPage/',
 		);
 		
 		$found = false;

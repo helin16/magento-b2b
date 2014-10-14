@@ -78,9 +78,9 @@ class PriceMatchCompany extends BaseEntityAbstract
 	 *
 	 * @return Ambigous <multitype:, multitype:BaseEntityAbstract >
 	 */
-	public static function findAll($searchActiveOnly = true, $pageNo = null, $pageSize = DaoQuery::DEFAUTL_PAGE_SIZE, $orderBy = array())
+	public static function findAll($searchActiveOnly = true, $pageNo = null, $pageSize = DaoQuery::DEFAUTL_PAGE_SIZE, $orderBy = array(), &$stats = array())
 	{
-		return FactoryAbastract::dao(__CLASS__)->findAll($searchActiveOnly, $pageNo, $pageSize, $orderBy);
+		return self::getAll($searchActiveOnly, $pageNo, $pageSize, $orderBy, $stats);
 	}
 	
 	/**

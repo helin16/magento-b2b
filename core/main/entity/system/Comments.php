@@ -73,14 +73,12 @@ class Comments extends BaseEntityAbstract
 	{
 		$className = __CLASS__;
 		$en = new $className();
-		$en->setEntityId($entity->getId());
-		$en->setEntityName(get_class($entity));
-		$en->setComments($comments);
-		$en->setType($type);
-		$groupId = trim($groupId);
-		$en->setGroupId($groupId === '' ? self::genGroupId() : $groupId);
-		FactoryAbastract::dao($className)->save($en);
-		return $en;
+		return $en->setEntityId($entity->getId())
+			->setEntityName(get_class($entity))
+			->setComments($comments)
+			->setType($type)
+			->setGroupId(($groupId = trim($groupId)) === '' ? self::genGroupId() : $groupId)
+			->save();
 	}
 	/**
 	 * Getter for EntityId

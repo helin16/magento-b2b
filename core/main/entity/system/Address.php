@@ -213,15 +213,14 @@ class Address extends BaseEntityAbstract
 	{
 		$className = get_called_class();
 		$obj = ($exsitAddr instanceof Address ? $exsitAddr : new $className());
-		$obj->setStreet($street)
+		return $obj->setStreet($street)
 			->setCity($city)
 			->setRegion($region)
 			->setCountry($country)
 			->setPostCode($postCode)
 			->setContactName($contactName)
-			->setContactNo($contactNo);
-		FactoryAbastract::dao($className)->save($obj);
-		return $obj;
+			->setContactNo($contactNo)
+			->save();
 	}
 	/**
 	 * (non-PHPdoc)

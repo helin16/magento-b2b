@@ -376,7 +376,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		});
 		tmp.me._signRandID(tmp.etaBox);
 		try {
-			new Prado.WebUI.TDatePicker({'ID': tmp.etaBox.id, 'InputMode':"TextBox",'Format':"yyyy-MM-dd 17:00:00",'FirstDayOfWeek':1,'CalendarStyle':"default",'FromYear':2009,'UpToYear':2024,'PositionMode':"Bottom"});
+			new Prado.WebUI.TDatePicker({'ID': tmp.etaBox.id, 'InputMode':"TextBox",'Format':"yyyy-MM-dd 17:00:00",'FirstDayOfWeek':1,'CalendarStyle':"default",'FromYear':2009,'UpToYear':2024,'PositionMode':"Bottom", "ClassName": 'datepicker-layer-fixer'});
 		} catch(e) {}
 		return tmp.me;
 	}
@@ -659,39 +659,6 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			.insert({'bottom': new Element('div', {'class': 'panel-body table-responsive'})
 				.insert({'bottom':  tmp.productListDiv})
 			});
-	}
-	/**
-	 * give the input box a random id
-	 */
-	,_signRandID: function(input) {
-		if(!input.id)
-			input.id = 'input_' + String.fromCharCode(65 + Math.floor(Math.random() * 26)) + Date.now();
-		return this;
-	}
-	/**
-	 * Marking a form group to has-error
-	 */
-	,_markFormGroupError: function(input, errMsg) {
-		var tmp = {}
-		tmp.me = this;
-		if(input.up('.form-group')) {
-			input.up('.form-group').addClassName('has-error');
-			tmp.me._signRandID(input);
-			jQuery('#' + input.id).tooltip({
-				'trigger': 'manual'
-				,'placement': 'auto'
-				,'container': 'body'
-				,'placement': 'bottom'
-				,'html': true
-				,'title': errMsg
-			})
-			.tooltip('show');
-			$(input).observe('change', function() {
-				input.up('.form-group').removeClassName('has-error');
-				jQuery(this).tooltip('hide').tooltip('destroy').show();
-			});
-		}
-		return tmp.me;
 	}
 	/**
 	 * Check and save the shipment
@@ -1119,7 +1086,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		//load the comments after
 		tmp.me._getComments(true);
 		$$('.datepicker').each(function(item) {
-			new Prado.WebUI.TDatePicker({'ID': item.id, 'InputMode':"TextBox",'Format':"yyyy-MM-dd 17:00:00",'FirstDayOfWeek':1,'CalendarStyle':"default",'FromYear':2009,'UpToYear':2024,'PositionMode':"Bottom"});
+			new Prado.WebUI.TDatePicker({'ID': item.id, 'InputMode':"TextBox",'Format':"yyyy-MM-dd 17:00:00",'FirstDayOfWeek':1,'CalendarStyle':"default",'FromYear':2009,'UpToYear':2024,'PositionMode':"Bottom", "ClassName": 'datepicker-layer-fixer'});
 		});
 		jQuery('.popover-comments').click(function(){
 			tmp.me._signRandID($(this));

@@ -29,14 +29,14 @@ class UsersController extends BPCPageAbstract
 	private function _getUser()
 	{
 		$userAccount = null;
-		if(!isset($this->Request['action']) || ($method = trim($this->Request['action'])) === 'edit' && !($userAccount = FactoryAbastract::service('UserAccount')->get($this->Request['id'])) instanceof UserAccount)
+		if(!isset($this->Request['action']) || ($method = trim($this->Request['action'])) === 'edit' && !($userAccount = UserAccount::get($this->Request['id'])) instanceof UserAccount)
 			throw new Exception('Invalid params!');
 		return $userAccount instanceof UserAccount ? $userAccount->getJson() : null;
 	}
 	private function _getRoles()
 	{
 		$roles = array();
-		foreach(FactoryAbastract::service('Role')->findAll(true, null, DaoQuery::DEFAUTL_PAGE_SIZE, array('r.name' => 'asc')) as $role)
+		foreach(Role::getAll(true, null, DaoQuery::DEFAUTL_PAGE_SIZE, array('r.name' => 'asc')) as $role)
 			$roles[] = $role->getJson();
 		return $roles;
 	}
@@ -52,11 +52,11 @@ class UsersController extends BPCPageAbstract
 				throw new Exception('System Error: lastName is mandatory!');
 			if(!isset($params->CallbackParameter->userName) || ($userName = trim($params->CallbackParameter->userName)) === '')
 				throw new Exception('System Error: userName is mandatory!');
-			if(!isset($params->CallbackParameter->roleid) || !($role = FactoryAbastract::service('Role')->get($params->CallbackParameter->roleid)) instanceof Role)
+			if(!isset($params->CallbackParameter->roleid) || !($role = Role::get($params->CallbackParameter->roleid)) instanceof Role)
 				throw new Exception('System Error: role is mandatory!');
 			
 			$newpassword = trim($params->CallbackParameter->newpassword);
-			if(!isset($params->CallbackParameter->userid) || !($userAccount = FactoryAbastract::service('UserAccount')->get($params->CallbackParameter->userid)) instanceof UserAccount)
+			if(!isset($params->CallbackParameter->userid) || !($userAccount = UserAccount::get($params->CallbackParameter->userid)) instanceof UserAccount)
 			{
 				$userAccount = new UserAccount();
 				$person = new Person();
@@ -74,18 +74,18 @@ class UsersController extends BPCPageAbstract
 			}
 			
 			//double check whether the username has been used
-			$users = FactoryAbastract::service('UserAccount')->findByCriteria('username=? and id!=?', array($userName, $userAccount->getId()), false, 1, 1);
+			$users = UserAccount::getAllByCriteria('username=? and id!=?', array($userName, $userAccount->getId()), false, 1, 1);
 			if(count($users) > 0)
 				throw new Exception('Username(=' . $userName . ') has been used by another user, please choose another one!');
 			
 			$person->setFirstName($firstName)
-				->setLastName($lastName);
-			FactoryAbastract::service('Person')->save($person);
+				->setLastName($lastName)
+				->save();
 			
 			$userAccount->setUserName($userName)
 				->setPassword($newpassword)
-				->setPerson($person);
-			FactoryAbastract::service('UserAccount')->save($userAccount);
+				->setPerson($person)
+				->save();
 			
 			$results = $userAccount->clearRoles()
 				->addRole($role)

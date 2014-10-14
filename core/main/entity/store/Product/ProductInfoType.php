@@ -15,6 +15,12 @@ class ProductInfoType extends InfoTypeAbstract
 	 */
 	const ID_MAGE_PRODUCT_ID = 1;
 	/**
+	 * The product weight
+	 * 
+	 * @var int
+	 */
+	const ID_WEIGHT = 2;
+	/**
 	 * (non-PHPdoc)
 	 * @see BaseEntity::__loadDaoMap()
 	 */

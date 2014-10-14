@@ -411,8 +411,8 @@ abstract class BaseEntityAbstract
     		$where .= ' AND type = ?';
     		$params[] = $type;
     	}
-    	$results = FactoryAbastract::dao('Comments')->findByCriteria($where, $params, true, $pageNo, $pageSize, $orderBy);
-    	$pageStats = FactoryAbastract::dao('Comments')->getPageStats();
+    	$stats = array();
+    	$results = Comments::getAllByCriteria($where, $params, true, $pageNo, $pageSize, $orderBy, $stats);
     	return $results;
     }
     /**
@@ -447,9 +447,141 @@ abstract class BaseEntityAbstract
         $errorMsgs = array();
         return $errorMsgs;
     }
-    public function preSave() {
+    /**
+     * function before save the entity
+     */
+    public function preSave() {}
+    /**
+     * function after save the entity
+     */
+    public function postSave() {}
+    /**
+     * Saving the current entity
+     * 
+     * @return BaseEntityAbstract
+     */
+    public function save() 
+    {
+    	return FactoryAbastract::dao(get_class($this))->save($this);
     }
-    public function postSave() {
+    /**
+     * Find all entities
+     * 
+     * @param string  $activeOnly
+     * @param string  $pageNo
+     * @param unknown $pageSize
+     * @param unknown $orderBy
+     * @param array   $stats
+     * 
+     * @return Ambigous <multitype:, multitype:BaseEntityAbstract >
+     */
+    public static function getAll($activeOnly = true, $pageNo = null, $pageSize = DaoQuery::DEFAUTL_PAGE_SIZE, $orderBy = array(), &$stats = array())
+    {
+    	$result = FactoryAbastract::dao(get_called_class())->findAll($activeOnly, $pageNo, $pageSize, $orderBy);
+    	$stats = FactoryAbastract::dao(get_called_class())->getPageStats();
+    	return $result;
+    }
+    /**
+     * Find all entities with criterias
+     * 
+     * @param unknown $criteria
+     * @param unknown $params
+     * @param string $activeOnly
+     * @param string $pageNo
+     * @param unknown $pageSize
+     * @param unknown $orderBy
+     * @param array   $stats
+     * 
+     * @return Ambigous <multitype:, multitype:BaseEntityAbstract >
+     */
+    public static function getAllByCriteria($criteria, $params = array(), $activeOnly = true, $pageNo = null, $pageSize = DaoQuery::DEFAUTL_PAGE_SIZE, $orderBy = array(), &$stats = array())
+    {
+    	$result = FactoryAbastract::dao(get_called_class())->findByCriteria($criteria, $params, $activeOnly, $pageNo, $pageSize, $orderBy);
+    	$stats = FactoryAbastract::dao(get_called_class())->getPageStats();
+    	return $result;
+    }
+    /**
+     * Getting entity with an id
+     * 
+     * @param int $id The id of the entity
+     * 
+     * @return Ambigous <BaseEntityAbstract, NULL, SimpleXMLElement>
+     */
+    public static function get($id)
+    {
+    	return FactoryAbastract::dao(get_called_class())->findById($id);
+    }
+    /**
+     * Updating a table for the search criteria
+     *
+     * @param string $setClause The set clause
+     * @param string $criteria  The where clause
+     * @param array  $params    The parameters
+     *
+     * @return int
+     */
+    public static function updateByCriteria($setClause, $criteria, $params = array())
+    {
+    	return FactoryAbastract::dao(get_called_class())->updateByCriteria($setClause, $criteria, $params);
+    }
+    /**
+     * delete a table for the search criteria
+     *
+     * @param string   $criteria The where clause
+     * @param array    $params   The parameters
+     *
+     * @return int
+     */
+    public static function deleteByCriteria($criteria, $params = array())
+    {
+    	return FactoryAbastract::dao(get_called_class())->deleteByCriteria($criteria, $params);
+    }
+    /**
+     * Count By Criteria
+     * 
+     * @param string   $criteria The where clause
+     * @param array    $params   The parameters
+     * 
+     * @return number
+     */
+    public static function countByCriteria($criteria, $params = array())
+    {
+    	return FactoryAbastract::dao(get_called_class())->countByCriteria($criteria, $params);
+    }
+    /**
+     * Getting the DaoQuery
+     * 
+     * @return DaoQuery
+     */
+    public static function getQuery()
+    {
+    	return FactoryAbastract::dao(get_called_class())->getQuery();
+    }
+    /**
+     * Add a join table record for many to many relationship
+     *
+     * @param BaseEntityAbstract $leftEntity  The left entity
+     * @param BaseEntityAbstract $rightEntity The right entity
+     *
+     * @return int
+     */
+    public function saveManyToManyJoin(BaseEntityAbstract &$leftEntity, BaseEntityAbstract $rightEntity)
+    {
+    	FactoryAbastract::dao(get_called_class())->saveManyToManyJoin($leftEntity, $rightEntity);
+    	return $leftEntity;
+    }
+    /**
+     * Remove a join table record for many to many relationship
+     *
+     * @param BaseEntityAbstract $leftEntity  The left entity
+     * @param BaseEntityAbstract $rightEntity The right entity
+     *
+     * @return int
+     */
+    public function deleteManyToManyJoin(BaseEntityAbstract &$leftEntity, BaseEntityAbstract $rightEntity)
+    {
+    	FactoryAbastract::dao(get_called_class())->deleteManyToManyJoin($leftEntity, $rightEntity);
+    	return $leftEntity;
     }
 }
 

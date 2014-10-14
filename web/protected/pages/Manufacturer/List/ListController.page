@@ -1,0 +1,34 @@
+<com:TContent ID="MainContent">
+	<div class="pagewrapper item-list-wrapper">
+		<div class="panel panel-default" id="searchPanel">
+			<div class="panel-heading">
+				<label for="showSearch">Show Search Criteria?</label>
+				<input id="showSearch" type="checkbox" onclick="$(this).up('#searchPanel').down('.panel-body').toggle();">
+			</div>
+			<div class="panel-body search-panel" style="display: none;">
+				<div class="row">
+					<div class="col-sm-4">
+						<div class="form-group form-group-sm">
+                           <label>name:</label>
+                           <input type="text" search_field="man.name" placeholder="The name of the manufacturer" class="form-control input-sm">
+                       </div>
+					</div>
+					<div class="col-sm-2">
+						<div class="form-group form-group-sm">
+                           <label>&nbsp;</label>
+						   <span id="searchBtn" class="btn btn-primary form-control inpu-sm" data-loading-text="searching ..." onclick="pageJs.getSearchCriteria().getResults(true, <%= $this->pageSize %>);" >Search</span>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="panel panel-default">
+			<div class="panel-heading">
+				Found <label id="total-found-count">0</label> <%= $this->getFocusEntity() %>:
+			</div>
+			<small class="table-responsive">
+                <table class="table table-hover" id="item-list"></table>
+            </small>
+		</div> 
+	</div>
+</com:TContent>

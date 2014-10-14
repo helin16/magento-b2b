@@ -83,8 +83,7 @@ class OrderItemController extends BPCPageAbstract
 				if((is_array($value) && count($value) === 0) || (is_string($value) && ($value = trim($value)) === ''))
 					continue;
 				
-				$query = FactoryAbastract::service('OrderItem')->getDao()->getQuery();
-				$query->eagerLoad("OrderItem.order", 'inner join', 'ord', 'ord.id = ord_item.orderId');
+				OrderItem::getQuery()->eagerLoad("OrderItem.order", 'inner join', 'ord', 'ord.id = ord_item.orderId');
 				switch ($field)
 				{
 					case 'ord.orderNo': 
@@ -117,13 +116,14 @@ class OrderItemController extends BPCPageAbstract
 			}
 			if($noSearch === true)
 				throw new Exception("Nothing to search!");
-			$orderItems = FactoryAbastract::service('OrderItem')->findByCriteria(implode(' AND ', $where), $params, true, $pageNo, $pageSize, array('ord_item.eta' => 'asc', 'ord.orderNo' => 'asc'));
-			$results['pageStats'] = FactoryAbastract::service('OrderItem')->getPageStats();
+			$stats = array();
+			$orderItems = OrderItem::getAllByCriteria(implode(' AND ', $where), $params, true, $pageNo, $pageSize, array('ord_item.eta' => 'asc', 'ord.orderNo' => 'asc'), $stats);
+			$results['pageStats'] = $stats;
 			$results['items'] = array();
 			foreach($orderItems as $item)
 			{
 				$orderItemArray = $item->getJson();
-				$comments = FactoryAbastract::service('Comments')->findByCriteria('entityName = ? and entityId = ?', array('OrderItem', $item->getId()), true, null, DaoQuery::DEFAUTL_PAGE_SIZE, array('created' => 'desc'));
+				$comments = Comments::getAllByCriteria('entityName = ? and entityId = ?', array('OrderItem', $item->getId()), true, null, DaoQuery::DEFAUTL_PAGE_SIZE, array('created' => 'desc'));
 				$orderItemArray['comments'] = array_map(create_function('$a', 'return $a->getJson();'), $comments); 
 				$results['items'][] = $orderItemArray;
 			}

@@ -1,8 +1,30 @@
 <?php
+/**
+ * Entity for Payment
+ *
+ * @package    Core
+ * @subpackage Entity
+ * @author     lhe<helin16@gmail.com>
+ */
 class Payment extends BaseEntityAbstract
 {
+	/**
+	 * The payment method
+	 * 
+	 * @var PaymentMethod
+	 */
 	protected $method;
+	/**
+	 * The order of this payment
+	 * 
+	 * @var Order
+	 */
 	protected $order;
+	/**
+	 * The value of this payment
+	 * 
+	 * @var double
+	 */
 	private $value;
 	/**
 	 * Getter for method

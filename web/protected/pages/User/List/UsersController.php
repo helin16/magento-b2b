@@ -55,16 +55,16 @@ class UsersController extends BPCPageAbstract
 			$params = array('sysId' => UserAccount::ID_SYSTEM_ACCOUNT);
 			if($serachCriteria !== '')
 			{
-				$query = FactoryAbastract::service('UserAccount')->getDao()->getQuery();
-				$query->eagerLoad("UserAccount.person", 'inner join', 'ord', '`p`.id = `ua`.personId and (`p`.firstName like :firstName and `p`.lastName like :lastName)');
+				UserAccount::getQuery()->eagerLoad("UserAccount.person", 'inner join', 'ord', '`p`.id = `ua`.personId and (`p`.firstName like :firstName and `p`.lastName like :lastName)');
 				$params['firstName'] = $serachCriteria . '%';
 				$params['lastName'] = $serachCriteria . '%';
 				$where .= ' OR `ua`.username like :username';
 				$params['username'] = $serachCriteria . '%';
 			}
 			
-			$users = FactoryAbastract::service('UserAccount')->findByCriteria($where, $params, true, $pageNo, $pageSize);
-			$results['pageStats'] = FactoryAbastract::service('UserAccount')->getPageStats();
+			$stats = array();
+			$users = UserAccount::getAllByCriteria($where, $params, true, $pageNo, $pageSize, array(), $stats);
+			$results['pageStats'] = $stats;
 			$results['items'] = array();
 			foreach($users as $item)
 				$results['items'][] = $item->getJson();
@@ -88,11 +88,11 @@ class UsersController extends BPCPageAbstract
 		$results = $errors = array();
 		try
 		{
-			if(!isset($param->CallbackParameter->userId) || !($userAccount = FactoryAbastract::service('UserAccount')->get(trim($param->CallbackParameter->userId))) instanceof UserAccount)
+			if(!isset($param->CallbackParameter->userId) || !($userAccount = UserAccount::get(trim($param->CallbackParameter->userId))) instanceof UserAccount)
 				throw new Exception("Invalid user account passed for deletion!");
-			$userAccount->setActive(false);
-			FactoryAbastract::service('UserAccount')->save($userAccount);
-			$results = $userAccount->getJson();
+			$results = $userAccount->setActive(false)
+				->save()
+				->getJson();
 		}
 		catch(Exception $ex)
 		{

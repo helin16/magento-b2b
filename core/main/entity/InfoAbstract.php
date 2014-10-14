@@ -106,8 +106,8 @@ class InfoAbstract extends BaseEntityAbstract
 		$info = ($exitsObj instanceof InfoAbstract ? $exitsObj : new $className());
 		$info->setEntity($entity)
 			->setType($type)
-			->setValue($value);
-		FactoryAbastract::dao($className)->save($info);
+			->setValue($value)
+			->save();
 		return $info;
 	}
 	/**
@@ -118,7 +118,7 @@ class InfoAbstract extends BaseEntityAbstract
 	 * 
 	 * @return Ambigous <multitype:, multitype:BaseEntityAbstract >
 	 */
-	public static function find(InfoEntityAbstract $entity, InfoTypeAbstract $type = null, $searchActiveOnly = true, $pageNo = null, $pageSize = DaoQuery::DEFAUTL_PAGE_SIZE, $orderBy = array())
+	public static function find(InfoEntityAbstract $entity, InfoTypeAbstract $type = null, $searchActiveOnly = true, $pageNo = null, $pageSize = DaoQuery::DEFAUTL_PAGE_SIZE, $orderBy = array(), &$stats = array())
 	{
 		$where = StringUtilsAbstract::lcFirst(str_replace('Info', '', get_called_class())) . 'Id = ?';
 		$params = array($entity->getId());
@@ -127,7 +127,7 @@ class InfoAbstract extends BaseEntityAbstract
 			$where .=' AND typeId = ?';
 			$params[] = $type->getId();
 		}
-		return FactoryAbastract::dao(get_called_class())->findByCriteria($where, $params, $searchActiveOnly, $pageNo, $pageSize, $orderBy);
+		return self::getAllByCriteria($where, $params, $searchActiveOnly, $pageNo, $pageSize, $orderBy, $stats);
 	}
 	/**
 	 * removing all the information object
@@ -146,7 +146,7 @@ class InfoAbstract extends BaseEntityAbstract
 			$where .=' AND typeId = ?';
 			$params[] = $type->getId();
 		}
-		FactoryAbastract::dao(get_called_class())->updateByCriteria('active = 0', $where, $params);
+		self::updateByCriteria('active = 0', $where, $params);
 	}
 	/**
 	 * (non-PHPdoc)

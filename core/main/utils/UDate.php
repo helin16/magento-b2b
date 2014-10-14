@@ -41,6 +41,27 @@ class UDate
 	    return $date;
 	}
 	/**
+	 * getting a max date object
+	 * 
+	 * @return UDate
+	 */
+	public static function maxDate()
+	{
+	    $date = new UDate();
+	    $date->setDate(31, 12, 9999);
+	    $date->setTime(23, 59, 59);
+	    return $date;
+	}
+	/**
+	 * getting now datetime
+	 * 
+	 * @return UDate
+	 */
+	public static function now($timeZone = 'UTC')
+	{
+	    return new UDate('now', $timeZone);
+	}
+	/**
 	 * Magic toString function
 	 * @return string
 	 */

@@ -18,8 +18,10 @@ class Chosen extends TClientScript
 		if(!$this->getPage()->IsPostBack || !$this->getPage()->IsCallback)
 		{
 			// Add chosen main JS and CSS files
-			$clientScript->registerStyleSheetFile('chosen.css', $this->publishAsset('source/chosen.css'), 'screen');
-			$clientScript->registerScriptFile('chosen.proto', $this->publishAsset('source/chosen.proto.js'));
+			$folder = $this->publishFilePath(dirname(__FILE__) . DIRECTORY_SEPARATOR . 'source' . DIRECTORY_SEPARATOR);
+			
+			$clientScript->registerStyleSheetFile('chosen.css', $folder . '/chosen.css', 'screen');
+			$clientScript->registerScriptFile('chosen.jquery', $folder . '/chosen.jquery.min.js');
 			$this->_publishSource();
 		}
 	}

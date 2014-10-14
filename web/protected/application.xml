@@ -22,6 +22,8 @@
 			
 			<!-- FrontEnd:: order list page -->
 			<url ServiceParameter="Order.List.OrderController" pattern="order.html" />
+			<!-- FrontEnd:: order new page -->
+			<url ServiceParameter="Order.New.OrderController" pattern="order/new.html" />
 			<!-- FrontEnd:: order print page -->
 			<url ServiceParameter="Order.Print.OrderPrintController" pattern="print/order/{orderId}.html" parameters.orderId="\d+"/>
 			<!-- FrontEnd:: order details page -->
@@ -39,13 +41,37 @@
 			<!-- FrontEnd:: me page -->
 			<url ServiceParameter="User.Me.MeController" pattern="{id}.html" parameters.id="me"/>
 			
+			<!-- FrontEnd:: system settings page -->
+			<url ServiceParameter="System.Settings.List.ListController" pattern="systemsettings.html" parameters.id="me"/>
+			
 			<!-- FrontEnd:: Price Match page -->
 			<url ServiceParameter="PriceMatch.PriceMatchController" pattern="pricematch.html" />
 			<!-- FrontEnd:: Price Match Companypage -->
 			<url ServiceParameter="PriceMatch.Company.List.PriceMatchCompanyListController" pattern="pricematchcompanies.html" />
 			
-			<!-- FrontEnd:: order list page -->
+			<!-- FrontEnd:: product list page -->
 			<url ServiceParameter="Product.List.ProductController" pattern="products.html" />
+			<!-- FrontEnd:: product details page -->
+			<url ServiceParameter="Product.Details.DetailsController" pattern="product/{id}.html" parameters.id="new"/>
+			<url ServiceParameter="Product.Details.DetailsController" pattern="product/{id}.html" parameters.id="\d+"/>
+			
+			<!-- FrontEnd:: product code type list page -->
+			<url ServiceParameter="ProductCodeType.List.ListController" pattern="productcodetypes.html" />
+			
+			<!-- FrontEnd:: product category list page -->
+			<url ServiceParameter="ProductCategory.List.ListController" pattern="productcategories.html" />
+			
+			<!-- FrontEnd:: manufacturer list page -->
+			<url ServiceParameter="Manufacturer.List.ListController" pattern="manufacturers.html" />
+			<!-- FrontEnd:: supplier list page -->
+			<url ServiceParameter="Supplier.List.ListController" pattern="suppliers.html" />
+			
+			<!-- Statics::Order::Trend::Monthly page -->
+			<url ServiceParameter="Statics.Order.MthlyTrend.StaticsController" pattern="/statics/order/mthlytrend.html" />
+			<!-- Statics::Product::Trend::Sales -->
+			<url ServiceParameter="Statics.Product.SalesTrend.StaticsController" pattern="/statics/product/salestrend.html" />
+			<!-- Statics::Product::Trend::Price -->
+			<url ServiceParameter="Statics.Product.PriceTrend.StaticsController" pattern="/statics/product/pricetrend.html" />
 			
 			<!-- asset service -->
 			<url ServiceId="asset" ServiceParameter="" pattern="asset/{method}" parameters.method="get" />

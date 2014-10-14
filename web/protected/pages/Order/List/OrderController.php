@@ -96,7 +96,7 @@ class OrderController extends BPCPageAbstract
 				if((is_array($value) && count($value) === 0) || (is_string($value) && ($value = trim($value)) === ''))
 					continue;
 				
-				$query = FactoryAbastract::service('Order')->getDao()->getQuery();
+				$query = Order::getQuery();
 				switch ($field)
 				{
 					case 'ord.orderNo': 
@@ -131,9 +131,9 @@ class OrderController extends BPCPageAbstract
 			}
 			if($noSearch === true)
 				throw new Exception("Nothing to search!");
-			
-			$orders = FactoryAbastract::service('Order')->findByCriteria(implode(' AND ', $where), $params, true, $pageNo, $pageSize, array('ord.id' => 'desc'));
-			$results['pageStats'] = FactoryAbastract::service('Order')->getPageStats();
+			$stats = array();
+			$orders = Order::getAllByCriteria(implode(' AND ', $where), $params, true, $pageNo, $pageSize, array('ord.id' => 'desc'), $stats);
+			$results['pageStats'] = $stats;
 			$results['items'] = array();
 			foreach($orders as $order)
 				$results['items'][] = $order->getJson();

@@ -419,9 +419,9 @@ class Order extends InfoEntityAbstract
 	 * 
 	 * @return Ambigous <NULL, unknown>
 	 */
-	public static function get($orderNo)
+	public static function getByOrderNo($orderNo)
 	{
-		$items = FactoryAbastract::dao(get_called_class())->findByCriteria('orderNo = ?', array($orderNo), false, 1, 1);
+		$items = self::getAllByCriteria('orderNo = ?', array($orderNo), false, 1, 1);
 		return (count($items) === 0 ? null : $items[0]);
 	}
 	/**

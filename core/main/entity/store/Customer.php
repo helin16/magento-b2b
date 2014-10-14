@@ -1,4 +1,11 @@
 <?php
+/**
+ * Entity for Customer
+ *
+ * @package    Core
+ * @subpackage Entity
+ * @author     lhe<helin16@gmail.com>
+ */
 class Customer extends BaseEntityAbstract
 {
 	/**
@@ -48,7 +55,7 @@ class Customer extends BaseEntityAbstract
 	 *
 	 * @var bool
 	 */
-	private $isFromB2B;
+	private $isFromB2B = false;
 	/**
 	 * Getter for name
 	 *
@@ -228,17 +235,6 @@ class Customer extends BaseEntityAbstract
 			$this->setShippingAddress($this->getBillingAddress());
 	}
 	/**
-	 * Getting the customer
-	 * 
-	 * @param int $id The id of the customer
-	 * 
-	 * @return Ambigous <BaseEntityAbstract, NULL, SimpleXMLElement>
-	 */
-	public static function get($id)
-	{
-		return FactoryAbastract::dao(get_called_class())->findById($id);
-	}
-	/**
 	 * Creating a instance of this
 	 * 
 	 * @param string  $name
@@ -259,20 +255,22 @@ class Customer extends BaseEntityAbstract
 		$email = trim($email);
 		$isFromB2B = ($isFromB2B === true);
 		$class =__CLASS__;
-		$objects = FactoryAbastract::dao($class)->findByCriteria('email = ?', array($email), true, 1, 1, array() );
+		$objects = self::getAllByCriteria('email = ?', array($email), true, 1, 1);
 		if(count($objects) > 0 && $email !== '')
 			$obj = $objects[0];
 		else
+		{
 			$obj = new $class();
+			$obj->setIsFromB2B($isFromB2B);
+		}
 		$obj->setName($name)
 			->setDescription(trim($description))
 			->setContactNo($contactNo)
-			->setIsFromB2B($isFromB2B)
 			->setEmail($email)
 			->setBillingAddress($billingAddr)
 			->setShippingAddress($shippingAddr)
-			->setMageId($mageId);
-		FactoryAbastract::dao(get_class($obj))->save($obj);
+			->setMageId($mageId)
+			->save();
 		$comments = 'Customer(ID=' . $obj->getId() . ')' . (count($objects) > 0 ? 'updated' : 'created') . ' via B2B with (name=' . $name . ', contactNo=' . $contactNo . ', email=' . $email .')';
 		if($isFromB2B === true)
 			Comments::addComments($obj, $comments, Comments::TYPE_SYSTEM);
@@ -288,11 +286,25 @@ class Customer extends BaseEntityAbstract
 	 * 
 	 * @return multitype:|Ambigous <multitype:, multitype:BaseEntityAbstract>
 	 */
-	public function getOrders($pageNo = null, $pageSize = DaoQuery::DEFAUTL_PAGE_SIZE, $orderBy = array())
+	public function getOrders($pageNo = null, $pageSize = DaoQuery::DEFAUTL_PAGE_SIZE, $orderBy = array(), &$stats = array())
 	{
 		if(($id = trim($this->getId())) === '')
 			return array();
-		return FactoryAbastract::dao(get_class($this))->findByCriteria('customerId = ?', array($id), true, $pageNo, $pageSize, $orderBy);
+		return self::getAllByCriteria('customerId = ?', array($id), true, $pageNo, $pageSize, $orderBy, $stats);
+	}
+	/**
+	 * (non-PHPdoc)
+	 * @see BaseEntityAbstract::getJson()
+	 */
+	public function getJson($extra = '', $reset = false)
+	{
+		$array = array();
+		if(!$this->isJsonLoaded($reset))
+		{
+			$array['address']['shipping'] = $this->getShippingAddress() instanceof Address ? $this->getShippingAddress()->getJson() : array();
+			$array['address']['billing'] = $this->getBillingAddress() instanceof Address ? $this->getBillingAddress()->getJson() : array();
+		}
+		return parent::getJson($array, $reset);
 	}
 	/**
 	 * (non-PHPdoc)
@@ -309,6 +321,7 @@ class Customer extends BaseEntityAbstract
 		DaoMap::setManyToOne('billingAddress', 'Address');
 		DaoMap::setManyToOne('shippingAddress', 'Address');
 		DaoMap::setIntType('mageId');
+		DaoMap::setBoolType('isFromB2B');
 		parent::__loadDaoMap();
 		
 		DaoMap::createIndex('name');

@@ -282,8 +282,8 @@ class OrderItem extends BaseEntityAbstract
 			->setQtyOrdered($qty)
 			->setTotalPrice($totalPrice)
 			->setMageOrderId($mageOrderItemId)
-			->setEta($eta);
-		FactoryAbastract::dao(get_called_class())->save($item);
+			->setEta($eta)
+			->save();
 		return $item;
 	}
 	/**
@@ -291,10 +291,15 @@ class OrderItem extends BaseEntityAbstract
 	 * 
 	 * @param Order   $order
 	 * @param Product $product
+	 * @param bool    $activeOnly
+	 * @param int     $pageNo
+	 * @param int     $pageSize
+	 * @param array   $orderBy
+	 * @param array   $stats
 	 * 
-	 * @return array
+	 * @return Ambigous <Ambigous, multitype:, multitype:BaseEntityAbstract >
 	 */
-	public static function getItems(Order $order, Product $product = null)
+	public static function getItems(Order $order, Product $product = null, $activeOnly = true, $pageNo = null, $pageSize = DaoQuery::DEFAUTL_PAGE_SIZE, $orderBy = array(), &$stats = array())
 	{
 		$where = 'orderId = ?';
 		$params = array($order->getId());
@@ -303,7 +308,7 @@ class OrderItem extends BaseEntityAbstract
 			$where .=' AND productId = ?';
 			$params[] = $product->getId();
 		}
-		return FactoryAbastract::dao(get_called_class())->findByCriteria($where, $params, true, 1, 1);
+		return self::getAllByCriteria($where, $params, $activeOnly, $pageNo, $pageSize, $orderBy, $stats);
 	}
 	/**
 	 * (non-PHPdoc)

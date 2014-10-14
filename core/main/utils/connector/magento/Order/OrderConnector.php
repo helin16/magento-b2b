@@ -29,8 +29,9 @@ class OrderConnector extends B2BConnector
 			{
 				try {Dao::beginTransaction();} catch(Exception $e) {$transStarted = true;}
 				
-				$order = $this->getOrderInfo(trim($order->increment_id));
 				Log::logging(0, get_class($this), 'Found order from Magento with orderNo = ' . trim($order->increment_id) . '.', self::LOG_TYPE, '', __FUNCTION__);
+				
+				$order = $this->getOrderInfo(trim($order->increment_id));
 				if(($status = trim($order->state)) === '')
 				{
 					Log::logging(0, get_class($this), 'Found no state Elment from $order, next element!', self::LOG_TYPE, '$index = ' . $index, __FUNCTION__);
@@ -43,7 +44,7 @@ class OrderConnector extends B2BConnector
 				$totalPaid = (!isset($order->total_paid) ? 0 : trim($order->total_paid));
 	
 				$shippingAddr = $billingAddr = null;
-				if(!($o = Order::get(trim($order->increment_id))) instanceof Order)
+				if(!($o = Order::getByOrderNo(trim($order->increment_id))) instanceof Order)
 				{
 					$o = new Order();
 					Log::logging(0, get_class($this), 'Found no order from DB, create new', self::LOG_TYPE, '$index = ' . $index, __FUNCTION__);
@@ -75,8 +76,7 @@ class OrderConnector extends B2BConnector
 					->setShippingAddr($customer->getShippingAddress())
 					->setBillingAddr($customer->getBillingAddress())
 					->setCustomer($customer)
-					;
-				FactoryAbastract::dao('Order')->save($o);
+					->save();
 				Log::logging(0, get_class($this), 'Saved the order, ID = ' . $o->getId(), self::LOG_TYPE, '$index = ' . $index, __FUNCTION__);
 	
 				//create order info
@@ -167,9 +167,9 @@ class OrderConnector extends B2BConnector
 	 */
 	private function _createItem(Order $order, $itemObj)
 	{
-		$productXml = CatelogConnector::getConnector(B2BConnector::CONNECTOR_TYPE_CATELOG, SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_WSDL), SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_USER), SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_KEY))
+		$productXml = CatelogConnector::getConnector(B2BConnector::CONNECTOR_TYPE_CATELOG, $this->_getWSDL(), $this->_getApiUser(), $this->_getApiKey())
 			->getProductInfo(trim($itemObj->sku));
-		$product = Product::create(trim($itemObj->sku), trim($itemObj->name), trim($itemObj->product_id), (isset($productXml) && isset($productXml->price) ? trim($productXml->price) : null), 1, true);
+		$product = Product::create(trim($itemObj->sku), trim($itemObj->name), trim($itemObj->product_id));
 		return OrderItem::create($order,
 				$product,
 				trim($itemObj->price),

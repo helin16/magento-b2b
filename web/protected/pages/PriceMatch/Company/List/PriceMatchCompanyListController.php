@@ -49,9 +49,9 @@ class PriceMatchCompanyListController extends BPCPageAbstract
 				$pageSize = $param->CallbackParameter->pagination->pageSize;
 			}	
 			if($searchCriteria === '')
-				$pmcArray = PriceMatchCompany::findAll(true, $pageNo, $pageSize, array('companyName' => 'asc'));
+				$pmcArray = PriceMatchCompany::getAll(true, $pageNo, $pageSize, array('companyName' => 'asc'));
 			else
-				$pmcArray = FactoryAbastract::service('PriceMatchCompany')->findByCriteria('companyName like ?', array('%'.$searchCriteria.'%'), true, $pageNo, $pageSize, array('companyName' => 'asc'));
+				$pmcArray = PriceMatchCompany::getAllByCriteria('companyName like ?', array('%'.$searchCriteria.'%'), true, $pageNo, $pageSize, array('companyName' => 'asc'));
 	
 			foreach($pmcArray as $pmc)
 			{
@@ -97,14 +97,13 @@ class PriceMatchCompanyListController extends BPCPageAbstract
 			if(!isset($param->CallbackParameter->companyName) || ($companyName = trim($param->CallbackParameter->companyName)) === '')
 				throw new Exception('System Error: Price Match Company Name value NOT SET. Cannot be EMPTY');
 			
-			$priceMatchCompany = (($pmcId = trim($param->CallbackParameter->id)) === '') ? new PriceMatchCompany() : FactoryAbastract::service('PriceMatchCompany')->get($pmcId);
+			$priceMatchCompany = (($pmcId = trim($param->CallbackParameter->id)) === '') ? new PriceMatchCompany() : PriceMatchCompany::get($pmcId);
 			if(!$priceMatchCompany instanceof PriceMatchCompany)
 				throw new Exception('System Error: Price Match Company Id(=' . $pmcId . ') is REQUIRED. Cannot be EMPTY/INVALID');
 			
-			$priceMatchCompany->setCompanyName($companyName);
-			$priceMatchCompany->setCompanyAlias($newAliasValue);
-			$priceMatchCompany = FactoryAbastract::service('PriceMatchCompany')->save($priceMatchCompany);
-				
+			$priceMatchCompany->setCompanyName($companyName)
+				->setCompanyAlias($newAliasValue)
+				->save();
 			$result['item'] = $priceMatchCompany->getJson();
 		}
 		catch(Exception $ex)
@@ -127,13 +126,10 @@ class PriceMatchCompanyListController extends BPCPageAbstract
 			if(!isset($data->id) || !isset($data->companyAlias) || ($id = trim($data->id)) == '' || ($alias = trim($data->companyAlias)) == '')
 				throw new Exception('Data to be deleted is NOT proper format');
 			
-			$pmc = FactoryAbastract::service('PriceMatchCompany')->get($id);
-			if(!$pmc instanceof PriceMatchCompany)
+			if(!($pmc = PriceMatchCompany::get($id)) instanceof PriceMatchCompany)
 				throw new Exception('Invalid Id ['.$id.'] provided for PriceMatchCompany!!!');
 			
-			$pmc->setActive(false);
-			$pmc = FactoryAbastract::service('PriceMatchCompany')->save($pmc);
-			$result['items'] = $pmc->getJson();
+			$result['items'] = $pmc->setActive(false)->save()->getJson();
 		}
 		catch(Exception $ex)
 		{
