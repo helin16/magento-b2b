@@ -228,11 +228,11 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 				'title'    : '<div class="row"><div class="col-xs-10">Details for: ' + item.sku + '</div><div class="col-xs-2"><span class="btn btn-danger pull-right btn-sm" onclick="pageJs.deSelectProduct();"><span class="glyphicon glyphicon-remove"></span></span></div></div>',
 				'html'     : true, 
 				'placement': 'right', 
-				'container': 'body', 
+				'container': '.list-panel', 
 				'trigger'  : 'manual', 
 				'viewport' : {"selector": ".list-panel", "padding": 0 },
 				'content'  : function() { return tmp.me._showProductInfoOnRightPanel(item).wrap(new Element('div')).innerHTML; }, 
-				'template' : '<div class="popover" role="tooltip" style="max-width: none; z-index: 0;"><div class="arrow"></div><h3 class="popover-title"></h3><div class="popover-content"></div></div>'
+				'template' : '<div class="popover" role="tooltip" style="max-width: none; z-index: 0; width: 200%"><div class="arrow"></div><h3 class="popover-title"></h3><div class="popover-content"></div></div>'
 			})
 			.addClass('popover-loaded');
 		}
