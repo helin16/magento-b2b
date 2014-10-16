@@ -120,19 +120,19 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		tmp.minPrice = 0;
 		tmp.tbody = new Element('tbody');
 		$H(prices["companyPrices"]).each(function(price){
-			if(parseFloat(price.value.price) < parseFloat(tmp.minPrice))
+			if(parseInt(price.value.price) !== 0 && parseFloat(price.value.price) < parseFloat(tmp.minPrice))
 				tmp.minPrice = price.value.price;
 			tmp.tbody.insert({'bottom': new Element('tr')
 				.insert({'bottom': new Element('td', {'colspan': 3}).update(price.key) })
 				.insert({'bottom': new Element('td').update(price.value.priceURL && !price.value.priceURL.blank() ? new Element('a', {'href': price.value.priceURL, 'target': '__blank'}).update(tmp.me.getCurrency(price.value.price)) : tmp.me.getCurrency(price.value.price)) })
 			})
 		});
-		
+		tmp.priceDiff = parseFloat(prices.myPrice) - parseFloat(tmp.minPrice);
 		tmp.priceDiffClass = '';
 		if(parseInt(tmp.minPrice) !== 0) {
-			if(parseInt(prices.priceDiff) > 0)
+			if(parseInt(tmp.priceDiff) > 0)
 				tmp.priceDiffClass = 'label label-danger';
-			else if (parseInt(prices.priceDiff) < 0)
+			else if (parseInt(tmp.priceDiff) < 0)
 				tmp.priceDiffClass = 'label label-success';
 		}
 		tmp.newDiv = new Element('table', {'class': 'table table-striped table-hover price-match-listing'})
@@ -148,7 +148,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 				.insert({'bottom': new Element('tr')
 					.insert({'bottom': new Element('td').update(prices.sku) })
 					.insert({'bottom': new Element('td').update(tmp.me.getCurrency(prices.myPrice)) })
-					.insert({'bottom': new Element('td', {'class': 'price_diff'}).update(new Element('span', {'class': '' + tmp.priceDiffClass}).update(tmp.me.getCurrency(prices.priceDiff)) ) })
+					.insert({'bottom': new Element('td', {'class': 'price_diff'}).update(new Element('span', {'class': '' + tmp.priceDiffClass}).update(tmp.me.getCurrency(tmp.priceDiff)) ) })
 					.insert({'bottom': new Element('td', {'class': 'price_min'}).update(tmp.me.getCurrency(tmp.minPrice) ) })
 				})
 			})
