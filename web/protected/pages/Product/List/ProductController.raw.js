@@ -115,7 +115,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 	,_displayPriceMatchResult: function(prices) {
 		var tmp = {};
 		tmp.me = this;
-		tmp.newDiv = new Element('table', {'class': 'table table-striped price-match-listing'})
+		tmp.newDiv = new Element('table', {'class': 'table table-striped table-hover price-match-listing'})
 			.insert({'bottom': new Element('thead')
 				.insert({'bottom': new Element('tr')
 					.insert({'bottom': new Element('th').update('SKU') })
@@ -129,26 +129,20 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 					.insert({'bottom': new Element('td').update(prices.sku) })
 					.insert({'bottom': new Element('td').update(tmp.me.getCurrency(prices.myPrice)) })
 					.insert({'bottom': new Element('td', {'class': 'price_diff'}).update(tmp.me.getCurrency(prices.priceDiff) ) })
-					.insert({'bottom': new Element('td', {'class': 'price_min'}).update(new Element('a', {"href": "javascript: void(0);"})
-						.update(tmp.me.getCurrency(prices.minPrice))
-						.observe('click', function() {
-							tmp.table = new Element('table', {'class': 'table table-striped'})
-								.insert({'bottom': new Element('thead')
-									.insert({'bottom': new Element('tr')
-										.insert({'bottom': new Element('th').update('Company') })
-										.insert({'bottom': new Element('th').update('Price') })
-									})
-								})
-								.insert({'bottom': tmp.tbody = new Element('tbody') });
-							$H(prices["companyPrices"]).each(function(price){
-								tmp.tbody.insert({'bottom': new Element('tr')
-									.insert({'bottom': new Element('td').update(price.key) })
-									.insert({'bottom': new Element('td').update(price.value.priceURL && !price.value.priceURL.blank() ? new Element('a', {'href': price.value.priceURL, 'target': '__blank'}).update(tmp.me.getCurrency(price.value.price)) : tmp.me.getCurrency(price.value.price)) })
-								})
-							});
-							tmp.me.showModalBox('Min Price Details: ', tmp.table, false);
-						})
-					) })
+					.insert({'bottom': new Element('td', {'class': 'price_min'}).update(tmp.me.getCurrency(prices.minPrice) ) })
+				})
+			})
+			.insert({'bottom': new Element('thead')
+				.insert({'bottom': new Element('tr')
+					.insert({'bottom': new Element('th', {'colspan': 3}).update('Company') })
+					.insert({'bottom': new Element('th').update('Price') })
+				})
+			})
+			.insert({'bottom': tmp.tbody = new Element('tbody') });
+			$H(prices["companyPrices"]).each(function(price){
+				tmp.tbody.insert({'bottom': new Element('tr')
+					.insert({'bottom': new Element('td', {'colspan': 3}).update(price.key) })
+					.insert({'bottom': new Element('td').update(price.value.priceURL && !price.value.priceURL.blank() ? new Element('a', {'href': price.value.priceURL, 'target': '__blank'}).update(tmp.me.getCurrency(price.value.price)) : tmp.me.getCurrency(price.value.price)) })
 				})
 			});
 		return tmp.newDiv;
