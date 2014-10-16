@@ -270,7 +270,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		tmp.me = this;
 		tmp.tag = (tmp.isTitle === true ? 'th' : 'td');
 		tmp.isTitle = (isTitle || false);
-		tmp.price = 0;
+		tmp.price = '';
 		if(row.prices) {
 			row.prices.each(function(price) {
 				if(price.type && parseInt(price.type.id) === 1) {
@@ -297,7 +297,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 				}) 
 			})
 			.insert({'bottom': new Element(tmp.tag, {'class': 'product_name hidden-xs hide-when-info hidden-sm', 'style': (tmp.me._showRightPanel ? 'display: none' : '')}).update(row.name) })
-			.insert({'bottom': new Element(tmp.tag, {'class': 'product_price hidden-xs hide-when-info hidden-sm', 'style': (tmp.me._showRightPanel ? 'display: none' : '')}).update(tmp.isTitle === true ? 'Price' : tmp.me.getCurrency(tmp.price)) })
+			.insert({'bottom': new Element(tmp.tag, {'class': 'product_price hidden-xs hide-when-info hidden-sm', 'style': (tmp.me._showRightPanel ? 'display: none' : '')}).update(tmp.isTitle === true ? 'Price' : (tmp.price.blank() ? '' : tmp.me.getCurrency(tmp.price))) })
 			.insert({'bottom': new Element(tmp.tag, {'class': 'manufacturer col-xs-2'}).update(row.manufacturer ? row.manufacturer.name : '') })
 			.insert({'bottom': new Element(tmp.tag, {'class': 'supplier col-xs-2'}).update(
 					row.supplierCodes ? tmp.me._getSupplierCodes(row.supplierCodes, isTitle) : ''
