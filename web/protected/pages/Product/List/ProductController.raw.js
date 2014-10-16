@@ -128,7 +128,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 				.insert({'bottom': new Element('tr')
 					.insert({'bottom': new Element('td').update(prices.sku) })
 					.insert({'bottom': new Element('td').update(tmp.me.getCurrency(prices.myPrice)) })
-					.insert({'bottom': new Element('td', {'class': 'price_diff'}).update(tmp.me.getCurrency(prices.priceDiff) ) })
+					.insert({'bottom': new Element('td', {'class': 'price_diff'}).update(new Element('span', {'class': '' + (prices.priceDiff * 1) > 0 ? 'label label-danger' : ((prices.priceDiff * 1) === 0 ? '' : 'label label-success')}).update(tmp.me.getCurrency(prices.priceDiff)) ) })
 					.insert({'bottom': new Element('td', {'class': 'price_min'}).update(tmp.me.getCurrency(prices.minPrice) ) })
 				})
 			})
