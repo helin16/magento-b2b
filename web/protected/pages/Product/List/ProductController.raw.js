@@ -219,8 +219,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		tmp.me = this;
 		jQuery('.product_item.success', jQuery('#' + tmp.me.resultDivId)).removeClass('success').popover('hide');
 		$(tmp.me.resultDivId).up('.list-panel').removeClassName('col-xs-4').addClassName('col-xs-12');
-		jQuery('.product_name', jQuery('#' + tmp.me.resultDivId)).show();
-		jQuery('.btns', jQuery('#' + tmp.me.resultDivId)).show();
+		jQuery('.hide-when-info', jQuery('#' + tmp.me.resultDivId)).show();
 		tmp.me._showRightPanel = false;
 		return tmp.me;
 	}
@@ -231,8 +230,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		var tmp = {};
 		tmp.me = this;
 		$(tmp.me.resultDivId).up('.list-panel').removeClassName('col-xs-12').addClassName('col-xs-4');
-		jQuery('.product_name', jQuery('#' + tmp.me.resultDivId)).hide();
-		jQuery('.btns', jQuery('#' + tmp.me.resultDivId)).hide();
+		jQuery('.hide-when-info', jQuery('#' + tmp.me.resultDivId)).hide();
 		tmp.me._showRightPanel = true;
 		
 		//remove all active class
@@ -272,6 +270,14 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		tmp.me = this;
 		tmp.tag = (tmp.isTitle === true ? 'th' : 'td');
 		tmp.isTitle = (isTitle || false);
+		tmp.price = 0;
+		if(row.prices) {
+			row.prices.each(function(price) {
+				if(price.type && parseInt(price.type.id) === 1) {
+					tmp.price = price.price;
+				}
+			});
+		}
 		tmp.row = new Element('tr', {'class': 'visible-xs visible-md visible-lg visible-sm ' + (tmp.isTitle === true ? '' : 'product_item'), 'product_id' : row.id}).store('data', row)
 			.insert({'bottom': new Element(tmp.tag, {'class': 'sku', 'title': row.name})
 				.insert({'bottom': new Element('span', {'style': 'margin: 0 5px 0 0;'})
@@ -290,7 +296,8 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 					.update(row.sku)
 				}) 
 			})
-			.insert({'bottom': new Element(tmp.tag, {'class': 'product_name hidden-xs hidden-sm', 'style': (tmp.me._showRightPanel ? 'display: none' : '')}).update(row.name) })
+			.insert({'bottom': new Element(tmp.tag, {'class': 'product_name hidden-xs hide-when-info hidden-sm', 'style': (tmp.me._showRightPanel ? 'display: none' : '')}).update(row.name) })
+			.insert({'bottom': new Element(tmp.tag, {'class': 'product_price hidden-xs hide-when-info hidden-sm', 'style': (tmp.me._showRightPanel ? 'display: none' : '')}).update(tmp.isTitle === true ? 'Price' : tmp.me.getCurrency(tmp.price)) })
 			.insert({'bottom': new Element(tmp.tag, {'class': 'manufacturer col-xs-2'}).update(row.manufacturer ? row.manufacturer.name : '') })
 			.insert({'bottom': new Element(tmp.tag, {'class': 'supplier col-xs-2'}).update(
 					row.supplierCodes ? tmp.me._getSupplierCodes(row.supplierCodes, isTitle) : ''
@@ -298,7 +305,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 			.insert({'bottom': new Element(tmp.tag, {'class': 'product_active col-xs-1'})
 				.insert({'bottom': (tmp.isTitle === true ? row.active : new Element('input', {'type': 'checkbox', 'disabled': true, 'checked': row.active}) ) })
 			})
-			.insert({'bottom': tmp.isTitle === true ? '' : new Element(tmp.tag, {'class': 'btns hidden-xs hidden-sm', 'style': (tmp.me._showRightPanel ? 'display: none' : '')})
+			.insert({'bottom': tmp.isTitle === true ? '' : new Element(tmp.tag, {'class': 'btns hidden-xs hide-when-info hidden-sm', 'style': (tmp.me._showRightPanel ? 'display: none' : '')})
 				.insert({'bottom': new Element('span', {'class': 'btn btn-primary btn-xs'})
 					.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-pencil'}) })
 				})
