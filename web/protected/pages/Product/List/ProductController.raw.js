@@ -111,10 +111,30 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		})
 		return tmp.supplierCodeString.join(', ');
 	}
-	
+	/**
+	 * Displaying the price matching result
+	 */
 	,_displayPriceMatchResult: function(prices) {
 		var tmp = {};
 		tmp.me = this;
+		tmp.minPrice = 0;
+		tmp.tbody = new Element('tbody');
+		$H(prices["companyPrices"]).each(function(price){
+			if(parseFloat(price.value.price) < parseFloat(tmp.minPrice))
+				tmp.minPrice = price.value.price;
+			tmp.tbody.insert({'bottom': new Element('tr')
+				.insert({'bottom': new Element('td', {'colspan': 3}).update(price.key) })
+				.insert({'bottom': new Element('td').update(price.value.priceURL && !price.value.priceURL.blank() ? new Element('a', {'href': price.value.priceURL, 'target': '__blank'}).update(tmp.me.getCurrency(price.value.price)) : tmp.me.getCurrency(price.value.price)) })
+			})
+		});
+		
+		tmp.priceDiffClass = '';
+		if(parseInt(tmp.minPrice) !== 0) {
+			if(parseInt(prices.priceDiff) > 0)
+				tmp.priceDiffClass = 'label label-danger';
+			else if (parseInt(prices.priceDiff) < 0)
+				tmp.priceDiffClass = 'label label-success';
+		}
 		tmp.newDiv = new Element('table', {'class': 'table table-striped table-hover price-match-listing'})
 			.insert({'bottom': new Element('thead')
 				.insert({'bottom': new Element('tr')
@@ -128,8 +148,8 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 				.insert({'bottom': new Element('tr')
 					.insert({'bottom': new Element('td').update(prices.sku) })
 					.insert({'bottom': new Element('td').update(tmp.me.getCurrency(prices.myPrice)) })
-					.insert({'bottom': new Element('td', {'class': 'price_diff'}).update(new Element('span', {'class': '' + (prices.priceDiff * 1) > 0 ? 'label label-danger' : ((prices.priceDiff * 1) === 0 ? '' : 'label label-success')}).update(tmp.me.getCurrency(prices.priceDiff)) ) })
-					.insert({'bottom': new Element('td', {'class': 'price_min'}).update(tmp.me.getCurrency(prices.minPrice) ) })
+					.insert({'bottom': new Element('td', {'class': 'price_diff'}).update(new Element('span', {'class': '' + tmp.priceDiffClass}).update(tmp.me.getCurrency(prices.priceDiff)) ) })
+					.insert({'bottom': new Element('td', {'class': 'price_min'}).update(tmp.me.getCurrency(tmp.minPrice) ) })
 				})
 			})
 			.insert({'bottom': new Element('thead')
@@ -138,13 +158,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 					.insert({'bottom': new Element('th').update('Price') })
 				})
 			})
-			.insert({'bottom': tmp.tbody = new Element('tbody') });
-			$H(prices["companyPrices"]).each(function(price){
-				tmp.tbody.insert({'bottom': new Element('tr')
-					.insert({'bottom': new Element('td', {'colspan': 3}).update(price.key) })
-					.insert({'bottom': new Element('td').update(price.value.priceURL && !price.value.priceURL.blank() ? new Element('a', {'href': price.value.priceURL, 'target': '__blank'}).update(tmp.me.getCurrency(price.value.price)) : tmp.me.getCurrency(price.value.price)) })
-				})
-			});
+			.insert({'bottom': tmp.tbody });
 		return tmp.newDiv;
 	}
 	,_getInfoPanel: function(product) {
