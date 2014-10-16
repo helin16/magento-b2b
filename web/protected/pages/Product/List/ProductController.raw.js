@@ -120,8 +120,10 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		tmp.minPrice = 0;
 		tmp.tbody = new Element('tbody');
 		$H(prices["companyPrices"]).each(function(price){
-			if(parseInt(price.value.price) !== 0 && parseFloat(price.value.price) < parseFloat(tmp.minPrice))
-				tmp.minPrice = price.value.price;
+			if(parseInt(price.value.price) !== 0) {
+				if((parseInt(tmp.minPrice) === 0 && parseFloat(price.value.price) > 0) || parseFloat(price.value.price) < parseFloat(tmp.minPrice))
+					tmp.minPrice = price.value.price;
+			}
 			tmp.tbody.insert({'bottom': new Element('tr')
 				.insert({'bottom': new Element('td', {'colspan': 3}).update(price.key) })
 				.insert({'bottom': new Element('td').update(price.value.priceURL && !price.value.priceURL.blank() ? new Element('a', {'href': price.value.priceURL, 'target': '__blank'}).update(tmp.me.getCurrency(price.value.price)) : tmp.me.getCurrency(price.value.price)) })
