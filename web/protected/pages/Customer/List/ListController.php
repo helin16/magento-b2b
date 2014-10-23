@@ -56,14 +56,20 @@ class ListController extends CRUDPageAbstract
                 $pageSize = $param->CallbackParameter->pagination->pageSize;
             }
             
-            $stats = array();
-            $id = '2';
-            //var_dump(Customer::get($id));die;
-            //var_dump(Customer::getAll(true,$pageNo,$pageSize,array('cust.name' => 'asc'),$stats));die;
-            //var_dump(array('cust.name' => 'asc'));die;
+            $serachCriteria = isset($param->CallbackParameter->searchCriteria) ? json_decode(json_encode($param->CallbackParameter->searchCriteria), true) : array();
             
-            //$objects = Product::getProducts(trim($serachCriteria['pro.sku']), trim($serachCriteria['pro.name']), $supplierIds, $manufacturerIds, $categoryIds, $productStatusIds, trim($serachCriteria['pro.active']), $pageNo, $pageSize, array('pro.name' => 'asc'), $stats);
-            $objects = Customer::getAll(true,$pageNo,$pageSize,array('cust.name' => 'asc'),$stats);
+            $where = array(1);
+            $params = array();
+            if(isset($serachCriteria['cust.name']) && ($name = trim($serachCriteria['cust.name'])) !== '')
+            {
+            	$where[] = 'cust.name like ?';
+            	$params[] = '%' . $name . '%';
+            }
+            
+            $stats = array();
+
+            $objects = Customer::getAllByCriteria(implode(' AND ', $where), $params, false, $pageNo, $pageSize, array('cust.name' => 'asc'), $stats);
+            
             $results['pageStats'] = $stats;
             $results['items'] = array();
             foreach($objects as $obj)

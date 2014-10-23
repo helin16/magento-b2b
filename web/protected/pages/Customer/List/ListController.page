@@ -1,6 +1,6 @@
 <com:TContent ID="MainContent">
 	<div class="pagewrapper item-list-wrapper">
-		<div class="panel panel-default" id="searchPanel" style="display:none;">
+		<div class="panel panel-default" id="searchPanel">
 			<div class="panel-heading">
 				<label for="showSearch">Show Search Criteria?</label>
 				<input id="showSearch" type="checkbox" onclick="$(this).up('#searchPanel').down('.panel-body').toggle();">
@@ -9,14 +9,14 @@
 				<div class="row">
 					<div class="col-sm-4">
 						<div class="form-group form-group-sm">
-                           <label>name:</label>
-                           <input type="text" search_field="man.name" placeholder="The name of the manufacturer" class="form-control input-sm">
+                           <label>Name:</label>
+                           <input type="text" search_field="cust.name" placeholder="The name of the customer" class="form-control input-sm">
                        </div>
 					</div>
 					<div class="col-sm-2">
 						<div class="form-group form-group-sm">
                            <label>&nbsp;</label>
-						   <span id="searchBtn" class="btn btn-primary form-control inpu-sm" data-loading-text="searching ..." onclick="" >Search</span>
+						   <span id="searchBtn" class="btn btn-primary form-control inpu-sm" data-loading-text="searching ..." onclick="pageJs.getSearchCriteria().getResults(true, <%= $this->pageSize %>);" >Search</span>
 						</div>
 					</div>
 				</div>
