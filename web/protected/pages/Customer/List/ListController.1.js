@@ -7,6 +7,22 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		return {'email': "Email", 'name': 'Name'};
 	}
 
+	/**
+	 * Binding the search key
+	 */
+	,_bindSearchKey: function() {
+		var tmp = {}
+		tmp.me = this;
+		$('searchDiv').getElementsBySelector('[search_field]').each(function(item) {
+			item.observe('keydown', function(event) {
+				tmp.me.keydown(event, function() {
+					$(tmp.me.searchDivId).down('#searchBtn').click();
+				});
+			})
+		});
+		return this;
+	}
+	
 	,_getEditPanel: function(row) {
 
 	}

@@ -30,6 +30,7 @@ class ListController extends CRUDPageAbstract
 	protected function _getEndJs()
 	{
 		$js = parent::_getEndJs();
+		$js .= "._bindSearchKey()";
 		$js .= "pageJs.getResults(true, " . $this->pageSize . ");";
 		return $js;
 	}
@@ -68,7 +69,7 @@ class ListController extends CRUDPageAbstract
             
             $stats = array();
 
-            $objects = Customer::getAllByCriteria(implode(' AND ', $where), $params, false, $pageNo, $pageSize, array('cust.name' => 'asc'), $stats);
+            $objects = $class::getAllByCriteria(implode(' AND ', $where), $params, false, $pageNo, $pageSize, array('cust.name' => 'asc'), $stats);
             
             $results['pageStats'] = $stats;
             $results['items'] = array();
