@@ -4,7 +4,11 @@
 var PageJs = new Class.create();
 PageJs.prototype = Object.extend(new CRUDPageJs(), {
 	_getTitleRowData: function() {
-		return {'email': "Email", 'name': 'Name'};
+		return {'email': "Email", 'name': 'Name', 'contactNo': 'Contact Num', 'description': 'Description', 
+			'address': {'billing': {'full': 'Billing Address'}, 'shipping': {'full': 'shipping Address'} },
+			'mageId': "Mage Id", 'active': "Active?"
+			//mageId
+			};
 	}
 
 	/**
@@ -32,10 +36,19 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		tmp.me = this;
 		tmp.tag = (tmp.isTitle === true ? 'th' : 'td');
 		tmp.isTitle = (isTitle || false);
-		//console.debug(row);
+		console.debug(row);
 		tmp.row = new Element('tr', {'class': (tmp.isTitle === true ? '' : 'btn-hide-row')}).store('data', row)
-			.insert({'bottom': new Element(tmp.tag, {'class': 'name col-xs-2'}).update(row.name) })
-			.insert({'bottom': new Element(tmp.tag, {'class': 'description'}).update(row.email) })
+			.insert({'bottom': new Element(tmp.tag, {'class': 'name col-xs-1'}).update(row.name) })
+			.insert({'bottom': new Element(tmp.tag, {'class': 'email col-xs-1'}).update(row.email) })
+			.insert({'bottom': new Element(tmp.tag, {'class': 'contact col-xs-1'}).update(row.contactNo)})
+			.insert({'bottom': new Element(tmp.tag, {'class': 'description col-xs-1'}).update(row.description) })
+			.insert({'bottom': new Element(tmp.tag, {'class': 'address col-xs-2'}).update(row.address.billing.full) })
+			.insert({'bottom': new Element(tmp.tag, {'class': 'address col-xs-2'}).update(row.address.shipping.full) })
+			.insert({'bottom': new Element(tmp.tag, {'class': 'mageId col-xs-1'}).update(row.mageId) })
+			.insert({'bottom': new Element(tmp.tag, {'class': 'active col-xs-1'})
+				.insert({'bottom': (tmp.isTitle === true ? row.active : new Element('input', {'type': 'checkbox', 'disabled': true, 'checked': row.active}) ) })
+			})
+			
 		;
 		return tmp.row;
 	}
