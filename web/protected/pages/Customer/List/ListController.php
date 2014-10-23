@@ -30,8 +30,8 @@ class ListController extends CRUDPageAbstract
 	protected function _getEndJs()
 	{
 		$js = parent::_getEndJs();
-		$js .= "._bindSearchKey()";
-		$js .= "pageJs.getResults(true, " . $this->pageSize . ");";
+		$js .= "pageJs._bindSearchKey()";
+		$js .= ".getResults(true, " . $this->pageSize . ");";
 		return $js;
 	}
 	/**
