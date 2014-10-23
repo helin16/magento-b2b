@@ -29,7 +29,7 @@
 				Found <label id="total-found-count">0</label> <%= $this->getFocusEntity() %>:
 			</div>
 			<small class="table-responsive">
-                <table class="table table-hover" id="item-list"></table>
+                <table class="table table-hover table-striped" id="item-list"></table>
             </small>
 		</div> 
 	</div>

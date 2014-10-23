@@ -45,7 +45,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 			.insert({'bottom': new Element(tmp.tag, {'class': 'address col-xs-2'}).update(row.address.billing.full) })
 			.insert({'bottom': new Element(tmp.tag, {'class': 'address col-xs-2'}).update(row.address.shipping.full) })
 			.insert({'bottom': new Element(tmp.tag, {'class': 'mageId col-xs-1'}).update(row.mageId) })
-			.insert({'bottom': new Element(tmp.tag, {'class': 'active col-xs-1'})
+			.insert({'bottom': new Element(tmp.tag, {'class': 'cust_active col-xs-1'})
 				.insert({'bottom': (tmp.isTitle === true ? row.active : new Element('input', {'type': 'checkbox', 'disabled': true, 'checked': row.active}) ) })
 			})
 			
