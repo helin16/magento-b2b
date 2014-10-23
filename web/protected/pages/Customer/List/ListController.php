@@ -59,7 +59,6 @@ class ListController extends CRUDPageAbstract
             
             $serachCriteria = isset($param->CallbackParameter->searchCriteria) ? json_decode(json_encode($param->CallbackParameter->searchCriteria), true) : array();
             
-            $noSearch = true;
             $where = array(1);
             $params = array();
             
@@ -74,7 +73,7 @@ class ListController extends CRUDPageAbstract
             		case 'cust.name': 
 					{
 						$where[] = 'cust.name like ?';
-            			$params[] = '%' . $name . '%';
+            			$params[] = '%' . $value . '%';
 						break;
 					}
 					case 'cust.email': 
@@ -90,8 +89,6 @@ class ListController extends CRUDPageAbstract
 						break;
 					}
             	}
-            	$noSearch = false;
-            	
             }
 
             $stats = array();
