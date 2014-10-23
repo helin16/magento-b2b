@@ -59,14 +59,41 @@ class ListController extends CRUDPageAbstract
             
             $serachCriteria = isset($param->CallbackParameter->searchCriteria) ? json_decode(json_encode($param->CallbackParameter->searchCriteria), true) : array();
             
+            $noSearch = true;
             $where = array(1);
             $params = array();
-            if(isset($serachCriteria['cust.name']) && ($name = trim($serachCriteria['cust.name'])) !== '')
-            {
-            	$where[] = 'cust.name like ?';
-            	$params[] = '%' . $name . '%';
-            }
             
+            foreach($serachCriteria as $field => $value)
+            {
+            	if((is_array($value) && count($value) === 0) || (is_string($value) && ($value = trim($value)) === ''))
+            		continue;
+            	
+            	$query = $class::getQuery();
+            	switch ($field)
+            	{
+            		case 'cust.name': 
+					{
+						$where[] = 'cust.name like ?';
+            			$params[] = '%' . $name . '%';
+						break;
+					}
+					case 'cust.email': 
+					{
+						$where[] =  $field . " = ? ";
+						$params[] = $value;
+						break;
+					}
+					case 'cust.description':
+					{
+						$where[] =  $field . " = ? ";
+						$params[] = $value;
+						break;
+					}
+            	}
+            	$noSearch = false;
+            	
+            }
+
             $stats = array();
 
             $objects = $class::getAllByCriteria(implode(' AND ', $where), $params, false, $pageNo, $pageSize, array('cust.name' => 'asc'), $stats);
