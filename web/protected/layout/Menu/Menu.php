@@ -38,6 +38,8 @@ class Menu extends TTemplateControl
 				'productcodetypes' => array('url' => '/productcodetypes.html', 'name' => 'Product Code Types', 'icon' => '<span class="glyphicon glyphicon-barcode"></span>'),
 				'productcategories' => array('url' => '/productcategories.html', 'name' => 'Product Categories')
 			);
+		if(AccessControl::canAccessOrderItemsPage(Core::getRole()) )
+			$array['Customers'] = array('url' => '/customer.html', 'name' => 'Customers', 'icon' => '<span class="glyphicon glyphicon-user"></span>' );
 		if(AccessControl::canAccessUsersPage(Core::getRole()) )
 		{
 			$array['Systems'] = array(
