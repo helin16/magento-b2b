@@ -11,6 +11,13 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 	,_getTitleRowData: function() {
 		return {'sku': 'SKU', 'name': 'Product Name', 'manufacturer' : {'name': 'Brand'}, 'supplierCodes': [{'supplier': {'name': 'Supplier'}, 'code': ''}],  'active': 'act?'};
 	}
+	,toggleSearchPanel: function(panel) {
+		var tmp = {};
+		tmp.me = this;
+		$(panel).toggle();
+		tmp.me.deSelectProduct();
+		return tmp.me;
+	}
 	/**
 	 * Load the manufacturers
 	 */
@@ -104,11 +111,33 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		})
 		return tmp.supplierCodeString.join(', ');
 	}
-	
+	/**
+	 * Displaying the price matching result
+	 */
 	,_displayPriceMatchResult: function(prices) {
 		var tmp = {};
 		tmp.me = this;
-		tmp.newDiv = new Element('table', {'class': 'table table-striped price-match-listing'})
+		tmp.minPrice = 0;
+		tmp.tbody = new Element('tbody');
+		$H(prices["companyPrices"]).each(function(price){
+			if(parseInt(price.value.price) !== 0) {
+				if((parseInt(tmp.minPrice) === 0 && parseFloat(price.value.price) > 0) || parseFloat(price.value.price) < parseFloat(tmp.minPrice))
+					tmp.minPrice = price.value.price;
+			}
+			tmp.tbody.insert({'bottom': new Element('tr')
+				.insert({'bottom': new Element('td', {'colspan': 3}).update(price.key) })
+				.insert({'bottom': new Element('td').update(price.value.priceURL && !price.value.priceURL.blank() ? new Element('a', {'href': price.value.priceURL, 'target': '__blank'}).update(tmp.me.getCurrency(price.value.price)) : tmp.me.getCurrency(price.value.price)) })
+			})
+		});
+		tmp.priceDiff = parseFloat(prices.myPrice) - parseFloat(tmp.minPrice);
+		tmp.priceDiffClass = '';
+		if(parseInt(tmp.minPrice) !== 0) {
+			if(parseInt(tmp.priceDiff) > 0)
+				tmp.priceDiffClass = 'label label-danger';
+			else if (parseInt(tmp.priceDiff) < 0)
+				tmp.priceDiffClass = 'label label-success';
+		}
+		tmp.newDiv = new Element('table', {'class': 'table table-striped table-hover price-match-listing'})
 			.insert({'bottom': new Element('thead')
 				.insert({'bottom': new Element('tr')
 					.insert({'bottom': new Element('th').update('SKU') })
@@ -121,29 +150,17 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 				.insert({'bottom': new Element('tr')
 					.insert({'bottom': new Element('td').update(prices.sku) })
 					.insert({'bottom': new Element('td').update(tmp.me.getCurrency(prices.myPrice)) })
-					.insert({'bottom': new Element('td', {'class': 'price_diff'}).update(tmp.me.getCurrency(prices.priceDiff) ) })
-					.insert({'bottom': new Element('td', {'class': 'price_min'}).update(new Element('a', {"href": "javascript: void(0);"})
-						.update(tmp.me.getCurrency(prices.minPrice))
-						.observe('click', function() {
-							tmp.table = new Element('table', {'class': 'table table-striped'})
-								.insert({'bottom': new Element('thead')
-									.insert({'bottom': new Element('tr')
-										.insert({'bottom': new Element('th').update('Company') })
-										.insert({'bottom': new Element('th').update('Price') })
-									})
-								})
-								.insert({'bottom': tmp.tbody = new Element('tbody') });
-							$H(prices["companyPrices"]).each(function(price){
-								tmp.tbody.insert({'bottom': new Element('tr')
-									.insert({'bottom': new Element('td').update(price.key) })
-									.insert({'bottom': new Element('td').update(price.value.priceURL && !price.value.priceURL.blank() ? new Element('a', {'href': price.value.priceURL, 'target': '__blank'}).update(tmp.me.getCurrency(price.value.price)) : tmp.me.getCurrency(price.value.price)) })
-								})
-							});
-							tmp.me.showModalBox('Min Price Details: ', tmp.table, false);
-						})
-					) })
+					.insert({'bottom': new Element('td', {'class': 'price_diff'}).update(new Element('span', {'class': '' + tmp.priceDiffClass}).update(tmp.me.getCurrency(tmp.priceDiff)) ) })
+					.insert({'bottom': new Element('td', {'class': 'price_min'}).update(tmp.me.getCurrency(tmp.minPrice) ) })
 				})
-			});
+			})
+			.insert({'bottom': new Element('thead')
+				.insert({'bottom': new Element('tr')
+					.insert({'bottom': new Element('th', {'colspan': 3}).update('Company') })
+					.insert({'bottom': new Element('th').update('Price') })
+				})
+			})
+			.insert({'bottom': tmp.tbody });
 		return tmp.newDiv;
 	}
 	,_getInfoPanel: function(product) {
@@ -202,8 +219,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		tmp.me = this;
 		jQuery('.product_item.success', jQuery('#' + tmp.me.resultDivId)).removeClass('success').popover('hide');
 		$(tmp.me.resultDivId).up('.list-panel').removeClassName('col-xs-4').addClassName('col-xs-12');
-		jQuery('.product_name', jQuery('#' + tmp.me.resultDivId)).show();
-		jQuery('.btns', jQuery('#' + tmp.me.resultDivId)).show();
+		jQuery('.hide-when-info', jQuery('#' + tmp.me.resultDivId)).show();
 		tmp.me._showRightPanel = false;
 		return tmp.me;
 	}
@@ -214,8 +230,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		var tmp = {};
 		tmp.me = this;
 		$(tmp.me.resultDivId).up('.list-panel').removeClassName('col-xs-12').addClassName('col-xs-4');
-		jQuery('.product_name', jQuery('#' + tmp.me.resultDivId)).hide();
-		jQuery('.btns', jQuery('#' + tmp.me.resultDivId)).hide();
+		jQuery('.hide-when-info', jQuery('#' + tmp.me.resultDivId)).hide();
 		tmp.me._showRightPanel = true;
 		
 		//remove all active class
@@ -255,6 +270,14 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		tmp.me = this;
 		tmp.tag = (tmp.isTitle === true ? 'th' : 'td');
 		tmp.isTitle = (isTitle || false);
+		tmp.price = '';
+		if(row.prices) {
+			row.prices.each(function(price) {
+				if(price.type && parseInt(price.type.id) === 1) {
+					tmp.price = price.price;
+				}
+			});
+		}
 		tmp.row = new Element('tr', {'class': 'visible-xs visible-md visible-lg visible-sm ' + (tmp.isTitle === true ? '' : 'product_item'), 'product_id' : row.id}).store('data', row)
 			.insert({'bottom': new Element(tmp.tag, {'class': 'sku', 'title': row.name})
 				.insert({'bottom': new Element('span', {'style': 'margin: 0 5px 0 0;'})
@@ -273,7 +296,8 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 					.update(row.sku)
 				}) 
 			})
-			.insert({'bottom': new Element(tmp.tag, {'class': 'product_name hidden-xs hidden-sm', 'style': (tmp.me._showRightPanel ? 'display: none' : '')}).update(row.name) })
+			.insert({'bottom': new Element(tmp.tag, {'class': 'product_name hidden-xs hide-when-info hidden-sm', 'style': (tmp.me._showRightPanel ? 'display: none' : '')}).update(row.name) })
+			.insert({'bottom': new Element(tmp.tag, {'class': 'product_price hidden-xs hide-when-info hidden-sm', 'style': (tmp.me._showRightPanel ? 'display: none' : '')}).update(tmp.isTitle === true ? 'Price' : (tmp.price.blank() ? '' : tmp.me.getCurrency(tmp.price))) })
 			.insert({'bottom': new Element(tmp.tag, {'class': 'manufacturer col-xs-2'}).update(row.manufacturer ? row.manufacturer.name : '') })
 			.insert({'bottom': new Element(tmp.tag, {'class': 'supplier col-xs-2'}).update(
 					row.supplierCodes ? tmp.me._getSupplierCodes(row.supplierCodes, isTitle) : ''
@@ -281,7 +305,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 			.insert({'bottom': new Element(tmp.tag, {'class': 'product_active col-xs-1'})
 				.insert({'bottom': (tmp.isTitle === true ? row.active : new Element('input', {'type': 'checkbox', 'disabled': true, 'checked': row.active}) ) })
 			})
-			.insert({'bottom': tmp.isTitle === true ? '' : new Element(tmp.tag, {'class': 'btns hidden-xs hidden-sm', 'style': (tmp.me._showRightPanel ? 'display: none' : '')})
+			.insert({'bottom': tmp.isTitle === true ? '' : new Element(tmp.tag, {'class': 'btns hidden-xs hide-when-info hidden-sm', 'style': (tmp.me._showRightPanel ? 'display: none' : '')})
 				.insert({'bottom': new Element('span', {'class': 'btn btn-primary btn-xs'})
 					.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-pencil'}) })
 				})

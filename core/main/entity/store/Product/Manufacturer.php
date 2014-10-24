@@ -133,7 +133,7 @@ class Manufacturer extends BaseEntityAbstract
 		$isFromB2B = ($isFromB2B === true);
 		$class =__CLASS__;
 		$objects = self::getAllByCriteria('name = ?', array($name), true, 1, 1);
-		if(count($objects) > 0 && $name !== '')
+		if(count($objects) > 0)
 			$obj = $objects[0];
 		else
 		{

@@ -33,7 +33,7 @@ class PaymentMethod extends BaseEntityAbstract
 	 * 
 	 * @return PaymentMethod|null
 	 */
-	public static function get($id)
+	public static function getFromCache($id)
 	{
 		if(!isset(self::$_cache[$id]))
 		{
