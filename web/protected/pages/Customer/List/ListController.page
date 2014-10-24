@@ -37,7 +37,7 @@
 				</div>
 			</div>
 		</div>
-		<div class="panel panel-default">
+		<div class="panel panel-default list-panel">
 			<div class="panel-heading">
 				Found <label id="total-found-count">0</label> <%= $this->getFocusEntity() %>:
 			</div>

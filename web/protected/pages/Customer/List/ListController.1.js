@@ -26,17 +26,36 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		});
 		return this;
 	}
-	
+	/**
+	 * open the customer edit popup page
+	 */
+	,_openEditPage: function(customer) {
+		var tmp = {};
+		tmp.newWindow = window.open('/customer/' + customer.id + '.html', 'Product Details for: ' + customer.name, 'location=no, menubar=no, status=no, titlebar=no, fullscreen=yes, toolbar=no');
+		tmp.newWindow.focus();
+	}
 	,_getEditPanel: function(row) {
 
+	}
+	,_highlightSelectedRow : function (btn) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.item = $(btn).up('[item_id]').retrieve('data');
+		jQuery('.item_row.success').removeClass('success');
+		tmp.selectedRow = jQuery('[item_id=' + tmp.item.id + ']')
+		.addClass('success');
 	}
 	/**
 	 * Displaying the selected address 
 	 */
-	,_displaySelectedAddress: function(btn) {
+	,_displaySelectedAddress: function(btn,row,content) {
 		var tmp = {};
 		tmp.me = this;
 		tmp.item = $(btn).up('[item_id]').retrieve('data');
+		
+		tmp.type = $(btn).down('span').classList.contains('address-shipping');
+		console.debug(tmp.type);
+		
 		jQuery('.popover-loaded').popover('hide');
 		//remove highlight
 		jQuery('.item_row.success').removeClass('success');
@@ -47,12 +66,14 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		tmp.me._signRandID(btn); //sign it with a HTML ID to commnunicate with jQuery
 		if(!jQuery('#' + btn.id).hasClass('popover-loaded')) {
 			jQuery('#' + btn.id).popover({
-				'container': 'body',
-				'title'    : '<div class="row"><div class="col-xs-10">title</div><div class="col-xs-2"><a class="pull-right" href="javascript:void(0);" onclick="jQuery(' + "'#" + btn.id + "'" + ').popover(' + "'hide'" + ');"><strong>&times;</strong></a></div></div>',
+				'title'    : '<div class="row"><div class="col-xs-10">Details for: ' + row.name + '</div><div class="col-xs-2" style="cursor: pointer"><span class="pull-right glyphicon glyphicon-remove" href="javascript:void(0);" onclick="jQuery(' + "'#" + btn.id + "'" + ').popover(' + "'hide'" + ');"></span></div></div>',
 				'html'     : true, 
-				'placement': 'right', 
+				'placement': function () {return tmp.type? 'left' : 'right'},
+				'container': 'body', 
 				'trigger'  : 'manual', 
-				'content'  : '<p>test content f;dsklfsdl;akfjasd;lfkj dsa;fl kwr;lk fdsafds</p>', 
+				'viewport' : {"selector": ".list-panel", "padding": 0 },
+				'content'  : '<p>' + content +'</p>',
+				'template' : '<div class="popover" role="tooltip" style="max-width: none; z-index: 0;"><div class="arrow"></div><h3 class="popover-title"></h3><div class="popover-content"></div></div>'
 			})
 			.addClass('popover-loaded');
 		}
@@ -65,37 +86,47 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		tmp.tag = (tmp.isTitle === true ? 'th' : 'td');
 		tmp.isTitle = (isTitle || false);
 		tmp.row = new Element('tr', {'class': (tmp.isTitle === true ? '' : 'btn-hide-row')}).store('data', row)
-			.insert({'bottom': new Element(tmp.tag, {'class': 'name col-xs-1'}).update(row.name) })
+			.insert({'bottom': new Element(tmp.tag, {'class': 'name col-xs-1'}).update(row.name) 
+				.observe('click', function(){
+					tmp.me._highlightSelectedRow(this);
+				})	
+			})
 			.insert({'bottom': new Element(tmp.tag, {'class': 'email col-xs-1'}).update(row.email) })
 			.insert({'bottom': new Element(tmp.tag, {'class': 'contact col-xs-1'}).update(row.contactNo)})
 			.insert({'bottom': new Element(tmp.tag, {'class': 'description col-xs-1'}).update(row.description) })
-			//.insert({'bottom': new Element(tmp.tag, {'class': 'address col-xs-2'}).update(row.address.billing.full) })
-			//glyphicon glyphicon-send
-			.insert({'bottom': tmp.isTitle === true ? row.addresses : new Element(tmp.tag, {'class': 'address col-xs-1'})
-				.insert({'bottom': new Element('span', {'style': 'display: inline-block'})
+			.insert({'bottom': new Element(tmp.tag, {'class': 'address col-xs-1'})
+				.insert({'bottom': tmp.isTitle === true ? row.addresses : new Element('span', {'style': 'display: inline-block'})
 					.insert({'bottom': new Element('a', {'class': 'visible-xs visible-md visible-sm visible-lg', 'href': 'javascript: void(0);'})
 						.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-plane address-shipping'}) })
 						.observe('click', function(){
-							console.debug('works');
-							tmp.me._displaySelectedAddress(this);
+							tmp.me._displaySelectedAddress(this,row,row.address.shipping.full);
 						})
 					})
 				})
-				.insert({'bottom': new Element('span', {'style': 'display: inline-block'})
+				.insert({'bottom': tmp.isTitle === true ? '' : new Element('span', {'style': 'display: inline-block'})
 					.insert({'bottom':  new Element('a', {'class': 'visible-xs visible-md visible-sm visible-lg', 'href': 'javascript: void(0);'})
 						.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-usd address-billing'}) })
 						.observe('click', function(){
-							console.debug('works2');
-							tmp.me._displaySelectedAddress(this);
+							tmp.me._displaySelectedAddress(this,row,row.address.billing.full);
 						})
 					})
 				})
 			})
-			.insert({'bottom': new Element(tmp.tag, {'class': 'address col-xs-2'}).update(row.address.shipping.full) })
 			.insert({'bottom': new Element(tmp.tag, {'class': 'mageId col-xs-1'}).update(row.mageId) })
 			.insert({'bottom': new Element(tmp.tag, {'class': 'cust_active col-xs-1'})
 				.insert({'bottom': (tmp.isTitle === true ? row.active : new Element('input', {'type': 'checkbox', 'disabled': true, 'checked': row.active}) ) })
 			})
+			
+			.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-1' })
+				.insert({'bottom': tmp.isTitle === true ? '' : new Element('span', {'class': 'btn btn-primary btn-xs'})
+					.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-pencil'}) })
+				})
+				.observe('click', function(){
+					tmp.me._openEditPage(row);
+					tmp.me._highlightSelectedRow(this);
+				})
+			});
+			
 			
 		;
 		return tmp.row;
