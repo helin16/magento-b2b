@@ -54,7 +54,7 @@ class ListController extends CRUDPageAbstract
             if(isset($param->CallbackParameter->pagination))
             {
                 $pageNo = $param->CallbackParameter->pagination->pageNo;
-                $pageSize = $param->CallbackParameter->pagination->pageSize;
+                $pageSize = $param->CallbackParameter->pagination->pageSize * 3;
             }
             
             $serachCriteria = isset($param->CallbackParameter->searchCriteria) ? json_decode(json_encode($param->CallbackParameter->searchCriteria), true) : array();
