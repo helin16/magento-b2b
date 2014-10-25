@@ -31,7 +31,8 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 	 */
 	,_openEditPage: function(customer) {
 		var tmp = {};
-		tmp.newWindow = window.open('/customer/' + customer.id + '.html', 'Product Details for: ' + customer.name, 'location=no, menubar=no, status=no, titlebar=no, fullscreen=yes, toolbar=no');
+		tmp.newWindow = arguments.length ? window.open('/customer/' + customer.id + '.html', 'Customer Details for: ' + customer.name, 'location=no, menubar=no, status=no, titlebar=no, fullscreen=yes, toolbar=no')
+										:  window.open('/customer/' + 'new' + '.html', 'New Customer', 'location=no, menubar=no, status=no, titlebar=no, fullscreen=yes, toolbar=no');
 		tmp.newWindow.focus();
 	}
 	,_getEditPanel: function(row) {
@@ -119,18 +120,50 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 				.insert({'bottom': (tmp.isTitle === true ? row.active : new Element('input', {'type': 'checkbox', 'disabled': true, 'checked': row.active}) ) })
 			})
 			
-			.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-1' })
-				.insert({'bottom': tmp.isTitle === true ? '' : new Element('span', {'class': 'btn btn-primary btn-xs'})
-					.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-pencil'}) })
-				})
-				.observe('click', function(){
-					tmp.me._openEditPage(row);
-					tmp.me._highlightSelectedRow(this);
-				})
-			});
-			
+			.insert({'bottom': new Element(tmp.tag, {'class': 'text-right col-xs-1'}).update(
+				tmp.isTitle === true ?  
+				(new Element('span', {'class': 'btn btn-primary btn-xs', 'title': 'New'})
+					.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-plus'}) })
+					.insert({'bottom': ' NEW' })
+					.observe('click', function(){
+						$(this).up('thead').insert({'bottom': tmp.me._openEditPage() });
+					})
+				)
+				: (new Element('span', {'class': 'btn-group btn-group-xs'})
+					.insert({'bottom': new Element('span', {'class': 'btn btn-default', 'title': 'Edit'})
+						.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-pencil'}) })
+						.observe('click', function(){
+							$(this).up('.item_row').replace(tmp.me._openEditPage(row));
+						})
+					})
+					.insert({'bottom': new Element('span', {'class': 'btn btn-danger', 'title': 'Delete'})
+						.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-trash'}) })
+						.observe('click', function(){
+							if(!confirm('Are you sure you want to delete this item?'))
+								return false;
+							tmp.me._deleteItem(row);
+						})
+					}) ) 
+			) })
 			
 		;
+
 		return tmp.row;
+	}
+	,_getNextPageBtn: function() {
+		var tmp = {}
+		tmp.me = this;
+		return new Element('tfoot')
+			.insert({'bottom': new Element('tr')
+				.insert({'bottom': new Element('td', {'colspan': '8', 'class': 'text-center'})
+					.insert({'bottom': new Element('span', {'class': 'btn btn-primary', 'data-loading-text':"Fetching more results ..."}).update('Show More')
+						.observe('click', function() {
+							tmp.me._pagination.pageNo = tmp.me._pagination.pageNo*1 + 1;
+							jQuery(this).button('loading');
+							tmp.me.getResults();
+						})
+					})
+				})
+			});
 	}
 });
