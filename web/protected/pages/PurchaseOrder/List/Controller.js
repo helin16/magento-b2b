@@ -6,12 +6,22 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 	/**
 	 * Getting each row for displaying the result list
 	 */
-	,_getResultRow: function(row, isTitle) {
+	_getResultRow: function(row, isTitle) {
 		var tmp = {};
 		tmp.me = this;
 		tmp.tag = (tmp.isTitle === true ? 'th' : 'td');
 		tmp.isTitle = (isTitle || false);
-		tmp.row = new Element('tr').store('data', row)
+		console.debug("test01");
+		tmp.row = new Element('tr', {'class': (tmp.isTitle === true ? '' : 'btn-hide-row')}).store('data', row)
+			.insert({'bottom': new Element(tmp.tag, {'class': 'id col-xs-1'}).update(row.id) 
+				.observe('click', function(){
+					tmp.me._highlightSelectedRow(this);
+					console.debug("test02");
+				})	
+			})
+		
+		
+		
 		return tmp.row;
 	}
 });

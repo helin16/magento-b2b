@@ -64,11 +64,12 @@ class Controller extends CRUDPageAbstract
             }
             
             $stats = array();
-            $supplierIds = (!isset($serachCriteria['pro.supplierIds']) || is_null($serachCriteria['pro.supplierIds'])) ? array() : $serachCriteria['pro.supplierIds'];
+            /*$supplierIds = (!isset($serachCriteria['po.supplierIds']) || is_null($serachCriteria['po.supplierIds'])) ? array() : $serachCriteria['po.supplierIds'];*/
             
             $where = array(1);
             $params = array();
-            PurchaseOrder::getAllByCriteria(implode(', ', $where), $params, true, $pageNo, $pageSize, array('po.id' => 'desc'), $stats);
+            PurchaseOrder::getAll(false,$pageNo,$pageSize,array('po.id' => 'desc'), $stats);
+            /*PurchaseOrder::getAllByCriteria(implode(', ', $where), $params, true, $pageNo, $pageSize, array('po.id' => 'desc'), $stats);*/
             $results['pageStats'] = $stats;
             $results['items'] = array();
             foreach($objects as $obj)
