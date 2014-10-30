@@ -52,8 +52,8 @@ class Controller extends CRUDPageAbstract
         $results = $errors = array();
         try
         {
-            if(!isset($param->CallbackParameter->searchCriteria) || count($serachCriteria = json_decode(json_encode($param->CallbackParameter->searchCriteria), true)) === 0)
-                throw new Exception('System Error: search criteria not provided!');
+//             if(!isset($param->CallbackParameter->searchCriteria) || count($serachCriteria = json_decode(json_encode($param->CallbackParameter->searchCriteria), true)) === 0)
+//                 throw new Exception('System Error: search criteria not provided!');
             $pageNo = 1;
             $pageSize = DaoQuery::DEFAUTL_PAGE_SIZE;
             
@@ -69,6 +69,7 @@ class Controller extends CRUDPageAbstract
             $where = array(1);
             $params = array();
             PurchaseOrder::getAll(false,$pageNo,$pageSize,array('po.id' => 'desc'), $stats);
+            $objects = array();
             /*PurchaseOrder::getAllByCriteria(implode(', ', $where), $params, true, $pageNo, $pageSize, array('po.id' => 'desc'), $stats);*/
             $results['pageStats'] = $stats;
             $results['items'] = array();

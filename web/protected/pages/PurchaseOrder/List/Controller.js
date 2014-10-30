@@ -3,10 +3,13 @@
  */
 var PageJs = new Class.create();
 PageJs.prototype = Object.extend(new CRUDPageJs(), {
+	_getTitleRowData: function() {
+		return {'poNo': 'PO No.'};
+	}
 	/**
 	 * Getting each row for displaying the result list
 	 */
-	_getResultRow: function(row, isTitle) {
+	,_getResultRow: function(row, isTitle) {
 		var tmp = {};
 		tmp.me = this;
 		tmp.tag = (tmp.isTitle === true ? 'th' : 'td');
