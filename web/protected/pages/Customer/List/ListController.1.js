@@ -140,8 +140,8 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 						.observe('click', function(){
 							if(!confirm('Are you sure you want to delete this item?'))
 								return false;
-							//tmp.me._deleteItem(row);
-							tmp.me._deactivateItem(this);
+							if(row.active)
+								tmp.me._deactivateItem(this);
 						})
 					}) ) 
 			) })
