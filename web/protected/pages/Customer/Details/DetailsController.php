@@ -12,12 +12,12 @@ class DetailsController extends DetailsPageAbstract
 	 * (non-PHPdoc)
 	 * @see BPCPageAbstract::$menuItem
 	 */
-	public $menuItem = 'product.details';
+	public $menuItem = 'customer.details';
 	/**
 	 * (non-PHPdoc)
 	 * @see BPCPageAbstract::$_focusEntityName
 	 */
-	protected $_focusEntity = 'Product';
+	protected $_focusEntity = 'Customer';
 	/**
 	 * constructor
 	 */
@@ -34,10 +34,15 @@ class DetailsController extends DetailsPageAbstract
 	 */
 	protected function _getEndJs()
 	{
+		if(!isset($this->Request['id']))
+			die('System ERR: no param passed in!');
+		if(trim($this->Request['id']) === 'new')
+			$customer = new Customer();
+		else if(!($customer = Customer::get($this->Request['id'])) instanceof Customer)
+			die('Invalid Customer!');
 		$js = parent::_getEndJs();
-		$customers = array_map(create_function('$a', 'return $a->getJson();'), Customer::getAll());
 		
-		$js .= "pageJs.setPreData(" . json_encode($customers) . ")";
+		$js .= "pageJs.setPreData(" . json_encode($customer) . ")";
 		$js .= ".load()";
 		$js .= ".bindAllEventNObjects();";
 		return $js;

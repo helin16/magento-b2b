@@ -1,10 +1,5 @@
 <%@MasterClass="Application.layout.BlankLayout"%>
 <com:TContent ID="MainContent">
-	<com:Application.controls.RichTextEditor.RichTextEditor />
-	<com:Application.controls.jQueryEasyUI.jQueryEasyUI />
-	<com:TDatePicker Style="display:none;"/>
-	<com:Application.controls.fancybox.FancyBox />
-	<com:TCallback ID="getCategoriesBtn" OnCallback="getCategories" />
-	<div class="pagewrapper productdetailswraper" id='item-div'>
+	<div class="pagewrapper customerdetailswraper" id='item-div'>
 	</div>
 </com:TContent>
