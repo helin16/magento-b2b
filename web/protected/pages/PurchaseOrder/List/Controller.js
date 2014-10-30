@@ -16,11 +16,11 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 			.insert({'bottom': new Element(tmp.tag, {'class': 'id col-xs-1'}).update(row.id) 
 				.observe('click', function(){
 					tmp.me._highlightSelectedRow(this);
-					console.debug("test02");
 				})	
 			})
-		
-		
+			.insert({'bottom': new Element(tmp.tag, {'class': 'poNo col-xs-1'}).update(row.poNo) })
+			.insert({'bottom': new Element(tmp.tag, {'class': 'poDate col-xs-1'}).update(row.poDate)})
+			.insert({'bottom': new Element(tmp.tag, {'class': 'supplierID col-xs-1'}).update(row.supplierID)})
 		
 		return tmp.row;
 	}
