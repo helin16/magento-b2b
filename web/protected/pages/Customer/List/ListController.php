@@ -115,20 +115,21 @@ class ListController extends CRUDPageAbstract
 	 * @throws Exception
 	 *
 	 */
-	public function saveItem($sender, $param)
+	public function deactivateItems($sender, $param)
 	{
 		$results = $errors = array();
 		try
 		{
-			var_dump('works');die;
-			$id = 1638;
+			$class = trim($this->_focusEntity);
+			$id = isset($param->CallbackParameter->item_id) ? $param->CallbackParameter->item_id : array();
 			
 			$customer = Customer::get($id);
+			
 			if(!$customer instanceof Customer)
 				throw new Exception();
 			$customer->setActive(false)
 				->save();
-			$result['item'] = $customer->getJson();
+			$results['item'] = $customer->getJson();
 		}
         catch(Exception $ex)
         {
