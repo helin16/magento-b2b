@@ -40,9 +40,9 @@ class DetailsController extends DetailsPageAbstract
 			$customer = new Customer();
 		else if(!($customer = Customer::get($this->Request['id'])) instanceof Customer)
 			die('Invalid Customer!');
-		$js = parent::_getEndJs();
 		
-		$js .= "pageJs.setPreData(" . json_encode($customer) . ")";
+		$js = parent::_getEndJs();
+		$js .= "pageJs.setPreData(" . json_encode($customer->getJson()) . ")";
 		$js .= ".load()";
 		$js .= ".bindAllEventNObjects();";
 		return $js;

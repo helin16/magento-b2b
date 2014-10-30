@@ -3,7 +3,7 @@
  */
 var PageJs = new Class.create();
 PageJs.prototype = Object.extend(new DetailsPageJs(), {
-	_customer: []
+	_customer: {}
 	/**
 	 * Set some pre defined data before javascript start
 	 */
@@ -17,8 +17,12 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 	,_getItemDiv: function() {
 		var tmp = {};
 		tmp.me = this;
+		console.debug(tmp.me._customer);
 		tmp.newDiv = new Element('div')
 			.insert({'bottom': new Element('h3').update('YEAH!!!!!! I am here... need to do something here!') });
+		if(tmp.me._customer.id) {
+			tmp.newDiv.insert({'bottom': new Element('h3').update('Customer ID: ' + tmp.me._customer.id + ', NAME' + tmp.me._customer.name) });
+		}
 		return tmp.newDiv;
 	}
 	/**
