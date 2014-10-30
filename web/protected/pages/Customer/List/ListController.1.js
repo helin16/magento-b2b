@@ -141,7 +141,8 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 						.observe('click', function(){
 							if(!confirm('Are you sure you want to delete this item?'))
 								return false;
-							tmp.me._deleteItem(row);
+							//tmp.me._deleteItem(row);
+							tmp.me._deactivateItem(this);
 						})
 					}) ) 
 			) })
@@ -165,5 +166,25 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 					})
 				})
 			});
+	}
+	,_deactivateItem: function(btn) {
+		var tmp = {}
+		tmp.me = this;
+		tmp.item = $(btn).up('[item_id]').retrieve('data');
+		tmp.me._postAjax(tmp.me.getCallbackId('deactivateItems'), {'item_id': tmp.item.id}, {
+			'onLoading': function() {}
+			,'onSuccess': function(sender, param){
+				try {
+					tmp.result = tmp.me.getResp(param, false, true);
+					if(!tmp.result.item)
+						throw 'errror';
+					
+					$$('[item_id="1041"]').first().replace(tmp.me._getResultRow(tmp.result.item, false));
+					
+				} catch(e) {
+					tmp.me.showModalBox('ERROR', '<h4 class="danger>' + e + '</h4>', true);
+				}
+			}
+		})
 	}
 });

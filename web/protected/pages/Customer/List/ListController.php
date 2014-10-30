@@ -31,6 +31,7 @@ class ListController extends CRUDPageAbstract
 	{
 		$js = parent::_getEndJs();
 		$js .= "pageJs._bindSearchKey()";
+		$js .= ".setCallbackId('deactivateItems', '" . $this->deactivateItemBtn->getUniqueID() . "')";
 		$js .= ".getResults(true, " . $this->pageSize . ");";
 		return $js;
 	}
@@ -58,7 +59,7 @@ class ListController extends CRUDPageAbstract
             }
             
             $serachCriteria = isset($param->CallbackParameter->searchCriteria) ? json_decode(json_encode($param->CallbackParameter->searchCriteria), true) : array();
-            
+
             $where = array(1);
             $params = array();
             
@@ -94,6 +95,7 @@ class ListController extends CRUDPageAbstract
             $stats = array();
 
             $objects = $class::getAllByCriteria(implode(' AND ', $where), $params, false, $pageNo, $pageSize, array('cust.name' => 'asc'), $stats);
+
             $results['pageStats'] = $stats;
             $results['items'] = array();
             foreach($objects as $obj)
@@ -115,7 +117,24 @@ class ListController extends CRUDPageAbstract
 	 */
 	public function saveItem($sender, $param)
 	{
-
+		$results = $errors = array();
+		try
+		{
+			var_dump('works');die;
+			$id = 1638;
+			
+			$customer = Customer::get($id);
+			if(!$customer instanceof Customer)
+				throw new Exception();
+			$customer->setActive(false)
+				->save();
+			$result['item'] = $customer->getJson();
+		}
+        catch(Exception $ex)
+        {
+            $errors[] = $ex->getMessage() . $ex->getTraceAsString();
+        }
+        $param->ResponseData = StringUtilsAbstract::getJson($results, $errors);
 	}
 }
 ?>

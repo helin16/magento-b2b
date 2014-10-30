@@ -1,6 +1,7 @@
 <com:TContent ID="MainContent">
 <com:Application.controls.fancybox.FancyBox />
 <com:Application.controls.chosen.Chosen />
+<com:TCallback ID="deactivateItemBtn" OnCallback = 'Page.deactivateItems' />
 	<div class="pagewrapper item-list-wrapper">
 		<div class="panel panel-default" id="searchPanel">
 			<div class="panel-heading">
