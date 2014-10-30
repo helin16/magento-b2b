@@ -39,6 +39,8 @@ class Menu extends TTemplateControl
 				'productcategories' => array('url' => '/productcategories.html', 'name' => 'Product Categories')
 			);
 		if(AccessControl::canAccessOrderItemsPage(Core::getRole()) )
+			$array['PurchaseOrder'] = array('url' => '/purchase.html', 'name' => 'Purchase', 'icon' => '<span class="glyphicon glyphicon-shopping-cart"></span>' );
+		if(AccessControl::canAccessOrderItemsPage(Core::getRole()) )
 			$array['Customers'] = array('url' => '/customer.html', 'name' => 'Customers', 'icon' => '<span class="glyphicon glyphicon-user"></span>' );
 		if(AccessControl::canAccessUsersPage(Core::getRole()) )
 		{
