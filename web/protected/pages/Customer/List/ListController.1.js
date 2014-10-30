@@ -86,13 +86,21 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		tmp.me = this;
 		tmp.tag = (tmp.isTitle === true ? 'th' : 'td');
 		tmp.isTitle = (isTitle || false);
-		tmp.row = new Element('tr', {'class': (tmp.isTitle === true ? '' : 'btn-hide-row')}).store('data', row)
+		tmp.row = new Element('tr', {'class': (tmp.isTitle === true ? 'item_top_row' : 'btn-hide-row item_row'), 'item_id': (tmp.isTitle === true ? '' : row.id)}).store('data', row)
 			.insert({'bottom': new Element(tmp.tag, {'class': 'name col-xs-1'}).update(row.name) 
 				.observe('click', function(){
 					tmp.me._highlightSelectedRow(this);
 				})	
 			})
-			.insert({'bottom': new Element(tmp.tag, {'class': 'email col-xs-1'}).update(row.email) })
+			.insert({'bottom': new Element(tmp.tag, {'class': 'email col-xs-1', 'style': 'text-decoration: underline;'}).update(row.email) 
+				.observe('click', function(){
+					tmp.me._highlightSelectedRow(this);
+				})	
+				.observe('dblclick', function(){
+					tmp.newWindow = window.open('mailto:' + row.email, 'location=no, menubar=no, status=no, titlebar=no, fullscreen=yes, toolbar=no');
+					tmp.newWindow.close();
+				})	
+			})
 			.insert({'bottom': new Element(tmp.tag, {'class': 'contact col-xs-1'}).update(row.contactNo)})
 			.insert({'bottom': new Element(tmp.tag, {'class': 'description col-xs-1'}).update(row.description) })
 			.insert({'bottom': new Element(tmp.tag, {'class': 'address col-xs-1'})
@@ -131,7 +139,8 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 					.insert({'bottom': new Element('span', {'class': 'btn btn-default', 'title': 'Edit'})
 						.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-pencil'}) })
 						.observe('click', function(){
-							$(this).up('tr').replace(tmp.me._openEditPage(row));
+							//$(this).up('tr').replace(tmp.me._openEditPage(row));
+							tmp.me._openEditPage(row);
 						})
 					})
 					.insert({'bottom': new Element('span', {'class': 'btn btn-danger', 'title': 'Delete'})
@@ -143,7 +152,11 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 								tmp.me._deactivateItem(this);
 						})
 					}) ) 
-			) })
+				)
+				.observe('click', function(){
+					tmp.me._highlightSelectedRow(this);
+				})	
+			})
 			
 		;
 
@@ -184,7 +197,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 					if(!tmp.result.item)
 						throw 'errror';
 					$$('[item_id="'+ tmp.result.item.id +'"]').first().replace(tmp.me._getResultRow(tmp.result.item, false));
-					
+					tmp.me._highlightSelectedRow($$('[item_id="'+ tmp.result.item.id +'"]').first().down('.glyphicon.glyphicon-trash'));
 				} catch(e) {
 					tmp.me.showModalBox('<span class="text-danger">ERROR</span>', e, true);
 				}
