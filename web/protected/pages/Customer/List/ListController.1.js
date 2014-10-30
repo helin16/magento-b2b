@@ -7,7 +7,6 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		return {'email': "Email", 'name': 'Name', 'contactNo': 'Contact Num', 'description': 'Description', 'addresses': 'Addresses',
 			'address': {'billing': {'full': 'Billing Address'}, 'shipping': {'full': 'Shipping Address'} },
 			'mageId': "Mage Id", 'active': "Active?"
-			//mageId
 			};
 	}
 

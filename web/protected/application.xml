@@ -65,8 +65,11 @@
 			<!-- FrontEnd:: supplier list page -->
 			<url ServiceParameter="Supplier.List.ListController" pattern="suppliers.html" />
 			
-			<!-- FrontEnd:: manufacturer list page -->
+			<!-- FrontEnd:: cutomer list page -->
 			<url ServiceParameter="Customer.List.ListController" pattern="customer.html" />
+			<!-- FrontEnd:: customer details page -->
+			<url ServiceParameter="Customer.Details.DetailsController" pattern="customer/{id}.html" parameters.id="new"/>
+			<url ServiceParameter="Customer.Details.DetailsController" pattern="customer/{id}.html" parameters.id="\d+"/>
 			
 			<!-- Statics::Order::Trend::Monthly page -->
 			<url ServiceParameter="Statics.Order.MthlyTrend.StaticsController" pattern="/statics/order/mthlytrend.html" />
