@@ -1,1 +1,194 @@
-var PageJs=new Class.create();PageJs.prototype=Object.extend(new CRUDPageJs(),{_getTitleRowData:function(){return{email:"Email",name:"Name",contactNo:"Contact Num",description:"Description",addresses:"Addresses",address:{billing:{full:"Billing Address"},shipping:{full:"Shipping Address"}},mageId:"Mage Id",active:"Active?"}},_bindSearchKey:function(){var a={};a.me=this;$("searchDiv").getElementsBySelector("[search_field]").each(function(b){b.observe("keydown",function(c){a.me.keydown(c,function(){$(a.me.searchDivId).down("#searchBtn").click()})})});return this},_openEditPage:function(b){var a={};a.newWindow=arguments.length?window.open("/customer/"+b.id+".html","Customer Details for: "+b.name,"location=no, menubar=no, status=no, titlebar=no, fullscreen=yes, toolbar=no"):window.open("/customer/new.html","New Customer","location=no, menubar=no, status=no, titlebar=no, fullscreen=yes, toolbar=no");a.newWindow.focus()},_getEditPanel:function(a){},_highlightSelectedRow:function(b){var a={};a.me=this;a.item=$(b).up("[item_id]").retrieve("data");jQuery(".item_row.success").removeClass("success");a.selectedRow=jQuery("[item_id="+a.item.id+"]").addClass("success")},_displaySelectedAddress:function(b){var a={};a.me=this;a.item=$(b).up("[item_id]").retrieve("data");console.debug(a.item);a.type=$(b).down("span").classList.contains("address-shipping");jQuery(".popover-loaded").popover("hide");jQuery(".item_row.success").removeClass("success");a.selectedRow=jQuery("[item_id="+a.item.id+"]").addClass("success");a.me._signRandID(b);if(!jQuery("#"+b.id).hasClass("popover-loaded")){jQuery("#"+b.id).popover({title:'<div class="row"><div class="col-xs-10">Details for: '+a.item.name+'</div><div class="col-xs-2" style="cursor: pointer"><span class="pull-right glyphicon glyphicon-remove" href="javascript:void(0);" onclick="jQuery(\'#'+b.id+"').popover('hide');\"></span></div></div>",html:true,placement:function(){return a.type?"left":"right"},container:"body",trigger:"manual",viewport:{selector:".list-panel",padding:0},content:function(){return a.type?"<p>"+a.item.address.shipping.full+"</p>":"<p>"+a.item.address.billing.full+"</p>"},template:'<div class="popover" role="tooltip" style="max-width: none; z-index: 0;"><div class="arrow"></div><h3 class="popover-title"></h3><div class="popover-content"></div></div>'}).addClass("popover-loaded")}jQuery("#"+b.id).popover("toggle");return a.me},_getResultRow:function(c,a){var b={};b.me=this;b.tag=(b.isTitle===true?"th":"td");b.isTitle=(a||false);b.row=new Element("tr",{"class":(b.isTitle===true?"":"btn-hide-row")}).store("data",c).insert({bottom:new Element(b.tag,{"class":"name col-xs-1"}).update(c.name).observe("click",function(){b.me._highlightSelectedRow(this)})}).insert({bottom:new Element(b.tag,{"class":"email col-xs-1"}).update(c.email)}).insert({bottom:new Element(b.tag,{"class":"contact col-xs-1"}).update(c.contactNo)}).insert({bottom:new Element(b.tag,{"class":"description col-xs-1"}).update(c.description)}).insert({bottom:new Element(b.tag,{"class":"address col-xs-1"}).insert({bottom:b.isTitle===true?c.addresses:new Element("span",{style:"display: inline-block"}).insert({bottom:new Element("a",{"class":"visible-xs visible-md visible-sm visible-lg",href:"javascript: void(0);"}).insert({bottom:new Element("span",{"class":"glyphicon glyphicon-plane address-shipping",style:"font-size: 1.3em"})}).observe("click",function(){b.me._displaySelectedAddress(this)})})}).insert({bottom:b.isTitle===true?"":new Element("span",{style:"display: inline-block"}).insert({bottom:new Element("a",{"class":"visible-xs visible-md visible-sm visible-lg",href:"javascript: void(0);"}).insert({bottom:new Element("span",{"class":"glyphicon glyphicon-usd address-billing",style:"font-size: 1.3em; padding-left:10%;"})}).observe("click",function(){b.me._displaySelectedAddress(this)})})})}).insert({bottom:new Element(b.tag,{"class":"mageId col-xs-1"}).update(c.mageId)}).insert({bottom:new Element(b.tag,{"class":"cust_active col-xs-1"}).insert({bottom:(b.isTitle===true?c.active:new Element("input",{type:"checkbox",disabled:true,checked:c.active}))})}).insert({bottom:new Element(b.tag,{"class":"text-right col-xs-1"}).update(b.isTitle===true?(new Element("span",{"class":"btn btn-primary btn-xs",title:"New"}).insert({bottom:new Element("span",{"class":"glyphicon glyphicon-plus"})}).insert({bottom:" NEW"}).observe("click",function(){$(this).up("thead").insert({bottom:b.me._openEditPage()})})):(new Element("span",{"class":"btn-group btn-group-xs"}).insert({bottom:new Element("span",{"class":"btn btn-default",title:"Edit"}).insert({bottom:new Element("span",{"class":"glyphicon glyphicon-pencil"})}).observe("click",function(){$(this).up(".item_row").replace(b.me._openEditPage(c))})}).insert({bottom:new Element("span",{"class":"btn btn-danger",title:"Delete"}).insert({bottom:new Element("span",{"class":"glyphicon glyphicon-trash"})}).observe("click",function(){if(!confirm("Are you sure you want to delete this item?")){return false}if(c.active){b.me._deactivateItem(this)}})})))});return b.row},_getNextPageBtn:function(){var a={};a.me=this;return new Element("tfoot").insert({bottom:new Element("tr").insert({bottom:new Element("td",{colspan:"8","class":"text-center"}).insert({bottom:new Element("span",{"class":"btn btn-primary","data-loading-text":"Fetching more results ..."}).update("Show More").observe("click",function(){a.me._pagination.pageNo=a.me._pagination.pageNo*1+1;jQuery(this).button("loading");a.me.getResults()})})})})},_deactivateItem:function(b){var a={};a.me=this;a.row=$(b).up("[item_id]");a.item=a.row.retrieve("data");a.me.postAjax(a.me.getCallbackId("deactivateItems"),{item_id:a.item.id},{onLoading:function(){if(a.row){a.row.toggleClassName("danger");a.row.hide()}},onSuccess:function(c,f){try{a.row.toggleClassName("danger");a.result=a.me.getResp(f,false,true);if(!a.result.item){throw"errror"}$$('[item_id="'+a.result.item.id+'"]').first().replace(a.me._getResultRow(a.result.item,false))}catch(d){a.me.showModalBox('<span class="text-danger">ERROR</span>',d,true)}}})}});
+/**
+ * The page Js file
+ */
+var PageJs = new Class.create();
+PageJs.prototype = Object.extend(new CRUDPageJs(), {
+	_getTitleRowData: function() {
+		return {'email': "Email", 'name': 'Name', 'contactNo': 'Contact Num', 'description': 'Description', 'addresses': 'Addresses',
+			'address': {'billing': {'full': 'Billing Address'}, 'shipping': {'full': 'Shipping Address'} },
+			'mageId': "Mage Id", 'active': "Active?"
+			};
+	}
+
+	/**
+	 * Binding the search key
+	 */
+	,_bindSearchKey: function() {
+		var tmp = {}
+		tmp.me = this;
+		$('searchDiv').getElementsBySelector('[search_field]').each(function(item) {
+			item.observe('keydown', function(event) {
+				tmp.me.keydown(event, function() {
+					$(tmp.me.searchDivId).down('#searchBtn').click();
+				});
+			})
+		});
+		return this;
+	}
+	/**
+	 * open the customer edit popup page
+	 */
+	,_openEditPage: function(customer) {
+		var tmp = {};
+		tmp.newWindow = arguments.length ? window.open('/customer/' + customer.id + '.html', 'Customer Details for: ' + customer.name, 'location=no, menubar=no, status=no, titlebar=no, fullscreen=yes, toolbar=no')
+										:  window.open('/customer/' + 'new' + '.html', 'New Customer', 'location=no, menubar=no, status=no, titlebar=no, fullscreen=yes, toolbar=no');
+		tmp.newWindow.focus();
+	}
+	,_getEditPanel: function(row) {
+
+	}
+	,_highlightSelectedRow : function (btn) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.item = $(btn).up('[item_id]').retrieve('data');
+		jQuery('.item_row.success').removeClass('success');
+		tmp.selectedRow = jQuery('[item_id=' + tmp.item.id + ']')
+		.addClass('success');
+	}
+	/**
+	 * Displaying the selected address 
+	 */
+	,_displaySelectedAddress: function(btn) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.item = $(btn).up('[item_id]').retrieve('data');
+		console.debug(tmp.item);
+		tmp.type = $(btn).down('span').classList.contains('address-shipping');
+		
+		jQuery('.popover-loaded').popover('hide');
+		//remove highlight
+		jQuery('.item_row.success').removeClass('success');
+		//mark this one as active
+		tmp.selectedRow = jQuery('[item_id=' + tmp.item.id + ']')
+			.addClass('success');
+		
+		tmp.me._signRandID(btn); //sign it with a HTML ID to commnunicate with jQuery
+		if(!jQuery('#' + btn.id).hasClass('popover-loaded')) {
+			jQuery('#' + btn.id).popover({
+				'title'    : '<div class="row"><div class="col-xs-10">Details for: ' + tmp.item.name + '</div><div class="col-xs-2" style="cursor: pointer"><span class="pull-right glyphicon glyphicon-remove" href="javascript:void(0);" onclick="jQuery(' + "'#" + btn.id + "'" + ').popover(' + "'hide'" + ');"></span></div></div>',
+				'html'     : true, 
+				'placement': function () {return tmp.type? 'left' : 'right'},
+				'container': 'body', 
+				'trigger'  : 'manual', 
+				'viewport' : {"selector": ".list-panel", "padding": 0 },
+				'content'  : function () {
+					return tmp.type? '<p>' + tmp.item.address.shipping.full +'</p>' : '<p>' + tmp.item.address.billing.full +'</p>'
+				},
+				'template' : '<div class="popover" role="tooltip" style="max-width: none; z-index: 0;"><div class="arrow"></div><h3 class="popover-title"></h3><div class="popover-content"></div></div>'
+			})
+			.addClass('popover-loaded');
+		}
+		jQuery('#' + btn.id).popover('toggle');
+		return tmp.me;
+	}
+	,_getResultRow: function(row, isTitle) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.tag = (tmp.isTitle === true ? 'th' : 'td');
+		tmp.isTitle = (isTitle || false);
+		tmp.row = new Element('tr', {'class': (tmp.isTitle === true ? '' : 'btn-hide-row')}).store('data', row)
+			.insert({'bottom': new Element(tmp.tag, {'class': 'name col-xs-1'}).update(row.name) 
+				.observe('click', function(){
+					tmp.me._highlightSelectedRow(this);
+				})	
+			})
+			.insert({'bottom': new Element(tmp.tag, {'class': 'email col-xs-1'}).update(row.email) })
+			.insert({'bottom': new Element(tmp.tag, {'class': 'contact col-xs-1'}).update(row.contactNo)})
+			.insert({'bottom': new Element(tmp.tag, {'class': 'description col-xs-1'}).update(row.description) })
+			.insert({'bottom': new Element(tmp.tag, {'class': 'address col-xs-1'})
+				.insert({'bottom': tmp.isTitle === true ? row.addresses : new Element('span', {'style': 'display: inline-block'})
+					.insert({'bottom': new Element('a', {'class': 'visible-xs visible-md visible-sm visible-lg', 'href': 'javascript: void(0);'})
+						.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-plane address-shipping', 'style': 'font-size: 1.3em'}) })
+						.observe('click', function(){
+							tmp.me._displaySelectedAddress(this);
+						})
+					})
+				})
+				.insert({'bottom': tmp.isTitle === true ? '' : new Element('span', {'style': 'display: inline-block'})
+					.insert({'bottom':  new Element('a', {'class': 'visible-xs visible-md visible-sm visible-lg', 'href': 'javascript: void(0);'})
+						.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-usd address-billing', 'style': 'font-size: 1.3em; padding-left:10%;'}) })
+						.observe('click', function(){
+							tmp.me._displaySelectedAddress(this);
+						})
+					})
+				})
+			})
+			.insert({'bottom': new Element(tmp.tag, {'class': 'mageId col-xs-1'}).update(row.mageId) })
+			.insert({'bottom': new Element(tmp.tag, {'class': 'cust_active col-xs-1'})
+				.insert({'bottom': (tmp.isTitle === true ? row.active : new Element('input', {'type': 'checkbox', 'disabled': true, 'checked': row.active}) ) })
+			})
+			
+			.insert({'bottom': new Element(tmp.tag, {'class': 'text-right col-xs-1'}).update(
+				tmp.isTitle === true ?  
+				(new Element('span', {'class': 'btn btn-primary btn-xs', 'title': 'New'})
+					.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-plus'}) })
+					.insert({'bottom': ' NEW' })
+					.observe('click', function(){
+						$(this).up('thead').insert({'bottom': tmp.me._openEditPage() });
+					})
+				)
+				: (new Element('span', {'class': 'btn-group btn-group-xs'})
+					.insert({'bottom': new Element('span', {'class': 'btn btn-default', 'title': 'Edit'})
+						.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-pencil'}) })
+						.observe('click', function(){
+							$(this).up('tr').replace(tmp.me._openEditPage(row));
+						})
+					})
+					.insert({'bottom': new Element('span', {'class': 'btn btn-danger', 'title': 'Delete'})
+						.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-trash'}) })
+						.observe('click', function(){
+							if(!confirm('Are you sure you want to delete this item?'))
+								return false;
+							if(row.active)
+								tmp.me._deactivateItem(this);
+						})
+					}) ) 
+			) })
+			
+		;
+
+		return tmp.row;
+	}
+	,_getNextPageBtn: function() {
+		var tmp = {}
+		tmp.me = this;
+		return new Element('tfoot')
+			.insert({'bottom': new Element('tr')
+				.insert({'bottom': new Element('td', {'colspan': '8', 'class': 'text-center'})
+					.insert({'bottom': new Element('span', {'class': 'btn btn-primary', 'data-loading-text':"Fetching more results ..."}).update('Show More')
+						.observe('click', function() {
+							tmp.me._pagination.pageNo = tmp.me._pagination.pageNo*1 + 1;
+							jQuery(this).button('loading');
+							tmp.me.getResults();
+						})
+					})
+				})
+			});
+	}
+	,_deactivateItem: function(btn) {
+		var tmp = {}
+		tmp.me = this;
+		tmp.row = $(btn).up('[item_id]');
+		tmp.item = tmp.row.retrieve('data');
+		tmp.me.postAjax(tmp.me.getCallbackId('deactivateItems'), {'item_id': tmp.item.id}, {
+			'onLoading': function() {
+				if(tmp.row) {
+					tmp.row.toggleClassName('danger');
+					tmp.row.hide(); 
+				}
+			}
+			,'onSuccess': function(sender, param){
+				try {
+					tmp.row.toggleClassName('danger');
+					tmp.result = tmp.me.getResp(param, false, true);
+					if(!tmp.result.item)
+						throw 'errror';
+					$$('[item_id="'+ tmp.result.item.id +'"]').first().replace(tmp.me._getResultRow(tmp.result.item, false));
+					
+				} catch(e) {
+					tmp.me.showModalBox('<span class="text-danger">ERROR</span>', e, true);
+				}
+			}
+		})
+	}
+});
