@@ -52,7 +52,6 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		var tmp = {};
 		tmp.me = this;
 		tmp.item = $(btn).up('[item_id]').retrieve('data');
-		console.debug(tmp.item);
 		tmp.type = $(btn).down('span').classList.contains('address-shipping');
 		
 		jQuery('.popover-loaded').popover('hide');
