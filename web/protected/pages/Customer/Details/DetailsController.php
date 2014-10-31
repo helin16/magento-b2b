@@ -74,14 +74,15 @@ class DetailsController extends DetailsPageAbstract
 			$billingState = trim($param->CallbackParameter->billingState);
 			$billingCountry = trim($param->CallbackParameter->billingCountry);
 			$billingPostcode = trim($param->CallbackParameter->billingPosecode);
-			$billingAdressFull = $billingSteet.' '.$billingCity.' '.$billingState.' '.$billingCountry.' '.$billingPostcode;
+			$billingAdressFull = Address::create($billingSteet, $billingCity, $billingState, $billingCountry, $billingPostcode);
 			$shippingSteet = trim($param->CallbackParameter->shippingSteet);
 			$shippingCity = trim($param->CallbackParameter->shippingCity);
 			$shippingState = trim($param->CallbackParameter->shippingState);
 			$shippingCountry = trim($param->CallbackParameter->shippingCountry);
 			$shippingPosecode = trim($param->CallbackParameter->shippingPosecode);
-			$shippingAdressFull = $shippingSteet.' '.$shippingCity.' '.$shippingState.' '.$shippingCountry.' '.$shippingPosecode;
+			$shippingAdressFull = Address::create($shippingSteet, $shippingCity, $shippingState, $shippingCountry, $shippingPosecode);
 				
+			
 			
 			$customer->setName($name)
 			->setEmail($emai)
@@ -90,7 +91,7 @@ class DetailsController extends DetailsPageAbstract
 			->setUpdated($updated)
 			->setActive($active)
 			->setBillingAddress($billingAdressFull)
-			->setShippingAddress($shipingAdressFull)
+			->setShippingAddress($shippingAdressFull)
 			;
 		
 			if(trim($customer->getId()) === '')

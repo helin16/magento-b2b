@@ -55,15 +55,16 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		
 		//submit all data
 		tmp.me.saveItem(btn, tmp.data, function(data=tmp.data){
-			console.debug(data);
 			data.url = '/customer/' + data.id + '.html';
+			console.debug(data);
 			if(!data.url)
 				throw 'System Error: no return product url';
 			
 			tmp.me._item = data;
-			//tmp.me.refreshParentWindow();
+			tmp.me.refreshParentWindow();
 			//tmp.me.showModalBox('<strong class="text-success">Saved Successfully!</strong>', 'Saved Successfully!', true);
-			//window.location = data.url; 
+			window.location = data.url; 
+			window.close();
 		});
 		
 		
@@ -86,7 +87,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		if(!window.opener)
 			return;
 		tmp.parentWindow = window.opener;
-		tmp.row = $(tmp.parentWindow.document.body).down('#' + tmp.parentWindow.pageJs.resultDivId + ' .item_row[item_id=' + tmp.me._item.id + ']');
+		tmp.row = $(tmp.parentWindow.document.body).down('#' + ' .item_row[item_id=' + tmp.me._item.id + ']');
 		if(tmp.row) {
 			tmp.row.replace(tmp.parentWindow.pageJs._getResultRow(tmp.me._item));
 			if(tmp.row.hasClassName('success'))
@@ -197,14 +198,13 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 //		});
 		return tmp.me;
 	}
-	
 	,refreshParentWindow: function() {
 		var tmp = {};
 		tmp.me = this;
 		if(!window.opener)
 			return;
 		tmp.parentWindow = window.opener;
-		tmp.row = $(tmp.parentWindow.document.body).down('#' + tmp.parentWindow.pageJs.resultDivId + ' .product_item[product_id=' + tmp.me._item.id + ']');
+		tmp.row = $(tmp.parentWindow.document.body).down('#' + ' .item_row[item_id=' + tmp.me._item.id + ']');
 		if(tmp.row) {
 			tmp.row.replace(tmp.parentWindow.pageJs._getResultRow(tmp.me._item));
 			if(tmp.row.hasClassName('success'))
