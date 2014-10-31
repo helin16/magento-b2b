@@ -19,6 +19,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		tmp.me = this;
 		
 		console.debug(tmp.me._customer);
+		
 		/*
 		tmp.newDiv = new Element('div')
 			.insert({'bottom': new Element('h3').update('YEAH!!!!!! I am here... need to do something here!') });
@@ -36,7 +37,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 				.insert({'bottom': new Element('div', {'class': 'row'})
 					.insert({'bottom': new Element('span', {'class': 'btn btn-primary pull-right', 'data-loading-text': 'saving ...'}).update('Save')
 						.observe('click', function() {
-							//tmp.me._submitSave(this);
+							tmp.me._submitSave(this);
 						})
 					})
 				})
@@ -46,8 +47,84 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		return tmp.newDiv;
 	}
 	
-	
-	
+	/**
+	 * Ajax: saving the item
+	 */
+	,_submitSave: function(btn) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.data = tmp.me._collectFormData($(tmp.me._htmlIds.itemDiv), 'save-item');
+		if(tmp.data === null)
+			return tmp.me;
+		
+		tmp.data = tmp.me._collectFormData($(tmp.me._htmlIds.itemDiv).down('.customer-summary'),'save-item');
+		console.debug(tmp.data);
+		
+		/*
+		//get all prices
+		tmp.data.prices = tmp.me._collectFormData($(tmp.me._htmlIds.itemDiv).down('.prices-panel'), 'list-panel-row', 'list-item');
+		if(tmp.data.prices === null)
+			return tmp.me;
+		//get all suppliercode
+		tmp.data.supplierCodes = tmp.me._collectFormData($(tmp.me._htmlIds.itemDiv).down('.suppliers-panel'), 'list-panel-row', 'list-item');
+		if(tmp.data.supplierCodes === null)
+			return tmp.me;
+		//get all suppliercode
+		tmp.data.productCodes = tmp.me._collectFormData($(tmp.me._htmlIds.itemDiv).down('.codes-panel'), 'list-panel-row', 'list-item');
+		if(tmp.data.productCodes === null)
+			return tmp.me;
+		
+		tmp.data.id = tmp.me._item.id;
+		//tricks for fullDescription's editor
+		if ($$('[save-item=fullDescription]').size() > 0 && (tmp.fullDescriptionBox = $$('[save-item=fullDescription]').first()))
+		{
+			//sign the value to the textarea
+			tmp.fullDescriptionBox.retrieve('editor').toggle();
+			tmp.fullDescriptionBox.retrieve('editor').toggle();
+			tmp.data['fullDescription'] = $F(tmp.fullDescriptionBox);
+		}
+		
+		//get all categories
+		if(jQuery('#' + tmp.me._productTreeId).length >0) {
+			tmp.data.categoryIds = [];
+			tmp.checkedNodes = jQuery('#' + tmp.me._productTreeId).tree('getChecked');
+			for(tmp.i = 0; tmp.i < tmp.checkedNodes.length; tmp.i++)
+				tmp.data.categoryIds.push(tmp.checkedNodes[tmp.i].id);
+		}
+		//get all images
+		tmp.data.images = [];
+		tmp.imgPanel = $(tmp.me._imgPanelId);
+		tmp.imgPanel.getElementsBySelector('.product-image').each(function(element) {
+			tmp.img = element.retrieve('data');
+			tmp.img.imageAssetId = (tmp.img.imageAssetId ? tmp.img.imageAssetId : '');
+			tmp.img.active= (element.readAttribute('active') === '1');
+			tmp.data.images.push(tmp.img);
+		});
+		//submit all data
+		tmp.me.saveItem(btn, tmp.data, function(data){
+			if(!data.url)
+				throw 'System Error: no return product url';
+			tmp.me._item = data.item;
+			tmp.me.refreshParentWindow();
+			tmp.me.showModalBox('<strong class="text-success">Saved Successfully!</strong>', 'Saved Successfully!', true);
+			window.location = data.url; 
+		});
+		*/
+		return tmp.me;
+	}
+	,refreshParentWindow: function() {
+		var tmp = {};
+		tmp.me = this;
+		if(!window.opener)
+			return;
+		tmp.parentWindow = window.opener;
+		tmp.row = $(tmp.parentWindow.document.body).down('#' + tmp.parentWindow.pageJs.resultDivId + ' .product_item[product_id=' + tmp.me._item.id + ']');
+		if(tmp.row) {
+			tmp.row.replace(tmp.parentWindow.pageJs._getResultRow(tmp.me._item));
+			if(tmp.row.hasClassName('success'))
+				tmp.row.addClassName('success');
+		}
+	}
 	/**
 	 * Getting the summary div
 	 */
@@ -56,7 +133,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		tmp.me = this;
 		tmp.item = item;
 
-		tmp.newDiv = new Element('div', {'class': 'panel panel-default'})
+		tmp.newDiv = new Element('div', {'class': 'panel panel-default customer-summary'})
 		.insert({'bottom': new Element('div', {'class': 'panel-heading'})
 			.insert({'bottom': new Element('a', {'href': 'javascript: void(0);', 'title': 'click to show/hide below'})
 				.insert({'bottom': new Element('strong').update(tmp.item.name ? 'Editing: ' + tmp.item.name : 'Creating new product: ') })
@@ -73,24 +150,24 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 			.insert({'bottom': new Element('div', {'class': 'row'})
 				.insert({'bottom': new Element('strong', {'class': 'col-sm-4 pull-left'}).update('Customer Info') })
 			})
-			.insert({'bottom': new Element('div', {'class': 'row'})
-				.insert({'bottom': new Element('div', {'class': 'col-sm-2'}).update(tmp.me._getFormGroup('Name', new Element('input', {'save-item': 'name', 'type': 'text', 'value': tmp.item.name ? tmp.item.name : ''}) ) ) })
-				.insert({'bottom': new Element('div', {'class': 'col-sm-1'}).update(tmp.me._getFormGroup('ID', new Element('input', {'save-item': 'id', 'type': 'text', 'value': tmp.item.id ? tmp.item.id : ''}) ) ) })
-				.insert({'bottom': new Element('div', {'class': 'col-sm-1'}).update(tmp.me._getFormGroup('Mage ID', new Element('input', {'save-item': 'mageId', 'type': 'value', 'value': tmp.item.mageId ? tmp.item.mageId : ''}) ) ) })
-				.insert({'bottom': new Element('div', {'class': 'col-sm-1'}).update(tmp.me._getFormGroup('Active?', new Element('input', {'save-item': 'active', 'type': 'checkbox', 'checked': tmp.item.active }) ) ) })
-				.insert({'bottom': new Element('div', {'class': 'col-sm-2'}).update(tmp.me._getFormGroup('Email', new Element('input', {'save-item': 'email', 'type': 'email', 'value': tmp.item.email ? tmp.item.email : '' }) ) ) })
-				.insert({'bottom': new Element('div', {'class': 'col-sm-1'}).update(tmp.me._getFormGroup('Contact No', new Element('input', {'save-item': 'contactNo', 'type': 'value', 'value': tmp.item.contactNo ? tmp.item.contactNo : '' }) ) ) })
-				.insert({'bottom': new Element('div', {'class': 'col-sm-2'}).update(tmp.me._getFormGroup('Created Date', 
+			.insert({'bottom': new Element('div', {'class': 'list-panel-row'})
+				.insert({'bottom': new Element('div', {'class': 'col-sm-2 item-name'}).update(tmp.me._getFormGroup('Name', new Element('input', {'save-item': 'name', 'type': 'text', 'value': tmp.item.name ? tmp.item.name : ''}) ) ) })
+				.insert({'bottom': new Element('div', {'class': 'col-sm-1 item-id'}).update(tmp.me._getFormGroup('ID', new Element('input', {'save-item': 'id', 'type': 'text', 'value': tmp.item.id ? tmp.item.id : ''}) ) ) })
+				.insert({'bottom': new Element('div', {'class': 'col-sm-1 item-mageId'}).update(tmp.me._getFormGroup('Mage ID', new Element('input', {'save-item': 'mageId', 'type': 'value', 'value': tmp.item.mageId ? tmp.item.mageId : ''}) ) ) })
+				.insert({'bottom': new Element('div', {'class': 'col-sm-1 item-active'}).update(tmp.me._getFormGroup('Active?', new Element('input', {'save-item': 'active', 'type': 'checkbox', 'checked': tmp.item.active }) ) ) })
+				.insert({'bottom': new Element('div', {'class': 'col-sm-2 item-email'}).update(tmp.me._getFormGroup('Email', new Element('input', {'save-item': 'email', 'type': 'email', 'value': tmp.item.email ? tmp.item.email : '' }) ) ) })
+				.insert({'bottom': new Element('div', {'class': 'col-sm-1 item-contactNo'}).update(tmp.me._getFormGroup('Contact No', new Element('input', {'save-item': 'contactNo', 'type': 'value', 'value': tmp.item.contactNo ? tmp.item.contactNo : '' }) ) ) })
+				.insert({'bottom': new Element('div', {'class': 'col-sm-2 item-createDate'}).update(tmp.me._getFormGroup('Created Date', 
 							new Element('input', {'class': 'datepicker', 'save-item': 'created', 'value': (tmp.item.created ? tmp.item.created : '') })  
 					) ) })
-				.insert({'bottom': new Element('div', {'class': 'col-sm-2'}).update(tmp.me._getFormGroup('Updated Date', 
+				.insert({'bottom': new Element('div', {'class': 'col-sm-2 item-updateDate'}).update(tmp.me._getFormGroup('Updated Date', 
 							new Element('input', {'class': 'datepicker', 'save-item': 'updated', 'value': (tmp.item.updated ? tmp.item.updated : '') })  
 					) ) })
 			})
 			.insert({'bottom': new Element('div', {'class': 'row'})
 				.insert({'bottom': new Element('strong', {'class': 'col-sm-4 pull-left'}).update('Billing Info') })
 			})
-			.insert({'bottom': new Element('div', {'class': 'row'})
+			.insert({'bottom': new Element('div', {'class': 'list-panel-row'})
 				.insert({'bottom': new Element('div', {'class': 'col-sm-2'}).update(tmp.me._getFormGroup('Name', new Element('input', {'save-item': 'billing-name', 'type': 'text', 'value': tmp.item.address.billing.contactName ? tmp.item.address.billing.contactName : ''}) ) ) })
 				.insert({'bottom': new Element('div', {'class': 'col-sm-1'}).update(tmp.me._getFormGroup('Contact No', new Element('input', {'save-item': 'billing-contactNo', 'type': 'value', 'value': tmp.item.address.billing.contactNo ? tmp.item.address.billing.contactNo : ''}) ) ) })
 				.insert({'bottom': new Element('div', {'class': 'col-sm-1'}).update(tmp.me._getFormGroup('Street', new Element('input', {'save-item': 'billing-steet', 'type': 'text', 'value': tmp.item.address.billing.street ? tmp.item.address.billing.street : ''}) ) ) })
@@ -108,7 +185,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 			.insert({'bottom': new Element('div', {'class': 'row'})
 				.insert({'bottom': new Element('strong', {'class': 'col-sm-4 pull-left'}).update('Shipping Info') })
 			})
-			.insert({'bottom': new Element('div', {'class': 'row'})
+			.insert({'bottom': new Element('div', {'class': 'list-panel-row'})
 				.insert({'bottom': new Element('div', {'class': 'col-sm-2'}).update(tmp.me._getFormGroup('Name', new Element('input', {'save-item': 'shipping-name', 'type': 'text', 'value': tmp.item.address.shipping.contactName ? tmp.item.address.shipping.contactName : ''}) ) ) })
 				.insert({'bottom': new Element('div', {'class': 'col-sm-1'}).update(tmp.me._getFormGroup('Contact No', new Element('input', {'save-item': 'shipping-contactNo', 'type': 'value', 'value': tmp.item.address.shipping.contactNo ? tmp.item.address.shipping.contactNo : ''}) ) ) })
 				.insert({'bottom': new Element('div', {'class': 'col-sm-1'}).update(tmp.me._getFormGroup('Street', new Element('input', {'save-item': 'shipping-steet', 'type': 'text', 'value': tmp.item.address.shipping.street ? tmp.item.address.shipping.street : ''}) ) ) })
