@@ -61,9 +61,9 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 				throw 'System Error: no return product url';
 			
 			tmp.me._item = data;
-			tmp.me.refreshParentWindow();
+			//tmp.me.refreshParentWindow();
 			//tmp.me.showModalBox('<strong class="text-success">Saved Successfully!</strong>', 'Saved Successfully!', true);
-			window.location = data.url; 
+			//window.location = data.url; 
 		});
 		
 		
@@ -136,13 +136,13 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 				.insert({'bottom': new Element('strong', {'class': 'col-sm-4 pull-left'}).update('Billing Info') })
 			})
 			.insert({'bottom': new Element('div', {'class': 'row'})
-				.insert({'bottom': new Element('div', {'class': 'col-sm-2'}).update(tmp.me._getFormGroup('Name', new Element('input', {'save-item': 'billing-name', 'type': 'text', 'value': tmp.item.address.billing.contactName ? tmp.item.address.billing.contactName : ''}) ) ) })
-				.insert({'bottom': new Element('div', {'class': 'col-sm-1'}).update(tmp.me._getFormGroup('Contact No', new Element('input', {'save-item': 'billing-contactNo', 'type': 'value', 'value': tmp.item.address.billing.contactNo ? tmp.item.address.billing.contactNo : ''}) ) ) })
-				.insert({'bottom': new Element('div', {'class': 'col-sm-1'}).update(tmp.me._getFormGroup('Street', new Element('input', {'save-item': 'billing-steet', 'type': 'text', 'value': tmp.item.address.billing.street ? tmp.item.address.billing.street : ''}) ) ) })
-				.insert({'bottom': new Element('div', {'class': 'col-sm-1'}).update(tmp.me._getFormGroup('City', new Element('input', {'save-item': 'billing-city', 'type': 'text', 'value': tmp.item.address.billing.city ? tmp.item.address.billing.city : ''}) ) ) })
-				.insert({'bottom': new Element('div', {'class': 'col-sm-1'}).update(tmp.me._getFormGroup('State', new Element('input', {'save-item': 'billing-state', 'type': 'text', 'value': tmp.item.address.billing.region ? tmp.item.address.billing.region : ''}) ) ) })
-				.insert({'bottom': new Element('div', {'class': 'col-sm-1'}).update(tmp.me._getFormGroup('Country', new Element('input', {'save-item': 'billing-country', 'type': 'text', 'value': tmp.item.address.billing.country ? tmp.item.address.billing.country : ''}) ) ) })
-				.insert({'bottom': new Element('div', {'class': 'col-sm-1'}).update(tmp.me._getFormGroup('Post Code', new Element('input', {'save-item': 'billing-posecode', 'type': 'value', 'value': tmp.item.address.billing.postCode ? tmp.item.address.billing.postCode : ''}) ) ) })
+				.insert({'bottom': new Element('div', {'class': 'col-sm-2'}).update(tmp.me._getFormGroup('Name', new Element('input', {'save-item': 'billingName', 'type': 'text', 'value': tmp.item.address.billing.contactName ? tmp.item.address.billing.contactName : ''}) ) ) })
+				.insert({'bottom': new Element('div', {'class': 'col-sm-1'}).update(tmp.me._getFormGroup('Contact No', new Element('input', {'save-item': 'billingContactNo', 'type': 'value', 'value': tmp.item.address.billing.contactNo ? tmp.item.address.billing.contactNo : ''}) ) ) })
+				.insert({'bottom': new Element('div', {'class': 'col-sm-1'}).update(tmp.me._getFormGroup('Street', new Element('input', {'save-item': 'billingSteet', 'type': 'text', 'value': tmp.item.address.billing.street ? tmp.item.address.billing.street : ''}) ) ) })
+				.insert({'bottom': new Element('div', {'class': 'col-sm-1'}).update(tmp.me._getFormGroup('City', new Element('input', {'save-item': 'billingCity', 'type': 'text', 'value': tmp.item.address.billing.city ? tmp.item.address.billing.city : ''}) ) ) })
+				.insert({'bottom': new Element('div', {'class': 'col-sm-1'}).update(tmp.me._getFormGroup('State', new Element('input', {'save-item': 'billingState', 'type': 'text', 'value': tmp.item.address.billing.region ? tmp.item.address.billing.region : ''}) ) ) })
+				.insert({'bottom': new Element('div', {'class': 'col-sm-1'}).update(tmp.me._getFormGroup('Country', new Element('input', {'save-item': 'billingCountry', 'type': 'text', 'value': tmp.item.address.billing.country ? tmp.item.address.billing.country : ''}) ) ) })
+				.insert({'bottom': new Element('div', {'class': 'col-sm-1'}).update(tmp.me._getFormGroup('Post Code', new Element('input', {'save-item': 'billingPosecode', 'type': 'value', 'value': tmp.item.address.billing.postCode ? tmp.item.address.billing.postCode : ''}) ) ) })
 				.insert({'bottom': new Element('div', {'class': 'col-sm-2'}).update(tmp.me._getFormGroup('Created Date', 
 							new Element('input', {'class': 'datepicker', 'save-item': 'billing-created', 'value': (tmp.item.address.billing.created ? tmp.item.address.billing.created : '') })  
 					) ) })
@@ -154,13 +154,13 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 				.insert({'bottom': new Element('strong', {'class': 'col-sm-4 pull-left'}).update('Shipping Info') })
 			})
 			.insert({'bottom': new Element('div', {'class': 'row'})
-				.insert({'bottom': new Element('div', {'class': 'col-sm-2'}).update(tmp.me._getFormGroup('Name', new Element('input', {'save-item': 'shipping-name', 'type': 'text', 'value': tmp.item.address.shipping.contactName ? tmp.item.address.shipping.contactName : ''}) ) ) })
-				.insert({'bottom': new Element('div', {'class': 'col-sm-1'}).update(tmp.me._getFormGroup('Contact No', new Element('input', {'save-item': 'shipping-contactNo', 'type': 'value', 'value': tmp.item.address.shipping.contactNo ? tmp.item.address.shipping.contactNo : ''}) ) ) })
-				.insert({'bottom': new Element('div', {'class': 'col-sm-1'}).update(tmp.me._getFormGroup('Street', new Element('input', {'save-item': 'shipping-steet', 'type': 'text', 'value': tmp.item.address.shipping.street ? tmp.item.address.shipping.street : ''}) ) ) })
-				.insert({'bottom': new Element('div', {'class': 'col-sm-1'}).update(tmp.me._getFormGroup('City', new Element('input', {'save-item': 'shipping-city', 'type': 'text', 'value': tmp.item.address.shipping.city ? tmp.item.address.shipping.city : ''}) ) ) })
-				.insert({'bottom': new Element('div', {'class': 'col-sm-1'}).update(tmp.me._getFormGroup('State', new Element('input', {'save-item': 'shipping-state', 'type': 'text', 'value': tmp.item.address.shipping.region ? tmp.item.address.shipping.region : ''}) ) ) })
-				.insert({'bottom': new Element('div', {'class': 'col-sm-1'}).update(tmp.me._getFormGroup('Country', new Element('input', {'save-item': 'shipping-country', 'type': 'text', 'value': tmp.item.address.shipping.country ? tmp.item.address.shipping.country : ''}) ) ) })
-				.insert({'bottom': new Element('div', {'class': 'col-sm-1'}).update(tmp.me._getFormGroup('Post Code', new Element('input', {'save-item': 'shipping-posecode', 'type': 'value', 'value': tmp.item.address.shipping.postCode ? tmp.item.address.shipping.postCode : ''}) ) ) })
+				.insert({'bottom': new Element('div', {'class': 'col-sm-2'}).update(tmp.me._getFormGroup('Name', new Element('input', {'save-item': 'shippingName', 'type': 'text', 'value': tmp.item.address.shipping.contactName ? tmp.item.address.shipping.contactName : ''}) ) ) })
+				.insert({'bottom': new Element('div', {'class': 'col-sm-1'}).update(tmp.me._getFormGroup('Contact No', new Element('input', {'save-item': 'shippingContactNo', 'type': 'value', 'value': tmp.item.address.shipping.contactNo ? tmp.item.address.shipping.contactNo : ''}) ) ) })
+				.insert({'bottom': new Element('div', {'class': 'col-sm-1'}).update(tmp.me._getFormGroup('Street', new Element('input', {'save-item': 'shippingSteet', 'type': 'text', 'value': tmp.item.address.shipping.street ? tmp.item.address.shipping.street : ''}) ) ) })
+				.insert({'bottom': new Element('div', {'class': 'col-sm-1'}).update(tmp.me._getFormGroup('City', new Element('input', {'save-item': 'shippingCity', 'type': 'text', 'value': tmp.item.address.shipping.city ? tmp.item.address.shipping.city : ''}) ) ) })
+				.insert({'bottom': new Element('div', {'class': 'col-sm-1'}).update(tmp.me._getFormGroup('State', new Element('input', {'save-item': 'shippingState', 'type': 'text', 'value': tmp.item.address.shipping.region ? tmp.item.address.shipping.region : ''}) ) ) })
+				.insert({'bottom': new Element('div', {'class': 'col-sm-1'}).update(tmp.me._getFormGroup('Country', new Element('input', {'save-item': 'shippingCountry', 'type': 'text', 'value': tmp.item.address.shipping.country ? tmp.item.address.shipping.country : ''}) ) ) })
+				.insert({'bottom': new Element('div', {'class': 'col-sm-1'}).update(tmp.me._getFormGroup('Post Code', new Element('input', {'save-item': 'shippingPosecode', 'type': 'value', 'value': tmp.item.address.shipping.postCode ? tmp.item.address.shipping.postCode : ''}) ) ) })
 				.insert({'bottom': new Element('div', {'class': 'col-sm-2'}).update(tmp.me._getFormGroup('Created Date', 
 							new Element('input', {'class': 'datepicker', 'save-item': 'shipping-created', 'value': (tmp.item.address.billing.created ? tmp.item.address.shipping.created : '') })  
 					) ) })

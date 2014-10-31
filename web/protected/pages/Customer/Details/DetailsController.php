@@ -47,6 +47,67 @@ class DetailsController extends DetailsPageAbstract
 		$js .= ".bindAllEventNObjects();";
 		return $js;
 	}
+	/**
+	 * (non-PHPdoc)
+	 * @see DetailsPageAbstract::saveItem()
+	 */
+	public function saveItem($sender, $param)
+	{
+		$results = $errors = array();
+		try
+		{
+			Dao::beginTransaction();
+			
+			$customer = !isset($param->CallbackParameter->id) ? new Customer() : Customer::get(trim($param->CallbackParameter->id));
+			if(!$customer instanceof Customer)
+				throw new Exception('Invalid Product passed in!');
+			$name = trim($param->CallbackParameter->name);
+			$id = trim($param->CallbackParameter->id);
+			$magId = trim($param->CallbackParameter->mageId);
+			$active = trim($param->CallbackParameter->active);
+			$emai = trim($param->CallbackParameter->email);
+			$contactNo = trim($param->CallbackParameter->contactNo);
+			$created = trim($param->CallbackParameter->created);
+			$updated = trim($param->CallbackParameter->updated);
+			$billingSteet = trim($param->CallbackParameter->billingSteet);
+			$billingCity = trim($param->CallbackParameter->billingCity);
+			$billingState = trim($param->CallbackParameter->billingState);
+			$billingCountry = trim($param->CallbackParameter->billingCountry);
+			$billingPostcode = trim($param->CallbackParameter->billingPosecode);
+			$billingAdressFull = $billingSteet.' '.$billingCity.' '.$billingState.' '.$billingCountry.' '.$billingPostcode;
+			$shippingSteet = trim($param->CallbackParameter->shippingSteet);
+			$shippingCity = trim($param->CallbackParameter->shippingCity);
+			$shippingState = trim($param->CallbackParameter->shippingState);
+			$shippingCountry = trim($param->CallbackParameter->shippingCountry);
+			$shippingPosecode = trim($param->CallbackParameter->shippingPosecode);
+			$shippingAdressFull = $shippingSteet.' '.$shippingCity.' '.$shippingState.' '.$shippingCountry.' '.$shippingPosecode;
+				
+			
+			$customer->setName($name)
+			->setEmail($emai)
+			->setMageId($magId)
+			->getCreated($created)
+			->setUpdated($updated)
+			->setActive($active)
+			->setBillingAddress($billingAdressFull)
+			->setShippingAddress($shipingAdressFull)
+			;
+		
+			if(trim($customer->getId()) === '')
+				$customer->setIsFromB2B(false);
+			$customer->save();
+			
+			$results['url'] = '/customer/' . $customer->getId() . '.html';
+			$results['item'] = $customer->getJson();
+			Dao::commitTransaction();
 
+		}
+		catch(Exception $ex)
+		{
+			Dao::rollbackTransaction();
+			$errors[] = $ex->getMessage() . $ex->getTraceAsString();
+		}
+		$param->ResponseData = StringUtilsAbstract::getJson($results, $errors);
+	}
 }
 ?>
