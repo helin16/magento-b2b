@@ -1,6 +1,7 @@
 <com:TContent ID="MainContent">
 <com:Application.controls.fancybox.FancyBox />
 <com:Application.controls.chosen.Chosen />
+<com:TCallback ID="deactivateItemBtn" OnCallback = 'Page.deactivateItems' />
 	<div class="pagewrapper productlistwraper">
 		<div class="col-xs-12">
 			<div class="panel panel-default" id="searchPanel">
@@ -22,21 +23,21 @@
 						<div class="col-md-4">
 							<div class="form-group form-group-sm input-group">
 	                           <label class="input-group-addon">Supplier Ref:</label>
-	                           <input type="text" search_field="pro.supplierRefNo" placeholder="The refrerence number from the supplier" class="form-control input-sm">
+	                           <input type="text" search_field="po.supplierRefNo" placeholder="The refrerence number from the supplier" class="form-control input-sm">
 	                       </div>
 						</div>
 						<div class="col-md-4">
 							<div class="form-group form-group-sm input-group">
 	                           <label class="input-group-addon">Order Date:</label>
-	                           <input type="text" search_field="pro.orderDate_from" placeholder="The order date - from" class="form-control input-sm">
-	                           <input type="text" search_field="pro.orderDate_to" placeholder="The order date - to" class="form-control input-sm">
+	                           <input type="text" search_field="po.orderDate_from" placeholder="The order date - from" class="form-control input-sm">
+	                           <input type="text" search_field="po.orderDate_to" placeholder="The order date - to" class="form-control input-sm">
 	                       </div>
 						</div>
 						<div class="col-md-4">
 	                        <div class="form-group form-group-sm input-group">
 				                <label class="input-group-addon">Suppliers: </label>
 				                <div class="form-control" style="padding: 0px; height: 100%;">
-				                	<select search_field="pro.supplierIds" multiple class="chosen"></select>
+				                	<select search_field="po.supplierIds" multiple class="chosen"></select>
 		                        </div>
 	                        </div>
 						</div>

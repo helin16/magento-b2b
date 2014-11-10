@@ -33,9 +33,14 @@ class Controller extends CRUDPageAbstract
 	 */
 	protected function _getEndJs()
 	{
-		
+		$suppliersArray = array();
+		foreach(Supplier::getAll() as $os)
+			$suppliersArray[] = $os->getJson();
 		$js = parent::_getEndJs();
 		$js .= 'pageJs';
+		$js .= ".setCallbackId('deactivateItems', '" . $this->deactivateItemBtn->getUniqueID() . "')";
+		$js .= "._loadSuppliers(" . json_encode($suppliersArray) . ")";
+		$js .= "._loadChosen()";
 		$js .= ".getResults(true, " . $this->pageSize . ");";
 		return $js;
 	}
@@ -62,15 +67,21 @@ class Controller extends CRUDPageAbstract
                 $pageNo = $param->CallbackParameter->pagination->pageNo;
                 $pageSize = $param->CallbackParameter->pagination->pageSize * 3;
             }
-            
+            $serachCriteria = isset($param->CallbackParameter->searchCriteria) ? json_decode(json_encode($param->CallbackParameter->searchCriteria), true) : array();
             $stats = array();
-            /*$supplierIds = (!isset($serachCriteria['po.supplierIds']) || is_null($serachCriteria['po.supplierIds'])) ? array() : $serachCriteria['po.supplierIds'];*/
-            
             $where = array(1);
             $params = array();
-            PurchaseOrder::getAll(false,$pageNo,$pageSize,array('po.id' => 'desc'), $stats);
-            $objects = array();
-            /*PurchaseOrder::getAllByCriteria(implode(', ', $where), $params, true, $pageNo, $pageSize, array('po.id' => 'desc'), $stats);*/
+            if(isset($serachCriteria['po.purchaseOrderNo']) && $serachCriteria['po.purchaseOrderNo'] !== '')
+            {
+            	$where[] = 'po.purchaseOrderNo = ?';
+            	$params[] = $serachCriteria['po.purchaseOrderNo'];
+            }
+            if(isset($serachCriteria['po.supplierRefNo']) && $serachCriteria['po.supplierRefNo'] !== '')
+            {
+            	$where[] = 'po.supplierRefNo = ?';
+            	$params[] = $serachCriteria['po.supplierRefNo'];
+            }
+            $objects = PurchaseOrder::getAllByCriteria(implode(' AND ', $where), $params, false, $pageNo, $pageSize, array('po.id' => 'desc'), $stats);
             $results['pageStats'] = $stats;
             $results['items'] = array();
             foreach($objects as $obj)
@@ -81,6 +92,36 @@ class Controller extends CRUDPageAbstract
             $errors[] = $ex->getMessage() . $ex->getTraceAsString();
         }
         $param->ResponseData = StringUtilsAbstract::getJson($results, $errors);
+    }
+    /**
+     * save the items
+     *
+     * @param unknown $sender
+     * @param unknown $param
+     * @throws Exception
+     *
+     */
+    public function deactivateItems($sender, $param)
+    {
+    	$results = $errors = array();
+    	try
+    	{
+    		$class = trim($this->_focusEntity);
+    		$id = isset($param->CallbackParameter->item_id) ? $param->CallbackParameter->item_id : array();
+    			
+    		$item = PurchaseOrder::get($id);
+    			
+    		if(!$item instanceof PurchaseOrder)
+    			throw new Exception();
+    		$item->setActive(false)
+    			->save();
+    		$results['item'] = $item->getJson();
+    	}
+    	catch(Exception $ex)
+    	{
+    		$errors[] = $ex->getMessage() . $ex->getTraceAsString();
+    	}
+    	$param->ResponseData = StringUtilsAbstract::getJson($results, $errors);
     }
 }
 ?>

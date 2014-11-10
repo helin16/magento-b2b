@@ -129,7 +129,7 @@ class PurchaseOrder extends BaseEntityAbstract
 	 */
 	public function setStatus($value) 
 	{
-	    $this->status = trim($status);
+	    $this->status = trim($value);
 	    return $this;
 	}
 	/**
@@ -313,6 +313,19 @@ class PurchaseOrder extends BaseEntityAbstract
 		DaoMap::createIndex('totalPaid');
 	
 		DaoMap::commit();
+	}
+	/**
+	 * (non-PHPdoc)
+	 * @see BaseEntityAbstract::getJson()
+	 */
+	public function getJson($extra = '', $reset = false)
+	{
+		$array = array();
+		if(!$this->isJsonLoaded($reset))
+		{
+			$array['supplier'] = $this->getSupplier() instanceof Supplier ? $this->getSupplier()->getJson() : array();
+		}
+		return parent::getJson($array, $reset);
 	}
 	/**
 	 * creating a PO
