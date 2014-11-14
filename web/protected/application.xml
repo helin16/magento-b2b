@@ -74,8 +74,8 @@
             <!-- FrontEnd:: PO list page -->
             <url ServiceParameter="PurchaseOrder.List.Controller" pattern="purchase.html" />
             <!-- FrontEnd:: PO details page -->
-            <!--url ServiceParameter="PurchaseOrder.Details.DetailsController" pattern="purchase/{id}.html" parameters.id="new"/-->
-            <!--url ServiceParameter="PurchaseOrder.Details.DetailsController" pattern="purchase/{id}.html" parameters.id="\d+"/-->
+            <url ServiceParameter="PurchaseOrder.Details.DetailsController" pattern="purchase/{id}.html" parameters.id="new"/>
+            <url ServiceParameter="PurchaseOrder.Details.DetailsController" pattern="purchase/{id}.html" parameters.id="\d+"/>
 
 			
 			<!-- Statics::Order::Trend::Monthly page -->
