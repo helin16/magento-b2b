@@ -85,13 +85,13 @@ class DetailsController extends DetailsPageAbstract
 			
 			
 			$customer->setName($name)
-			->setEmail($emai)
-			->setMageId($magId)
-			->setCreated($created)
-			->setUpdated($updated)
-			->setActive($active)
-			->setBillingAddress($billingAdressFull)
-			->setShippingAddress($shippingAdressFull)
+				->setEmail($emai)
+				->setMageId($magId)
+				->setCreated($created)
+				->setUpdated($updated)
+				->setActive($active)
+				->setBillingAddress($billingAdressFull)
+				->setShippingAddress($shippingAdressFull)
 			;
 		
 			if(trim($customer->getId()) === '')

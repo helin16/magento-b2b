@@ -54,7 +54,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		//console.debug(tmp.data);
 		
 		//submit all data
-		tmp.me.saveItem(btn, tmp.data, function(data=tmp.data){
+		tmp.me.saveItem(btn, tmp.data, function(data){
 			data.url = '/customer/' + data.id + '.html';
 			console.debug(data);
 			if(!data.url)

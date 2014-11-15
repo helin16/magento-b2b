@@ -17,9 +17,6 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 	,_getItemDiv: function() {
 		var tmp = {};
 		tmp.me = this;
-		
-		console.debug(tmp.me._customer);
-				
 		tmp.newDiv = new Element('div')
 		.insert({'bottom': new Element('div', {'class': 'row'})
 			.insert({'bottom': new Element('div', {'class': 'col-sm-12'})
@@ -54,40 +51,22 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		//console.debug(tmp.data);
 		
 		//submit all data
-		tmp.me.saveItem(btn, tmp.data, function(data=tmp.data){
-			data.url = '/customer/' + data.id + '.html';
-			console.debug(data);
-			if(!data.url)
-				throw 'System Error: no return product url';
-			
-			tmp.me._item = data;
-			tmp.me.refreshParentWindow();
-			//tmp.me.showModalBox('<strong class="text-success">Saved Successfully!</strong>', 'Saved Successfully!', true);
-			window.location = data.url; 
-			window.close();
-		});
-		
-		
-		/*
-		//submit all data
 		tmp.me.saveItem(btn, tmp.data, function(data){
-			if(!data.url)
-				throw 'System Error: no return product url';
+			tmp.me.showModalBox('<strong class="text-success">Saved Successfully!</strong>', 'Saved Successfully!', true);
 			tmp.me._item = data.item;
 			tmp.me.refreshParentWindow();
-			tmp.me.showModalBox('<strong class="text-success">Saved Successfully!</strong>', 'Saved Successfully!', true);
-			window.location = data.url; 
+			window.parent.jQuery.fancybox.close();
 		});
-		*/
 		return tmp.me;
 	}
+	
 	,refreshParentWindow: function() {
 		var tmp = {};
 		tmp.me = this;
-		if(!window.opener)
+		if(!window.parent)
 			return;
-		tmp.parentWindow = window.opener;
-		tmp.row = $(tmp.parentWindow.document.body).down('#' + ' .item_row[item_id=' + tmp.me._item.id + ']');
+		tmp.parentWindow = window.parent;
+		tmp.row = $(tmp.parentWindow.document.body).down('#' + tmp.parentWindow.pageJs.resultDivId + ' .item_row[item_id=' + tmp.me._item.id + ']');
 		if(tmp.row) {
 			tmp.row.replace(tmp.parentWindow.pageJs._getResultRow(tmp.me._item));
 			if(tmp.row.hasClassName('success'))
@@ -197,18 +176,5 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 //			tmp.me._loadRichTextEditor(item);
 //		});
 		return tmp.me;
-	}
-	,refreshParentWindow: function() {
-		var tmp = {};
-		tmp.me = this;
-		if(!window.opener)
-			return;
-		tmp.parentWindow = window.opener;
-		tmp.row = $(tmp.parentWindow.document.body).down('#' + ' .item_row[item_id=' + tmp.me._item.id + ']');
-		if(tmp.row) {
-			tmp.row.replace(tmp.parentWindow.pageJs._getResultRow(tmp.me._item));
-			if(tmp.row.hasClassName('success'))
-				tmp.row.addClassName('success');
-		}
 	}
 });

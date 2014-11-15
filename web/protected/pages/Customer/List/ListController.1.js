@@ -28,12 +28,69 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 	/**
 	 * open the customer edit popup page
 	 */
-	,_openEditPage: function(customer) {
+	//,_openEditPage: function(customer) {
+	//	var tmp = {};
+	//	tmp.newWindow = arguments.length ? window.open('/customer/' + customer.id + '.html', 'Customer Details for: ' + customer.name, 'location=no, menubar=no, status=no, titlebar=no, fullscreen=yes, toolbar=no')
+	//									:  window.open('/customer/' + 'new' + '.html', 'New Customer', 'location=no, menubar=no, status=no, titlebar=no, fullscreen=yes, toolbar=no');
+	//	tmp.newWindow.focus();
+	//}
+	
+//	,refreshRow: function(customer) {
+//		var tmp = {};
+//		tmp.me = this;
+//		console.debug($(tmp.me.resultDivId));
+//		console.debug('.item_row[item_id=' + customer.id + ']');
+//		
+//		tmp.row = $(tmp.me.resultDivId).down('.item_row[item_id=' + customer.id + ']');
+//		console.debug($$('#' + tmp.me.resultDivId + ' .item_row[item_id=' + customer.id + ']'));
+//		if(tmp.row)
+//		{
+//			console.debug('found!');
+//			tmp.row.replace(tmp.me._getResultRow(customer));
+//		}
+//		return tmp.me;
+//	}
+	
+	,_openEditPage: function(row) {
 		var tmp = {};
-		tmp.newWindow = arguments.length ? window.open('/customer/' + customer.id + '.html', 'Customer Details for: ' + customer.name, 'location=no, menubar=no, status=no, titlebar=no, fullscreen=yes, toolbar=no')
-										:  window.open('/customer/' + 'new' + '.html', 'New Customer', 'location=no, menubar=no, status=no, titlebar=no, fullscreen=yes, toolbar=no');
-		tmp.newWindow.focus();
+		tmp.me = this;
+		jQuery.fancybox({
+			'width'			: '95%',
+			'height'		: '95%',
+			'autoScale'     : false,
+			'autoDimensions': false,
+			'fitToView'     : false,
+			'autoSize'      : false,
+			'type'			: 'iframe',
+			'href'			: '/customer/' + (row && row.id ? row.id : 'new') + '.html'
+ 		});
+		return tmp.me;
+		
 	}
+	
+	
+	/*,_openDetailsPage: function(row) {
+		var tmp = {};
+		tmp.me = this;
+		jQuery.fancybox({
+			'width'			: '95%',
+			'height'		: '95%',
+			'autoScale'     : false,
+			'autoDimensions': false,
+			'fitToView'     : false,
+			'autoSize'      : false,
+			'type'			: 'iframe',
+			'href'			: '/orderdetails/' + row.id + '.html',
+			'beforeClose'	    : function() {
+				if($(tmp.me.resultDivId).down('.order_item[order_id=' + row.id + ']'))
+					$(tmp.me.resultDivId).down('.order_item[order_id=' + row.id + ']').replace(tmp.me._getResultRow($$('iframe.fancybox-iframe').first().contentWindow.pageJs._order));
+			}
+ 		});
+		return tmp.me;
+	}*/
+	
+	
+	
 	,_getEditPanel: function(row) {
 
 	}

@@ -42,7 +42,7 @@ class DetailsController extends DetailsPageAbstract
 			die('Invalid Purchase Order!');
 		
 		$js = parent::_getEndJs();
-		$js .= "pageJs.setPreData(" . json_encode($purchaseOrder->getJson()) . ")";
+		$js .= "pageJs.setPreData(" . json_encode($purchaseOrder->getJson()) . ")"; 
 		$js .= ".load()";
 		$js .= ".bindAllEventNObjects();";
 		return $js;

@@ -302,7 +302,7 @@ class Customer extends BaseEntityAbstract
 		if(!$this->isJsonLoaded($reset))
 		{
 			$array['address']['shipping'] = $this->getShippingAddress() instanceof Address ? $this->getShippingAddress()->getJson() : array();
-			$array['address']['billing'] = $this->getBillingAddress() instanceof Address ? $this->getBillingAddress()->getJson() : array();
+			$array['address']['billing'] = trim($this->getId()) !== '' && $this->getBillingAddress() instanceof Address ? $this->getBillingAddress()->getJson() : array();
 		}
 		return parent::getJson($array, $reset);
 	}
