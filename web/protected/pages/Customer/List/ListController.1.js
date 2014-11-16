@@ -157,7 +157,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 					.insert({'bottom': new Element('span', {'class': 'btn btn-danger', 'title': 'Delete'})
 						.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-trash'}) })
 						.observe('click', function(){
-							if(!confirm('Are you sure you want to delete this item?'))
+							if(!confirm('Are you sure you want to deactivate this item?'))
 								return false;
 							if(row.active)
 								tmp.me._deactivateItem(this);
