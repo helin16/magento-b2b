@@ -32,10 +32,8 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 				})
 			})
 		});
-
 		return tmp.newDiv;
 	}
-	
 	/**
 	 * Ajax: saving the item
 	 */
@@ -47,9 +45,6 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 			return tmp.me;
 		
 		tmp.data = tmp.me._collectFormData($(tmp.me._htmlIds.itemDiv).down('.customer-summary'),'save-item');
-		
-		//console.debug(tmp.data);
-		
 		//submit all data
 		tmp.me.saveItem(btn, tmp.data, function(data){
 			tmp.me.showModalBox('<strong class="text-success">Saved Successfully!</strong>', 'Saved Successfully!', true);
@@ -59,7 +54,6 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		});
 		return tmp.me;
 	}
-	
 	,refreshParentWindow: function() {
 		var tmp = {};
 		tmp.me = this;
@@ -100,16 +94,16 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 			})
 			.insert({'bottom': new Element('div', {'class': 'row'})
 				.insert({'bottom': new Element('div', {'class': 'col-sm-2 item-name'}).update(tmp.me._getFormGroup('Name', new Element('input', {'save-item': 'name', 'type': 'text', 'value': tmp.item.name ? tmp.item.name : ''}) ) ) })
-				.insert({'bottom': new Element('div', {'class': 'col-sm-1 item-id'}).update(tmp.me._getFormGroup('ID', new Element('input', {'save-item': 'id', 'type': 'text', 'value': tmp.item.id ? tmp.item.id : ''}) ) ) })
+				.insert({'bottom': new Element('div', {'class': 'col-sm-1 item-id'}).update(tmp.me._getFormGroup('ID', new Element('input', {'disabled': 'disabled', 'save-item': 'id', 'type': 'text', 'value': tmp.item.id ? tmp.item.id : 'Auto'}) ) ) })
 				.insert({'bottom': new Element('div', {'class': 'col-sm-1 item-mageId'}).update(tmp.me._getFormGroup('Mage ID', new Element('input', {'save-item': 'mageId', 'type': 'value', 'value': tmp.item.mageId ? tmp.item.mageId : ''}) ) ) })
 				.insert({'bottom': new Element('div', {'class': 'col-sm-1 item-active'}).update(tmp.me._getFormGroup('Active?', new Element('input', {'save-item': 'active', 'type': 'checkbox', 'checked': tmp.item.active }) ) ) })
 				.insert({'bottom': new Element('div', {'class': 'col-sm-2 item-email'}).update(tmp.me._getFormGroup('Email', new Element('input', {'save-item': 'email', 'type': 'email', 'value': tmp.item.email ? tmp.item.email : '' }) ) ) })
 				.insert({'bottom': new Element('div', {'class': 'col-sm-1 item-contactNo'}).update(tmp.me._getFormGroup('Contact No', new Element('input', {'save-item': 'contactNo', 'type': 'value', 'value': tmp.item.contactNo ? tmp.item.contactNo : '' }) ) ) })
 				.insert({'bottom': new Element('div', {'class': 'col-sm-2 item-createDate'}).update(tmp.me._getFormGroup('Created Date', 
-							new Element('input', {'class': 'datepicker', 'save-item': 'created', 'value': (tmp.item.created ? tmp.item.created : '') })  
-					) ) })
+							new Element('input', {'disabled': 'disabled', 'class': 'datepicker', 'save-item': 'created', 'value': (tmp.item.created ? tmp.item.created : 'Auto') })  
+					) ) })	
 				.insert({'bottom': new Element('div', {'class': 'col-sm-2 item-updateDate'}).update(tmp.me._getFormGroup('Updated Date', 
-							new Element('input', {'class': 'datepicker', 'save-item': 'updated', 'value': (tmp.item.updated ? tmp.item.updated : '') })  
+							new Element('input', {'disabled': 'disabled', 'class': 'datepicker', 'save-item': 'updated', 'value': (tmp.item.updated ? tmp.item.updated : 'Auto') })  
 					) ) })
 			})
 			.insert({'bottom': new Element('div', {'class': 'row'})
@@ -124,10 +118,10 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 				.insert({'bottom': new Element('div', {'class': 'col-sm-1'}).update(tmp.me._getFormGroup('Country', new Element('input', {'save-item': 'billingCountry', 'type': 'text', 'value': tmp.item.address.billing.country ? tmp.item.address.billing.country : ''}) ) ) })
 				.insert({'bottom': new Element('div', {'class': 'col-sm-1'}).update(tmp.me._getFormGroup('Post Code', new Element('input', {'save-item': 'billingPosecode', 'type': 'value', 'value': tmp.item.address.billing.postCode ? tmp.item.address.billing.postCode : ''}) ) ) })
 				.insert({'bottom': new Element('div', {'class': 'col-sm-2'}).update(tmp.me._getFormGroup('Created Date', 
-							new Element('input', {'class': 'datepicker', 'save-item': 'billing-created', 'value': (tmp.item.address.billing.created ? tmp.item.address.billing.created : '') })  
+							new Element('input', {'disabled': 'disabled', 'class': 'datepicker', 'save-item': 'billing-created', 'value': (tmp.item.address.billing.created ? tmp.item.address.billing.created : 'Auto') })  
 					) ) })
 				.insert({'bottom': new Element('div', {'class': 'col-sm-2'}).update(tmp.me._getFormGroup('Updated Date', 
-							new Element('input', {'class': 'datepicker', 'save-item': 'billing-updated', 'value': (tmp.item.address.billing.updated ? tmp.item.address.billing.updated : '') })  
+							new Element('input', {'disabled': 'disabled', 'class': 'datepicker', 'save-item': 'billing-updated', 'value': (tmp.item.address.billing.updated ? tmp.item.address.billing.updated : 'Auto') })  
 					) ) })
 			})
 			.insert({'bottom': new Element('div', {'class': 'row'})
@@ -142,21 +136,15 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 				.insert({'bottom': new Element('div', {'class': 'col-sm-1'}).update(tmp.me._getFormGroup('Country', new Element('input', {'save-item': 'shippingCountry', 'type': 'text', 'value': tmp.item.address.shipping.country ? tmp.item.address.shipping.country : ''}) ) ) })
 				.insert({'bottom': new Element('div', {'class': 'col-sm-1'}).update(tmp.me._getFormGroup('Post Code', new Element('input', {'save-item': 'shippingPosecode', 'type': 'value', 'value': tmp.item.address.shipping.postCode ? tmp.item.address.shipping.postCode : ''}) ) ) })
 				.insert({'bottom': new Element('div', {'class': 'col-sm-2'}).update(tmp.me._getFormGroup('Created Date', 
-							new Element('input', {'class': 'datepicker', 'save-item': 'shipping-created', 'value': (tmp.item.address.billing.created ? tmp.item.address.shipping.created : '') })  
+							new Element('input', {'disabled': 'disabled', 'class': 'datepicker', 'save-item': 'shipping-created', 'value': (tmp.item.address.billing.created ? tmp.item.address.shipping.created : 'Auto') })  
 					) ) })
 				.insert({'bottom': new Element('div', {'class': 'col-sm-2'}).update(tmp.me._getFormGroup('Updated Date', 
-							new Element('input', {'class': 'datepicker', 'save-item': 'shipping-updated', 'value': (tmp.item.address.billing.updated ? tmp.item.address.shipping.updated : '') })  
+							new Element('input', {'disabled': 'disabled', 'class': 'datepicker', 'save-item': 'shipping-updated', 'value': (tmp.item.address.billing.updated ? tmp.item.address.shipping.updated : 'Auto') })  
 					) ) })
 			})
 		});
-		
-		
-		
-		
 		return tmp.newDiv;
 	}
-	
-	
 	/**
 	 * Getting a form group for forms
 	 */
@@ -171,10 +159,6 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 	,bindAllEventNObjects: function() {
 		var tmp = {};
 		tmp.me = this;
-//		tmp.me._bindDatePicker();
-//		$$('textarea.rich-text-editor').each(function(item){
-//			tmp.me._loadRichTextEditor(item);
-//		});
 		return tmp.me;
 	}
 });

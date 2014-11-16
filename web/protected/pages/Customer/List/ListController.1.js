@@ -9,7 +9,6 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 			'mageId': "Mage Id", 'active': "Active?"
 			};
 	}
-
 	/**
 	 * Binding the search key
 	 */
@@ -26,31 +25,8 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		return this;
 	}
 	/**
-	 * open the customer edit popup page
+	 * Open edit page in a fancybox
 	 */
-	//,_openEditPage: function(customer) {
-	//	var tmp = {};
-	//	tmp.newWindow = arguments.length ? window.open('/customer/' + customer.id + '.html', 'Customer Details for: ' + customer.name, 'location=no, menubar=no, status=no, titlebar=no, fullscreen=yes, toolbar=no')
-	//									:  window.open('/customer/' + 'new' + '.html', 'New Customer', 'location=no, menubar=no, status=no, titlebar=no, fullscreen=yes, toolbar=no');
-	//	tmp.newWindow.focus();
-	//}
-	
-//	,refreshRow: function(customer) {
-//		var tmp = {};
-//		tmp.me = this;
-//		console.debug($(tmp.me.resultDivId));
-//		console.debug('.item_row[item_id=' + customer.id + ']');
-//		
-//		tmp.row = $(tmp.me.resultDivId).down('.item_row[item_id=' + customer.id + ']');
-//		console.debug($$('#' + tmp.me.resultDivId + ' .item_row[item_id=' + customer.id + ']'));
-//		if(tmp.row)
-//		{
-//			console.debug('found!');
-//			tmp.row.replace(tmp.me._getResultRow(customer));
-//		}
-//		return tmp.me;
-//	}
-	
 	,_openEditPage: function(row) {
 		var tmp = {};
 		tmp.me = this;
@@ -67,37 +43,13 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		return tmp.me;
 		
 	}
-	
-	
-	/*,_openDetailsPage: function(row) {
-		var tmp = {};
-		tmp.me = this;
-		jQuery.fancybox({
-			'width'			: '95%',
-			'height'		: '95%',
-			'autoScale'     : false,
-			'autoDimensions': false,
-			'fitToView'     : false,
-			'autoSize'      : false,
-			'type'			: 'iframe',
-			'href'			: '/orderdetails/' + row.id + '.html',
-			'beforeClose'	    : function() {
-				if($(tmp.me.resultDivId).down('.order_item[order_id=' + row.id + ']'))
-					$(tmp.me.resultDivId).down('.order_item[order_id=' + row.id + ']').replace(tmp.me._getResultRow($$('iframe.fancybox-iframe').first().contentWindow.pageJs._order));
-			}
- 		});
-		return tmp.me;
-	}*/
-	
-	
-	
-	,_getEditPanel: function(row) {
-
-	}
+	/**
+	 * Highlisht seleteted row
+	 */
 	,_highlightSelectedRow : function (btn) {
 		var tmp = {};
 		tmp.me = this;
-		tmp.item = $(btn).up('[item_id]').retrieve('data');
+		tmp.item = btn.down('.glyphicon-plus') ? '' : $(btn).up('[item_id]').retrieve('data');
 		jQuery('.item_row.success').removeClass('success');
 		tmp.selectedRow = jQuery('[item_id=' + tmp.item.id + ']')
 		.addClass('success');
@@ -137,6 +89,9 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		jQuery('#' + btn.id).popover('toggle');
 		return tmp.me;
 	}
+	/**
+	 * get result row for data given
+	 */
 	,_getResultRow: function(row, isTitle) {
 		var tmp = {};
 		tmp.me = this;
@@ -212,10 +167,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 				.observe('click', function(){
 					tmp.me._highlightSelectedRow(this);
 				})	
-			})
-			
-		;
-
+			});
 		return tmp.row;
 	}
 	,_getNextPageBtn: function() {
@@ -234,6 +186,9 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 				})
 			});
 	}
+	/**
+	 * insted of delete item, deactivate it
+	 */
 	,_deactivateItem: function(btn) {
 		var tmp = {}
 		tmp.me = this;
