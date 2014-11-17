@@ -127,27 +127,37 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		tmp.me = this;
 		tmp.item = item;
 
-		tmp.newDiv = new Element('div', {'class': 'panel panel-default'})
+		tmp.newDiv = new Element('div', {'class': 'panel panel-default', 'id': 'billing-info'})
 			.insert({'bottom': new Element('div', {'class': 'panel-heading'})
-				.insert({'bottom': new Element('a', {'href': 'javascript: void(0);', 'title': 'click to show/hide below'})
-					.insert({'bottom': new Element('strong').update(tmp.item.name ? 'Billing Info: ' + tmp.item.name : 'New customer: ') })
+				.insert({'bottom': new Element('strong').update(tmp.item.name ? 'Billing Info: ' + tmp.item.name : 'Creating new customer: ') })
+				.insert({'bottom': new Element('small', {'class': 'pull-right'}) 
+					.insert({'bottom': new Element('button', {'class': 'btn btn-default btn-xs', 'type': 'button'}).update('Copy from Shipping') })
+				})
+				.observe('click', function() {
+					$(this).up('.panel').down('#billingName input').writeAttribute('value',$$('.customer-editing-container').first().down('#shipping-info #shippingName input').value);
+					$(this).up('.panel').down('#billingContactNo input').writeAttribute('value',$$('.customer-editing-container').first().down('#shipping-info #shippingContactNo input').value);
+					$(this).up('.panel').down('#billingStreet input').writeAttribute('value',$$('.customer-editing-container').first().down('#shipping-info #shippingStreet input').value);
+					$(this).up('.panel').down('#billingCity input').writeAttribute('value',$$('.customer-editing-container').first().down('#shipping-info #shippingCity input').value);
+					$(this).up('.panel').down('#billingState input').writeAttribute('value',$$('.customer-editing-container').first().down('#shipping-info #shippingState input').value);
+					$(this).up('.panel').down('#billingCountry input').writeAttribute('value',$$('.customer-editing-container').first().down('#shipping-info #shippingCountry input').value);
+					$(this).up('.panel').down('#billingPosecode input').writeAttribute('value',$$('.customer-editing-container').first().down('#shipping-info #shippingPosecode input').value);
 				})
 			})
 			.insert({'bottom': new Element('div', {'class': 'panel-body'})
 				.insert({'bottom': new Element('div', {'class': 'row'})
-					.insert({'bottom': new Element('div', {'class': 'col-sm-12'}).update(tmp.me._getFormGroup('Name', new Element('input', {'save-item': 'billingName', 'type': 'text', 'value': tmp.item.id ? tmp.item.address.billing.contactName : ''}) ) ) })
+					.insert({'bottom': new Element('div', {'class': 'col-sm-12', 'id': 'billingName'}).update(tmp.me._getFormGroup('Name', new Element('input', {'save-item': 'billingName', 'type': 'text', 'value': tmp.item.id ? tmp.item.address.billing.contactName : ''}) ) ) })
 				})
 				.insert({'bottom': new Element('div', {'class': 'row'})
-					.insert({'bottom': new Element('div', {'class': 'col-sm-12'}).update(tmp.me._getFormGroup('Contact No.', new Element('input', {'save-item': 'billingContactNo', 'type': 'value', 'value': tmp.item.id ? tmp.item.address.billing.contactNo : ''}) ) ) })
+					.insert({'bottom': new Element('div', {'class': 'col-sm-12', 'id': 'billingContactNo'}).update(tmp.me._getFormGroup('Contact No.', new Element('input', {'save-item': 'billingContactNo', 'type': 'value', 'value': tmp.item.id ? tmp.item.address.billing.contactNo : ''}) ) ) })
 				})
 				.insert({'bottom': new Element('div', {'class': 'row'})
-					.insert({'bottom': new Element('div', {'class': 'col-sm-6'}).update(tmp.me._getFormGroup('Street', new Element('input', {'save-item': 'billingStreet', 'type': 'text', 'value': tmp.item.id ? tmp.item.address.billing.street : ''}) ) ) })
-					.insert({'bottom': new Element('div', {'class': 'col-sm-6'}).update(tmp.me._getFormGroup('City', new Element('input', {'save-item': 'billingCity', 'type': 'text', 'value': tmp.item.id ? tmp.item.address.billing.city : ''}) ) ) })
+					.insert({'bottom': new Element('div', {'class': 'col-sm-6', 'id': 'billingStreet'}).update(tmp.me._getFormGroup('Street', new Element('input', {'save-item': 'billingStreet', 'type': 'text', 'value': tmp.item.id ? tmp.item.address.billing.street : ''}) ) ) })
+					.insert({'bottom': new Element('div', {'class': 'col-sm-6', 'id': 'billingCity'}).update(tmp.me._getFormGroup('City', new Element('input', {'save-item': 'billingCity', 'type': 'text', 'value': tmp.item.id ? tmp.item.address.billing.city : ''}) ) ) })
 				})
 				.insert({'bottom': new Element('div', {'class': 'row'})
-					.insert({'bottom': new Element('div', {'class': 'col-sm-4'}).update(tmp.me._getFormGroup('State', new Element('input', {'save-item': 'billingState', 'type': 'text', 'value': tmp.item.id ? tmp.item.address.billing.region : ''}) ) ) })
-					.insert({'bottom': new Element('div', {'class': 'col-sm-4'}).update(tmp.me._getFormGroup('Country', new Element('input', {'save-item': 'billingCountry', 'type': 'text', 'value': tmp.item.id ? tmp.item.address.billing.country : 'AU'}) ) ) })
-					.insert({'bottom': new Element('div', {'class': 'col-sm-4'}).update(tmp.me._getFormGroup('Post Code', new Element('input', {'save-item': 'billingPosecode', 'type': 'text', 'value': tmp.item.id ? tmp.item.address.billing.postCode : ''}) ) ) })
+					.insert({'bottom': new Element('div', {'class': 'col-sm-4', 'id': 'billingState'}).update(tmp.me._getFormGroup('State', new Element('input', {'save-item': 'billingState', 'type': 'text', 'value': tmp.item.id ? tmp.item.address.billing.region : ''}) ) ) })
+					.insert({'bottom': new Element('div', {'class': 'col-sm-4', 'id': 'billingCountry'}).update(tmp.me._getFormGroup('Country', new Element('input', {'save-item': 'billingCountry', 'type': 'text', 'value': tmp.item.id ? tmp.item.address.billing.country : 'AU'}) ) ) })
+					.insert({'bottom': new Element('div', {'class': 'col-sm-4', 'id': 'billingPosecode'}).update(tmp.me._getFormGroup('Post Code', new Element('input', {'save-item': 'billingPosecode', 'type': 'text', 'value': tmp.item.id ? tmp.item.address.billing.postCode : ''}) ) ) })
 				})
 			})
 		;
@@ -161,27 +171,37 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		tmp.me = this;
 		tmp.item = item;
 
-		tmp.newDiv = new Element('div', {'class': 'panel panel-default'})
+		tmp.newDiv = new Element('div', {'class': 'panel panel-default', 'id': 'shipping-info'})
 			.insert({'bottom': new Element('div', {'class': 'panel-heading'})
-				.insert({'bottom': new Element('a', {'href': 'javascript: void(0);', 'title': 'click to show/hide below'})
-					.insert({'bottom': new Element('strong').update(tmp.item.name ? 'Shipping Info: ' + tmp.item.name : 'New customer: ') })
+				.insert({'bottom': new Element('strong').update(tmp.item.name ? 'Shipping Info: ' + tmp.item.name : 'Creating new customer: ') })
+				.insert({'bottom': new Element('small', {'class': 'pull-right'}) 
+					.insert({'bottom': new Element('button', {'class': 'btn btn-default btn-xs', 'type': 'button'}).update('Copy from Billing') })
+				})
+				.observe('click', function() {
+					$(this).up('.panel').down('#shippingName input').writeAttribute('value',$$('.customer-editing-container').first().down('#billing-info #billingName input').value);
+					$(this).up('.panel').down('#shippingContactNo input').writeAttribute('value',$$('.customer-editing-container').first().down('#billing-info #billingContactNo input').value);
+					$(this).up('.panel').down('#shippingStreet input').writeAttribute('value',$$('.customer-editing-container').first().down('#billing-info #billingStreet input').value);
+					$(this).up('.panel').down('#shippingCity input').writeAttribute('value',$$('.customer-editing-container').first().down('#billing-info #billingCity input').value);
+					$(this).up('.panel').down('#shippingState input').writeAttribute('value',$$('.customer-editing-container').first().down('#billing-info #billingState input').value);
+					$(this).up('.panel').down('#shippingCountry input').writeAttribute('value',$$('.customer-editing-container').first().down('#billing-info #billingCountry input').value);
+					$(this).up('.panel').down('#shippingPosecode input').writeAttribute('value',$$('.customer-editing-container').first().down('#billing-info #billingPosecode input').value);
 				})
 			})
 			.insert({'bottom': new Element('div', {'class': 'panel-body'})
 				.insert({'bottom': new Element('div', {'class': 'row'})
-					.insert({'bottom': new Element('div', {'class': 'col-sm-12'}).update(tmp.me._getFormGroup('Name', new Element('input', {'save-item': 'shippingName', 'type': 'text', 'value': tmp.item.id ? tmp.item.address.shipping.contactName : ''}) ) ) })
+					.insert({'bottom': new Element('div', {'class': 'col-sm-12', 'id': 'shippingName'}).update(tmp.me._getFormGroup('Name', new Element('input', {'save-item': 'shippingName', 'type': 'text', 'value': tmp.item.id ? tmp.item.address.shipping.contactName : ''}) ) ) })
 				})
 				.insert({'bottom': new Element('div', {'class': 'row'})
-					.insert({'bottom': new Element('div', {'class': 'col-sm-12'}).update(tmp.me._getFormGroup('Contact No.', new Element('input', {'save-item': 'shippingContactNo', 'type': 'value', 'value': tmp.item.id ? tmp.item.address.shipping.contactNo : ''}) ) ) })
+					.insert({'bottom': new Element('div', {'class': 'col-sm-12', 'id': 'shippingContactNo'}).update(tmp.me._getFormGroup('Contact No.', new Element('input', {'save-item': 'shippingContactNo', 'type': 'value', 'value': tmp.item.id ? tmp.item.address.shipping.contactNo : ''}) ) ) })
 				})
 				.insert({'bottom': new Element('div', {'class': 'row'})
-					.insert({'bottom': new Element('div', {'class': 'col-sm-6'}).update(tmp.me._getFormGroup('Street', new Element('input', {'save-item': 'shippingStreet', 'type': 'text', 'value': tmp.item.id ? tmp.item.address.shipping.street : ''}) ) ) })
-					.insert({'bottom': new Element('div', {'class': 'col-sm-6'}).update(tmp.me._getFormGroup('City', new Element('input', {'save-item': 'shippingCity', 'type': 'text', 'value': tmp.item.id ? tmp.item.address.shipping.city : ''}) ) ) })
+					.insert({'bottom': new Element('div', {'class': 'col-sm-6', 'id': 'shippingStreet'}).update(tmp.me._getFormGroup('Street', new Element('input', {'save-item': 'shippingStreet', 'type': 'text', 'value': tmp.item.id ? tmp.item.address.shipping.street : ''}) ) ) })
+					.insert({'bottom': new Element('div', {'class': 'col-sm-6', 'id': 'shippingCity'}).update(tmp.me._getFormGroup('City', new Element('input', {'save-item': 'shippingCity', 'type': 'text', 'value': tmp.item.id ? tmp.item.address.shipping.city : ''}) ) ) })
 				})
 				.insert({'bottom': new Element('div', {'class': 'row'})
-					.insert({'bottom': new Element('div', {'class': 'col-sm-4'}).update(tmp.me._getFormGroup('State', new Element('input', {'save-item': 'shippingState', 'type': 'text', 'value': tmp.item.id ? tmp.item.address.shipping.region : ''}) ) ) })
-					.insert({'bottom': new Element('div', {'class': 'col-sm-4'}).update(tmp.me._getFormGroup('Country', new Element('input', {'save-item': 'shippingCountry', 'type': 'text', 'value': tmp.item.id ? tmp.item.address.shipping.country : 'AU'}) ) ) })
-					.insert({'bottom': new Element('div', {'class': 'col-sm-4'}).update(tmp.me._getFormGroup('Post Code', new Element('input', {'save-item': 'shippingPosecode', 'type': 'text', 'value': tmp.item.id ? tmp.item.address.shipping.postCode : ''}) ) ) })
+					.insert({'bottom': new Element('div', {'class': 'col-sm-4', 'id': 'shippingState'}).update(tmp.me._getFormGroup('State', new Element('input', {'save-item': 'shippingState', 'type': 'text', 'value': tmp.item.id ? tmp.item.address.shipping.region : ''}) ) ) })
+					.insert({'bottom': new Element('div', {'class': 'col-sm-4', 'id': 'shippingCountry'}).update(tmp.me._getFormGroup('Country', new Element('input', {'save-item': 'shippingCountry', 'type': 'text', 'value': tmp.item.id ? tmp.item.address.shipping.country : 'AU'}) ) ) })
+					.insert({'bottom': new Element('div', {'class': 'col-sm-4', 'id': 'shippingPosecode'}).update(tmp.me._getFormGroup('Post Code', new Element('input', {'save-item': 'shippingPosecode', 'type': 'text', 'value': tmp.item.id ? tmp.item.address.shipping.postCode : ''}) ) ) })
 				})
 			})
 		;
