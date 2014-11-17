@@ -54,6 +54,21 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		});
 		return tmp.me;
 	}
+	/**
+	 * Binding the save key
+	 */
+	,_bindSaveKey: function() {
+		var tmp = {}
+		tmp.me = this;
+		$('.panel.customer-summary').getElementsBySelector('[save-item]').each(function(item) {
+			item.observe('keydown', function(event) {
+				tmp.me.keydown(event, function() {
+					$(tmp.me.searchDivId).down('#searchBtn').click();
+				});
+			})
+		});
+		return this;
+	}	
 	,refreshParentWindow: function() {
 		var tmp = {};
 		tmp.me = this;
