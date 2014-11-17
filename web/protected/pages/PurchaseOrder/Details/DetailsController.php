@@ -53,55 +53,45 @@ class DetailsController extends DetailsPageAbstract
 	 */
 	public function saveItem($sender, $param)
 	{
-/*
 		$results = $errors = array();
 		try
 		{
 			Dao::beginTransaction();
+			$perchaseorder = !isset($param->CallbackParameter->id) ? new PurchaseOrder() : PurchaseOrder::get(trim($param->CallbackParameter->id));
+			if(!$perchaseorder instanceof PurchaseOrder)
+				throw new Exception('Invalid Purchase Order passed in!');
+			$purchaseOrderNo = trim($param->CallbackParameter->purchaseOrderNo);
+			$id = !isset($param->CallbackParameter->id) ? '' : trim($param->CallbackParameter->id);
+			$active = !is_numeric($param->CallbackParameter->id) ? '' : trim($param->CallbackParameter->active);
+			$supplieName = !is_numeric($param->CallbackParameter->supplierName) ? '' : trim($param->CallbackParameter->supplierName);
+			$supplierId = trim($param->CallbackParameter->supplierId);
+			$supplier = Supplier::get($supplierId);
+			$supplierContactName = trim($param->CallbackParameter->supplierContactName);
+			$orderDate = trim($param->CallbackParameter->orderDate);
+			$totalAmount = trim($param->CallbackParameter->totalAmount);
+			$totalPaid = trim($param->CallbackParameter->totalPaid);
 			
-			$customer = !isset($param->CallbackParameter->id) ? new Customer() : Customer::get(trim($param->CallbackParameter->id));
-			if(!$customer instanceof Customer)
-				throw new Exception('Invalid Product passed in!');
-			$name = trim($param->CallbackParameter->name);
-			$id = trim($param->CallbackParameter->id);
-			$magId = trim($param->CallbackParameter->mageId);
-			$active = trim($param->CallbackParameter->active);
-			$emai = trim($param->CallbackParameter->email);
-			$contactNo = trim($param->CallbackParameter->contactNo);
-			$created = trim($param->CallbackParameter->created);
-			$updated = trim($param->CallbackParameter->updated);
-			$billingSteet = trim($param->CallbackParameter->billingSteet);
-			$billingCity = trim($param->CallbackParameter->billingCity);
-			$billingState = trim($param->CallbackParameter->billingState);
-			$billingCountry = trim($param->CallbackParameter->billingCountry);
-			$billingPostcode = trim($param->CallbackParameter->billingPosecode);
-			$billingAdressFull = Address::create($billingSteet, $billingCity, $billingState, $billingCountry, $billingPostcode);
-			$shippingSteet = trim($param->CallbackParameter->shippingSteet);
-			$shippingCity = trim($param->CallbackParameter->shippingCity);
-			$shippingState = trim($param->CallbackParameter->shippingState);
-			$shippingCountry = trim($param->CallbackParameter->shippingCountry);
-			$shippingPosecode = trim($param->CallbackParameter->shippingPosecode);
-			$shippingAdressFull = Address::create($shippingSteet, $shippingCity, $shippingState, $shippingCountry, $shippingPosecode);
-				
-			
-			
-			$customer->setName($name)
-			->setEmail($emai)
-			->setMageId($magId)
-			->setCreated($created)
-			->setUpdated($updated)
-			->setActive($active)
-			->setBillingAddress($billingAdressFull)
-			->setShippingAddress($shippingAdressFull)
+			if(isset($param->CallbackParameter->id)) {
+			$perchaseorder->setPurchaseOrderNo($purchaseOrderNo)
+				->setSupplier($supplier)
+				->setSupplierRefNo($supplierId)
+// 				->setSupplierContact($supplierContactName)
+				->setOrderDate($orderDate)
+				->setTotalAmount($totalAmount)
+				->setTotalPaid($totalPaid)
 			;
-		
-			if(trim($customer->getId()) === '')
-				$customer->setIsFromB2B(false);
-			$customer->save();
+// 			if(trim($perchaseorder->getId()) === '')
+// 				$perchaseorder->setIsFromB2B(false);
+			$perchaseorder->save();
+			} else {
+// 				PurchaseOrder::
+			}
 			
-			$results['url'] = '/customer/' . $customer->getId() . '.html';
-			$results['item'] = $customer->getJson();
+			$results['url'] = '/purchase/' . $perchaseorder->getId() . '.html';
+			$results['item'] = $perchaseorder->getJson();
+			
 			Dao::commitTransaction();
+
 		}
 		catch(Exception $ex)
 		{
@@ -109,7 +99,6 @@ class DetailsController extends DetailsPageAbstract
 			$errors[] = $ex->getMessage() . $ex->getTraceAsString();
 		}
 		$param->ResponseData = StringUtilsAbstract::getJson($results, $errors);
-*/
 	}
 }
 ?>

@@ -66,14 +66,22 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		return tmp.row;
 	}
 	/**
-	 * open the PO edit popup page
+	 * Open edit page in a fancybox
 	 */
-	,_openEditPage: function(PO) {
+	,_openEditPage: function(row) {
 		var tmp = {};
-		console.debug(PO);
-		tmp.newWindow = arguments.length ? window.open('/purchase/' + PO.id + '.html', 'PO Details for: ' + PO.supplier.name, 'location=no, menubar=no, status=no, titlebar=no, fullscreen=yes, toolbar=no')
-										:  window.open('/purchase/' + 'new' + '.html', 'New PO', 'location=no, menubar=no, status=no, titlebar=no, fullscreen=yes, toolbar=no');
-		tmp.newWindow.focus();
+		tmp.me = this;
+		jQuery.fancybox({
+			'width'			: '95%',
+			'height'		: '95%',
+			'autoScale'     : false,
+			'autoDimensions': false,
+			'fitToView'     : false,
+			'autoSize'      : false,
+			'type'			: 'iframe',
+			'href'			: '/purchase/' + (row && row.id ? row.id : 'new') + '.html'
+ 		});
+		return tmp.me;
 	}
 	,_highlightSelectedRow : function (btn) {
 		var tmp = {};
