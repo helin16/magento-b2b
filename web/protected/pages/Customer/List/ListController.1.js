@@ -38,6 +38,9 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 			'fitToView'     : false,
 			'autoSize'      : false,
 			'type'			: 'iframe',
+			'frameborder'	: '0',
+			'border'		: '0',
+			'seamless'		: 'seamless',
 			'href'			: '/customer/' + (row && row.id ? row.id : 'new') + '.html'
  		});
 		return tmp.me;
