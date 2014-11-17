@@ -64,32 +64,27 @@ class DetailsController extends DetailsPageAbstract
 				throw new Exception('Invalid Customer passed in!');
 			$name = trim($param->CallbackParameter->name);
 			$id = !is_numeric($param->CallbackParameter->id) ? '' : trim($param->CallbackParameter->id);
-			$magId = !is_numeric($param->CallbackParameter->id) ? '' : trim($param->CallbackParameter->mageId);
+			$mageId = !is_numeric($param->CallbackParameter->id) ? '' : trim($param->CallbackParameter->mageId);
 			$active = !is_numeric($param->CallbackParameter->id) ? '' : trim($param->CallbackParameter->active);
 			$email = trim($param->CallbackParameter->email);
 			$contactNo = trim($param->CallbackParameter->contactNo);
-// 			$created = trim($param->CallbackParameter->created);
-// 			$updated = trim($param->CallbackParameter->updated);
-			$billingSteet = trim($param->CallbackParameter->billingSteet);
+			$billingStreet = trim($param->CallbackParameter->billingStreet);
 			$billingCity = trim($param->CallbackParameter->billingCity);
 			$billingState = trim($param->CallbackParameter->billingState);
 			$billingCountry = trim($param->CallbackParameter->billingCountry);
 			$billingPostcode = trim($param->CallbackParameter->billingPosecode);
-			$billingAdressFull = Address::create($billingSteet, $billingCity, $billingState, $billingCountry, $billingPostcode);
-			$shippingSteet = trim($param->CallbackParameter->shippingSteet);
+			$billingAdressFull = Address::create($billingStreet, $billingCity, $billingState, $billingCountry, $billingPostcode);
+			$shippingStreet = trim($param->CallbackParameter->shippingStreet);
 			$shippingCity = trim($param->CallbackParameter->shippingCity);
 			$shippingState = trim($param->CallbackParameter->shippingState);
 			$shippingCountry = trim($param->CallbackParameter->shippingCountry);
 			$shippingPosecode = trim($param->CallbackParameter->shippingPosecode);
-			$shippingAdressFull = Address::create($shippingSteet, $shippingCity, $shippingState, $shippingCountry, $shippingPosecode);
+			$shippingAdressFull = Address::create($shippingStreet, $shippingCity, $shippingState, $shippingCountry, $shippingPosecode);
 				
-			
 			if(is_numeric($param->CallbackParameter->id)) {
 			$customer->setName($name)
 				->setEmail($email)
-				->setMageId($magId)
-// 				->setCreated($created)
-// 				->setUpdated($updated)
+				->setMageId($mageId)
 				->setActive($active)
 				->setBillingAddress($billingAdressFull)
 				->setShippingAddress($shippingAdressFull)
@@ -98,7 +93,7 @@ class DetailsController extends DetailsPageAbstract
 				$customer->setIsFromB2B(false);
 			$customer->save();
 			} else {
-				$customer->create($name, $contactNo, $email, $billingAdressFull, false, '', $shippingAdressFull, $magId);
+				$customer->create($name, $contactNo, $email, $billingAdressFull, false, '', $shippingAdressFull, $mageId);
 			}
 		
 			$results['url'] = '/customer/' . $customer->getId() . '.html';
