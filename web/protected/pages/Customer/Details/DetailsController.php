@@ -43,9 +43,9 @@ class DetailsController extends DetailsPageAbstract
 		
 		$js = parent::_getEndJs();
 		$js .= "pageJs.setPreData(" . json_encode($customer->getJson()) . ")";
-// 		$js .= "pageJs._bindSaveKey()";
 		$js .= ".load()";
-		$js .= ".bindAllEventNObjects();";
+		$js .= ".bindAllEventNObjects()";
+		$js .= "._bindSaveKey();";
 		return $js;
 	}
 	/**

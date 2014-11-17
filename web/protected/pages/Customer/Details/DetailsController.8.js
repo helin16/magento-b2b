@@ -18,7 +18,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		var tmp = {};
 		tmp.me = this;
 
-		tmp.newDiv = new Element('div')
+		tmp.newDiv = new Element('div', {'class': 'customer-editing-container'})
 			.insert({'bottom': new Element('div', {'class': 'row'})
 				.insert({'bottom': tmp.me._getCustomerSummaryDiv(tmp.me._item).wrap(new Element('div', {'class': 'col-sm-12'})) })
 			})
@@ -27,7 +27,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 				.insert({'bottom': tmp.me._getCustomerShippingSummaryDiv(tmp.me._item).wrap(new Element('div', {'class': 'col-sm-6'})) })
 			})
 			.insert({'bottom': new Element('div', {'class': 'row'})
-				.insert({'bottom': new Element('span', {'class': 'btn btn-primary pull-right col-sm-4', 'data-loading-text': 'saving ...'}).update('Save')
+				.insert({'bottom': new Element('span', {'id': 'saveBtn', 'class': 'btn btn-primary pull-right col-sm-4', 'data-loading-text': 'saving ...'}).update('Save')
 					.observe('click', function() {
 						tmp.me._submitSave(this);
 					})
@@ -61,15 +61,15 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 	,_bindSaveKey: function() {
 		var tmp = {}
 		tmp.me = this;
-		$('.panel.customer-summary').getElementsBySelector('[save-item]').each(function(item) {
+		$$('.customer-editing-container').first().getElementsBySelector('[save-item]').each(function(item) {
 			item.observe('keydown', function(event) {
 				tmp.me.keydown(event, function() {
-					$(tmp.me.searchDivId).down('#searchBtn').click();
+					$$('.customer-editing-container').first().down('#saveBtn').click();
 				});
 			})
 		});
 		return this;
-	}	
+	}
 	,refreshParentWindow: function() {
 		var tmp = {};
 		tmp.me = this;
