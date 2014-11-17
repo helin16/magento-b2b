@@ -53,22 +53,22 @@ class DetailsController extends DetailsPageAbstract
 	 */
 	public function saveItem($sender, $param)
 	{
+		
 		$results = $errors = array();
 		try
 		{
 			Dao::beginTransaction();
-			
-			$customer = !isset($param->CallbackParameter->id) ? new Customer() : Customer::get(trim($param->CallbackParameter->id));
+			$customer = !is_numeric($param->CallbackParameter->id) ? new Customer() : Customer::get(trim($param->CallbackParameter->id));
 			if(!$customer instanceof Customer)
-				throw new Exception('Invalid Product passed in!');
+				throw new Exception('Invalid Customer passed in!');
 			$name = trim($param->CallbackParameter->name);
-			$id = trim($param->CallbackParameter->id);
-			$magId = trim($param->CallbackParameter->mageId);
-			$active = trim($param->CallbackParameter->active);
-			$emai = trim($param->CallbackParameter->email);
+			$id = !is_numeric($param->CallbackParameter->id) ? '' : trim($param->CallbackParameter->id);
+			$magId = !is_numeric($param->CallbackParameter->id) ? '' : trim($param->CallbackParameter->mageId);
+			$active = !is_numeric($param->CallbackParameter->id) ? '' : trim($param->CallbackParameter->active);
+			$email = trim($param->CallbackParameter->email);
 			$contactNo = trim($param->CallbackParameter->contactNo);
-			$created = trim($param->CallbackParameter->created);
-			$updated = trim($param->CallbackParameter->updated);
+// 			$created = trim($param->CallbackParameter->created);
+// 			$updated = trim($param->CallbackParameter->updated);
 			$billingSteet = trim($param->CallbackParameter->billingSteet);
 			$billingCity = trim($param->CallbackParameter->billingCity);
 			$billingState = trim($param->CallbackParameter->billingState);
@@ -83,21 +83,23 @@ class DetailsController extends DetailsPageAbstract
 			$shippingAdressFull = Address::create($shippingSteet, $shippingCity, $shippingState, $shippingCountry, $shippingPosecode);
 				
 			
-			
+			if(is_numeric($param->CallbackParameter->id)) {
 			$customer->setName($name)
-				->setEmail($emai)
+				->setEmail($email)
 				->setMageId($magId)
-				->setCreated($created)
-				->setUpdated($updated)
+// 				->setCreated($created)
+// 				->setUpdated($updated)
 				->setActive($active)
 				->setBillingAddress($billingAdressFull)
 				->setShippingAddress($shippingAdressFull)
 			;
-		
 			if(trim($customer->getId()) === '')
 				$customer->setIsFromB2B(false);
 			$customer->save();
-			
+			} else {
+				$customer->create($name, $contactNo, $email, $billingAdressFull, false, '', $shippingAdressFull, $magId);
+			}
+		
 			$results['url'] = '/customer/' . $customer->getId() . '.html';
 			$results['item'] = $customer->getJson();
 			Dao::commitTransaction();
