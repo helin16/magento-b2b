@@ -104,13 +104,28 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 			.insert({'bottom': new Element(tmp.tag, {'class': 'name col-xs-1'}).update(row.name) 
 				.observe('click', function(){
 					tmp.me._highlightSelectedRow(this);
+					$$('.popover-loaded').each(function(item){
+						jQuery(item).popover('hide');
+					});
+				})	
+				.observe('dblclick', function(){
+					$$('.popover-loaded').each(function(item){
+						jQuery(item).popover('hide');
+					});
+					tmp.me._openEditPage(row);
 				})	
 			})
 			.insert({'bottom': new Element(tmp.tag, {'class': 'email col-xs-1', 'style': 'text-decoration: underline;'}).update(row.email) 
 				.observe('click', function(){
 					tmp.me._highlightSelectedRow(this);
+					$$('.popover-loaded').each(function(item){
+						jQuery(item).popover('hide');
+					});
 				})	
 				.observe('dblclick', function(){
+					$$('.popover-loaded').each(function(item){
+						jQuery(item).popover('hide');
+					});
 					tmp.newWindow = window.open('mailto:' + row.email, 'location=no, menubar=no, status=no, titlebar=no, fullscreen=yes, toolbar=no');
 					tmp.newWindow.close();
 				})	
@@ -153,7 +168,9 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 					.insert({'bottom': new Element('span', {'class': 'btn btn-default', 'title': 'Edit'})
 						.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-pencil'}) })
 						.observe('click', function(){
-							//$(this).up('tr').replace(tmp.me._openEditPage(row));
+							$$('.popover-loaded').each(function(item){
+								jQuery(item).popover('hide');
+							});
 							tmp.me._openEditPage(row);
 						})
 					})
@@ -164,11 +181,17 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 								return false;
 							if(row.active)
 								tmp.me._deactivateItem(this);
+							$$('.popover-loaded').each(function(item){
+								jQuery(item).popover('hide');
+							});
 						})
 					}) ) 
 				)
 				.observe('click', function(){
 					tmp.me._highlightSelectedRow(this);
+					$$('.popover-loaded').each(function(item){
+						jQuery(item).popover('hide');
+					});
 				})	
 			});
 		return tmp.row;
