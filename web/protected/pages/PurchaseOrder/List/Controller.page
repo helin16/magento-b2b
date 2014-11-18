@@ -54,13 +54,13 @@
 			</div>
 		</div>
 		<div class="col-xs-12 list-panel">
-			<div class="panel panel-default">
+			<div class="panel panel-default list-panel">
 				<div class="panel-heading">
-					Found <label id="total-found-count">0</label> Purchase Orders:
+					Found <label id="total-found-count">0</label> <%= $this->getFocusEntity() %>:
 				</div>
-				<div class="table-responsive">
-	                <table class="table table-hover" id="item-list"></table>
-	            </div>
+				<small class="table-responsive">
+	                <table class="table table-hover table-striped" id="item-list"></table>
+	            </small>
 			</div>
 		</div>
 	</div>

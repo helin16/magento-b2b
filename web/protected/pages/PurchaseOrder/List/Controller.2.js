@@ -35,7 +35,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		tmp.me = this;
 		tmp.tag = (tmp.isTitle === true ? 'th' : 'td');
 		tmp.isTitle = (isTitle || false);
-		tmp.row = new Element('tr', {'class': (tmp.isTitle === true ? '' : 'btn-hide-row') + (row.active == 0 ? ' danger' : ''), 'item_id': (tmp.isTitle === true ? '' : row.id)}).store('data', row)
+		tmp.row = new Element('tr', {'class': (tmp.isTitle === true ? 'item_top_row' : 'btn-hide-row item_row') + (row.active == 0 ? ' danger' : ''), 'item_id': (tmp.isTitle === true ? '' : row.id)}).store('data', row)
 			.insert({'bottom': new Element(tmp.tag, {'class': 'purchaseOrderNo col-xs-1'}).update(row.purchaseOrderNo)})
 			.insert({'bottom': new Element(tmp.tag, {'class': 'status col-xs-1'}).update(row.status)})
 			.insert({'bottom': new Element(tmp.tag, {'class': 'supplierId col-xs-1'}).update(row.supplier.name)})
