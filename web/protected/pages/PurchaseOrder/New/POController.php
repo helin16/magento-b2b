@@ -6,7 +6,7 @@
  * @subpackage Controller
  * @author     lhe<helin16@gmail.com>
  */
-class OrderController extends BPCPageAbstract
+class POController extends BPCPageAbstract
 {
 	/**
 	 * (non-PHPdoc)
@@ -35,7 +35,7 @@ class OrderController extends BPCPageAbstract
 		$customer = (isset($_REQUEST['customerid']) && ($customer = Customer::get(trim($_REQUEST['customerid']))) instanceof Customer) ? $customer->getJson() : null;
 		$js .= "pageJs";
 			$js .= ".setHTMLIDs('detailswrapper')";
-			$js .= ".setCallbackId('searchCustomer', '" . $this->searchCustomerBtn->getUniqueID() . "')";
+			$js .= ".setCallbackId('searchSupplier', '" . $this->searchSupplierBtn->getUniqueID() . "')";
 			$js .= ".setCallbackId('searchProduct', '" . $this->searchProductBtn->getUniqueID() . "')";
 			$js .= ".setCallbackId('saveOrder', '" . $this->saveOrderBtn->getUniqueID() . "')";
 			$js .= ".setPaymentMethods(" . json_encode($paymentMethods) . ")";
@@ -52,16 +52,16 @@ class OrderController extends BPCPageAbstract
 	 * @throws Exception
 	 *
 	 */
-	public function searchCustomer($sender, $param)
+	public function searchSupplier($sender, $param)
 	{
 		$results = $errors = array();
 		try
 		{
 			$items = array();
 			$searchTxt = isset($param->CallbackParameter->searchTxt) ? trim($param->CallbackParameter->searchTxt) : '';
-			foreach(Customer::getAllByCriteria('name like :searchTxt or email like :searchTxt', array('searchTxt' => $searchTxt . '%')) as $customer)
+			foreach(Supplier::getAllByCriteria('name like :searchTxt or contactName like :searchTxt', array('searchTxt' => $searchTxt . '%')) as $supplier)
 			{
-				$items[] = $customer->getJson();
+				$items[] = $supplier->getJson();
 			}
 			$results['items'] = $items;
 		}

@@ -5,6 +5,7 @@ var PageJs = new Class.create();
 PageJs.prototype = Object.extend(new BPCPageJs(), {
 	_htmlIds: {'itemDiv': '', 'searchPanel': 'search_panel', 'totalPriceExcludeGST': 'total_price_exclude_gst', 'totalPriceGST': 'total_price_gst', 'totalPriceIncludeGST': 'total_price_include_gst', 'totalPaidAmount': 'total-paid-amount', 'totalShippingCost': 'total-shipping-cost'}
 	,_customer: null
+	,_supplier: null
 	/**
 	 * Setting the HTMLIDS
 	 */
@@ -551,10 +552,10 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			})
 		return tmp.newDiv;
 	}
-	,selectCustomer: function(customer) {
+	,selectSupplier: function(supplier) {
 		var tmp = {};
 		tmp.me = this;
-		tmp.me._customer = customer;
+		tmp.me._supplier = supplier;
 		tmp.newDiv = tmp.me._getViewOfOrder();
 		$(tmp.me._htmlIds.itemDiv).update(tmp.newDiv);
 		tmp.newDiv.down('.new-order-item-input [new-order-item="product"]').focus();
@@ -563,34 +564,40 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 	/**
 	 * Getting the customer row for displaying the searching result
 	 */
-	,_getCustomerRow: function(customer, isTitle) {
+	,_getSupplierRow: function(supplier, isTitle) {
 		var tmp = {};
 		tmp.me = this;
+		console.debug(supplier);
 		tmp.isTitle = (isTitle || false);
 		tmp.tag = (tmp.isTitle === true ? 'th': 'td');
-		tmp.newDiv = new Element('tr').store('data', customer)
+		tmp.newDiv = new Element('tr').store('data', supplier)
 			.insert({'bottom': new Element(tmp.tag)
 				.insert({'bottom': (tmp.isTitle === true ? '&nbsp;':
 					new Element('span', {'class': 'btn btn-primary btn-xs'}).update('select')	
 					.observe('click', function(){
-						tmp.me.selectCustomer(customer);
+						tmp.me.selectSupplier(supplier);
 					})
 				) })
 			})
-			.insert({'bottom': new Element(tmp.tag).update(customer.name) })
-			.insert({'bottom': new Element(tmp.tag).update(customer.email) })
-			.insert({'bottom': new Element(tmp.tag).update(customer.address && customer.address.billing ? customer.address.billing.full : '') })
+			.insert({'bottom': new Element(tmp.tag).update(supplier.name) })
+			.insert({'bottom': new Element(tmp.tag).update(supplier.contactName) })
+			.insert({'bottom': new Element(tmp.tag).update(supplier.contactNo) })
+			.insert({'bottom': new Element(tmp.tag).update(supplier.description) })
+			.insert({'bottom': new Element(tmp.tag)
+				.insert({'bottom': (tmp.isTitle === true ? supplier.active : new Element('input', {'type': 'checkbox', 'disabled': true, 'checked': supplier.active}) ) })
+			})
+		;
 		return tmp.newDiv;
 	}
 	/**
 	 * Ajax: searching the customer
 	 */
-	,_searchCustomer: function (txtbox) {
+	,_searchSupplier: function (txtbox) {
 		var tmp = {};
 		tmp.me = this;
 		tmp.searchTxt = $F(txtbox).strip();
 		tmp.searchPanel = $(txtbox).up('#' + tmp.me._htmlIds.searchPanel);
-		tmp.me.postAjax(tmp.me.getCallbackId('searchCustomer'), {'searchTxt': tmp.searchTxt}, {
+		tmp.me.postAjax(tmp.me.getCallbackId('searchSupplier'), {'searchTxt': tmp.searchTxt}, {
 			'onLoading': function() {
 				if($(tmp.searchPanel).down('.list-div'))
 					$(tmp.searchPanel).down('.list-div').remove();
@@ -606,13 +613,13 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					$(tmp.searchPanel).insert({'bottom': new Element('small', {'class': 'table-responsive list-div'})
 						.insert({'bottom': new Element('table', {'class': 'table table-hover table-condensed'})
 							.insert({'bottom': new Element('thead') 
-								.insert({'bottom': tmp.me._getCustomerRow({'name': 'Customer Name', 'email': 'Email', 'address': {'billing': {'full': 'Address'}}}, true)  })
+								.insert({'bottom': tmp.me._getSupplierRow({'name': 'Supplier Name', 'contactName': 'Contact Name', 'contactNo': 'Contact Number', 'description': 'Description', 'active': 'Active?'}, true)  })
 							})
 							.insert({'bottom': tmp.listDiv = new Element('tbody') })
 						})
 					});
 					tmp.result.items.each(function(item) {
-						tmp.listDiv.insert({'bottom': tmp.me._getCustomerRow(item) })
+						tmp.listDiv.insert({'bottom': tmp.me._getSupplierRow(item) })
 					});
 				} catch (e) {
 					$(tmp.searchPanel).insert({'bottom': new Element('div', {'class': 'panel-body'}).update(tmp.me.getAlertBox('ERROR', e).addClassName('alert-danger')) });
@@ -646,7 +653,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 						})
 						.observe('click', function(){
 							tmp.btn = this;
-							tmp.me._searchCustomer($(tmp.me._htmlIds.searchPanel).down('.search-txt'));
+							tmp.me._searchSupplier($(tmp.me._htmlIds.searchPanel).down('.search-txt'));
 						})
 					})
 				})
@@ -660,12 +667,11 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			;
 		return tmp.newDiv;
 	}
-			
-	,init: function(customer) {
+	,init: function(supplier) {
 		var tmp = {};
 		tmp.me = this;
-		if(customer) {
-			tmp.me.selectCustomer(customer);
+		if(supplier) {
+			tmp.me.selectSupplier(supplier);
 		} else {
 			$(tmp.me._htmlIds.itemDiv).update(tmp.me._getCustomerListPanel());
 		}
