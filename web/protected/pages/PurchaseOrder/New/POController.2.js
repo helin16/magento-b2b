@@ -50,7 +50,6 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			return tmp.me;
 		}
 		tmp.data.customer = tmp.me._customer;
-		console.debug(tmp.data);
 		tmp.me.postAjax(tmp.me.getCallbackId('saveOrder'), tmp.data, {
 			
 		});
@@ -87,47 +86,32 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		return tmp.newDiv;
 	}
 	/**
-	 * Getting the address div
+	 * Getting the Supplier div
 	 */
-	,_getAddressDiv: function(title, addr) {
-		return new Element('div', {'class': 'address-div'})
-			.insert({'bottom': new Element('strong').update(title) })
-			.insert({'bottom': new Element('dl', {'class': 'dl-horizontal dl-condensed'})
-				.insert({'bottom': new Element('dt')
-					.update(new Element('span', {'class': "glyphicon glyphicon-user", 'title': "Customer Name"}) ) 
-				})
-				.insert({'bottom': new Element('dd').update(addr.contactName) })
-				.insert({'bottom': new Element('dt')
-					.update(new Element('span', {'class': "glyphicon glyphicon-map-marker", 'title': "Address"}) ) 
-				})
-				.insert({'bottom': new Element('dd')
-					.insert({'bottom': new Element('div')
-						.insert({'bottom': new Element('div', {'class': 'street inlineblock'}).update(addr.street) })
-						.insert({'bottom': new Element('span', {'class': 'city inlineblock'}).update(addr.city + ' ') })
-						.insert({'bottom': new Element('span', {'class': 'region inlineblock'}).update(addr.region + ' ') })
-						.insert({'bottom': new Element('span', {'class': 'postcode inlineblock'}).update(addr.postCode) })
-					})
-				})
+	,_getSupplierDiv: function (title, content) {
+		return new Element('div', {'class': ''})
+			.insert({'bottom': new Element('dl', {'class': 'dl-condensed dl-horizontal'})
+				.insert({'bottom': new Element('dt', {'style': 'text-align:left'}).update(title) })
+				.insert({'bottom': new Element('dd', {'style': 'text-align:left'}).update(content) })
 			})
+		;
 	}
 	/**
 	 * getting the customer information div
 	 */
-	,_getCustomerInfoPanel: function() {
+	,_getSupplierInfoPanel: function() {
 		var tmp = {};
 		tmp.me = this;
-		tmp.customer = tmp.me._customer;
+		tmp.supplier = tmp.me._supplier;
 		tmp.newDiv = new Element('div', {'class': 'panel panel-default'})
 			.insert({'bottom': new Element('div', {'class': 'panel-heading'})
-				.insert({'bottom': new Element('strong').update('Creating order for: ' + tmp.customer.name + ' ') })
-				.insert({'bottom': ' <' })
-				.insert({'bottom': new Element('a', {'href': 'mailto:' + tmp.customer.email}).update(tmp.customer.email) })
-				.insert({'bottom': '>' })
+				.insert({'bottom': new Element('strong').update('Creating purchase order for: ' + tmp.supplier.name + ' ') })
 			})
 			.insert({'bottom': new Element('div', {'class': 'panel-body'})
 				.insert({'bottom': new Element('div', {'class': 'row'})
-					.insert({'bottom': tmp.me._getAddressDiv("Shipping Address: ", tmp.customer.address.shipping).addClassName('col-xs-6') })
-					.insert({'bottom': tmp.me._getAddressDiv("Billing Address: ", tmp.customer.address.billing).addClassName('col-xs-6') })
+					.insert({'bottom': new Element('div', {'class': 'col-sm-4'}).update(tmp.me._getSupplierDiv('Name', tmp.supplier.name ) ) })
+					.insert({'bottom': new Element('div', {'class': 'col-sm-4'}).update(tmp.me._getSupplierDiv('Contact Name', tmp.supplier.contactName ) ) })
+					.insert({'bottom': new Element('div', {'class': 'col-sm-4'}).update(tmp.me._getSupplierDiv('Contact Number', tmp.supplier.contactNo ) ) })
 				 })
 			});
 		return tmp.newDiv;
@@ -471,6 +455,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 	,_getPaymentPanel: function () {
 		var tmp = {};
 		tmp.me = this;
+		tmp.supplier = tmp.me._supplier;
 		tmp.paymentMethodSel = new Element('select', {'class': '', 'save-order': 'paymentMethodId'})
 			.insert({'bottom': new Element('option', {'value': ''}).update('Payment Received via:') });
 		tmp.me._paymentMethods.each(function(method){
@@ -481,11 +466,11 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.me._shippingMethods.each(function(method){
 			tmp.shippingMethodSel.insert({'bottom': new Element('option', {'value': method.id}).update(method.name) });
 		})
-		
+		console.debug(tmp.supplier);
 		tmp.newDiv = new Element('div', {'class': 'panel panel-default'})
 			.insert({'bottom': new Element('div', {'class':'panel-heading'})
 				.insert({'bottom': new Element('strong').update('Total Payment Due: ') })
-				.insert({'bottom': new Element('span', {'class': 'pull-right total-payment-due'}).update(tmp.me.getCurrency(0) ) })
+				.insert({'bottom': new Element('span', {'class': 'pull-right total-payment-due'}).update(tmp.me.getCurrency(5) ) })
 			})
 			.insert({'bottom': new Element('div', {'class':'list-group'})
 				.insert({'bottom': new Element('div', {'class': 'list-group-item'})
@@ -536,12 +521,12 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 	/**
 	 * Getting the div of the order view
 	 */
-	,_getViewOfOrder: function() {
+	,_getViewOfPurchaseOrder: function() {
 		var tmp = {};
 		tmp.me = this;
 		tmp.newDiv = new Element('div')
 			.insert({'bottom': new Element('div', {'class': 'row'})
-				.insert({'bottom': new Element('div', {'class': 'col-sm-8'}).update(tmp.me._getCustomerInfoPanel()) })
+				.insert({'bottom': new Element('div', {'class': 'col-sm-8'}).update(tmp.me._getSupplierInfoPanel()) })
 				.insert({'bottom': new Element('div', {'class': 'col-sm-4'}).update(tmp.me._getPaymentPanel()) })
 			})
 			.insert({'bottom': new Element('div', {'class': 'row'})
@@ -556,8 +541,8 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		var tmp = {};
 		tmp.me = this;
 		tmp.me._supplier = supplier;
-		tmp.newDiv = tmp.me._getViewOfOrder();
-		$(tmp.me._htmlIds.itemDiv).update(tmp.newDiv);
+		tmp.newDiv = tmp.me._getViewOfPurchaseOrder();
+		$(tmp.me._htmlIds.itemDiv).update(tmp.newDiv);return;
 		tmp.newDiv.down('.new-order-item-input [new-order-item="product"]').focus();
 		return tmp.me;
 	}
@@ -567,10 +552,9 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 	,_getSupplierRow: function(supplier, isTitle) {
 		var tmp = {};
 		tmp.me = this;
-		console.debug(supplier);
 		tmp.isTitle = (isTitle || false);
 		tmp.tag = (tmp.isTitle === true ? 'th': 'td');
-		tmp.newDiv = new Element('tr').store('data', supplier)
+		tmp.newDiv = new Element('tr', {'class': (tmp.isTitle === true ? 'item_top_row' : 'btn-hide-row item_row') + (supplier.active == 0 ? ' danger' : ''), 'item_id': (tmp.isTitle === true ? '' : supplier.id)}).store('data', supplier)
 			.insert({'bottom': new Element(tmp.tag)
 				.insert({'bottom': (tmp.isTitle === true ? '&nbsp;':
 					new Element('span', {'class': 'btn btn-primary btn-xs'}).update('select')	
@@ -631,7 +615,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 	/**
 	 * Getting the customer list panel
 	 */
-	,_getCustomerListPanel: function () {
+	,_getSupplierListPanel: function () {
 		var tmp = {};
 		tmp.me = this;
 		tmp.newDiv = new Element('div', {'id': tmp.me._htmlIds.searchPanel, 'class': 'panel panel-default search-panel'})
@@ -657,10 +641,11 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 						})
 					})
 				})
-				.insert({'bottom': new Element('span', {'class': 'btn btn-success pull-right btn-sm'})
-					.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-plus-sign'}) })
-					.insert({'bottom': ' NEW' })
+				.insert({'bottom': new Element('span', {'class': 'btn btn-success pull-right btn-sm btn-danger'})
+					.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-remove'}) })
 					.observe('click', function(){
+						$(tmp.me._htmlIds.searchPanel).down('.search-txt').clear();
+						tmp.me._searchSupplier($(tmp.me._htmlIds.searchPanel).down('.search-txt'));
 					})
 				})
 			})
@@ -673,7 +658,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		if(supplier) {
 			tmp.me.selectSupplier(supplier);
 		} else {
-			$(tmp.me._htmlIds.itemDiv).update(tmp.me._getCustomerListPanel());
+			$(tmp.me._htmlIds.itemDiv).update(tmp.me._getSupplierListPanel());
 		}
 		if($$('.init-focus').size() > 0)
 			$$('.init-focus').first().focus();
