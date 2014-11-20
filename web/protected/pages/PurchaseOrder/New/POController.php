@@ -116,6 +116,10 @@ class POController extends BPCPageAbstract
 		try
 		{
 			var_dump($param->CallbackParameter);
+			$supplier = Supplier::get(trim($param->CallbackParameter->supplier->id));
+			if(!$supplier instanceof Supplier)
+				throw new Exception('Invalid Purchase Order passed in!');
+			PurchaseOrder::create($supplier,$supplier->getId());
 		}
 		catch(Exception $ex)
 		{

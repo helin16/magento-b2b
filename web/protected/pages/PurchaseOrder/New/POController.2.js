@@ -4,7 +4,6 @@
 var PageJs = new Class.create();
 PageJs.prototype = Object.extend(new BPCPageJs(), {
 	_htmlIds: {'itemDiv': '', 'searchPanel': 'search_panel', 'totalPriceExcludeGST': 'total_price_exclude_gst', 'totalPriceGST': 'total_price_gst', 'totalPriceIncludeGST': 'total_price_include_gst', 'totalPaidAmount': 'total-paid-amount', 'totalShippingCost': 'total-shipping-cost'}
-	,_customer: null
 	,_supplier: null
 	/**
 	 * Setting the HTMLIDS
@@ -45,11 +44,12 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		$$('.order-item-row').each(function(item){
 			tmp.data.items.push(item.retrieve('data'));
 		});
+		console.debug(tmp.data);
 		if(tmp.data.items.size() <= 0) {
 			tmp.me.showModalBox('<strong class="text-danger">Error</strong>', 'At least one order item is needed!', true);
 			return tmp.me;
 		}
-		tmp.data.customer = tmp.me._customer;
+		tmp.data.supplier = tmp.me._supplier;
 		tmp.me.postAjax(tmp.me.getCallbackId('saveOrder'), tmp.data, {
 			
 		});
@@ -131,12 +131,36 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			})
 			.insert({'bottom': new Element(tmp.tag, {'class': 'uprice col-xs-1'})
 				.insert({'bottom': (orderItem.unitPrice) })
+				.observe('keydown', function(event){
+					tmp.txtBox = this;
+					console.debug(tmp.txtBox);
+					tmp.me.keydown(event, function() {
+						$(tmp.txtBox).up('.item_row').down('.glyphicon.glyphicon-floppy-saved').click();
+					});
+					return false;
+				})
 			})
 			.insert({'bottom': new Element(tmp.tag, {'class': 'qty col-xs-1'})
 				.insert({'bottom': (orderItem.qtyOrdered) })
+				.observe('keydown', function(event){
+					tmp.txtBox = this;
+					console.debug(tmp.txtBox);
+					tmp.me.keydown(event, function() {
+						$(tmp.txtBox).up('.item_row').down('.glyphicon.glyphicon-floppy-saved').click();
+					});
+					return false;
+				})
 			})
 			.insert({'bottom': new Element(tmp.tag, {'class': 'tprice col-xs-1'})
 				.insert({'bottom': (orderItem.totalPrice) })
+				.observe('keydown', function(event){
+					tmp.txtBox = this;
+					console.debug(tmp.txtBox);
+					tmp.me.keydown(event, function() {
+						$(tmp.txtBox).up('.item_row').down('.glyphicon.glyphicon-floppy-saved').click();
+					});
+					return false;
+				})
 			})
 			.insert({'bottom': new Element(tmp.tag, {'class': 'btns  col-xs-1'}).update(orderItem.btns ? orderItem.btns : '') });
 		if(orderItem.product.sku) {
