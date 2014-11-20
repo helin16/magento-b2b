@@ -477,16 +477,8 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		var tmp = {};
 		tmp.me = this;
 		tmp.supplier = tmp.me._supplier;
-		tmp.paymentMethodSel = new Element('select', {'class': '', 'save-order': 'paymentMethodId'})
-			.insert({'bottom': new Element('option', {'value': ''}).update('Payment Received via:') });
-		tmp.me._paymentMethods.each(function(method){
-			tmp.paymentMethodSel.insert({'bottom': new Element('option', {'value': method.id}).update(method.name) });
-		})
-		tmp.shippingMethodSel = new Element('select', {'class': '', 'save-order': 'courierId'})
-			.insert({'bottom': new Element('option', {'value': ''}).update('Please Select:') });
-		tmp.me._shippingMethods.each(function(method){
-			tmp.shippingMethodSel.insert({'bottom': new Element('option', {'value': method.id}).update(method.name) });
-		})
+		tmp.paymentMethodSel = new Element('input', {'class': '', 'save-order': 'totalAmount'});
+		tmp.shippingMethodSel = new Element('input', {'class': '', 'save-order': 'totalPaid'});
 		tmp.newDiv = new Element('div', {'class': 'panel panel-default'})
 			.insert({'bottom': new Element('div', {'class':'panel-heading'})
 				.insert({'bottom': new Element('strong').update('Total Payment Due: ') })
@@ -495,44 +487,22 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			.insert({'bottom': new Element('div', {'class':'list-group'})
 				.insert({'bottom': new Element('div', {'class': 'list-group-item'})
 					.insert({'bottom': new Element('div', {'class': 'row'})
-						.insert({'bottom': new Element('div', {'class': 'col-xs-6 text-right form-group', 'style': 'margin: 0px;'})
-							.insert({'bottom': tmp.paymentMethodSel.addClassName('form-control input-sm')
-								.observe('change', function() {
-									tmp.btn = this;
-									$(tmp.btn).up('.row').down('.input-field').update($F(tmp.btn).blank() ? '' : 
-										tmp.paidAmountBox = new Element('input', {'id': tmp.me._htmlIds.totalPaidAmount, 'class': 'form-control input-sm', 'save-order': 'totalPaidAmount', 'placeholder': tmp.me.getCurrency(0), 'required': true, 'validate_currency': 'Invalid number provided!' })
-										.observe('change', function() {
-											tmp.me._recalculateSummary(0);
-										})
-									);
-									tmp.me._recalculateSummary(0);
-									if(tmp.paidAmountBox)
-										tmp.paidAmountBox.select();
-								})
-							})
+						.insert({'bottom': new Element('div', {'class': 'col-xs-6 text-left form-group', 'style': 'margin: 0px;'})
+							.insert({'bottom': new Element('lable', {'class': 'text-left active'}).update( new Element('span').update('Total Amount Excl. GST ') ) }) 
 						})
-						.insert({'bottom': new Element('div', {'class': 'col-xs-6 form-group input-field', 'style': 'margin: 0px;'}) })
+						.insert({'bottom': new Element('div', {'class': 'col-xs-6 text-left form-group', 'style': 'margin: 0px;'})
+							.insert({'bottom': tmp.paymentMethodSel.addClassName('form-control input-sm col-xs-6') })
+						})
 					})
 				})
 				.insert({'bottom': new Element('div', {'class': 'list-group-item'})
 					.insert({'bottom': new Element('div', {'class': 'row'})
-						.insert({'bottom': new Element('div', {'class': 'col-xs-6 form-group', 'style': 'margin: 0px;'})
-							.insert({'bottom': tmp.shippingMethodSel.addClassName('form-control input-sm') 
-								.observe('change', function() {
-									tmp.btn = this;
-									$(tmp.btn).up('.row').down('.input-field').update($F(tmp.btn).blank() ? '' : 
-										tmp.shippingCostBox = new Element('input', {'id': tmp.me._htmlIds.totalShippingCost, 'class': 'form-control input-sm', 'save-order': 'totalShippingCost', 'placeholder': tmp.me.getCurrency(0), 'required': true, 'validate_currency': 'Invalid number provided!' })
-										.observe('change', function() {
-											tmp.me._recalculateSummary(0);
-										})
-									);
-									tmp.me._recalculateSummary(0);
-									if(tmp.shippingCostBox)
-										tmp.shippingCostBox.select();
-								})
-							})
+						.insert({'bottom': new Element('div', {'class': 'col-xs-6 text-left form-group', 'style': 'margin: 0px;'})
+							.insert({'bottom': new Element('lable', {'class': 'text-left active'}).update( new Element('span').update('Total Amount Paid ') ) }) 
 						})
-						.insert({'bottom': new Element('strong', {'class': 'col-xs-6 input-field'})})
+						.insert({'bottom': new Element('div', {'class': 'col-xs-6 form-group', 'style': 'margin: 0px;'})
+							.insert({'bottom': tmp.shippingMethodSel.addClassName('form-control input-sm') })
+						})
 					}) 
 				})
 			});
