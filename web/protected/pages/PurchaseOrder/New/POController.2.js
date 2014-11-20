@@ -44,7 +44,6 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		$$('.order-item-row').each(function(item){
 			tmp.data.items.push(item.retrieve('data'));
 		});
-		console.debug(tmp.data);
 		if(tmp.data.items.size() <= 0) {
 			tmp.me.showModalBox('<strong class="text-danger">Error</strong>', 'At least one order item is needed!', true);
 			return tmp.me;
@@ -133,7 +132,6 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				.insert({'bottom': (orderItem.unitPrice) })
 				.observe('keydown', function(event){
 					tmp.txtBox = this;
-					console.debug(tmp.txtBox);
 					tmp.me.keydown(event, function() {
 						$(tmp.txtBox).up('.item_row').down('.glyphicon.glyphicon-floppy-saved').click();
 					});
@@ -144,7 +142,6 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				.insert({'bottom': (orderItem.qtyOrdered) })
 				.observe('keydown', function(event){
 					tmp.txtBox = this;
-					console.debug(tmp.txtBox);
 					tmp.me.keydown(event, function() {
 						$(tmp.txtBox).up('.item_row').down('.glyphicon.glyphicon-floppy-saved').click();
 					});
@@ -155,7 +152,6 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				.insert({'bottom': (orderItem.totalPrice) })
 				.observe('keydown', function(event){
 					tmp.txtBox = this;
-					console.debug(tmp.txtBox);
 					tmp.me.keydown(event, function() {
 						$(tmp.txtBox).up('.item_row').down('.glyphicon.glyphicon-floppy-saved').click();
 					});
@@ -490,7 +486,6 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.me._shippingMethods.each(function(method){
 			tmp.shippingMethodSel.insert({'bottom': new Element('option', {'value': method.id}).update(method.name) });
 		})
-		console.debug(tmp.supplier);
 		tmp.newDiv = new Element('div', {'class': 'panel panel-default'})
 			.insert({'bottom': new Element('div', {'class':'panel-heading'})
 				.insert({'bottom': new Element('strong').update('Total Payment Due: ') })
