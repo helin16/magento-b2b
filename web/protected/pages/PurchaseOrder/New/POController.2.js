@@ -283,10 +283,10 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.totalIncGSTBox = $(tmp.me._htmlIds.totalPriceIncludeGST);
 		tmp.totalGSTBox = $(tmp.me._htmlIds.totalPriceGST);
 		tmp.totalExcGSTBox = $(tmp.me._htmlIds.totalPriceExcludeGST);
-		tmp.totalShippingCost = ($(tmp.me._htmlIds.totalShippingCost) ? tmp.me.getValueFromCurrency($F(tmp.me._htmlIds.totalShippingCost)) : 0);
 		
-		tmp.totalIncGST = tmp.me.getValueFromCurrency(tmp.totalIncGSTBox.innerHTML) * 1 + tmp.totalShippingCost * 1 + amount * 1;
-		tmp.totalExcGST = tmp.totalIncGST * 1 / 1.1;
+		tmp.totalExcGST = tmp.me.getValueFromCurrency(tmp.totalIncGSTBox.innerHTML) * 1  + amount * 1;
+		tmp.totalIncGST = tmp.totalExcGST * 1 + 1.1;
+		
 		tmp.totalGST = tmp.totalIncGST * 1 - tmp.totalExcGST * 1;
 		
 		tmp.totalIncGSTBox.update(tmp.me.getCurrency(tmp.totalIncGST));
