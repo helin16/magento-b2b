@@ -133,6 +133,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				.observe('keydown', function(event){
 					tmp.txtBox = this;
 					tmp.me.keydown(event, function() {
+						$(tmp.txtBox).up('.item_row').down('.tprice input').value = tmp.me.getCurrency($(tmp.txtBox).down('input').value);
 						$(tmp.txtBox).up('.item_row').down('.glyphicon.glyphicon-floppy-saved').click();
 					});
 					return false;
