@@ -85,17 +85,6 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		return tmp.newDiv;
 	}
 	/**
-	 * Getting the Supplier div
-	 */
-	,_getSupplierDiv: function (title, content) {
-		return new Element('div', {'class': ''})
-			.insert({'bottom': new Element('dl', {'class': 'dl-condensed dl-horizontal'})
-				.insert({'bottom': new Element('dt', {'style': 'text-align:left'}).update(title) })
-				.insert({'bottom': new Element('dd', {'style': 'text-align:left'}).update(content) })
-			})
-		;
-	}
-	/**
 	 * getting the customer information div
 	 */
 	,_getSupplierInfoPanel: function() {
@@ -108,9 +97,10 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			})
 			.insert({'bottom': new Element('div', {'class': 'panel-body'})
 				.insert({'bottom': new Element('div', {'class': 'row'})
-					.insert({'bottom': new Element('div', {'class': 'col-sm-4'}).update(tmp.me._getSupplierDiv('Name', tmp.supplier.name ) ) })
-					.insert({'bottom': new Element('div', {'class': 'col-sm-4'}).update(tmp.me._getSupplierDiv('Contact Name', tmp.supplier.contactName ) ) })
-					.insert({'bottom': new Element('div', {'class': 'col-sm-4'}).update(tmp.me._getSupplierDiv('Contact Number', tmp.supplier.contactNo ) ) })
+					.insert({'bottom': new Element('div', {'class': 'col-sm-3'}).update(tmp.me._getFormGroup('Name', new Element('input', {'disabled': 'disabled', 'type': 'text', 'value': tmp.supplier.name ? tmp.supplier.name : ''}) ) ) })
+					.insert({'bottom': new Element('div', {'class': 'col-sm-3'}).update(tmp.me._getFormGroup('Contact Name', new Element('input', {'disabled': 'disabled', 'type': 'text', 'value': tmp.supplier.contactName ? tmp.supplier.contactName : ''}) ) ) })
+					.insert({'bottom': new Element('div', {'class': 'col-sm-3'}).update(tmp.me._getFormGroup('Contact Number', new Element('input', {'disabled': 'disabled', 'type': 'value', 'value': tmp.supplier.contactNo ? tmp.supplier.contactNo : ''}) ) ) })
+					.insert({'bottom': new Element('div', {'class': 'col-sm-3'}).update(tmp.me._getFormGroup('Supplier Reference Number', new Element('input', {'required': 'required', 'save-order': 'supplierRefNum', 'type': 'text', 'value': ''}) ) ) })
 				 })
 			});
 		return tmp.newDiv;
@@ -224,7 +214,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.me._signRandID(tmp.btn);
 		tmp.searchTxtBox = $(tmp.btn).up('.product-autocomplete').down('.search-txt');
 		tmp.searchTxt = $F(tmp.searchTxtBox);
-		tmp.me.postAjax(tmp.me.getCallbackId('searchProduct'), {'searchTxt': tmp.searchTxt}, {
+		tmp.me.postAjax(tmp.me.getCallbackId('searchProduct'), {'searchTxt': tmp.searchTxt, 'supplierID': tmp.me._supplier.id}, {
 			'onLoading': function() {
 				jQuery('#' + tmp.btn.id).button('loading');
 			}
