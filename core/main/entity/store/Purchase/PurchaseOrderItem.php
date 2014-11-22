@@ -233,7 +233,7 @@ class PurchaseOrderItem extends BaseEntityAbstract
 	 * 
 	 * @return PurchaseOrderItem
 	 */
-	public function create(PurchaseOrder $po, Product $product, $unitPrice = '0.0000', $qty = 1, $supplierItemCode = '', $description = '', $totalPrice = null)
+	public static function create(PurchaseOrder $po, Product $product, $unitPrice = '0.0000', $qty = 1, $supplierItemCode = '', $description = '', $totalPrice = null)
 	{
 		$class = get_called_class();
 		$entity = new $class();
