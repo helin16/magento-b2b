@@ -296,7 +296,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				tmp.newEl.addClassName('label-success')
 					.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-ok'})});
 			} else {
-				tmp.newEl.addClassName('label-info').writeAttribute('title', 'Over paid to supplier')
+				tmp.newEl.addClassName('label-danger').writeAttribute('title', 'Over paid to supplier')
 					.insert({'bottom': new Element('span', {'class': ' glyphicon glyphicon-export'})});
 			}
 			item.update(tmp.newEl);
@@ -485,7 +485,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 							tmp.newEl.addClassName('label-success')
 								.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-ok'})});
 						} else {
-							tmp.newEl.addClassName('label-info').writeAttribute('title', 'Over paid to supplier')
+							tmp.newEl.addClassName('label-danger').writeAttribute('title', 'Over paid to supplier')
 								.insert({'bottom': new Element('span', {'class': ' glyphicon glyphicon-export'})});
 						}
 						item.update(tmp.newEl);
@@ -626,13 +626,13 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				.insert({'bottom': new Element('strong').update('Creating a new order for: ') })
 				.insert({'bottom': new Element('span', {'class': 'input-group col-sm-6'})
 					.insert({'bottom': new Element('input', {'class': 'form-control search-txt init-focus', 'placeholder': 'customer name or email'}) 
-						.observe('keydown', function(event){
-							tmp.txtBox = this;
-							tmp.me.keydown(event, function() {
-								$(tmp.me._htmlIds.searchPanel).down('.search-btn').click();
-							});
-							return false;
-						})
+//						.observe('keydown', function(event){
+//							tmp.txtBox = this;
+//							tmp.me.keydown(event, function() {
+//								$(tmp.me._htmlIds.searchPanel).down('.search-btn').click();
+//							});
+//							return false;
+//						})
 						.observe('keyup', function(event){
 							tmp.txtBox = this;
 							$(tmp.me._htmlIds.searchPanel).down('.search-btn').click();
