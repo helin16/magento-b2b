@@ -275,7 +275,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.totalGSTBox = $(tmp.me._htmlIds.totalPriceGST);
 		tmp.totalExcGSTBox = $(tmp.me._htmlIds.totalPriceExcludeGST);
 		
-		tmp.totalExcGST = tmp.me.getValueFromCurrency(tmp.totalIncGSTBox.innerHTML) * 1  + amount * 1;
+		tmp.totalExcGST = tmp.me.getValueFromCurrency(tmp.totalExcGSTBox.innerHTML) * 1  + amount * 1;
 		tmp.totalIncGST = tmp.totalExcGST * 1 + 1.1;
 		
 		tmp.totalGST = tmp.totalIncGST * 1 - tmp.totalExcGST * 1;
@@ -286,7 +286,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		
 		
 		tmp.totalPaidAmount = ($(tmp.me._htmlIds.totalPaidAmount) ? tmp.me.getValueFromCurrency($F(tmp.me._htmlIds.totalPaidAmount)) : 0);
-		tmp.totalPaymentDue = tmp.totalIncGST * 1 - tmp.totalPaidAmount;
+		tmp.totalPaymentDue = tmp.totalExcGST * 1 - tmp.totalPaidAmount;
 		$$('.total-payment-due').each(function(item) {
 			tmp.newEl = new Element('strong', {'class': 'label'}).update(tmp.me.getCurrency(tmp.totalPaymentDue) + ' ');
 			if(tmp.totalPaymentDue * 1 > 0) {
@@ -474,8 +474,8 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			.observe('keyup',function(){
 				tmp.totalPaidAmount = this.value==='' ? 0 : this.value;
 				if(jQuery.isNumeric(tmp.totalPaidAmount)) {
-					tmp.totalIncGST = tmp.me.getValueFromCurrency($(tmp.me._htmlIds.totalPriceIncludeGST).innerHTML);
-					tmp.totalPaymentDue = tmp.totalIncGST * 1 - tmp.totalPaidAmount;
+					tmp.totalExcGST = tmp.me.getValueFromCurrency($(tmp.me._htmlIds.totalPriceExcludeGST).innerHTML) * 1;
+					tmp.totalPaymentDue = tmp.totalExcGST * 1 - tmp.totalPaidAmount;
 					$$('.total-payment-due').each(function(item) {
 						tmp.newEl = new Element('strong', {'class': 'label'}).update(tmp.me.getCurrency(tmp.totalPaymentDue) + ' ');
 						if(tmp.totalPaymentDue * 1 > 0) {
@@ -625,19 +625,12 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			.insert({'bottom': new Element('div', {'class': 'panel-heading form-inline'})
 				.insert({'bottom': new Element('strong').update('Creating a new order for: ') })
 				.insert({'bottom': new Element('span', {'class': 'input-group col-sm-6'})
-					.insert({'bottom': new Element('input', {'class': 'form-control search-txt init-focus', 'placeholder': 'customer name or email'}) 
-//						.observe('keydown', function(event){
-//							tmp.txtBox = this;
-//							tmp.me.keydown(event, function() {
-//								$(tmp.me._htmlIds.searchPanel).down('.search-btn').click();
-//							});
-//							return false;
-//						})
+					.insert({'bottom': new Element('input', {'class': 'form-control search-txt init-focus', 'placeholder': 'Supplier name'}) 
 						.observe('keyup', function(event){
 							tmp.txtBox = this;
 							$(tmp.me._htmlIds.searchPanel).down('.search-btn').click();
-							if(tmp.txtBox.value.length>1 && tmp.txtBox.up('#'+pageJs._htmlIds.searchPanel).down('.item_row')!=undefined && tmp.txtBox.up('#'+pageJs._htmlIds.searchPanel).down('tbody').getElementsBySelector('.item_row').length===1) {
-//								tmp.me._searchSupplier($(tmp.me._htmlIds.searchPanel).down('.search-txt'));
+							if(tmp.txtBox.up('#'+pageJs._htmlIds.searchPanel).down('.item_row')!=undefined && tmp.txtBox.up('#'+pageJs._htmlIds.searchPanel).down('tbody').getElementsBySelector('.item_row').length===1) {
+								tmp.txtBox.up('#'+pageJs._htmlIds.searchPanel).down('tbody .item_row .btn').click();
 							};
 						})
 					})
