@@ -39,14 +39,20 @@ class PurchaseOrder extends BaseEntityAbstract
 	 */
 	private $status = self::STATUS_NEW;
 	/**
-	 * The contact person of the supplier for this order
+	 * The contact person's name of the supplier for this order
 	 * 
-	 * @var Person
+	 * @var string
 	 */
-	protected $supplierContact;
+	private $supplierContact = '';
+	/**
+	 * The contact person's contact number of the supplier for this order
+	 *
+	 * @var string
+	 */
+	private $supplierContactNumber = '';
 	private $orderDate;
-	private $totalAmount;
-	private $totalPaid;
+	private $totalAmount = 0;
+	private $totalPaid = 0;
 	/**
 	 * Getter for purchaseOrderNo
 	 *
@@ -135,24 +141,44 @@ class PurchaseOrder extends BaseEntityAbstract
 	/**
 	 * Getter for supplierContact
 	 *
-	 * @return Person
+	 * @return string
 	 */
 	public function getSupplierContact() 
 	{
-		$this->loadManyToOne('supplierContact');
 	    return $this->supplierContact;
 	}
 	/**
 	 * Setter for supplierContact
 	 *
-	 * @param Person $value The supplierContact
+	 * @param string $value The supplierContact
 	 *
 	 * @return PurchaseOrder
 	 */
-	public function setSupplierContact(Person $value = null) 
+	public function setSupplierContact($value) 
 	{
 	    $this->supplierContact = $value;
 	    return $this;
+	}
+	/**
+	 * Getter for supplierContactNumber
+	 *
+	 * @return string
+	 */
+	public function getSupplierContactNumber()
+	{
+		return $this->supplierContactNumber;
+	}
+	/**
+	 * Setter for supplierContactNumber
+	 *
+	 * @param string $value The supplierContactNumber
+	 *
+	 * @return PurchaseOrder
+	 */
+	public function setSupplierContactNumber($value)
+	{
+		$this->supplierContactNumber = $value;
+		return $this;
 	}
 	/**
 	 * Getter for orderDate
@@ -299,7 +325,8 @@ class PurchaseOrder extends BaseEntityAbstract
 		DaoMap::setManyToOne('supplier', 'Supplier', 'po_sup');
 		DaoMap::setStringType('supplierRefNo', 'varchar', 100); 
 		DaoMap::setStringType('status', 'varchar', 20); 
-		DaoMap::setManyToOne('supplierContact', 'Person', 'po_p', true);
+		DaoMap::setStringType('supplierContact', 'varchar', 100);
+		DaoMap::setStringType('supplierContactNumber', 'varchar', 100);
 		DaoMap::setDateType('orderDate');
 		DaoMap::setIntType('totalAmount', 'Double', '10,4');
 		DaoMap::setIntType('totalPaid', 'Double', '10,4');
@@ -311,6 +338,8 @@ class PurchaseOrder extends BaseEntityAbstract
 		DaoMap::createIndex('orderDate');
 		DaoMap::createIndex('totalAmount');
 		DaoMap::createIndex('totalPaid');
+		DaoMap::createIndex('supplierContact');
+		DaoMap::createIndex('supplierContactNumber');
 	
 		DaoMap::commit();
 	}
@@ -332,17 +361,19 @@ class PurchaseOrder extends BaseEntityAbstract
 	 * 
 	 * @param Supplier $supplier
 	 * @param string   $supplierRefNo
-	 * @param Person   $supplierContact
+	 * @param string   $supplierContact
+	 * @param string   $supplierContactNumber
 	 * 
 	 * @return PurchaseOrder
 	 */
-	public static function create(Supplier $supplier, $supplierRefNo = '', Person $supplierContact = null)
+	public static function create(Supplier $supplier, $supplierRefNo = '', $supplierContact = '', $supplierContactNumber = '')
 	{
 		$class = get_called_class();
 		$entity = new $class();
 		return $entity->setSupplier($supplier)
 			->setSupplierRefNo(trim($supplierRefNo))
 			->setSupplierContact($supplierContact)
+			->setSupplierContactNumber($supplierContactNumber)
 			->save();
 	}
 }

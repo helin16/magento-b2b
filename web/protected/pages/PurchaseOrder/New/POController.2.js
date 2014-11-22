@@ -636,6 +636,9 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 						.observe('keyup', function(event){
 							tmp.txtBox = this;
 							$(tmp.me._htmlIds.searchPanel).down('.search-btn').click();
+							if(tmp.txtBox.value.length>1 && tmp.txtBox.up('#'+pageJs._htmlIds.searchPanel).down('.item_row')!=undefined && tmp.txtBox.up('#'+pageJs._htmlIds.searchPanel).down('tbody').getElementsBySelector('.item_row').length===1) {
+//								tmp.me._searchSupplier($(tmp.me._htmlIds.searchPanel).down('.search-txt'));
+							};
 						})
 					})
 					.insert({'bottom': new Element('span', {'class': 'input-group-btn search-btn'})

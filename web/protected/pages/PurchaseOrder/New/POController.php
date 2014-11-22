@@ -122,12 +122,13 @@ class POController extends BPCPageAbstract
 			if(!$supplier instanceof Supplier)
 				throw new Exception('Invalid Supplier passed in!');
 			$supplierRefNum = trim($param->CallbackParameter->supplierRefNum);
-			$personDummy = Person::getAll(true,1,1, array('p.id' => 'asc') );
-			$personDummy = $personDummy[0];
-			var_dump($personDummy);
+// 			$personDummy = Person::getAll(true,1,1, array('p.id' => 'asc') );
+// 			$personDummy = $personDummy[0];
+// 			var_dump($personDummy);
 			
 // 			$purchaseOrder = PurchaseOrder::create($supplier,$supplierRefNum);
-			PurchaseOrder::create($supplier,$supplierRefNum);
+			$purchaseOrder = PurchaseOrder::create($supplier,$supplierRefNum,'Name','1234');
+// 			$purchaseOrder->setT
 			var_dump($purchaseOrder);
 			
 			
