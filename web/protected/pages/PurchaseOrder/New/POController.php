@@ -116,10 +116,22 @@ class POController extends BPCPageAbstract
 		try
 		{
 			var_dump($param->CallbackParameter);
+			
+// 			Dao::beginTransaction();
 			$supplier = Supplier::get(trim($param->CallbackParameter->supplier->id));
 			if(!$supplier instanceof Supplier)
-				throw new Exception('Invalid Purchase Order passed in!');
-			PurchaseOrder::create($supplier,$supplier->getId());
+				throw new Exception('Invalid Supplier passed in!');
+			$supplierRefNum = trim($param->CallbackParameter->supplierRefNum);
+			$personDummy = Person::getAll(true,1,1, array('p.id' => 'asc') );
+			$personDummy = $personDummy[0];
+			var_dump($personDummy);
+			
+// 			$purchaseOrder = PurchaseOrder::create($supplier,$supplierRefNum);
+			PurchaseOrder::create($supplier,$supplierRefNum);
+			var_dump($purchaseOrder);
+			
+			
+// 			Dao::commitTransaction();
 		}
 		catch(Exception $ex)
 		{

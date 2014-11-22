@@ -3,7 +3,7 @@
  */
 var PageJs = new Class.create();
 PageJs.prototype = Object.extend(new BPCPageJs(), {
-	_htmlIds: {'itemDiv': '', 'searchPanel': 'search_panel', 'totalPriceExcludeGST': 'total_price_exclude_gst', 'totalPriceGST': 'total_price_gst', 'totalPriceIncludeGST': 'total_price_include_gst', 'totalPaidAmount': 'total-paid-amount', 'totalShippingCost': 'total-shipping-cost'}
+	_htmlIds: {'paymentPanel': 'payment_panel', 'itemDiv': '', 'searchPanel': 'search_panel', 'totalPriceExcludeGST': 'total_price_exclude_gst', 'totalPriceGST': 'total_price_gst', 'totalPriceIncludeGST': 'total_price_include_gst', 'totalPaidAmount': 'total-paid-amount', 'totalShippingCost': 'total-shipping-cost'}
 	,_supplier: null
 	/**
 	 * Setting the HTMLIDS
@@ -289,17 +289,19 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.totalPaymentDue = tmp.totalIncGST * 1 - tmp.totalPaidAmount;
 		$$('.total-payment-due').each(function(item) {
 			tmp.newEl = new Element('strong', {'class': 'label'}).update(tmp.me.getCurrency(tmp.totalPaymentDue) + ' ');
-			if(tmp.totalPaymentDue * 1 < 0) {
-				tmp.newEl.addClassName('label-danger').writeAttribute('title', 'Customer over paid!')
-					.insert({'bottom': new Element('span', {'class': ' glyphicon glyphicon-warning-sign'})});
+			if(tmp.totalPaymentDue * 1 > 0) {
+				tmp.newEl.addClassName('label-info').writeAttribute('title', 'Need to pay supplier')
+					.insert({'bottom': new Element('span', {'class': ' glyphicon glyphicon-import'})});
 			} else if (tmp.totalPaymentDue * 1 === 0) {
 				tmp.newEl.addClassName('label-success')
 					.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-ok'})});
 			} else {
-				tmp.newEl.addClassName('label-default');
+				tmp.newEl.addClassName('label-info').writeAttribute('title', 'Over paid to supplier')
+					.insert({'bottom': new Element('span', {'class': ' glyphicon glyphicon-export'})});
 			}
 			item.update(tmp.newEl);
-		})
+		});
+		$$('#'+tmp.me._htmlIds.paymentPanel).first().getElementsBySelector('input').first('disabled').value = tmp.me.getCurrency(tmp.totalExcGST);
 		return tmp.me;
 	}
 	/**
@@ -377,7 +379,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.data = {
 			'product': {'name': tmp.skuAutoComplete	}
 			,'unitPrice': tmp.me._getFormGroup( null, new Element('input', {'class': 'input-sm', 'new-order-item': 'unitPrice', 'required': 'Required!' , 'value': tmp.me.getCurrency(0)})
-				.observe('change', function(){
+				.observe('keyup', function(){
 					tmp.row =$(this).up('.item_row');
 					tmp.unitPrice = tmp.me.getValueFromCurrency($F(this));
 					tmp.qty = $F(tmp.row.down('[new-order-item=qtyOrdered]'));
@@ -385,7 +387,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				})
 			)
 			,'qtyOrdered': tmp.me._getFormGroup( null, new Element('input', {'class': 'input-sm', 'new-order-item': 'qtyOrdered', 'required': 'Required!', 'value': '1'})
-				.observe('change', function(){
+				.observe('keyup', function(){
 					tmp.row =$(this).up('.item_row');
 					tmp.unitPrice = tmp.me.getValueFromCurrency($F(tmp.row.down('[new-order-item=unitPrice]')));
 					tmp.qty = $F(this);
@@ -393,7 +395,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				})
 			)
 			,'totalPrice': tmp.me._getFormGroup( null, new Element('input', {'class': 'input-sm', 'new-order-item': 'totalPrice', 'required': 'Required!', 'value': tmp.me.getCurrency(0)})
-				.observe('change', function(){
+				.observe('keyup', function(){
 					tmp.row =$(this).up('.item_row');
 					tmp.totalPrice = tmp.me.getValueFromCurrency($F(this));
 					tmp.qty = $F(tmp.row.down('[new-order-item=qtyOrdered]'));
@@ -467,12 +469,33 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		var tmp = {};
 		tmp.me = this;
 		tmp.supplier = tmp.me._supplier;
-		tmp.paymentMethodSel = new Element('input', {'class': '', 'save-order': 'totalAmount'});
-		tmp.shippingMethodSel = new Element('input', {'class': '', 'save-order': 'totalPaid'});
-		tmp.newDiv = new Element('div', {'class': 'panel panel-default'})
+		tmp.paymentMethodSel = new Element('input', {'class': 'text-right', 'disabled': 'disabled', 'save-order': 'totalAmount'});
+		tmp.shippingMethodSel = new Element('input', {'class': 'text-right', 'id': tmp.me._htmlIds.totalPaidAmount, 'save-order': 'totalPaid'})
+			.observe('keyup',function(){
+				tmp.totalPaidAmount = this.value==='' ? 0 : this.value;
+				if(jQuery.isNumeric(tmp.totalPaidAmount)) {
+					tmp.totalIncGST = tmp.me.getValueFromCurrency($(tmp.me._htmlIds.totalPriceIncludeGST).innerHTML);
+					tmp.totalPaymentDue = tmp.totalIncGST * 1 - tmp.totalPaidAmount;
+					$$('.total-payment-due').each(function(item) {
+						tmp.newEl = new Element('strong', {'class': 'label'}).update(tmp.me.getCurrency(tmp.totalPaymentDue) + ' ');
+						if(tmp.totalPaymentDue * 1 > 0) {
+							tmp.newEl.addClassName('label-info').writeAttribute('title', 'Need to pay supplier')
+								.insert({'bottom': new Element('span', {'class': ' glyphicon glyphicon-import'})});
+						} else if (tmp.totalPaymentDue * 1 === 0) {
+							tmp.newEl.addClassName('label-success')
+								.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-ok'})});
+						} else {
+							tmp.newEl.addClassName('label-info').writeAttribute('title', 'Over paid to supplier')
+								.insert({'bottom': new Element('span', {'class': ' glyphicon glyphicon-export'})});
+						}
+						item.update(tmp.newEl);
+					});					
+				}
+			});
+		tmp.newDiv = new Element('div', {'class': 'panel panel-default', 'id': tmp.me._htmlIds.paymentPanel})
 			.insert({'bottom': new Element('div', {'class':'panel-heading'})
 				.insert({'bottom': new Element('strong').update('Total Payment Due: ') })
-				.insert({'bottom': new Element('span', {'class': 'pull-right total-payment-due'}).update(tmp.me.getCurrency(5) ) })
+				.insert({'bottom': new Element('span', {'class': 'pull-right total-payment-due'}).update(tmp.me.getCurrency(0) ) })
 			})
 			.insert({'bottom': new Element('div', {'class':'list-group'})
 				.insert({'bottom': new Element('div', {'class': 'list-group-item'})
@@ -609,6 +632,10 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 								$(tmp.me._htmlIds.searchPanel).down('.search-btn').click();
 							});
 							return false;
+						})
+						.observe('keyup', function(event){
+							tmp.txtBox = this;
+							$(tmp.me._htmlIds.searchPanel).down('.search-btn').click();
 						})
 					})
 					.insert({'bottom': new Element('span', {'class': 'input-group-btn search-btn'})
