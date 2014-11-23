@@ -280,9 +280,9 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.totalExcGSTBox = $(tmp.me._htmlIds.totalPriceExcludeGST);
 		
 		tmp.totalExcGST = tmp.me.getValueFromCurrency(tmp.totalExcGSTBox.innerHTML) * 1  + amount * 1;
-		tmp.totalIncGST = tmp.totalExcGST * 1 + 1.1;
+		tmp.totalIncGST = tmp.totalExcGST ? (tmp.totalExcGST * 1 + 1.1) : 0;
 		
-		tmp.totalGST = tmp.totalIncGST * 1 - tmp.totalExcGST * 1;
+		tmp.totalGST = tmp.totalExcGST ? (tmp.totalIncGST * 1 - tmp.totalExcGST * 1) : 0;
 		
 		tmp.totalIncGSTBox.update(tmp.me.getCurrency(tmp.totalIncGST));
 		tmp.totalGSTBox.update(tmp.me.getCurrency(tmp.totalGST));
@@ -360,7 +360,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					if(!confirm('You remove this entry.\n\nContinue?'))
 						return;
 					tmp.row = $(this).up('.item_row');
-					tmp.me._recalculateSummary( 0 - tmp.row.retrieve('data').totalPrice * 1 );
+					tmp.me._recalculateSummary( 0 - tmp.me.getValueFromCurrency(tmp.row.retrieve('data').totalPrice) * 1 );
 					tmp.row.remove();
 				})
 			})
