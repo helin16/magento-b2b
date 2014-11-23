@@ -94,12 +94,20 @@ class POController extends BPCPageAbstract
 			{
 				// Min price: across all supplier for one product, Latest price: for one supplier
 				$array = $product->getJson();
-				$array['minPrice'] = 0;
-				$array['latestPrice'] = 0;
-				$minPrice = PurchaseOrderItem::getAllByCriteria('productId = ?', array($product->getId()), true, 1, 1, array('unitPrice'=> 'asc'));
-				$minPrice = sizeof($minPrice) ? $minPrice[0]->getUnitPrice() : 0;
-				var_dump($minPrice);
+				$array['minProductPrice'] = 0;
+				$array['lastSupplierPrice'] = 0;
+				$array['minSupplierPrice'] = 0;
+				$minProductPrice = PurchaseOrderItem::getAllByCriteria('productId = ?', array($product->getId()), true, 1, 1, array('unitPrice'=> 'asc'));
+				$minProductPrice = sizeof($minProductPrice) ? $minProductPrice[0]->getUnitPrice() : 0;
+				$lastSupplierPrice = PurchaseOrderItem::getAllByCriteria('productId = ? and supplierId = ?', array($product->getId(), $supplierID), true, 1, 1, array('id'=> 'desc'));
+				$lastSupplierPrice = sizeof($lastSupplierPrice) ? $lastSupplierPrice[0]->getUnitPrice() : 0;
+				$minSupplierPrice = PurchaseOrderItem::getAllByCriteria('productId = ? and supplierId = ?', array($product->getId(), $supplierID), true, 1, 1, array('unitPrice'=> 'asc'));
+				$minSupplierPrice = sizeof($minSupplierPrice) ? $minSupplierPrice[0]->getUnitPrice() : 0;
+				$array['minProductPrice'] = $minProductPrice;
+				$array['lastSupplierPrice'] = $lastSupplierPrice;
+				$array['minSupplierPrice'] = $minSupplierPrice;
 				$items[] = $array;
+				var_dump($items);
 			}
 			$results['items'] = $items;
 		}

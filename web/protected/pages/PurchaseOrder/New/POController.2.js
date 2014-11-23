@@ -53,7 +53,6 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		}
 		tmp.data.supplier = tmp.me._supplier;
 		tmp.data.totalAmount = tmp.data.totalAmount ? tmp.me.getValueFromCurrency(tmp.data.totalAmount) : '';
-		console.debug(tmp.data);
 		tmp.me.postAjax(tmp.me.getCallbackId('saveOrder'), tmp.data, {
 		});
 		return tmp.me;
@@ -167,6 +166,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 	,_getSearchPrductResultRow: function(product, searchTxtBox) {
 		var tmp = {};
 		tmp.me = this;
+//		console.debug(product);
 		tmp.defaultImgSrc = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjZWVlIi8+PHRleHQgdGV4dC1hbmNob3I9Im1pZGRsZSIgeD0iMzIiIHk9IjMyIiBzdHlsZT0iZmlsbDojYWFhO2ZvbnQtd2VpZ2h0OmJvbGQ7Zm9udC1zaXplOjEycHg7Zm9udC1mYW1pbHk6QXJpYWwsSGVsdmV0aWNhLHNhbnMtc2VyaWY7ZG9taW5hbnQtYmFzZWxpbmU6Y2VudHJhbCI+NjR4NjQ8L3RleHQ+PC9zdmc+';
 		tmp.newRow = new Element('a', {'class': 'list-group-item', 'href': 'javascript: void(0);'})
 			.insert({'bottom': new Element('div', {'class': 'row'})
@@ -176,12 +176,31 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					})
 				})
 				.insert({'bottom': new Element('div', {'class': 'col-xs-10'})
-					.insert({'bottom': new Element('strong').update(product.name)
-						.insert({'bottom': new Element('small', {'class': 'pull-right'}).update('SKU: ' + product.sku) })
+					.insert({'bottom': new Element('div', {'class': 'row'})
+						.insert({'bottom': new Element('strong').update(product.name)
+							.insert({'bottom': new Element('small', {'class': 'pull-right'}).update('SKU: ' + product.sku) })
+						})
+						.insert({'bottom': new Element('div')
+							.insert({'bottom': new Element('small').update(product.shortDescription) })
+						})
 					})
-					.insert({'bottom': new Element('div')
-						.insert({'bottom': new Element('small').update(product.shortDescription) })
+					.insert({'bottom': new Element('div', {'class': 'row', 'style': (product.minProductPrice || product.lastSupplierPrice || product.minSupplierPrice) ? 'height: 2px; background-color: brown;' : 'display:none'}).update('&nbsp;') })
+					.insert({'bottom': new Element('div', {'class': 'row small'})
+						.insert({'bottom': new Element('span', {'style': product.minProductPrice ? '': 'display:none'}).update('Minimum product price: ')
+							.insert({'bottom': new Element('strong').update(tmp.me.getCurrency(product.minProductPrice)) })
+						})
 					})
+					.insert({'bottom': new Element('div', {'class': 'row small'})
+						.insert({'bottom': new Element('span', {'style': product.lastSupplierPrice ? '': 'display:none'}).update('Last supplier price: ')
+							.insert({'bottom': new Element('strong').update(tmp.me.getCurrency(product.lastSupplierPrice)) })
+						})
+					})
+					.insert({'bottom': new Element('div', {'class': 'row small'})
+						.insert({'bottom': new Element('span', {'style': product.minSupplierPrice ? '': 'display:none'}).update('Minimum supplier price: ')
+							.insert({'bottom': new Element('strong').update(tmp.me.getCurrency(product.minSupplierPrice)) })
+						})
+					})
+					
 				})
 			})
 			.observe('click', function(){
