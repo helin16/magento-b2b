@@ -50,6 +50,19 @@ class PurchaseOrder extends BaseEntityAbstract
 	 * @var string
 	 */
 	private $supplierContactNumber = '';
+	/**
+	 * The the shipping cost for this order
+	 * 
+	 * @var string
+	 */
+	private $shippingCost = 0;
+	/**
+	 * The the handling cost for this order
+	 * 
+	 * @var string
+	 */
+	private $handlingCost = 0;
+	
 	private $orderDate;
 	private $totalAmount = 0;
 	private $totalPaid = 0;
@@ -187,6 +200,48 @@ class PurchaseOrder extends BaseEntityAbstract
 	public function setSupplierContactNumber($value)
 	{
 		$this->supplierContactNumber = $value;
+		return $this;
+	}
+	/**
+	 * Getter for PO shipping cost
+	 *
+	 * @return string
+	 */
+	public function getshippingCost()
+	{
+		return $this->shippingCost;
+	}
+	/**
+	 * Setter for PO shipping cost
+	 *
+	 * @param string $value The shippingCost
+	 *
+	 * @return string
+	 */
+	public function setshippingCost($value)
+	{
+		$this->shippingCost = $value;
+		return $this;
+	}
+	/**
+	 * Getter for PO handlingCost
+	 *
+	 * @return string
+	 */
+	public function gethandlingCost()
+	{
+		return $this->handlingCost;
+	}
+	/**
+	 * Setter for PO handlingCost
+	 *
+	 * @param string $value The handlingCost
+	 *
+	 * @return string
+	 */
+	public function sethandlingCost($value)
+	{
+		$this->handlingCost = $value;
 		return $this;
 	}
 	/**
@@ -336,6 +391,8 @@ class PurchaseOrder extends BaseEntityAbstract
 		DaoMap::setStringType('status', 'varchar', 20); 
 		DaoMap::setStringType('supplierContact', 'varchar', 100);
 		DaoMap::setStringType('supplierContactNumber', 'varchar', 100);
+		DaoMap::setStringType('shippingCost', 'Double', '10,4');
+		DaoMap::setStringType('handlingCost', 'Double', '10,4');
 		DaoMap::setDateType('orderDate');
 		DaoMap::setIntType('totalAmount', 'Double', '10,4');
 		DaoMap::setIntType('totalPaid', 'Double', '10,4');
@@ -349,7 +406,9 @@ class PurchaseOrder extends BaseEntityAbstract
 		DaoMap::createIndex('totalPaid');
 		DaoMap::createIndex('supplierContact');
 		DaoMap::createIndex('supplierContactNumber');
-	
+		DaoMap::createIndex('shippingCost');
+		DaoMap::createIndex('handlingCost');
+		
 		DaoMap::commit();
 	}
 	/**
@@ -372,10 +431,12 @@ class PurchaseOrder extends BaseEntityAbstract
 	 * @param string   $supplierRefNo
 	 * @param string   $supplierContact
 	 * @param string   $supplierContactNumber
+	 * @param string   $shippingCost
+	 * @param string   $handlingCost
 	 * 
 	 * @return PurchaseOrder
 	 */
-	public static function create(Supplier $supplier, $supplierRefNo = '', $supplierContact = '', $supplierContactNumber = '')
+	public static function create(Supplier $supplier, $supplierRefNo = '', $supplierContact = '', $supplierContactNumber = '',$shippingCost = 0, $handlingCost = 0)
 	{
 		$class = get_called_class();
 		$entity = new $class();
@@ -383,6 +444,8 @@ class PurchaseOrder extends BaseEntityAbstract
 			->setSupplierRefNo(trim($supplierRefNo))
 			->setSupplierContact($supplierContact)
 			->setSupplierContactNumber($supplierContactNumber)
+			->setshippingCost($shippingCost)
+			->sethandlingCost($handlingCost)
 			->save();
 	}
 }

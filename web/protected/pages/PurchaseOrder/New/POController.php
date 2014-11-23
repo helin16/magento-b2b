@@ -124,7 +124,9 @@ class POController extends BPCPageAbstract
 			$supplierRefNum = trim($param->CallbackParameter->supplierRefNum);
 			$supplierContactName = trim($param->CallbackParameter->contactName);
 			$supplierContactNo = trim($param->CallbackParameter->contactNo);
-			$purchaseOrder = PurchaseOrder::create($supplier,$supplierRefNum,$supplierContactName,$supplierContactNo);
+			$shippingCost = trim($param->CallbackParameter->shippingCost);
+			$handlingCost = trim($param->CallbackParameter->handlingCost);
+			$purchaseOrder = PurchaseOrder::create($supplier,$supplierRefNum,$supplierContactName,$supplierContactNo,$shippingCost,$handlingCost);
 			$purchaseOrderTotalAmount = trim($param->CallbackParameter->totalAmount);
 			$purchaseOrderTotalPaid = trim($param->CallbackParameter->totalPaid);
 			$purchaseOrder->setTotalAmount($purchaseOrderTotalAmount)->setTotalPaid($purchaseOrderTotalPaid)->save();
@@ -137,7 +139,6 @@ class POController extends BPCPageAbstract
 				$product = Product::get($productId);
 				if(!$product instanceof Product)
 					throw new Exception('Invalid Product passed in!');
-				var_dump($productUnitPrice);
 				$purchaseOrder->addItem($product,$productUnitPrice,$qtyOrdered,'','',$productTotalPrice) -> save();
 			};
 			var_dump($purchaseOrder);
