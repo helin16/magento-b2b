@@ -10,3 +10,5 @@ Pause
 :: Import sql file
 c:\wamp\bin\mysql\mysql5.6.17\bin\mysql.exe -u root -proot bpcinternal < .\bpcinternal.sql
 Pause
+c:\wamp\bin\mysql\mysql5.6.17\bin\mysql.exe -u root -proot bpcinternal < ..\PO.sql
+Pause
