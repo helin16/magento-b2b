@@ -40,9 +40,23 @@ class DetailsController extends DetailsPageAbstract
 			$purchaseOrder = new PurchaseOrder();
 		else if(!($purchaseOrder = PurchaseOrder::get($this->Request['id'])) instanceof PurchaseOrder)
 			die('Invalid Purchase Order!');
-		
+		$statusOptions =  $purchaseOrder->getStatusOptions();
+// 		var_dump($products[0]->getProduct());die;
+// 		var_dump($products);die;
+		$purchaseOrderItems = array();
+		foreach (PurchaseOrderItem::getAllByCriteria('purchaseOrderId = ?', array($purchaseOrder->getId()), true, 1, DaoQuery::DEFAUTL_PAGE_SIZE, array('po_item.id'=>'asc')) as $item) {
+			$product = $item->getProduct();
+			if(!$product instanceof Product)
+				throw new Exception('Invalid Product passed in!');
+			$unitPrice = $item->getUnitPrice();
+			$qty = $item->getQty();
+			$totalPrice = $item->getTotalPrice();
+			array_push($purchaseOrderItems,array('product'=> $product, 'unitPrice'=> $unitPrice, 'qrt'=> $qty, 'totalPrice'=> $totalPrice));
+		};
 		$js = parent::_getEndJs();
 		$js .= "pageJs.setPreData(" . json_encode($purchaseOrder->getJson()) . ")"; 
+		$js .= ".setStatusOptions(" . json_encode($statusOptions) . ")";
+		$js .= ".setPurchaseOrderItems(" . json_encode($purchaseOrderItems) . ")";
 		$js .= ".load()";
 		$js .= ".bindAllEventNObjects();";
 		return $js;

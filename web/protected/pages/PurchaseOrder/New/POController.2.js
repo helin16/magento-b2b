@@ -42,7 +42,10 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			return tmp.me;
 		tmp.data.items = [];
 		$$('.order-item-row').each(function(item){
-			tmp.data.items.push(item.retrieve('data'));
+			tmp.item = item.retrieve('data');
+			tmp.item.totalPrice = tmp.item.totalPrice ? tmp.me.getValueFromCurrency(tmp.item.totalPrice) : '';
+			tmp.item.unitPrice = tmp.item.unitPrice ? tmp.me.getValueFromCurrency(tmp.item.unitPrice) : '';
+			tmp.data.items.push(tmp.item);
 		});
 		if(tmp.data.items.size() <= 0) {
 			tmp.me.showModalBox('<strong class="text-danger">Error</strong>', 'At least one order item is needed!', true);
@@ -50,6 +53,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		}
 		tmp.data.supplier = tmp.me._supplier;
 		tmp.data.totalAmount = tmp.data.totalAmount ? tmp.me.getValueFromCurrency(tmp.data.totalAmount) : '';
+		console.debug(tmp.data);
 		tmp.me.postAjax(tmp.me.getCallbackId('saveOrder'), tmp.data, {
 		});
 		return tmp.me;

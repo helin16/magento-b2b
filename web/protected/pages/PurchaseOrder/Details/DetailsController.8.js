@@ -9,7 +9,22 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 	 */
 	,setPreData: function(purchaseorder) {
 		this._purchaseorder = purchaseorder;
-		console.debug(this);
+		console.debug(this._purchaseorder);
+		return this;
+	}
+	/**
+	 * setting the status options
+	 */
+	,setStatusOptions: function(statusOptions) {
+		this._statusOptions = statusOptions;
+		return this;
+	}
+	/**
+	 * setting the Purchase Order Items
+	 */
+	,setPurchaseOrderItems: function(purchaseOrderItems) {
+		this._purchaseOrderItems = purchaseOrderItems;
+		console.debug(purchaseOrderItems);
 		return this;
 	}
 	/**
@@ -19,7 +34,6 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		var tmp = {};
 		tmp.me = this;
 		
-		console.debug(tmp.me._purchaseorder);
 		tmp.newDiv = new Element('div')
 		.insert({'bottom': new Element('div', {'class': 'row'})
 			.insert({'bottom': new Element('div', {'class': 'col-sm-12'})
@@ -66,7 +80,6 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		if(!window.parent)
 			return;
 		tmp.parentWindow = window.parent;
-//		console.debug($(tmp.parentWindow.document.body));return;
 		tmp.row = $(tmp.parentWindow.document.body).down('#' + tmp.parentWindow.pageJs.resultDivId + ' .item_row[item_id=' + tmp.me._item.id + ']');
 		if(tmp.row) {
 			tmp.row.replace(tmp.parentWindow.pageJs._getResultRow(tmp.me._item));
@@ -81,7 +94,12 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		var tmp = {};
 		tmp.me = this;
 		tmp.item = item;
-		console.debug(tmp.item);
+		tmp.statusOptionSel = new Element('select', {'class': '', 'save-item': 'status'})
+			.insert({'bottom': new Element('option', {'value': tmp.item.status}).update(tmp.item.status) });
+		tmp.me._statusOptions.each(function(option){
+			if(option!==tmp.item.status)
+				tmp.statusOptionSel.insert({'bottom': new Element('option', {'value': option}).update(option) });
+		})
 		tmp.newDiv = new Element('div', {'class': 'panel panel-default purchaseorder-summary'})
 		.insert({'bottom': new Element('div', {'class': 'panel-heading'})
 			.insert({'bottom': new Element('a', {'href': 'javascript: void(0);', 'title': 'click to show/hide below'})
@@ -101,8 +119,10 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 				.insert({'bottom': new Element('strong', {'class': 'col-sm-4 pull-left'}).update('Purchase Order Info') })
 			})
 			.insert({'bottom': new Element('div', {'class': 'row'})
+				.insert({'bottom': new Element('div', {'class': 'col-sm-1 purchaseOrderNo'}).update(tmp.me._getFormGroup('PO Number', new Element('input', {'disabled': 'disabled', 'type': 'value', 'value': tmp.item.purchaseOrderNo ? tmp.item.purchaseOrderNo : ''}) ) ) })
 				.insert({'bottom': new Element('div', {'class': 'col-sm-1 purchaseRefNo'}).update(tmp.me._getFormGroup('PO RefNumber', new Element('input', {'save-item': 'purchaseRefNo', 'type': 'value', 'value': tmp.item.supplierRefNo ? tmp.item.supplierRefNo : ''}) ) ) })
-				.insert({'bottom': new Element('div', {'class': 'col-sm-1 purchaseOrderNo'}).update(tmp.me._getFormGroup('Mage ID', new Element('input', {'save-item': 'purchaseOrderNo', 'type': 'value', 'value': tmp.item.purchaseOrderNo ? tmp.item.purchaseOrderNo : ''}) ) ) })
+				
+				.insert({'bottom': new Element('div', {'class': 'col-sm-1 status'}).update(tmp.me._getFormGroup('Status', tmp.statusOptionSel ) ) })
 				.insert({'bottom': new Element('div', {'class': 'col-sm-1 active'}).update(tmp.me._getFormGroup('Active?', new Element('input', {'save-item': 'active', 'type': 'checkbox', 'checked': tmp.item.active }) ) ) })
 				.insert({'bottom': new Element('div', {'class': 'col-sm-2 orderDate'}).update(tmp.me._getFormGroup('Ordered Date', 
 							new Element('input', {'class': 'datepicker', 'save-item': 'orderDate', 'value': (tmp.item.orderDate ? tmp.item.orderDate : '') })  

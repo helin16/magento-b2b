@@ -115,24 +115,33 @@ class POController extends BPCPageAbstract
 		$results = $errors = array();
 		try
 		{
-			var_dump($param->CallbackParameter);
+// 			var_dump($param->CallbackParameter);
 			
-// 			Dao::beginTransaction();
+			Dao::beginTransaction();
 			$supplier = Supplier::get(trim($param->CallbackParameter->supplier->id));
 			if(!$supplier instanceof Supplier)
 				throw new Exception('Invalid Supplier passed in!');
 			$supplierRefNum = trim($param->CallbackParameter->supplierRefNum);
-// 			$personDummy = Person::getAll(true,1,1, array('p.id' => 'asc') );
-// 			$personDummy = $personDummy[0];
-// 			var_dump($personDummy);
-			
-// 			$purchaseOrder = PurchaseOrder::create($supplier,$supplierRefNum);
-			$purchaseOrder = PurchaseOrder::create($supplier,$supplierRefNum,'Name','1234');
-// 			$purchaseOrder->setT
+			$supplierContactName = trim($param->CallbackParameter->contactName);
+			$supplierContactNo = trim($param->CallbackParameter->contactNo);
+			$purchaseOrder = PurchaseOrder::create($supplier,$supplierRefNum,$supplierContactName,$supplierContactNo);
+			$purchaseOrderTotalAmount = trim($param->CallbackParameter->totalAmount);
+			$purchaseOrderTotalPaid = trim($param->CallbackParameter->totalPaid);
+			$purchaseOrder->setTotalAmount($purchaseOrderTotalAmount)->setTotalPaid($purchaseOrderTotalPaid)->save();
+			foreach ($param->CallbackParameter->items as $item) {
+				$productId = trim($item->product->id);
+				$productUnitPrice = trim($item->unitPrice);
+				$qtyOrdered = trim($item->qtyOrdered);
+				$productWtyOrdered = trim($item->qtyOrdered);
+				$productTotalPrice = trim($item->totalPrice);
+				$product = Product::get($productId);
+				if(!$product instanceof Product)
+					throw new Exception('Invalid Product passed in!');
+				var_dump($productUnitPrice);
+				$purchaseOrder->addItem($product,$productUnitPrice,$qtyOrdered,'','',$productTotalPrice) -> save();
+			};
 			var_dump($purchaseOrder);
-			
-			
-// 			Dao::commitTransaction();
+			Dao::commitTransaction();
 		}
 		catch(Exception $ex)
 		{
