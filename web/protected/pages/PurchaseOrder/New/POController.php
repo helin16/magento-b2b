@@ -87,11 +87,19 @@ class POController extends BPCPageAbstract
 		{
 			$items = array();
 			$searchTxt = isset($param->CallbackParameter->searchTxt) ? trim($param->CallbackParameter->searchTxt) : '';
+			$supplierID = isset($param->CallbackParameter->supplierID) ? trim($param->CallbackParameter->supplierID) : '';
 			$productIdsFromBarcode = array_map(create_function('$a', 'return $a->getProduct()->getId();'), ProductCode::getAllByCriteria('code = ?', array($searchTxt)));
 			$where = (count($productIdsFromBarcode) === 0 ? '' : ' OR id in (' . implode(',', $productIdsFromBarcode) . ')');
 			foreach(Product::getAllByCriteria('name like :searchTxt OR sku like :searchTxt' . $where, array('searchTxt' => $searchTxt . '%'), true, 1, DaoQuery::DEFAUTL_PAGE_SIZE) as $product)
 			{
-				$items[] = $product->getJson();
+				// Min price: across all supplier for one product, Latest price: for one supplier
+				$array = $product->getJson();
+				$array['minPrice'] = 0;
+				$array['latestPrice'] = 0;
+				$minPrice = PurchaseOrderItem::getAllByCriteria('productId = ?', array($product->getId()), true, 1, 1, array('unitPrice'=> 'asc'));
+				$minPrice = sizeof($minPrice) ? $minPrice[0]->getUnitPrice() : 0;
+				var_dump($minPrice);
+				$items[] = $array;
 			}
 			$results['items'] = $items;
 		}
@@ -139,7 +147,7 @@ class POController extends BPCPageAbstract
 				$product = Product::get($productId);
 				if(!$product instanceof Product)
 					throw new Exception('Invalid Product passed in!');
-				$purchaseOrder->addItem($product,$productUnitPrice,$qtyOrdered,'','',$productTotalPrice) -> save();
+				$purchaseOrder->addItem($product,$supplier->getId(),$productUnitPrice,$qtyOrdered,'','',$productTotalPrice) -> save();
 			};
 			var_dump($purchaseOrder);
 			Dao::commitTransaction();

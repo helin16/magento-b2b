@@ -226,6 +226,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				tmp.resultList = new Element('div', {'style': 'overflow: auto; max-height: 400px;'});
 				try {
 					tmp.result = tmp.me.getResp(param, false, true);
+					console.debug(tmp.result);
 					if(!tmp.result || !tmp.result.items || tmp.result.items.size() === 0)
 						throw 'Nothing Found for: ' + tmp.searchTxt;
 					tmp.me._signRandID(tmp.searchTxtBox);

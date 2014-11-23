@@ -33,6 +33,12 @@ class PurchaseOrderItem extends BaseEntityAbstract
 	 */
 	private $supplierItemCode;
 	/**
+	 * The supplier's id for this item when it's ordered
+	 * 
+	 * @var string
+	 */
+	private $supplierId;
+	/**
 	 * The unitprice of each item
 	 * 
 	 * @var double
@@ -200,6 +206,27 @@ class PurchaseOrderItem extends BaseEntityAbstract
 	    return $this;
 	}
 	/**
+	 * Getter for supplierId
+	 *
+	 * @return string
+	 */
+	public function getsupplierId() 
+	{
+	    return $this->supplierId;
+	}
+	/**
+	 * Setter for supplierId
+	 *
+	 * @param string $value The supplierId
+	 *
+	 * @return PurchaseOrderItem
+	 */
+	public function setsupplierId($value) 
+	{
+	    $this->supplierId = $value;
+	    return $this;
+	}
+	/**
 	 * (non-PHPdoc)
 	 * @see HydraEntity::__loadDaoMap()
 	 */
@@ -213,10 +240,12 @@ class PurchaseOrderItem extends BaseEntityAbstract
 		DaoMap::setIntType('unitPrice', 'double', '10,4');
 		DaoMap::setIntType('totalPrice', 'double', '10,4');
 		DaoMap::setStringType('supplierItemCode', 'varchar', 50);
+		DaoMap::setStringType('supplierId', 'int', 10);
 		DaoMap::setStringType('description', 'varchar', 255);
 		
 		parent::__loadDaoMap();
 		DaoMap::createIndex('supplierItemCode');
+		DaoMap::createIndex('supplierId');
 		DaoMap::createIndex('qty');
 		DaoMap::commit();
 	}
@@ -228,17 +257,19 @@ class PurchaseOrderItem extends BaseEntityAbstract
 	 * @param double        $unitPrice
 	 * @param int           $qty
 	 * @param string        $supplierItemCode
+	 * @param string        $supplierId
 	 * @param string        $description
 	 * @param double        $totalPrice
 	 * 
 	 * @return PurchaseOrderItem
 	 */
-	public static function create(PurchaseOrder $po, Product $product, $unitPrice = '0.0000', $qty = 1, $supplierItemCode = '', $description = '', $totalPrice = null)
+	public static function create(PurchaseOrder $po, Product $product, $supplierId, $unitPrice = '0.0000', $qty = 1, $supplierItemCode = '', $description = '', $totalPrice = null)
 	{
 		$class = get_called_class();
 		$entity = new $class();
 		return $entity->setPurchaseOrder($po)
 			->setProduct($product)
+			->setsupplierId($supplierId)
 			->setUnitPrice($unitPrice)
 			->setQty($qty)
 			->setsupplierItemCode($supplierItemCode)
