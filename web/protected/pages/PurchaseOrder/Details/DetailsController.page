@@ -1,9 +1,9 @@
 <%@MasterClass="Application.layout.BlankLayout"%>
 <com:TContent ID="MainContent">
-	<com:Application.controls.RichTextEditor.RichTextEditor />
-	<com:Application.controls.jQueryEasyUI.jQueryEasyUI />
 	<com:TDatePicker Style="display:none;"/>
 	<com:Application.controls.fancybox.FancyBox />
+	<com:TCallback ID="searchProductBtn" onCallback="searchProduct" />
+	<com:TCallback ID="saveOrderBtn" onCallback="saveOrder" />
 	<div class="pagewrapper purchaseorderdetailswraper" id='item-div'>
 	</div>
 </com:TContent>

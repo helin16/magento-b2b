@@ -43,21 +43,67 @@ class DetailsController extends DetailsPageAbstract
 		$statusOptions =  $purchaseOrder->getStatusOptions();
 		$purchaseOrderItems = array();
 		foreach (PurchaseOrderItem::getAllByCriteria('purchaseOrderId = ?', array($purchaseOrder->getId()), true, 1, DaoQuery::DEFAUTL_PAGE_SIZE, array('po_item.id'=>'asc')) as $item) {
-			$product = $item->getProduct();
+			$product = Product::get($item->getProduct()->getId());
 			if(!$product instanceof Product)
 				throw new Exception('Invalid Product passed in!');
 			$unitPrice = $item->getUnitPrice();
 			$qty = $item->getQty();
 			$totalPrice = $item->getTotalPrice();
-			array_push($purchaseOrderItems,array('product'=> $product, 'unitPrice'=> $unitPrice, 'qrt'=> $qty, 'totalPrice'=> $totalPrice));
+			array_push($purchaseOrderItems,array('product'=> $product->getJson(), 'unitPrice'=> $unitPrice, 'qrt'=> $qty, 'totalPrice'=> $totalPrice));
 		};
 		$js = parent::_getEndJs();
 		$js .= "pageJs.setPreData(" . json_encode($purchaseOrder->getJson()) . ")"; 
 		$js .= ".setStatusOptions(" . json_encode($statusOptions) . ")";
+		$js .= ".setCallbackId('searchProduct', '" . $this->searchProductBtn->getUniqueID() . "')";
 		$js .= ".setPurchaseOrderItems(" . json_encode($purchaseOrderItems) . ")";
 		$js .= ".load()";
 		$js .= ".bindAllEventNObjects();";
 		return $js;
+	}
+	/**
+	 * Searching searchProduct
+	 *
+	 * @param unknown $sender
+	 * @param unknown $param
+	 *
+	 * @throws Exception
+	 *
+	 */
+	public function searchProduct($sender, $param)
+	{
+		$results = $errors = array();
+		try
+		{
+			$items = array();
+			$searchTxt = isset($param->CallbackParameter->searchTxt) ? trim($param->CallbackParameter->searchTxt) : '';
+			$supplierID = isset($param->CallbackParameter->supplierID) ? trim($param->CallbackParameter->supplierID) : '';
+			$productIdsFromBarcode = array_map(create_function('$a', 'return $a->getProduct()->getId();'), ProductCode::getAllByCriteria('code = ?', array($searchTxt)));
+			$where = (count($productIdsFromBarcode) === 0 ? '' : ' OR id in (' . implode(',', $productIdsFromBarcode) . ')');
+			foreach(Product::getAllByCriteria('name like :searchTxt OR sku like :searchTxt' . $where, array('searchTxt' => $searchTxt . '%'), true, 1, DaoQuery::DEFAUTL_PAGE_SIZE) as $product)
+			{
+				// Min price: across all supplier for one product, Latest price: for one supplier
+				$array = $product->getJson();
+				$array['minProductPrice'] = 0;
+				$array['lastSupplierPrice'] = 0;
+				$array['minSupplierPrice'] = 0;
+				$minProductPrice = PurchaseOrderItem::getAllByCriteria('productId = ?', array($product->getId()), true, 1, 1, array('unitPrice'=> 'asc'));
+				$minProductPrice = sizeof($minProductPrice) ? $minProductPrice[0]->getUnitPrice() : 0;
+				$lastSupplierPrice = PurchaseOrderItem::getAllByCriteria('productId = ? and supplierId = ?', array($product->getId(), $supplierID), true, 1, 1, array('id'=> 'desc'));
+				$lastSupplierPrice = sizeof($lastSupplierPrice) ? $lastSupplierPrice[0]->getUnitPrice() : 0;
+				$minSupplierPrice = PurchaseOrderItem::getAllByCriteria('productId = ? and supplierId = ?', array($product->getId(), $supplierID), true, 1, 1, array('unitPrice'=> 'asc'));
+				$minSupplierPrice = sizeof($minSupplierPrice) ? $minSupplierPrice[0]->getUnitPrice() : 0;
+				$array['minProductPrice'] = $minProductPrice;
+				$array['lastSupplierPrice'] = $lastSupplierPrice;
+				$array['minSupplierPrice'] = $minSupplierPrice;
+				$items[] = $array;
+			}
+			$results['items'] = $items;
+		}
+		catch(Exception $ex)
+		{
+			$errors[] = $ex->getMessage();
+		}
+		$param->ResponseData = StringUtilsAbstract::getJson($results, $errors);
 	}
 	/**
 	 * (non-PHPdoc)

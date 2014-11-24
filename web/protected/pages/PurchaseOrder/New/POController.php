@@ -107,7 +107,6 @@ class POController extends BPCPageAbstract
 				$array['lastSupplierPrice'] = $lastSupplierPrice;
 				$array['minSupplierPrice'] = $minSupplierPrice;
 				$items[] = $array;
-				var_dump($items);
 			}
 			$results['items'] = $items;
 		}

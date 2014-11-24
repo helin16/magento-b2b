@@ -595,6 +595,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		var tmp = {};
 		tmp.me = this;
 		tmp.me._supplier = supplier;
+		console.debug(tmp.me._supplier);
 		tmp.newDiv = tmp.me._getViewOfPurchaseOrder();
 		$(tmp.me._htmlIds.itemDiv).update(tmp.newDiv);return;
 		tmp.newDiv.down('.new-order-item-input [new-order-item="product"]').focus();
