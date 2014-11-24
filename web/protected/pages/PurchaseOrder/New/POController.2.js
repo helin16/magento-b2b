@@ -681,9 +681,15 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 						.observe('keyup', function(event){
 							tmp.txtBox = this;
 							$(tmp.me._htmlIds.searchPanel).down('.search-btn').click();
-							if(tmp.txtBox.up('#'+pageJs._htmlIds.searchPanel).down('.item_row')!=undefined && tmp.txtBox.up('#'+pageJs._htmlIds.searchPanel).down('tbody').getElementsBySelector('.item_row').length/*===1*/) {
-								tmp.txtBox.up('#'+pageJs._htmlIds.searchPanel).down('tbody .item_row .btn').click();
-							};
+						})
+						.observe('keydown', function(event){
+							tmp.txtBox = this;
+							tmp.me.keydown(event, function() {
+								if(tmp.txtBox.up('#'+pageJs._htmlIds.searchPanel).down('.item_row')!=undefined && tmp.txtBox.up('#'+pageJs._htmlIds.searchPanel).down('tbody').getElementsBySelector('.item_row').length===1) {
+									tmp.txtBox.up('#'+pageJs._htmlIds.searchPanel).down('tbody .item_row .btn').click();
+								};
+							});
+							return false;
 						})
 					})
 					.insert({'bottom': new Element('span', {'class': 'input-group-btn search-btn'})
