@@ -55,6 +55,7 @@ class DetailsController extends DetailsPageAbstract
 		$js .= "pageJs.setPreData(" . json_encode($purchaseOrder->getJson()) . ")"; 
 		$js .= ".setStatusOptions(" . json_encode($statusOptions) . ")";
 		$js .= ".setCallbackId('searchProduct', '" . $this->searchProductBtn->getUniqueID() . "')";
+		$js .= ".setCallbackId('saveOrder', '" . $this->saveOrderBtn->getUniqueID() . "')";
 		$js .= ".setPurchaseOrderItems(" . json_encode($purchaseOrderItems) . ")";
 		$js .= ".load()";
 		$js .= ".bindAllEventNObjects();";
@@ -98,6 +99,63 @@ class DetailsController extends DetailsPageAbstract
 				$items[] = $array;
 			}
 			$results['items'] = $items;
+		}
+		catch(Exception $ex)
+		{
+			$errors[] = $ex->getMessage();
+		}
+		$param->ResponseData = StringUtilsAbstract::getJson($results, $errors);
+	}
+	/**
+	 * saveOrder
+	 *
+	 * @param unknown $sender
+	 * @param unknown $param
+	 *
+	 * @throws Exception
+	 *
+	 */
+	public function saveOrder($sender, $param)
+	{
+		$results = $errors = array();
+		try
+		{
+			var_dump($param->CallbackParameter);
+				
+			Dao::beginTransaction();
+			$supplier = Supplier::get(trim($param->CallbackParameter->supplier->id));
+			$purchaseOrderId = trim($param->CallbackParameter->id);
+			if(!$supplier instanceof Supplier)
+				throw new Exception('Invalid Supplier passed in!');
+			$supplierRefNum = trim($param->CallbackParameter->supplierRefNum);
+			$supplierContactName = trim($param->CallbackParameter->contactName);
+			$supplierContactNo = trim($param->CallbackParameter->contactNo);
+			$shippingCost = trim($param->CallbackParameter->shippingCost);
+			$handlingCost = trim($param->CallbackParameter->handlingCost);
+			$purchaseOrder = PurchaseOrder::get($purchaseOrderId);
+			$purchaseOrderTotalAmount = trim($param->CallbackParameter->totalAmount);
+			$purchaseOrderTotalPaid = trim($param->CallbackParameter->totalPaid);
+			$purchaseOrder->setTotalAmount($purchaseOrderTotalAmount)
+				->setTotalPaid($purchaseOrderTotalPaid)
+				->setSupplierRefNo($supplierRefNum)
+				->setSupplierContact($supplierContactName)
+				->setSupplierContactNumber($supplierContactNo)
+				->setshippingCost($shippingCost)
+				->sethandlingCost($handlingCost)
+				->save();
+			foreach ($param->CallbackParameter->items as $item) {
+				$productId = trim($item->product->id);
+				$productUnitPrice = trim($item->unitPrice);
+				$qtyOrdered = trim($item->qtyOrdered);
+				$productWtyOrdered = trim($item->qtyOrdered);
+				$productTotalPrice = trim($item->totalPrice);
+				$product = Product::get($productId);
+				if(!$product instanceof Product)
+					throw new Exception('Invalid Product passed in!');
+				$purchaseOrder->addItem($product,$supplier->getId(),$productUnitPrice,$qtyOrdered,'','',$productTotalPrice) -> save();
+			};
+// 			var_dump($purchaseOrder);
+			Dao::commitTransaction();
 		}
 		catch(Exception $ex)
 		{

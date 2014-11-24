@@ -50,22 +50,6 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 	,_getItemDiv: function() {
 		var tmp = {};
 		tmp.me = this;
-		
-//		tmp.newDiv = new Element('div')
-//		.insert({'bottom': new Element('div', {'class': 'row'})
-//			.insert({'bottom': new Element('div', {'class': 'col-sm-12'})
-//				.insert({'bottom': new Element('div', {'class': 'row'})
-//					.insert({'bottom': tmp.me._getSummaryDiv(tmp.me._purchaseorder).wrap(new Element('div', {'class': ''})) })
-//				})
-//				.insert({'bottom': new Element('div', {'class': 'row'})
-//					.insert({'bottom': new Element('span', {'class': 'btn btn-primary pull-right', 'data-loading-text': 'saving ...'}).update('Save')
-//						.observe('click', function() {
-//							tmp.me._submitSave(this);
-//						})
-//					})
-//				})
-//			})
-//		});
 		tmp.me._newDiv = new Element('div')
 			.insert({'bottom': new Element('div', {'class': 'row'})
 				.insert({'bottom': new Element('div', {'class': 'col-sm-6'}).update(tmp.me._getSupplierInfoPanel()) })
@@ -74,13 +58,15 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 			.insert({'bottom': new Element('div', {'class': 'row'})
 				.insert({'bottom': new Element('div', {'class': 'col-sm-12'}).update(tmp.me._getPartsTable()) })
 			})
-//			.insert({'bottom': new Element('div', {'class': 'row'})
-//				.insert({'bottom': new Element('div', {'class': 'col-sm-12'}).update(tmp.me._saveBtns()) })
-//			})
-		
+			.insert({'bottom': new Element('div', {'class': 'row'})
+				.insert({'bottom': new Element('div', {'class': 'col-sm-12'}).update(tmp.me._saveBtns()) })
+			})
 		;
 		tmp.me._purchaseOrderItems.each(function(product){
 			tmp.me._addNewProductRow(tmp.me._newDiv.down('.glyphicon.glyphicon-floppy-saved'),product);
+		});
+		tmp.me._newDiv.getElementsBySelector('.order-item-row').each(function(item){
+			item.removeClassName('order-item-row');
 		});
 		return tmp.me._newDiv;
 	}
@@ -112,9 +98,9 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		tmp.me = this;
 		tmp.supplier = tmp.me._supplier;
 		tmp.shippingCostEl = new Element('input', {'class': 'text-right', 'id': 'shipping_cost', 'save-order': 'shippingCost' , 'value': tmp.me._purchaseorder.shippingCost ? tmp.me.getCurrency(tmp.me._purchaseorder.shippingCost) : tmp.me.getCurrency(0)});
-		tmp.handlingCostEl = new Element('input', {'class': 'text-right', 'id': 'handling_cost', 'save-order': 'handlingCost' , 'value': tmp.me._purchaseorder.shippingCost ? tmp.me.getCurrency(tmp.me._purchaseorder.handlingCost) : tmp.me.getCurrency(0)});
+		tmp.handlingCostEl = new Element('input', {'class': 'text-right', 'id': 'handling_cost', 'save-order': 'handlingCost' , 'value': tmp.me._purchaseorder.handlingCost ? tmp.me.getCurrency(tmp.me._purchaseorder.handlingCost) : tmp.me.getCurrency(0)});
 		tmp.totalAmountExGstEl = new Element('input', {'class': 'text-right', 'disabled': 'disabled', 'save-order': 'totalAmount'});
-		tmp.totalPaidEl = new Element('input', {'class': 'text-right', 'id': tmp.me._htmlIds.totalPaidAmount, 'save-order': 'totalPaid'})
+		tmp.totalPaidEl = new Element('input', {'class': 'text-right', 'id': tmp.me._htmlIds.totalPaidAmount, 'save-order': 'totalPaid' , 'value': tmp.me._purchaseorder.totalPaid ? tmp.me.getCurrency(tmp.me._purchaseorder.totalPaid) : tmp.me.getCurrency(0)})
 			.observe('keyup',function(){
 				tmp.totalPaidAmount = this.value==='' ? 0 : this.value;
 				if(jQuery.isNumeric(tmp.totalPaidAmount)) {
@@ -589,6 +575,60 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 			})
 			;
 		return tmp.newRow;
+	}
+	/**
+	 * Getting the save btn for this order
+	 */
+	,_saveBtns: function() {
+		var tmp = {};
+		tmp.me = this;
+		tmp.newDiv = new Element('span', {'class': 'btn-group'})
+			.insert({'bottom': new Element('span', {'class': 'btn btn-primary'})
+				.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-ok-circle'}) })
+				.insert({'bottom': new Element('span').update(' save ') })
+				.observe('click', function() {
+					tmp.me._submitOrder();
+				})
+			})
+			.insert({'bottom': new Element('span', {'class': 'btn btn-default'})
+				.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-remove-sign'}) })
+				.insert({'bottom': new Element('span').update(' cancel ') })
+				.observe('click', function(){
+					tmp.me.showModalBox('<strong class="text-danger">Cancelling the current order</strong>', 
+							'<div>You are about to cancel this new order, all input data will be lost.</div><br /><div>Continue?</div>'
+							+ '<div>'
+								+ '<span class="btn btn-primary" onclick="window.location = document.URL;"><span class="glyphicon glyphicon-ok"></span> YES</span>'
+								+ '<span class="btn btn-default pull-right" data-dismiss="modal"><span aria-hidden="true"><span class="glyphicon glyphicon-remove-sign"></span> NO</span></span>'
+							+ '</div>',
+					true);
+				})
+			})
+		;
+		return tmp.newDiv;
+	}
+	,_submitOrder: function() {
+		var tmp = {};
+		tmp.me = this;
+		tmp.data = tmp.me._collectFormData($(tmp.me._htmlIds.itemDiv),'save-order');
+		if(tmp.data === null)
+			return tmp.me;
+		tmp.data.items = [];
+		$$('.order-item-row').each(function(item){
+			tmp.item = item.retrieve('data');
+			tmp.item.totalPrice = tmp.item.totalPrice ? tmp.me.getValueFromCurrency(tmp.item.totalPrice) : '';
+			tmp.item.unitPrice = tmp.item.unitPrice ? tmp.me.getValueFromCurrency(tmp.item.unitPrice) : '';
+			tmp.data.items.push(tmp.item);
+		});
+//		if(tmp.data.items.size() <= 0) {
+//			tmp.me.showModalBox('<strong class="text-danger">Error</strong>', 'At least one order item is needed!', true);
+//			return tmp.me;
+//		}
+		tmp.data.id = tmp.me._purchaseorder.id;
+		tmp.data.supplier = tmp.me._supplier;
+		tmp.data.totalAmount = tmp.data.totalAmount ? tmp.me.getValueFromCurrency(tmp.data.totalAmount) : '';
+		tmp.me.postAjax(tmp.me.getCallbackId('saveOrder'), tmp.data, {
+		});
+		return tmp.me;
 	}
 	/**
 	 * Ajax: saving the item
