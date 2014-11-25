@@ -763,8 +763,10 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		} else {
 			$(tmp.me._htmlIds.itemDiv).update(tmp.me._getSupplierListPanel());
 		}
-		if($$('.init-focus').size() > 0)
+		if($$('.init-focus').size() > 0){
+			console.debug($$('.init-focus').first());
 			$$('.init-focus').first().focus();
+		}
 		return tmp.me;
 	}
 });

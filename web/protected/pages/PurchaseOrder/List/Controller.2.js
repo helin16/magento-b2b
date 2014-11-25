@@ -128,6 +128,11 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 			'fitToView'     : false,
 			'autoSize'      : false,
 			'type'			: 'iframe',
+		    'afterLoad'		: function(current, previous) {
+		    	tmp.iframe = $$('iframe.fancybox-iframe').first();
+		    	tmp.innerDoc = tmp.iframe.contentDocument || tmp.iframe.contentWindow.document;
+		    	$(tmp.innerDoc).body.down('.init-focus').select();
+		    },
 			'href'			: '/purchase/new.html'
 		});
 		return tmp.me;
