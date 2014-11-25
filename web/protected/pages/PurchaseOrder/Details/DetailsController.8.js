@@ -91,7 +91,11 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		tmp.purchaseOrder = tmp.me._purchaseorder;
 		tmp.newDiv = new Element('div', {'class': 'panel panel-default'})
 			.insert({'bottom': new Element('div', {'class': 'panel-heading'})
-				.insert({'bottom': new Element('strong').update('Creating purchase order for: ' + tmp.supplier.name + ' ') })
+				.insert({'bottom': new Element('strong').update('Editing purchase order for: ' + tmp.supplier.name + ' ') })
+				.insert({'bottom': new Element('div', {'class': 'pull-right'})
+					.insert({'bottom': new Element('strong').update('Status: ') })
+					.insert({'bottom': tmp.me._getOrderStatus() })
+				})
 			})
 			.insert({'bottom': new Element('div', {'class': 'panel-body'})
 				.insert({'bottom': new Element('div', {'class': 'row'})
@@ -102,6 +106,20 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 				 })
 			});
 		return tmp.newDiv;
+	}
+	/**
+	 * Getting the order status dropdown list
+	 */
+	,_getOrderStatus: function () {
+		var tmp = {}
+		tmp.me = this;
+		tmp.selBox = new Element('select', {'save-order': 'status'});
+		tmp.selBox.insert({'bottom': new Element('option').update(tmp.me._purchaseorder.status) });
+		tmp.me._statusOptions.each(function(status) {
+			if (tmp.me._purchaseorder.status !== status)
+				tmp.selBox.insert({'bottom': new Element('option').update(status) });
+		});
+		return tmp.selBox;
 	}
 	,_getPaymentPanel: function () {
 		var tmp = {};
@@ -638,14 +656,11 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 			else if (!item.hasClassName('order-item-row-old'))
 				tmp.data.newItems.push(tmp.item);
 		});
-//		if(tmp.data.items.size() <= 0) {
-//			tmp.me.showModalBox('<strong class="text-danger">Error</strong>', 'At least one order item is needed!', true);
-//			return tmp.me;
-//		}
 		tmp.data.id = tmp.me._purchaseorder.id;
 		tmp.data.supplier = tmp.me._supplier;
 		tmp.data.totalAmount = tmp.data.totalAmount ? tmp.me.getValueFromCurrency(tmp.data.totalAmount) : '';
 		tmp.data.totalPaid = tmp.data.totalPaid ? tmp.me.getValueFromCurrency(tmp.data.totalPaid) : '';
+		console.debug(tmp.data);
 		tmp.me.postAjax(tmp.me.getCallbackId('saveOrder'), tmp.data, {
 		});
 //		tmp.me.refreshParentWindow();

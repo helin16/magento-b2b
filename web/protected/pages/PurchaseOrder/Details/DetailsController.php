@@ -135,6 +135,7 @@ class DetailsController extends DetailsPageAbstract
 			$shippingCost = trim($param->CallbackParameter->shippingCost);
 			$handlingCost = trim($param->CallbackParameter->handlingCost);
 			$comment = trim($param->CallbackParameter->comments);
+			$status = trim($param->CallbackParameter->status);
 			$purchaseOrder = PurchaseOrder::get($purchaseOrderId);
 			$purchaseOrderTotalAmount = trim($param->CallbackParameter->totalAmount);
 			$purchaseOrderTotalPaid = trim($param->CallbackParameter->totalPaid);
@@ -145,6 +146,7 @@ class DetailsController extends DetailsPageAbstract
 				->setSupplierContactNumber($supplierContactNo)
 				->setshippingCost($shippingCost)
 				->sethandlingCost($handlingCost)
+				->setStatus($status)
 				->save();
 			$purchaseOrder->addComment($comment, Comments::TYPE_SYSTEM);
 			foreach ($param->CallbackParameter->newItems as $item) {
