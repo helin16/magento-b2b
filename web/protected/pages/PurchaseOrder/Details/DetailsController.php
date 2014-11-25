@@ -122,7 +122,7 @@ class DetailsController extends DetailsPageAbstract
 		$results = $errors = array();
 		try
 		{
-			var_dump($param->CallbackParameter);
+// 			var_dump($param->CallbackParameter);
 				
 			Dao::beginTransaction();
 			$supplier = Supplier::get(trim($param->CallbackParameter->supplier->id));
@@ -162,12 +162,12 @@ class DetailsController extends DetailsPageAbstract
 				$qtyOrdered = trim($item->qtyOrdered);
 				$productWtyOrdered = trim($item->qtyOrdered);
 				$productTotalPrice = trim($item->totalPrice);
-				$removedItemsCount = count($param->CallbackParameter->removedOldItems);
 				$product = Product::get($productId);
 				if(!$product instanceof Product)
 					throw new Exception('Invalid Product passed in!');
-				var_dump(count($param->CallbackParameter->removedOldItems));
-				var_dump( PurchaseOrder::getAllByCriteria('purchaseOrderId = ? and productId = ?',array($purchaseOrder-> getId(), $product->getId()),true,1,$removedItemsCount) );
+				$removedItemPOitem = PurchaseOrderItem::getAllByCriteria('purchaseOrderId = ? and productId = ?',array($purchaseOrder-> getId(), $product->getId()),true,1,1)[0];
+				$removedItemPOitem->setActive(false)->save();
+// 				var_dump($removedItem->getProduct()->getId());
 // 				$purchaseOrder->addItem($product,$supplier->getId(),$productUnitPrice,$qtyOrdered,'','',$productTotalPrice) -> save();
 			};
 			
