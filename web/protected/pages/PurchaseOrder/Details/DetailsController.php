@@ -172,7 +172,7 @@ class DetailsController extends DetailsPageAbstract
 				$removedItemPOitem = PurchaseOrderItem::getAllByCriteria('purchaseOrderId = ? and productId = ?',array($purchaseOrder-> getId(), $product->getId()),true,1,1)[0];
 				$removedItemPOitem->setActive(false)->save();
 			};
-			
+			$results['item'] = $purchaseOrder->getJson();
 // 			var_dump($purchaseOrder);
 			Dao::commitTransaction();
 		}

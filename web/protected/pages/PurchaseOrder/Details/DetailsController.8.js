@@ -669,8 +669,10 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 			,'onSuccess': function(sender, param) {
 				try {
 					tmp.result = tmp.me.getResp(param, false, true);
-					if(!tmp.result)
+					if(!tmp.result || !tmp.result.item)
 						return;
+					tmp.me._item = tmp.result.item;
+					tmp.me.refreshParentWindow();
 					window.parent.jQuery.fancybox.close();
 				} catch(e) {
 					tmp.me.showModalBox('Error!', e, false);
@@ -680,42 +682,6 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 				jQuery('#' + tmp.btn.id).button('reset');
 			}
 		});
-//		tmp.me.refreshParentWindow();
-		return tmp.me;
-	}
-	,refreshParentWindow: function() {
-		var tmp = {};
-		tmp.me = this;
-		if(!window.parent)
-			return;
-		tmp.parentWindow = window.parent;
-		tmp.row = $(tmp.parentWindow.document.body).down('#' + tmp.parentWindow.pageJs.resultDivId + ' .item_row[item_id=' + tmp.me._item.id + ']');
-		console.debug(tmp.row);
-		if(tmp.row) {
-			tmp.row.replace(tmp.parentWindow.pageJs._getResultRow(tmp.me._item));
-			if(tmp.row.hasClassName('success'))
-				tmp.row.addClassName('success');
-		}
-	}
-	/**
-	 * Ajax: saving the item
-	 */
-	,_submitSave: function(btn) {
-		var tmp = {};
-		tmp.me = this;
-		tmp.data = tmp.me._collectFormData($(tmp.me._htmlIds.itemDiv), 'save-item');
-		if(tmp.data === null)
-			return tmp.me;
-		
-		
-		//submit all data
-		tmp.me.saveItem(btn, tmp.data, function(data){
-			tmp.me.showModalBox('<strong class="text-success">Saved Successfully!</strong>', 'Saved Successfully!', true);
-			tmp.me._item = data.item;
-			tmp.me.refreshParentWindow();
-			window.parent.jQuery.fancybox.close();
-		});
-		
 		return tmp.me;
 	}
 	,refreshParentWindow: function() {
@@ -726,9 +692,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		tmp.parentWindow = window.parent;
 		tmp.row = $(tmp.parentWindow.document.body).down('#' + tmp.parentWindow.pageJs.resultDivId + ' .item_row[item_id=' + tmp.me._item.id + ']');
 		if(tmp.row) {
-			tmp.row.replace(tmp.parentWindow.pageJs._getResultRow(tmp.me._item));
-			if(tmp.row.hasClassName('success'))
-				tmp.row.addClassName('success');
+			tmp.row.replace(tmp.parentWindow.pageJs._getResultRow(tmp.me._item).addClassName('success'));
 		}
 	}
 	/**
