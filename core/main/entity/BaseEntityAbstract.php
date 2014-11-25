@@ -403,7 +403,7 @@ abstract class BaseEntityAbstract
     public function getComment($type = null, $pageNo = null, $pageSize = DaoQuery::DEFAUTL_PAGE_SIZE, $orderBy = array(), &$pageStats = array())
     {
     	if(count($orderBy) === 0)
-    		$orderBy = array(get_class($this) . '.id' => 'desc');
+    		$orderBy = array('comm.id' => 'desc');
     	$where = 'entityName = ? and entityId = ?';
     	$params = array(get_class($this), $this->getId());
     	if(($type = trim($type)) !== '')
