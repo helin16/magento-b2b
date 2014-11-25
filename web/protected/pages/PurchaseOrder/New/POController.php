@@ -130,7 +130,7 @@ class POController extends BPCPageAbstract
 		$results = $errors = array();
 		try
 		{
-// 			var_dump($param->CallbackParameter);
+			var_dump($param->CallbackParameter);
 			
 			Dao::beginTransaction();
 			$supplier = Supplier::get(trim($param->CallbackParameter->supplier->id));
@@ -141,10 +141,11 @@ class POController extends BPCPageAbstract
 			$supplierContactNo = trim($param->CallbackParameter->contactNo);
 			$shippingCost = trim($param->CallbackParameter->shippingCost);
 			$handlingCost = trim($param->CallbackParameter->handlingCost);
+			$comment = trim($param->CallbackParameter->comments);
 			$purchaseOrder = PurchaseOrder::create($supplier,$supplierRefNum,$supplierContactName,$supplierContactNo,$shippingCost,$handlingCost);
 			$purchaseOrderTotalAmount = trim($param->CallbackParameter->totalAmount);
 			$purchaseOrderTotalPaid = trim($param->CallbackParameter->totalPaid);
-			$purchaseOrder->setTotalAmount($purchaseOrderTotalAmount)->setTotalPaid($purchaseOrderTotalPaid)->save();
+			$purchaseOrder->setTotalAmount($purchaseOrderTotalAmount)->setTotalPaid($purchaseOrderTotalPaid);
 			foreach ($param->CallbackParameter->items as $item) {
 				$productId = trim($item->product->id);
 				$productUnitPrice = trim($item->unitPrice);
@@ -154,9 +155,11 @@ class POController extends BPCPageAbstract
 				$product = Product::get($productId);
 				if(!$product instanceof Product)
 					throw new Exception('Invalid Product passed in!');
-				$purchaseOrder->addItem($product,$supplier->getId(),$productUnitPrice,$qtyOrdered,'','',$productTotalPrice) -> save();
+				$purchaseOrder->addItem($product,$supplier->getId(),$productUnitPrice,$qtyOrdered,'','',$productTotalPrice);
 			};
 			var_dump($purchaseOrder);
+			$purchaseOrder->save();
+			$purchaseOrder->addComment($comment, Comments::TYPE_SYSTEM);
 			Dao::commitTransaction();
 		}
 		catch(Exception $ex)

@@ -85,6 +85,7 @@ class DetailsController extends DetailsPageAbstract
 			$customer->setName($name)
 				->setEmail($email)
 				->setMageId($mageId)
+				->setContactNo($contactNo)
 				->setActive($active)
 				->setBillingAddress($billingAdressFull)
 				->setShippingAddress($shippingAdressFull)

@@ -40,6 +40,8 @@ class DetailsController extends DetailsPageAbstract
 			$purchaseOrder = new PurchaseOrder();
 		else if(!($purchaseOrder = PurchaseOrder::get($this->Request['id'])) instanceof PurchaseOrder)
 			die('Invalid Purchase Order!');
+		var_dump($purchaseOrder);
+// 		var_dump($purchaseOrder->getComment());die;
 		$statusOptions =  $purchaseOrder->getStatusOptions();
 		$purchaseOrderItems = array();
 		foreach (PurchaseOrderItem::getAllByCriteria('purchaseOrderId = ?', array($purchaseOrder->getId()), true, 1, DaoQuery::DEFAUTL_PAGE_SIZE, array('po_item.id'=>'asc')) as $item) {
