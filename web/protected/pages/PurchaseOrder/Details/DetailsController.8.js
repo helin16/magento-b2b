@@ -66,7 +66,8 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 			tmp.me._addNewProductRow(tmp.me._newDiv.down('.glyphicon.glyphicon-floppy-saved'),product);
 		});
 		tmp.me._newDiv.getElementsBySelector('.order-item-row').each(function(item){
-			item.removeClassName('order-item-row');
+//			item.removeClassName('order-item-row');
+			item.addClassName('order-item-row-old');
 		});
 		return tmp.me._newDiv;
 	}
@@ -461,8 +462,14 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 					if(!confirm('You remove this entry.\n\nContinue?'))
 						return;
 					tmp.row = $(this).up('.item_row');
+					console.debug(tmp.row);
 					tmp.me._recalculateSummary( 0 - tmp.me.getValueFromCurrency(tmp.row.retrieve('data').totalPrice) * 1 );
-					tmp.row.remove();
+					if (tmp.row.hasClassName('order-item-row-old')) {
+						tmp.row.addClassName('order-item-row-old-removed');
+						tmp.row.hide();
+					} else {
+						tmp.row.remove();
+					}
 				})
 			})
 		};
@@ -612,12 +619,18 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		tmp.data = tmp.me._collectFormData($(tmp.me._htmlIds.itemDiv),'save-order');
 		if(tmp.data === null)
 			return tmp.me;
-		tmp.data.items = [];
+		tmp.data.newItems = [];
+		tmp.data.removedOldItems = [];
 		$$('.order-item-row').each(function(item){
 			tmp.item = item.retrieve('data');
 			tmp.item.totalPrice = tmp.item.totalPrice ? tmp.me.getValueFromCurrency(tmp.item.totalPrice) : '';
 			tmp.item.unitPrice = tmp.item.unitPrice ? tmp.me.getValueFromCurrency(tmp.item.unitPrice) : '';
-			tmp.data.items.push(tmp.item);
+			console.debug(item);
+			console.debug(item.hasClassName('order-item-row-old order-item-row-old-removed'));
+			if (item.hasClassName('order-item-row-old order-item-row-old-removed'))
+				tmp.data.removedOldItems.push(tmp.item);
+			else if (!item.hasClassName('order-item-row-old'))
+				tmp.data.newItems.push(tmp.item);
 		});
 //		if(tmp.data.items.size() <= 0) {
 //			tmp.me.showModalBox('<strong class="text-danger">Error</strong>', 'At least one order item is needed!', true);
@@ -626,6 +639,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		tmp.data.id = tmp.me._purchaseorder.id;
 		tmp.data.supplier = tmp.me._supplier;
 		tmp.data.totalAmount = tmp.data.totalAmount ? tmp.me.getValueFromCurrency(tmp.data.totalAmount) : '';
+		console.debug(tmp.data);
 		tmp.me.postAjax(tmp.me.getCallbackId('saveOrder'), tmp.data, {
 		});
 		return tmp.me;
