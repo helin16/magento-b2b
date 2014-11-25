@@ -1,3 +1,4 @@
+<%@MasterClass="Application.layout.BlankLayout"%>
 <com:TContent ID="MainContent">
 	<com:TCallback ID="searchCustomerBtn" onCallback="searchCustomer" />
 	<com:TCallback ID="searchSupplierBtn" onCallback="searchSupplier" />

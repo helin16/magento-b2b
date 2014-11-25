@@ -47,7 +47,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 			.insert({'bottom': new Element(tmp.tag, {'class': 'cust_active col-xs-1'})
 				.insert({'bottom': (tmp.isTitle === true ? row.active : new Element('input', {'type': 'checkbox', 'disabled': true, 'checked': row.active}) ) })
 			})
-			.insert({'bottom': tmp.btns = new Element(tmp.tag, {'class': 'col-xs-1'}) 	});
+			.insert({'bottom': tmp.btns = new Element(tmp.tag, {'class': 'col-xs-1 text-right'}) 	});
 		if(tmp.isTitle !== true)
 			tmp.btns.insert({'bottom': new Element('div', {'class': 'btn-group'})
 				.insert({'bottom': new Element('span', {'class': 'btn btn-default btn-sm', 'title': 'Edit'})
@@ -63,6 +63,16 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 							return false;
 						if(row.active)
 							tmp.me._deactivateItem(this);
+					})
+				})
+			});
+		else
+			tmp.btns.insert({'bottom': new Element('div', {'class': 'btn-group'})
+				.insert({'bottom': new Element('span', {'class': 'btn btn-primary btn-sm', 'title': 'New'})
+					.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-plus'}) })
+					.insert({'bottom': ' NEW' })
+					.observe('click', function(){
+						$(this).up('thead').insert({'bottom': tmp.me._openNewPage() });
 					})
 				})
 			});
@@ -84,6 +94,24 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 			'type'			: 'iframe',
 			'href'			: '/purchase/' + (row && row.id ? row.id : 'new') + '.html'
  		});
+		return tmp.me;
+	}
+	/**
+	 * Open edit page in a fancybox
+	 */
+	,_openNewPage: function(row) {
+		var tmp = {};
+		tmp.me = this;
+		jQuery.fancybox({
+			'width'			: '95%',
+			'height'		: '95%',
+			'autoScale'     : false,
+			'autoDimensions': false,
+			'fitToView'     : false,
+			'autoSize'      : false,
+			'type'			: 'iframe',
+			'href'			: '/purchase/new.html'
+		});
 		return tmp.me;
 	}
 	,_highlightSelectedRow : function (btn) {
