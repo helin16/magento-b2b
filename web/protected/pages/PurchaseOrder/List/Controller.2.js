@@ -5,7 +5,7 @@ var PageJs = new Class.create();
 
 PageJs.prototype = Object.extend(new CRUDPageJs(), {
 	_getTitleRowData: function() {
-		return {'purchaseOrderNo': 'PO Number', 'supplier': {'name': 'Supplier'}, 'status': 'Status', 'supplierRefNo': 'Supplier Ref.', 'orderDate': 'Order Date', 'active': 'Active'};
+		return {'totalAmount': 'Total Amount', 'totalPaid': 'Total Paid', 'purchaseOrderNo': 'PO Number', 'supplier': {'name': 'Supplier'}, 'status': 'Status', 'supplierRefNo': 'Supplier Ref.', 'orderDate': 'Order Date', 'active': 'Active'};
 		
 	}
 	,_loadChosen: function () {
@@ -38,12 +38,17 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		tmp.row = new Element('tr', {'class': (tmp.isTitle === true ? 'item_top_row' : 'btn-hide-row item_row') + (row.active == 0 ? ' danger' : ''), 'item_id': (tmp.isTitle === true ? '' : row.id)}).store('data', row)
 			.insert({'bottom': new Element(tmp.tag, {'class': 'purchaseOrderNo col-xs-1'}).update(row.purchaseOrderNo)})
 				.observe('dblclick', function(){
-						tmp.me._openEditPage(row);
+					tmp.me._openEditPage(row);
+				})
+				.observe('click', function(){
+					tmp.me._highlightSelectedRow(this.down('.btn'));
 				})
 			.insert({'bottom': new Element(tmp.tag, {'class': 'status col-xs-1'}).update(row.status)})
-			.insert({'bottom': new Element(tmp.tag, {'class': 'supplierId col-xs-1'}).update(row.supplier.name)})
-			.insert({'bottom': new Element(tmp.tag, {'class': 'supplierRefNo col-xs-1'}).update(row.supplierRefNo)})
+			.insert({'bottom': new Element(tmp.tag, {'class': 'supplierId col-xs-1'}).update(row.supplier.name ? row.supplier.name : '')})
+			.insert({'bottom': new Element(tmp.tag, {'class': 'supplierRefNo col-xs-1'}).update(row.supplierRefNo ? row.supplierRefNo : '')})
 			.insert({'bottom': new Element(tmp.tag, {'class': 'orderDate col-xs-1'}).update(row.orderDate)})
+			.insert({'bottom': new Element(tmp.tag, {'class': 'orderDate col-xs-1'}).update(row.totalAmount)})
+			.insert({'bottom': new Element(tmp.tag, {'class': 'orderDate col-xs-1'}).update(row.totalPaid ? tmp.me.getCurrency(row.totalPaid) : '')})
 			.insert({'bottom': new Element(tmp.tag, {'class': 'cust_active col-xs-1'})
 				.insert({'bottom': (tmp.isTitle === true ? row.active : new Element('input', {'type': 'checkbox', 'disabled': true, 'checked': row.active}) ) })
 			})
@@ -54,6 +59,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 					.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-pencil'}) })
 					.observe('click', function(){
 							tmp.me._openEditPage(row);
+							tmp.me._highlightSelectedRow(this);
 					})
 				})
 				.insert({'bottom': new Element('span', {'class': 'btn btn-danger btn-sm', 'title': 'Delete'})
@@ -63,6 +69,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 							return false;
 						if(row.active)
 							tmp.me._deactivateItem(this);
+						tmp.me._highlightSelectedRow(this);
 					})
 				})
 			});
@@ -77,6 +84,17 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 				})
 			});
 		return tmp.row;
+	}
+	/**
+	 * Highlisht seleteted row
+	 */
+	,_highlightSelectedRow : function (btn) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.item = btn.down('.glyphicon-plus') ? '' : $(btn).up('[item_id]').retrieve('data');
+		jQuery('.item_row.success').removeClass('success');
+		tmp.selectedRow = jQuery('[item_id=' + tmp.item.id + ']')
+		.addClass('success');
 	}
 	/**
 	 * Open edit page in a fancybox
