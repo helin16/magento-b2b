@@ -134,6 +134,7 @@ class DetailsController extends DetailsPageAbstract
 			$supplierContactNo = trim($param->CallbackParameter->contactNo);
 			$shippingCost = trim($param->CallbackParameter->shippingCost);
 			$handlingCost = trim($param->CallbackParameter->handlingCost);
+			$comment = trim($param->CallbackParameter->comments);
 			$purchaseOrder = PurchaseOrder::get($purchaseOrderId);
 			$purchaseOrderTotalAmount = trim($param->CallbackParameter->totalAmount);
 			$purchaseOrderTotalPaid = trim($param->CallbackParameter->totalPaid);
@@ -145,6 +146,7 @@ class DetailsController extends DetailsPageAbstract
 				->setshippingCost($shippingCost)
 				->sethandlingCost($handlingCost)
 				->save();
+			$purchaseOrder->addComment($comment, Comments::TYPE_SYSTEM);
 			foreach ($param->CallbackParameter->newItems as $item) {
 				$productId = trim($item->product->id);
 				$productUnitPrice = trim($item->unitPrice);
@@ -167,8 +169,6 @@ class DetailsController extends DetailsPageAbstract
 					throw new Exception('Invalid Product passed in!');
 				$removedItemPOitem = PurchaseOrderItem::getAllByCriteria('purchaseOrderId = ? and productId = ?',array($purchaseOrder-> getId(), $product->getId()),true,1,1)[0];
 				$removedItemPOitem->setActive(false)->save();
-// 				var_dump($removedItem->getProduct()->getId());
-// 				$purchaseOrder->addItem($product,$supplier->getId(),$productUnitPrice,$qtyOrdered,'','',$productTotalPrice) -> save();
 			};
 			
 // 			var_dump($purchaseOrder);
