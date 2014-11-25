@@ -40,8 +40,6 @@ class DetailsController extends DetailsPageAbstract
 			$purchaseOrder = new PurchaseOrder();
 		else if(!($purchaseOrder = PurchaseOrder::get($this->Request['id'])) instanceof PurchaseOrder)
 			die('Invalid Purchase Order!');
-		var_dump($purchaseOrder);
-// 		var_dump($purchaseOrder->getComment());die;
 		$statusOptions =  $purchaseOrder->getStatusOptions();
 		$purchaseOrderItems = array();
 		foreach (PurchaseOrderItem::getAllByCriteria('purchaseOrderId = ?', array($purchaseOrder->getId()), true, 1, DaoQuery::DEFAUTL_PAGE_SIZE, array('po_item.id'=>'asc')) as $item) {
@@ -145,7 +143,7 @@ class DetailsController extends DetailsPageAbstract
 				->setshippingCost($shippingCost)
 				->sethandlingCost($handlingCost)
 				->save();
-			foreach ($param->CallbackParameter->items as $item) {
+			foreach ($param->CallbackParameter->newItems as $item) {
 				$productId = trim($item->product->id);
 				$productUnitPrice = trim($item->unitPrice);
 				$qtyOrdered = trim($item->qtyOrdered);
@@ -156,6 +154,21 @@ class DetailsController extends DetailsPageAbstract
 					throw new Exception('Invalid Product passed in!');
 				$purchaseOrder->addItem($product,$supplier->getId(),$productUnitPrice,$qtyOrdered,'','',$productTotalPrice) -> save();
 			};
+			foreach ($param->CallbackParameter->removedOldItems as $item) {
+				$productId = trim($item->product->id);
+				$productUnitPrice = trim($item->unitPrice);
+				$qtyOrdered = trim($item->qtyOrdered);
+				$productWtyOrdered = trim($item->qtyOrdered);
+				$productTotalPrice = trim($item->totalPrice);
+				$removedItemsCount = count($param->CallbackParameter->removedOldItems);
+				$product = Product::get($productId);
+				if(!$product instanceof Product)
+					throw new Exception('Invalid Product passed in!');
+				var_dump(count($param->CallbackParameter->removedOldItems));
+				var_dump( PurchaseOrder::getAllByCriteria('purchaseOrderId = ? and productId = ?',array($purchaseOrder-> getId(), $product->getId()),true,1,$removedItemsCount) );
+// 				$purchaseOrder->addItem($product,$supplier->getId(),$productUnitPrice,$qtyOrdered,'','',$productTotalPrice) -> save();
+			};
+			
 // 			var_dump($purchaseOrder);
 			Dao::commitTransaction();
 		}
