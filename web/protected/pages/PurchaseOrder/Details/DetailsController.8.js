@@ -471,7 +471,6 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 					if(!confirm('You remove this entry.\n\nContinue?'))
 						return;
 					tmp.row = $(this).up('.item_row');
-					console.debug(tmp.row);
 					tmp.me._recalculateSummary( 0 - tmp.me.getValueFromCurrency(tmp.row.retrieve('data').totalPrice) * 1 );
 					if (tmp.row.hasClassName('order-item-row-old')) {
 						tmp.row.addClassName('order-item-row-old-removed');
@@ -634,8 +633,6 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 			tmp.item = item.retrieve('data');
 			tmp.item.totalPrice = tmp.item.totalPrice ? tmp.me.getValueFromCurrency(tmp.item.totalPrice) : '';
 			tmp.item.unitPrice = tmp.item.unitPrice ? tmp.me.getValueFromCurrency(tmp.item.unitPrice) : '';
-			console.debug(item);
-			console.debug(item.hasClassName('order-item-row-old order-item-row-old-removed'));
 			if (item.hasClassName('order-item-row-old order-item-row-old-removed'))
 				tmp.data.removedOldItems.push(tmp.item);
 			else if (!item.hasClassName('order-item-row-old'))
@@ -648,6 +645,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		tmp.data.id = tmp.me._purchaseorder.id;
 		tmp.data.supplier = tmp.me._supplier;
 		tmp.data.totalAmount = tmp.data.totalAmount ? tmp.me.getValueFromCurrency(tmp.data.totalAmount) : '';
+		tmp.data.totalPaid = tmp.data.totalPaid ? tmp.me.getValueFromCurrency(tmp.data.totalPaid) : '';
 		console.debug(tmp.data);
 		tmp.me.postAjax(tmp.me.getCallbackId('saveOrder'), tmp.data, {
 		});
@@ -665,6 +663,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		
 		
 		//submit all data
+		tmp.data.totalPaid = tmp.me.getValueFromCurrency(tmp.data.totalPaid);
 		tmp.me.saveItem(btn, tmp.data, function(data){
 			tmp.me.showModalBox('<strong class="text-success">Saved Successfully!</strong>', 'Saved Successfully!', true);
 			tmp.me._item = data.item;
