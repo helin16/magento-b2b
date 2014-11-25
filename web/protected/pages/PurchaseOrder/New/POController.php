@@ -32,12 +32,14 @@ class POController extends BPCPageAbstract
 		
 		$paymentMethods =  array_map(create_function('$a', 'return $a->getJson();'), PaymentMethod::getAll());
 		$shippingMethods =  array_map(create_function('$a', 'return $a->getJson();'), Courier::getAll());
+		$statusOptions =  PurchaseOrder::getStatusOptions();
 		$customer = (isset($_REQUEST['customerid']) && ($customer = Customer::get(trim($_REQUEST['customerid']))) instanceof Customer) ? $customer->getJson() : null;
 		$js .= "pageJs";
 			$js .= ".setHTMLIDs('detailswrapper')";
 			$js .= ".setCallbackId('searchSupplier', '" . $this->searchSupplierBtn->getUniqueID() . "')";
 			$js .= ".setCallbackId('searchProduct', '" . $this->searchProductBtn->getUniqueID() . "')";
 			$js .= ".setCallbackId('saveOrder', '" . $this->saveOrderBtn->getUniqueID() . "')";
+			$js .= ".setStatusOptions(" . json_encode($statusOptions) . ")";
 			$js .= ".setPaymentMethods(" . json_encode($paymentMethods) . ")";
 			$js .= ".setShippingMethods(" . json_encode($shippingMethods) . ")";
 			$js .= ".init(" . json_encode($customer) . ");";
@@ -142,10 +144,13 @@ class POController extends BPCPageAbstract
 			$shippingCost = trim($param->CallbackParameter->shippingCost);
 			$handlingCost = trim($param->CallbackParameter->handlingCost);
 			$comment = trim($param->CallbackParameter->comments);
+			$status = trim($param->CallbackParameter->status);
 			$purchaseOrder = PurchaseOrder::create($supplier,$supplierRefNum,$supplierContactName,$supplierContactNo,$shippingCost,$handlingCost);
 			$purchaseOrderTotalAmount = trim($param->CallbackParameter->totalAmount);
 			$purchaseOrderTotalPaid = trim($param->CallbackParameter->totalPaid);
-			$purchaseOrder->setTotalAmount($purchaseOrderTotalAmount)->setTotalPaid($purchaseOrderTotalPaid);
+			$purchaseOrder->setTotalAmount($purchaseOrderTotalAmount)
+			->setTotalPaid($purchaseOrderTotalPaid)
+			->setStatus($status);
 			foreach ($param->CallbackParameter->items as $item) {
 				$productId = trim($item->product->id);
 				$productUnitPrice = trim($item->unitPrice);

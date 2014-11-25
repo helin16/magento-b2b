@@ -27,6 +27,15 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		return this;
 	}
 	/**
+	 * setting the status options
+	 */
+	,setStatusOptions: function(statusOptions) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.me._statusOptions = statusOptions;
+		return tmp.me;
+	}
+	/**
 	 * Getting the form group
 	 */
 	,_getFormGroup: function(title, content) {
@@ -98,6 +107,10 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.newDiv = new Element('div', {'class': 'panel panel-default'})
 			.insert({'bottom': new Element('div', {'class': 'panel-heading'})
 				.insert({'bottom': new Element('strong').update('Creating purchase order for: ' + tmp.supplier.name + ' ') })
+				.insert({'bottom': new Element('div', {'class': 'pull-right'})
+					.insert({'bottom': new Element('strong').update('Status: ') })
+					.insert({'bottom': tmp.me._getOrderStatus() })
+				})
 			})
 			.insert({'bottom': new Element('div', {'class': 'panel-body'})
 				.insert({'bottom': new Element('div', {'class': 'row'})
@@ -108,6 +121,18 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				 })
 			});
 		return tmp.newDiv;
+	}
+	/**
+	 * Getting the order status dropdown list
+	 */
+	,_getOrderStatus: function () {
+		var tmp = {}
+		tmp.me = this;
+		tmp.selBox = new Element('select', {'save-order': 'status'});
+		tmp.me._statusOptions.each(function(status) {
+			tmp.selBox.insert({'bottom': new Element('option').update(status) });
+		});
+		return tmp.selBox;
 	}
 	/**
 	 * Getting each product row
