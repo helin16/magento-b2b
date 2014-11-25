@@ -65,7 +65,23 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		console.debug(tmp.data);
 		tmp.me.postAjax(tmp.me.getCallbackId('saveOrder'), tmp.data, {
 		});
+//		tmp.me.refreshParentWindow();
+		window.parent.jQuery.fancybox.close();
 		return tmp.me;
+	}
+	,refreshParentWindow: function() {
+		var tmp = {};
+		tmp.me = this;
+		if(!window.parent)
+			return;
+		tmp.parentWindow = window.parent;
+		tmp.row = $(tmp.parentWindow.document.body).down('#' + tmp.parentWindow.pageJs.resultDivId + ' .item_row[item_id=' + tmp.me._item.id + ']');
+		console.debug(tmp.row);
+		if(tmp.row) {
+			tmp.row.replace(tmp.parentWindow.pageJs._getResultRow(tmp.me._item));
+			if(tmp.row.hasClassName('success'))
+				tmp.row.addClassName('success');
+		}
 	}
 	/**
 	 * Getting the save btn for this order

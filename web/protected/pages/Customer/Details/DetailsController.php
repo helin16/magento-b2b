@@ -58,6 +58,7 @@ class DetailsController extends DetailsPageAbstract
 		$results = $errors = array();
 		try
 		{
+// 			var_dump($param->CallbackParameter);
 			Dao::beginTransaction();
 			$customer = !is_numeric($param->CallbackParameter->id) ? new Customer() : Customer::get(trim($param->CallbackParameter->id));
 			if(!$customer instanceof Customer)
@@ -82,21 +83,19 @@ class DetailsController extends DetailsPageAbstract
 			$shippingAdressFull = Address::create($shippingStreet, $shippingCity, $shippingState, $shippingCountry, $shippingPosecode);
 				
 			if(is_numeric($param->CallbackParameter->id)) {
-			$customer->setName($name)
-				->setEmail($email)
-				->setMageId($mageId)
-				->setContactNo($contactNo)
-				->setActive($active)
-				->setBillingAddress($billingAdressFull)
-				->setShippingAddress($shippingAdressFull)
-			;
-			if(trim($customer->getId()) === '')
-				$customer->setIsFromB2B(false);
-			$customer->save();
+				$customer->setName($name)
+					->setEmail($email)
+					->setMageId($mageId)
+					->setContactNo($contactNo)
+					->setActive($active)
+					->setBillingAddress($billingAdressFull)
+					->setShippingAddress($shippingAdressFull)
+					->save();
+				var_dump($customer);
 			} else {
 				$customer->create($name, $contactNo, $email, $billingAdressFull, false, '', $shippingAdressFull, $mageId);
 			}
-		
+			$customer->save();
 			$results['url'] = '/customer/' . $customer->getId() . '.html';
 			$results['item'] = $customer->getJson();
 			Dao::commitTransaction();
