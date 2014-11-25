@@ -36,6 +36,15 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		return tmp.me;
 	}
 	/**
+	 * setting the comment
+	 */
+	,setComment: function(comment) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.me._comment = comment.comments;
+		return tmp.me;
+	}
+	/**
 	 * setting the Purchase Order Items
 	 */
 	,setPurchaseOrderItems: function(purchaseOrderItems) {
@@ -195,7 +204,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		tmp.productListDiv.insert({'bottom': tmp.tbody = new Element('tfoot')
 			.insert({'bottom': new Element('tr') 
 				.insert({'bottom': new Element('td', {'colspan': 2, 'rowspan': 4})
-					.insert({'bottom': tmp.me._getFormGroup( 'Comments:', new Element('textarea', {'save-order': 'comments'}) ) })
+					.insert({'bottom': tmp.me._getFormGroup( 'Comments:', new Element('textarea', {'save-order': 'comments'}).update(tmp.me._comment ? tmp.me._comment : '') ) })
 				}) 
 				.insert({'bottom': new Element('td', {'colspan': 2, 'class': 'text-right active'}).update( new Element('strong').update('Total Excl. GST: ') ) }) 
 				.insert({'bottom': new Element('td', {'id': tmp.me._htmlIds.totalPriceExcludeGST, 'class': 'active'}).update( tmp.me.getCurrency(0) ) }) 
