@@ -40,7 +40,10 @@ class DetailsController extends DetailsPageAbstract
 			$purchaseOrder = new PurchaseOrder();
 		else if(!($purchaseOrder = PurchaseOrder::get($this->Request['id'])) instanceof PurchaseOrder)
 			die('Invalid Purchase Order!');
-		$comment = $purchaseOrder->getComment()[0];
+		$comments = array();
+		foreach ($purchaseOrder->getComment() as $item) {
+			array_push($comments, $item->getJson());
+		};
 		$statusOptions =  $purchaseOrder->getStatusOptions();
 		$purchaseOrderItems = array();
 		foreach (PurchaseOrderItem::getAllByCriteria('purchaseOrderId = ?', array($purchaseOrder->getId()), true, 1, DaoQuery::DEFAUTL_PAGE_SIZE, array('po_item.id'=>'asc')) as $item) {
@@ -54,7 +57,7 @@ class DetailsController extends DetailsPageAbstract
 		};
 		$js = parent::_getEndJs();
 		$js .= "pageJs.setPreData(" . json_encode($purchaseOrder->getJson()) . ")"; 
-		$js .= ".setComment(" . json_encode($comment->getJson()) . ")";
+		$js .= ".setComment(" . json_encode($comments) . ")";
 		$js .= ".setStatusOptions(" . json_encode($statusOptions) . ")";
 		$js .= ".setCallbackId('searchProduct', '" . $this->searchProductBtn->getUniqueID() . "')";
 		$js .= ".setCallbackId('saveOrder', '" . $this->saveOrderBtn->getUniqueID() . "')";

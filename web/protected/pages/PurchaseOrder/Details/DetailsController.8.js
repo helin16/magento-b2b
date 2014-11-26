@@ -38,10 +38,10 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 	/**
 	 * setting the comment
 	 */
-	,setComment: function(comment) {
+	,setComment: function(comments) {
 		var tmp = {};
 		tmp.me = this;
-		tmp.me._comment = comment.comments;
+		tmp.me._comments = comments;
 		return tmp.me;
 	}
 	/**
@@ -52,6 +52,18 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		tmp.me = this;
 		tmp.me._purchaseOrderItems = purchaseOrderItems;
 		return tmp.me;
+	}
+	/**
+	 * Getting the comments row
+	 */
+	,_getCommentsRow: function(comments,isTitle) {
+		return new Element('tr', {'class': isTitle ? 'comments_row header' : 'comments_row'})
+		.store('data', comments)
+		.insert({'bottom': new Element('td', {'class': 'created', 'width': '15%'}).update(new Element('small').update(!isTitle ? comments.created : 'Created') ) })
+		.insert({'bottom': new Element('td', {'class': 'creator', 'width': '15%'}).update(new Element('small').update(!isTitle ? comments.createdBy.person.fullname : 'Who') ) })
+		.insert({'bottom': new Element('td', {'class': 'type', 'width': '10%'}).update(new Element('small').update(!isTitle ? comments.type : 'Type') ) })
+		.insert({'bottom': new Element('td', {'class': 'comments', 'width': 'auto'}).update(!isTitle ? comments.comments : '') })
+		;
 	}
 	/**
 	 * This function should return you the edit div for this item
@@ -68,14 +80,13 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 				.insert({'bottom': new Element('div', {'class': 'col-sm-12'}).update(tmp.me._getPartsTable()) })
 			})
 			.insert({'bottom': new Element('div', {'class': 'row'})
-				.insert({'bottom': new Element('div', {'class': 'col-sm-12'}).update(tmp.me._saveBtns()) })
+				.insert({'bottom': new Element('div', {'class': 'col-sm-12'}).update(tmp.me._getCommentsPanel()) })
 			})
 		;
 		tmp.me._purchaseOrderItems.each(function(product){
 			tmp.me._addNewProductRow(tmp.me._newDiv.down('.glyphicon.glyphicon-floppy-saved'),product);
 		});
 		tmp.me._newDiv.getElementsBySelector('.order-item-row').each(function(item){
-//			item.removeClassName('order-item-row');
 			item.addClassName('order-item-row-old');
 		});
 		return tmp.me._newDiv;
@@ -105,6 +116,32 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 					.insert({'bottom': new Element('div', {'class': 'col-sm-3'}).update(tmp.me._getFormGroup('Supplier Ref Num', new Element('input', {'required': 'required', 'save-order': 'supplierRefNum', 'type': 'text', 'value': tmp.purchaseOrder.supplierRefNo ? tmp.purchaseOrder.supplierRefNo : ''}) ) ) })
 				 })
 			});
+		return tmp.newDiv;
+	}
+	/**
+	 * getting the PO comments div
+	 */
+	,_getCommentsPanel: function() {
+		var tmp = {};
+		tmp.me = this;
+		tmp.comments = tmp.me._comments;
+//		console.debug(tmp.comments);
+		tmp.newDiv = new Element('div', {'class': 'panel panel-default'})
+			.insert({'bottom': new Element('div', {'class': 'panel-heading'}).update('Comment History') })
+			.insert({'bottom': new Element('div', {'class': 'table-responsive'})
+				.insert({'bottom': new Element('table', {'id': 'comments_result_div', 'class': 'table table-hover table-condensed'}) 
+					.insert({'bottom': new Element('thead') 
+					})
+					.insert({'bottom': new Element('tbody') 
+					})
+				})
+		});
+		tmp.row=tmp.me._getCommentsRow('',true);
+		tmp.newDiv.down('#comments_result_div thead').insert({'bottom': tmp.row});
+		tmp.comments.each(function(item) {
+			tmp.row=tmp.me._getCommentsRow(item,false);
+			tmp.newDiv.down('#comments_result_div tbody').insert({'bottom': tmp.row})
+		});
 		return tmp.newDiv;
 	}
 	/**
@@ -222,7 +259,8 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		tmp.productListDiv.insert({'bottom': tmp.tbody = new Element('tfoot')
 			.insert({'bottom': new Element('tr') 
 				.insert({'bottom': new Element('td', {'colspan': 2, 'rowspan': 4})
-					.insert({'bottom': tmp.me._getFormGroup( 'Comments:', new Element('textarea', {'save-order': 'comments'}).update(tmp.me._comment ? tmp.me._comment : '') ) })
+					.insert({'bottom': tmp.me._getFormGroup( 'Comments:', new Element('textarea', {'save-order': 'comments', 'style': 'height:33px'}).update(tmp.me._comment ? tmp.me._comment : '') ) })
+					.insert({'bottom': new Element('td', {'colspan': 2, 'class': 'text-right active pull-right'}).update(tmp.me._saveBtns()) })
 				}) 
 				.insert({'bottom': new Element('td', {'colspan': 2, 'class': 'text-right active'}).update( new Element('strong').update('Total Excl. GST: ') ) }) 
 				.insert({'bottom': new Element('td', {'id': tmp.me._htmlIds.totalPriceExcludeGST, 'class': 'active'}).update( tmp.me.getCurrency(0) ) }) 
