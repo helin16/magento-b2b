@@ -130,7 +130,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 
 		tmp.newDiv = new Element('div', {'class': 'panel panel-default', 'id': 'billing-info'})
 			.insert({'bottom': new Element('div', {'class': 'panel-heading'})
-				.insert({'bottom': new Element('strong').update(tmp.item.name ? 'Billing Info: ' + tmp.item.name : 'Creating new customer: ') })
+				.insert({'bottom': new Element('strong').update(tmp.item.name ? 'Billing Info: ' + tmp.item.name : 'Billing Info: new customer') })
 				.insert({'bottom': new Element('small', {'class': 'pull-right'}) 
 					.insert({'bottom': new Element('button', {'class': 'btn btn-default btn-xs', 'type': 'button'}).update('Copy from Shipping') })
 				})
@@ -174,7 +174,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 
 		tmp.newDiv = new Element('div', {'class': 'panel panel-default', 'id': 'shipping-info'})
 			.insert({'bottom': new Element('div', {'class': 'panel-heading'})
-				.insert({'bottom': new Element('strong').update(tmp.item.name ? 'Shipping Info: ' + tmp.item.name : 'Creating new customer: ') })
+				.insert({'bottom': new Element('strong').update(tmp.item.name ? 'Shipping Info: ' + tmp.item.name : 'Shipping Info: new customer') })
 				.insert({'bottom': new Element('small', {'class': 'pull-right'}) 
 					.insert({'bottom': new Element('button', {'class': 'btn btn-default btn-xs', 'type': 'button'}).update('Copy from Billing') })
 				})
