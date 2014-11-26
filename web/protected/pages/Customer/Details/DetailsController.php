@@ -68,18 +68,22 @@ class DetailsController extends DetailsPageAbstract
 			$active = !is_numeric($param->CallbackParameter->id) ? '' : trim($param->CallbackParameter->active);
 			$email = trim($param->CallbackParameter->email);
 			$contactNo = trim($param->CallbackParameter->contactNo);
+			$billingName = trim($param->CallbackParameter->billingName);
+			$billingContactNo = trim($param->CallbackParameter->billingContactNo);
 			$billingStreet = trim($param->CallbackParameter->billingStreet);
 			$billingCity = trim($param->CallbackParameter->billingCity);
 			$billingState = trim($param->CallbackParameter->billingState);
 			$billingCountry = trim($param->CallbackParameter->billingCountry);
 			$billingPostcode = trim($param->CallbackParameter->billingPosecode);
-			$billingAdressFull = Address::create($billingStreet, $billingCity, $billingState, $billingCountry, $billingPostcode);
+			$billingAdressFull = Address::create($billingStreet, $billingCity, $billingState, $billingCountry, $billingPostcode, $billingName, $billingContactNo);
+			$shippingName = trim($param->CallbackParameter->shippingName);
+			$shippingContactNo = trim($param->CallbackParameter->shippingContactNo);
 			$shippingStreet = trim($param->CallbackParameter->shippingStreet);
 			$shippingCity = trim($param->CallbackParameter->shippingCity);
 			$shippingState = trim($param->CallbackParameter->shippingState);
 			$shippingCountry = trim($param->CallbackParameter->shippingCountry);
 			$shippingPosecode = trim($param->CallbackParameter->shippingPosecode);
-			$shippingAdressFull = Address::create($shippingStreet, $shippingCity, $shippingState, $shippingCountry, $shippingPosecode);
+			$shippingAdressFull = Address::create($shippingStreet, $shippingCity, $shippingState, $shippingCountry, $shippingPosecode, $shippingName, $shippingContactNo);
 				
 			if(is_numeric($param->CallbackParameter->id)) {
 				$customer->setName($name)
