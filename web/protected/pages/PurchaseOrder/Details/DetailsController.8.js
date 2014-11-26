@@ -139,8 +139,10 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		tmp.row=tmp.me._getCommentsRow('',true);
 		tmp.newDiv.down('#comments_result_div thead').insert({'bottom': tmp.row});
 		tmp.comments.each(function(item) {
-			tmp.row=tmp.me._getCommentsRow(item,false);
-			tmp.newDiv.down('#comments_result_div tbody').insert({'bottom': tmp.row})
+			if (item.comments !== '') {
+				tmp.row=tmp.me._getCommentsRow(item,false);
+				tmp.newDiv.down('#comments_result_div tbody').insert({'bottom': tmp.row})
+			}
 		});
 		return tmp.newDiv;
 	}
