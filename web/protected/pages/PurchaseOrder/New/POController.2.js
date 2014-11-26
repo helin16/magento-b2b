@@ -43,9 +43,10 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			.insert({'bottom': title ? new Element('label', {'class': 'control-label'}).update(title) : '' })
 			.insert({'bottom': content.addClassName('form-control') });
 	}
-	,_submitOrder: function() {
+	,_submitOrder: function(btn) {
 		var tmp = {};
 		tmp.me = this;
+		tmp.btn = btn;
 		tmp.data = tmp.me._collectFormData($(tmp.me._htmlIds.itemDiv),'save-order');
 		if(tmp.data === null)
 			return tmp.me;
@@ -62,8 +63,26 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		}
 		tmp.data.supplier = tmp.me._supplier;
 		tmp.data.totalAmount = tmp.data.totalAmount ? tmp.me.getValueFromCurrency(tmp.data.totalAmount) : '';
-		console.debug(tmp.data);
+		tmp.me._signRandID(tmp.btn);
 		tmp.me.postAjax(tmp.me.getCallbackId('saveOrder'), tmp.data, {
+			'onLoading': function(sender, param) {
+				jQuery('#' + tmp.btn.id).button('loading');
+			}
+			,'onSuccess': function(sender, param) {
+				try {
+					tmp.result = tmp.me.getResp(param, false, true);
+					if(!tmp.result || !tmp.result.item)
+						return;
+					tmp.me._item = tmp.result.item;
+//					tmp.me.refreshParentWindow();
+					window.parent.jQuery.fancybox.close();
+				} catch(e) {
+					tmp.me.showModalBox('Error!', e, false);
+				}
+			}
+			,'onComplete': function(sender, param) {
+				jQuery('#' + tmp.btn.id).button('reset');
+			}
 		});
 //		tmp.me.refreshParentWindow();
 		window.parent.jQuery.fancybox.close();
@@ -76,11 +95,8 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			return;
 		tmp.parentWindow = window.parent;
 		tmp.row = $(tmp.parentWindow.document.body).down('#' + tmp.parentWindow.pageJs.resultDivId + ' .item_row[item_id=' + tmp.me._item.id + ']');
-		console.debug(tmp.row);
 		if(tmp.row) {
-			tmp.row.replace(tmp.parentWindow.pageJs._getResultRow(tmp.me._item));
-			if(tmp.row.hasClassName('success'))
-				tmp.row.addClassName('success');
+			tmp.row.replace(tmp.parentWindow.pageJs._getResultRow(tmp.me._item).addClassName('success'));
 		}
 	}
 	/**
@@ -94,7 +110,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-ok-circle'}) })
 				.insert({'bottom': new Element('span').update(' save ') })
 				.observe('click', function() {
-					tmp.me._submitOrder();
+					tmp.me._submitOrder(this);
 				})
 			})
 			.insert({'bottom': new Element('span', {'class': 'btn btn-default'})

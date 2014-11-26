@@ -165,6 +165,7 @@ class POController extends BPCPageAbstract
 			var_dump($purchaseOrder);
 			$purchaseOrder->save();
 			$purchaseOrder->addComment($comment, Comments::TYPE_SYSTEM);
+			$results['item'] = $purchaseOrder->getJson();
 			Dao::commitTransaction();
 		}
 		catch(Exception $ex)

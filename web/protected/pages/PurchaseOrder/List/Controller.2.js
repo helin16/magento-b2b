@@ -192,14 +192,6 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		});
 		return tmp.me;
 	}
-	,_highlightSelectedRow : function (btn) {
-		var tmp = {};
-		tmp.me = this;
-		tmp.item = $(btn).up('[item_id]').retrieve('data');
-		jQuery('.item_row.success').removeClass('success');
-		tmp.selectedRow = jQuery('[item_id=' + tmp.item.id + ']')
-		.addClass('success');
-	}
 	,_deactivateItem: function(btn) {
 		var tmp = {}
 		tmp.me = this;
