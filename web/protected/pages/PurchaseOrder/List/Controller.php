@@ -84,8 +84,13 @@ class Controller extends CRUDPageAbstract
             $objects = PurchaseOrder::getAllByCriteria(implode(' AND ', $where), $params, false, $pageNo, $pageSize, array('po.id' => 'desc'), $stats);
             $results['pageStats'] = $stats;
             $results['items'] = array();
-            foreach($objects as $obj)
-                $results['items'][] = $obj->getJson();
+            foreach($objects as $obj){
+            	$PoId = $obj->getId();
+            	$totalProdcutCount = array('totalProdcutCount' => $obj->gettotalProdcutCount());
+//                 $results['items'][] = $obj->getJson();
+                array_push($results['items'], array('totalProdcutCount' => $obj->gettotalProdcutCount(), 'item' => $obj->getJson()));
+                var_dump($results);
+            }
         }
         catch(Exception $ex)
         {

@@ -66,6 +66,7 @@ class PurchaseOrder extends BaseEntityAbstract
 	private $orderDate;
 	private $totalAmount = 0;
 	private $totalPaid = 0;
+	private $totalProdcutCount = 0;
 	/**
 	 * Getter for purchaseOrderNo
 	 *
@@ -253,6 +254,16 @@ class PurchaseOrder extends BaseEntityAbstract
 	{
 		$this->orderDate = new UDate(trim($this->orderDate));
 	    return $this->orderDate;
+	}
+	/**
+	 * Getter for totalProdcutCount
+	 *
+	 * @return string
+	 */
+	public function gettotalProdcutCount() 
+	{
+		$this->totalProdcutCount = count(PurchaseOrderItem::getAllByCriteria('purchaseOrderId = ?', array($this->getId()), true, 1, DaoQuery::DEFAUTL_PAGE_SIZE * 10) );
+	    return $this->totalProdcutCount;
 	}
 	/**
 	 * Setter for orderDate
