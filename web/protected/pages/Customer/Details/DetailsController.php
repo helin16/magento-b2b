@@ -65,7 +65,6 @@ class DetailsController extends DetailsPageAbstract
 				throw new Exception('Invalid Customer passed in!');
 			$name = trim($param->CallbackParameter->name);
 			$id = !is_numeric($param->CallbackParameter->id) ? '' : trim($param->CallbackParameter->id);
-			$mageId = !is_numeric($param->CallbackParameter->id) ? '' : trim($param->CallbackParameter->mageId);
 			$active = !is_numeric($param->CallbackParameter->id) ? '' : trim($param->CallbackParameter->active);
 			$email = trim($param->CallbackParameter->email);
 			$contactNo = trim($param->CallbackParameter->contactNo);

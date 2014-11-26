@@ -43,6 +43,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		var tmp = {};
 		tmp.me = this;
 		tmp.data = tmp.me._collectFormData($(tmp.me._htmlIds.itemDiv), 'save-item');
+		tmp.data.id = tmp.me._customer.id ? tmp.me._customer.id : 0;
 		if(tmp.data === null)
 			return tmp.me;
 		
@@ -90,7 +91,6 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		var tmp = {};
 		tmp.me = this;
 		tmp.item = item;
-		console.debug(item);
 		tmp.newDiv = new Element('div', {'class': 'panel panel-default'})
 			.insert({'bottom': new Element('div', {'class': 'panel-heading'})
 				.insert({'bottom': new Element('a', {'href': 'javascript: void(0);', 'title': 'click to show/hide below'})
@@ -99,25 +99,26 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 				.observe('click', function() {
 					$(this).up('.panel').down('.panel-body').toggle();
 				})
-				.insert({'bottom': new Element('small', {'class': 'pull-right'}) 
-					.insert({'bottom': new Element('label', {'for': 'showOnWeb_' + tmp.item.id}).update('Show on Web?') })
-					.insert({'bottom': new Element('input', {'id': 'showOnWeb_' + tmp.item.id, 'save-item': 'sellOnWeb', 'type': 'checkbox', 'checked': tmp.item.sellOnWeb}) })
-				})
 			})
 			.insert({'bottom': new Element('div', {'class': 'panel-body'})
 				.insert({'bottom': new Element('div', {'class': 'row'})
-					.insert({'bottom': new Element('div', {'class': 'col-sm-6'}).update(tmp.me._getFormGroup('Name', new Element('input', {'required': true, 'save-item': 'name', 'type': 'text', 'value': tmp.item.name ? tmp.item.name : ''}) ) ) })
-					.insert({'bottom': new Element('div', {'class': 'col-sm-2'}).update(tmp.me._getFormGroup('ID', new Element('input', {'disabled': 'disabled', 'save-item': 'id', 'type': 'text', 'value': tmp.item.id ? tmp.item.id : ''}) ) ) })
-					.insert({'bottom': new Element('div', {'class': 'col-sm-2'}).update(tmp.me._getFormGroup('Mage ID', new Element('input', {'save-item': 'mageId', 'type': 'value', 'value': tmp.item.mageId ? tmp.item.mageId : ''}) ) ) })
-					.insert({'bottom': new Element('div', {'class': 'col-sm-2'}).update(tmp.me._getFormGroup('Active?', new Element('input', {'save-item': 'active', 'type': 'checkbox', 'value': tmp.item.active}) ) ) })
-				})
-				.insert({'bottom': new Element('div', {'class': 'row'})
-					.insert({'bottom': new Element('div', {'class': 'col-sm-6'}).update(tmp.me._getFormGroup('Email', new Element('input', {'save-item': 'email', 'type': 'email', 'value': tmp.item.email ? tmp.item.email : ''}) ) ) })
-					.insert({'bottom': new Element('div', {'class': 'col-sm-6'}).update(tmp.me._getFormGroup('Contact No?', new Element('input', {'save-item': 'contactNo', 'type': 'value', 'value': tmp.item.contactNo ? tmp.item.contactNo : ''}) ) ) })
+					.insert({'bottom': new Element('div', {'class': 'col-sm-4'}).update(tmp.me._getFormGroup('Name', new Element('input', {'required': true, 'save-item': 'name', 'type': 'text', 'value': tmp.item.name ? tmp.item.name : ''}) ) ) })
+					.insert({'bottom': new Element('div', {'class': 'col-sm-4'}).update(tmp.me._getFormGroup('Email', new Element('input', {'save-item': 'email', 'type': 'email', 'value': tmp.item.email ? tmp.item.email : ''}) ) ) })
+					.insert({'bottom': new Element('div', {'class': 'col-sm-3'}).update(tmp.me._getFormGroup('Contact No?', new Element('input', {'save-item': 'contactNo', 'type': 'value', 'value': tmp.item.contactNo ? tmp.item.contactNo : ''}) ) ) })
+					.insert({'bottom': new Element('div', {'class': 'col-sm-1'}).update(tmp.me._getFormGroup('Active?', new Element('input', {'save-item': 'active', 'type': 'checkbox', 'value': tmp.item.active}) ) ) })
 				})
 			})
 		;
 		return tmp.newDiv;
+	}
+	/**
+	 * copy field between two address fields
+	 */
+	,_copyInfoFields: function (btn,from,to,tag) {
+		var tmp = {};
+		tmp.me = this;
+		if($$('.customer-editing-container').first().down('#' + from + '-info' + ' #' + from + tag + ' input').value !== '')
+			$(btn).up('.panel').down('#' + to + tag +' input').writeAttribute('value',$$('.customer-editing-container').first().down('#' + from + '-info' + ' #' + from + tag + ' input').value);
 	}
 	/**
 	 * Getting the customer billing summary div
@@ -134,13 +135,13 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 					.insert({'bottom': new Element('button', {'class': 'btn btn-default btn-xs', 'type': 'button'}).update('Copy from Shipping') })
 				})
 				.observe('click', function() {
-					$(this).up('.panel').down('#billingName input').writeAttribute('value',$$('.customer-editing-container').first().down('#shipping-info #shippingName input').value);
-					$(this).up('.panel').down('#billingContactNo input').writeAttribute('value',$$('.customer-editing-container').first().down('#shipping-info #shippingContactNo input').value);
-					$(this).up('.panel').down('#billingStreet input').writeAttribute('value',$$('.customer-editing-container').first().down('#shipping-info #shippingStreet input').value);
-					$(this).up('.panel').down('#billingCity input').writeAttribute('value',$$('.customer-editing-container').first().down('#shipping-info #shippingCity input').value);
-					$(this).up('.panel').down('#billingState input').writeAttribute('value',$$('.customer-editing-container').first().down('#shipping-info #shippingState input').value);
-					$(this).up('.panel').down('#billingCountry input').writeAttribute('value',$$('.customer-editing-container').first().down('#shipping-info #shippingCountry input').value);
-					$(this).up('.panel').down('#billingPosecode input').writeAttribute('value',$$('.customer-editing-container').first().down('#shipping-info #shippingPosecode input').value);
+					tmp.me._copyInfoFields($(this),'shipping','billing','Name');
+					tmp.me._copyInfoFields($(this),'shipping','billing','ContactNo');
+					tmp.me._copyInfoFields($(this),'shipping','billing','Street');
+					tmp.me._copyInfoFields($(this),'shipping','billing','City');
+					tmp.me._copyInfoFields($(this),'shipping','billing','State');
+					tmp.me._copyInfoFields($(this),'shipping','billing','Country');
+					tmp.me._copyInfoFields($(this),'shipping','billing','Posecode');
 				})
 			})
 			.insert({'bottom': new Element('div', {'class': 'panel-body'})
@@ -178,13 +179,13 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 					.insert({'bottom': new Element('button', {'class': 'btn btn-default btn-xs', 'type': 'button'}).update('Copy from Billing') })
 				})
 				.observe('click', function() {
-					$(this).up('.panel').down('#shippingName input').writeAttribute('value',$$('.customer-editing-container').first().down('#billing-info #billingName input').value);
-					$(this).up('.panel').down('#shippingContactNo input').writeAttribute('value',$$('.customer-editing-container').first().down('#billing-info #billingContactNo input').value);
-					$(this).up('.panel').down('#shippingStreet input').writeAttribute('value',$$('.customer-editing-container').first().down('#billing-info #billingStreet input').value);
-					$(this).up('.panel').down('#shippingCity input').writeAttribute('value',$$('.customer-editing-container').first().down('#billing-info #billingCity input').value);
-					$(this).up('.panel').down('#shippingState input').writeAttribute('value',$$('.customer-editing-container').first().down('#billing-info #billingState input').value);
-					$(this).up('.panel').down('#shippingCountry input').writeAttribute('value',$$('.customer-editing-container').first().down('#billing-info #billingCountry input').value);
-					$(this).up('.panel').down('#shippingPosecode input').writeAttribute('value',$$('.customer-editing-container').first().down('#billing-info #billingPosecode input').value);
+					tmp.me._copyInfoFields($(this),'billing','shipping','Name');
+					tmp.me._copyInfoFields($(this),'billing','shipping','ContactNo');
+					tmp.me._copyInfoFields($(this),'billing','shipping','Street');
+					tmp.me._copyInfoFields($(this),'billing','shipping','City');
+					tmp.me._copyInfoFields($(this),'billing','shipping','State');
+					tmp.me._copyInfoFields($(this),'billing','shipping','Country');
+					tmp.me._copyInfoFields($(this),'billing','shipping','Posecode');
 				})
 			})
 			.insert({'bottom': new Element('div', {'class': 'panel-body'})
