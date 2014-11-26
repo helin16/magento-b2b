@@ -85,7 +85,6 @@ class DetailsController extends DetailsPageAbstract
 			if(is_numeric($param->CallbackParameter->id)) {
 				$customer->setName($name)
 					->setEmail($email)
-					->setMageId($mageId)
 					->setContactNo($contactNo)
 					->setActive($active)
 					->setBillingAddress($billingAdressFull)
@@ -95,7 +94,6 @@ class DetailsController extends DetailsPageAbstract
 			} else {
 				$customer->create($name, $contactNo, $email, $billingAdressFull, false, '', $shippingAdressFull, $mageId);
 			}
-			$customer->save();
 			$results['url'] = '/customer/' . $customer->getId() . '.html';
 			$results['item'] = $customer->getJson();
 			Dao::commitTransaction();
