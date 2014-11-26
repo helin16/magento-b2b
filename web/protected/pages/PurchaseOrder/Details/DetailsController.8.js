@@ -661,6 +661,8 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		tmp.data.supplier = tmp.me._supplier;
 		tmp.data.totalAmount = tmp.data.totalAmount ? tmp.me.getValueFromCurrency(tmp.data.totalAmount) : '';
 		tmp.data.totalPaid = tmp.data.totalPaid ? tmp.me.getValueFromCurrency(tmp.data.totalPaid) : '';
+		tmp.data.handlingCost = tmp.data.handlingCost ? tmp.me.getValueFromCurrency(tmp.data.handlingCost) : '';
+		tmp.data.shippingCost = tmp.data.shippingCost ? tmp.me.getValueFromCurrency(tmp.data.shippingCost) : '';
 		tmp.me._signRandID(tmp.btn);
 		tmp.me.postAjax(tmp.me.getCallbackId('saveOrder'), tmp.data, {
 			'onLoading': function(sender, param) {
