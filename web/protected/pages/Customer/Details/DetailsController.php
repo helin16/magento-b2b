@@ -36,8 +36,11 @@ class DetailsController extends DetailsPageAbstract
 	{
 		if(!isset($this->Request['id']))
 			die('System ERR: no param passed in!');
-		if(trim($this->Request['id']) === 'new')
+		if(trim($this->Request['id']) === 'new') {
 			$customer = new Customer();
+			$customer->setBillingAddress(new Address());
+			$customer->setShippingAddress(new Address());
+		}
 		else if(!($customer = Customer::get($this->Request['id'])) instanceof Customer)
 			die('Invalid Customer!');
 		
@@ -60,9 +63,7 @@ class DetailsController extends DetailsPageAbstract
 		{
 // 			var_dump($param->CallbackParameter);
 			Dao::beginTransaction();
-			$customer = !is_numeric($param->CallbackParameter->id) ? new Customer() : Customer::get(trim($param->CallbackParameter->id));
-			if(!$customer instanceof Customer)
-				throw new Exception('Invalid Customer passed in!');
+			
 			$name = trim($param->CallbackParameter->name);
 			$id = !is_numeric($param->CallbackParameter->id) ? '' : trim($param->CallbackParameter->id);
 			$active = !is_numeric($param->CallbackParameter->id) ? '' : trim($param->CallbackParameter->active);
@@ -75,7 +76,6 @@ class DetailsController extends DetailsPageAbstract
 			$billingState = trim($param->CallbackParameter->billingState);
 			$billingCountry = trim($param->CallbackParameter->billingCountry);
 			$billingPostcode = trim($param->CallbackParameter->billingPosecode);
-			$billingAdressFull = Address::create($billingStreet, $billingCity, $billingState, $billingCountry, $billingPostcode, $billingName, $billingContactNo);
 			$shippingName = trim($param->CallbackParameter->shippingName);
 			$shippingContactNo = trim($param->CallbackParameter->shippingContactNo);
 			$shippingStreet = trim($param->CallbackParameter->shippingStreet);
@@ -83,24 +83,45 @@ class DetailsController extends DetailsPageAbstract
 			$shippingState = trim($param->CallbackParameter->shippingState);
 			$shippingCountry = trim($param->CallbackParameter->shippingCountry);
 			$shippingPosecode = trim($param->CallbackParameter->shippingPosecode);
-			$shippingAdressFull = Address::create($shippingStreet, $shippingCity, $shippingState, $shippingCountry, $shippingPosecode, $shippingName, $shippingContactNo);
-				
+
 			if(is_numeric($param->CallbackParameter->id)) {
+				$customer = Customer::get(trim($param->CallbackParameter->id));
+				if(!$customer instanceof Customer)
+					throw new Exception('Invalid Customer passed in!');
 				$customer->setName($name)
-					->setEmail($email)
-					->setContactNo($contactNo)
-					->setActive($active)
-					->setBillingAddress($billingAdressFull)
-					->setShippingAddress($shippingAdressFull)
-					->save();
-				var_dump($customer);
+				->setEmail($email)
+				->setContactNo($contactNo)
+				->setActive($active);
+				$billingAddress = $customer->getBillingAddress();
+				$billingAddress->setStreet($billingStreet)
+				->setCity($billingCity)
+				->setRegion($billingState)
+				->setCountry($billingCountry)
+				->setPostCode($billingPostcode)
+				->setContactName($billingName)
+				->setContactNo($billingContactNo)
+				->save();
+				$shippingAddress = $customer->getShippingAddress();
+				$shippingAddress->setStreet($shippingStreet)
+				->setCity($shippingCity)
+				->setRegion($shippingState)
+				->setCountry($shippingCountry)
+				->setPostCode($shippingPosecode)
+				->setContactName($shippingName)
+				->setContactNo($shippingContactNo)
+				->save();
+				$customer->save();
 			} else {
-				$customer->create($name, $contactNo, $email, $billingAdressFull, false, '', $shippingAdressFull, $mageId);
+				$billingAdressFull = Address::create($billingStreet, $billingCity, $billingState, $billingCountry, $billingPostcode, $billingName, $billingContactNo);
+				$shippingAdressFull = Address::create($shippingStreet, $shippingCity, $shippingState, $shippingCountry, $shippingPosecode, $shippingName, $shippingContactNo);
+				$customer = Customer::create($name, $contactNo, $email, $billingAdressFull, false, '', $shippingAdressFull);
+				if(!$customer instanceof Customer)
+					throw new Exception('Error creating customer!');
 			}
+			
 			$results['url'] = '/customer/' . $customer->getId() . '.html';
 			$results['item'] = $customer->getJson();
 			Dao::commitTransaction();
-
 		}
 		catch(Exception $ex)
 		{
