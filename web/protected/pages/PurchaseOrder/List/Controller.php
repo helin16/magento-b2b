@@ -87,9 +87,7 @@ class Controller extends CRUDPageAbstract
             foreach($objects as $obj){
             	$PoId = $obj->getId();
             	$totalProdcutCount = array('totalProdcutCount' => $obj->gettotalProdcutCount());
-//                 $results['items'][] = $obj->getJson();
                 array_push($results['items'], array('totalProdcutCount' => $obj->gettotalProdcutCount(), 'item' => $obj->getJson()));
-                var_dump($results);
             }
         }
         catch(Exception $ex)

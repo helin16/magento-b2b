@@ -125,7 +125,6 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		var tmp = {};
 		tmp.me = this;
 		tmp.comments = tmp.me._comments;
-//		console.debug(tmp.comments);
 		tmp.newDiv = new Element('div', {'class': 'panel panel-default'})
 			.insert({'bottom': new Element('div', {'class': 'panel-heading'}).update('Comment History') })
 			.insert({'bottom': new Element('div', {'class': 'table-responsive'})
@@ -683,7 +682,6 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		var tmp = {};
 		tmp.me = this;
 		tmp.btn = btn;
-		console.debug(btn);
 		tmp.data = tmp.me._collectFormData($(tmp.me._htmlIds.itemDiv),'save-order');
 		if(tmp.data === null)
 			return tmp.me;

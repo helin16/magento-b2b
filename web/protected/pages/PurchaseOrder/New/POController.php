@@ -132,8 +132,6 @@ class POController extends BPCPageAbstract
 		$results = $errors = array();
 		try
 		{
-			var_dump($param->CallbackParameter);
-			
 			Dao::beginTransaction();
 			$supplier = Supplier::get(trim($param->CallbackParameter->supplier->id));
 			if(!$supplier instanceof Supplier)
@@ -162,7 +160,6 @@ class POController extends BPCPageAbstract
 					throw new Exception('Invalid Product passed in!');
 				$purchaseOrder->addItem($product,$supplier->getId(),$productUnitPrice,$qtyOrdered,'','',$productTotalPrice);
 			};
-			var_dump($purchaseOrder);
 			$purchaseOrder->save();
 			$purchaseOrder->addComment($comment, Comments::TYPE_SYSTEM);
 			$results['item'] = $purchaseOrder->getJson();

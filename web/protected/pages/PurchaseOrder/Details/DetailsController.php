@@ -125,8 +125,6 @@ class DetailsController extends DetailsPageAbstract
 		$results = $errors = array();
 		try
 		{
-// 			var_dump($param->CallbackParameter);
-				
 			Dao::beginTransaction();
 			$supplier = Supplier::get(trim($param->CallbackParameter->supplier->id));
 			$purchaseOrderId = trim($param->CallbackParameter->id);
@@ -176,7 +174,6 @@ class DetailsController extends DetailsPageAbstract
 				$removedItemPOitem->setActive(false)->save();
 			};
 			$results['item'] = $purchaseOrder->getJson();
-// 			var_dump($purchaseOrder);
 			Dao::commitTransaction();
 		}
 		catch(Exception $ex)

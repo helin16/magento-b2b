@@ -61,7 +61,6 @@ class DetailsController extends DetailsPageAbstract
 		$results = $errors = array();
 		try
 		{
-// 			var_dump($param->CallbackParameter);
 			Dao::beginTransaction();
 			
 			$name = trim($param->CallbackParameter->name);

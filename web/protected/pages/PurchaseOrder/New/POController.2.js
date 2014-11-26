@@ -224,7 +224,6 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 	,_getSearchPrductResultRow: function(product, searchTxtBox) {
 		var tmp = {};
 		tmp.me = this;
-//		console.debug(product);
 		tmp.defaultImgSrc = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjZWVlIi8+PHRleHQgdGV4dC1hbmNob3I9Im1pZGRsZSIgeD0iMzIiIHk9IjMyIiBzdHlsZT0iZmlsbDojYWFhO2ZvbnQtd2VpZ2h0OmJvbGQ7Zm9udC1zaXplOjEycHg7Zm9udC1mYW1pbHk6QXJpYWwsSGVsdmV0aWNhLHNhbnMtc2VyaWY7ZG9taW5hbnQtYmFzZWxpbmU6Y2VudHJhbCI+NjR4NjQ8L3RleHQ+PC9zdmc+';
 		tmp.newRow = new Element('a', {'class': 'list-group-item', 'href': 'javascript: void(0);'})
 			.insert({'bottom': new Element('div', {'class': 'row'})
@@ -303,7 +302,6 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				tmp.resultList = new Element('div', {'style': 'overflow: auto; max-height: 400px;'});
 				try {
 					tmp.result = tmp.me.getResp(param, false, true);
-					console.debug(tmp.result);
 					if(!tmp.result || !tmp.result.items || tmp.result.items.size() === 0)
 						throw 'Nothing Found for: ' + tmp.searchTxt;
 					tmp.me._signRandID(tmp.searchTxtBox);
@@ -653,7 +651,6 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		var tmp = {};
 		tmp.me = this;
 		tmp.me._supplier = supplier;
-		console.debug(tmp.me._supplier);
 		tmp.newDiv = tmp.me._getViewOfPurchaseOrder();
 		$(tmp.me._htmlIds.itemDiv).update(tmp.newDiv);return;
 		tmp.newDiv.down('.new-order-item-input [new-order-item="product"]').focus();
@@ -780,7 +777,6 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			$(tmp.me._htmlIds.itemDiv).update(tmp.me._getSupplierListPanel());
 		}
 		if($$('.init-focus').size() > 0){
-			console.debug($$('.init-focus').first());
 			$$('.init-focus').first().focus();
 		}
 		return tmp.me;
