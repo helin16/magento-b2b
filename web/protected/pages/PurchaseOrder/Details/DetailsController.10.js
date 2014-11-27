@@ -403,6 +403,9 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 					tmp.me.keydown(event, function() {
 						$(tmp.txtBox).up('.product-autocomplete').down('.search-btn').click();
 					});
+					tmp.me.keydown(event, function() {
+						$(tmp.txtBox).up('.product-autocomplete').down('.search-btn').click();
+					}, null, 9);
 					return false;
 				})
 			})
