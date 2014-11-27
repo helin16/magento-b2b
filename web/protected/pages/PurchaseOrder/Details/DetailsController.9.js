@@ -426,7 +426,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		tmp.totalExcGSTBox = $(tmp.me._htmlIds.totalPriceExcludeGST) ? $(tmp.me._htmlIds.totalPriceExcludeGST) : tmp.me._newDiv.down('#'+tmp.me._htmlIds.totalPriceExcludeGST);
 		
 		tmp.totalExcGST = tmp.me.getValueFromCurrency(tmp.totalExcGSTBox.innerHTML) * 1  + amount * 1;
-		tmp.totalIncGST = tmp.totalExcGST ? (tmp.totalExcGST * 1 + 1.1) : 0;
+		tmp.totalIncGST = tmp.totalExcGST ? (tmp.totalExcGST * 1 * 1.1) : 0;
 		
 		tmp.totalGST = tmp.totalExcGST ? (tmp.totalIncGST * 1 - tmp.totalExcGST * 1) : 0;
 		
