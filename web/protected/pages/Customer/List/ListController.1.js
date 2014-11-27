@@ -130,7 +130,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 					tmp.newWindow.close();
 				})	
 			})
-			.insert({'bottom': new Element(tmp.tag, {'class': 'contact col-xs-1'}).update(row.contactNo)})
+			.insert({'bottom': new Element(tmp.tag, {'class': 'contact col-xs-1 truncate'}).update(row.contactNo)})
 			.insert({'bottom': new Element(tmp.tag, {'class': 'description col-xs-1'}).update(row.description) })
 			.insert({'bottom': new Element(tmp.tag, {'class': 'address col-xs-1'})
 				.insert({'bottom': tmp.isTitle === true ? row.addresses : new Element('span', {'style': 'display: inline-block'})

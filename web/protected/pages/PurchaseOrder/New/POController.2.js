@@ -74,7 +74,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					if(!tmp.result || !tmp.result.item)
 						return;
 					tmp.me._item = tmp.result.item;
-//					tmp.me.refreshParentWindow();
+					tmp.me.refreshParentWindow();
 					window.parent.jQuery.fancybox.close();
 				} catch(e) {
 					tmp.me.showModalBox('Error!', e, false);
@@ -84,8 +84,6 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				jQuery('#' + tmp.btn.id).button('reset');
 			}
 		});
-//		tmp.me.refreshParentWindow();
-		window.parent.jQuery.fancybox.close();
 		return tmp.me;
 	}
 	,refreshParentWindow: function() {
@@ -94,10 +92,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		if(!window.parent)
 			return;
 		tmp.parentWindow = window.parent;
-		tmp.row = $(tmp.parentWindow.document.body).down('#' + tmp.parentWindow.pageJs.resultDivId + ' .item_row[item_id=' + tmp.me._item.id + ']');
-		if(tmp.row) {
-			tmp.row.replace(tmp.parentWindow.pageJs._getResultRow(tmp.me._item).addClassName('success'));
-		}
+		tmp.row = $(tmp.parentWindow.document.body).down('table#item-list tbody').insert({'top': tmp.parentWindow.pageJs._getResultRow(tmp.me._item).addClassName('success')});
 	}
 	/**
 	 * Getting the save btn for this order
