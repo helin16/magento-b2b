@@ -76,7 +76,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		tmp.me._signRandID(btn); //sign it with a HTML ID to commnunicate with jQuery
 		if(!jQuery('#' + btn.id).hasClass('popover-loaded')) {
 			jQuery('#' + btn.id).popover({
-				'title'    : '<div class="row"><div class="col-xs-10">Details for: ' + tmp.item.name + '</div><div class="col-xs-2" style="cursor: pointer"><span class="pull-right glyphicon glyphicon-remove" href="javascript:void(0);" onclick="jQuery(' + "'#" + btn.id + "'" + ').popover(' + "'hide'" + ');"></span></div></div>',
+				'title'    : '<div class="row"><div class="col-xs-10">Details for: ' + tmp.item.name + '</div><div class="col-xs-2" style="cursor: pointer" href="javascript:void(0);" onclick="jQuery(' + "'#" + btn.id + "'" + ').popover(' + "'hide'" + ');"><span class="pull-right glyphicon glyphicon-remove" ></span></div></div>',
 				'html'     : true, 
 				'placement': function () {return tmp.type? 'left' : 'right'},
 				'container': 'body', 
