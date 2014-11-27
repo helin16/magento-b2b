@@ -25,10 +25,13 @@ class Menu extends TTemplateControl
 				'order' => array('url' => '/order.html', 'name' => 'Orders', 'icon' => '<span class="glyphicon glyphicon-search"></span>')
 			)
 		);
-		if(AccessControl::canAccessPriceMatchPage(Core::getRole()) )
-			$array['priceMatch'] = array('url' => '/pricematch.html', 'name' => 'Price Match', 'icon' => '<span class="glyphicon glyphicon-usd"></span>' );
+		/*if(AccessControl::canAccessPriceMatchPage(Core::getRole()) )
+			$array['priceMatch'] = array('url' => '/pricematch.html', 'name' => 'Price Match', 'icon' => '<span class="glyphicon glyphicon-usd"></span>' );*/
+
 		if(AccessControl::canAccessOrderItemsPage(Core::getRole()) )
 			$array['Orders']['orderitems'] = array('url' => '/orderitems.html', 'name' => 'OrderItems');
+		if(AccessControl::canAccessOrderItemsPage(Core::getRole()) )
+			$array['Orders']['priceMatch'] = array('url' => '/pricematch.html', 'name' => 'Price Match', 'icon' => '<span class="glyphicon glyphicon-usd"></span>');
 		if(AccessControl::canAccessProductsPage(Core::getRole()) )
 			$array['Products'] = array(
 				'icon' => '<span class="glyphicon glyphicon-th-list"></span>',
@@ -39,7 +42,11 @@ class Menu extends TTemplateControl
 				'productcategories' => array('url' => '/productcategories.html', 'name' => 'Product Categories')
 			);
 		if(AccessControl::canAccessOrderItemsPage(Core::getRole()) )
-			$array['PurchaseOrder'] = array('url' => '/purchase.html', 'name' => 'Purchase', 'icon' => '<span class="glyphicon glyphicon-shopping-cart"></span>' );
+			$array['Purchase'] = array(
+				'icon' => '<span class="glyphicon glyphicon-shopping-cart"></span>',
+				'PurchaseOrder' =>array('url' => '/purchase.html', 'name' => 'Purchase Orders', 'icon' => '<span class="glyphicon glyphicon-cart"></span>'),
+				'priceMatch' => array('url' => '/pricematch.html', 'name' => 'Price Match', 'icon' => '<span class="glyphicon glyphicon-usd"></span>' )
+			);
 		if(AccessControl::canAccessOrderItemsPage(Core::getRole()) )
 			$array['Customers'] = array('url' => '/customer.html', 'name' => 'Customers', 'icon' => '<span class="glyphicon glyphicon-user"></span>' );
 		if(AccessControl::canAccessUsersPage(Core::getRole()) )
