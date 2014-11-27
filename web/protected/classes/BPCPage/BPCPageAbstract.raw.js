@@ -90,9 +90,11 @@ BPCPageJs.prototype = {
 		return currency.replace(/\s*/g, '').replace(/\$/g, '').replace(/,/g, '');
 	}
 	//do key enter
-	,keydown: function (event, enterFunc, nFunc) {
+	,keydown: function (event, enterFunc, nFunc, keyValue) {
+		var tmp = {};
+		tmp.keyValue = keyValue ? keyValue : 13;
 		//if it's not a enter key, then return true;
-		if(!((event.which && event.which == 13) || (event.keyCode && event.keyCode == 13))) {
+		if(!((event.which && event.which == tmp.keyValue) || (event.keyCode && event.keyCode == tmp.keyValue))) {
 			if(typeof(nFunc) === 'function') {
 				nFunc();
 			}
