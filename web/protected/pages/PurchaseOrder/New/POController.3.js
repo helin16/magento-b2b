@@ -778,3 +778,6 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		return tmp.me;
 	}
 });
+
+
+//TODO: link to all min prices to PO in new window
