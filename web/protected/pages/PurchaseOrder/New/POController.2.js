@@ -230,7 +230,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				.insert({'bottom': new Element('div', {'class': 'col-xs-10'})
 					.insert({'bottom': new Element('div', {'class': 'row'})
 						.insert({'bottom': new Element('strong').update(product.name)
-							.insert({'bottom': new Element('small', {'class': 'pull-right'}).update('SKU: ' + product.sku) })
+							.insert({'bottom': new Element('small', {'class': '', 'style': 'padding-left: 10px;'}).update('SKU: ' + product.sku) })
 						})
 						.insert({'bottom': new Element('div')
 							.insert({'bottom': new Element('small').update(product.shortDescription) })
@@ -272,9 +272,8 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 						})
 					});
 				jQuery('#' + tmp.me.modalId).modal('hide');
-				tmp.retailPrice = product.prices.size() === 0 ? 0 : product.prices[0].price;
-				tmp.inputRow.down('[new-order-item=totalPrice]').writeAttribute('value', tmp.me.getCurrency(tmp.retailPrice));
-				tmp.inputRow.down('[new-order-item=unitPrice]').writeAttribute('value', tmp.me.getCurrency(tmp.retailPrice)).select();
+				tmp.inputRow.down('[new-order-item=totalPrice]').writeAttribute('value', tmp.me.getCurrency(product.minProductPrice));
+				tmp.inputRow.down('[new-order-item=unitPrice]').writeAttribute('value', tmp.me.getCurrency(product.minProductPrice)).select();
 			})
 			;
 		return tmp.newRow;
