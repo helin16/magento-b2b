@@ -100,7 +100,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		tmp.me = this;
 		tmp.supplier = tmp.me._purchaseorder.supplier;
 		tmp.purchaseOrder = tmp.me._purchaseorder;
-		tmp.newDiv = new Element('div', {'class': 'panel panel-default'})
+		tmp.newDiv = new Element('div', {'class': 'panel panel-info'})
 			.insert({'bottom': new Element('div', {'class': 'panel-heading'})
 				.insert({'bottom': new Element('strong').update('Editing purchase order for: ' + tmp.supplier.name + ' ') })
 				.insert({'bottom': new Element('div', {'class': 'pull-right'})
@@ -125,7 +125,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		var tmp = {};
 		tmp.me = this;
 		tmp.comments = tmp.me._comments;
-		tmp.newDiv = new Element('div', {'class': 'panel panel-default'})
+		tmp.newDiv = new Element('div', {'class': 'panel panel-info'})
 			.insert({'bottom': new Element('div', {'class': 'panel-heading'}).update('Comment History') })
 			.insert({'bottom': new Element('div', {'class': 'table-responsive'})
 				.insert({'bottom': new Element('table', {'id': 'comments_result_div', 'class': 'table table-hover table-condensed'}) 
@@ -188,7 +188,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 					});					
 				}
 			});
-		tmp.newDiv = new Element('div', {'class': 'panel panel-default', 'id': tmp.me._htmlIds.paymentPanel})
+		tmp.newDiv = new Element('div', {'class': 'panel panel-info', 'id': tmp.me._htmlIds.paymentPanel})
 			.insert({'bottom': new Element('div', {'class':'panel-heading'})
 				.insert({'bottom': new Element('strong').update('Total Payment Due: ') })
 				.insert({'bottom': new Element('span', {'class': 'pull-right total-payment-due'}).update(tmp.me.getCurrency(0) ) })
@@ -276,7 +276,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 				.insert({'bottom': new Element('td', {'id': tmp.me._htmlIds.totalPriceIncludeGST, 'class': 'active'}).update( tmp.me.getCurrency(0) ) })
 			})
 		});
-		return new Element('div', {'class': 'panel panel-default'})
+		return new Element('div', {'class': 'panel panel-info'})
 			.insert({'bottom': new Element('div', {'class': 'panel-body table-responsive'})
 				.insert({'bottom':  tmp.productListDiv})
 			});

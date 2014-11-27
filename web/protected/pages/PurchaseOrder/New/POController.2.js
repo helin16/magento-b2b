@@ -131,7 +131,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		var tmp = {};
 		tmp.me = this;
 		tmp.supplier = tmp.me._supplier;
-		tmp.newDiv = new Element('div', {'class': 'panel panel-default'})
+		tmp.newDiv = new Element('div', {'class': 'panel panel-info'})
 			.insert({'bottom': new Element('div', {'class': 'panel-heading'})
 				.insert({'bottom': new Element('strong').update('Creating purchase order for: ' + tmp.supplier.name + ' ') })
 				.insert({'bottom': new Element('div', {'class': 'pull-right'})
@@ -535,7 +535,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				.insert({'bottom': new Element('td', {'id': tmp.me._htmlIds.totalPriceIncludeGST, 'class': 'active'}).update( tmp.me.getCurrency(0) ) })
 			})
 		});
-		return new Element('div', {'class': 'panel panel-default'})
+		return new Element('div', {'class': 'panel panel-info'})
 			.insert({'bottom': new Element('div', {'class': 'panel-body table-responsive'})
 				.insert({'bottom':  tmp.productListDiv})
 			});
@@ -570,7 +570,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				}
 			});
 
-		tmp.newDiv = new Element('div', {'class': 'panel panel-default', 'id': tmp.me._htmlIds.paymentPanel})
+		tmp.newDiv = new Element('div', {'class': 'panel panel-info', 'id': tmp.me._htmlIds.paymentPanel})
 			.insert({'bottom': new Element('div', {'class':'panel-heading'})
 				.insert({'bottom': new Element('strong').update('Total Payment Due: ') })
 				.insert({'bottom': new Element('span', {'class': 'pull-right total-payment-due'}).update(tmp.me.getCurrency(0) ) })
@@ -723,7 +723,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 	,_getSupplierListPanel: function () {
 		var tmp = {};
 		tmp.me = this;
-		tmp.newDiv = new Element('div', {'id': tmp.me._htmlIds.searchPanel, 'class': 'panel panel-default search-panel'})
+		tmp.newDiv = new Element('div', {'id': tmp.me._htmlIds.searchPanel, 'class': 'panel panel-info search-panel'})
 			.insert({'bottom': new Element('div', {'class': 'panel-heading form-inline'})
 				.insert({'bottom': new Element('strong').update('Creating a new order for: ') })
 				.insert({'bottom': new Element('span', {'class': 'input-group col-sm-6'})
