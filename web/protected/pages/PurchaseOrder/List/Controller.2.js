@@ -16,6 +16,23 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		});
 		return this;
 	}
+	,_loadDataPicker: function () {
+		$$('.datepicker').each(function(item){new Prado.WebUI.TDatePicker({'ID': item, 'InputMode':"TextBox",'Format':"yyyy-MM-dd 17:00:00",'FirstDayOfWeek':1,'CalendarStyle':"default",'FromYear':2009,'UpToYear':2024,'PositionMode':"Bottom", "ClassName": 'datepicker-layer-fixer'}); });
+		return this;
+	}
+	/**
+	 * setting the status options
+	 */
+	,_setStatusOptions: function(statusOptions) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.selBox = $$('#searchPanel').first().down('#statusSelect');
+		tmp.me._statusOptions = statusOptions;
+		tmp.me._statusOptions.each(function(status) {
+			tmp.selBox.insert({'bottom': new Element('option').update(status) });
+		});
+		return tmp.me;
+	}
 	,_loadSuppliers: function(suppliers) {
 		var tmp = {};
 		tmp.me = this;
@@ -35,6 +52,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		if(tmp.reset === true)
 			tmp.me._pagination.pageNo = 1;
 		tmp.me._pagination.pageSize = (pageSize || tmp.me._pagination.pageSize);
+		console.debug(tmp.me._searchCriteria);
 		tmp.me.postAjax(tmp.me.getCallbackId('getItems'), {'pagination': tmp.me._pagination, 'searchCriteria': tmp.me._searchCriteria}, {
 			'onLoading': function () {
 				jQuery('#' + tmp.me.searchDivId + ' #searchBtn').button('loading');
@@ -83,7 +101,6 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 	/**
 	 * Getting each row for displaying the result list
 	 */
-
 	,_getResultRow: function(row, isTitle) {
 		var tmp = {};
 		tmp.me = this;

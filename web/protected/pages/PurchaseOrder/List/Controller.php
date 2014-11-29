@@ -36,11 +36,14 @@ class Controller extends CRUDPageAbstract
 		$suppliersArray = array();
 		foreach(Supplier::getAll() as $os)
 			$suppliersArray[] = $os->getJson();
+		$statusOptions = PurchaseOrder::getStatusOptions();
 		$js = parent::_getEndJs();
 		$js .= 'pageJs';
 		$js .= ".setCallbackId('deactivateItems', '" . $this->deactivateItemBtn->getUniqueID() . "')";
 		$js .= "._loadSuppliers(" . json_encode($suppliersArray) . ")";
+		$js .= "._setStatusOptions(" . json_encode($statusOptions) . ")";
 		$js .= "._loadChosen()";
+		$js .= "._loadDataPicker()";
 		$js .= ".getResults(true, " . $this->pageSize . ");";
 		return $js;
 	}
@@ -61,7 +64,7 @@ class Controller extends CRUDPageAbstract
 //                 throw new Exception('System Error: search criteria not provided!');
             $pageNo = 1;
             $pageSize = DaoQuery::DEFAUTL_PAGE_SIZE;
-            
+            var_dump($param->CallbackParameter);
             if(isset($param->CallbackParameter->pagination))
             {
                 $pageNo = $param->CallbackParameter->pagination->pageNo;
@@ -75,6 +78,26 @@ class Controller extends CRUDPageAbstract
             {
             	$where[] = 'po.purchaseOrderNo = ?';
             	$params[] = $serachCriteria['po.purchaseOrderNo'];
+            }
+            if(isset($serachCriteria['po.supplierRefNo']) && $serachCriteria['po.supplierRefNo'] !== '')
+            {
+            	$where[] = 'po.supplierRefNo = ?';
+            	$params[] = $serachCriteria['po.supplierRefNo'];
+            }
+            if(isset($serachCriteria['po.orderDate_from']) && $serachCriteria['po.orderDate_from'] !== '')
+            {
+            	$where[] = 'po.orderDate >= ?';
+            	$params[] = $serachCriteria['po.orderDate_from'];
+            }
+            if(isset($serachCriteria['po.supplierRefNo']) && $serachCriteria['po.supplierRefNo'] !== '')
+            {
+            	$where[] = 'po.supplierRefNo = ?';
+            	$params[] = $serachCriteria['po.supplierRefNo'];
+            }
+            if(isset($serachCriteria['po.supplierRefNo']) && $serachCriteria['po.supplierRefNo'] !== '')
+            {
+            	$where[] = 'po.supplierRefNo = ?';
+            	$params[] = $serachCriteria['po.supplierRefNo'];
             }
             if(isset($serachCriteria['po.supplierRefNo']) && $serachCriteria['po.supplierRefNo'] !== '')
             {
