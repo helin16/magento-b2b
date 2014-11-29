@@ -16,8 +16,25 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		});
 		return this;
 	}
+	/**
+	 * Binding the search key
+	 */
+	,_bindSearchKey: function() {
+		var tmp = {}
+		tmp.me = this;
+		$('searchDiv').getElementsBySelector('[search_field]').each(function(item) {
+			item.observe('keydown', function(event) {
+				tmp.me.keydown(event, function() {
+					$('searchPanel').down('#searchBtn').click();
+				});
+			})
+		});
+		return this;
+	}
 	,_loadDataPicker: function () {
-		$$('.datepicker').each(function(item){new Prado.WebUI.TDatePicker({'ID': item, 'InputMode':"TextBox",'Format':"yyyy-MM-dd 00:00:00",'FirstDayOfWeek':1,'CalendarStyle':"default",'FromYear':2009,'UpToYear':2024,'PositionMode':"Bottom", "ClassName": 'datepicker-layer-fixer'}); });
+		$$('.datepicker').each(function(item){
+			new Prado.WebUI.TDatePicker({'ID': item, 'InputMode':"TextBox",'Format':"yyyy-MM-dd 00:00:00",'FirstDayOfWeek':1,'CalendarStyle':"default",'FromYear':2009,'UpToYear':2024,'PositionMode':"Bottom", "ClassName": 'datepicker-layer-fixer'});
+		});
 		return this;
 	}
 	/**

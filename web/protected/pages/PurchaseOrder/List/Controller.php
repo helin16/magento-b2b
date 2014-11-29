@@ -40,6 +40,7 @@ class Controller extends CRUDPageAbstract
 		$js = parent::_getEndJs();
 		$js .= 'pageJs';
 		$js .= ".setCallbackId('deactivateItems', '" . $this->deactivateItemBtn->getUniqueID() . "')";
+		$js .= "._bindSearchKey()";
 		$js .= "._loadSuppliers(" . json_encode($suppliersArray) . ")";
 		$js .= "._setStatusOptions(" . json_encode($statusOptions) . ")";
 		$js .= "._loadChosen()";
@@ -76,37 +77,7 @@ class Controller extends CRUDPageAbstract
             $where = array(1);
             $params = array();
             $noSearch = true;
-            
-//             if(isset($serachCriteria['po.purchaseOrderNo']) && $serachCriteria['po.purchaseOrderNo'] !== '')
-//             {
-//             	$where[] = 'po.purchaseOrderNo = ?';
-//             	$params[] = $serachCriteria['po.purchaseOrderNo'];
-//             }
-//             if(isset($serachCriteria['po.supplierRefNo']) && $serachCriteria['po.supplierRefNo'] !== '')
-//             {
-//             	$where[] = 'po.supplierRefNo = ?';
-//             	$params[] = $serachCriteria['po.supplierRefNo'];
-//             }
-//             if(isset($serachCriteria['po.orderDate_from']) && $serachCriteria['po.orderDate_from'] !== '')
-//             {
-//             	$where[] = 'po.orderDate >= ?';
-//             	$params[] = $serachCriteria['po.orderDate_from'];
-//             }
-//             if(isset($serachCriteria['po.orderDate_to']) && $serachCriteria['po.orderDate_to'] !== '')
-//             {
-//             	$where[] = 'po.orderDate <= ?';
-//             	$params[] = $serachCriteria['po.orderDate_to'];
-//             }
-            
-//             if(isset($serachCriteria['po.supplierIds']) && $serachCriteria['po.supplierIds'] !== '')
-//             {
-// 	            foreach ($serachCriteria['po.supplierIds'] as $id) {
-// 	            	$where[] = 'po.	supplierId = ?';
-// 	            	$params[] = trim($id);
-// 	            }
-//             }
-            
-        	var_dump($serachCriteria);
+        	
             foreach($serachCriteria as $field => $value)
             {
             	if((is_array($value) && count($value) === 0) || (is_string($value) && ($value = trim($value)) === ''))
