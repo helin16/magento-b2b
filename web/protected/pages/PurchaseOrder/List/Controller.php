@@ -62,48 +62,100 @@ class Controller extends CRUDPageAbstract
         {
 //             if(!isset($param->CallbackParameter->searchCriteria) || count($serachCriteria = json_decode(json_encode($param->CallbackParameter->searchCriteria), true)) === 0)
 //                 throw new Exception('System Error: search criteria not provided!');
+
             $pageNo = 1;
             $pageSize = DaoQuery::DEFAUTL_PAGE_SIZE;
-            var_dump($param->CallbackParameter);
             if(isset($param->CallbackParameter->pagination))
             {
                 $pageNo = $param->CallbackParameter->pagination->pageNo;
                 $pageSize = $param->CallbackParameter->pagination->pageSize * 3;
             }
+            
             $serachCriteria = isset($param->CallbackParameter->searchCriteria) ? json_decode(json_encode($param->CallbackParameter->searchCriteria), true) : array();
             $stats = array();
             $where = array(1);
             $params = array();
-            if(isset($serachCriteria['po.purchaseOrderNo']) && $serachCriteria['po.purchaseOrderNo'] !== '')
+            $noSearch = true;
+            
+//             if(isset($serachCriteria['po.purchaseOrderNo']) && $serachCriteria['po.purchaseOrderNo'] !== '')
+//             {
+//             	$where[] = 'po.purchaseOrderNo = ?';
+//             	$params[] = $serachCriteria['po.purchaseOrderNo'];
+//             }
+//             if(isset($serachCriteria['po.supplierRefNo']) && $serachCriteria['po.supplierRefNo'] !== '')
+//             {
+//             	$where[] = 'po.supplierRefNo = ?';
+//             	$params[] = $serachCriteria['po.supplierRefNo'];
+//             }
+//             if(isset($serachCriteria['po.orderDate_from']) && $serachCriteria['po.orderDate_from'] !== '')
+//             {
+//             	$where[] = 'po.orderDate >= ?';
+//             	$params[] = $serachCriteria['po.orderDate_from'];
+//             }
+//             if(isset($serachCriteria['po.orderDate_to']) && $serachCriteria['po.orderDate_to'] !== '')
+//             {
+//             	$where[] = 'po.orderDate <= ?';
+//             	$params[] = $serachCriteria['po.orderDate_to'];
+//             }
+            
+//             if(isset($serachCriteria['po.supplierIds']) && $serachCriteria['po.supplierIds'] !== '')
+//             {
+// 	            foreach ($serachCriteria['po.supplierIds'] as $id) {
+// 	            	$where[] = 'po.	supplierId = ?';
+// 	            	$params[] = trim($id);
+// 	            }
+//             }
+            
+        	var_dump($serachCriteria);
+            foreach($serachCriteria as $field => $value)
             {
-            	$where[] = 'po.purchaseOrderNo = ?';
-            	$params[] = $serachCriteria['po.purchaseOrderNo'];
+            	if((is_array($value) && count($value) === 0) || (is_string($value) && ($value = trim($value)) === ''))
+            		continue;
+            
+            	$query = PurchaseOrder::getQuery();
+            	switch ($field)
+            	{
+            		case 'po.purchaseOrderNo':
+            			{
+            				$where[] =  $field . " = ? ";
+            				$params[] = $value;
+            				break;
+            			}
+            		case 'po.supplierRefNo':
+            			{
+            				$where[] =  $field . " = ? ";
+            				$params[] = $value;
+            				break;
+            			}
+            		case 'po.orderDate_from':
+            			{
+            				$where[] =  'po.orderDate >= ?';
+            				$params[] = $value;
+            				break;
+            			}
+            		case 'po.orderDate_to':
+            			{
+            				$where[] =  'po.orderDate <= ?';
+            				$params[] = $value;
+            				break;
+            			}
+            		case 'po.supplierIds':
+            			{
+            				$where[] = 'po.supplierId IN ('.implode(", ", array_fill(0, count($value), "?")).')';
+            				$params = array_merge($params, $value);
+            				break;
+            			}
+            		case 'po.status':
+            			{
+            				$where[] = 'po.status IN ('.implode(", ", array_fill(0, count($value), "?")).')';
+            				$params = array_merge($params, $value);
+            				break;
+            			}
+            	}
+            	$noSearch = false;
             }
-            if(isset($serachCriteria['po.supplierRefNo']) && $serachCriteria['po.supplierRefNo'] !== '')
-            {
-            	$where[] = 'po.supplierRefNo = ?';
-            	$params[] = $serachCriteria['po.supplierRefNo'];
-            }
-            if(isset($serachCriteria['po.orderDate_from']) && $serachCriteria['po.orderDate_from'] !== '')
-            {
-            	$where[] = 'po.orderDate >= ?';
-            	$params[] = $serachCriteria['po.orderDate_from'];
-            }
-            if(isset($serachCriteria['po.supplierRefNo']) && $serachCriteria['po.supplierRefNo'] !== '')
-            {
-            	$where[] = 'po.supplierRefNo = ?';
-            	$params[] = $serachCriteria['po.supplierRefNo'];
-            }
-            if(isset($serachCriteria['po.supplierRefNo']) && $serachCriteria['po.supplierRefNo'] !== '')
-            {
-            	$where[] = 'po.supplierRefNo = ?';
-            	$params[] = $serachCriteria['po.supplierRefNo'];
-            }
-            if(isset($serachCriteria['po.supplierRefNo']) && $serachCriteria['po.supplierRefNo'] !== '')
-            {
-            	$where[] = 'po.supplierRefNo = ?';
-            	$params[] = $serachCriteria['po.supplierRefNo'];
-            }
+            
+            
             $objects = PurchaseOrder::getAllByCriteria(implode(' AND ', $where), $params, false, $pageNo, $pageSize, array('po.id' => 'desc'), $stats);
             $results['pageStats'] = $stats;
             $results['items'] = array();

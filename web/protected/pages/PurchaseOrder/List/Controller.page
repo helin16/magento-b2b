@@ -42,11 +42,11 @@
 		                        </div>
 	                        </div>
 						</div>
-						<div class="col-md-2">
+						<div class="col-md-4">
 							<div class="form-group form-group-sm input-group">
 	                           <label class="input-group-addon">Status:</label>
 	                           <div class="form-control" style="padding: 0px; height: 100%;">
-                                    <select id="statusSelect" search_field="pro.productStatusIds" multiple class="chosen"></select>
+                                    <select id="statusSelect" search_field="po.status" multiple class="chosen"></select>
                                 </div>
 	                       </div>
 						</div>
