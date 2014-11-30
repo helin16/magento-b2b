@@ -454,8 +454,24 @@ class Order extends InfoEntityAbstract
 			OrderInfo::create($this, $infoType, $this->_previousStatus->getId(), $orderInfo);
 			Log::LogEntity($this, 'Changed Status from [' . $this->_previousStatus . '] to [' . $this->getStatus() .']', Log::TYPE_SYSTEM, 'Auto Change', get_class($this) . '::' . __FUNCTION__);
 		}
+	} 
+	/**
+	 * adding a item onto the order
+	 *
+	 * @param Product $product
+	 * @param number  $unitPrice
+	 * @param number  $qty
+	 * @param number  $totalPrice
+	 * @param number  $mageOrderItemId The order_item_id from Magento
+	 * @param string  $eta
+	 *
+	 * @return PurchaseOrder
+	 */
+	public function addItem(Product $product, $unitPrice = '0.0000', $qty = 1, $description = '', $totalPrice = null, $mageOrderItemId = null, $eta = null)
+	{
+		OrderItem::create($this, $product, $unitPrice, $qty, $totalPrice, $mageOrderItemId, $eta);
+		return $this;
 	}
-	
 	/**
 	 * (non-PHPdoc)
 	 * @see BaseEntityAbstract::getJson()
@@ -531,16 +547,19 @@ class Order extends InfoEntityAbstract
 	 * @param Address $shipAddr
 	 * @param Address $billAddr
 	 */
-	public static function create(Customer $customer, $orderNo = null, Order $status = null, $orderDate = null, $isFromB2B = false, Address $shipAddr = null, Address $billAddr = null)
+	public static function create(Customer $customer, $orderNo = null, $comments = '', Order $status = null, $orderDate = null, $isFromB2B = false, Address $shipAddr = null, Address $billAddr = null)
 	{
-		$o = new Order();
-		return $o->setOrderNo(trim($orderNo))
+		$order = new Order();
+		$order->setOrderNo(trim($orderNo))
 			->setCustomer($customer)
 			->setStatus($status instanceof OrderStatus ? $status : OrderStatus::get(OrderStatus::ID_NEW))
 			->setOrderDate(trim($orderDate) === '' ? trim(new UDate()) : trim($orderDate))
 			->setIsFromB2B($isFromB2B)
 			->setShippingAddr($shipAddr instanceof Address ? $shipAddr : $customer->getShippingAddress())
 			->setBillingAddr($billAddr instanceof Address ? $billAddr : $customer->getBillingAddress())
-			->save();
+			->save()
+			->addComment($comments, Comments::TYPE_NORMAL);
+		Log::LogEntity($order, 'Order (OrderNo.=' . $order->getOrderNo() . ') created with status' . $order->getStatus()->getName(), Log::TYPE_SYSTEM);
+		return $order;
 	}
 }

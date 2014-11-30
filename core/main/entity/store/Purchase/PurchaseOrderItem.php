@@ -15,29 +15,11 @@ class PurchaseOrderItem extends BaseEntityAbstract
 	 */
 	protected $product;
 	/**
-	 * The description of this item
-	 * 
-	 * @var string
-	 */
-	private $description = '';
-	/**
 	 * The purchaseorder
 	 * 
 	 * @var PurchaseOrder
 	 */
 	protected $purchaseOrder;
-	/**
-	 * The supplier's code for this item when it's ordered
-	 * 
-	 * @var string
-	 */
-	private $supplierItemCode;
-	/**
-	 * The supplier's id for this item when it's ordered
-	 * 
-	 * @var string
-	 */
-	private $supplierId;
 	/**
 	 * The unitprice of each item
 	 * 
@@ -98,27 +80,6 @@ class PurchaseOrderItem extends BaseEntityAbstract
 	public function setPurchaseOrder(PurchaseOrder $value) 
 	{
 	    $this->purchaseOrder = $value;
-	    return $this;
-	}
-	/**
-	 * Getter for description
-	 *
-	 * @return string
-	 */
-	public function getDescription() 
-	{
-	    return $this->description;
-	}
-	/**
-	 * Setter for description
-	 *
-	 * @param string $value The description
-	 *
-	 * @return PurchaseOrderItem
-	 */
-	public function setDescription($value) 
-	{
-	    $this->description = $value;
 	    return $this;
 	}
 	/**
@@ -185,48 +146,6 @@ class PurchaseOrderItem extends BaseEntityAbstract
 	    return $this;
 	}
 	/**
-	 * Getter for supplierItemCode
-	 *
-	 * @return string
-	 */
-	public function getSupplierItemCode() 
-	{
-	    return $this->supplierItemCode;
-	}
-	/**
-	 * Setter for supplierItemCode
-	 *
-	 * @param string $value The supplierItemCode
-	 *
-	 * @return PurchaseOrderItem
-	 */
-	public function setsupplierItemCode($value) 
-	{
-	    $this->supplierItemCode = $value;
-	    return $this;
-	}
-	/**
-	 * Getter for supplierId
-	 *
-	 * @return string
-	 */
-	public function getsupplierId() 
-	{
-	    return $this->supplierId;
-	}
-	/**
-	 * Setter for supplierId
-	 *
-	 * @param string $value The supplierId
-	 *
-	 * @return PurchaseOrderItem
-	 */
-	public function setsupplierId($value) 
-	{
-	    $this->supplierId = $value;
-	    return $this;
-	}
-	/**
 	 * (non-PHPdoc)
 	 * @see HydraEntity::__loadDaoMap()
 	 */
@@ -239,13 +158,8 @@ class PurchaseOrderItem extends BaseEntityAbstract
 		DaoMap::setIntType('qty');
 		DaoMap::setIntType('unitPrice', 'double', '10,4');
 		DaoMap::setIntType('totalPrice', 'double', '10,4');
-		DaoMap::setStringType('supplierItemCode', 'varchar', 50);
-		DaoMap::setStringType('supplierId', 'int', 10);
-		DaoMap::setStringType('description', 'varchar', 255);
 		
 		parent::__loadDaoMap();
-		DaoMap::createIndex('supplierItemCode');
-		DaoMap::createIndex('supplierId');
 		DaoMap::createIndex('qty');
 		DaoMap::commit();
 	}
@@ -263,17 +177,14 @@ class PurchaseOrderItem extends BaseEntityAbstract
 	 * 
 	 * @return PurchaseOrderItem
 	 */
-	public static function create(PurchaseOrder $po, Product $product, $supplierId, $unitPrice = '0.0000', $qty = 1, $supplierItemCode = '', $description = '', $totalPrice = null)
+	public static function create(PurchaseOrder $po, Product $product, $unitPrice = '0.0000', $qty = 1, $totalPrice = null)
 	{
 		$class = get_called_class();
 		$entity = new $class();
 		return $entity->setPurchaseOrder($po)
 			->setProduct($product)
-			->setsupplierId($supplierId)
 			->setUnitPrice($unitPrice)
 			->setQty($qty)
-			->setsupplierItemCode($supplierItemCode)
-			->setDescription($description)
 			->setTotalPrice(trim($totalPrice) !== '' ? $totalPrice : ($unitPrice * $qty))
 			->save();
 	}
