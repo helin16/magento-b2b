@@ -22,6 +22,14 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 	,_bindSearchKey: function() {
 		var tmp = {}
 		tmp.me = this;
+		$$('#searchBtn').first()
+			.observe('click', function(event) {
+				console.debug(!$$('#showSearch').first().checked);
+				if(!$$('#showSearch').first().checked)
+					$$('#showSearch').first().click();
+				else
+					tmp.me.getSearchCriteria().getResults(true, tmp.me._pagination.pageSize);
+			});
 		$('searchDiv').getElementsBySelector('[search_field]').each(function(item) {
 			item.observe('keydown', function(event) {
 				tmp.me.keydown(event, function() {
