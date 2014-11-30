@@ -71,6 +71,9 @@
 			<url ServiceParameter="Customer.Details.DetailsController" pattern="customer/{id}.html" parameters.id="new"/>
 			<url ServiceParameter="Customer.Details.DetailsController" pattern="customer/{id}.html" parameters.id="\d+"/>
 			
+			<!-- FrontEnd:: receiving page -->
+			<url ServiceParameter="Receiving.Details.DetailsController" pattern="receiving.html" />
+			
             <!-- FrontEnd:: PO list page -->
             <url ServiceParameter="PurchaseOrder.List.Controller" pattern="purchase.html" />
             <!-- FrontEnd:: PO details page -->
