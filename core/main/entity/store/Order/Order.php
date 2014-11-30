@@ -13,7 +13,7 @@ class Order extends InfoEntityAbstract
 	 * 
 	 * @var string
 	 */
-	private $orderNo;
+	private $orderNo = '';
 	/**
 	 * The order date from magento
 	 * 
@@ -437,19 +437,15 @@ class Order extends InfoEntityAbstract
 	}
 	/**
 	 * (non-PHPdoc)
-	 * @see BaseEntityAbstract::preSave()
-	 */
-	public function preSave()
-	{
-		if(trim($this->getOrderNo()) === '')
-			$this->orderNo = StringUtilsAbstract::getRandKey('', 'ORD');
-	}
-	/**
-	 * (non-PHPdoc)
 	 * @see BaseEntityAbstract::postSave()
 	 */
 	public function postSave()
 	{
+		if(trim($this->getOrderNo()) === '')
+		{
+			$this->setOrderNo('BPCO' .str_pad('0', 8, STR_PAD_LEFT))
+				->save();
+		}
 		if($this->_previousStatus instanceof OrderStatus && $this->_previousStatus->getId() !== $this->getStatus()->getId())
 		{
 			$infoType = OrderInfoType::get(OrderInfoType::ID_MAGE_ORDER_STATUS_BEFORE_CHANGE);
@@ -524,5 +520,27 @@ class Order extends InfoEntityAbstract
 		DaoMap::createIndex('passPaymentCheck');
 		DaoMap::createIndex('isFromB2B');
 		DaoMap::commit();
+	}
+	/**
+	 * 
+	 * @param Customer $customer
+	 * @param string $orderNo
+	 * @param Order $status
+	 * @param string $orderDate
+	 * @param string $isFromB2B
+	 * @param Address $shipAddr
+	 * @param Address $billAddr
+	 */
+	public static function create(Customer $customer, $orderNo = null, Order $status = null, $orderDate = null, $isFromB2B = false, Address $shipAddr = null, Address $billAddr = null)
+	{
+		$o = new Order();
+		return $o->setOrderNo(trim($orderNo))
+			->setCustomer($customer)
+			->setStatus($status instanceof OrderStatus ? $status : OrderStatus::get(OrderStatus::ID_NEW))
+			->setOrderDate(trim($orderDate) === '' ? trim(new UDate()) : trim($orderDate))
+			->setIsFromB2B($isFromB2B)
+			->setShippingAddr($shipAddr instanceof Address ? $shipAddr : $customer->getShippingAddress())
+			->setBillingAddr($billAddr instanceof Address ? $billAddr : $customer->getBillingAddress())
+			->save();
 	}
 }
