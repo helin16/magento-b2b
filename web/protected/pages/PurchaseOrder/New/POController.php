@@ -94,20 +94,33 @@ class POController extends BPCPageAbstract
 			$where = (count($productIdsFromBarcode) === 0 ? '' : ' OR id in (' . implode(',', $productIdsFromBarcode) . ')');
 			foreach(Product::getAllByCriteria('name like :searchTxt OR sku like :searchTxt' . $where, array('searchTxt' => '%' . $searchTxt . '%'), true, 1, DaoQuery::DEFAUTL_PAGE_SIZE) as $product)
 			{
-				// Min price: across all supplier for one product, Latest price: for one supplier
 				$array = $product->getJson();
+				
 				$array['minProductPrice'] = 0;
 				$array['lastSupplierPrice'] = 0;
 				$array['minSupplierPrice'] = 0;
-				$minProductPrice = PurchaseOrderItem::getAllByCriteria('productId = ?', array($product->getId()), true, 1, 1, array('unitPrice'=> 'asc'));
-				$minProductPrice = sizeof($minProductPrice) ? $minProductPrice[0]->getUnitPrice() : 0;
-				$lastSupplierPrice = PurchaseOrderItem::getAllByCriteria('productId = ? and supplierId = ?', array($product->getId(), $supplierID), true, 1, 1, array('id'=> 'desc'));
-				$lastSupplierPrice = sizeof($lastSupplierPrice) ? $lastSupplierPrice[0]->getUnitPrice() : 0;
-				$minSupplierPrice = PurchaseOrderItem::getAllByCriteria('productId = ? and supplierId = ?', array($product->getId(), $supplierID), true, 1, 1, array('unitPrice'=> 'asc'));
-				$minSupplierPrice = sizeof($minSupplierPrice) ? $minSupplierPrice[0]->getUnitPrice() : 0;
+				
+				$minProductPriceProduct = PurchaseOrderItem::getAllByCriteria('productId = ?', array($product->getId()), true, 1, 1, array('unitPrice'=> 'asc'));
+				$minProductPrice = sizeof($minProductPriceProduct) ? $minProductPriceProduct[0]->getUnitPrice() : 0;
+				$minProductPriceId = sizeof($minProductPriceProduct) ? $minProductPriceProduct[0]->getPurchaseOrder()->getId() : '';
+				
+				$lastSupplierPriceProduct = PurchaseOrderItem::getAllByCriteria('productId = ? and supplierId = ?', array($product->getId(), $supplierID), true, 1, 1, array('id'=> 'desc'));
+				$lastSupplierPrice = sizeof($lastSupplierPriceProduct) ? $lastSupplierPriceProduct[0]->getUnitPrice() : 0;
+				$lastSupplierPriceId = sizeof($lastSupplierPriceProduct) ? $lastSupplierPriceProduct[0]->getPurchaseOrder()->getId() : '';
+				
+				$minSupplierPriceProduct = PurchaseOrderItem::getAllByCriteria('productId = ? and supplierId = ?', array($product->getId(), $supplierID), true, 1, 1, array('unitPrice'=> 'asc'));
+				$minSupplierPrice = sizeof($minSupplierPriceProduct) ? $minSupplierPriceProduct[0]->getUnitPrice() : 0;
+				$minSupplierPriceId = sizeof($minSupplierPriceProduct) ? $minSupplierPriceProduct[0]->getPurchaseOrder()->getId() : '';
+				
 				$array['minProductPrice'] = $minProductPrice;
+				$array['minProductPriceId'] = $minProductPriceId;
+				
 				$array['lastSupplierPrice'] = $lastSupplierPrice;
+				$array['lastSupplierPriceId'] = $lastSupplierPriceId;
+				
 				$array['minSupplierPrice'] = $minSupplierPrice;
+				$array['minSupplierPriceId'] = $minSupplierPriceId;
+				
 				$items[] = $array;
 			}
 			$results['items'] = $items;

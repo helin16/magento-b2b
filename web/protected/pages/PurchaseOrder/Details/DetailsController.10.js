@@ -591,6 +591,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 	,_getSearchPrductResultRow: function(product, searchTxtBox) {
 		var tmp = {};
 		tmp.me = this;
+		console.debug(product);
 		tmp.defaultImgSrc = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjZWVlIi8+PHRleHQgdGV4dC1hbmNob3I9Im1pZGRsZSIgeD0iMzIiIHk9IjMyIiBzdHlsZT0iZmlsbDojYWFhO2ZvbnQtd2VpZ2h0OmJvbGQ7Zm9udC1zaXplOjEycHg7Zm9udC1mYW1pbHk6QXJpYWwsSGVsdmV0aWNhLHNhbnMtc2VyaWY7ZG9taW5hbnQtYmFzZWxpbmU6Y2VudHJhbCI+NjR4NjQ8L3RleHQ+PC9zdmc+';
 		tmp.newRow = new Element('a', {'class': 'list-group-item', 'href': 'javascript: void(0);'})
 			.insert({'bottom': new Element('div', {'class': 'row'})
@@ -610,18 +611,27 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 					})
 					.insert({'bottom': new Element('div', {'class': 'row', 'style': (product.minProductPrice || product.lastSupplierPrice || product.minSupplierPrice) ? 'height: 2px; background-color: brown;' : 'display:none'}).update('&nbsp;') })
 					.insert({'bottom': new Element('div', {'class': 'row small'})
-						.insert({'bottom': new Element('span', {'style': product.minProductPrice ? '': 'display:none'}).update('Minimum product price: ')
+						.insert({'bottom': new Element('span', {'class': 'btn btn-link btn-xs', 'style': product.minProductPrice ? '': 'display:none'}).update('Minimum product price: ')
 							.insert({'bottom': new Element('strong').update(tmp.me.getCurrency(product.minProductPrice)) })
 						})
-					})
-					.insert({'bottom': new Element('div', {'class': 'row small'})
-						.insert({'bottom': new Element('span', {'style': product.lastSupplierPrice ? '': 'display:none'}).update('Last supplier price: ')
-							.insert({'bottom': new Element('strong').update(tmp.me.getCurrency(product.lastSupplierPrice)) })
+						.observe('click', function(event) {
+							tmp.me._openPOPage(product.minProductPriceId);
 						})
 					})
 					.insert({'bottom': new Element('div', {'class': 'row small'})
-						.insert({'bottom': new Element('span', {'style': product.minSupplierPrice ? '': 'display:none'}).update('Minimum supplier price: ')
+						.insert({'bottom': new Element('span', {'class': 'btn btn-link btn-xs', 'style': product.lastSupplierPrice ? '': 'display:none'}).update('Last supplier price: ')
+							.insert({'bottom': new Element('strong').update(tmp.me.getCurrency(product.lastSupplierPrice)) })
+						})
+						.observe('click', function(event) {
+							tmp.me._openPOPage(product.lastSupplierPriceId);
+						})
+					})
+					.insert({'bottom': new Element('div', {'class': 'row small'})
+						.insert({'bottom': new Element('span', {'class': 'btn btn-link btn-xs', 'style': product.minSupplierPrice ? '': 'display:none'}).update('Minimum supplier price: ')
 							.insert({'bottom': new Element('strong').update(tmp.me.getCurrency(product.minSupplierPrice)) })
+						})
+						.observe('click', function(event) {
+							tmp.me._openPOPage(product.minSupplierPriceId);
 						})
 					})
 					
@@ -726,6 +736,16 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 				jQuery('#' + tmp.btn.id).button('reset');
 			}
 		});
+		return tmp.me;
+	}
+	/**
+	 * Open PO page in a fancybox
+	 */
+	,_openPOPage: function(id) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.newWindow = window.open('/purchase/' + id + '.html', 'Product Details', 'location=no, menubar=no, status=no, titlebar=no, fullscreen=yes, toolbar=no');
+		tmp.newWindow.focus();
 		return tmp.me;
 	}
 	,refreshParentWindow: function() {

@@ -238,18 +238,27 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					})
 					.insert({'bottom': new Element('div', {'class': 'row', 'style': (product.minProductPrice || product.lastSupplierPrice || product.minSupplierPrice) ? 'height: 2px; background-color: brown;' : 'display:none'}).update('&nbsp;') })
 					.insert({'bottom': new Element('div', {'class': 'row small'})
-						.insert({'bottom': new Element('span', {'style': product.minProductPrice ? '': 'display:none'}).update('Minimum product price: ')
+						.insert({'bottom': new Element('span', {'class': 'btn btn-link btn-xs', 'style': product.minProductPrice ? '': 'display:none'}).update('Minimum product price: ')
 							.insert({'bottom': new Element('strong').update(tmp.me.getCurrency(product.minProductPrice)) })
 						})
-					})
-					.insert({'bottom': new Element('div', {'class': 'row small'})
-						.insert({'bottom': new Element('span', {'style': product.lastSupplierPrice ? '': 'display:none'}).update('Last supplier price: ')
-							.insert({'bottom': new Element('strong').update(tmp.me.getCurrency(product.lastSupplierPrice)) })
+						.observe('click', function(event) {
+							tmp.me._openPOPage(product.minProductPriceId);
 						})
 					})
 					.insert({'bottom': new Element('div', {'class': 'row small'})
-						.insert({'bottom': new Element('span', {'style': product.minSupplierPrice ? '': 'display:none'}).update('Minimum supplier price: ')
+						.insert({'bottom': new Element('span', {'class': 'btn btn-link btn-xs', 'style': product.lastSupplierPrice ? '': 'display:none'}).update('Last supplier price: ')
+							.insert({'bottom': new Element('strong').update(tmp.me.getCurrency(product.lastSupplierPrice)) })
+						})
+						.observe('click', function(event) {
+							tmp.me._openPOPage(product.lastSupplierPriceId);
+						})
+					})
+					.insert({'bottom': new Element('div', {'class': 'row small'})
+						.insert({'bottom': new Element('span', {'class': 'btn btn-link btn-xs', 'style': product.minSupplierPrice ? '': 'display:none'}).update('Minimum supplier price: ')
 							.insert({'bottom': new Element('strong').update(tmp.me.getCurrency(product.minSupplierPrice)) })
+						})
+						.observe('click', function(event) {
+							tmp.me._openPOPage(product.minSupplierPriceId);
 						})
 					})
 					
@@ -277,6 +286,16 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			})
 			;
 		return tmp.newRow;
+	}
+	/**
+	 * Open PO page in a fancybox
+	 */
+	,_openPOPage: function(id) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.newWindow = window.open('/purchase/' + id + '.html', 'Product Details', 'location=no, menubar=no, status=no, titlebar=no, fullscreen=yes, toolbar=no');
+		tmp.newWindow.focus();
+		return tmp.me;
 	}
 	/**
 	 * Ajax: searching the product based on a string
