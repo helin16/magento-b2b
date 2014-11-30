@@ -116,6 +116,49 @@ class OrderController extends BPCPageAbstract
 		try
 		{
 			var_dump($param->CallbackParameter);
+			
+			Dao::beginTransaction();
+			$customer = Customer::get(trim($param->CallbackParameter->customer->id));
+			if(!$customer instanceof Customer)
+				throw new Exception('Invalid Customer passed in!');
+			$paymentMethodId = PaymentMethod::get(trim($param->CallbackParameter->paymentMethodId));
+			if(!$paymentMethodId instanceof PaymentMethod)
+				throw new Exception('Invalid PaymentMethod passed in!');
+			$courierId = Courier::get(trim($param->CallbackParameter->courierId));
+			if(!$courierId instanceof Courier)
+				throw new Exception('Invalid Courier passed in!');
+			$comments = trim($param->CallbackParameter->comments);
+			$totalPaidAmount = trim($param->CallbackParameter->totalPaidAmount);
+			$totalShippingCost = trim($param->CallbackParameter->totalShippingCost);
+			
+// 			$supplierRefNum = trim($param->CallbackParameter->supplierRefNum);
+// 			$supplierContactName = trim($param->CallbackParameter->contactName);
+// 			$supplierContactNo = trim($param->CallbackParameter->contactNo);
+// 			$shippingCost = trim($param->CallbackParameter->shippingCost);
+// 			$handlingCost = trim($param->CallbackParameter->handlingCost);
+// 			$comment = trim($param->CallbackParameter->comments);
+// 			$status = trim($param->CallbackParameter->status);
+// 			$purchaseOrder = PurchaseOrder::create($supplier,$supplierRefNum,$supplierContactName,$supplierContactNo,$shippingCost,$handlingCost);
+// 			$purchaseOrderTotalAmount = trim($param->CallbackParameter->totalAmount);
+// 			$purchaseOrderTotalPaid = trim($param->CallbackParameter->totalPaid);
+// 			$purchaseOrder->setTotalAmount($purchaseOrderTotalAmount)
+// 			->setTotalPaid($purchaseOrderTotalPaid)
+// 			->setStatus($status);
+// 			foreach ($param->CallbackParameter->items as $item) {
+// 				$productId = trim($item->product->id);
+// 				$productUnitPrice = trim($item->unitPrice);
+// 				$qtyOrdered = trim($item->qtyOrdered);
+// 				$productWtyOrdered = trim($item->qtyOrdered);
+// 				$productTotalPrice = trim($item->totalPrice);
+// 				$product = Product::get($productId);
+// 				if(!$product instanceof Product)
+// 					throw new Exception('Invalid Product passed in!');
+// 				$purchaseOrder->addItem($product,$supplier->getId(),$productUnitPrice,$qtyOrdered,'','',$productTotalPrice);
+// 			};
+// 			$purchaseOrder->save();
+// 			$purchaseOrder->addComment($comment, Comments::TYPE_SYSTEM);
+// 			$results['item'] = $purchaseOrder->getJson();
+			Dao::commitTransaction();
 		}
 		catch(Exception $ex)
 		{
