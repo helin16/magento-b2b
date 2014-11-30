@@ -632,12 +632,12 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				.insert({'bottom': new Element('strong').update('Creating a new order for: ') })
 				.insert({'bottom': new Element('span', {'class': 'input-group col-sm-6'})
 					.insert({'bottom': new Element('input', {'class': 'form-control search-txt init-focus', 'placeholder': 'customer name or email'}) 
-						.observe('keyup', function(event){
-							if(!document.getElementsByClassName('loading-img').length) {
-								tmp.txtBox = this;
-								$(tmp.me._htmlIds.searchPanel).down('.search-btn').click();
-							}
-						})
+//						.observe('keyup', function(event){
+//							if(!document.getElementsByClassName('loading-img').length) {
+//								tmp.txtBox = this;
+//								$(tmp.me._htmlIds.searchPanel).down('.search-btn').click();
+//							}
+//						})
 						.observe('keydown', function(event){
 							tmp.txtBox = this;
 							tmp.me.keydown(event, function() {
