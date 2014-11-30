@@ -454,7 +454,7 @@ class Order extends InfoEntityAbstract
 			OrderInfo::create($this, $infoType, $this->_previousStatus->getId(), $orderInfo);
 			Log::LogEntity($this, 'Changed Status from [' . $this->_previousStatus . '] to [' . $this->getStatus() .']', Log::TYPE_SYSTEM, 'Auto Change', get_class($this) . '::' . __FUNCTION__);
 		}
-	} 
+	}
 	/**
 	 * adding a item onto the order
 	 *
@@ -547,7 +547,7 @@ class Order extends InfoEntityAbstract
 	 * @param Address $shipAddr
 	 * @param Address $billAddr
 	 */
-	public static function create(Customer $customer, $orderNo = null, $comments = '', Order $status = null, $orderDate = null, $isFromB2B = false, Address $shipAddr = null, Address $billAddr = null)
+	public static function create(Customer $customer, $orderNo = null, $comments = '', Order $status = null, $orderDate = null, $isFromB2B = false, Address $shipAddr = null, Address $billAddr = null, $passPaymentCheck = false)
 	{
 		$order = new Order();
 		$order->setOrderNo(trim($orderNo))
@@ -557,8 +557,11 @@ class Order extends InfoEntityAbstract
 			->setIsFromB2B($isFromB2B)
 			->setShippingAddr($shipAddr instanceof Address ? $shipAddr : $customer->getShippingAddress())
 			->setBillingAddr($billAddr instanceof Address ? $billAddr : $customer->getBillingAddress())
+			->passPaymentCheck($passPaymentCheck)
 			->save()
-			->addComment($comments, Comments::TYPE_NORMAL);
+			->addComment($comments, Comments::TYPE_NORMAL)
+			->addInfo(OrderInfoType::ID_CUS_EMAIL, $customer->getEmail())
+			->addInfo(OrderInfoType::ID_CUS_NAME, $customer->getName());
 		Log::LogEntity($order, 'Order (OrderNo.=' . $order->getOrderNo() . ') created with status' . $order->getStatus()->getName(), Log::TYPE_SYSTEM);
 		return $order;
 	}
