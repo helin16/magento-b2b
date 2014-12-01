@@ -416,6 +416,21 @@ abstract class BaseEntityAbstract
     	return $results;
     }
     /**
+     * Adding a log to this entity
+     * 
+     * @param string $msg
+     * @param string $type
+     * @param string $comments
+     * @param string $funcName
+     * 
+     * @return BaseEntityAbstract
+     */
+    public function addLog($msg, $type, $comments = '', $funcName = '')
+    {
+    	Log::LogEntity($this, $msg, $type, $comments = '', $funcName = '');
+    	return $this;
+    }
+    /**
      * Default toString implementation
      *
      * @return string
