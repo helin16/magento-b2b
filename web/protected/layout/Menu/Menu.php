@@ -44,7 +44,8 @@ class Menu extends TTemplateControl
 		if(AccessControl::canAccessOrderItemsPage(Core::getRole()) )
 			$array['Purchase'] = array(
 				'icon' => '<span class="glyphicon glyphicon-shopping-cart"></span>',
-				'PurchaseOrder' =>array('url' => '/purchase.html', 'name' => 'Purchase Orders', 'icon' => '<span class="glyphicon glyphicon-cart"></span>'),
+				'PurchaseOrder' =>array('url' => '/purchase.html', 'name' => 'Purchase Orders', 'icon' => '<span class="glyphicon glyphicon-shopping-cart"></span>'),
+				'Receiving' =>array('url' => '/receiving.html', 'name' => 'Receiving PO', 'icon' => '<span class="glyphicon glyphicon-home"></span>'),
 				'priceMatch' => array('url' => '/pricematch.html', 'name' => 'Price Match', 'icon' => '<span class="glyphicon glyphicon-usd"></span>' )
 			);
 		if(AccessControl::canAccessOrderItemsPage(Core::getRole()) )
