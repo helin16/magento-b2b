@@ -31,7 +31,13 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					.observe('keydown', function(event){
 						tmp.txtBox = this;
 						tmp.me.keydown(event, function() {
-							$(tmp.me._htmlIds.searchPanel).down('.search-btn').click();
+							if ($$('#'+pageJs._htmlIds.searchPanel).first().down('tbody')) {
+								$(tmp.me._htmlIds.searchPanel).down('.search-btn').click();
+								if ($$('#'+pageJs._htmlIds.searchPanel).first().down('tbody').getElementsBySelector('.item_row').size()===1)
+									$$('#'+pageJs._htmlIds.searchPanel).first().down('tbody').down('.item_row .btn').click();
+							}
+							else
+								$(tmp.me._htmlIds.searchPanel).down('.search-btn').click();
 					});
 							return false;
 						})
@@ -152,14 +158,9 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				.insert({'bottom': new Element('div', {'class': 'col-sm-12'}).update(tmp.me._getPartsTable()) })
 			})
 			.insert({'bottom': new Element('div', {'class': 'row'})
-//				.insert({'bottom': new Element('div', {'class': 'col-sm-12'}).update(tmp.me._saveBtns()) })
+				
+				.insert({'bottom': new Element('div', {'class': 'col-sm-12'}).update(tmp.me._saveBtns()) })
 			});
-//		tmp.me._purchaseOrderItems.each(function(product){
-//			tmp.me._addNewProductRow(tmp.me._newDiv.down('.glyphicon.glyphicon-floppy-saved'),product);
-//		});
-//		tmp.me._newDiv.getElementsBySelector('.order-item-row').each(function(item){
-//			item.addClassName('order-item-row-old');
-//		});
 		return tmp.newDiv;
 	}
 	/**
@@ -249,7 +250,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		});
 		tmp.productListDiv.down('[new-order-item=product]').focus();
 		return new Element('div', {'class': 'panel panel-info'})
-			.insert({'bottom': new Element('div', {'class': 'panel-body table-responsive'})
+			.insert({'bottom': new Element('div', {'class': 'panel-body table-responsive', 'style': 'padding-top:0'})
 				.insert({'bottom':  tmp.productListDiv})
 			});
 	}
@@ -261,7 +262,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.me = this;
 		tmp.isTitle = (isTitleRow || false);
 		tmp.tag = (tmp.isTitle === true ? 'th' : 'td');
-		tmp.row = new Element('tr', {'class': (tmp.isTitle === true ? '' : 'item_row order-item-row')})
+		tmp.row = new Element('tr', {'class': (tmp.isTitle === true ? '' : 'item_row order-item-row btn-hide-row')})
 			.store('data', orderItem.product)
 			.insert({'bottom': new Element(tmp.tag, {'class': 'productName'})
 				.insert({'bottom': orderItem.product.name ? orderItem.product.name : orderItem.product.barcode })
@@ -272,6 +273,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		} else {
 			tmp.row.down('.productName').writeAttribute('colspan', 2);
 		}
+		
 		return tmp.row;
 	}
 	/**
@@ -305,7 +307,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					})
 				})
 		};
-		return tmp.me._getProductRow(tmp.data, false).addClassName('new-order-item-input info').removeClassName('order-item-row');
+		return tmp.me._getProductRow(tmp.data, false).addClassName('new-order-item-input info').removeClassName('order-item-row btn-hide-row');
 	}
 	/**
 	 * Getting the autocomplete input box for product
@@ -348,6 +350,8 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.me._signRandID(tmp.btn);
 		tmp.searchTxtBox = $(tmp.btn).up('.product-autocomplete').down('.search-txt');
 		tmp.searchTxt = $F(tmp.searchTxtBox);
+		if (!tmp.searchTxt)
+			return;
 		tmp.currentRow = $(btn).up('.new-order-item-input');
 		tmp.product = {
 				'name': '',
@@ -363,19 +367,12 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 						if(!confirm('You remove this entry.\n\nContinue?'))
 							return;
 						tmp.row = $(this).up('.item_row');
-						tmp.me._recalculateSummary( 0 - tmp.me.getValueFromCurrency(tmp.row.retrieve('data').totalPrice) * 1 );
-						if (tmp.row.hasClassName('order-item-row-old')) {
-							tmp.row.addClassName('order-item-row-old-removed');
-							tmp.row.hide();
-						} else {
-							tmp.row.remove();
-						}
+						tmp.row.remove();
 					})
 				})
 			};
 		tmp.currentRow.insert({'after': tmp.lastRow = tmp.me._getProductRow(tmp.data, false) });
 		tmp.newRow = tmp.me._getNewProductRow();
-		tmp.newRow.addClassName('btn-hide-row');
 		tmp.currentRow.replace(tmp.newRow);
 		tmp.newRow.down('[new-order-item=product]').focus();
 		
@@ -402,39 +399,93 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				} catch(e) {
 					tmp.resultList.update(tmp.me.getAlertBox('Error: ', e).addClassName('alert-danger'));
 				}
-//				tmp.me.showModalBox('Products that has: ' + tmp.searchTxt, tmp.resultList, false);
 			}
 			,'onComplete': function(sender, param) {
 				jQuery('#' + tmp.me._htmlIds.barcodeInput).button('reset');
 			}
 		});
-		
-		
-		
-//		tmp.me.postAjax(tmp.me.getCallbackId('searchProduct'), {'searchTxt': tmp.searchTxt, 'supplierID': tmp.me._supplier.id}, {
-//			'onLoading': function() {
-//				jQuery('#' + tmp.btn.id).button('loading');
-//			}
-//			,'onSuccess': function(sender, param) {
-//				tmp.resultList = new Element('div', {'style': 'overflow: auto; max-height: 400px;'});
-//				try {
-//					tmp.result = tmp.me.getResp(param, false, true);
-//					if(!tmp.result || !tmp.result.items || tmp.result.items.size() === 0)
-//						throw 'Nothing Found for: ' + tmp.searchTxt;
-//					tmp.me._signRandID(tmp.searchTxtBox);
-//					tmp.result.items.each(function(product) {
-//						tmp.resultList.insert({'bottom': tmp.me._getSearchPrductResultRow(product, tmp.searchTxtBox) });
-//					});
-//					tmp.resultList.addClassName('list-group'); 
-//				} catch(e) {
-//					tmp.resultList.update(tmp.me.getAlertBox('Error: ', e).addClassName('alert-danger'));
-//				}
-//				tmp.me.showModalBox('Products that has: ' + tmp.searchTxt, tmp.resultList, false);
-//			}
-//			,'onComplete': function(sender, param) {
-//				jQuery('#' + tmp.btn.id).button('reset');
-//			}
-//		});
+		return tmp.me;
+	}
+	/**
+	 * Getting the save btn for this order
+	 */
+	,_saveBtns: function() {
+		var tmp = {};
+		tmp.me = this;
+		tmp.newDiv = new Element('span', {'class': 'btn-group pull-right'})
+			.insert({'bottom': new Element('span', {'class': 'btn btn-primary', 'data-loading-text' : 'saving...'})
+				.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-ok-circle'}) })
+				.insert({'bottom': new Element('span').update(' save ') })
+				.observe('click', function() {
+					tmp.me._submitOrder($(this));
+				})
+			})
+			.insert({'bottom': new Element('span', {'class': 'btn btn-default'})
+				.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-remove-sign'}) })
+				.insert({'bottom': new Element('span').update(' cancel ') })
+				.observe('click', function(){
+					tmp.me.showModalBox('<strong class="text-danger">Cancelling this PO receiving</strong>', 
+							'<div>You are about to cancel this receiving process, all input data will be lost.</div><br /><div>Continue?</div>'
+							+ '<div>'
+								+ '<span class="btn btn-primary" onclick="window.location = document.URL;"><span class="glyphicon glyphicon-ok"></span> YES</span>'
+								+ '<span class="btn btn-default pull-right" data-dismiss="modal"><span aria-hidden="true"><span class="glyphicon glyphicon-remove-sign"></span> NO</span></span>'
+							+ '</div>',
+					true);
+				})
+			})
+		;
+		return tmp.newDiv;
+	}
+	/**
+	 * Ajax: collect data and post ajax
+	 */
+	,_submitOrder: function(btn) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.btn = btn;
+		tmp.data = tmp.me._collectFormData($(tmp.me._htmlIds.itemDiv),'save-order');
+		console.debug(tmp.data);
+//		if(tmp.data === null)
+//			return tmp.me;
+		tmp.data.itemsMatched = [];
+		tmp.data.itemsNotMatched = [];
+		$$('.order-item-row').each(function(item){
+			tmp.item = item.retrieve('data');
+			if (tmp.item.id !== '')
+				tmp.data.itemsMatched.push(tmp.item);
+			else
+				tmp.data.itemsNotMatched.push(tmp.item);
+		});
+		if( (tmp.data.itemsMatched.size() + tmp.data.itemsNotMatched.size()) <= 0) {
+			tmp.me.showModalBox('<strong class="text-danger">Error</strong>', 'At least one item is needed!', true);
+			return tmp.me;
+		}
+		tmp.me._signRandID(tmp.btn);
+		tmp.me.postAjax(tmp.me.getCallbackId('saveOrder'), tmp.data, {
+			'onLoading': function(sender, param) {
+				jQuery('#' + tmp.btn.id).button('loading');
+			}
+			,'onSuccess': function(sender, param) {
+				try {
+					tmp.result = tmp.me.getResp(param, false, true);
+					if(!tmp.result || !tmp.result.item)
+						return;
+					console.debug(tmp.result);
+					tmp.me.showModalBox('<strong class="text-success">Success!</strong>', 
+							'<div>The current receiving process is succussed and saved.</div><br /><div><strong>Another One?</strong></div>'
+							+ '<div>'
+								+ '<span class="btn btn-primary" onclick="window.location = document.URL;"><span class="glyphicon glyphicon-ok"></span> YES</span>'
+								+ '<span class="btn btn-default pull-right" data-dismiss="modal"><span aria-hidden="true"><span class="glyphicon glyphicon-remove-sign"></span> NO</span></span>'
+							+ '</div>',
+					true);
+				} catch(e) {
+					tmp.me.showModalBox('Error!', e, false);
+				}
+			}
+			,'onComplete': function(sender, param) {
+				jQuery('#' + tmp.btn.id).button('reset');
+			}
+		});
 		return tmp.me;
 	}
 	,init: function() {
