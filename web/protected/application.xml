@@ -72,7 +72,7 @@
 			<url ServiceParameter="Customer.Details.DetailsController" pattern="customer/{id}.html" parameters.id="\d+"/>
 			
 			<!-- FrontEnd:: receiving page -->
-			<url ServiceParameter="Receiving.Details.DetailsController" pattern="receiving.html" />
+			<url ServiceParameter="Receiving.New.ReceivingController" pattern="receiving.html" />
 			
             <!-- FrontEnd:: PO list page -->
             <url ServiceParameter="PurchaseOrder.List.Controller" pattern="purchase.html" />
