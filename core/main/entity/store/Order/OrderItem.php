@@ -258,59 +258,6 @@ class OrderItem extends BaseEntityAbstract
 	    return $this;
 	}
 	/**
-	 * creating the orderitem object
-	 * 
-	 * @param Order   $order
-	 * @param Product $product
-	 * @param number  $unitPrice
-	 * @param number  $qty
-	 * @param number  $totalPrice
-	 * @param number  $mageOrderItemId The order_item_id from Magento
-	 * @param string  $eta
-	 * 
-	 * @return Ambigous <OrderItem, BaseEntityAbstract>
-	 */
-	public static function create(Order $order, Product $product, $unitPrice, $qty, $totalPrice, $mageOrderItemId, $eta = null)
-	{
-		if(count($items = self::getItems($order, $product)) === 0)
-			$item = new OrderItem();
-		else
-			$item = $items[0];
-		$item->setOrder($order)
-			->setProduct($product)
-			->setUnitPrice($unitPrice)
-			->setQtyOrdered($qty)
-			->setTotalPrice($totalPrice)
-			->setMageOrderId($mageOrderItemId)
-			->setEta($eta)
-			->save();
-		return $item;
-	}
-	/**
-	 * Getting the order item via order and product
-	 * 
-	 * @param Order   $order
-	 * @param Product $product
-	 * @param bool    $activeOnly
-	 * @param int     $pageNo
-	 * @param int     $pageSize
-	 * @param array   $orderBy
-	 * @param array   $stats
-	 * 
-	 * @return Ambigous <Ambigous, multitype:, multitype:BaseEntityAbstract >
-	 */
-	public static function getItems(Order $order, Product $product = null, $activeOnly = true, $pageNo = null, $pageSize = DaoQuery::DEFAUTL_PAGE_SIZE, $orderBy = array(), &$stats = array())
-	{
-		$where = 'orderId = ?';
-		$params = array($order->getId());
-		if($product instanceof Product)
-		{
-			$where .=' AND productId = ?';
-			$params[] = $product->getId();
-		}
-		return self::getAllByCriteria($where, $params, $activeOnly, $pageNo, $pageSize, $orderBy, $stats);
-	}
-	/**
 	 * (non-PHPdoc)
 	 * @see BaseEntityAbstract::getJson()
 	 */
@@ -348,5 +295,58 @@ class OrderItem extends BaseEntityAbstract
 		DaoMap::createIndex('isOrdered');
 		DaoMap::createIndex('mageOrderId');
 		DaoMap::commit();
+	}
+	/**
+	 * creating the orderitem object
+	 *
+	 * @param Order   $order
+	 * @param Product $product
+	 * @param number  $unitPrice
+	 * @param number  $qty
+	 * @param number  $totalPrice
+	 * @param number  $mageOrderItemId The order_item_id from Magento
+	 * @param string  $eta
+	 *
+	 * @return Ambigous <OrderItem, BaseEntityAbstract>
+	 */
+	public static function create(Order $order, Product $product, $unitPrice, $qty, $totalPrice, $mageOrderItemId, $eta = null)
+	{
+		if(count($items = self::getItems($order, $product)) === 0)
+			$item = new OrderItem();
+		else
+			$item = $items[0];
+		$item->setOrder($order)
+		->setProduct($product)
+		->setUnitPrice($unitPrice)
+		->setQtyOrdered($qty)
+		->setTotalPrice($totalPrice)
+		->setMageOrderId($mageOrderItemId)
+		->setEta($eta)
+		->save();
+		return $item;
+	}
+	/**
+	 * Getting the order item via order and product
+	 *
+	 * @param Order   $order
+	 * @param Product $product
+	 * @param bool    $activeOnly
+	 * @param int     $pageNo
+	 * @param int     $pageSize
+	 * @param array   $orderBy
+	 * @param array   $stats
+	 *
+	 * @return Ambigous <Ambigous, multitype:, multitype:BaseEntityAbstract >
+	 */
+	public static function getItems(Order $order, Product $product = null, $activeOnly = true, $pageNo = null, $pageSize = DaoQuery::DEFAUTL_PAGE_SIZE, $orderBy = array(), &$stats = array())
+	{
+		$where = 'orderId = ?';
+		$params = array($order->getId());
+		if($product instanceof Product)
+		{
+			$where .=' AND productId = ?';
+			$params[] = $product->getId();
+		}
+		return self::getAllByCriteria($where, $params, $activeOnly, $pageNo, $pageSize, $orderBy, $stats);
 	}
 }
