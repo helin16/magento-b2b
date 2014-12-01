@@ -33,6 +33,12 @@ class PurchaseOrderItem extends BaseEntityAbstract
 	 */
 	private $qty;
 	/**
+	 * The receivedQty of the item
+	 *
+	 * @var int
+	 */
+	private $receivedQty = 0;
+	/**
 	 * The total price of the whole lot
 	 * 
 	 * @var double
@@ -104,6 +110,27 @@ class PurchaseOrderItem extends BaseEntityAbstract
 	    return $this;
 	}
 	/**
+	 * Getter for receivedQty
+	 *
+	 * @return int
+	 */
+	public function getReceivedQty() 
+	{
+	    return $this->receivedQty;
+	}
+	/**
+	 * Setter for receivedQty
+	 *
+	 * @param int $value The receivedQty
+	 *
+	 * @return PurchaseOrderItem
+	 */
+	public function setReceivedQty($value) 
+	{
+	    $this->receivedQty = $value;
+	    return $this;
+	}
+	/**
 	 * Getter for unitPrice
 	 *
 	 * @return double
@@ -156,11 +183,13 @@ class PurchaseOrderItem extends BaseEntityAbstract
 		DaoMap::setManyToOne('purchaseOrder', 'PurchaseOrder', 'po_item_po');
 		DaoMap::setManyToOne('product', 'Product', 'po_item_pro');
 		DaoMap::setIntType('qty');
+		DaoMap::setIntType('receivedQty');
 		DaoMap::setIntType('unitPrice', 'double', '10,4');
 		DaoMap::setIntType('totalPrice', 'double', '10,4');
 		
 		parent::__loadDaoMap();
 		DaoMap::createIndex('qty');
+		DaoMap::createIndex('receivedQty');
 		DaoMap::commit();
 	}
 	/**
@@ -177,15 +206,19 @@ class PurchaseOrderItem extends BaseEntityAbstract
 	 * 
 	 * @return PurchaseOrderItem
 	 */
-	public static function create(PurchaseOrder $po, Product $product, $unitPrice = '0.0000', $qty = 1, $totalPrice = null)
+	public static function create(PurchaseOrder $po, Product $product, $unitPrice = '0.0000', $qty = 1, $totalPrice = null, $receivedQty = 0)
 	{
-		$class = get_called_class();
-		$entity = new $class();
-		return $entity->setPurchaseOrder($po)
+		$entity = new PurchaseOrderItem();
+		$msg = 'created POI for PO(' . $po->getPurchaseOrderNo() . ') with Product(SKU=' . $product->getSku() . ') unitPrice=' . $unitPrice . ', qty=' . $qty;
+		$entity->setPurchaseOrder($po)
 			->setProduct($product)
 			->setUnitPrice($unitPrice)
 			->setQty($qty)
+			->setReceivedQty(receivedQty)
 			->setTotalPrice(trim($totalPrice) !== '' ? $totalPrice : ($unitPrice * $qty))
-			->save();
+			->save()
+			->addLog($msg, Log::TYPE_SYSTEM);
+		$po->addLog($msg, Log::TYPE_SYSTEM);
+		return $entity;
 	}
 }
