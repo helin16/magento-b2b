@@ -157,9 +157,14 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			.insert({'bottom': new Element('div', {'class': 'row'})
 				.insert({'bottom': new Element('div', {'class': 'col-sm-12'}).update(tmp.me._getPartsTable()) })
 			})
-			.insert({'bottom': new Element('div', {'class': 'row'})
-				
-				.insert({'bottom': new Element('div', {'class': 'col-sm-12'}).update(tmp.me._saveBtns()) })
+			.insert({'bottom': new Element('div', {'class': 'row', 'style': 'padding: 0 15px'})
+				.insert({'bottom': new Element('div', {'class': 'col-sm-1'})
+					.insert({'bottom': new Element('label', {'class': 'control-label'}).update('Comment: ') })
+				})
+				.insert({'bottom': new Element('div', {'class': 'col-sm-9'})
+					.insert({'bottom': new Element('textarea', {'save-order': 'comments', 'style': 'height:33px; width: 100%;'}) })
+				})
+				.insert({'bottom': new Element('div', {'class': 'col-sm-2'}).update(tmp.me._saveBtns()) })
 			});
 		return tmp.newDiv;
 	}
