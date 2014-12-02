@@ -256,7 +256,6 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 	,_getProductRow: function(orderItem, isTitleRow) {
 		var tmp = {};
 		tmp.me = this;
-		console.debug(orderItem);
 		tmp.isTitle = (isTitleRow || false);
 		tmp.row = new Element((tmp.isTitle === true ? 'strong' : 'div'), {'class': ' item_row list-group-item'})
 			.store('data', orderItem.product)
@@ -327,10 +326,10 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.me = this;
 		tmp.tag = isTitle === true ? 'th' : 'td';
 		tmp.newDiv = new Element('tr', {'class': isTitle === true ? '' : 'scanned-item-row'}).store('data', item)
-			.insert({'bottom': new Element(tmp.tag).update(item.serialNumber) })
-			.insert({'bottom': new Element(tmp.tag).update(item.unitPrice) })
-			.insert({'bottom': new Element(tmp.tag).update(item.invoiceNumber) })
-			.insert({'bottom': new Element(tmp.tag).update(item.comments) })
+			.insert({'bottom': new Element(tmp.tag).update(item.serialNo ? item.serialNo : '') })
+			.insert({'bottom': new Element(tmp.tag).update(item.unitPrice ? item.unitPrice : '') })
+			.insert({'bottom': new Element(tmp.tag).update(item.invoiceNo ? item.invoiceNo : '') })
+			.insert({'bottom': new Element(tmp.tag).update(item.comments ? item.comments : '') })
 			.insert({'bottom': new Element(tmp.tag, {'class': 'btns'}).update(item.btns ? item.btns : '') });
 		return tmp.newDiv;
 	}
@@ -338,18 +337,32 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		var tmp = {};
 		tmp.me = this;
 		tmp.table = new Element('table', {'class': 'table'})
-			.insert({'bottom': new Element('thead').update(tmp.me._getScanTableROW({'serialNumber': 'Serial No.', 'unitPrice': 'Unit Price', 'invoiceNumber': 'Inv. No.', 'comments': 'Comments'}, true)) })
+			.insert({'bottom': new Element('thead').update(tmp.me._getScanTableROW({'serialNo': 'Serial No.', 'unitPrice': 'Unit Price', 'invoiceNo': 'Inv. No.', 'comments': 'Comments'}, true)) })
 			.insert({'bottom': new Element('tbody')
 				.insert({'bottom': tmp.me._getScanTableROW({
-						'serialNumber': new Element('input', {'class': 'form-control', 'scanned-item': 'serialNo', 'placeholder': 'Serial Number:'}), 
+						'serialNo': new Element('input', {'class': 'form-control', 'scanned-item': 'serialNo', 'placeholder': 'Serial Number:'}), 
 						'unitPrice': new Element('input', {'class': 'form-control', 'scanned-item': 'unitPrice', 'placeholder': 'Unit Price:'}), 
-						'invoiceNumber': new Element('input', {'class': 'form-control', 'scanned-item': 'invoiceNo', 'placeholder': 'Inv. No.:'}), 
+						'invoiceNo': new Element('input', {'class': 'form-control', 'scanned-item': 'invoiceNo', 'placeholder': 'Inv. No.:'}), 
 						'comments': new Element('input', {'class': 'form-control', 'scanned-item': 'comments', 'placeholder': 'Comments:'}), 
 						'btns': new Element('span', {'class': 'btn-group btn-group-sm pull-right'})
 								.insert({'bottom': new Element('span', {'class': 'btn btn-primary'})
 								.insert({'bottom': new Element('span', {'class': ' glyphicon glyphicon-floppy-saved'}) })
 								.observe('click', function() {
-									tmp.me._addNewProductRow(this);
+									tmp.currentRow = $(this).up('.scanned-item-row');
+									tmp.formData = tmp.me._collectFormData(tmp.currentRow,'scanned-item');
+									tmp.currentRow.insert({'after': tmp.lastRow = tmp.me._getScanTableROW(tmp.formData, false) });
+									
+									tmp.serialNoBox = tmp.currentRow.down('input[scanned-item=serialNo]');
+									tmp.unitPriceBox = tmp.currentRow.down('input[scanned-item=unitPrice]');
+									tmp.invoiceNoBox = tmp.currentRow.down('input[scanned-item=invoiceNo]');
+									tmp.commentsBox = tmp.currentRow.down('input[scanned-item=comments]');
+									
+									tmp.unitPriceBox.clear();
+									tmp.invoiceNoBox.clear();
+									tmp.commentsBox.clear();
+									
+									tmp.serialNoBox.focus();
+									tmp.serialNoBox.select();
 								})
 							})
 							.insert({'bottom': new Element('span', {'class': 'btn btn-default'})
@@ -357,13 +370,20 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 								.observe('click', function() {
 									if(!confirm('You about to clear this entry. All input data for this entry will be lost.\n\nContinue?'))
 										return;
-									tmp.newRow = tmp.me._getNewProductRow();
-									tmp.currentRow = $(this).up('.new-order-item-input');
-									tmp.currentRow.getElementsBySelector('.form-group.has-error .form-control').each(function(control){
-										$(control).retrieve('clearErrFunc')();
-									});
-									tmp.currentRow.replace(tmp.newRow);
-									tmp.newRow.down('[new-order-item=product]').focus();
+									
+									tmp.row = $(this).up('.scanned-item-row');
+									
+									tmp.serialNoBox = tmp.row.down('input[scanned-item=serialNo]');
+									tmp.unitPriceBox = tmp.row.down('input[scanned-item=unitPrice]');
+									tmp.invoiceNoBox = tmp.row.down('input[scanned-item=invoiceNo]');
+									tmp.commentsBox = tmp.row.down('input[scanned-item=comments]');
+									
+									tmp.serialNoBox.clear();
+									tmp.unitPriceBox.clear();
+									tmp.invoiceNoBox.clear();
+									tmp.commentsBox.clear();
+									
+									tmp.serialNoBox.focus();
 								})
 							})
 					}).addClassName('info')
@@ -429,9 +449,12 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 						tmp.data.scanTable = tmp.me._getScanTable(tmp.data.product);
 						tmp.lastRow.replace(tmp.newRow = tmp.me._getProductRow(tmp.data, false) );
 						tmp.newRow.down('[scanned-item="serialNo"]').focus();
+						
 						tmp.me._focusNext(tmp.newRow,'serialNo','unitPrice');
 						tmp.me._focusNext(tmp.newRow,'unitPrice','invoiceNo');
 						tmp.me._focusNext(tmp.newRow,'invoiceNo','comments');
+						
+						tmp.me._scanRowAutoSave(tmp.newRow);
 					}); // end each
 					tmp.resultList.addClassName('list-group'); 
 				} catch(e) {
@@ -441,6 +464,27 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			,'onComplete': function(sender, param) {
 				jQuery('#' + tmp.me._htmlIds.barcodeInput).button('reset');
 			}
+		});
+		return tmp.me;
+	}
+	,_scanRowAutoSave: function(row) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.row = row;
+		tmp.btn = row.getElementsBySelector('input[scanned-item]');
+		$$('[scanned-item="comments"]').first().observe('keydown', function(event){
+			tmp.me.keydown(event, function() {
+				Event.stop(event);
+				tmp.serialNoBox = tmp.row.down('input[scanned-item=serialNo]');
+				tmp.unitPriceBox = tmp.row.down('input[scanned-item=unitPrice]');
+				tmp.invoiceNoBox = tmp.row.down('input[scanned-item=invoiceNo]');
+				tmp.commentsBox = tmp.row.down('input[scanned-item=comments]');
+				
+				if(tmp.serialNoBox.value.length && tmp.unitPriceBox.value.length && tmp.invoiceNoBox.value.length) {
+					tmp.row.down('.btn  .glyphicon.glyphicon-floppy-saved').click();
+				}
+			});
+			return false;
 		});
 		return tmp.me;
 	}
@@ -454,6 +498,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			tmp.me.keydown(event, function() {
 				tmp.row.down('[scanned-item="' + tmp.to + '"]').focus();
 			});
+		
 			return false;
 		});
 	}
@@ -495,7 +540,6 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.me = this;
 		tmp.btn = btn;
 		tmp.data = tmp.me._collectFormData($(tmp.me._htmlIds.itemDiv),'save-order');
-		console.debug(tmp.data);
 //		if(tmp.data === null)
 //			return tmp.me;
 		tmp.data.itemsMatched = [];
@@ -521,7 +565,6 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					tmp.result = tmp.me.getResp(param, false, true);
 					if(!tmp.result || !tmp.result.item)
 						return;
-					console.debug(tmp.result);
 					tmp.me.showModalBox('<strong class="text-success">Success!</strong>', 
 							'<div>The current receiving process is succussed and saved.</div><br /><div><strong>Another One?</strong></div>'
 							+ '<div>'
