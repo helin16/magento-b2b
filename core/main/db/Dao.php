@@ -152,7 +152,7 @@ abstract class Dao
     public static function findAll(DaoQuery $qry, $pageNumber = null, $pageSize = DaoQuery::DEFAUTL_PAGE_SIZE, $orderBy = array(), $outputFormat = self::AS_OBJECTS)
     {
         self::connect();
-        $results = self::findByCriteria($qry, DaoMap::$map[strtolower($qry->getFocusClass())]['_']['alias']  . '.active = ?', array(1), $pageNumber, $pageSize, $orderBy, $outputFormat);
+        $results = self::findByCriteria($qry, '', array(), $pageNumber, $pageSize, $orderBy, $outputFormat);
         return $results;
     }
     /**
@@ -168,7 +168,7 @@ abstract class Dao
     {
         self::connect();
         DaoMap::loadMap($qry->getFocusClass());
-        $results = self::findByCriteria($qry, '`' . DaoMap::$map[strtolower($qry->getFocusClass())]['_']['alias'] . '`.`id`=?', array($id), null, DaoQuery::DEFAUTL_PAGE_SIZE, array(), $outputFormat);
+        $results = self::findByCriteria($qry->setSelectActiveOnly(false), '`' . DaoMap::$map[strtolower($qry->getFocusClass())]['_']['alias'] . '`.`id`=?', array($id), null, DaoQuery::DEFAUTL_PAGE_SIZE, array(), $outputFormat);
         if (is_array($results) && sizeof($results) > 0)
         	return $results[0];
         if ($results instanceof SimpleXMLElement)
@@ -192,7 +192,8 @@ abstract class Dao
     {
         self::connect();
         $qry->getPage($pageNumber, $pageSize);
-        $qry = $qry->where($criteria);
+        if(trim($criteria) !== '')
+        	$qry = $qry->where($criteria);
         foreach ($orderByParams as $field => $direction)
         $qry = $qry->orderBy($field,$direction);
         $sql = $qry->generateForSelect();
