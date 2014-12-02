@@ -99,6 +99,13 @@ class Product extends InfoEntityAbstract
 	 */
 	protected $categories = array();
 	/**
+	/**
+	 * The productCodes
+	 * 
+	 * @var array
+	 */
+	protected $codes = array();
+	/**
 	 * Getter for categories
 	 *
 	 * @return array()
@@ -118,6 +125,28 @@ class Product extends InfoEntityAbstract
 	public function setCategories($value) 
 	{
 	    $this->categories = $value;
+	    return $this;
+	}
+	/**
+	 * Getter for codes
+	 *
+	 * @return array()
+	 */
+	public function getCodes() 
+	{
+		$this->loadOneToMany('codes');
+	    return $this->codes;
+	}
+	/**
+	 * Setter for codes
+	 *
+	 * @param array $value The codes
+	 *
+	 * @return Product
+	 */
+	public function setCodes($value) 
+	{
+	    $this->codes = $value;
 	    return $this;
 	}
 	/**
@@ -639,6 +668,7 @@ class Product extends InfoEntityAbstract
 		DaoMap::setStringType('fullDescAssetId', 'varchar', 100);
 		DaoMap::setOneToMany('supplierCodes', 'SupplierCode', 'pro_sup_code');
 		DaoMap::setOneToMany('categories', 'Product_Category', 'pro_cate');
+		DaoMap::setOneToMany('codes', 'ProductCode', 'pro_pro_code');
 		parent::__loadDaoMap();
 		
 		DaoMap::createUniqueIndex('sku');

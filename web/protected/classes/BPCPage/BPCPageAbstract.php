@@ -94,6 +94,8 @@ abstract class BPCPageAbstract extends TPage
 		$clientScript->registerHeadScriptFile('Bootstrap.js', $folder . '/js/bootstrap.min.js');
 		$clientScript->registerStyleSheetFile('Bootstrap.css', $folder . '/css/bootstrap.min.css');
 		$clientScript->registerStyleSheetFile('Bootstrap.theme.css', $folder . '/bootstrap-theme.min.css');
+		
+		$clientScript->registerStyleSheetFile('Awesome.font.css', '//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css');
 	}
 	/**
 	 * Getting the lastest version of Js and Css under the Class'file path
