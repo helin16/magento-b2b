@@ -62,8 +62,18 @@ class PurchaseOrder extends BaseEntityAbstract
 	 * @var string
 	 */
 	private $handlingCost = 0;
-	
+	/**
+	 * The orderdate
+	 * @var UDate
+	 */
 	private $orderDate;
+	/**
+	 * The eta of the po
+	 * 
+	 * @var UDate
+	 */
+	private $eta = '';
+	
 	private $totalAmount = 0;
 	private $totalPaid = 0;
 	private $totalProdcutCount = 0;
@@ -246,6 +256,16 @@ class PurchaseOrder extends BaseEntityAbstract
 		return $this;
 	}
 	/**
+	 * Getter for totalProdcutCount
+	 *
+	 * @return string
+	 */
+	public function getTotalProdcutCount()
+	{
+		$this->totalProdcutCount = PurchaseOrderItem::countByCriteria('purchaseOrderId = ?', array($this->getId()));
+		return $this->totalProdcutCount;
+	}
+	/**
 	 * Getter for orderDate
 	 *
 	 * @return UDate
@@ -254,16 +274,6 @@ class PurchaseOrder extends BaseEntityAbstract
 	{
 		$this->orderDate = new UDate(trim($this->orderDate));
 	    return $this->orderDate;
-	}
-	/**
-	 * Getter for totalProdcutCount
-	 *
-	 * @return string
-	 */
-	public function gettotalProdcutCount() 
-	{
-		$this->totalProdcutCount = count(PurchaseOrderItem::getAllByCriteria('purchaseOrderId = ?', array($this->getId()), true, 1, DaoQuery::DEFAUTL_PAGE_SIZE * 10) );
-	    return $this->totalProdcutCount;
 	}
 	/**
 	 * Setter for orderDate
@@ -275,6 +285,28 @@ class PurchaseOrder extends BaseEntityAbstract
 	public function setOrderDate($value) 
 	{
 	    $this->orderDate = $value;
+	    return $this;
+	}
+	/**
+	 * Getter for eta
+	 *
+	 * @return UDate
+	 */
+	public function getEta() 
+	{
+		$this->eta = new UDate(trim($this->eta));
+	    return $this->eta;
+	}
+	/**
+	 * Setter for eta
+	 *
+	 * @param string $value The eta
+	 *
+	 * @return PurchaseOrder
+	 */
+	public function setEta($value) 
+	{
+	    $this->eta = $value;
 	    return $this;
 	}
 	/**
@@ -405,6 +437,7 @@ class PurchaseOrder extends BaseEntityAbstract
 		DaoMap::setStringType('shippingCost', 'Double', '10,4');
 		DaoMap::setStringType('handlingCost', 'Double', '10,4');
 		DaoMap::setDateType('orderDate');
+		DaoMap::setDateType('eta');
 		DaoMap::setIntType('totalAmount', 'Double', '10,4');
 		DaoMap::setIntType('totalPaid', 'Double', '10,4');
 		parent::__loadDaoMap();
@@ -413,6 +446,7 @@ class PurchaseOrder extends BaseEntityAbstract
 		DaoMap::createIndex('supplierRefNo');
 		DaoMap::createIndex('status');
 		DaoMap::createIndex('orderDate');
+		DaoMap::createIndex('eta');
 		DaoMap::createIndex('totalAmount');
 		DaoMap::createIndex('totalPaid');
 		DaoMap::createIndex('supplierContact');
