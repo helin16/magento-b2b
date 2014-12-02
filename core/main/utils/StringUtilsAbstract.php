@@ -90,7 +90,7 @@ abstract class StringUtilsAbstract
              $newperms = $perms;
              list($foo) = array_splice($newitems, $i, 1);
              array_unshift($newperms, $foo);
-             $array = array_merge($array, pc_permute($newitems, $newperms));
+             $array = array_merge($array, self::getAllPossibleCombo($newitems, $newperms));
          }
          return $array;
 	}
