@@ -140,7 +140,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		tmp.comments.each(function(item) {
 			if (item.comments !== '') {
 				tmp.row=tmp.me._getCommentsRow(item,false);
-				tmp.newDiv.down('#comments_result_div tbody').insert({'bottom': tmp.row})
+				tmp.newDiv.down('#comments_result_div tbody').insert({'bottom': tmp.row});
 			}
 		});
 		return tmp.newDiv;
@@ -149,7 +149,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 	 * Getting the order status dropdown list
 	 */
 	,_getOrderStatus: function () {
-		var tmp = {}
+		var tmp = {};
 		tmp.me = this;
 		tmp.selBox = new Element('select', {'save-order': 'status'});
 		tmp.selBox.insert({'bottom': new Element('option').update(tmp.me._purchaseorder.status) });
@@ -771,7 +771,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		tmp.me._statusOptions.each(function(option){
 			if(option!==tmp.item.status)
 				tmp.statusOptionSel.insert({'bottom': new Element('option', {'value': option}).update(option) });
-		})
+		});
 		tmp.newDiv = new Element('div', {'class': 'panel panel-default purchaseorder-summary'})
 		.insert({'bottom': new Element('div', {'class': 'panel-heading'})
 			.insert({'bottom': new Element('a', {'href': 'javascript: void(0);', 'title': 'click to show/hide below'})

@@ -20,7 +20,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 	 * Binding the search key
 	 */
 	,_bindSearchKey: function() {
-		var tmp = {}
+		var tmp = {};
 		tmp.me = this;
 		$$('#searchBtn').first()
 			.observe('click', function(event) {
@@ -35,7 +35,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 				tmp.me.keydown(event, function() {
 					$('searchPanel').down('#searchBtn').click();
 				});
-			})
+			});
 		});
 		return this;
 	}
@@ -234,7 +234,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		return tmp.me;
 	}
 	,_deactivateItem: function(btn) {
-		var tmp = {}
+		var tmp = {};
 		tmp.me = this;
 		tmp.row = $(btn).up('[item_id]');
 		tmp.item = tmp.row.retrieve('data');
@@ -257,6 +257,6 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 					tmp.me.showModalBox('<span class="text-danger">ERROR</span>', e, true);
 				}
 			}
-		})
+		});
 	}
 });
