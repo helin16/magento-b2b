@@ -56,6 +56,45 @@ abstract class StringUtilsAbstract
 		return $prefix . number_format($currencyValue, 2, $decimal, $thousand);
 	}
 	/**
+	 * Tokenizing a string
+	 * 
+	 * @param string $string
+	 * @param string $separator The separator of the string
+	 * 
+	 * @return array
+	 */
+	public static function tokenize($string, $separator = ' ')
+	{
+		$tokens = explode($separator, $string);
+		if(!is_array($tokens))
+			return $string;
+		return array_map(create_function('$a', 'return trim($a);'), $tokens);
+	}
+	/**
+	 * Getting all possible combination of an array 
+	 * 
+	 * @param array $items
+	 * @param array $perms
+	 * 
+	 * @return array
+	 */
+	public static function getAllPossibleCombo($items, $perms = array())
+	{
+	    if (empty($items)) 
+	    	return array($perms);
+	    	
+		$array = array();
+        for ($i = count($items) - 1; $i >= 0; --$i) 
+        {
+             $newitems = $items;
+             $newperms = $perms;
+             list($foo) = array_splice($newitems, $i, 1);
+             array_unshift($newperms, $foo);
+             $array = array_merge($array, pc_permute($newitems, $newperms));
+         }
+         return $array;
+	}
+	/**
 	 * Simple method for detirmining mime type of a file based on file extension
 	 * This isn't technically correct, but for our problem domain, this is good enough
 	 *
