@@ -153,7 +153,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 	 * Getting the order status dropdown list
 	 */
 	,_getOrderStatus: function () {
-		var tmp = {}
+		var tmp = {};
 		tmp.me = this;
 		tmp.selBox = new Element('select', {'save-order': 'status'});
 		tmp.me._statusOptions.each(function(status) {
@@ -660,7 +660,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			})
 			.insert({'bottom': new Element('div', {'class': 'row'})
 				.insert({'bottom': new Element('div', {'class': 'col-sm-12'}).update(tmp.me._saveBtns()) })
-			})
+			});
 		return tmp.newDiv;
 	}
 	,selectSupplier: function(supplier) {
@@ -729,7 +729,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 						})
 					});
 					tmp.result.items.each(function(item) {
-						tmp.listDiv.insert({'bottom': tmp.me._getSupplierRow(item) })
+						tmp.listDiv.insert({'bottom': tmp.me._getSupplierRow(item) });
 					});
 				} catch (e) {
 					$(tmp.searchPanel).insert({'bottom': new Element('div', {'class': 'panel-body'}).update(tmp.me.getAlertBox('ERROR', e).addClassName('alert-danger')) });
