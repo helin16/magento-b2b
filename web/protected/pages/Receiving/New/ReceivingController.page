@@ -1,4 +1,3 @@
-<%@MasterClass="Application.layout.BlankLayout"%>
 <com:TContent ID="MainContent">
 	<com:Application.controls.fancybox.FancyBox />
 	<com:TCallback ID="searchPOBtn" onCallback="searchPO" />

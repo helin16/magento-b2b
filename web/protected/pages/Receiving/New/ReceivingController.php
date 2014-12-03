@@ -87,9 +87,9 @@ class ReceivingController extends BPCPageAbstract
 		{
 			$items = array();
 			$searchTxt = isset($param->CallbackParameter->searchTxt) ? trim($param->CallbackParameter->searchTxt) : '';
-			$productIdsFromBarcode = array_map(create_function('$a', 'return $a->getProduct()->getId();'), ProductCode::getAllByCriteria('code = ?', array($searchTxt)));
-			$where = (count($productIdsFromBarcode) === 0 ? '' : 'id in (' . implode(',', $productIdsFromBarcode) . ')');
-			foreach(Product::getAllByCriteria($where, array(), true, 1, DaoQuery::DEFAUTL_PAGE_SIZE * 3) as $product)
+			Product::getQuery()->eagerLoad('Product.codes', 'left join');
+			$products = Product::getAllByCriteria('pro_pro_code.code = :searchExact or pro.sku = :searchTxt or pro.name = :searchTxt', array('searchExact' => $searchTxt, 'searchTxt' => '%' . $searchTxt . '%'), true, 1, DaoQuery::DEFAUTL_PAGE_SIZE * 3);
+			foreach($products as $product)
 			{
 				$items[] = $product->getJson();
 			}
