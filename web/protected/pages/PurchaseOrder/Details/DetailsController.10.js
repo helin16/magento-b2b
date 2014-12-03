@@ -261,7 +261,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 			.insert({'bottom': new Element('tr') 
 				.insert({'bottom': new Element('td', {'colspan': 2, 'rowspan': 4})
 					.insert({'bottom': tmp.me._getFormGroup( 'Comments:', new Element('textarea', {'save-order': 'comments', 'style': 'height:33px'}).update(tmp.me._comment ? tmp.me._comment : '') ) })
-					.insert({'bottom': new Element('td', {'colspan': 2, 'class': 'text-right active pull-right'}).update(tmp.me._saveBtns()) })
+					.insert({'bottom': new Element('td', {'colspan': 2, 'class': 'text-right active pull-left'}).update(tmp.me._saveBtns()) })
 				}) 
 				.insert({'bottom': new Element('td', {'colspan': 2, 'class': 'text-right active'}).update( new Element('strong').update('Total Excl. GST: ') ) }) 
 				.insert({'bottom': new Element('td', {'id': tmp.me._htmlIds.totalPriceExcludeGST, 'class': 'active'}).update( tmp.me.getCurrency(0) ) }) 
