@@ -669,7 +669,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.me._supplier = supplier;
 		tmp.newDiv = tmp.me._getViewOfPurchaseOrder();
 		$(tmp.me._htmlIds.itemDiv).update(tmp.newDiv);
-		tmp.newDiv.down('.form-control[new-order-item="contactName"]').focus();
+		tmp.newDiv.down('input[save-order]').focus();
 		return tmp.me;
 	}
 	/**

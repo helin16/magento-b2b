@@ -842,4 +842,12 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 //		});
 		return tmp.me;
 	}
+	,load: function () {
+		var tmp = {};
+		tmp.me = this;
+		$(tmp.me._htmlIds.itemDiv).update(tmp.newDiv = tmp.me._getItemDiv());
+		tmp.newDiv.down('input[save-order]').focus();
+		tmp.newDiv.down('input[save-order]').select();
+		return tmp.me;
+	}
 });
