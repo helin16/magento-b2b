@@ -38,3 +38,6 @@ CREATE TABLE `receivingitem` (
 	,INDEX (`unitPrice`)
 	,INDEX (`invoiceNo`)
 ) ENGINE=innodb DEFAULT CHARSET=utf8;
+
+#add ETA column onto purchaseorder
+ALTER TABLE `purchaseorder` ADD `eta` DATETIME NOT NULL DEFAULT '0001-01-01 00:00:00' AFTER `orderDate`, ADD INDEX (`eta`) ;
