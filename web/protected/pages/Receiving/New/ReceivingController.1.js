@@ -341,7 +341,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 	,_getScanTable: function(product) {
 		var tmp = {};
 		tmp.me = this;
-		tmp.table = new Element('table', {'class': 'table'})
+		tmp.table = new Element('table', {'class': 'table scanTable'})
 			.insert({'bottom': new Element('thead').update(tmp.me._getScanTableROW({'serialNo': 'Serial No.', 'unitPrice': 'Unit Price', 'invoiceNo': 'Inv. No.', 'comments': 'Comments', 'btns': ''}, true)) })
 			.insert({'bottom': new Element('tbody')
 				.insert({'bottom': tmp.me._getScanTableROW({
@@ -620,21 +620,32 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.me = this;
 		tmp.btn = btn;
 		tmp.data = tmp.me._collectFormData($(tmp.me._htmlIds.itemDiv),'save-order');
-//		if(tmp.data === null)
-//			return tmp.me;
-		tmp.data.itemsMatched = [];
-		tmp.data.itemsNotMatched = [];
-		$$('.order-item-row').each(function(item){
-			tmp.item = item.retrieve('data');
-			if (tmp.item.id !== '')
-				tmp.data.itemsMatched.push(tmp.item);
-			else
-				tmp.data.itemsNotMatched.push(tmp.item);
+		tmp.data.purchaseOrder = tmp.me._purchaseOrder;
+		tmp.data.products = [];
+		tmp.data.products.matched = [];
+		tmp.data.products.notMatched = [];
+		$(tmp.me._htmlIds.partsTable).getElementsBySelector('div.item_row').each(function(item) {
+			if(!item.hasClassName('new-order-item-input')) {
+				if(item.retrieve('data').id !== '') {
+					tmp.scanData = [];
+					item.getElementsBySelector('.table.scanTable .scanned-item-row').each(function(scanItem) {
+						if(!scanItem.hasClassName('new-scan-row')){
+							tmp.scanData.push(tmp.me._collectFormData(scanItem,'scanned-item'));
+						}
+					});
+          tmp.data.products.matched.push({'product':item.retrieve('data'),'serial':tmp.scanData});
+				} else {
+					tmp.data.products.notMatched.push(item.retrieve('data'));
+				}
+			}
 		});
-		if( (tmp.data.itemsMatched.size() + tmp.data.itemsNotMatched.size()) <= 0) {
+		if(tmp.data === null)
+			return tmp.me;
+		if( (tmp.data.products.matched.size() + tmp.data.products.notMatched.size()) <= 0) {
 			tmp.me.showModalBox('<strong class="text-danger">Error</strong>', 'At least one item is needed!', true);
 			return tmp.me;
 		}
+		console.debug(tmp.data);
 		tmp.me._signRandID(tmp.btn);
 		tmp.me.postAjax(tmp.me.getCallbackId('saveOrder'), tmp.data, {
 			'onLoading': function(sender, param) {
