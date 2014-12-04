@@ -59,6 +59,8 @@ class ReceivingController extends BPCPageAbstract
 			else {
 				foreach(PurchaseOrder::getAllByCriteria('(purchaseOrderNo like :searchTxt || supplierRefNo like :searchTxt) && (status = :statusReceiving || status = :statusOrdered)', array('searchTxt' => $searchTxt . '%', 'statusReceiving' => PurchaseOrder::STATUS_RECEIVING, 'statusOrdered' => PurchaseOrder::STATUS_ORDERED), true, null, DaoQuery::DEFAUTL_PAGE_SIZE, array('id'=> 'desc')) as $po)
 				{
+					if(!$po instanceof PurchaseOrder)
+						throw new Exception('Invalid PurchaseOrder passed in!');
 					$array = $po->getJson();
 					$array['totalProdcutCount'] = $po->gettotalProdcutCount();
 					$items[] = $array;
@@ -87,23 +89,13 @@ class ReceivingController extends BPCPageAbstract
 		try
 		{
 			$items = array();
-			var_dump($param->CallbackParameter);
 			$purchaseOrder = PurchaseOrder::get(trim($param->CallbackParameter->purchaseOrder->id));
+			if(!$purchaseOrder instanceof PurchaseOrder)
+				throw new Exception('Invalid PurchaseOrder passed in!');
 			$product = Product::get(trim($param->CallbackParameter->product->id));
+			if(!$product instanceof Product)
+				throw new Exception('Invalid Product passed in!');
 			$results['count'] = PurchaseOrderItem::countByCriteria('purchaseOrderId = :purchaseOrderId and productId = :productId', array('purchaseOrderId' => $purchaseOrder->getId(), 'productId' => $product->getId()));
-			
-// 			$searchTxt = isset($param->CallbackParameter->searchTxt) ? trim($param->CallbackParameter->searchTxt) : '';
-// 			if($searchTxt === '')
-// 				$results['items'] = '';
-// 			else {
-// 				foreach(PurchaseOrder::getAllByCriteria('(purchaseOrderNo like :searchTxt || supplierRefNo like :searchTxt) && (status = :statusReceiving || status = :statusOrdered)', array('searchTxt' => $searchTxt . '%', 'statusReceiving' => PurchaseOrder::STATUS_RECEIVING, 'statusOrdered' => PurchaseOrder::STATUS_ORDERED), true, null, DaoQuery::DEFAUTL_PAGE_SIZE, array('id'=> 'desc')) as $po)
-// 				{
-// 					$array = $po->getJson();
-// 					$array['totalProdcutCount'] = $po->gettotalProdcutCount();
-// 					$items[] = $array;
-// 				}
-// 				$results['items'] = $items;
-// 			}
 		}
 		catch(Exception $ex)
 		{
@@ -126,14 +118,13 @@ class ReceivingController extends BPCPageAbstract
 		try
 		{
 			$items = array();
-			var_dump($param->CallbackParameter);
 			$searchTxt = isset($param->CallbackParameter->searchTxt) ? trim($param->CallbackParameter->searchTxt) : '';
-// 			$purchaseOrder = PurchaseOrderItem::get(trim($param->CallbackParameter->purchaseOrder->id));
 			Product::getQuery()->eagerLoad('Product.codes', 'left join');
 			$products = Product::getAllByCriteria('pro_pro_code.code = :searchExact or pro.sku = :searchTxt or pro.name = :searchTxt', array('searchExact' => $searchTxt, 'searchTxt' => '%' . $searchTxt . '%'), true, 1, DaoQuery::DEFAUTL_PAGE_SIZE * 3);
-// 			PurchaseOrderItem::countByCriteria('purchaseOrderId = :purchaseOrderId and productId = :productId');
 			foreach($products as $product)
 			{
+				if(!$product instanceof Product)
+					throw new Exception('Invalid Product passed in!');
 				$items[] = $product->getJson();
 			}
 			$results['items'] = $items;
