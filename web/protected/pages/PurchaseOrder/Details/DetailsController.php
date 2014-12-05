@@ -190,7 +190,7 @@ class DetailsController extends DetailsPageAbstract
 				$product = Product::get($productId);
 				if(!$product instanceof Product)
 					throw new Exception('Invalid Product passed in!');
-				$purchaseOrder->addItem($product,$supplier->getId(),$productUnitPrice,$qtyOrdered,'','',$productTotalPrice) -> save();
+				$purchaseOrder->addItem($product,$productUnitPrice,$qtyOrdered,'','',$productTotalPrice) -> save();
 			};
 			foreach ($param->CallbackParameter->removedOldItems as $item) {
 				$productId = trim($item->product->id);

@@ -84,6 +84,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 			})
 		;
 		tmp.me._purchaseOrderItems.each(function(product){
+			console.debug(product);
 			tmp.me._addNewProductRow(tmp.me._newDiv.down('.glyphicon.glyphicon-floppy-saved'),product);
 		});
 		tmp.me._newDiv.getElementsBySelector('.order-item-row').each(function(item){
