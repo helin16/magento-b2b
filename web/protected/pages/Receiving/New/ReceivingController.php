@@ -156,7 +156,7 @@ class ReceivingController extends BPCPageAbstract
 			if(!$purchaseOrder instanceof PurchaseOrder)
 				throw new Exception('Invalid PurchaseOrder passed in!');
 			$comment = trim($param->CallbackParameter->comments);
-			$purchaseOrder->addComments(Comments::TYPE_WAREHOUSE, $comment);
+			$purchaseOrder->addComment(Comments::TYPE_WAREHOUSE, $comment);
 			$products = $param->CallbackParameter->products;
 			
 			foreach ($products->matched as $item) {
@@ -173,16 +173,17 @@ class ReceivingController extends BPCPageAbstract
 					ReceivingItem::create($purchaseOrder, $product, $unitPrice, $serialNo, $invoiceNo, $comments);
 				}
 				
-				$nofullReceivedItems = PurchaseOrderItem::getAllByCriteria('productId = ? and purchaseOrderId = ? and receivedQty < qty', array($product->getId(), $po->getId()), true, 1, 1);
+				$nofullReceivedItems = PurchaseOrderItem::getAllByCriteria('productId = ? and purchaseOrderId = ? and receivedQty < qty', array($product->getId(), $purchaseOrder->getId()), true, 1, 1);
+				var_dump($nofullReceivedItems);
 				$msg = 'received ' . count($serials) . ' product(SKU=' . $product->getSku() . ') by ' . Core::getUser()->getPerson()->getFullName() . '@' . trim(new UDate()) . '(UTC)';
 				if(count($nofullReceivedItems) > 0) {
 					$nofullReceivedItems[0]
 					->setReceivedQty($nofullReceivedItems[0]->GetReceivedQty() + count($serials))
 					->save()
 					->addLog(Log::TYPE_SYSTEM, $msg, __CLASS__ . '::' . __FUNCTION__)
-					->addComments(Comments::TYPE_WAREHOUSE, $msg);
+					->addComment(Comments::TYPE_WAREHOUSE, $msg);
 				}
-				$purchaseOrder->addComments(Comments::TYPE_WAREHOUSE, $msg);
+				$purchaseOrder->addComment(Comments::TYPE_WAREHOUSE, $msg);
 			}
 			foreach ($products->notMatched as $item) {
 // 				var_dump($item);
