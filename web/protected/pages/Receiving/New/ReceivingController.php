@@ -171,107 +171,38 @@ class ReceivingController extends BPCPageAbstract
 					$invoiceNo = trim($serial->invoiceNo);
 					$comments = trim($serial->comments);
 					ReceivingItem::create($purchaseOrder, $product, $unitPrice, $serialNo, $invoiceNo, $comments);
+					
+					$nofullReceivedItems = PurchaseOrderItem::getAllByCriteria('productId = ? and purchaseOrderId = ? and receivedQty < qty', array($product->getId(), $purchaseOrder->getId()), true, 1, 1);
+					var_dump($nofullReceivedItems);
+					if(count($nofullReceivedItems) > 0) {
+						$nofullReceivedItems[0]
+						->setReceivedQty($nofullReceivedItems[0]->getReceivedQty() + 1)
+						->save()
+						->addLog(Log::TYPE_SYSTEM, ($msg = 'received a product(SKU=' . $product->getSku() . ') by ' . Core::getUser()->getPerson()->getFullName() . '@' . trim(new UDate()) . '(UTC)'), __CLASS__ . '::' . __FUNCTION__)
+						->addComment(Comments::TYPE_WAREHOUSE, $msg);
+					}
+					
 				}
 				
-				$nofullReceivedItems = PurchaseOrderItem::getAllByCriteria('productId = ? and purchaseOrderId = ? and receivedQty < qty', array($product->getId(), $purchaseOrder->getId()), true, 1, 1);
-				var_dump($nofullReceivedItems);
-				$msg = 'received ' . count($serials) . ' product(SKU=' . $product->getSku() . ') by ' . Core::getUser()->getPerson()->getFullName() . '@' . trim(new UDate()) . '(UTC)';
-				if(count($nofullReceivedItems) > 0) {
-					$nofullReceivedItems[0]
-					->setReceivedQty($nofullReceivedItems[0]->GetReceivedQty() + count($serials))
-					->save()
-					->addLog(Log::TYPE_SYSTEM, $msg, __CLASS__ . '::' . __FUNCTION__)
-					->addComment(Comments::TYPE_WAREHOUSE, $msg);
-				}
-				$purchaseOrder->addComment(Comments::TYPE_WAREHOUSE, $msg);
+				$purchaseOrder->addComment(Comments::TYPE_WAREHOUSE, 'received ' . count($serials) . ' product(SKU=' . $product->getSku() . ') by ' . Core::getUser()->getPerson()->getFullName() . '@' . trim(new UDate()) . '(UTC)');
 			}
-			foreach ($products->notMatched as $item) {
+// 			foreach ($products->notMatched as $item) {
 // 				var_dump($item);
-			}
+// 			}
 			
 			$totalCount = PurchaseOrderItem::countByCriteria('purchaseOrderId = ? and receivedQty < qty', array($purchaseOrder->getId()));
 			if($totalCount === 0)
-				$po->setStatus(PurchaseOrder::STATUS_RECEIVING)
-					->save();
+			{
+				$purchaseOrder->setStatus(PurchaseOrder::STATUS_RECEIVED);
+			}
+			else
+			{
+				$purchaseOrder->setStatus(PurchaseOrder::STATUS_RECEIVING);
+			}
+			$purchaseOrder->save();
 			
 			$results['item'] = $purchaseOrder->getJson();
 			Dao::commitTransaction();
-// 			die;
-			
-			
-			
-// 			$results['item'] = 'works';
-			
-// 			Dao::beginTransaction();
-// 			foreach ($serialnos as $serialNo)
-// 			{
-// 				$item = ReceivingItem::create($po, $product);
-// 			}
-// 			$msg = 'received ' . count($serialnos) . ' product(SKU=' . $produt->getSku() . ') by ' . Core::getUser()->getPerson()->getFullName() . '@' . trim(new UDate()) . '(UTC)';
-// 			$nofullReceivedItems = PurchaseOrderItem::getAllByCriteria('productId = ? and purchaseOrderId = ? and receivedQty < qty', array($product->getId(), $po->getId()), true, 1, 1);
-// 			if(count($nofullReceivedItems) > 0)
-// 			{
-// 				$nofullReceivedItems[0]
-// 					->setReceivedQty($nofullReceivedItems[0]->GetReceivedQty() + count($serialnos))
-// 					->save()
-// 					->addLog(Log::TYPE_SYSTEM, $msg, __CLASS__ . '::' . __FUNCTION__)
-// 					->addComments(Comments::TYPE_WAREHOUSE, $msg);
-// 			}
-// 			$po->addComments(Comments::TYPE_WAREHOUSE, $msg);
-			
-// 			$totalCount = PurchaseOrderItem::countByCriteria('purchaseOrderId = ? and receivedQty < qty', array($po->getId()));
-// 			if($totalCount === 0)
-// 				$po->setStatus(PurchaseOrder::STATUS_RECEIVING)->save()->addComments(Comments::TYPE_WAREHOUSE, '')->addLog(Log::TYPE_SYSTEM, '', __CLASS__ . '::' . __FUNCTION__);
-			
-			
-// 			$supplier = Supplier::get(trim($param->CallbackParameter->supplier->id));
-// 			$purchaseOrderId = trim($param->CallbackParameter->id);
-// 			if(!$supplier instanceof Supplier)
-// 				throw new Exception('Invalid Supplier passed in!');
-// 			$supplierRefNum = trim($param->CallbackParameter->supplierRefNum);
-// 			$supplierContactName = trim($param->CallbackParameter->contactName);
-// 			$supplierContactNo = trim($param->CallbackParameter->contactNo);
-// 			$shippingCost = trim($param->CallbackParameter->shippingCost);
-// 			$handlingCost = trim($param->CallbackParameter->handlingCost);
-// 			$comment = trim($param->CallbackParameter->comments);
-// 			$status = trim($param->CallbackParameter->status);
-// 			$purchaseOrder = PurchaseOrder::get($purchaseOrderId);
-// 			$purchaseOrderTotalAmount = trim($param->CallbackParameter->totalAmount);
-// 			$purchaseOrderTotalPaid = trim($param->CallbackParameter->totalPaid);
-// 			$purchaseOrder->setTotalAmount($purchaseOrderTotalAmount)
-// 			->setTotalPaid($purchaseOrderTotalPaid)
-// 			->setSupplierRefNo($supplierRefNum)
-// 			->setSupplierContact($supplierContactName)
-// 			->setSupplierContactNumber($supplierContactNo)
-// 			->setshippingCost($shippingCost)
-// 			->sethandlingCost($handlingCost)
-// 			->setStatus($status)
-// 			->save();
-// 			$purchaseOrder->addComment($comment, Comments::TYPE_SYSTEM);
-// 			foreach ($param->CallbackParameter->newItems as $item) {
-// 				$productId = trim($item->product->id);
-// 				$productUnitPrice = trim($item->unitPrice);
-// 				$qtyOrdered = trim($item->qtyOrdered);
-// 				$productWtyOrdered = trim($item->qtyOrdered);
-// 				$productTotalPrice = trim($item->totalPrice);
-// 				$product = Product::get($productId);
-// 				if(!$product instanceof Product)
-// 					throw new Exception('Invalid Product passed in!');
-// 				$purchaseOrder->addItem($product,$supplier->getId(),$productUnitPrice,$qtyOrdered,'','',$productTotalPrice) -> save();
-// 			};
-// 			foreach ($param->CallbackParameter->removedOldItems as $item) {
-// 				$productId = trim($item->product->id);
-// 				$productUnitPrice = trim($item->unitPrice);
-// 				$qtyOrdered = trim($item->qtyOrdered);
-// 				$productWtyOrdered = trim($item->qtyOrdered);
-// 				$productTotalPrice = trim($item->totalPrice);
-// 				$product = Product::get($productId);
-// 				if(!$product instanceof Product)
-// 					throw new Exception('Invalid Product passed in!');
-// 				$removedItemPOitem = PurchaseOrderItem::getAllByCriteria('purchaseOrderId = ? and productId = ?',array($purchaseOrder-> getId(), $product->getId()),true,1,1)[0];
-// 				$removedItemPOitem->setActive(false)->save();
-// 			};
-// 			$results['item'] = $purchaseOrder->getJson();
 		}
 		catch(Exception $ex)
 		{

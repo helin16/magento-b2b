@@ -12,6 +12,7 @@ class PurchaseOrder extends BaseEntityAbstract
 	const STATUS_NEW = 'NEW';
 	const STATUS_ORDERED = 'ORDERED';
 	const STATUS_RECEIVING = 'RECEIVING';
+	const STATUS_RECEIVED = 'RECEIVED';
 	const STATUS_CANCELED = 'CANCELED';
 	const STATUS_CLOSED = 'CLOSED';
 	/**
@@ -415,9 +416,9 @@ class PurchaseOrder extends BaseEntityAbstract
 	 * 
 	 * @return PurchaseOrder
 	 */
-	public function addItem(Product $product, $supplierId, $unitPrice = '0.0000', $qty = 1, $supplierItemCode = '', $description = '', $totalPrice = null)
+	public function addItem(Product $product, $unitPrice = '0.0000', $qty = 1, $supplierItemCode = '', $description = '', $totalPrice = null)
 	{
-		PurchaseOrderItem::create($this, $product, $supplierId, $unitPrice, $qty, $supplierItemCode, $description, $totalPrice);
+		PurchaseOrderItem::create($this, $product, $unitPrice, $qty, $supplierItemCode, $description, $totalPrice);
 		return $this;
 	}
 	/**

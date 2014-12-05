@@ -185,12 +185,11 @@ class POController extends BPCPageAbstract
 				$productId = trim($item->product->id);
 				$productUnitPrice = trim($item->unitPrice);
 				$qtyOrdered = trim($item->qtyOrdered);
-				$productWtyOrdered = trim($item->qtyOrdered);
 				$productTotalPrice = trim($item->totalPrice);
 				$product = Product::get($productId);
 				if(!$product instanceof Product)
 					throw new Exception('Invalid Product passed in!');
-				$purchaseOrder->addItem($product,$supplier->getId(),$productUnitPrice,$qtyOrdered,'','',$productTotalPrice);
+				$purchaseOrder->addItem($product,$productUnitPrice,$qtyOrdered);
 			};
 			$purchaseOrder->save();
 			$purchaseOrder->addComment($comment, Comments::TYPE_SYSTEM);
