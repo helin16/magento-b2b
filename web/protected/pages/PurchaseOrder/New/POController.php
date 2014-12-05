@@ -89,10 +89,26 @@ class POController extends BPCPageAbstract
 		{
 			$items = array();
 			$searchTxt = isset($param->CallbackParameter->searchTxt) ? trim($param->CallbackParameter->searchTxt) : '';
+			$where = 'pro_pro_code.code = :searchExact or pro.name like :searchTxt OR sku like :searchTxt';
+			$params = array('searchExact' => '%' . $searchTxt . '%' , 'searchTxt' => '%' . $searchTxt . '%');
+			
+			$searchTxtArray = StringUtilsAbstract::getAllPossibleCombo(StringUtilsAbstract::tokenize($searchTxt));
+			if(count($searchTxtArray) > 1)
+			{
+				foreach($searchTxtArray as $index => $comboArray)
+				{
+					$key = 'combo' . $index;
+					$where .= ' OR pro.name like :' . $key;
+					$params[$key] = '%' . implode('%', $comboArray) . '%';
+				}
+			}
+			
 			$supplierID = isset($param->CallbackParameter->supplierID) ? trim($param->CallbackParameter->supplierID) : '';
-			$productIdsFromBarcode = array_map(create_function('$a', 'return $a->getProduct()->getId();'), ProductCode::getAllByCriteria('code = ?', array($searchTxt)));
-			$where = (count($productIdsFromBarcode) === 0 ? '' : ' OR id in (' . implode(',', $productIdsFromBarcode) . ')');
-			foreach(Product::getAllByCriteria('name like :searchTxt OR sku like :searchTxt' . $where, array('searchTxt' => '%' . $searchTxt . '%'), true, 1, DaoQuery::DEFAUTL_PAGE_SIZE, array('pro.sku' => 'asc')) as $product)
+			Product::getQuery()->eagerLoad('Product.codes', 'left join');
+			Dao::$debug = true;
+			$products = Product::getAllByCriteria($where, $params, true, 1, DaoQuery::DEFAUTL_PAGE_SIZE, array('pro.sku' => 'asc'));
+			Dao::$debug = false;
+			foreach($products as $product)
 			{
 				$array = $product->getJson();
 				
