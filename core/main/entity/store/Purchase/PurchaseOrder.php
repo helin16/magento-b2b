@@ -170,7 +170,7 @@ class PurchaseOrder extends BaseEntityAbstract
 	 */
 	public static function getStatusOptions()
 	{
-		return array(self::STATUS_NEW, self::STATUS_ORDERED, self::STATUS_RECEIVING, self::STATUS_CANCELED, self::STATUS_CLOSED);
+		return array(self::STATUS_NEW, self::STATUS_ORDERED, self::STATUS_RECEIVING, self::STATUS_CANCELED, self::STATUS_CLOSED, self::STATUS_RECEIVED);
 	}
 	/**
 	 * Getter for supplierContact

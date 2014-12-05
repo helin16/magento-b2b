@@ -84,7 +84,6 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 			})
 		;
 		tmp.me._purchaseOrderItems.each(function(product){
-			console.debug(product);
 			tmp.me._addNewProductRow(tmp.me._newDiv.down('.glyphicon.glyphicon-floppy-saved'),product);
 		});
 		tmp.me._newDiv.getElementsBySelector('.order-item-row').each(function(item){
@@ -272,7 +271,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 			.insert({'bottom': new Element('tr') 
 				.insert({'bottom': new Element('td', {'colspan': 2, 'rowspan': 4})
 					.insert({'bottom': tmp.me._getFormGroup( 'Comments:', new Element('textarea', {'save-order': 'comments', 'style': 'height:33px'}).update(tmp.me._comment ? tmp.me._comment : '') ) })
-					.insert({'bottom': new Element('td', {'colspan': 2, 'class': 'text-right active pull-left'}).update(tmp.me._saveBtns()) })
+					.insert({'bottom': new Element('td', {'colspan': 2, 'class': 'text-right active pull-right'}).update(tmp.me._saveBtns()) })
 				}) 
 				.insert({'bottom': new Element('td', {'colspan': 2, 'class': 'text-right active'}).update( new Element('strong').update('Total Excl. GST: ') ) }) 
 				.insert({'bottom': new Element('td', {'id': tmp.me._htmlIds.totalPriceExcludeGST, 'class': 'active'}).update( tmp.me.getCurrency(0) ) }) 
@@ -317,7 +316,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 				})
 			})
 			.insert({'bottom': new Element(tmp.tag, {'class': 'qty col-xs-1'})
-				.insert({'bottom': (orderItem.qtyOrdered) })
+				.insert({'bottom': (orderItem.receievedQty && tmp.me._purchaseorder.status!=='NEW') ? (orderItem.receievedQty + '/' + orderItem.qtyOrdered) : (orderItem.qtyOrdered) })
 				.observe('keydown', function(event){
 					tmp.txtBox = this;
 					tmp.me.keydown(event, function() {
@@ -514,11 +513,12 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 			return ;
 		}
 		tmp.qtyOrderedBox = tmp.currentRow.down('[new-order-item=qtyOrdered]');
-		tmp.qtyOrdered = (typeof product === 'undefined') ? tmp.me.getValueFromCurrency($F(tmp.qtyOrderedBox)) : product.qrt;
+		tmp.qtyOrdered = (typeof product === 'undefined') ? tmp.me.getValueFromCurrency($F(tmp.qtyOrderedBox)) : product.qty;
 		if(tmp.qtyOrdered.match(/^\d+(\.\d{1,2})?$/) === null) {
 			tmp.me._markFormGroupError(tmp.qtyOrderedBox, 'Invalid value provided!');
 			return ;
 		}
+		tmp.receievedQty = (typeof product === 'undefined') ? '' : product.receievedQty;
 		tmp.totalPriceBox = tmp.currentRow.down('[new-order-item=totalPrice]');
 		tmp.totalPrice = (typeof product === 'undefined') ? tmp.me.getValueFromCurrency($F(tmp.totalPriceBox)) : product.totalPrice;
 		if( (!jQuery.isNumeric(tmp.totalPrice)) && (tmp.totalPrice.match(/^\d+(\.\d{1,2})?$/) === null) ) {
@@ -534,6 +534,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 			'product': tmp.product, 
 			'unitPrice': tmp.me.getCurrency(tmp.unitPrice), 
 			'qtyOrdered': tmp.qtyOrdered, 
+			'receievedQty': tmp.receievedQty, 
 			'totalPrice': tmp.me.getCurrency(tmp.totalPrice),
 			'btns': new Element('span', {'class': 'pull-right'})
 				.insert({'bottom': new Element('span', {'class': 'btn btn-danger btn-xs'})
@@ -602,7 +603,6 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 	,_getSearchPrductResultRow: function(product, searchTxtBox) {
 		var tmp = {};
 		tmp.me = this;
-		console.debug(product);
 		tmp.defaultImgSrc = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjZWVlIi8+PHRleHQgdGV4dC1hbmNob3I9Im1pZGRsZSIgeD0iMzIiIHk9IjMyIiBzdHlsZT0iZmlsbDojYWFhO2ZvbnQtd2VpZ2h0OmJvbGQ7Zm9udC1zaXplOjEycHg7Zm9udC1mYW1pbHk6QXJpYWwsSGVsdmV0aWNhLHNhbnMtc2VyaWY7ZG9taW5hbnQtYmFzZWxpbmU6Y2VudHJhbCI+NjR4NjQ8L3RleHQ+PC9zdmc+';
 		tmp.newRow = new Element('a', {'class': 'list-group-item', 'href': 'javascript: void(0);'})
 			.insert({'bottom': new Element('div', {'class': 'row'})
@@ -683,6 +683,20 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 				.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-ok-circle'}) })
 				.insert({'bottom': new Element('span').update(' save ') })
 				.observe('click', function() {
+					tmp.me._submitOrder($(this));
+				})
+			})
+			.insert({'bottom': new Element('span', {'class': 'btn btn-info', 'data-loading-text' : 'saving...'})
+				.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-send'}) })
+				.insert({'bottom': new Element('span').update(' submit ') })
+				.observe('click', function() {
+					tmp.selBox = new Element('select', {'save-order': 'status'});
+					tmp.selBox.insert({'bottom': new Element('option').update('ORDERED') });
+					tmp.me._statusOptions.each(function(status) {
+						if (tmp.me._purchaseorder.status !== 'ORDERED')
+							tmp.selBox.insert({'bottom': new Element('option').update(status) });
+					});
+					$$('select[save-order="status"]').first().replace(tmp.selBox);
 					tmp.me._submitOrder($(this));
 				})
 			})

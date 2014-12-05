@@ -53,7 +53,9 @@ class DetailsController extends DetailsPageAbstract
 			$unitPrice = $item->getUnitPrice();
 			$qty = $item->getQty();
 			$totalPrice = $item->getTotalPrice();
-			array_push($purchaseOrderItems,array('product'=> $product->getJson(), 'unitPrice'=> $unitPrice, 'qrt'=> $qty, 'totalPrice'=> $totalPrice));
+			$receivedQty = $item->getReceivedQty(); 
+// 			$serials = Rec;
+			array_push($purchaseOrderItems,array('product'=> $product->getJson(), 'unitPrice'=> $unitPrice, 'qty'=> $qty, 'totalPrice'=> $totalPrice, 'receievedQty'=> $receivedQty));
 		};
 		$js = parent::_getEndJs();
 		$js .= "pageJs.setPreData(" . json_encode($purchaseOrder->getJson()) . ")"; 
