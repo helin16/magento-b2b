@@ -86,7 +86,7 @@ CRUDPageJs.prototype = Object.extend(new BPCPageJs(), {
 	}
 	
 	,_getNextPageBtn: function() {
-		var tmp = {}
+		var tmp = {};
 		tmp.me = this;
 		return new Element('tfoot')
 			.insert({'bottom': new Element('tr')

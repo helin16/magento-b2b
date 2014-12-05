@@ -34,6 +34,7 @@ class ReceivingController extends BPCPageAbstract
 			$js .= ".setCallbackId('searchPO', '" . $this->searchPOBtn->getUniqueID() . "')";
 			$js .= ".setCallbackId('searchProduct', '" . $this->searchProductBtn->getUniqueID() . "')";
 			$js .= ".setCallbackId('saveOrder', '" . $this->saveOrderBtn->getUniqueID() . "')";
+			$js .= ".setCallbackId('checkProduct', '" . $this->checkProductBtn->getUniqueID() . "')";
 			$js .= ".init();";
 		return $js;
 	}
@@ -58,12 +59,43 @@ class ReceivingController extends BPCPageAbstract
 			else {
 				foreach(PurchaseOrder::getAllByCriteria('(purchaseOrderNo like :searchTxt || supplierRefNo like :searchTxt) && (status = :statusReceiving || status = :statusOrdered)', array('searchTxt' => $searchTxt . '%', 'statusReceiving' => PurchaseOrder::STATUS_RECEIVING, 'statusOrdered' => PurchaseOrder::STATUS_ORDERED), true, null, DaoQuery::DEFAUTL_PAGE_SIZE, array('id'=> 'desc')) as $po)
 				{
+					if(!$po instanceof PurchaseOrder)
+						throw new Exception('Invalid PurchaseOrder passed in!');
 					$array = $po->getJson();
 					$array['totalProdcutCount'] = $po->gettotalProdcutCount();
 					$items[] = $array;
 				}
 				$results['items'] = $items;
 			}
+		}
+		catch(Exception $ex)
+		{
+			$errors[] = $ex->getMessage();
+		}
+		$param->ResponseData = StringUtilsAbstract::getJson($results, $errors);
+	}
+	/**
+	 * check product: if the PO contain such product
+	 *
+	 * @param unknown $sender
+	 * @param unknown $param
+	 *
+	 * @throws Exception
+	 *
+	 */
+	public function checkProduct($sender, $param)
+	{
+		$results = $errors = array();
+		try
+		{
+			$items = array();
+			$purchaseOrder = PurchaseOrder::get(trim($param->CallbackParameter->purchaseOrder->id));
+			if(!$purchaseOrder instanceof PurchaseOrder)
+				throw new Exception('Invalid PurchaseOrder passed in!');
+			$product = Product::get(trim($param->CallbackParameter->product->id));
+			if(!$product instanceof Product)
+				throw new Exception('Invalid Product passed in!');
+			$results['count'] = PurchaseOrderItem::countByCriteria('purchaseOrderId = :purchaseOrderId and productId = :productId', array('purchaseOrderId' => $purchaseOrder->getId(), 'productId' => $product->getId()));
 		}
 		catch(Exception $ex)
 		{
@@ -87,10 +119,12 @@ class ReceivingController extends BPCPageAbstract
 		{
 			$items = array();
 			$searchTxt = isset($param->CallbackParameter->searchTxt) ? trim($param->CallbackParameter->searchTxt) : '';
-			$productIdsFromBarcode = array_map(create_function('$a', 'return $a->getProduct()->getId();'), ProductCode::getAllByCriteria('code = ?', array($searchTxt)));
-			$where = (count($productIdsFromBarcode) === 0 ? '' : 'id in (' . implode(',', $productIdsFromBarcode) . ')');
-			foreach(Product::getAllByCriteria($where, array(), true, 1, DaoQuery::DEFAUTL_PAGE_SIZE * 3) as $product)
+			Product::getQuery()->eagerLoad('Product.codes', 'left join');
+			$products = Product::getAllByCriteria('pro_pro_code.code = :searchExact or pro.sku = :searchTxt or pro.name = :searchTxt', array('searchExact' => $searchTxt, 'searchTxt' => '%' . $searchTxt . '%'), true, 1, DaoQuery::DEFAUTL_PAGE_SIZE * 3);
+			foreach($products as $product)
 			{
+				if(!$product instanceof Product)
+					throw new Exception('Invalid Product passed in!');
 				$items[] = $product->getJson();
 			}
 			$results['items'] = $items;
@@ -115,10 +149,81 @@ class ReceivingController extends BPCPageAbstract
 		$results = $errors = array();
 		try
 		{
-			var_dump($param->CallbackParameter);
-			$results['item'] = 'works';
+// 			var_dump($param->CallbackParameter);
+			Dao::beginTransaction();
+			$items = array();
+			$purchaseOrder = PurchaseOrder::get(trim($param->CallbackParameter->purchaseOrder->id));
+			if(!$purchaseOrder instanceof PurchaseOrder)
+				throw new Exception('Invalid PurchaseOrder passed in!');
+			$comment = trim($param->CallbackParameter->comments);
+			$purchaseOrder->addComment(Comments::TYPE_WAREHOUSE, $comment);
+			$products = $param->CallbackParameter->products;
+			
+			foreach ($products->matched as $item) {
+				$product = Product::get(trim($item->product->id));
+				if(!$product instanceof Product)
+					throw new Exception('Invalid Product passed in!');
+				
+				$serials = $item->serial;
+				foreach ($serials as $serial) {
+					$serialNo = trim($serial->serialNo);
+					$unitPrice = trim($serial->unitPrice);
+					$invoiceNo = trim($serial->invoiceNo);
+					$comments = trim($serial->comments);
+					ReceivingItem::create($purchaseOrder, $product, $unitPrice, $serialNo, $invoiceNo, $comments);
+				}
+				
+				$nofullReceivedItems = PurchaseOrderItem::getAllByCriteria('productId = ? and purchaseOrderId = ? and receivedQty < qty', array($product->getId(), $purchaseOrder->getId()), true, 1, 1);
+				var_dump($nofullReceivedItems);
+				$msg = 'received ' . count($serials) . ' product(SKU=' . $product->getSku() . ') by ' . Core::getUser()->getPerson()->getFullName() . '@' . trim(new UDate()) . '(UTC)';
+				if(count($nofullReceivedItems) > 0) {
+					$nofullReceivedItems[0]
+					->setReceivedQty($nofullReceivedItems[0]->GetReceivedQty() + count($serials))
+					->save()
+					->addLog(Log::TYPE_SYSTEM, $msg, __CLASS__ . '::' . __FUNCTION__)
+					->addComment(Comments::TYPE_WAREHOUSE, $msg);
+				}
+				$purchaseOrder->addComment(Comments::TYPE_WAREHOUSE, $msg);
+			}
+			foreach ($products->notMatched as $item) {
+// 				var_dump($item);
+			}
+			
+			$totalCount = PurchaseOrderItem::countByCriteria('purchaseOrderId = ? and receivedQty < qty', array($purchaseOrder->getId()));
+			if($totalCount === 0)
+				$po->setStatus(PurchaseOrder::STATUS_RECEIVING)
+					->save();
+			
+			$results['item'] = $purchaseOrder->getJson();
+			Dao::commitTransaction();
+// 			die;
+			
+			
+			
+// 			$results['item'] = 'works';
 			
 // 			Dao::beginTransaction();
+// 			foreach ($serialnos as $serialNo)
+// 			{
+// 				$item = ReceivingItem::create($po, $product);
+// 			}
+// 			$msg = 'received ' . count($serialnos) . ' product(SKU=' . $produt->getSku() . ') by ' . Core::getUser()->getPerson()->getFullName() . '@' . trim(new UDate()) . '(UTC)';
+// 			$nofullReceivedItems = PurchaseOrderItem::getAllByCriteria('productId = ? and purchaseOrderId = ? and receivedQty < qty', array($product->getId(), $po->getId()), true, 1, 1);
+// 			if(count($nofullReceivedItems) > 0)
+// 			{
+// 				$nofullReceivedItems[0]
+// 					->setReceivedQty($nofullReceivedItems[0]->GetReceivedQty() + count($serialnos))
+// 					->save()
+// 					->addLog(Log::TYPE_SYSTEM, $msg, __CLASS__ . '::' . __FUNCTION__)
+// 					->addComments(Comments::TYPE_WAREHOUSE, $msg);
+// 			}
+// 			$po->addComments(Comments::TYPE_WAREHOUSE, $msg);
+			
+// 			$totalCount = PurchaseOrderItem::countByCriteria('purchaseOrderId = ? and receivedQty < qty', array($po->getId()));
+// 			if($totalCount === 0)
+// 				$po->setStatus(PurchaseOrder::STATUS_RECEIVING)->save()->addComments(Comments::TYPE_WAREHOUSE, '')->addLog(Log::TYPE_SYSTEM, '', __CLASS__ . '::' . __FUNCTION__);
+			
+			
 // 			$supplier = Supplier::get(trim($param->CallbackParameter->supplier->id));
 // 			$purchaseOrderId = trim($param->CallbackParameter->id);
 // 			if(!$supplier instanceof Supplier)
@@ -167,7 +272,6 @@ class ReceivingController extends BPCPageAbstract
 // 				$removedItemPOitem->setActive(false)->save();
 // 			};
 // 			$results['item'] = $purchaseOrder->getJson();
-// 			Dao::commitTransaction();
 		}
 		catch(Exception $ex)
 		{

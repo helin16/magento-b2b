@@ -174,7 +174,7 @@ BPCPageJs.prototype = {
 			if(item.hasAttribute('validate_currency') || item.hasAttribute('validate_number')) {
 				if (tmp.me.getValueFromCurrency(tmp.itemValue).match(/^\d+(\.\d{1,2})?$/) === null) {
 					tmp.me._markFormGroupError(item, (item.hasAttribute('validate_currency') ? item.readAttribute('validate_currency') : item.hasAttribute('validate_number')));
-					tmp.hasErr = true;
+					tmp.hasError = true;
 				}
 				tmp.value = tmp.me.getValueFromCurrency(tmp.itemValue);
 			}

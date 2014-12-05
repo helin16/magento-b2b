@@ -33,6 +33,12 @@ class ReceivingItem extends BaseEntityAbstract
 	 */
 	private $serialNo;
 	/**
+	 * The invoiceNo
+	 * 
+	 * @var string
+	 */
+	private $invoiceNo;
+	/**
 	 * Getter for product
 	 *
 	 * @return Product

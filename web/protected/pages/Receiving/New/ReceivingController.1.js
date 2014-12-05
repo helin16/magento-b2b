@@ -227,6 +227,11 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.newDiv = new Element('div', {'class': 'panel panel-info', 'id': tmp.me._htmlIds.paymentPanel})
 			.insert({'bottom': new Element('div', {'class':'panel-heading'})
 				.insert({'bottom': new Element('strong').update('Payment Info: ') })
+				
+				.insert({'bottom': new Element('div', {'class': 'pull-right'})
+				.insert({'bottom': new Element('strong').update('Order Date: ') })
+				.insert({'bottom': new Element('input', {'class': 'datepicker', 'disabled': true, 'value': (tmp.me._purchaseOrder.orderDate ? tmp.me._purchaseOrder.orderDate : '') }) })
+				})
 			})
 			.insert({'bottom': new Element('div', {'class': 'panel-body', 'style': 'padding: 0 10px'})
 				.insert({'bottom': new Element('div', {'class': 'row'})
@@ -246,8 +251,26 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.me = this;
 		//header row
 		tmp.productListDiv = new Element('div', {'class': 'list-group', 'id': tmp.me._htmlIds.partsTable})
-			.insert({'bottom': tmp.me._getProductRow({'product': {'sku': 'SKU', 'name': 'Description / Barcode', 'qty': 'Qty'} }, true) });
-		tmp.productListDiv.insert({'bottom': tmp.me._getNewProductRow()});
+			.insert({'bottom': tmp.newDiv = tmp.me._getProductRow({'product': {'sku': 'SKU', 'name': 'Product Name', 'qty': 'Qty'} }, true) });
+		tmp.newDiv.setStyle({cursor:'pointer'});
+		tmp.newDiv.observe('dblclick', function(event){
+			tmp.allClosed = true;
+			$$('.row.product-content-row').each(function(item){
+				if(item.visible())
+					tmp.allClosed = false;
+			});
+			if(tmp.allClosed) {
+				$$('.row.product-content-row').each(function(item){
+					item.show();
+				});
+			} else {
+				$$('.row.product-content-row').each(function(item){
+					item.hide();
+				});
+			};
+			return false;
+		});
+		tmp.productListDiv.insert({'bottom': tmp.newDiv = tmp.me._getNewProductRow()});
 		return new Element('div', {'class': 'panel panel-info'}).insert({'bottom':  tmp.productListDiv});
 	}
 	/**
@@ -257,20 +280,18 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		var tmp = {};
 		tmp.me = this;
 		tmp.isTitle = (isTitleRow || false);
-		tmp.row = new Element((tmp.isTitle === true ? 'strong' : 'div'), {'class': ' item_row list-group-item'})
+		tmp.row = new Element((tmp.isTitle === true ? 'strong' : 'div'), {'class': 'item_row list-group-item'})
 			.store('data', orderItem.product)
-			.insert({'bottom': tmp.infoRow = new Element('div', {'class': 'row btn-hide-row'})
+			.insert({'bottom': tmp.infoRow = new Element('div', {'class': tmp.isTitle ? 'row btn-hide-row' : 'row btn-hide-row product-head-row'})
 				.insert({'bottom': new Element('span', {'class': ' col-sm-3 productName'})
 					.insert({'bottom': orderItem.product.name ? orderItem.product.name : orderItem.product.barcode })
 				})
 				.insert({'bottom': new Element('span', {'class': 'col-sm-1 scannedQty'}).update(orderItem.product.qty ? orderItem.product.qty : '') })
 				.insert({'bottom': tmp.btns = new Element('span', {'class': 'btns col-sm-1'}).update(orderItem.btns ? orderItem.btns : '') })
 			});
-//		if(orderItem.product.sku) {
 			tmp.infoRow.insert({'top': new Element('span', {'class': 'col-sm-2 productSku'}).update(orderItem.product.sku ? orderItem.product.sku : '') });
-//		}
 		if(orderItem.scanTable) {
-			tmp.row.insert({'bottom': new Element('div', {'class': 'row'})
+			tmp.row.insert({'bottom': new Element('div', {'class': 'row product-content-row'})
 				.insert({'bottom': new Element('span', {'class': 'col-sm-10 col-sm-offset-2'}).update(orderItem.scanTable) })
 			});
 		}
@@ -284,6 +305,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		var tmp = {};
 		tmp.me = this;
 		tmp.skuAutoComplete = tmp.me._getNewProductProductAutoComplete();
+		
 		tmp.data = {
 			'product': {'name': tmp.skuAutoComplete	}
 			,'btns': ''
@@ -336,36 +358,49 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 	,_getScanTable: function(product) {
 		var tmp = {};
 		tmp.me = this;
-		tmp.table = new Element('table', {'class': 'table'})
-			.insert({'bottom': new Element('thead').update(tmp.me._getScanTableROW({'serialNo': 'Serial No.', 'unitPrice': 'Unit Price', 'invoiceNo': 'Inv. No.', 'comments': 'Comments'}, true)) })
+		tmp.table = new Element('table', {'class': 'table scanTable'})
+			.insert({'bottom': new Element('thead').update(tmp.me._getScanTableROW({'serialNo': 'Serial No.', 'unitPrice': 'Unit Price', 'invoiceNo': 'Inv. No.', 'comments': 'Comments', 'btns': ''}, true)) })
 			.insert({'bottom': new Element('tbody')
 				.insert({'bottom': tmp.me._getScanTableROW({
-						'serialNo': new Element('input', {'class': 'form-control', 'scanned-item': 'serialNo', 'placeholder': 'Serial Number:'}), 
-						'unitPrice': new Element('input', {'class': 'form-control', 'scanned-item': 'unitPrice', 'placeholder': 'Unit Price:'}), 
-						'invoiceNo': new Element('input', {'class': 'form-control', 'scanned-item': 'invoiceNo', 'placeholder': 'Inv. No.:'}), 
-						'comments': new Element('input', {'class': 'form-control', 'scanned-item': 'comments', 'placeholder': 'Comments:'}), 
+						'serialNo': tmp.me._getFormGroup('',new Element('input', {'class': 'form-control', 'scanned-item': 'serialNo', 'type': 'text', 'placeholder': 'Serial Number:', 'required': true})), 
+						'unitPrice': tmp.me._getFormGroup('', new Element('input', {'class': 'form-control', 'scanned-item': 'unitPrice', 'type': 'value', 'placeholder': 'Unit Price:', 'validate_currency': 'Invalid currency'})), 
+						'invoiceNo': tmp.me._getFormGroup('', new Element('input', {'class': 'form-control', 'scanned-item': 'invoiceNo', 'type': 'text', 'placeholder': 'Inv. No.:'})), 
+						'comments': tmp.me._getFormGroup('', new Element('input', {'class': 'form-control', 'scanned-item': 'comments', 'type': 'text', 'placeholder': 'Comments:'})), 
 						'btns': new Element('span', {'class': 'btn-group btn-group-sm pull-right'})
-								.insert({'bottom': new Element('span', {'class': 'btn btn-primary'})
-								.insert({'bottom': new Element('span', {'class': ' glyphicon glyphicon-floppy-saved'}) })
-								.observe('click', function() {
-									tmp.currentRow = $(this).up('.scanned-item-row');
-									tmp.formData = tmp.me._collectFormData(tmp.currentRow,'scanned-item');
-									tmp.currentRow.insert({'after': tmp.lastRow = tmp.me._getScanTableROW(tmp.formData, false) });
-									
-									tmp.serialNoBox = tmp.currentRow.down('input[scanned-item=serialNo]');
-									tmp.unitPriceBox = tmp.currentRow.down('input[scanned-item=unitPrice]');
-									tmp.invoiceNoBox = tmp.currentRow.down('input[scanned-item=invoiceNo]');
-									tmp.commentsBox = tmp.currentRow.down('input[scanned-item=comments]');
-									
-									tmp.unitPriceBox.clear();
-									tmp.invoiceNoBox.clear();
-									tmp.commentsBox.clear();
-									
-									tmp.serialNoBox.focus();
-									tmp.serialNoBox.select();
-								})
+								.insert({'bottom': new Element('span', {'class': 'scanned-item-save-btn btn btn-primary'})
+									.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-floppy-saved'}) })
+									.observe('click', function() {
+										tmp.currentRow = $(this).up('.scanned-item-row');
+										tmp.data = tmp.me._collectFormData(tmp.currentRow, 'scanned-item');
+										if(tmp.data !== null) {
+											tmp.newRow = tmp.currentRow.clone(true);
+											tmp.newDeleteBtn = new Element('td')
+												.insert({'bottom': new Element('span', {'class': 'scanned-item-delte-btn btn btn-danger btn-xs pull-right'}) 
+													.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-trash'}) })
+													.observe('click', function(event) {
+														if(!confirm('You are about to remove this entry.\n\nContinue?'))
+															return;
+														$(this).up('.item_row').down('.product-head-row .scannedQty').innerHTML--;
+														if($(this).up('.item_row').down('.product-head-row .scannedQty').innerHTML == 0)
+															$(this).up('.item_row').down('.product-head-row .scannedQty').setStyle({color: 'red'});
+														$(this).up('.scanned-item-row').remove();
+													})
+												});
+											tmp.newRow.removeClassName('info new-scan-row').addClassName('btn-hide-row');
+											tmp.newRow.down('.scanned-item-save-btn').remove();
+											tmp.newRow.down('.btns').replace(tmp.newDeleteBtn);
+											
+											tmp.currentRow.insert({'after': tmp.newRow});
+											tmp.currentRow.down('input[scanned-item=comments]').clear();
+											tmp.currentRow.down('input[scanned-item=serialNo]').clear().focus();
+											
+											$(this).up('.item_row').down('.scannedQty').innerHTML++;
+											
+											
+										}
+									})
 							})
-							.insert({'bottom': new Element('span', {'class': 'btn btn-default'})
+							.insert({'bottom': new Element('span', {'class': 'scanned-item-delete-btn btn btn-default'})
 								.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-floppy-remove'}) })
 								.observe('click', function() {
 									if(!confirm('You about to clear this entry. All input data for this entry will be lost.\n\nContinue?'))
@@ -407,7 +442,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.product = {
 				'name': ''
 				,'id' : ''
-				,'qty': 1
+				,'qty': 0
 				,'barcode': tmp.searchTxt
 		};
 		tmp.data = {
@@ -415,8 +450,9 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				'btns': new Element('span', {'class': 'pull-right'})
 					.insert({'bottom': new Element('span', {'class': 'btn btn-danger btn-xs'})
 					.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-trash'}) })
-					.observe('click', function() {
-						if(!confirm('You remove this entry.\n\nContinue?'))
+					.observe('click', function(event) {
+						Event.stop(event);
+						if(!confirm('You are about to remove this entry.\n\nContinue?'))
 							return;
 						tmp.row = $(this).up('.item_row');
 						tmp.row.remove();
@@ -428,8 +464,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.currentRow.replace(tmp.newRow);
 		tmp.newRow.down('[new-order-item=product]').focus();
 		
-		tmp.delBtn = tmp.lastRow.down('.btn');
-		tmp.me._signRandID(tmp.delBtn);
+		tmp.inputBox = jQuery('#' + tmp.me._htmlIds.barcodeInput);
 		
 		tmp.me.postAjax(tmp.me.getCallbackId('searchProduct'), {'searchTxt': tmp.searchTxt}, {
 			'onLoading': function() {
@@ -439,24 +474,24 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				tmp.resultList = new Element('div', {'style': 'overflow: auto; max-height: 400px;'});
 				try {
 					tmp.result = tmp.me.getResp(param, false, true);
-					if(!tmp.result || !tmp.result.items || tmp.result.items.size() === 0)
-						throw 'Nothing Found for: ' + tmp.searchTxt;
 					
-					tmp.me._signRandID(tmp.searchTxtBox);
-					tmp.result.items.each(function(product) {
-						tmp.data.product = product;
-						tmp.data.product.qty = tmp.product.qty;
-						tmp.data.scanTable = tmp.me._getScanTable(tmp.data.product);
-						tmp.lastRow.replace(tmp.newRow = tmp.me._getProductRow(tmp.data, false) );
-						tmp.newRow.down('[scanned-item="serialNo"]').focus();
-						
-						tmp.me._focusNext(tmp.newRow,'serialNo','unitPrice');
-						tmp.me._focusNext(tmp.newRow,'unitPrice','invoiceNo');
-						tmp.me._focusNext(tmp.newRow,'invoiceNo','comments');
-						
-						tmp.me._scanRowAutoSave(tmp.newRow);
-					}); // end each
-					tmp.resultList.addClassName('list-group'); 
+					if(!tmp.result || !tmp.result.items || tmp.result.items.size() === 0) {
+						tmp.lastRow.down('.productSku').insert({'bottom': new Element('strong', {'class': 'text-danger'}).update('No Product Found!') });
+						tmp.lastRow.down('.productName').insert({'top': new Element('span', {'class': ''}).update('Barcode: ') });
+						throw 'Nothing Found for: ' + tmp.searchTxt;
+					}
+					if(tmp.result.items.size()>1) {
+						tmp.searchTxtBox = tmp.newRow.down('.search-txt');
+						tmp.resultList = new Element('div', {'style': 'overflow: auto; max-height: 400px;', 'class': 'selectProductPanel'});
+						tmp.result.items.each(function(product) {
+							tmp.resultList.insert({'bottom': tmp.me._getSearchPrductResultRow(product, tmp.searchTxtBox,tmp.lastRow,tmp.newRow) });
+						});
+						tmp.resultList.addClassName('list-group'); 
+						tmp.me.showModalBox('Products that has: ' + tmp.searchTxt, tmp.resultList, false);
+						return tmp.me;
+					}
+						tmp.data.product = tmp.result.items[0];
+						tmp.me._selectProduct(tmp.data.product,tmp.lastRow,tmp.newRow);
 				} catch(e) {
 					tmp.resultList.update(tmp.me.getAlertBox('Error: ', e).addClassName('alert-danger'));
 				}
@@ -467,22 +502,115 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		});
 		return tmp.me;
 	}
+	,_selectProduct: function(product,lastRow,newRow) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.data = [];
+		tmp.product = product;
+		tmp.lastRow = lastRow;
+		tmp.newRow = newRow;
+		
+		tmp.btn = $('barcode_input');
+		tmp.me._signRandID(tmp.btn);
+		
+		tmp.data = {
+				'product': tmp.product, 
+				'btns': new Element('span', {'class': 'pull-right'})
+					.insert({'bottom': new Element('span', {'class': 'btn btn-danger btn-xs'})
+					.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-trash'}) })
+					.observe('click', function(event) {
+						Event.stop(event);
+						if(!confirm('You are about to remove this entry.\n\nContinue?'))
+							return;
+						tmp.row = $(this).up('.item_row');
+						tmp.row.remove();
+					})
+				}),
+				'qty': 0,
+			};
+		tmp.data.scanTable = tmp.me._getScanTable(tmp.data.product);
+		tmp.lastRow.replace(tmp.newRow = tmp.me._getProductRow(tmp.data, false) );
+		
+//		tmp.me.postAjax(tmp.me.getCallbackId('checkProduct'), {'product': tmp.product, 'purchaseOrder': tmp.me._purchaseOrder}, {
+//			'onLoading': function(sender, param) {
+//				jQuery('#' + tmp.btn.id).button('loading');
+//			}
+//			,'onSuccess': function(sender, param) {
+//				try {
+//					tmp.result = tmp.me.getResp(param, false, true);
+//					if (tmp.result.count == 0) {
+//						tmp.newRow.down('.product-head-row .productSku').insert({'bottom': new Element('strong', {'style': 'color:red'}).update('  (Not found in PO)') });
+//					}
+//				} catch(e) {
+//					tmp.me.showModalBox('Error!', e, false);
+//				}
+//			}
+//			,'onComplete': function(sender, param) {
+//				jQuery('#' + tmp.btn.id).button('reset');
+//			}
+//		});
+//		
+		tmp.me._checkProduct(tmp.product, tmp.newRow.down('.product-head-row'));
+		
+		tmp.newRow.down('[scanned-item="serialNo"]').focus();
+		
+		tmp.me._focusNext(tmp.newRow,'serialNo','unitPrice');
+		tmp.me._focusNext(tmp.newRow,'unitPrice','invoiceNo');
+		tmp.me._focusNext(tmp.newRow,'invoiceNo','comments');
+		
+		tmp.newRow.down('.product-head-row').setStyle({cursor: 'pointer'});
+		tmp.newRow.down('.product-head-row').observe('click', function(event){
+			tmp.newRow.down('.product-content-row').toggle();
+		});
+		
+		tmp.serialNoBox = tmp.newRow.down('input[scanned-item=serialNo]')
+			.observe('keydown', function(event){
+				tmp.me.keydown(event, function() {
+					if(!$F(tmp.serialNoBox).blank() && !$F(tmp.unitPriceBox).blank() && !$F(tmp.invoiceNoBox).blank() ) {
+						tmp.newRow.down('.scanned-item-save-btn span').click();
+					}
+				});
+				return false;
+			});
+		tmp.unitPriceBox = tmp.newRow.down('input[scanned-item=unitPrice]')
+			.observe('keydown', function(event){
+				tmp.me.keydown(event, function() {
+					if(!$F(tmp.serialNoBox).blank() && !$F(tmp.unitPriceBox).blank() && !$F(tmp.invoiceNoBox).blank() ) {
+						tmp.newRow.down('.scanned-item-save-btn span').click();
+					}
+				});
+				return false;
+			});
+		tmp.invoiceNoBox = tmp.newRow.down('input[scanned-item=invoiceNo]')
+			.observe('keydown', function(event){
+				tmp.me.keydown(event, function() {
+					if(!$F(tmp.serialNoBox).blank() && !$F(tmp.unitPriceBox).blank() && !$F(tmp.invoiceNoBox).blank() ) {
+						tmp.newRow.down('.scanned-item-save-btn span').click();
+					}
+				});
+				return false;
+			});
+		tmp.commentsBox = tmp.newRow.down('input[scanned-item=comments]')
+			.observe('keydown', function(event){
+				tmp.me.keydown(event, function() {
+					if(!$F(tmp.serialNoBox).blank() && !$F(tmp.unitPriceBox).blank() && !$F(tmp.invoiceNoBox).blank() ) {
+						tmp.newRow.down('.scanned-item-save-btn span').click();
+					}
+				});
+				return false;
+			});
+		
+		tmp.serialNoBox.up('.scanned-item-row').addClassName('new-scan-row');
+		tmp.me._scanRowAutoSave(tmp.newRow);
+		return tmp.me;
+	}
 	,_scanRowAutoSave: function(row) {
 		var tmp = {};
 		tmp.me = this;
 		tmp.row = row;
-		tmp.btn = row.getElementsBySelector('input[scanned-item]');
-		$$('[scanned-item="comments"]').first().observe('keydown', function(event){
+		tmp.row.down('[scanned-item="comments"]').observe('keydown', function(event){
 			tmp.me.keydown(event, function() {
-				Event.stop(event);
-				tmp.serialNoBox = tmp.row.down('input[scanned-item=serialNo]');
-				tmp.unitPriceBox = tmp.row.down('input[scanned-item=unitPrice]');
-				tmp.invoiceNoBox = tmp.row.down('input[scanned-item=invoiceNo]');
-				tmp.commentsBox = tmp.row.down('input[scanned-item=comments]');
-				
-				if(tmp.serialNoBox.value.length && tmp.unitPriceBox.value.length && tmp.invoiceNoBox.value.length) {
-					tmp.row.down('.btn  .glyphicon.glyphicon-floppy-saved').click();
-				}
+				tmp.row.down('.scanned-item-save-btn').click();
 			});
 			return false;
 		});
@@ -497,9 +625,36 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.row.down('[scanned-item="' + tmp.from + '"]').observe('keydown', function(event){
 			tmp.me.keydown(event, function() {
 				tmp.row.down('[scanned-item="' + tmp.to + '"]').focus();
+				tmp.row.down('[scanned-item="' + tmp.to + '"]').select();
 			});
-		
 			return false;
+		});
+	}
+	,_checkProduct: function(product, row) {
+		var tmp = {};
+		tmp.me = pageJs;
+		tmp.newRow = row;
+		tmp.product = product;
+		tmp.btn = $('barcode_input');
+		tmp.me._signRandID(tmp.btn);
+		tmp.me.postAjax(tmp.me.getCallbackId('checkProduct'), {'product': tmp.product, 'purchaseOrder': tmp.me._purchaseOrder}, {
+			'onLoading': function(sender, param) {
+				jQuery('#' + tmp.btn.id).button('loading');
+			}
+			,'onSuccess': function(sender, param) {
+				try {
+					tmp.result = tmp.me.getResp(param, false, true);
+					if (tmp.result.count == 0) {
+						tmp.newRow.down('.productSku').insert({'bottom': new Element('strong', {'style': 'color:red'}).update('  (Not found in PO)') });
+						tmp.newRow.up('.item_row').addClassName('not-in-po');
+					}
+				} catch(e) {
+					tmp.me.showModalBox('Error!', e, false);
+				}
+			}
+			,'onComplete': function(sender, param) {
+				jQuery('#' + tmp.btn.id).button('reset');
+			}
 		});
 	}
 	/**
@@ -540,18 +695,28 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.me = this;
 		tmp.btn = btn;
 		tmp.data = tmp.me._collectFormData($(tmp.me._htmlIds.itemDiv),'save-order');
-//		if(tmp.data === null)
-//			return tmp.me;
-		tmp.data.itemsMatched = [];
-		tmp.data.itemsNotMatched = [];
-		$$('.order-item-row').each(function(item){
-			tmp.item = item.retrieve('data');
-			if (tmp.item.id !== '')
-				tmp.data.itemsMatched.push(tmp.item);
-			else
-				tmp.data.itemsNotMatched.push(tmp.item);
+		tmp.data.purchaseOrder = tmp.me._purchaseOrder;
+		tmp.data.products = {};
+		tmp.data.products.matched = [];
+		tmp.data.products.notMatched = [];
+		$(tmp.me._htmlIds.partsTable).getElementsBySelector('div.item_row').each(function(item) {
+			if(!item.hasClassName('new-order-item-input')) {
+				if(item.retrieve('data').id !== '') {
+					tmp.scanData = [];
+					item.getElementsBySelector('.table.scanTable .scanned-item-row').each(function(scanItem) {
+						if(!scanItem.hasClassName('new-scan-row')){
+							tmp.scanData.push(tmp.me._collectFormData(scanItem,'scanned-item'));
+						}
+					});
+          tmp.data.products.matched.push({'product':item.retrieve('data'),'serial':tmp.scanData});
+				} else {
+					tmp.data.products.notMatched.push(item.retrieve('data'));
+				}
+			}
 		});
-		if( (tmp.data.itemsMatched.size() + tmp.data.itemsNotMatched.size()) <= 0) {
+		if(tmp.data === null)
+			return tmp.me;
+		if( (tmp.data.products.matched.size() + tmp.data.products.notMatched.size()) <= 0) {
 			tmp.me.showModalBox('<strong class="text-danger">Error</strong>', 'At least one item is needed!', true);
 			return tmp.me;
 		}
@@ -581,6 +746,43 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			}
 		});
 		return tmp.me;
+	}
+	/**
+	 * Getting the search product result row
+	 */
+	,_getSearchPrductResultRow: function(product, searchTxtBox,lastRow,newRow) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.lastRow = lastRow;
+		tmp.newRow = newRow;
+		tmp.defaultImgSrc = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjZWVlIi8+PHRleHQgdGV4dC1hbmNob3I9Im1pZGRsZSIgeD0iMzIiIHk9IjMyIiBzdHlsZT0iZmlsbDojYWFhO2ZvbnQtd2VpZ2h0OmJvbGQ7Zm9udC1zaXplOjEycHg7Zm9udC1mYW1pbHk6QXJpYWwsSGVsdmV0aWNhLHNhbnMtc2VyaWY7ZG9taW5hbnQtYmFzZWxpbmU6Y2VudHJhbCI+NjR4NjQ8L3RleHQ+PC9zdmc+';
+		tmp.newRow = new Element('a', {'class': 'list-group-item', 'href': 'javascript: void(0);'})
+			.insert({'bottom': new Element('div', {'class': 'row'})
+				.insert({'bottom': new Element('div', {'class': 'col-xs-2'})
+					.insert({'bottom': new Element('div', {'class': 'thumbnail'})
+						.insert({'bottom': new Element('img', {'data-src': 'holder.js/100%x64', 'alert': 'Product Image', 'src': product.images.size() === 0 ? tmp.defaultImgSrc : product.images[0].asset.url}) })
+					})
+				})
+				.insert({'bottom': new Element('div', {'class': 'col-xs-10'})
+					.insert({'bottom': new Element('div', {'class': 'row'})
+						.insert({'bottom': new Element('strong').update(product.name)
+							.insert({'bottom': new Element('small', {'class': '', 'style': 'padding-left: 10px;'}).update('SKU: ' + product.sku) })
+						})
+						.insert({'bottom': new Element('div')
+							.insert({'bottom': new Element('small').update(product.shortDescription) })
+						})
+					})
+					
+				})
+			})
+			.observe('click', function(){
+				tmp.inputRow = $(searchTxtBox).up('.new-order-item-input').store('product', product);
+				tmp.me._selectProduct(product,tmp.lastRow,tmp.newRow);
+				jQuery('#' + tmp.me.modalId).modal('hide');
+				$$('[scanned-item="serialNo"]').first().focus();
+			})
+			;
+		return tmp.newRow;
 	}
 	,init: function() {
 		var tmp = {};
