@@ -829,8 +829,8 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				.insert({'bottom': new Element('span', {'class': 'btn btn-success pull-right btn-sm btn-danger'})
 					.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-remove'}) })
 					.observe('click', function(){
-						$(tmp.me._htmlIds.searchPanel).down('.search-txt').clear();
-						tmp.me._searchSupplier($(tmp.me._htmlIds.searchPanel).down('.search-txt'));
+						$(tmp.me._htmlIds.searchPanel).down('.search-txt').clear().focus();
+						$(tmp.me._htmlIds.searchPanel).down('.table tbody').innerHTML = null;
 					})
 				})
 			})
