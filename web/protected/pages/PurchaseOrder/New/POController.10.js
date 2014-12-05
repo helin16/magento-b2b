@@ -5,6 +5,7 @@ var PageJs = new Class.create();
 PageJs.prototype = Object.extend(new BPCPageJs(), {
 	_htmlIds: {'paymentPanel': 'payment_panel', 'itemDiv': '', 'searchPanel': 'search_panel', 'totalPriceExcludeGST': 'total_price_exclude_gst', 'totalPriceGST': 'total_price_gst', 'totalPriceIncludeGST': 'total_price_include_gst', 'totalPaidAmount': 'total-paid-amount', 'totalShippingCost': 'total-shipping-cost'}
 	,_supplier: null
+	,_item: null
 	/**
 	 * Setting the HTMLIDS
 	 */
@@ -238,26 +239,27 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					})
 					.insert({'bottom': new Element('div', {'class': 'row', 'style': (product.minProductPrice || product.lastSupplierPrice || product.minSupplierPrice) ? 'height: 2px; background-color: brown;' : 'display:none'}).update('&nbsp;') })
 					.insert({'bottom': new Element('div', {'class': 'row small'})
-						.insert({'bottom': new Element('span', {'class': 'btn btn-link btn-xs', 'style': product.minProductPrice ? '': 'display:none'}).update('Minimum product price: ')
+						.insert({'bottom': new Element('span', {'class': 'col-xs-4 btn btn-link btn-xs', 'style': product.minProductPrice ? 'text-align: left': 'display:none'}).update('Minimum product price: ')
 							.insert({'bottom': new Element('strong').update(tmp.me.getCurrency(product.minProductPrice)) })
 						})
 						.observe('click', function(event) {
+							Event.stop(event);
 							tmp.me._openPOPage(product.minProductPriceId);
 						})
-					})
-					.insert({'bottom': new Element('div', {'class': 'row small'})
-						.insert({'bottom': new Element('span', {'class': 'btn btn-link btn-xs', 'style': product.lastSupplierPrice ? '': 'display:none'}).update('Last supplier price: ')
+						
+						.insert({'bottom': new Element('span', {'class': 'col-xs-4 btn btn-link btn-xs', 'style': product.lastSupplierPrice ? 'text-align: left': 'display:none'}).update('Last supplier price: ')
 							.insert({'bottom': new Element('strong').update(tmp.me.getCurrency(product.lastSupplierPrice)) })
 						})
 						.observe('click', function(event) {
+							Event.stop(event);
 							tmp.me._openPOPage(product.lastSupplierPriceId);
 						})
-					})
-					.insert({'bottom': new Element('div', {'class': 'row small'})
-						.insert({'bottom': new Element('span', {'class': 'btn btn-link btn-xs', 'style': product.minSupplierPrice ? '': 'display:none'}).update('Minimum supplier price: ')
+						
+						.insert({'bottom': new Element('span', {'class': 'col-xs-4 btn btn-link btn-xs', 'style': product.minSupplierPrice ? 'text-align: left': 'display:none'}).update('Minimum supplier price: ')
 							.insert({'bottom': new Element('strong').update(tmp.me.getCurrency(product.minSupplierPrice)) })
 						})
 						.observe('click', function(event) {
+							Event.stop(event);
 							tmp.me._openPOPage(product.minSupplierPriceId);
 						})
 					})
@@ -282,6 +284,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					});
 				jQuery('#' + tmp.me.modalId).modal('hide');
 				tmp.inputRow.down('[new-order-item=totalPrice]').writeAttribute('value', tmp.me.getCurrency(product.minProductPrice));
+				tmp.inputRow.down('[new-order-item=qtyOrdered]').writeAttribute('value', 1);
 				tmp.inputRow.down('[new-order-item=unitPrice]').writeAttribute('value', tmp.me.getCurrency(product.minProductPrice)).select();
 			})
 			;
@@ -429,16 +432,12 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			tmp.me._markFormGroupError(tmp.qtyOrderedBox, 'Invalid value provided!');
 			return ;
 		}
-		tmp.totalPriceBox = tmp.currentRow.down('[new-order-item=totalPrice]');
-		tmp.totalPrice = tmp.me.getValueFromCurrency($F(tmp.totalPriceBox));
-		if(tmp.totalPrice.match(/^\d+(\.\d{1,2})?$/) === null) {
-			tmp.me._markFormGroupError(tmp.totalPriceBox, 'Invalid value provided!');
-			return ;
-		}
+		tmp.totalPrice = tmp.me.getValueFromCurrency(tmp.unitPrice) * tmp.qtyOrdered;
 		//clear all error msg
 		tmp.currentRow.getElementsBySelector('.form-group.has-error .form-control').each(function(control){
 			$(control).retrieve('clearErrFunc')();
 		});
+		console.debug(tmp.unitPrice,tmp.qtyOrdered,tmp.totalPrice);
 		//get all data
 		tmp.data = {
 			'product': tmp.product, 
@@ -565,15 +564,63 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		var tmp = {};
 		tmp.me = this;
 		tmp.supplier = tmp.me._supplier;
-		tmp.shippingCostEl = new Element('input', {'class': 'text-right', 'id': 'shipping_cost', 'save-order': 'shippingCost'});
-		tmp.handlingCostEl = new Element('input', {'class': 'text-right', 'id': 'handling_cost', 'save-order': 'handlingCost'});
+		tmp.shippingCostEl = new Element('input', {'class': 'text-right', 'id': 'shipping_cost', 'save-order': 'shippingCost'})
+			.observe('keyup',function(){
+				tmp.shippingCost = this.value==='' ? 0 : tmp.me.getValueFromCurrency(this.value);
+				if(jQuery.isNumeric(tmp.shippingCost)) {
+					tmp.totalPaidAmount = tmp.me.getValueFromCurrency($$('[save-order="totalPaid"]').first().value) * 1;
+					tmp.handlingCost = tmp.me.getValueFromCurrency($$('[save-order="handlingCost"]').first().value) * 1;
+					tmp.totalExcGST = tmp.me.getValueFromCurrency($(tmp.me._htmlIds.totalPriceExcludeGST).innerHTML) * 1;
+					tmp.totalPaymentDue = tmp.totalExcGST * 1 + tmp.shippingCost * 1 + tmp.handlingCost * 1 - tmp.totalPaidAmount * 1;
+					$$('.total-payment-due').each(function(item) {
+						tmp.newEl = new Element('strong', {'class': 'label'}).update(tmp.me.getCurrency(tmp.totalPaymentDue) + ' ');
+						if(tmp.totalPaymentDue * 1 > 0) {
+							tmp.newEl.addClassName('label-info').writeAttribute('title', 'Need to pay supplier')
+								.insert({'bottom': new Element('span', {'class': ' glyphicon glyphicon-import'})});
+						} else if (tmp.totalPaymentDue * 1 === 0) {
+							tmp.newEl.addClassName('label-success')
+								.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-ok'})});
+						} else {
+							tmp.newEl.addClassName('label-danger').writeAttribute('title', 'Over paid to supplier')
+								.insert({'bottom': new Element('span', {'class': ' glyphicon glyphicon-export'})});
+						}
+						item.update(tmp.newEl);
+					});					
+				}
+			});
+		tmp.handlingCostEl = new Element('input', {'class': 'text-right', 'id': 'handling_cost', 'save-order': 'handlingCost'})
+			.observe('keyup',function(){
+				tmp.handlingCost = this.value==='' ? 0 : tmp.me.getValueFromCurrency(this.value);
+				if(jQuery.isNumeric(tmp.handlingCost)) {
+					tmp.totalPaidAmount = tmp.me.getValueFromCurrency($$('[save-order="totalPaid"]').first().value) * 1;
+					tmp.shippingCost = tmp.me.getValueFromCurrency($$('[save-order="shippingCost"]').first().value) * 1;
+					tmp.totalExcGST = tmp.me.getValueFromCurrency($(tmp.me._htmlIds.totalPriceExcludeGST).innerHTML) * 1;
+					tmp.totalPaymentDue = tmp.totalExcGST * 1 + tmp.shippingCost * 1 + tmp.handlingCost * 1 - tmp.totalPaidAmount * 1;
+					$$('.total-payment-due').each(function(item) {
+						tmp.newEl = new Element('strong', {'class': 'label'}).update(tmp.me.getCurrency(tmp.totalPaymentDue) + ' ');
+						if(tmp.totalPaymentDue * 1 > 0) {
+							tmp.newEl.addClassName('label-info').writeAttribute('title', 'Need to pay supplier')
+								.insert({'bottom': new Element('span', {'class': ' glyphicon glyphicon-import'})});
+						} else if (tmp.totalPaymentDue * 1 === 0) {
+							tmp.newEl.addClassName('label-success')
+								.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-ok'})});
+						} else {
+							tmp.newEl.addClassName('label-danger').writeAttribute('title', 'Over paid to supplier')
+								.insert({'bottom': new Element('span', {'class': ' glyphicon glyphicon-export'})});
+						}
+						item.update(tmp.newEl);
+					});					
+				}
+			});
 		tmp.totalAmountExGstEl = new Element('input', {'class': 'text-right', 'disabled': 'disabled', 'save-order': 'totalAmount'});
 		tmp.totalPaidEl = new Element('input', {'class': 'text-right', 'id': tmp.me._htmlIds.totalPaidAmount, 'save-order': 'totalPaid'})
 			.observe('keyup',function(){
-				tmp.totalPaidAmount = this.value==='' ? 0 : this.value;
+				tmp.totalPaidAmount = this.value==='' ? 0 : tmp.me.getValueFromCurrency(this.value);
 				if(jQuery.isNumeric(tmp.totalPaidAmount)) {
+					tmp.shippingCost = tmp.me.getValueFromCurrency($$('[save-order="shippingCost"]').first().value) * 1;
+					tmp.handlingCost = tmp.me.getValueFromCurrency($$('[save-order="handlingCost"]').first().value) * 1;
 					tmp.totalExcGST = tmp.me.getValueFromCurrency($(tmp.me._htmlIds.totalPriceExcludeGST).innerHTML) * 1;
-					tmp.totalPaymentDue = tmp.totalExcGST * 1 - tmp.totalPaidAmount;
+					tmp.totalPaymentDue = tmp.totalExcGST * 1 + tmp.shippingCost * 1 + tmp.handlingCost * 1 - tmp.totalPaidAmount * 1;
 					$$('.total-payment-due').each(function(item) {
 						tmp.newEl = new Element('strong', {'class': 'label'}).update(tmp.me.getCurrency(tmp.totalPaymentDue) + ' ');
 						if(tmp.totalPaymentDue * 1 > 0) {
@@ -771,7 +818,11 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 						})
 						.observe('click', function(){
 							tmp.btn = this;
-							tmp.me._searchSupplier($(tmp.me._htmlIds.searchPanel).down('.search-txt'));
+							tmp.txtBox = $(tmp.me._htmlIds.searchPanel).down('.search-txt');
+							if(!$F(tmp.txtBox).blank())
+								tmp.me._searchSupplier(tmp.txtBox);
+							else
+								$(tmp.me._htmlIds.searchPanel).down('.table tbody').innerHTML = null;
 						})
 					})
 				})
