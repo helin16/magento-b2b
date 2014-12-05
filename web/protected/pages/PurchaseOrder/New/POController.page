@@ -1,5 +1,7 @@
 <%@MasterClass="Application.layout.BlankLayout"%>
 <com:TContent ID="MainContent">
+	<com:TDatePicker Style="display:none;"/>
+	<com:Application.controls.fancybox.FancyBox />
 	<com:TCallback ID="searchCustomerBtn" onCallback="searchCustomer" />
 	<com:TCallback ID="searchSupplierBtn" onCallback="searchSupplier" />
 	<com:TCallback ID="searchProductBtn" onCallback="searchProduct" />

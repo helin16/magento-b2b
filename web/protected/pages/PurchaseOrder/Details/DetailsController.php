@@ -181,7 +181,7 @@ class DetailsController extends DetailsPageAbstract
 				->sethandlingCost($handlingCost)
 				->setStatus($status)
 				->save();
-			$purchaseOrder->addComment($comment, Comments::TYPE_SYSTEM);
+			$purchaseOrder->addComment($comment, Comments::TYPE_PURCHASING);
 			foreach ($param->CallbackParameter->newItems as $item) {
 				$productId = trim($item->product->id);
 				$productUnitPrice = trim($item->unitPrice);

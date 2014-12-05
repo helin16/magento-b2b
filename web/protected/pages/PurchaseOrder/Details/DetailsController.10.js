@@ -105,17 +105,19 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 			.insert({'bottom': new Element('div', {'class': 'panel-heading'})
 				.insert({'bottom': new Element('strong').update('Editing purchase order for: ' + tmp.supplier.name + ' ') })
 				.insert({'bottom': new Element('div', {'class': 'pull-right'})
+					.insert({'bottom': new Element('strong', {'style': 'padding-left: 10px'}).update('ETA: ') })
+					.insert({'bottom': new Element('input', {'style': 'max-height:19px', 'class': 'datepicker', 'save-order': 'ETA', 'type': 'date', 'value': tmp.purchaseOrder.eta ? tmp.purchaseOrder.eta : ''}) })
+				})
+				.insert({'bottom': new Element('div', {'class': 'pull-right'})
 					.insert({'bottom': new Element('strong').update('Status: ') })
 					.insert({'bottom': tmp.me._getOrderStatus() })
 				})
 			})
 			.insert({'bottom': new Element('div', {'class': 'panel-body'})
 				.insert({'bottom': new Element('div', {'class': 'row'})
-					.insert({'bottom': new Element('div', {'class': 'col-sm-3'}).update(tmp.me._getFormGroup('Name', new Element('input', {'disabled': 'disabled', 'type': 'text', 'value': tmp.supplier.name ? tmp.supplier.name : ''}) ) ) })
-					.insert({'bottom': new Element('div', {'class': 'col-sm-3'}).update(tmp.me._getFormGroup('Contact Name', new Element('input', {'save-order': 'contactName', 'type': 'text', 'value': tmp.purchaseOrder.supplierContact ? tmp.purchaseOrder.supplierContact : ''}) ) ) })
-					.insert({'bottom': new Element('div', {'class': 'col-sm-3'}).update(tmp.me._getFormGroup('Contact Number', new Element('input', {'save-order': 'contactNo', 'type': 'value', 'value': tmp.purchaseOrder.supplierContactNumber ? tmp.purchaseOrder.supplierContactNumber : ''}) ) ) })
-					.insert({'bottom': new Element('div', {'class': 'col-sm-3'}).update(tmp.me._getFormGroup('Contact Email', new Element('input', { 'save-order': 'contactEmail', 'type': 'email', 'value': tmp.purchaseOrder.supplierRefNo ? tmp.purchaseOrder.supplierRefNo : ''}) ) ) })
-					.insert({'bottom': new Element('div', {'class': 'col-sm-3'}).update(tmp.me._getFormGroup('ETA', new Element('input', {'class': 'datepicker', 'save-order': 'ETA', 'type': 'date', 'value': tmp.purchaseOrder.supplierRefNo ? tmp.purchaseOrder.supplierRefNo : ''}) ) ) })
+					.insert({'bottom': new Element('div', {'class': 'col-sm-3'}).update(tmp.me._getFormGroup('Contact Name', new Element('input', {'save-order': 'contactName', 'type': 'text', 'value': tmp.supplier.contactName ? tmp.supplier.contactName : ''}) ) ) })
+					.insert({'bottom': new Element('div', {'class': 'col-sm-3'}).update(tmp.me._getFormGroup('Contact Number', new Element('input', {'save-order': 'contactNo', 'type': 'value', 'value': tmp.supplier.contactNo ? tmp.supplier.contactNo : ''}) ) ) })
+					.insert({'bottom': new Element('div', {'class': 'col-sm-3'}).update(tmp.me._getFormGroup('Contact Email', new Element('input', { 'save-order': 'contactEmail', 'type': 'email', 'value': tmp.supplier.email ? tmp.supplier.email : ''}) ) ) })
 					.insert({'bottom': new Element('div', {'class': 'col-sm-3'}).update(tmp.me._getFormGroup('Supplier Ref Num', new Element('input', {'required': 'required', 'save-order': 'supplierRefNum', 'type': 'text', 'value': tmp.purchaseOrder.supplierRefNo ? tmp.purchaseOrder.supplierRefNo : ''}) ) ) })
 				 })
 			});
@@ -855,8 +857,8 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		var tmp = {};
 		tmp.me = this;
 		$(tmp.me._htmlIds.itemDiv).update(tmp.newDiv = tmp.me._getItemDiv());
-		tmp.newDiv.down('input[save-order]').focus();
-		tmp.newDiv.down('input[save-order]').select();
+		tmp.newDiv.down('input[save-order="contactName"]').focus();
+		tmp.newDiv.down('input[save-order="contactName"]').select();
 		return tmp.me;
 	}
 });

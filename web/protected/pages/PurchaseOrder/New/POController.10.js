@@ -51,6 +51,11 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.data = tmp.me._collectFormData($(tmp.me._htmlIds.itemDiv),'save-order');
 		if(tmp.data === null)
 			return tmp.me;
+		tmp.data.supplier = tmp.me._supplier;
+		tmp.data.supplier.contactName = tmp.data.contactName ? tmp.data.contactName : tmp.me._supplier.contactName;
+		tmp.data.supplier.contactNo = tmp.data.contactNo ? tmp.data.contactNo : tmp.me._supplier.contactNo;
+		tmp.data.supplier.email = tmp.data.contactEmail ? tmp.data.contactEmail : tmp.me._supplier.email;
+		
 		tmp.data.items = [];
 		$$('.order-item-row').each(function(item){
 			tmp.item = item.retrieve('data');
@@ -62,7 +67,6 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			tmp.me.showModalBox('<strong class="text-danger">Error</strong>', 'At least one order item is needed!', true);
 			return tmp.me;
 		}
-		tmp.data.supplier = tmp.me._supplier;
 		tmp.data.totalAmount = tmp.data.totalAmount ? tmp.me.getValueFromCurrency(tmp.data.totalAmount) : '';
 		tmp.me._signRandID(tmp.btn);
 		tmp.me.postAjax(tmp.me.getCallbackId('saveOrder'), tmp.data, {
@@ -136,19 +140,29 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			.insert({'bottom': new Element('div', {'class': 'panel-heading'})
 				.insert({'bottom': new Element('strong').update('Creating purchase order for: ' + tmp.supplier.name + ' ') })
 				.insert({'bottom': new Element('div', {'class': 'pull-right'})
+					.insert({'bottom': new Element('strong', {'style': 'padding-left: 10px'}).update('ETA: ') })
+					.insert({'bottom': new Element('input', {'style': 'max-height:19px', 'class': 'datepicker', 'save-order': 'ETA', 'type': 'date', 'value': ''}) })
+				})
+				.insert({'bottom': new Element('div', {'class': 'pull-right'})
 					.insert({'bottom': new Element('strong').update('Status: ') })
 					.insert({'bottom': tmp.me._getOrderStatus() })
 				})
 			})
 			.insert({'bottom': new Element('div', {'class': 'panel-body'})
 				.insert({'bottom': new Element('div', {'class': 'row'})
-					.insert({'bottom': new Element('div', {'class': 'col-sm-3'}).update(tmp.me._getFormGroup('Name', new Element('input', {'disabled': 'disabled', 'type': 'text', 'value': tmp.supplier.name ? tmp.supplier.name : ''}) ) ) })
 					.insert({'bottom': new Element('div', {'class': 'col-sm-3'}).update(tmp.me._getFormGroup('Contact Name', new Element('input', {'save-order': 'contactName', 'type': 'text', 'value': tmp.supplier.contactName ? tmp.supplier.contactName : ''}) ) ) })
 					.insert({'bottom': new Element('div', {'class': 'col-sm-3'}).update(tmp.me._getFormGroup('Contact Number', new Element('input', {'save-order': 'contactNo', 'type': 'value', 'value': tmp.supplier.contactNo ? tmp.supplier.contactNo : ''}) ) ) })
+					.insert({'bottom': new Element('div', {'class': 'col-sm-3'}).update(tmp.me._getFormGroup('Contact Email', new Element('input', {'save-order': 'contactEmail', 'type': 'email', 'value': tmp.supplier.email ? tmp.supplier.email : ''}) ) ) })
 					.insert({'bottom': new Element('div', {'class': 'col-sm-3'}).update(tmp.me._getFormGroup('Supplier Ref Num', new Element('input', {'required': 'required', 'save-order': 'supplierRefNum', 'type': 'text', 'value': ''}) ) ) })
 				 })
 			});
 		return tmp.newDiv;
+	}
+	,_loadDataPicker: function () {
+		$$('.datepicker').each(function(item){
+			new Prado.WebUI.TDatePicker({'ID': item, 'InputMode':"TextBox",'Format':"yyyy-MM-dd 00:00:00",'FirstDayOfWeek':1,'CalendarStyle':"default",'FromYear':2009,'UpToYear':2024,'PositionMode':"Bottom", "ClassName": 'datepicker-layer-fixer'});
+		});
+		return this;
 	}
 	/**
 	 * Getting the order status dropdown list
@@ -437,7 +451,6 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.currentRow.getElementsBySelector('.form-group.has-error .form-control').each(function(control){
 			$(control).retrieve('clearErrFunc')();
 		});
-		console.debug(tmp.unitPrice,tmp.qtyOrdered,tmp.totalPrice);
 		//get all data
 		tmp.data = {
 			'product': tmp.product, 
@@ -716,7 +729,8 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.me._supplier = supplier;
 		tmp.newDiv = tmp.me._getViewOfPurchaseOrder();
 		$(tmp.me._htmlIds.itemDiv).update(tmp.newDiv);
-		tmp.newDiv.down('input[save-order]').focus();
+		tmp.newDiv.down('input[save-order="contactName"]').focus();
+		tmp.me._loadDataPicker();
 		return tmp.me;
 	}
 	/**

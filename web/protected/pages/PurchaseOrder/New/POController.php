@@ -168,19 +168,34 @@ class POController extends BPCPageAbstract
 			$supplier = Supplier::get(trim($param->CallbackParameter->supplier->id));
 			if(!$supplier instanceof Supplier)
 				throw new Exception('Invalid Supplier passed in!');
+			
+			$supplierContactName = trim($param->CallbackParameter->supplier->contactName);
+			$supplierContactNo = trim($param->CallbackParameter->supplier->contactNo);
+			$supplierEmail = trim($param->CallbackParameter->supplier->email);
+			
+			if(!empty($supplierContactName) && $supplierContactName!==$supplier->getContactName())
+				$supplier->setContactName($supplierContactName);
+			if(!empty($supplierContactNo) && $supplierContactNo!==$supplier->getContactNo())
+				$supplier->setContactNo($supplierContactNo);
+			if(!empty($supplierEmail) && $supplierEmail!==$supplier->getEmail())
+				$supplier->setEmail($supplierEmail);
+			$supplier->save();
+			
 			$supplierRefNum = trim($param->CallbackParameter->supplierRefNum);
-			$supplierContactName = trim($param->CallbackParameter->contactName);
-			$supplierContactNo = trim($param->CallbackParameter->contactNo);
 			$shippingCost = trim($param->CallbackParameter->shippingCost);
 			$handlingCost = trim($param->CallbackParameter->handlingCost);
 			$comment = trim($param->CallbackParameter->comments);
 			$status = trim($param->CallbackParameter->status);
+			
 			$purchaseOrder = PurchaseOrder::create($supplier,$supplierRefNum,$supplierContactName,$supplierContactNo,$shippingCost,$handlingCost);
 			$purchaseOrderTotalAmount = trim($param->CallbackParameter->totalAmount);
 			$purchaseOrderTotalPaid = trim($param->CallbackParameter->totalPaid);
+			$purchaseOrderETA = trim($param->CallbackParameter->ETA);
 			$purchaseOrder->setTotalAmount($purchaseOrderTotalAmount)
 			->setTotalPaid($purchaseOrderTotalPaid)
+			->setEta($purchaseOrderETA)
 			->setStatus($status);
+			
 			foreach ($param->CallbackParameter->items as $item) {
 				$productId = trim($item->product->id);
 				$productUnitPrice = trim($item->unitPrice);
@@ -192,7 +207,7 @@ class POController extends BPCPageAbstract
 				$purchaseOrder->addItem($product,$productUnitPrice,$qtyOrdered);
 			};
 			$purchaseOrder->save();
-			$purchaseOrder->addComment($comment, Comments::TYPE_SYSTEM);
+			$purchaseOrder->addComment($comment, Comments::TYPE_PURCHASING);
 			$results['item'] = $purchaseOrder->getJson();
 			Dao::commitTransaction();
 		}
