@@ -63,6 +63,7 @@ class DetailsController extends DetailsPageAbstract
 		$js .= ".setCallbackId('saveOrder', '" . $this->saveOrderBtn->getUniqueID() . "')";
 		$js .= ".setPurchaseOrderItems(" . json_encode($purchaseOrderItems) . ")";
 		$js .= ".load()";
+		$js .= "._loadDataPicker()";
 		$js .= ".bindAllEventNObjects();";
 		return $js;
 	}
