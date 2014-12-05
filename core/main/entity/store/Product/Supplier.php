@@ -33,6 +33,12 @@ class Supplier extends BaseEntityAbstract
 	 */
 	private $contactNo = '';
 	/**
+	 * The email address of the supplier
+	 * 
+	 * @var string
+	 */
+	private $email = '';
+	/**
 	 * The address
 	 * 
 	 * @var Address
@@ -177,6 +183,27 @@ class Supplier extends BaseEntityAbstract
 		return $this;
 	}
 	/** 
+	 * Getter for contactNo
+	 * 
+	 * @return string
+	 */
+	public function getEmail ()
+	{
+		return $this->email;
+	}
+	/** 
+	 * Setter for email
+	 * 
+	 * @param string $value
+	 * 
+	 * @return Supplier
+	 */
+	public function setEmail($value)
+	{
+		$this->email = $value;
+		return $this;
+	}
+	/** 
 	 * Getter for address
 	 * 
 	 * @return Address
@@ -247,6 +274,7 @@ class Supplier extends BaseEntityAbstract
 		DaoMap::setStringType('description', 'varchar', 255);
 		DaoMap::setStringType('contactName', 'varchar', 100);
 		DaoMap::setStringType('contactNo', 'varchar', 100);
+		DaoMap::setStringType('email', 'varchar', 100);
 		DaoMap::setManyToOne('address', 'Address', 'sup_addr', true);
 		DaoMap::setIntType('mageId');
 		DaoMap::setBoolType('isFromB2B');
@@ -257,6 +285,7 @@ class Supplier extends BaseEntityAbstract
 		DaoMap::createIndex('mageId');
 		DaoMap::createIndex('contactNo');
 		DaoMap::createIndex('contactName');
+		DaoMap::createIndex('email');
 	
 		DaoMap::commit();
 	}

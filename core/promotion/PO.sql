@@ -41,3 +41,6 @@ CREATE TABLE `receivingitem` (
 
 #add ETA column onto purchaseorder
 ALTER TABLE `purchaseorder` ADD `eta` DATETIME NOT NULL DEFAULT '0001-01-01 00:00:00' AFTER `orderDate`, ADD INDEX (`eta`) ;
+
+#add email onto supplier
+ALTER TABLE `supplier` ADD `email` VARCHAR(100) NOT NULL DEFAULT '' AFTER `contactNo`, ADD INDEX (`email`) ;
