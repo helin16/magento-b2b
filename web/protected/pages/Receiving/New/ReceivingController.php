@@ -149,29 +149,78 @@ class ReceivingController extends BPCPageAbstract
 		$results = $errors = array();
 		try
 		{
-			var_dump($param->CallbackParameter);
-			$results['item'] = 'works';
-			
+// 			var_dump($param->CallbackParameter);
 			Dao::beginTransaction();
-			foreach ($serialnos as $serialNo)
-			{
-				$item = ReceivingItem::create($po, $product);
-			}
-			$msg = 'received ' . count($serialnos) . ' product(SKU=' . $produt->getSku() . ') by ' . Core::getUser()->getPerson()->getFullName() . '@' . trim(new UDate()) . '(UTC)';
-			$nofullReceivedItems = PurchaseOrderItem::getAllByCriteria('productId = ? and purchaseOrderId = ? and receivedQty < qty', array($product->getId(), $po->getId()), true, 1, 1);
-			if(count($nofullReceivedItems) > 0)
-			{
-				$nofullReceivedItems[0]
-					->setReceivedQty($nofullReceivedItems[0]->GetReceivedQty() + count($serialnos))
+			$items = array();
+			$purchaseOrder = PurchaseOrder::get(trim($param->CallbackParameter->purchaseOrder->id));
+			if(!$purchaseOrder instanceof PurchaseOrder)
+				throw new Exception('Invalid PurchaseOrder passed in!');
+			$comment = trim($param->CallbackParameter->comments);
+			$purchaseOrder->addComments(Comments::TYPE_WAREHOUSE, $comment);
+			$products = $param->CallbackParameter->products;
+			
+			foreach ($products->matched as $item) {
+				$product = Product::get(trim($item->product->id));
+				if(!$product instanceof Product)
+					throw new Exception('Invalid Product passed in!');
+				
+				$serials = $item->serial;
+				foreach ($serials as $serial) {
+					$serialNo = trim($serial->serialNo);
+					$unitPrice = trim($serial->unitPrice);
+					$invoiceNo = trim($serial->invoiceNo);
+					$comments = trim($serial->comments);
+					ReceivingItem::create($purchaseOrder, $product, $unitPrice, $serialNo, $invoiceNo, $comments);
+				}
+				
+				$nofullReceivedItems = PurchaseOrderItem::getAllByCriteria('productId = ? and purchaseOrderId = ? and receivedQty < qty', array($product->getId(), $po->getId()), true, 1, 1);
+				$msg = 'received ' . count($serials) . ' product(SKU=' . $product->getSku() . ') by ' . Core::getUser()->getPerson()->getFullName() . '@' . trim(new UDate()) . '(UTC)';
+				if(count($nofullReceivedItems) > 0) {
+					$nofullReceivedItems[0]
+					->setReceivedQty($nofullReceivedItems[0]->GetReceivedQty() + count($serials))
 					->save()
 					->addLog(Log::TYPE_SYSTEM, $msg, __CLASS__ . '::' . __FUNCTION__)
 					->addComments(Comments::TYPE_WAREHOUSE, $msg);
+				}
+				$purchaseOrder->addComments(Comments::TYPE_WAREHOUSE, $msg);
 			}
-			$po->addComments(Comments::TYPE_WAREHOUSE, $msg);
+			foreach ($products->notMatched as $item) {
+// 				var_dump($item);
+			}
 			
-			$totalCount = PurchaseOrderItem::countByCriteria('purchaseOrderId = ? and receivedQty < qty', array($po->getId()));
+			$totalCount = PurchaseOrderItem::countByCriteria('purchaseOrderId = ? and receivedQty < qty', array($purchaseOrder->getId()));
 			if($totalCount === 0)
-				$po->setStatus(PurchaseOrder::STATUS_RECEIVING)->save()->addComments(Comments::TYPE_WAREHOUSE, '')->addLog(Log::TYPE_SYSTEM, '', __CLASS__ . '::' . __FUNCTION__);
+				$po->setStatus(PurchaseOrder::STATUS_RECEIVING)
+					->save();
+			
+			$results['item'] = $purchaseOrder->getJson();
+			Dao::commitTransaction();
+// 			die;
+			
+			
+			
+// 			$results['item'] = 'works';
+			
+// 			Dao::beginTransaction();
+// 			foreach ($serialnos as $serialNo)
+// 			{
+// 				$item = ReceivingItem::create($po, $product);
+// 			}
+// 			$msg = 'received ' . count($serialnos) . ' product(SKU=' . $produt->getSku() . ') by ' . Core::getUser()->getPerson()->getFullName() . '@' . trim(new UDate()) . '(UTC)';
+// 			$nofullReceivedItems = PurchaseOrderItem::getAllByCriteria('productId = ? and purchaseOrderId = ? and receivedQty < qty', array($product->getId(), $po->getId()), true, 1, 1);
+// 			if(count($nofullReceivedItems) > 0)
+// 			{
+// 				$nofullReceivedItems[0]
+// 					->setReceivedQty($nofullReceivedItems[0]->GetReceivedQty() + count($serialnos))
+// 					->save()
+// 					->addLog(Log::TYPE_SYSTEM, $msg, __CLASS__ . '::' . __FUNCTION__)
+// 					->addComments(Comments::TYPE_WAREHOUSE, $msg);
+// 			}
+// 			$po->addComments(Comments::TYPE_WAREHOUSE, $msg);
+			
+// 			$totalCount = PurchaseOrderItem::countByCriteria('purchaseOrderId = ? and receivedQty < qty', array($po->getId()));
+// 			if($totalCount === 0)
+// 				$po->setStatus(PurchaseOrder::STATUS_RECEIVING)->save()->addComments(Comments::TYPE_WAREHOUSE, '')->addLog(Log::TYPE_SYSTEM, '', __CLASS__ . '::' . __FUNCTION__);
 			
 			
 // 			$supplier = Supplier::get(trim($param->CallbackParameter->supplier->id));
@@ -222,7 +271,6 @@ class ReceivingController extends BPCPageAbstract
 // 				$removedItemPOitem->setActive(false)->save();
 // 			};
 // 			$results['item'] = $purchaseOrder->getJson();
-// 			Dao::commitTransaction();
 		}
 		catch(Exception $ex)
 		{

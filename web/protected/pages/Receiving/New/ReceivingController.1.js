@@ -646,6 +646,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					tmp.result = tmp.me.getResp(param, false, true);
 					if (tmp.result.count == 0) {
 						tmp.newRow.down('.productSku').insert({'bottom': new Element('strong', {'style': 'color:red'}).update('  (Not found in PO)') });
+						tmp.newRow.up('.item_row').addClassName('not-in-po');
 					}
 				} catch(e) {
 					tmp.me.showModalBox('Error!', e, false);
