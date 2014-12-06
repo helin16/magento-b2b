@@ -142,6 +142,34 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.me._purchaseOrder = po;
 		tmp.newDiv = tmp.me._getViewOfPurchaseOrder();
 		$(tmp.me._htmlIds.itemDiv).update(tmp.newDiv).down('[new-order-item=product]').focus();
+		
+		tmp.me._purchaseOrder.purchaseOrderItem.each(function(item) {
+			tmp.currentRow = $$('.new-order-item-input').first();
+			tmp.product = {
+					'name': ''
+					,'id' : ''
+					,'qty': 0
+					,'barcode': tmp.searchTxt
+			};
+			tmp.data = {
+					'product': tmp.product, 
+					'btns': new Element('span', {'class': 'pull-right'})
+						.insert({'bottom': new Element('span', {'class': 'btn btn-danger btn-xs'})
+						.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-trash'}) })
+						.observe('click', function(event) {
+							Event.stop(event);
+							if(!confirm('You are about to remove this entry.\n\nContinue?'))
+								return;
+							tmp.row = $(this).up('.item_row');
+							tmp.row.remove();
+						})
+					})
+				};
+			tmp.currentRow.insert({'after': tmp.lastRow = tmp.me._getProductRow(tmp.data, false) });
+			tmp.product = item.product;
+			tmp.me._selectProduct(tmp.product, tmp.lastRow);
+		});
+		
 		return tmp.me;
 	}
 	/**
@@ -503,13 +531,12 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		});
 		return tmp.me;
 	}
-	,_selectProduct: function(product,lastRow,newRow) {
+	,_selectProduct: function(product,lastRow) {
 		var tmp = {};
 		tmp.me = this;
 		tmp.data = [];
 		tmp.product = product;
 		tmp.lastRow = lastRow;
-		tmp.newRow = newRow;
 		
 		tmp.btn = $('barcode_input');
 		tmp.me._signRandID(tmp.btn);
@@ -532,25 +559,6 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.data.scanTable = tmp.me._getScanTable(tmp.data.product);
 		tmp.lastRow.replace(tmp.newRow = tmp.me._getProductRow(tmp.data, false) );
 		
-//		tmp.me.postAjax(tmp.me.getCallbackId('checkProduct'), {'product': tmp.product, 'purchaseOrder': tmp.me._purchaseOrder}, {
-//			'onLoading': function(sender, param) {
-//				jQuery('#' + tmp.btn.id).button('loading');
-//			}
-//			,'onSuccess': function(sender, param) {
-//				try {
-//					tmp.result = tmp.me.getResp(param, false, true);
-//					if (tmp.result.count == 0) {
-//						tmp.newRow.down('.product-head-row .productSku').insert({'bottom': new Element('strong', {'style': 'color:red'}).update('  (Not found in PO)') });
-//					}
-//				} catch(e) {
-//					tmp.me.showModalBox('Error!', e, false);
-//				}
-//			}
-//			,'onComplete': function(sender, param) {
-//				jQuery('#' + tmp.btn.id).button('reset');
-//			}
-//		});
-//		
 		tmp.me._checkProduct(tmp.product, tmp.newRow.down('.product-head-row'));
 		
 		tmp.newRow.down('[scanned-item="serialNo"]').focus();
