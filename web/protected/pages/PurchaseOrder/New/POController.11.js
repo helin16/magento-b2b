@@ -142,7 +142,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.supplier = tmp.me._supplier;
 		tmp.newDiv = new Element('div', {'class': 'panel panel-info'})
 			.insert({'bottom': new Element('div', {'class': 'panel-heading'})
-				.insert({'bottom': new Element('strong').update('Creating purchase order for: ' + tmp.supplier.name + ' ') })
+				.insert({'bottom': new Element('strong').update('Creating PO for: ' + tmp.supplier.name + ' ') })
 				.insert({'bottom': new Element('div', {'class': 'pull-right'})
 					.insert({'bottom': new Element('strong', {'style': 'padding-left: 10px'}).update('ETA: ') })
 					.insert({'bottom': new Element('input', {'style': 'max-height:19px', 'class': 'datepicker', 'save-order': 'ETA', 'type': 'date', 'value': ''}) })
@@ -391,9 +391,14 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.totalIncGSTBox = $(tmp.me._htmlIds.totalPriceIncludeGST);
 		tmp.totalGSTBox = $(tmp.me._htmlIds.totalPriceGST);
 		tmp.totalExcGSTBox = $(tmp.me._htmlIds.totalPriceExcludeGST);
+		tmp.totalShippingCostBox = $('shipping_cost');
+		tmp.totalHandlingCostBox = $('handling_cost');
+		
 		
 		tmp.totalExcGST = tmp.me.getValueFromCurrency(tmp.totalExcGSTBox.innerHTML) * 1  + amount * 1;
 		tmp.totalIncGST = tmp.totalExcGST ? (tmp.totalExcGST * 1 * 1.1) : 0;
+		tmp.totalShippingCost = tmp.me.getValueFromCurrency($F(tmp.totalShippingCostBox));
+		tmp.totalHandlingCost = tmp.me.getValueFromCurrency($F(tmp.totalHandlingCostBox));
 		
 		tmp.totalGST = tmp.totalExcGST ? (tmp.totalIncGST * 1 - tmp.totalExcGST * 1) : 0;
 		
@@ -403,7 +408,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		
 		
 		tmp.totalPaidAmount = ($(tmp.me._htmlIds.totalPaidAmount) ? tmp.me.getValueFromCurrency($F(tmp.me._htmlIds.totalPaidAmount)) : 0);
-		tmp.totalPaymentDue = tmp.totalExcGST * 1 - tmp.totalPaidAmount;
+		tmp.totalPaymentDue = tmp.totalExcGST * 1 + tmp.totalShippingCost * 1 + tmp.totalHandlingCost * 1 - tmp.totalPaidAmount * 1;
 		$$('.total-payment-due').each(function(item) {
 			tmp.newEl = new Element('strong', {'class': 'label'}).update(tmp.me.getCurrency(tmp.totalPaymentDue) + ' ');
 			if(tmp.totalPaymentDue * 1 > 0) {
@@ -477,6 +482,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.newRow = tmp.me._getNewProductRow();
 		tmp.currentRow.replace(tmp.newRow);
 		tmp.newRow.down('[new-order-item=product]').focus();
+		tmp.newRow.down('[new-order-item=product]').select();
 		
 		tmp.me._recalculateSummary( tmp.totalPrice );
 		return tmp.me;
@@ -497,6 +503,9 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					tmp.qty = $F(tmp.row.down('[new-order-item=qtyOrdered]'));
 					$(tmp.row.down('[new-order-item=totalPrice]')).value = tmp.me.getCurrency( tmp.unitPrice * tmp.qty);
 				})
+				.observe('click', function(event){
+					$(this).select();
+				})
 			)
 			,'qtyOrdered': tmp.me._getFormGroup( null, new Element('input', {'class': 'input-sm', 'new-order-item': 'qtyOrdered', 'required': 'Required!', 'value': '1'})
 				.observe('keyup', function(){
@@ -505,6 +514,9 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					tmp.qty = $F(this);
 					$(tmp.row.down('[new-order-item=totalPrice]')).value = tmp.me.getCurrency( tmp.unitPrice * tmp.qty);
 				})
+				.observe('click', function(event){
+					$(this).select();
+				})
 			)
 			,'totalPrice': tmp.me._getFormGroup( null, new Element('input', {'class': 'input-sm', 'new-order-item': 'totalPrice', 'required': 'Required!', 'value': tmp.me.getCurrency(0)})
 				.observe('keyup', function(){
@@ -512,6 +524,9 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					tmp.totalPrice = tmp.me.getValueFromCurrency($F(this));
 					tmp.qty = $F(tmp.row.down('[new-order-item=qtyOrdered]'));
 					$(tmp.row.down('[new-order-item=unitPrice]')).value = tmp.me.getCurrency( tmp.totalPrice / tmp.qty );
+				})
+				.observe('click', function(event){
+					$(this).select();
 				})
 			)
 			, 'btns': new Element('span', {'class': 'btn-group btn-group-sm pull-right'})
@@ -533,6 +548,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 						});
 						tmp.currentRow.replace(tmp.newRow);
 						tmp.newRow.down('[new-order-item=product]').focus();
+						tmp.newRow.down('[new-order-item=product]').select();
 					})
 				})
 		};
@@ -734,6 +750,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.newDiv = tmp.me._getViewOfPurchaseOrder();
 		$(tmp.me._htmlIds.itemDiv).update(tmp.newDiv);
 		tmp.newDiv.down('input[save-order="contactName"]').focus();
+		tmp.newDiv.down('input[save-order="contactName"]').select();
 		tmp.me._loadDataPicker();
 		return tmp.me;
 	}
@@ -839,8 +856,10 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 							tmp.txtBox = $(tmp.me._htmlIds.searchPanel).down('.search-txt');
 							if(!$F(tmp.txtBox).blank())
 								tmp.me._searchSupplier(tmp.txtBox);
-							else
-								$(tmp.me._htmlIds.searchPanel).down('.table tbody').innerHTML = null;
+							else {
+								if($(tmp.me._htmlIds.searchPanel).down('.table tbody'))
+									$(tmp.me._htmlIds.searchPanel).down('.table tbody').innerHTML = null;
+							}
 						})
 					})
 				})

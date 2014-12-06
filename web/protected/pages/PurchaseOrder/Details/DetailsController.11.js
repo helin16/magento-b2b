@@ -437,9 +437,13 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		tmp.totalIncGSTBox = $(tmp.me._htmlIds.totalPriceIncludeGST) ? $(tmp.me._htmlIds.totalPriceIncludeGST) : tmp.me._newDiv.down('#'+tmp.me._htmlIds.totalPriceIncludeGST);
 		tmp.totalGSTBox = $(tmp.me._htmlIds.totalPriceGST) ? $(tmp.me._htmlIds.totalPriceGST) : tmp.me._newDiv.down('#'+tmp.me._htmlIds.totalPriceGST);
 		tmp.totalExcGSTBox = $(tmp.me._htmlIds.totalPriceExcludeGST) ? $(tmp.me._htmlIds.totalPriceExcludeGST) : tmp.me._newDiv.down('#'+tmp.me._htmlIds.totalPriceExcludeGST);
+		tmp.totalShippingCostBox = $('shipping_cost');
+		tmp.totalHandlingCostBox = $('handling_cost');
 		
 		tmp.totalExcGST = tmp.me.getValueFromCurrency(tmp.totalExcGSTBox.innerHTML) * 1  + amount * 1;
 		tmp.totalIncGST = tmp.totalExcGST ? (tmp.totalExcGST * 1 * 1.1) : 0;
+		tmp.totalShippingCost = tmp.totalShippingCostBox ? tmp.me.getValueFromCurrency($F(tmp.totalShippingCostBox)) : 0;
+		tmp.totalHandlingCost = tmp.totalHandlingCostBox ? tmp.me.getValueFromCurrency($F(tmp.totalHandlingCostBox)) : 0;
 		
 		tmp.totalGST = tmp.totalExcGST ? (tmp.totalIncGST * 1 - tmp.totalExcGST * 1) : 0;
 		
@@ -451,7 +455,8 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		tmp.totalPaidAmount = $$('.pull-right.total-payment-due').first() ?
 				($(tmp.me._htmlIds.totalPaidAmount) ? tmp.me.getValueFromCurrency($F(tmp.me._htmlIds.totalPaidAmount)) : 0)
 				: tmp.me._purchaseorder.totalPaid;
-		tmp.totalPaymentDue = tmp.totalExcGST * 1 - tmp.totalPaidAmount;
+		tmp.totalPaymentDue = tmp.totalExcGST * 1 - tmp.totalPaidAmount * 1;
+//		tmp.totalPaymentDue = tmp.totalExcGST * 1 + tmp.totalShippingCost * 1 + tmp.totalHandlingCost * 1 - tmp.totalPaidAmount * 1;
 		$$('.total-payment-due').each(function(item) {
 			tmp.newEl = new Element('strong', {'class': 'label'}).update(tmp.me.getCurrency(tmp.totalPaymentDue) + ' ');
 			if(tmp.totalPaymentDue * 1 > 0) {
