@@ -372,6 +372,9 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					}, null, 9);
 					return false;
 				})
+				.observe('click',function(){
+					$(this).select();
+				})
 			})
 			.insert({'bottom': new Element('span', {'class': 'input-group-btn'}) 
 				.insert({'bottom': new Element('span', {'class': ' btn btn-primary search-btn' , 'data-loading-text': 'searching...'})

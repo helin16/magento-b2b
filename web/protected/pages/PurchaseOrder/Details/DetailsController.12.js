@@ -202,6 +202,9 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 						item.update(tmp.newEl);
 					});					
 				}
+			})
+			.observe('click',function(){
+				$(this).select();
 			});
 		tmp.handlingCostEl = new Element('input', {'class': 'text-right', 'id': 'handling_cost', 'save-order': 'handlingCost' , 'value': tmp.me._purchaseorder.handlingCost ? tmp.me.getCurrency(tmp.me._purchaseorder.handlingCost) : tmp.me.getCurrency(0)})
 			.observe('keyup',function(){
@@ -226,6 +229,9 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 						item.update(tmp.newEl);
 					});					
 				}
+			})
+			.observe('click',function(){
+				$(this).select();
 			});
 		tmp.totalAmountExGstEl = new Element('input', {'class': 'text-right', 'disabled': 'disabled', 'save-order': 'totalAmount'});
 		tmp.totalPaidEl = new Element('input', {'class': 'text-right', 'id': tmp.me._htmlIds.totalPaidAmount, 'save-order': 'totalPaid' , 'value': tmp.me._purchaseorder.totalPaid ? tmp.me.getCurrency(tmp.me._purchaseorder.totalPaid) : tmp.me.getCurrency(0)})
@@ -251,6 +257,9 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 						item.update(tmp.newEl);
 					});					
 				}
+			})
+			.observe('click',function(){
+				$(this).select();
 			});
 		tmp.newDiv = new Element('div', {'class': 'panel panel-info', 'id': tmp.me._htmlIds.paymentPanel})
 			.insert({'bottom': new Element('div', {'class':'panel-heading'})
@@ -413,6 +422,9 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 					tmp.qty = $F(tmp.row.down('[new-order-item=qtyOrdered]'));
 					$(tmp.row.down('[new-order-item=totalPrice]')).value = tmp.me.getCurrency( tmp.unitPrice * tmp.qty);
 				})
+				.observe('click',function(){
+					$(this).select();
+				})
 			)
 			,'qtyOrdered': tmp.me._getFormGroup( null, new Element('input', {'class': 'input-sm', 'new-order-item': 'qtyOrdered', 'required': 'Required!', 'value': '1'})
 				.observe('keyup', function(){
@@ -421,6 +433,9 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 					tmp.qty = $F(this);
 					$(tmp.row.down('[new-order-item=totalPrice]')).value = tmp.me.getCurrency( tmp.unitPrice * tmp.qty);
 				})
+				.observe('click',function(){
+					$(this).select();
+				})
 			)
 			,'totalPrice': tmp.me._getFormGroup( null, new Element('input', {'class': 'input-sm', 'new-order-item': 'totalPrice', 'required': 'Required!', 'value': tmp.me.getCurrency(0)})
 				.observe('keyup', function(){
@@ -428,6 +443,9 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 					tmp.totalPrice = tmp.me.getValueFromCurrency($F(this));
 					tmp.qty = $F(tmp.row.down('[new-order-item=qtyOrdered]'));
 					$(tmp.row.down('[new-order-item=unitPrice]')).value = tmp.me.getCurrency( tmp.totalPrice / tmp.qty );
+				})
+				.observe('click',function(){
+					$(this).select();
 				})
 			)
 			, 'btns': new Element('span', {'class': 'btn-group btn-group-sm pull-right'})
@@ -471,6 +489,9 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 						$(tmp.txtBox).up('.product-autocomplete').down('.search-btn').click();
 					}, null, 9);
 					return false;
+				})
+				.observe('click',function(){
+					$(this).select();
 				})
 			})
 			.insert({'bottom': new Element('span', {'class': 'input-group-btn'}) 
