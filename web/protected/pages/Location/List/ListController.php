@@ -12,8 +12,8 @@ class ListController extends CRUDPageAbstract
 	 * (non-PHPdoc)
 	 * @see BPCPageAbstract::$menuItem
 	 */
-	public $menuItem = 'manufacturers';
-	protected $_focusEntity = 'Manufacturer';
+	public $menuItem = 'locations';
+	protected $_focusEntity = 'Location';
 	/**
 	 * constructor
 	 */
@@ -59,13 +59,13 @@ class ListController extends CRUDPageAbstract
 				
 			$where = array(1);
 			$params = array();
-			if(isset($serachCriteria['man.name']) && ($name = trim($serachCriteria['man.name'])) !== '')
+			if(isset($serachCriteria['location.name']) && ($name = trim($serachCriteria['location.name'])) !== '')
 			{
-				$where[] = 'man.name like ?';
+				$where[] = 'location.name like ?';
 				$params[] = '%' . $name . '%';
 			}
 			$stats = array();
-			$objects = $class::getAllByCriteria(implode(' AND ', $where), $params, false, $pageNo, $pageSize, array('man.name' => 'asc'), $stats);
+			$objects = $class::getAllByCriteria(implode(' AND ', $where), $params, false, $pageNo, $pageSize, array('location.name' => 'asc'), $stats);
 			var_dump($objects);
 			$results['pageStats'] = $stats;
 			$results['items'] = array();
