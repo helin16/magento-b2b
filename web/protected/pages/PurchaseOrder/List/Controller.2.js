@@ -24,7 +24,6 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		tmp.me = this;
 		$$('#searchBtn').first()
 			.observe('click', function(event) {
-				console.debug(!$$('#showSearch').first().checked);
 				if(!$$('#showSearch').first().checked)
 					$$('#showSearch').first().click();
 				else
@@ -138,10 +137,11 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 				.observe('click', function(){
 					tmp.me._highlightSelectedRow(this.down('.btn'));
 				})
-			.insert({'bottom': new Element(tmp.tag, {'class': 'orderDate col-xs-1'}).update(row.orderDate)})
+			.insert({'bottom': new Element(tmp.tag, {'class': 'orderDate col-xs-1'}).update(tmp.me.loadUTCTime(row.orderDate).toLocaleString())})
 			.insert({'bottom': new Element(tmp.tag, {'class': 'supplierId col-xs-1'}).update(row.supplier.name ? row.supplier.name : '')})
 			.insert({'bottom': new Element(tmp.tag, {'class': 'supplierRefNo col-xs-1'}).update(row.supplierRefNo ? row.supplierRefNo : '')})
 			.insert({'bottom': new Element(tmp.tag, {'class': 'totalProdcutCount col-xs-1'}).update(!tmp.isTitle ? row.totalProdcutCount ? row.totalProdcutCount : '' : 'Total Prodcut Count')})
+			.insert({'bottom': new Element(tmp.tag, {'class': 'ETA col-xs-1'}).update(!tmp.isTitle ? row.eta ? tmp.me.loadUTCTime(row.eta).toDateString() : '' : 'ETA')})
 			.insert({'bottom': new Element(tmp.tag, {'class': 'totalAmount col-xs-1'}).update(!tmp.isTitle ? tmp.me.getCurrency(row.totalAmount) : 'Total Amount')})
 			.insert({'bottom': new Element(tmp.tag, {'class': 'totalPaid col-xs-1'}).update(!tmp.isTitle ? row.totalPaid ? tmp.me.getCurrency(row.totalPaid) : '' : 'Total Paid')})
 			.insert({'bottom': new Element(tmp.tag, {'class': 'status col-xs-1'}).update(row.status)})
