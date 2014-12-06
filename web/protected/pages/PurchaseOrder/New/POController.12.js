@@ -575,17 +575,20 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				.insert({'bottom': new Element('td', {'colspan': 2, 'rowspan': 4})
 					.insert({'bottom': tmp.me._getFormGroup( 'Comments:', new Element('textarea', {'save-order': 'comments'}) ) })
 				}) 
-				.insert({'bottom': new Element('td', {'colspan': 2, 'class': 'text-right active'}).update( new Element('strong').update('Total Excl. GST: ') ) }) 
+				.insert({'bottom': new Element('td', {'colspan': 3, 'class': 'text-right active'}).update( new Element('strong').update('Total Excl. GST: ') ) }) 
 				.insert({'bottom': new Element('td', {'id': tmp.me._htmlIds.totalPriceExcludeGST, 'class': 'active'}).update( tmp.me.getCurrency(0) ) }) 
 				.insert({'bottom': new Element('td', {'rowspan': 4}).update('&nbsp;') }) 
 			})
 			.insert({'bottom': new Element('tr') 
-				.insert({'bottom': new Element('td', {'colspan': 2, 'class': 'text-right active'}).update( new Element('strong').update('Total GST: ') ) }) 
+				.insert({'bottom': new Element('td', {'colspan': 3, 'class': 'text-right active'}).update( new Element('strong').update('Total GST: ') ) }) 
 				.insert({'bottom': new Element('td', {'id': tmp.me._htmlIds.totalPriceGST, 'class': 'active'}).update( tmp.me.getCurrency(0) ) }) 
 			})
 			.insert({'bottom': new Element('tr') 
-				.insert({'bottom': new Element('td', {'colspan': 2, 'class': 'text-right active'}).update( new Element('strong').update('Total Incl. GST: ') ) }) 
+				.insert({'bottom': new Element('td', {'colspan': 3, 'class': 'text-right active'}).update( new Element('strong').update('Total Incl. GST: ') ) }) 
 				.insert({'bottom': new Element('td', {'id': tmp.me._htmlIds.totalPriceIncludeGST, 'class': 'active'}).update( tmp.me.getCurrency(0) ) })
+			})
+			.insert({'bottom': new Element('tr', {'class': 'text-right'}) 
+				.insert({'bottom': new Element('td', {'colspan': 4, 'rowspan': 4}).update( tmp.me._saveBtns() ) })
 			})
 		});
 		return new Element('div', {'class': 'panel panel-info'})
@@ -738,9 +741,9 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			.insert({'bottom': new Element('div', {'class': 'row'})
 				.insert({'bottom': new Element('div', {'class': 'col-sm-12'}).update(tmp.me._getPartsTable()) })
 			})
-			.insert({'bottom': new Element('div', {'class': 'row'})
-				.insert({'bottom': new Element('div', {'class': 'col-sm-12'}).update(tmp.me._saveBtns()) })
-			});
+//			.insert({'bottom': new Element('div', {'class': 'row'})
+//				.insert({'bottom': new Element('div', {'class': 'col-sm-12'}).update(tmp.me._saveBtns()) })
+//			});
 		return tmp.newDiv;
 	}
 	,selectSupplier: function(supplier) {
