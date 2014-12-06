@@ -536,7 +536,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 			'qtyOrdered': tmp.qtyOrdered, 
 			'receievedQty': tmp.receievedQty, 
 			'totalPrice': tmp.me.getCurrency(tmp.totalPrice),
-			'btns': new Element('span', {'class': 'pull-right'})
+			'btns': new Element('span', {'class': 'pull-right', 'style': tmp.me._purchaseorder.status!=='NEW' ? 'display:none' : ''})
 				.insert({'bottom': new Element('span', {'class': 'btn btn-danger btn-xs'})
 				.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-trash'}) })
 				.observe('click', function() {
@@ -873,6 +873,11 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		$(tmp.me._htmlIds.itemDiv).update(tmp.newDiv = tmp.me._getItemDiv());
 		tmp.newDiv.down('input[save-order="contactName"]').focus();
 		tmp.newDiv.down('input[save-order="contactName"]').select();
+		if (tmp.me._purchaseorder.status !== 'NEW') {
+			$$('.order_change_details_table').first().down('.new-order-item-input ').remove();
+			tmp.tableHead = $$('.order_change_details_table').first().down('tr');
+			tmp.tableHead.addClassName('info').setStyle({'border': '3px solid #ccc'});
+		}
 		return tmp.me;
 	}
 });
