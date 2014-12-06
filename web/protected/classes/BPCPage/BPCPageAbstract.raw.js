@@ -218,6 +218,12 @@ BPCPageJs.prototype = {
 		jQuery('#' + tmp.me.modalId).modal({'show': true, 'target': '#' + tmp.me.modalId});
 		return tmp.me;
 	}
+	,hideModalBox: function() {
+		var tmp = {};
+		tmp.me = this;
+		jQuery('#' + tmp.me.modalId).modal('hide');
+		return tmp.me;
+	}
 	/**
 	 * returning a loading image
 	 */
