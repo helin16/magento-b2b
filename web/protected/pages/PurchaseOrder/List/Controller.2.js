@@ -138,7 +138,8 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		tmp.row = new Element('tr', {'class': (tmp.isTitle === true ? 'item_top_row' : 'btn-hide-row item_row') + (row.active == 0 ? ' danger' : ''), 'item_id': (tmp.isTitle === true ? '' : row.id)}).store('data', row)
 			.insert({'bottom': new Element(tmp.tag, {'class': 'purchaseOrderNo col-xs-1'}).update(row.purchaseOrderNo)})
 				.observe('dblclick', function(){
-					tmp.me._openEditPage(row);
+					if(!isTitle)
+						tmp.me._openEditPage(row);
 				})
 				.observe('click', function(){
 					tmp.me._highlightSelectedRow(this.down('.btn'));
