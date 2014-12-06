@@ -174,7 +174,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 	,_getOrderStatus: function () {
 		var tmp = {};
 		tmp.me = this;
-		tmp.selBox = new Element('select', {'save-order': 'status'});
+		tmp.selBox = new Element('select', {'disabled': true, 'save-order': 'status'});
 		tmp.me._statusOptions.each(function(status) {
 			tmp.selBox.insert({'bottom': new Element('option').update(status) });
 		});

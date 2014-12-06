@@ -122,7 +122,7 @@ class ReceivingController extends BPCPageAbstract
 			$searchTxt = isset($param->CallbackParameter->searchTxt) ? trim($param->CallbackParameter->searchTxt) : '';
 			
 			$where = 'pro_pro_code.code = :searchExact or pro.name like :searchTxt OR sku like :searchTxt';
-			$params = array('searchExact' => '%' . $searchTxt . '%' , 'searchTxt' => '%' . $searchTxt . '%');
+			$params = array('searchExact' => $searchTxt , 'searchTxt' => '%' . $searchTxt . '%');
 				
 			$searchTxtArray = StringUtilsAbstract::getAllPossibleCombo(StringUtilsAbstract::tokenize($searchTxt));
 			if(count($searchTxtArray) > 1)
@@ -188,8 +188,7 @@ class ReceivingController extends BPCPageAbstract
 					$comments = trim($serial->comments);
 					ReceivingItem::create($purchaseOrder, $product, $unitPrice, $serialNo, $invoiceNo, $comments);
 					
-					$nofullReceivedItems = PurchaseOrderItem::getAllByCriteria('productId = ? and purchaseOrderId = ? and receivedQty < qty', array($product->getId(), $purchaseOrder->getId()), true, 1, 1);
-					var_dump($nofullReceivedItems);
+					$nofullReceivedItems = PurchaseOrderItem::getAllByCriteria('productId = ? and purchaseOrderId = ?', array($product->getId(), $purchaseOrder->getId()), true, 1, 1, array('po_item.receivedQty' => 'asc'));
 					if(count($nofullReceivedItems) > 0) {
 						$nofullReceivedItems[0]
 						->setReceivedQty($nofullReceivedItems[0]->getReceivedQty() + 1)
@@ -202,12 +201,9 @@ class ReceivingController extends BPCPageAbstract
 				
 				$purchaseOrder->addComment(Comments::TYPE_WAREHOUSE, 'received ' . count($serials) . ' product(SKU=' . $product->getSku() . ') by ' . Core::getUser()->getPerson()->getFullName() . '@' . trim(new UDate()) . '(UTC)');
 			}
-// 			foreach ($products->notMatched as $item) {
-// 				var_dump($item);
-// 			}
 			
-			$totalCount = PurchaseOrderItem::countByCriteria('purchaseOrderId = ? and receivedQty < qty', array($purchaseOrder->getId()));
-			if($totalCount === 0)
+			$totalCount = PurchaseOrderItem::countByCriteria('active = 1 and purchaseOrderId = ? and receivedQty < qty', array($purchaseOrder->getId()));
+			if(trim($totalCount) === '0')
 			{
 				$purchaseOrder->setStatus(PurchaseOrder::STATUS_RECEIVED);
 			}

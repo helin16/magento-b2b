@@ -86,7 +86,7 @@ class DetailsController extends DetailsPageAbstract
 			$items = array();
 			$searchTxt = isset($param->CallbackParameter->searchTxt) ? trim($param->CallbackParameter->searchTxt) : '';
 			$where = 'pro_pro_code.code = :searchExact or pro.name like :searchTxt OR sku like :searchTxt';
-			$params = array('searchExact' => '%' . $searchTxt . '%' , 'searchTxt' => '%' . $searchTxt . '%');
+			$params = array('searchExact' => $searchTxt, 'searchTxt' => '%' . $searchTxt . '%');
 			
 			$searchTxtArray = StringUtilsAbstract::getAllPossibleCombo(StringUtilsAbstract::tokenize($searchTxt));
 			if(count($searchTxtArray) > 1)
