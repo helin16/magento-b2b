@@ -133,7 +133,7 @@ class PaymentMethod extends BaseEntityAbstract
 	public static function getByName($name)
 	{
 		$entities = self::getAllByCriteria('name = ?', array(trim($name)), true, 1,1);
-		return count($entities) === 0 ? $entities[0] : null;
+		return count($entities) > 0 ? $entities[0] : null;
 	}
 	/**
 	 * Creating the PaymentMethod
@@ -148,7 +148,7 @@ class PaymentMethod extends BaseEntityAbstract
 		if(($entity = self::getByName($name)) instanceof PaymentMethod)
 			throw new Exception('The payment method already exsits: ' . $name);
 		$entity = new PaymentMethod();
-		return $entity->setName($value)
+		return $entity->setName(trim($name))
 			->setDescription(trim($description))
 			->save();
 	}
