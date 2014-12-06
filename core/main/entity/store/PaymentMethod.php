@@ -133,7 +133,7 @@ class PaymentMethod extends BaseEntityAbstract
 	public static function getByName($name)
 	{
 		$entities = self::getAllByCriteria('name = ?', array(trim($name)), true, 1,1);
-		return count($entities) === 0 ? $entities[0] : null;
+		return count($entities) > 0 ? $entities[0] : null;
 	}
 	/**
 	 * Creating the PaymentMethod
