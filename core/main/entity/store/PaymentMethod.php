@@ -148,7 +148,7 @@ class PaymentMethod extends BaseEntityAbstract
 		if(($entity = self::getByName($name)) instanceof PaymentMethod)
 			throw new Exception('The payment method already exsits: ' . $name);
 		$entity = new PaymentMethod();
-		return $entity->setName($value)
+		return $entity->setName($name)
 			->setDescription(trim($description))
 			->save();
 	}
