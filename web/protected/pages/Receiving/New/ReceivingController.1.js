@@ -28,17 +28,18 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				.insert({'bottom': new Element('strong').update('Searching for PO: ') })
 				.insert({'bottom': new Element('span', {'class': 'input-group col-sm-6'})
 					.insert({'bottom': new Element('input', {'required': true, 'class': 'form-control search-txt init-focus', 'placeholder': 'any of PO number, Supplier, Supplier Ref Number ...'}) 
-					.observe('keydown', function(event){
-						tmp.txtBox = this;
-						tmp.me.keydown(event, function() {
-							if ($$('#'+pageJs._htmlIds.searchPanel).first().down('tbody')) {
-								$(tmp.me._htmlIds.searchPanel).down('.search-btn').click();
-								if ($$('#'+pageJs._htmlIds.searchPanel).first().down('tbody').getElementsBySelector('.item_row').size()===1)
-									$$('#'+pageJs._htmlIds.searchPanel).first().down('tbody').down('.item_row .btn').click();
-							}
-							else
-								$(tmp.me._htmlIds.searchPanel).down('.search-btn').click();
-					});
+						.observe('keydown', function(event){
+							tmp.txtBox = this;
+							tmp.me.keydown(event, function() {
+								if(tmp.txtBox.hasClassName('search-finished') && $(pageJs._htmlIds.searchPanel).getElementsBySelector('.item_row .btn').size() === 1) {
+									$(pageJs._htmlIds.searchPanel).down('.item_row .btn').click();
+								} else {
+									$(tmp.me._htmlIds.searchPanel).down('.search-btn').click();
+									tmp.txtBox.addClassName('search-finished');
+								}
+							}, function() {
+								$(this).removeClassName('search-finished');
+							});
 							return false;
 						})
 					})
