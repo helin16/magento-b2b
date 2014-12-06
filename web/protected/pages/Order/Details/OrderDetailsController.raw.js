@@ -5,11 +5,13 @@ var PageJs = new Class.create();
 PageJs.prototype = Object.extend(new BPCPageJs(), {
 	_order: null //the order object
 	,_orderStatuses: [] //the order statuses object
+	,_orderStatusID_Shipped: '' //the order statuses object
 	,_paymentMethods: []
 	,_payments: []
 	,_orderItems: [] //the order items on that order
 	,_resultDivId: '' //the result div id
 	,_couriers: []	
+	,_courier_LocalPickUpId: ''
 	,_editMode: {'purchasing': false, 'warehouse': false, 'accounting': false, 'status': false} //the edit mode for purchasing and warehouse
 	,_commentsDiv: {'pagination': {'pageSize': 5, 'pageNo': 1}, 'resultDivId': 'comments_result_div', 'types': {'purchasing': '', 'warehouse': ''}} //the pagination for the comments
 	,infoType_custName : 1
@@ -37,16 +39,18 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		return this;
 	}
 		
-	,setOrder: function(order, orderItems, orderStatuses) {
+	,setOrder: function(order, orderItems, orderStatuses, _orderStatusID_Shipped) {
 		this._order = order;
 		this._orderItems = orderItems;
 		this._orderStatuses = orderStatuses;
+		this._orderStatusID_Shipped = _orderStatusID_Shipped;
 		return this;
 	}
 	
 	/* *** This function sets all the couriers to the class property *** */
-	,setCourier: function(couriers) {
+	,setCourier: function(couriers, _courier_LocalPickUpId) {
 		this._couriers = couriers;
+		this._courier_LocalPickUpId = _courier_LocalPickUpId;
 		return this;
 	}
 	
@@ -680,10 +684,35 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					tmp.result = tmp.me.getResp(param, false, true);
 					if(!tmp.result)
 						return;
-					alert('Saved Successfully!');
+					tmp.me.showModalBox('Success', 'Shipment saved successfully.')
 					window.location = document.URL;
 				} catch (e) {
-					$(button).up('.row').insert({'bottom': tmp.me.getAlertBox('ERROR: ', e).addClassName('alert-danger col-xs-12') });
+					tmp.newDiv = new Element('div', {'class': 'shipping-reconfim-wrapper'})
+						.insert({'bottom': tmp.me.getAlertBox('ERROR: ', e).addClassName('alert-danger') })
+						.insert({'bottom': new Element('h4').update('Please check with your Accountant to make sure this cusomter has paid for this order!') })
+						.insert({'bottom': new Element('div', {'class': 'form-group'})
+							.insert({'bottom': new Element('label').update('If you really want to mark this order to be SHIPPED, please provide a comments and click save:') })
+							.insert({'bottom': new Element('input', {'class': 'form-control comments', 'placeholder': 'Comments'}) })
+						})
+						.insert({'bottom': new Element('div', {'class': 'form-group'})
+							.insert({'bottom': new Element('span', {'class': 'btn btn-primary'}).update('Confirm')
+								.observe('click',function(){
+									tmp.commentsBox = $(this).up('.shipping-reconfim-wrapper').down('.comments');
+									tmp.comments = $F(tmp.commentsBox);
+									if(tmp.comments.blank()) {
+										tmp.me._markFormGroupError(tmp.commentsBox, 'Please provide some reason for this confirmation.');
+										return;
+									}
+									tmp.me._submitOrderStatusChange(tmp.me._orderStatusID_Shipped, tmp.comments);
+								})
+							})
+							.insert({'bottom': new Element('span', {'class': 'btn btn-default pull-right'}).update('Cancel')
+								.observe('click',function(){
+									tmp.me.hideModalBox();
+								})
+							})
+						});
+					tmp.me.showModalBox('Error', tmp.newDiv, false);
 				}
 			},
 			'onComplete': function(sender, param) {
@@ -743,7 +772,19 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				.insert({'bottom': tmp.me._getFormGroup('Contact No:', new Element('input', {'type': 'tel', 'save_shipping': 'contactNo', 'required': true, 'class': 'input-sm', 'value': tmp.me._order.address.shipping.contactNo}) ) })
 			})
 			.insert({'bottom': new Element('div', {'class': 'col-sm-2 bg-info'})
-				.insert({'bottom': tmp.me._getFormGroup('Courier:', tmp.me._getCourierList().writeAttribute('save_shipping', 'courierId').writeAttribute('required', true) ) })
+				.insert({'bottom': tmp.me._getFormGroup('Courier:', tmp.me._getCourierList().writeAttribute('save_shipping', 'courierId').writeAttribute('required', true) 
+					.observe('change', function() {
+						tmp.panel = $(this).up('.save_shipping_panel');
+						if($F(this) == tmp.me._courier_LocalPickUpId ) {
+							tmp.panel.down('[save_shipping="conNoteNo"]').setValue('Local Pickup').disabled = true;
+							tmp.panel.down('[save_shipping="actualShippingCost"]').setValue('0').disabled = true;
+						} else {
+							tmp.panel.down('[save_shipping="conNoteNo"]').setValue('').disabled = false;
+							tmp.panel.down('[save_shipping="actualShippingCost"]').setValue('').disabled = false;
+						}
+						tmp.panel.down('[save_shipping="noOfCartons"]').select();
+					})
+				) })
 			})
 			.insert({'bottom': new Element('div', {'class': 'col-sm-2 bg-info'})
 				.insert({'bottom': tmp.me._getFormGroup('Carton(s):', 
@@ -809,6 +850,28 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.shipmentDiv.down('.panel-heading').insert({'after': tmp.shipmentDivBody});
 		return tmp.shipmentDiv;
 	}
+	,_submitOrderStatusChange: function(orderStatusId, comments) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.me.postAjax(tmp.me.getCallbackId('changeOrderStatus'), {'order': tmp.me._order, 'orderStatusId': orderStatusId, 'comments': comments}, {
+			'onLoading': function (sender, param) { 
+				$(selBox).disabled = true; 
+			}
+			,'onSuccess': function (sender, param) {
+				try {
+					tmp.result = tmp.me.getResp(param, false, true);
+					alert('Saved Successfully!');
+					window.location = document.URL;
+				} catch (e) {
+					alert(e);
+					$(selBox).disabled = false;
+					$(selBox).replace(tmp.me._getOrderStatus());
+				}
+			}
+			,'onComplete': function(sender, param) {
+			}
+		});
+	}
 	/**
 	 * Ajax: change Order Status
 	 */
@@ -826,25 +889,8 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				$(selBox).replace(tmp.me._getOrderStatus());
 				return this;
 			}
+			tmp.me._submitOrderStatusChange($F(selBox), tmp.comments);
 			
-			tmp.me.postAjax(tmp.me.getCallbackId('changeOrderStatus'), {'order': tmp.me._order, 'orderStatusId': $F(selBox), 'comments': tmp.comments}, {
-				'onLoading': function (sender, param) { 
-					$(selBox).disabled = true; 
-				}
-				,'onSuccess': function (sender, param) {
-					try {
-						tmp.result = tmp.me.getResp(param, false, true);
-						alert('Saved Successfully!');
-						window.location = document.URL;
-					} catch (e) {
-						alert(e);
-						$(selBox).disabled = false;
-						$(selBox).replace(tmp.me._getOrderStatus());
-					}
-				}
-				,'onComplete': function(sender, param) {
-				}
-			});
 			return this;
 		}
 		$(selBox).replace(tmp.me._getOrderStatus());
