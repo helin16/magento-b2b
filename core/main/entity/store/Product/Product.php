@@ -628,6 +628,15 @@ class Product extends InfoEntityAbstract
 		SupplierCode::updateByCriteria('active = 0', 'productId = ?', array($this->getId()));
 		return $this;
 	}
+	public function getLocations(PreferredLocationType $type = null, $activeOnly = true, $pageNo = null, $pageSize = DaoQuery::DEFAUTL_PAGE_SIZE, $orderBy = array(), &$stats = array())
+	{
+		return PreferredLocation::getPreferredLocations($this, $type, $activeOnly, $pageNo, $pageSize, $orderBy, &$stats);
+	}
+	public function addLocation(PreferredLocationType $type, Location $location)
+	{
+		PreferredLocation::create($location, $this, $type);
+		return $this;
+	}
 	/**
 	 * (non-PHPdoc)
 	 * @see BaseEntityAbstract::getJson()
