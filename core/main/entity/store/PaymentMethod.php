@@ -123,4 +123,33 @@ class PaymentMethod extends BaseEntityAbstract
 		DaoMap::createUniqueIndex('name');
 		DaoMap::commit();
 	}
+	/**
+	 * Getting payment methods from the name
+	 * 
+	 * @param string $name
+	 * 
+	 * @return Ambigous <NULL, BaseEntityAbstract>
+	 */
+	public static function getByName($name)
+	{
+		$entities = self::getAllByCriteria('name = ?', array(trim($name)), true, 1,1);
+		return count($entities) === 0 ? $entities[0] : null;
+	}
+	/**
+	 * Creating the PaymentMethod
+	 * 
+	 * @param string $name
+	 * @param string $description
+	 * 
+	 * @return PaymentMethod
+	 */
+	public static function create($name, $description = '')
+	{
+		if(($entity = self::getByName($name)) instanceof PaymentMethod)
+			throw new Exception('The payment method already exsits: ' . $name);
+		$entity = new PaymentMethod();
+		return $entity->setName($value)
+			->setDescription(trim($description))
+			->save();
+	}
 }
