@@ -173,15 +173,69 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		var tmp = {};
 		tmp.me = this;
 		tmp.supplier = tmp.me._supplier;
-		tmp.shippingCostEl = new Element('input', {'class': 'text-right', 'id': 'shipping_cost', 'save-order': 'shippingCost' , 'value': tmp.me._purchaseorder.shippingCost ? tmp.me.getCurrency(tmp.me._purchaseorder.shippingCost) : tmp.me.getCurrency(0)});
-		tmp.handlingCostEl = new Element('input', {'class': 'text-right', 'id': 'handling_cost', 'save-order': 'handlingCost' , 'value': tmp.me._purchaseorder.handlingCost ? tmp.me.getCurrency(tmp.me._purchaseorder.handlingCost) : tmp.me.getCurrency(0)});
+		tmp.totalShippingCost = tmp.me._purchaseorder.shippingCost ? tmp.me._purchaseorder.shippingCost : 0;
+		tmp.totalHandlingCost = tmp.me._purchaseorder.handlingCost ? tmp.me._purchaseorder.handlingCost : 0;
+		tmp.totalExcGST = tmp.me._purchaseorder.totalAmount ? tmp.me._purchaseorder.totalAmount : 0;
+		tmp.totalPaidAmount = tmp.me._purchaseorder.totalPaid ? tmp.me._purchaseorder.totalPaid : 0;
+		tmp.totalPaymentDue = tmp.totalExcGST * 1 + tmp.totalShippingCost * 1 + tmp.totalHandlingCost * 1 - tmp.totalPaidAmount * 1;
+		
+		tmp.shippingCostEl = new Element('input', {'class': 'text-right', 'id': 'shipping_cost', 'save-order': 'shippingCost' , 'value': tmp.me._purchaseorder.shippingCost ? tmp.me.getCurrency(tmp.me._purchaseorder.shippingCost) : tmp.me.getCurrency(0)})
+			.observe('keyup',function(){
+				tmp.shippingCost = this.value==='' ? 0 : tmp.me.getValueFromCurrency(this.value);
+				if(jQuery.isNumeric(tmp.shippingCost)) {
+					tmp.totalPaidAmount = tmp.me.getValueFromCurrency($$('[save-order="totalPaid"]').first().value) * 1;
+					tmp.handlingCost = tmp.me.getValueFromCurrency($$('[save-order="handlingCost"]').first().value) * 1;
+					tmp.totalExcGST = tmp.me.getValueFromCurrency($(tmp.me._htmlIds.totalPriceExcludeGST).innerHTML) * 1;
+					tmp.totalPaymentDue = tmp.totalExcGST * 1 + tmp.shippingCost * 1 + tmp.handlingCost * 1 - tmp.totalPaidAmount * 1;
+					$$('.total-payment-due').each(function(item) {
+						tmp.newEl = new Element('strong', {'class': 'label'}).update(tmp.me.getCurrency(tmp.totalPaymentDue) + ' ');
+						if(tmp.totalPaymentDue * 1 > 0) {
+							tmp.newEl.addClassName('label-info').writeAttribute('title', 'Need to pay supplier')
+								.insert({'bottom': new Element('span', {'class': ' glyphicon glyphicon-import'})});
+						} else if (tmp.totalPaymentDue * 1 === 0) {
+							tmp.newEl.addClassName('label-success')
+								.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-ok'})});
+						} else {
+							tmp.newEl.addClassName('label-danger').writeAttribute('title', 'Over paid to supplier')
+								.insert({'bottom': new Element('span', {'class': ' glyphicon glyphicon-export'})});
+						}
+						item.update(tmp.newEl);
+					});					
+				}
+			});
+		tmp.handlingCostEl = new Element('input', {'class': 'text-right', 'id': 'handling_cost', 'save-order': 'handlingCost' , 'value': tmp.me._purchaseorder.handlingCost ? tmp.me.getCurrency(tmp.me._purchaseorder.handlingCost) : tmp.me.getCurrency(0)})
+			.observe('keyup',function(){
+				tmp.handlingCost = this.value==='' ? 0 : tmp.me.getValueFromCurrency(this.value);
+				if(jQuery.isNumeric(tmp.handlingCost)) {
+					tmp.totalPaidAmount = tmp.me.getValueFromCurrency($$('[save-order="totalPaid"]').first().value) * 1;
+					tmp.shippingCost = tmp.me.getValueFromCurrency($$('[save-order="shippingCost"]').first().value) * 1;
+					tmp.totalExcGST = tmp.me.getValueFromCurrency($(tmp.me._htmlIds.totalPriceExcludeGST).innerHTML) * 1;
+					tmp.totalPaymentDue = tmp.totalExcGST * 1 + tmp.shippingCost * 1 + tmp.handlingCost * 1 - tmp.totalPaidAmount * 1;
+					$$('.total-payment-due').each(function(item) {
+						tmp.newEl = new Element('strong', {'class': 'label'}).update(tmp.me.getCurrency(tmp.totalPaymentDue) + ' ');
+						if(tmp.totalPaymentDue * 1 > 0) {
+							tmp.newEl.addClassName('label-info').writeAttribute('title', 'Need to pay supplier')
+								.insert({'bottom': new Element('span', {'class': ' glyphicon glyphicon-import'})});
+						} else if (tmp.totalPaymentDue * 1 === 0) {
+							tmp.newEl.addClassName('label-success')
+								.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-ok'})});
+						} else {
+							tmp.newEl.addClassName('label-danger').writeAttribute('title', 'Over paid to supplier')
+								.insert({'bottom': new Element('span', {'class': ' glyphicon glyphicon-export'})});
+						}
+						item.update(tmp.newEl);
+					});					
+				}
+			});
 		tmp.totalAmountExGstEl = new Element('input', {'class': 'text-right', 'disabled': 'disabled', 'save-order': 'totalAmount'});
 		tmp.totalPaidEl = new Element('input', {'class': 'text-right', 'id': tmp.me._htmlIds.totalPaidAmount, 'save-order': 'totalPaid' , 'value': tmp.me._purchaseorder.totalPaid ? tmp.me.getCurrency(tmp.me._purchaseorder.totalPaid) : tmp.me.getCurrency(0)})
 			.observe('keyup',function(){
-				tmp.totalPaidAmount = this.value==='' ? 0 : this.value;
+				tmp.totalPaidAmount = this.value==='' ? 0 : tmp.me.getValueFromCurrency(this.value);
 				if(jQuery.isNumeric(tmp.totalPaidAmount)) {
+					tmp.shippingCost = tmp.me.getValueFromCurrency($$('[save-order="shippingCost"]').first().value) * 1;
+					tmp.handlingCost = tmp.me.getValueFromCurrency($$('[save-order="handlingCost"]').first().value) * 1;
 					tmp.totalExcGST = tmp.me.getValueFromCurrency($(tmp.me._htmlIds.totalPriceExcludeGST).innerHTML) * 1;
-					tmp.totalPaymentDue = tmp.totalExcGST * 1 - tmp.totalPaidAmount;
+					tmp.totalPaymentDue = tmp.totalExcGST * 1 + tmp.shippingCost * 1 + tmp.handlingCost * 1 - tmp.totalPaidAmount * 1;
 					$$('.total-payment-due').each(function(item) {
 						tmp.newEl = new Element('strong', {'class': 'label'}).update(tmp.me.getCurrency(tmp.totalPaymentDue) + ' ');
 						if(tmp.totalPaymentDue * 1 > 0) {
@@ -201,7 +255,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		tmp.newDiv = new Element('div', {'class': 'panel panel-info', 'id': tmp.me._htmlIds.paymentPanel})
 			.insert({'bottom': new Element('div', {'class':'panel-heading'})
 				.insert({'bottom': new Element('strong').update('Total Payment Due: ') })
-				.insert({'bottom': new Element('span', {'class': 'pull-right total-payment-due'}).update(tmp.me.getCurrency(0) ) })
+				.insert({'bottom': new Element('span', {'class': 'pull-right total-payment-due'}).update(tmp.me.getCurrency(tmp.totalPaymentDue) ) })
 			})
 			.insert({'bottom': new Element('div', {'class':'row'})
 				.insert({'bottom': new Element('div', {'class':'col-md-6'})
@@ -442,8 +496,8 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		
 		tmp.totalExcGST = tmp.me.getValueFromCurrency(tmp.totalExcGSTBox.innerHTML) * 1  + amount * 1;
 		tmp.totalIncGST = tmp.totalExcGST ? (tmp.totalExcGST * 1 * 1.1) : 0;
-		tmp.totalShippingCost = tmp.totalShippingCostBox ? tmp.me.getValueFromCurrency($F(tmp.totalShippingCostBox)) : 0;
-		tmp.totalHandlingCost = tmp.totalHandlingCostBox ? tmp.me.getValueFromCurrency($F(tmp.totalHandlingCostBox)) : 0;
+		tmp.totalShippingCost = tmp.totalShippingCostBox ? tmp.me.getValueFromCurrency($F(tmp.totalShippingCostBox)) : tmp.me._purchaseorder.shippingCost;
+		tmp.totalHandlingCost = tmp.totalHandlingCostBox ? tmp.me.getValueFromCurrency($F(tmp.totalHandlingCostBox)) : tmp.me._purchaseorder.handlingCost;
 		
 		tmp.totalGST = tmp.totalExcGST ? (tmp.totalIncGST * 1 - tmp.totalExcGST * 1) : 0;
 		
@@ -455,8 +509,8 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		tmp.totalPaidAmount = $$('.pull-right.total-payment-due').first() ?
 				($(tmp.me._htmlIds.totalPaidAmount) ? tmp.me.getValueFromCurrency($F(tmp.me._htmlIds.totalPaidAmount)) : 0)
 				: tmp.me._purchaseorder.totalPaid;
-		tmp.totalPaymentDue = tmp.totalExcGST * 1 - tmp.totalPaidAmount * 1;
-//		tmp.totalPaymentDue = tmp.totalExcGST * 1 + tmp.totalShippingCost * 1 + tmp.totalHandlingCost * 1 - tmp.totalPaidAmount * 1;
+//		tmp.totalPaymentDue = tmp.totalExcGST * 1 - tmp.totalPaidAmount * 1;
+		tmp.totalPaymentDue = tmp.totalExcGST * 1 + tmp.totalShippingCost * 1 + tmp.totalHandlingCost * 1 - tmp.totalPaidAmount * 1;
 		$$('.total-payment-due').each(function(item) {
 			tmp.newEl = new Element('strong', {'class': 'label'}).update(tmp.me.getCurrency(tmp.totalPaymentDue) + ' ');
 			if(tmp.totalPaymentDue * 1 > 0) {
