@@ -86,14 +86,14 @@ class Controller extends CRUDPageAbstract
             	{
             		case 'po.purchaseOrderNo':
             			{
-            				$where[] =  $field . " = ? ";
-            				$params[] = $value;
+            				$where[] =  $field . " like ? ";
+            				$params[] = '%' . $value . '%';
             				break;
             			}
             		case 'po.supplierRefNo':
             			{
-            				$where[] =  $field . " = ? ";
-            				$params[] = $value;
+            				$where[] =  $field . " like ? ";
+            				$params[] = '%' . $value . '%';
             				break;
             			}
             		case 'po.orderDate_from':
