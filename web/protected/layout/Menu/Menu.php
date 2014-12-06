@@ -65,6 +65,12 @@ class Menu extends TTemplateControl
 					'icon' => '<span class="glyphicon glyphicon-time"></span>',
 					'PaymentMethod' =>array('url' => '/paymentmethod.html', 'name' => 'Payment Method', 'icon' => '<span class="glyphicon glyphicon-record"></span>')
 			);
+		if(AccessControl::canAccessOrderItemsPage(Core::getRole()) )
+			$array['Warehouse'] = array(
+					'icon' => '<span class="glyphicon glyphicon-home"></span>',
+					'Receiving' =>array('url' => '/receiving.html', 'name' => 'Receiving PO', 'icon' => '<span class="glyphicon glyphicon-home"></span>'),
+					'PaymentMethod' =>array('url' => '/locations.html', 'name' => 'Logistics', 'icon' => '<span class="glyphicon glyphicon-pushpin"></span>')
+			);
 		$html = "<ul class='nav navbar-nav'>";
 			foreach($array as $key => $item)
 			{
