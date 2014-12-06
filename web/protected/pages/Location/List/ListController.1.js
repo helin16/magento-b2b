@@ -66,14 +66,34 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 					.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-plus'}) })
 					.insert({'bottom': ' NEW' })
 					.observe('click', function(){
-						$(this).up('thead').insert({'bottom': tmp.me._getEditPanel({}) });
+						$(this).up('thead').insert({'bottom': tmp.newEditEl = tmp.me._getEditPanel({}) });
+						tmp.newEditEl.down('.form-control[save-item-panel]').focus();
+						tmp.newEditEl.down('.form-control[save-item-panel]').select();
+						tmp.newEditEl.getElementsBySelector('.form-control[save-item-panel]').each(function(item) {
+							item.observe('keydown', function(event){
+								tmp.me.keydown(event, function() {
+									tmp.newEditEl.down('.btn-success span').click();
+								});
+								return false;
+							})
+						});
 					})
 				)
 				: (new Element('span', {'class': 'btn-group btn-group-xs'})
 					.insert({'bottom': new Element('span', {'class': 'btn btn-default', 'title': 'Edit'})
 						.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-pencil'}) })
 						.observe('click', function(){
-							$(this).up('.item_row').replace(tmp.me._getEditPanel(row));
+							$(this).up('.item_row').replace(tmp.editEl = tmp.me._getEditPanel(row));
+							tmp.editEl.down('.form-control[save-item-panel]').focus();
+							tmp.editEl.down('.form-control[save-item-panel]').select();
+							tmp.editEl.getElementsBySelector('.form-control[save-item-panel]').each(function(item) {
+								item.observe('keydown', function(event){
+									tmp.me.keydown(event, function() {
+										tmp.editEl.down('.btn-success span').click();
+									});
+									return false;
+								})
+							});
 						})
 					})
 					.insert({'bottom': new Element('span', {'class': 'btn btn-danger', 'title': 'Delete'})
