@@ -388,7 +388,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		var tmp = {};
 		tmp.me = this;
 		tmp.table = new Element('table', {'class': 'table scanTable'})
-			.insert({'bottom': new Element('thead').update(tmp.me._getScanTableROW({'serialNo': 'Serial No.', 'unitPrice': 'Unit Price', 'invoiceNo': 'Inv. No.', 'comments': 'Comments', 'btns': ''}, true)) })
+			.insert({'bottom': new Element('thead').update(tmp.me._getScanTableROW({'serialNo': 'Serial No.', 'unitPrice': 'Unit Price (Ex)', 'invoiceNo': 'Inv. No.', 'comments': 'Comments', 'btns': ''}, true)) })
 			.insert({'bottom': new Element('tbody')
 				.insert({'bottom': tmp.me._getScanTableROW({
 						'serialNo': tmp.me._getFormGroup('',new Element('input', {'class': 'form-control', 'scanned-item': 'serialNo', 'type': 'text', 'placeholder': 'Serial Number:', 'required': true})), 

@@ -565,7 +565,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.me = this;
 		//header row
 		tmp.productListDiv = new Element('table', {'class': 'table table-hover table-condensed order_change_details_table'})
-			.insert({'bottom': tmp.me._getProductRow({'product': {'sku': 'SKU', 'name': 'Description'}, 'unitPrice': 'Unit Price', 'qtyOrdered': 'Qty', 'totalPrice': 'Total Price'}, true)
+			.insert({'bottom': tmp.me._getProductRow({'product': {'sku': 'SKU', 'name': 'Description'}, 'unitPrice': 'Unit Price (Ex)', 'qtyOrdered': 'Qty', 'totalPrice': 'Total Price'}, true)
 				.wrap( new Element('thead') )
 			});
 		// tbody
