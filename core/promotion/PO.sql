@@ -54,3 +54,55 @@ ALTER TABLE `product` ADD INDEX(`stockOnOrder`);
 #added SALE role
 INSERT INTO `role` (`id`, `name`, `active`, `created`, `createdById`, `updated`, `updatedById`) VALUES
 (6, 'Sales', 1, NOW() , 10, NOW() , 10);
+
+#add location and other 2 tables
+DROP TABLE IF EXISTS `location`;
+CREATE TABLE `location` (
+	`id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+	`name` varchar(100) NOT NULL DEFAULT '',
+	`description` varchar(255) NOT NULL DEFAULT '',
+	`active` bool NOT NULL DEFAULT 1,
+	`created` datetime NOT NULL DEFAULT '0001-01-01 00:00:00',
+	`createdById` int(10) unsigned NOT NULL DEFAULT 0,
+	`updated` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+	`updatedById` int(10) unsigned NOT NULL DEFAULT 0,
+	PRIMARY KEY (`id`)
+	,INDEX (`createdById`)
+	,INDEX (`updatedById`)
+	,INDEX (`description`)
+	,UNIQUE INDEX (`name`)
+) ENGINE=innodb DEFAULT CHARSET=utf8;
+DROP TABLE IF EXISTS `preferredlocation`;
+CREATE TABLE `preferredlocation` (
+	`id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+	`locationId` int(10) unsigned NOT NULL DEFAULT 0,
+	`productId` int(10) unsigned NOT NULL DEFAULT 0,
+	`typeId` int(10) unsigned NOT NULL DEFAULT 0,
+	`active` bool NOT NULL DEFAULT 1,
+	`created` datetime NOT NULL DEFAULT '0001-01-01 00:00:00',
+	`createdById` int(10) unsigned NOT NULL DEFAULT 0,
+	`updated` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+	`updatedById` int(10) unsigned NOT NULL DEFAULT 0,
+	PRIMARY KEY (`id`)
+	,INDEX (`locationId`)
+	,INDEX (`productId`)
+	,INDEX (`typeId`)
+	,INDEX (`createdById`)
+	,INDEX (`updatedById`)
+) ENGINE=innodb DEFAULT CHARSET=utf8;
+DROP TABLE IF EXISTS `preferredlocationtype`;
+CREATE TABLE `preferredlocationtype` (
+	`id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+	`name` varchar(100) NOT NULL DEFAULT '',
+	`description` varchar(255) NOT NULL DEFAULT '',
+	`active` bool NOT NULL DEFAULT 1,
+	`created` datetime NOT NULL DEFAULT '0001-01-01 00:00:00',
+	`createdById` int(10) unsigned NOT NULL DEFAULT 0,
+	`updated` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+	`updatedById` int(10) unsigned NOT NULL DEFAULT 0,
+	PRIMARY KEY (`id`)
+	,INDEX (`createdById`)
+	,INDEX (`updatedById`)
+	,INDEX (`description`)
+	,UNIQUE INDEX (`name`)
+) ENGINE=innodb DEFAULT CHARSET=utf8;

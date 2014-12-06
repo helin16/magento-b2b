@@ -630,7 +630,7 @@ class Product extends InfoEntityAbstract
 	}
 	public function getLocations(PreferredLocationType $type = null, $activeOnly = true, $pageNo = null, $pageSize = DaoQuery::DEFAUTL_PAGE_SIZE, $orderBy = array(), &$stats = array())
 	{
-		return PreferredLocation::getPreferredLocations($this, $type, $activeOnly, $pageNo, $pageSize, $orderBy, &$stats);
+		return PreferredLocation::getPreferredLocations($this, $type, $activeOnly, $pageNo, $pageSize, $orderBy, $stats);
 	}
 	public function addLocation(PreferredLocationType $type, Location $location)
 	{

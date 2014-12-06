@@ -144,6 +144,6 @@ class PreferredLocation extends BaseEntityAbstract
 			$where[] = 'typeId = ?';
 			$params[] = $type->getId();
 		}
-		return self::getAllByCriteria(implode(' AND ', $where), $params, $activeOnly, $pageNo , $pageSize, $orderBy, &$stats);
+		return self::getAllByCriteria(implode(' AND ', $where), $params, $activeOnly, $pageNo , $pageSize, $orderBy, $stats);
 	}
 }
