@@ -44,3 +44,13 @@ ALTER TABLE `purchaseorder` ADD `eta` DATETIME NOT NULL DEFAULT '0001-01-01 00:0
 
 #add email onto supplier
 ALTER TABLE `supplier` ADD `email` VARCHAR(100) NOT NULL DEFAULT '' AFTER `contactNo`, ADD INDEX (`email`) ;
+
+#changed Product for qty
+ALTER TABLE `product` ADD `stockOnPO` INT(10) NOT NULL DEFAULT '0' AFTER `stockOnOrder`;
+ALTER TABLE `product` CHANGE `stockOnHand` `stockOnHand` INT(10) NOT NULL DEFAULT '0';
+ALTER TABLE `product` ADD INDEX(`stockOnPO`);
+ALTER TABLE `product` ADD INDEX(`stockOnOrder`);
+
+#added SALE role
+INSERT INTO `role` (`id`, `name`, `active`, `created`, `createdById`, `updated`, `updatedById`) VALUES
+(6, 'Sales', 1, NOW() , 10, NOW() , 10);

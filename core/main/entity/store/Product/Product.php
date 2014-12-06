@@ -39,6 +39,12 @@ class Product extends InfoEntityAbstract
 	 */
 	private $stockOnHand = 0;
 	/**
+	 * The quantity we have
+	 * 
+	 * @var int
+	 */
+	private $stockOnPO = 0;
+	/**
 	 * Whether this order is imported from B2B
 	 * 
 	 * @var bool
@@ -337,6 +343,27 @@ class Product extends InfoEntityAbstract
 	public function setStockOnHand($value) 
 	{
 	    $this->stockOnHand = $value;
+	    return $this;
+	}
+	/**
+	 * Getter for stockOnPO
+	 *
+	 * @return 
+	 */
+	public function getstockOnPO() 
+	{
+	    return $this->stockOnPO;
+	}
+	/**
+	 * Setter for stockOnPO
+	 *
+	 * @param int $value The stockOnHand
+	 *
+	 * @return Product
+	 */
+	public function setStockOnPO($value) 
+	{
+	    $this->stockOnPO = $value;
 	    return $this;
 	}
 	/**
@@ -656,8 +683,9 @@ class Product extends InfoEntityAbstract
 		DaoMap::setStringType('sku', 'varchar', 50);
 		DaoMap::setStringType('name', 'varchar', 100);
 		DaoMap::setStringType('mageId', 'varchar', 10);
-		DaoMap::setIntType('stockOnHand');
-		DaoMap::setIntType('stockOnOrder');
+		DaoMap::setIntType('stockOnHand', 'int', 10, false);
+		DaoMap::setIntType('stockOnOrder', 'int', 10, false);
+		DaoMap::setIntType('stockOnPO', 'int', 10, false);
 		DaoMap::setBoolType('isFromB2B');
 		DaoMap::setBoolType('sellOnWeb');
 		DaoMap::setManyToOne('status', 'ProductStatus', 'pro_status', true);
@@ -676,6 +704,7 @@ class Product extends InfoEntityAbstract
 		DaoMap::createIndex('mageId');
 		DaoMap::createIndex('stockOnHand');
 		DaoMap::createIndex('stockOnOrder');
+		DaoMap::createIndex('stockOnPO');
 		DaoMap::createIndex('isFromB2B');
 		DaoMap::createIndex('shortDescription');
 		DaoMap::createIndex('fullDescAssetId');

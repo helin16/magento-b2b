@@ -28,6 +28,8 @@ class Menu extends TTemplateControl
 		/*if(AccessControl::canAccessPriceMatchPage(Core::getRole()) )
 			$array['priceMatch'] = array('url' => '/pricematch.html', 'name' => 'Price Match', 'icon' => '<span class="glyphicon glyphicon-usd"></span>' );*/
 
+		if(AccessControl::canAccessCreateOrderPage(Core::getRole()) )
+			$array['Orders']['neworder'] = array('url' => '/order/new.html', 'name' => 'New Order', 'icon' => '<span class="glyphicon glyphicon-plus"></span>');
 		if(AccessControl::canAccessOrderItemsPage(Core::getRole()) )
 			$array['Orders']['orderitems'] = array('url' => '/orderitems.html', 'name' => 'OrderItems');
 		if(AccessControl::canAccessOrderItemsPage(Core::getRole()) )

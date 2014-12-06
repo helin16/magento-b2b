@@ -40,6 +40,12 @@ class Role extends BaseEntityAbstract
      */
     const ID_SYSTEM_ADMIN = 5;
     /**
+     * ID the SYSTEM ADMIN role
+     * 
+     * @var int
+     */
+    const ID_SALES = 6;
+    /**
      * The name of the role
      * @var string
      */

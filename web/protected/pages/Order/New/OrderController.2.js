@@ -116,7 +116,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		var tmp = {};
 		tmp.me = this;
 		tmp.customer = tmp.me._customer;
-		tmp.newDiv = new Element('div', {'class': 'panel panel-default'})
+		tmp.newDiv = new Element('div', {'class': 'panel panel-success'})
 			.insert({'bottom': new Element('div', {'class': 'panel-heading'})
 				.insert({'bottom': new Element('strong').update('Creating order for: ' + tmp.customer.name + ' ') })
 				.insert({'bottom': ' <' })
@@ -387,6 +387,9 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					tmp.qty = $F(tmp.row.down('[new-order-item=qtyOrdered]'));
 					$(tmp.row.down('[new-order-item=totalPrice]')).value = tmp.me.getCurrency( tmp.unitPrice * tmp.qty);
 				})
+				.observe('click', function() {
+					$(this).select();
+				})
 			)
 			,'qtyOrdered': tmp.me._getFormGroup( null, new Element('input', {'class': 'input-sm', 'new-order-item': 'qtyOrdered', 'required': 'Required!', 'value': '1'})
 				.observe('change', function(){
@@ -395,6 +398,9 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					tmp.qty = $F(this);
 					$(tmp.row.down('[new-order-item=totalPrice]')).value = tmp.me.getCurrency( tmp.unitPrice * tmp.qty);
 				})
+				.observe('click', function() {
+					$(this).select();
+				})
 			)
 			,'totalPrice': tmp.me._getFormGroup( null, new Element('input', {'class': 'input-sm', 'new-order-item': 'totalPrice', 'required': 'Required!', 'value': tmp.me.getCurrency(0)})
 				.observe('change', function(){
@@ -402,6 +408,9 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					tmp.totalPrice = tmp.me.getValueFromCurrency($F(this));
 					tmp.qty = $F(tmp.row.down('[new-order-item=qtyOrdered]'));
 					$(tmp.row.down('[new-order-item=unitPrice]')).value = tmp.me.getCurrency( tmp.totalPrice / tmp.qty );
+				})
+				.observe('click', function() {
+					$(this).select();
 				})
 			)
 			, 'btns': new Element('span', {'class': 'btn-group btn-group-sm pull-right'})
@@ -426,7 +435,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					})
 				})
 		};
-		return tmp.me._getProductRow(tmp.data, false).addClassName('new-order-item-input info').removeClassName('order-item-row');
+		return tmp.me._getProductRow(tmp.data, false).addClassName('new-order-item-input success').removeClassName('order-item-row');
 	}
 	/**
 	 * Getting the parts panel
@@ -462,7 +471,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				.insert({'bottom': new Element('td', {'id': tmp.me._htmlIds.totalPriceIncludeGST, 'class': 'active'}).update( tmp.me.getCurrency(0) ) })
 			})
 		});
-		return new Element('div', {'class': 'panel panel-default'})
+		return new Element('div', {'class': 'panel panel-success'})
 			.insert({'bottom': new Element('div', {'class': 'panel-body table-responsive'})
 				.insert({'bottom':  tmp.productListDiv})
 			});
@@ -481,7 +490,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			tmp.shippingMethodSel.insert({'bottom': new Element('option', {'value': method.id}).update(method.name) });
 		})
 		
-		tmp.newDiv = new Element('div', {'class': 'panel panel-default'})
+		tmp.newDiv = new Element('div', {'class': 'panel panel-success'})
 			.insert({'bottom': new Element('div', {'class':'panel-heading'})
 				.insert({'bottom': new Element('strong').update('Total Payment Due: ') })
 				.insert({'bottom': new Element('span', {'class': 'pull-right total-payment-due'}).update(tmp.me.getCurrency(0) ) })

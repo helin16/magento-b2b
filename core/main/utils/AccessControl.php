@@ -24,6 +24,7 @@ Abstract class AccessControl
 						break;
 					}
 				case Role::ID_PURCHASING:
+				case Role::ID_SALES:
 					{
 						self::$_cache['accessOrderStatusIds'][$role->getId()] = array(OrderStatus::ID_NEW, OrderStatus::ID_INSUFFICIENT_STOCK);
 						break;
@@ -46,6 +47,7 @@ Abstract class AccessControl
 			case Role::ID_STORE_MANAGER:
 			case Role::ID_SYSTEM_ADMIN:
 			case Role::ID_PURCHASING:
+			case Role::ID_SALES:
 				{
 					return $canAcessOrderByStatus;
 				}
@@ -89,6 +91,7 @@ Abstract class AccessControl
 		{
 			case Role::ID_STORE_MANAGER:
 			case Role::ID_SYSTEM_ADMIN:
+			case Role::ID_PURCHASING:
 				{
 					return true;
 				}
@@ -103,6 +106,7 @@ Abstract class AccessControl
 			case Role::ID_SYSTEM_ADMIN:
 			case Role::ID_PURCHASING:
 			case Role::ID_ACCOUNTING:
+			case Role::ID_SALES:
 				{
 					return true;
 				}
@@ -116,6 +120,21 @@ Abstract class AccessControl
 			case Role::ID_STORE_MANAGER:
 			case Role::ID_SYSTEM_ADMIN:
 			case Role::ID_PURCHASING:
+			case Role::ID_SALES:
+				{
+					return true;
+				}
+		}
+		return false;
+	}
+	public static function canAccessCreateOrderPage(Role $role)
+	{
+		switch($role->getId())
+		{
+			case Role::ID_STORE_MANAGER:
+			case Role::ID_SYSTEM_ADMIN:
+			case Role::ID_PURCHASING:
+			case Role::ID_SALES:
 				{
 					return true;
 				}
