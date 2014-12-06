@@ -195,16 +195,8 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 	,_openEditPage: function(row) {
 		var tmp = {};
 		tmp.me = this;
-		jQuery.fancybox({
-			'width'			: '95%',
-			'height'		: '95%',
-			'autoScale'     : false,
-			'autoDimensions': false,
-			'fitToView'     : false,
-			'autoSize'      : false,
-			'type'			: 'iframe',
-			'href'			: '/purchase/' + (row && row.id ? row.id : 'new') + '.html'
- 		});
+		tmp.newWindow = window.open('/purchase/' + (row && row.id ? row.id : 'new') + '.html', 'PO Details','width=1300px, location=no, menubar=no, status=no, titlebar=no, fullscreen=no, toolbar=no');
+		tmp.newWindow.focus();
 		return tmp.me;
 	}
 	/**
@@ -213,21 +205,8 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 	,_openNewPage: function(row) {
 		var tmp = {};
 		tmp.me = this;
-		jQuery.fancybox({
-			'width'			: '95%',
-			'height'		: '95%',
-			'autoScale'     : false,
-			'autoDimensions': false,
-			'fitToView'     : false,
-			'autoSize'      : false,
-			'type'			: 'iframe',
-		    'afterLoad'		: function(current, previous) {
-		    	tmp.iframe = $$('iframe.fancybox-iframe').first();
-		    	tmp.innerDoc = tmp.iframe.contentDocument || tmp.iframe.contentWindow.document;
-		    	$(tmp.innerDoc).body.down('.init-focus').select();
-		    },
-			'href'			: '/purchase/new.html'
-		});
+		tmp.newWindow = window.open('/purchase/new.html', 'PO Details','width=1300px, location=no, menubar=no, status=no, titlebar=no, fullscreen=no, toolbar=no');
+		tmp.newWindow.focus();
 		return tmp.me;
 	}
 	,_deactivateItem: function(btn) {

@@ -80,7 +80,8 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 						return;
 					tmp.me._item = tmp.result.item;
 					tmp.me.refreshParentWindow();
-					window.parent.jQuery.fancybox.close();
+					tmp.me.showModalBox('Success', 'Saved successfully', false);
+					location.reload(); 
 				} catch(e) {
 					tmp.me.showModalBox('Error!', e, false);
 				}
@@ -94,10 +95,13 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 	,refreshParentWindow: function() {
 		var tmp = {};
 		tmp.me = this;
-		if(!window.parent)
+		if(!window.opener)
 			return;
-		tmp.parentWindow = window.parent;
-		tmp.row = $(tmp.parentWindow.document.body).down('table#item-list tbody').insert({'top': tmp.parentWindow.pageJs._getResultRow(tmp.me._item).addClassName('success')});
+		tmp.parentWindow = window.opener;
+		tmp.row = $(tmp.parentWindow.document.body).down('table#item-list tbody');
+		if(tmp.row) {
+			tmp.row = $(tmp.parentWindow.document.body).down('table#item-list tbody').insert({'top': tmp.parentWindow.pageJs._getResultRow(tmp.me._item).addClassName('success')});
+		}
 	}
 	/**
 	 * Getting the save btn for this order

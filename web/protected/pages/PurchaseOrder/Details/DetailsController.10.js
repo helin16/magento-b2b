@@ -626,6 +626,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 							.insert({'bottom': new Element('strong').update(tmp.me.getCurrency(product.minProductPrice)) })
 						})
 						.observe('click', function(event) {
+							Event.stop(event);
 							tmp.me._openPOPage(product.minProductPriceId);
 						})
 					})
@@ -634,6 +635,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 							.insert({'bottom': new Element('strong').update(tmp.me.getCurrency(product.lastSupplierPrice)) })
 						})
 						.observe('click', function(event) {
+							Event.stop(event);
 							tmp.me._openPOPage(product.lastSupplierPriceId);
 						})
 					})
@@ -642,6 +644,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 							.insert({'bottom': new Element('strong').update(tmp.me.getCurrency(product.minSupplierPrice)) })
 						})
 						.observe('click', function(event) {
+							Event.stop(event);
 							tmp.me._openPOPage(product.minSupplierPriceId);
 						})
 					})
@@ -748,11 +751,12 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 			,'onSuccess': function(sender, param) {
 				try {
 					tmp.result = tmp.me.getResp(param, false, true);
-					if(!tmp.result || !tmp.result.item)
+					if(!tmp.result || !tmp.result.item )
 						return;
 					tmp.me._item = tmp.result.item;
 					tmp.me.refreshParentWindow();
-					window.parent.jQuery.fancybox.close();
+					tmp.me.showModalBox('Success', 'Saved successfully', false);
+					location.reload(); 
 				} catch(e) {
 					tmp.me.showModalBox('Error!', e, false);
 				}
@@ -776,9 +780,9 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 	,refreshParentWindow: function() {
 		var tmp = {};
 		tmp.me = this;
-		if(!window.parent)
+		if(!window.opener)
 			return;
-		tmp.parentWindow = window.parent;
+		tmp.parentWindow = window.opener;
 		tmp.row = $(tmp.parentWindow.document.body).down('#' + tmp.parentWindow.pageJs.resultDivId + ' .item_row[item_id=' + tmp.me._item.id + ']');
 		if(tmp.row) {
 			tmp.row.replace(tmp.parentWindow.pageJs._getResultRow(tmp.me._item).addClassName('success'));
@@ -861,23 +865,20 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 	,bindAllEventNObjects: function() {
 		var tmp = {};
 		tmp.me = this;
-//		tmp.me._bindDatePicker();
-//		$$('textarea.rich-text-editor').each(function(item){
-//			tmp.me._loadRichTextEditor(item);
-//		});
 		return tmp.me;
 	}
 	,load: function () {
 		var tmp = {};
 		tmp.me = this;
-		$(tmp.me._htmlIds.itemDiv).update(tmp.newDiv = tmp.me._getItemDiv());
-		tmp.newDiv.down('input[save-order="contactName"]').focus();
-		tmp.newDiv.down('input[save-order="contactName"]').select();
+		tmp.newDiv = tmp.me._getItemDiv();
+		$(tmp.me._htmlIds.itemDiv).update(tmp.newDiv);
 		if (tmp.me._purchaseorder.status !== 'NEW') {
 			$$('.order_change_details_table').first().down('.new-order-item-input ').remove();
 			tmp.tableHead = $$('.order_change_details_table').first().down('tr');
 			tmp.tableHead.addClassName('info').setStyle({'border': '3px solid #ccc'});
 		}
+		$(tmp.me._htmlIds.itemDiv).down('input[save-order="contactName"]').focus();
+		$(tmp.me._htmlIds.itemDiv).down('input[save-order="contactName"]').select();
 		return tmp.me;
 	}
 });
