@@ -64,6 +64,12 @@ class ReceivingController extends BPCPageAbstract
 						throw new Exception('Invalid PurchaseOrder passed in!');
 					$array = $po->getJson();
 					$array['totalProdcutCount'] = $po->gettotalProdcutCount();
+					
+					$array['purchaseOrderItem'] = [];
+					foreach (PurchaseOrderItem::getAllByCriteria('po_item.purchaseOrderId = :purchaseOrderId', array('purchaseOrderId'=> $po->getId() ), true, 1, DaoQuery::DEFAUTL_PAGE_SIZE * 10) as $purchaseOrderItem) 
+					{
+						$array['purchaseOrderItem'][] = array('purchaseOrderItem'=> $purchaseOrderItem->getJson(), 'product'=> $purchaseOrderItem->getProduct()->getJson());
+					}
 					$items[] = $array;
 				}
 				$results['items'] = $items;
