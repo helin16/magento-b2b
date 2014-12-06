@@ -367,7 +367,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 			.insert({'bottom': new Element(tmp.tag, {'class': 'productName'})
 				.insert({'bottom': orderItem.product.name })
 			})
-			.insert({'bottom': new Element(tmp.tag, {'class': 'uprice col-xs-1'})
+			.insert({'bottom': new Element(tmp.tag, {'class': 'uprice col-xs-2'})
 				.insert({'bottom': (orderItem.unitPrice) })
 				.observe('keydown', function(event){
 					tmp.txtBox = this;
