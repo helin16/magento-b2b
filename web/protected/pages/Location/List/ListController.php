@@ -30,7 +30,9 @@ class ListController extends CRUDPageAbstract
 	protected function _getEndJs()
 	{
 		$js = parent::_getEndJs();
-		$js .= "pageJs.getResults(true, " . $this->pageSize . ");";
+		$js .= "pageJs";
+		$js .= "._bindSearchKey()";
+		$js .= ".getResults(true, " . $this->pageSize . ");";
 		return $js;
 	}
 	/**
@@ -56,7 +58,7 @@ class ListController extends CRUDPageAbstract
 			}
 			
 			$serachCriteria = isset($param->CallbackParameter->searchCriteria) ? json_decode(json_encode($param->CallbackParameter->searchCriteria), true) : array();
-				
+			var_dump($serachCriteria);
 			$where = array(1);
 			$params = array();
 			if(isset($serachCriteria['location.name']) && ($name = trim($serachCriteria['location.name'])) !== '')

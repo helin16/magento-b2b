@@ -12,8 +12,8 @@ class ListController extends CRUDPageAbstract
 	 * (non-PHPdoc)
 	 * @see BPCPageAbstract::$menuItem
 	 */
-	public $menuItem = 'manufacturers';
-	protected $_focusEntity = 'Manufacturer';
+	public $menuItem = 'preferredlocationtypes';
+	protected $_focusEntity = 'PreferredLocationType';
 	/**
 	 * constructor
 	 */
@@ -30,7 +30,9 @@ class ListController extends CRUDPageAbstract
 	protected function _getEndJs()
 	{
 		$js = parent::_getEndJs();
-		$js .= "pageJs.getResults(true, " . $this->pageSize . ");";
+		$js .= "pageJs";
+		$js .= "._bindSearchKey()";
+		$js .= ".getResults(true, " . $this->pageSize . ");";
 		return $js;
 	}
 	/**
@@ -59,13 +61,13 @@ class ListController extends CRUDPageAbstract
 				
 			$where = array(1);
 			$params = array();
-			if(isset($serachCriteria['man.name']) && ($name = trim($serachCriteria['man.name'])) !== '')
+			if(isset($serachCriteria['pre_loc_type.name']) && ($name = trim($serachCriteria['pre_loc_type.name'])) !== '')
 			{
-				$where[] = 'man.name like ?';
+				$where[] = 'pre_loc_type.name like ?';
 				$params[] = '%' . $name . '%';
 			}
 			$stats = array();
-			$objects = $class::getAllByCriteria(implode(' AND ', $where), $params, false, $pageNo, $pageSize, array('man.name' => 'asc'), $stats);
+			$objects = $class::getAllByCriteria(implode(' AND ', $where), $params, false, $pageNo, $pageSize, array('pre_loc_type.name' => 'asc'), $stats);
 			var_dump($objects);
 			$results['pageStats'] = $stats;
 			$results['items'] = array();
