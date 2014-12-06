@@ -61,9 +61,6 @@ class Controller extends CRUDPageAbstract
         $results = $errors = array();
         try
         {
-//             if(!isset($param->CallbackParameter->searchCriteria) || count($serachCriteria = json_decode(json_encode($param->CallbackParameter->searchCriteria), true)) === 0)
-//                 throw new Exception('System Error: search criteria not provided!');
-
             $pageNo = 1;
             $pageSize = DaoQuery::DEFAUTL_PAGE_SIZE;
             if(isset($param->CallbackParameter->pagination))
@@ -73,6 +70,7 @@ class Controller extends CRUDPageAbstract
             }
             
             $serachCriteria = isset($param->CallbackParameter->searchCriteria) ? json_decode(json_encode($param->CallbackParameter->searchCriteria), true) : array();
+            var_dump($serachCriteria);
             $stats = array();
             $where = array(1);
             $params = array();
@@ -112,20 +110,33 @@ class Controller extends CRUDPageAbstract
             			}
             		case 'po.supplierIds':
             			{
-            				$where[] = 'po.supplierId IN ('.implode(", ", array_fill(0, count($value), "?")).')';
-            				$params = array_merge($params, $value);
+            				if(count($value) > 0)
+            				{
+            					$where[] = 'po.supplierId IN ('.implode(", ", array_fill(0, count($value), "?")).')';
+            					$params = array_merge($params, $value);
+            				}
             				break;
             			}
             		case 'po.status':
             			{
-            				$where[] = 'po.status IN ('.implode(", ", array_fill(0, count($value), "?")).')';
-            				$params = array_merge($params, $value);
+            				if(count($value) > 0) {
+	            				$where[] = 'po.status IN ('.implode(", ", array_fill(0, count($value), "?")).')';
+	            				$params = array_merge($params, $value);
+            				}
+            				break;
+            			}
+            		case 'po.active':
+            			{
+            				if(trim($value) !== '')
+            				{
+            					$where[] = 'po.active = ?';
+	            				$params[] = trim($value);
+            				}
             				break;
             			}
             	}
             	$noSearch = false;
             }
-            
             
             $objects = PurchaseOrder::getAllByCriteria(implode(' AND ', $where), $params, false, $pageNo, $pageSize, array('po.id' => 'desc'), $stats);
             $results['pageStats'] = $stats;

@@ -55,6 +55,16 @@
                                 </div>
 	                       </div>
 						</div>
+						<div class="col-md-2">
+                            <div class="form-group form-group-sm input-group">
+                               <label class="input-group-addon">Active:</label>
+                               <select search_field="po.active" class="form-control input-sm">
+                                    <option value="1">YES</option>
+                                    <option value="0">NO</option>
+                                    <option value=" ">All</option>
+                               </select>
+                           </div>
+                        </div>
 					</div>
 				</div>
 			</div>
