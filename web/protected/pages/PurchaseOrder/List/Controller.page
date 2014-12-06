@@ -30,13 +30,8 @@
 						<div class="col-md-4">
 							<div class="form-group form-group-sm input-group">
 	                           <label class="input-group-addon">Order Date:</label>
-								<div>
 	                           <input type="datetime" search_field="po.orderDate_from" placeholder="The order date - from" class="form-control input-sm datepicker">
-	                           <span onclick="$(this).up('div').down('input').value='' " class="glyphicon glyphicon-remove-circle pull-right btn" aria-hidden="aria-hidden" undefined="position: absolute; z-index: 999; left: 97%;" style="position: absolute; z-index: 999; left: 94%; top: -4%;"></span>
-								</div><div>
 	                           <input type="datetime" search_field="po.orderDate_to" placeholder="The order date - to" class="form-control input-sm datepicker">
-	                           <span onclick="$(this).up('div').down('input').value='' " class="glyphicon glyphicon-remove-circle pull-right btn" aria-hidden="aria-hidden" undefined="position: absolute; z-index: 999; left: 97%;" style="position: absolute; z-index: 999; left: 94%; top: 46%;"></span>
-	                           </div>
 	                       </div>
 						</div>
 						<div class="col-md-4">
