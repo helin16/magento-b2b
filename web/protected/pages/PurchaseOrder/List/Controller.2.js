@@ -14,6 +14,12 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 			no_results_text: "Oops, nothing found!",
 			width: "95%"
 		});
+		jQuery('.chosen-container input[type="text"]').keydown(function(event) {
+		  if(event.which == 13 || event.keyCode == 13) {
+			event.preventDefault();
+			$('searchPanel').down('#searchBtn').click();
+		  }
+		});
 		return this;
 	}
 	/**
