@@ -105,9 +105,7 @@ class POController extends BPCPageAbstract
 			
 			$supplierID = isset($param->CallbackParameter->supplierID) ? trim($param->CallbackParameter->supplierID) : '';
 			Product::getQuery()->eagerLoad('Product.codes', 'left join');
-			Dao::$debug = true;
 			$products = Product::getAllByCriteria($where, $params, true, 1, DaoQuery::DEFAUTL_PAGE_SIZE, array('pro.sku' => 'asc'));
-			Dao::$debug = false;
 			foreach($products as $product)
 			{
 				$array = $product->getJson();

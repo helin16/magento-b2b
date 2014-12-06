@@ -38,7 +38,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 									tmp.txtBox.addClassName('search-finished');
 								}
 							}, function() {
-								$(this).removeClassName('search-finished');
+								$(tmp.txtBox).removeClassName('search-finished');
 							});
 							return false;
 						})
