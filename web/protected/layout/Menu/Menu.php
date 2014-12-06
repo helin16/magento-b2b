@@ -47,11 +47,23 @@ class Menu extends TTemplateControl
 			$array['Purchase'] = array(
 				'icon' => '<span class="glyphicon glyphicon-shopping-cart"></span>',
 				'PurchaseOrder' =>array('url' => '/purchase.html', 'name' => 'Purchase Orders', 'icon' => '<span class="glyphicon glyphicon-shopping-cart"></span>'),
-				'Receiving' =>array('url' => '/receiving.html', 'name' => 'Receiving PO', 'icon' => '<span class="glyphicon glyphicon-home"></span>'),
+				'Receiving' =>array('url' => '/receiving.html', 'name' => 'Receiving PO', 'icon' => '<span class="fa fa-home"></span>'),
 				'priceMatch' => array('url' => '/pricematch.html', 'name' => 'Price Match', 'icon' => '<span class="glyphicon glyphicon-usd"></span>' )
 			);
 		if(AccessControl::canAccessOrderItemsPage(Core::getRole()) )
 			$array['Customers'] = array('url' => '/customer.html', 'name' => 'Customers', 'icon' => '<span class="glyphicon glyphicon-user"></span>' );
+		if(AccessControl::canAccessOrderItemsPage(Core::getRole()) )
+			$array['Accounts'] = array(
+					'icon' => '<span class="glyphicon glyphicon-time"></span>',
+					'PaymentMethod' =>array('url' => '/paymentmethod.html', 'name' => 'Payment Method', 'icon' => '<span class="glyphicon glyphicon-record"></span>')
+			);
+		if(AccessControl::canAccessOrderItemsPage(Core::getRole()) )
+			$array['Logistics'] = array(
+					'icon' => '<span class="fa fa-arrows"></span>',
+					'Receiving' =>array('url' => '/receiving.html', 'name' => 'Receiving Products', 'icon' => '<span class="fa fa-home"></span>'),
+					'Locations' =>array('url' => '/locations.html', 'name' => 'Locations', 'icon' => '<span class="fa fa-arrows"></span>'),
+					'PreferLocationTypes' =>array('url' => '/locationtypes.html', 'name' => 'Prefer Location Types', 'icon' => '<span class="glyphicon glyphicon-tasks"></span>')
+			);
 		if(AccessControl::canAccessUsersPage(Core::getRole()) )
 		{
 			$array['Systems'] = array(
@@ -60,17 +72,6 @@ class Menu extends TTemplateControl
 					'systemsettings' => array('url' => '/systemsettings.html', 'name' => 'Settings', 'icon' => '<span class="glyphicon glyphicon-cog"></span>')
 			);
 		}
-		if(AccessControl::canAccessOrderItemsPage(Core::getRole()) )
-			$array['Accounts'] = array(
-					'icon' => '<span class="glyphicon glyphicon-time"></span>',
-					'PaymentMethod' =>array('url' => '/paymentmethod.html', 'name' => 'Payment Method', 'icon' => '<span class="glyphicon glyphicon-record"></span>')
-			);
-		if(AccessControl::canAccessOrderItemsPage(Core::getRole()) )
-			$array['Warehouse'] = array(
-					'icon' => '<span class="glyphicon glyphicon-home"></span>',
-					'Receiving' =>array('url' => '/receiving.html', 'name' => 'Receiving PO', 'icon' => '<span class="glyphicon glyphicon-home"></span>'),
-					'PaymentMethod' =>array('url' => '/locations.html', 'name' => 'Logistics', 'icon' => '<span class="glyphicon glyphicon-pushpin"></span>')
-			);
 		$html = "<ul class='nav navbar-nav'>";
 			foreach($array as $key => $item)
 			{
