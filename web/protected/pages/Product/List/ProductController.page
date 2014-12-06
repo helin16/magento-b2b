@@ -9,7 +9,7 @@
 					<label for="showSearch">Show Search Criteria?</label>
 					<input id="showSearch" type="checkbox" onclick="pageJs.toggleSearchPanel($(this).up('#searchPanel').down('.panel-body'));">
 					<span class="pull-right">
-						<span id="searchBtn" class="btn btn-primary btn-sm" data-loading-text="searching ..." onclick="pageJs.getSearchCriteria().deSelectProduct().getResults(true, <%= $this->pageSize %>);" >Search</span>
+						<span id="searchBtn" class="btn btn-primary btn-sm" data-loading-text="searching ..." >Search</span>
 					</span>
 				</div>
 				<div class="panel-body search-panel" id="searchDiv" style="display: none; ">

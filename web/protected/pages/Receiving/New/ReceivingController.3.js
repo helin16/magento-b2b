@@ -23,7 +23,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 	,_getPOListPanel: function () {
 		var tmp = {};
 		tmp.me = this;
-		tmp.newDiv = new Element('div', {'id': tmp.me._htmlIds.searchPanel, 'class': 'panel panel-info search-panel'})
+		tmp.newDiv = new Element('div', {'id': tmp.me._htmlIds.searchPanel, 'class': 'panel panel-warning search-panel'})
 			.insert({'bottom': new Element('div', {'class': 'panel-heading form-inline'})
 				.insert({'bottom': new Element('strong').update('Searching for PO: ') })
 				.insert({'bottom': new Element('span', {'class': 'input-group col-sm-6'})
@@ -142,6 +142,34 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.me._purchaseOrder = po;
 		tmp.newDiv = tmp.me._getViewOfPurchaseOrder();
 		$(tmp.me._htmlIds.itemDiv).update(tmp.newDiv).down('[new-order-item=product]').focus();
+		
+		tmp.me._purchaseOrder.purchaseOrderItem.each(function(item) {
+			tmp.currentRow = $$('.new-order-item-input').first();
+			tmp.product = {
+					'name': ''
+					,'id' : ''
+					,'qty': 0
+					,'barcode': tmp.searchTxt
+			};
+			tmp.data = {
+					'product': tmp.product, 
+					'btns': new Element('span', {'class': 'pull-right'})
+						.insert({'bottom': new Element('span', {'class': 'btn btn-danger btn-xs'})
+						.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-trash'}) })
+						.observe('click', function(event) {
+							Event.stop(event);
+							if(!confirm('You are about to remove this entry.\n\nContinue?'))
+								return;
+							tmp.row = $(this).up('.item_row');
+							tmp.row.remove();
+						})
+					})
+				};
+			tmp.currentRow.insert({'after': tmp.lastRow = tmp.me._getProductRow(tmp.data, false) });
+			tmp.product = item.product;
+			tmp.me._selectProduct(tmp.product, tmp.lastRow);
+		});
+		
 		return tmp.me;
 	}
 	/**
@@ -177,7 +205,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.me = this;
 		tmp.purchaseOrder = tmp.me._purchaseOrder;
 		tmp.supplier = tmp.purchaseOrder.supplier;
-		tmp.newDiv = new Element('div', {'class': 'panel panel-info', 'id': tmp.me._htmlIds.supplierInfoPanel})
+		tmp.newDiv = new Element('div', {'class': 'panel panel-warning', 'id': tmp.me._htmlIds.supplierInfoPanel})
 			.insert({'bottom': new Element('div', {'class': 'panel-heading'})
 				.insert({'bottom': new Element('span').update('Receiving items for PO: ') 
 					.insert({'bottom': new Element('strong').update(tmp.purchaseOrder.purchaseOrderNo + ' ') })
@@ -225,7 +253,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.totalAmountExGstEl = new Element('input', {'disabled': true, 'class': 'text-right', 'value': tmp.purchaseOrder.totalAmount ? tmp.purchaseOrder.totalAmount : 0});
 		tmp.totalPaidEl = new Element('input', {'disabled': true, 'class': 'text-right', 'value': tmp.purchaseOrder.totalPaid ? tmp.purchaseOrder.totalPaid : 0});
 		
-		tmp.newDiv = new Element('div', {'class': 'panel panel-info', 'id': tmp.me._htmlIds.paymentPanel})
+		tmp.newDiv = new Element('div', {'class': 'panel panel-warning', 'id': tmp.me._htmlIds.paymentPanel})
 			.insert({'bottom': new Element('div', {'class':'panel-heading'})
 				.insert({'bottom': new Element('strong').update('Payment Info: ') })
 				
@@ -272,7 +300,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			return false;
 		});
 		tmp.productListDiv.insert({'bottom': tmp.newDiv = tmp.me._getNewProductRow()});
-		return new Element('div', {'class': 'panel panel-info'}).insert({'bottom':  tmp.productListDiv});
+		return new Element('div', {'class': 'panel panel-warning'}).insert({'bottom':  tmp.productListDiv});
 	}
 	/**
 	 * Getting each product row
@@ -311,7 +339,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			'product': {'name': tmp.skuAutoComplete	}
 			,'btns': ''
 		};
-		return tmp.me._getProductRow(tmp.data, false).addClassName('new-order-item-input list-group-item-info').removeClassName('order-item-row btn-hide-row');
+		return tmp.me._getProductRow(tmp.data, false).addClassName('new-order-item-input list-group-item-warning').removeClassName('order-item-row btn-hide-row');
 	}
 	/**
 	 * Getting the autocomplete input box for product
@@ -387,7 +415,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 														$(this).up('.scanned-item-row').remove();
 													})
 												});
-											tmp.newRow.removeClassName('info new-scan-row').addClassName('btn-hide-row');
+											tmp.newRow.removeClassName('warning new-scan-row').addClassName('btn-hide-row');
 											tmp.newRow.down('.scanned-item-save-btn').remove();
 											tmp.newRow.down('.btns').replace(tmp.newDeleteBtn);
 											
@@ -422,7 +450,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 									tmp.serialNoBox.focus();
 								})
 							})
-					}).addClassName('info')
+					}).addClassName('warning')
 				})
 			});
 		return tmp.table;
@@ -503,13 +531,12 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		});
 		return tmp.me;
 	}
-	,_selectProduct: function(product,lastRow,newRow) {
+	,_selectProduct: function(product,lastRow) {
 		var tmp = {};
 		tmp.me = this;
 		tmp.data = [];
 		tmp.product = product;
 		tmp.lastRow = lastRow;
-		tmp.newRow = newRow;
 		
 		tmp.btn = $('barcode_input');
 		tmp.me._signRandID(tmp.btn);
@@ -532,25 +559,6 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.data.scanTable = tmp.me._getScanTable(tmp.data.product);
 		tmp.lastRow.replace(tmp.newRow = tmp.me._getProductRow(tmp.data, false) );
 		
-//		tmp.me.postAjax(tmp.me.getCallbackId('checkProduct'), {'product': tmp.product, 'purchaseOrder': tmp.me._purchaseOrder}, {
-//			'onLoading': function(sender, param) {
-//				jQuery('#' + tmp.btn.id).button('loading');
-//			}
-//			,'onSuccess': function(sender, param) {
-//				try {
-//					tmp.result = tmp.me.getResp(param, false, true);
-//					if (tmp.result.count == 0) {
-//						tmp.newRow.down('.product-head-row .productSku').insert({'bottom': new Element('strong', {'style': 'color:red'}).update('  (Not found in PO)') });
-//					}
-//				} catch(e) {
-//					tmp.me.showModalBox('Error!', e, false);
-//				}
-//			}
-//			,'onComplete': function(sender, param) {
-//				jQuery('#' + tmp.btn.id).button('reset');
-//			}
-//		});
-//		
 		tmp.me._checkProduct(tmp.product, tmp.newRow.down('.product-head-row'));
 		
 		tmp.newRow.down('[scanned-item="serialNo"]').focus();
