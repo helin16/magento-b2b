@@ -106,3 +106,7 @@ CREATE TABLE `preferredlocationtype` (
 	,INDEX (`description`)
 	,UNIQUE INDEX (`name`)
 ) ENGINE=innodb DEFAULT CHARSET=utf8;
+
+
+#add column stockCalculated onto purchaseorderitem
+ALTER TABLE `purchaseorderitem` ADD `stockCalculated` TINYINT(1) NOT NULL DEFAULT '0' AFTER `totalPrice`, ADD INDEX (`stockCalculated`) ;

@@ -45,6 +45,12 @@ class PurchaseOrderItem extends BaseEntityAbstract
 	 */
 	private $totalPrice;
 	/**
+	 * Whether we have calculated all the stock for this item
+	 * 
+	 * @var bool
+	 */
+	private $stockCalculated = false;
+	/**
 	 * Getter for product
 	 *
 	 * @return Product
@@ -107,6 +113,27 @@ class PurchaseOrderItem extends BaseEntityAbstract
 	public function setQty($value) 
 	{
 	    $this->qty = $value;
+	    return $this;
+	}
+	/**
+	 * Getter for stockCalculated
+	 *
+	 * @return bool
+	 */
+	public function getStockCalculated() 
+	{
+	    return $this->stockCalculated;
+	}
+	/**
+	 * Setter for stockCalculated
+	 *
+	 * @param int $value The stockCalculated
+	 *
+	 * @return PurchaseOrderItem
+	 */
+	public function setStockCalculated($value) 
+	{
+	    $this->stockCalculated = $value;
 	    return $this;
 	}
 	/**
@@ -186,10 +213,12 @@ class PurchaseOrderItem extends BaseEntityAbstract
 		DaoMap::setIntType('receivedQty');
 		DaoMap::setIntType('unitPrice', 'double', '10,4');
 		DaoMap::setIntType('totalPrice', 'double', '10,4');
+		DaoMap::setBoolType('stockCalculated');
 		
 		parent::__loadDaoMap();
 		DaoMap::createIndex('qty');
 		DaoMap::createIndex('receivedQty');
+		DaoMap::createIndex('stockCalculated');
 		DaoMap::commit();
 	}
 	/**

@@ -8,12 +8,21 @@
  */
 class Order extends InfoEntityAbstract
 {
+	const TYPE_QUOTE = 'QUOTE';
+	const TYPE_ORDER = 'ORDER';
+	const TYPE_INVOICE = 'INVOICE';
 	/**
 	 * The order No from magento
 	 * 
 	 * @var string
 	 */
 	private $orderNo = '';
+	/**
+	 * The type of the order: quote, order, invoice
+	 * 
+	 * @var string
+	 */
+	private $type = self::TYPE_ORDER;
 	/**
 	 * The order date from magento
 	 * 
@@ -140,6 +149,28 @@ class Order extends InfoEntityAbstract
 	public function setOrderDate($value) 
 	{
 	    $this->orderDate = $value;
+	    return $this;
+	}
+	
+	/**
+	 * Getter for type
+	 *
+	 * @return string
+	 */
+	public function getType() 
+	{
+	    return $this->type;
+	}
+	/**
+	 * Setter for type
+	 *
+	 * @param string $value The type
+	 *
+	 * @return Order
+	 */
+	public function setType($value)
+	{
+	    $this->type = $value;
 	    return $this;
 	}
 	/**
@@ -413,18 +444,6 @@ class Order extends InfoEntityAbstract
 	    return $this;
 	}
 	/**
-	 * Getting the order by order no
-	 * 
-	 * @param string $orderNo
-	 * 
-	 * @return Ambigous <NULL, unknown>
-	 */
-	public static function getByOrderNo($orderNo)
-	{
-		$items = self::getAllByCriteria('orderNo = ?', array($orderNo), false, 1, 1);
-		return (count($items) === 0 ? null : $items[0]);
-	}
-	/**
 	 * checking whether the order can be edit by a role
 	 * 
 	 * @param Role $role The role who is trying to edit the roder
@@ -448,11 +467,25 @@ class Order extends InfoEntityAbstract
 		}
 		if($this->_previousStatus instanceof OrderStatus && $this->_previousStatus->getId() !== $this->getStatus()->getId())
 		{
+			if(trim($this->_previousStatus->getId()) === trim(OrderStatus::ID_SHIPPED))
+				throw new EntityException('You can NOT change the status of a shipped order!');
+			
 			$infoType = OrderInfoType::get(OrderInfoType::ID_MAGE_ORDER_STATUS_BEFORE_CHANGE);
 			$orderInfos = OrderInfo::find($this, $infoType, false, 1, 1);
 			$orderInfo = count($orderInfos) === 0 ? null : $orderInfos[0];
 			OrderInfo::create($this, $infoType, $this->_previousStatus->getId(), $orderInfo);
-			Log::LogEntity($this, 'Changed Status from [' . $this->_previousStatus . '] to [' . $this->getStatus() .']', Log::TYPE_SYSTEM, 'Auto Change', get_class($this) . '::' . __FUNCTION__);
+			$this->addLog('Changed Status from [' . $this->_previousStatus . '] to [' . $this->getStatus() .']', Log::TYPE_SYSTEM, 'Auto Log', get_class($this) . '::' . __FUNCTION__);
+			
+			if($this->getStatus()->getId() === OrderStatus::ID_SHIPPED) {
+				$items = OrderItem::getAllByCriteria('orderId = ? and isPicked = 1', array($this->getId()));
+				foreach($items as $item) {
+					$item->getProduct()
+						->setStockOnOrder(($originStockOnOrder = $item->getProduct()->getStockOnOrder()) - $item->getQtyOrdered())
+						->save()
+						->addLog('StockOnOrder(' . $originStockOnOrder . ' => ' . $item->getProduct()->getStockOnOrder() . ')', Log::TYPE_SYSTEM, 'STOCK_QTY_CHG', __CLASS__ . '::' . __FUNCTION__);
+					$item->addLog('This item is now shipped', Log::TYPE_SYSTEM, 'STOCK_QTY_CHG', __CLASS__ . '::' . __FUNCTION__);
+				}
+			}
 		}
 	}
 	/**
@@ -514,6 +547,7 @@ class Order extends InfoEntityAbstract
 	{
 		DaoMap::begin($this, 'ord');
 		DaoMap::setStringType('orderNo');
+		DaoMap::setStringType('type', 'varchar', 10);
 		DaoMap::setStringType('invNo');
 		DaoMap::setDateType('orderDate');
 		DaoMap::setManyToOne('customer', 'Customer', 'o_cust');
@@ -532,10 +566,23 @@ class Order extends InfoEntityAbstract
 		
 		DaoMap::createUniqueIndex('orderNo');
 		DaoMap::createIndex('invNo');
+		DaoMap::createIndex('type');
 		DaoMap::createIndex('orderDate');
 		DaoMap::createIndex('passPaymentCheck');
 		DaoMap::createIndex('isFromB2B');
 		DaoMap::commit();
+	}
+	/**
+	 * Getting the order by order no
+	 *
+	 * @param string $orderNo
+	 *
+	 * @return Ambigous <NULL, unknown>
+	 */
+	public static function getByOrderNo($orderNo)
+	{
+		$items = self::getAllByCriteria('orderNo = ?', array($orderNo), false, 1, 1);
+		return (count($items) === 0 ? null : $items[0]);
 	}
 	/**
 	 * 
@@ -561,8 +608,8 @@ class Order extends InfoEntityAbstract
 			->save()
 			->addComment($comments, Comments::TYPE_NORMAL)
 			->addInfo(OrderInfoType::ID_CUS_EMAIL, $customer->getEmail())
-			->addInfo(OrderInfoType::ID_CUS_NAME, $customer->getName());
-		Log::LogEntity($order, 'Order (OrderNo.=' . $order->getOrderNo() . ') created with status' . $order->getStatus()->getName(), Log::TYPE_SYSTEM);
+			->addInfo(OrderInfoType::ID_CUS_NAME, $customer->getName())
+			->addLog('Order (OrderNo.=' . $order->getOrderNo() . ') created with status' . $order->getStatus()->getName(), Log::TYPE_SYSTEM);
 		return $order;
 	}
 }

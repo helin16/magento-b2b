@@ -145,6 +145,19 @@ class ReceivingItem extends BaseEntityAbstract
 	    $this->serialNo = $value;
 	    return $this;
 	}
+	public function postSave()
+	{
+		//if a receiving item gets deactivate, then stockonHand needs to be changed
+		if(trim($this->getId()) !== '' && intval($this->getActive()) === 0 ) {
+			$msg = 'ReceivedIem for Product(SKU=' . $product . '), unitPrice=' . $unitPrice . ', serialNo=' . $serialNo . ', invoiceNo=' . $invoiceNo . ' has now been deactivated.';
+			$po->addLog($msg, Log::TYPE_SYSTEM, Log::TYPE_SYSTEM, '', __CLASS__ . '::' . __FUNCTION__)
+				->addComment($msg, Comments::TYPE_WAREHOUSE);
+			$product->setStockOnPO(($origStockOnPO = $product->getStockOnPO()) + 1)
+				->setStockOnHand(($origStockOnHand = $product->getStockOnHand()) - 1)
+				->save()
+				->addLog('stockOnPO(' . $product->getStockOnPO() . ' => ' .$product->getStockOnPO() . ', stockOnHand (' . $origStockOnHand . ' => ' . $product->getStockOnHand() . ')', Log::TYPE_SYSTEM, 'STOCK_QTY_CHG', __CLASS__ . '::' . __FUNCTION__);
+		}
+	}
 	/**
 	 * (non-PHPdoc)
 	 * @see HydraEntity::__loadDaoMap()
@@ -187,9 +200,13 @@ class ReceivingItem extends BaseEntityAbstract
 			->setSerialNo($serialNo)
 			->save()
 			->addComment($comments, Comments::TYPE_WAREHOUSE)
-			->addLog($msg, Log::TYPE_SYSTEM);
-		$po->addLog($msg, Log::TYPE_SYSTEM)
+			->addLog($msg, Log::TYPE_SYSTEM, Log::TYPE_SYSTEM, '', __CLASS__ . '::' . __FUNCTION__);
+		$po->addLog($msg, Log::TYPE_SYSTEM, Log::TYPE_SYSTEM, '', __CLASS__ . '::' . __FUNCTION__)
 			->addComment($msg, Comments::TYPE_WAREHOUSE);
+		$product->setStockOnPO(($origStockOnPO = $product->getStockOnPO()) - 1)
+			->setStockOnHand(($origStockOnHand = $product->getStockOnHand()) + 1)
+			->save()
+			->addLog('stockOnPO(' . $product->getStockOnPO() . ' => ' .$product->getStockOnPO() . ', stockOnHand (' . $origStockOnHand . ' => ' . $product->getStockOnHand() . ')', Log::TYPE_SYSTEM, 'STOCK_QTY_CHG', __CLASS__ . '::' . __FUNCTION__);
 		return $entity;
 	}
 }

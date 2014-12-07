@@ -273,6 +273,28 @@ class OrderItem extends BaseEntityAbstract
 	}
 	/**
 	 * (non-PHPdoc)
+	 * @see BaseEntityAbstract::preSave()
+	 */
+	public function preSave()
+	{
+		//if the isPicked changed
+		if(trim($this->getId()) !== '' && self::countByCriteria('id = ? and isPicked != ', array($this->getId(), $this->getIsPicked())) > 0) {
+			$product = $this->getProduct();
+			//we are picking this product
+			if(intval($this->getIsPicked()) === 1) {
+				$product->setStockOnPO(($originStockOnPO = $item->getProduct()->getStockOnPO()) - $item->getQtyOrdered())
+					->setStockOnOrder(($originStockOnOrder = $item->getProduct()->getStockOnOrder()) + $item->getQtyOrdered());
+			} else {
+				$product->setStockOnPO(($originStockOnPO = $item->getProduct()->getStockOnPO()) + $item->getQtyOrdered())
+					->setStockOnOrder(($originStockOnOrder = $item->getProduct()->getStockOnOrder()) - $item->getQtyOrdered());
+			}
+			$product->save()
+				->addLog('StockOnPO(' . $originStockOnPO . ' => ' . $item->getProduct()->getStockOnPO() . ')', Log::TYPE_SYSTEM, 'STOCK_QTY_CHG', __CLASS__ . '::' . __FUNCTION__)
+				->addLog('StockOnOrder(' . $originStockOnOrder . ' => ' . $item->getProduct()->getStockOnOrder() . ')', Log::TYPE_SYSTEM, 'STOCK_QTY_CHG', __CLASS__ . '::' . __FUNCTION__);
+		}
+	}
+	/**
+	 * (non-PHPdoc)
 	 * @see BaseEntityAbstract::__loadDaoMap()
 	 */
 	public function __loadDaoMap()
