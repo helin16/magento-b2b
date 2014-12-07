@@ -9,7 +9,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 	,productStatuses: []
 	,_showRightPanel: false
 	,_getTitleRowData: function() {
-		return {'sku': 'SKU', 'name': 'Product Name', 'manufacturer' : {'name': 'Brand'}, 'supplierCodes': [{'supplier': {'name': 'Supplier'}, 'code': ''}],  'active': 'act?'};
+		return {'sku': 'SKU', 'name': 'Product Name', 'manufacturer' : {'name': 'Brand'}, 'supplierCodes': [{'supplier': {'name': 'Supplier'}, 'code': ''}],  'active': 'act?', 'stockOnOrder': 'OnOrder', 'stockOnHand': 'OnHand', 'stockOnPO': 'OnPO'};
 	}
 	,toggleSearchPanel: function(panel) {
 		var tmp = {};
@@ -266,7 +266,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 	 */
 	,_openProductDetails: function(product) {
 		var tmp = {};
-		tmp.newWindow = window.open('/product/' + product.id + '.html', 'Product Details for: ' + product.sku, 'location=no, menubar=no, status=no, titlebar=no, fullscreen=yes, toolbar=no');
+		tmp.newWindow = window.open('/product/' + product.id + '.html', 'Product Details for: ' + product.sku, 'location=no, menubar=no, status=no, titlebar=no, fullscreen=no, toolbar=no, width=1024');
 		tmp.newWindow.focus();
 	}
 	/**
@@ -305,11 +305,17 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 			})
 			.insert({'bottom': new Element(tmp.tag, {'class': 'product_name hidden-xs hide-when-info hidden-sm', 'style': (tmp.me._showRightPanel ? 'display: none' : '')}).update(row.name) })
 			.insert({'bottom': new Element(tmp.tag, {'class': 'product_price hidden-xs hide-when-info hidden-sm', 'style': (tmp.me._showRightPanel ? 'display: none' : '')}).update(tmp.isTitle === true ? 'Price' : (tmp.price.blank() ? '' : tmp.me.getCurrency(tmp.price))) })
-			.insert({'bottom': new Element(tmp.tag, {'class': 'manufacturer col-xs-2'}).update(row.manufacturer ? row.manufacturer.name : '') })
-			.insert({'bottom': new Element(tmp.tag, {'class': 'supplier col-xs-2'}).update(
+			.insert({'bottom': new Element(tmp.tag, {'class': 'manufacturer col-xs-1'}).update(row.manufacturer ? row.manufacturer.name : '') })
+			.insert({'bottom': new Element(tmp.tag, {'class': 'supplier col-xs-1 hidden-sm'}).update(
 					row.supplierCodes ? tmp.me._getSupplierCodes(row.supplierCodes, isTitle) : ''
 			) })
-			.insert({'bottom': new Element(tmp.tag, {'class': 'product_active col-xs-1'})
+			.insert({'bottom': new Element(tmp.tag, {'class': 'qty col-xs-1 hidden-sm'}).update(
+					tmp.isTitle === true ? 'Qty' : new Element('div', {'class': 'row'})
+						.insert({'bottom': new Element(tmp.tag, {'class': 'stockOnPO col-xs-4', 'title': 'Stock on PurchaseOrder'}).update(row.stockOnPO) })
+						.insert({'bottom': new Element(tmp.tag, {'class': 'stockOnHand col-xs-4', 'title': 'Stock on hand'}).update(row.stockOnHand) })
+						.insert({'bottom': new Element(tmp.tag, {'class': 'stockOnOrder col-xs-4', 'title': 'Stock on Order'}).update(row.stockOnOrder) })
+			) })
+			.insert({'bottom': new Element(tmp.tag, {'class': 'product_active col-xs-1  hidden-sm'})
 				.insert({'bottom': (tmp.isTitle === true ? row.active : new Element('input', {'type': 'checkbox', 'disabled': true, 'checked': row.active}) ) })
 			})
 			.insert({'bottom': tmp.isTitle === true ? '' : new Element(tmp.tag, {'class': 'btns hidden-xs hide-when-info hidden-sm', 'style': (tmp.me._showRightPanel ? 'display: none' : '')})
