@@ -8,6 +8,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 	,_statuses: []
 	,_priceTypes: []                         //pre defined data: productCodeType
 	,_codeTypes: []                          //pre defined data: productCodeType
+	,_locationTypes: []                          //pre defined data: locationTypes
 	,_productTreeId: 'product_category_tree' //the html id of the tree
 	,_imgPanelId: 'images_panel'             //the html id of the iamges panel
 	/**
@@ -21,12 +22,13 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 	/**
 	 * Set some pre defined data before javascript start
 	 */
-	,setPreData: function(manufacturers, suppliers, statuses, priceTypes, codeTypes) {
+	,setPreData: function(manufacturers, suppliers, statuses, priceTypes, codeTypes, locationTypes) {
 		this._manufacturers = manufacturers;
 		this._suppliers = suppliers;
 		this._statuses = statuses;
 		this._priceTypes = priceTypes;
 		this._codeTypes = codeTypes;
+		this._locationTypes = locationTypes;
 		return this;
 	}
 	/**
@@ -318,24 +320,25 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 			.insert({'bottom': new Element('div', {'class': 'panel-heading'})
 				.insert({'bottom': new Element('a', {'href': 'javascript: void(0);', 'title': 'click to show/hide below'})
 					.insert({'bottom': new Element('strong').update(tmp.item.name ? 'Editing: ' + tmp.item.name : 'Creating new product: ') })
-					.insert({'bottom': new Element('small', {'class': 'pull-right'}) 
-						.insert({'bottom': new Element('label', {'for': 'showOnWeb_' + tmp.item.id}).update('Show on Web?') })
-						.insert({'bottom': new Element('input', {'id': 'showOnWeb_' + tmp.item.id, 'save-item': 'sellOnWeb', 'type': 'checkbox', 'checked': tmp.item.sellOnWeb}) })
+					.observe('click', function() {
+						$(this).up('.panel').down('.panel-body').toggle();
 					})
 				})
-				.observe('click', function() {
-					$(this).up('.panel').down('.panel-body').toggle();
+				.insert({'bottom': new Element('small', {'class': 'pull-right'}) 
+					.insert({'bottom': new Element('label', {'for': 'showOnWeb_' + tmp.item.id}).update('Show on Web?') })
+					.insert({'bottom': new Element('input', {'id': 'showOnWeb_' + tmp.item.id, 'save-item': 'sellOnWeb', 'type': 'checkbox', 'checked': tmp.item.sellOnWeb}) })
 				})
+
 			})
 			.insert({'bottom': new Element('div', {'class': 'panel-body'})
-				.insert({'bottom': new Element('div', {'class': 'row'})
+				.insert({'bottom': new Element('div', {'class': ''})
 					.insert({'bottom': new Element('div', {'class': 'col-sm-4'}).update(tmp.me._getFormGroup('Name', new Element('input', {'save-item': 'name', 'type': 'text', 'value': tmp.item.name ? tmp.item.name : ''}) ) ) })
 					.insert({'bottom': new Element('div', {'class': 'col-sm-4'}).update(tmp.me._getFormGroup('sku', new Element('input', {'save-item': 'sku', 'type': 'text', 'value': tmp.item.sku ? tmp.item.sku : ''}) ) ) })
 					.insert({'bottom': new Element('div', {'class': 'col-sm-4'}).update(tmp.me._getFormGroup('Status', 
 							tmp.me._getSelBox(tmp.me._statuses, tmp.item.status ? tmp.item.status.id : null).writeAttribute('save-item', 'statusId').addClassName('chosen') 
 					) ) })
 				})
-				.insert({'bottom': new Element('div', {'class': 'row'})
+				.insert({'bottom': new Element('div', {'class': ''})
 					.insert({'bottom': new Element('div', {'class': 'col-sm-4'}).update(tmp.me._getFormGroup('Brand/Manf.', 
 							tmp.me._getSelBox(tmp.me._manufacturers, tmp.item.manufacturer ? tmp.item.manufacturer.id : null).writeAttribute('save-item', 'manufacturerId').addClassName('chosen') 
 					) ) })
@@ -346,10 +349,10 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 							new Element('input', {'class': 'datepicker', 'save-item': 'asNewToDate', 'value': (tmp.item.asNewToDate ? tmp.item.asNewToDate : '') })  
 					) ) })
 				})
-				.insert({'bottom': new Element('div', {'class': 'row'})
+				.insert({'bottom': new Element('div', {'class': ''})
 					.insert({'bottom': new Element('div', {'class': 'col-sm-12'}).update(tmp.me._getFormGroup('Short Description:', new Element('input', {'save-item': 'shortDescription', 'type': 'text', 'value': tmp.item.shortDescription ? tmp.item.shortDescription : ''}) ) ) })
 				})
-				.insert({'bottom': new Element('div', {'class': 'row'})
+				.insert({'bottom': new Element('div', {'class': ''})
 					.insert({'bottom': new Element('div', {'class': 'col-sm-12'}).update(tmp.me._getFullDescriptionPanel(tmp.item) ) })
 				})
 			});
@@ -513,6 +516,10 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		tmp.data.productCodes = tmp.me._collectFormData($(tmp.me._htmlIds.itemDiv).down('.codes-panel'), 'list-panel-row', 'list-item');
 		if(tmp.data.productCodes === null)
 			return tmp.me;
+		//get all locations
+		tmp.data.locations = tmp.me._collectFormData($(tmp.me._htmlIds.itemDiv).down('.locations-panel'), 'list-panel-row', 'list-item');
+		if(tmp.data.locations === null)
+			return tmp.me;
 		
 		tmp.data.id = tmp.me._item.id;
 		//tricks for fullDescription's editor
@@ -547,7 +554,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 			tmp.me._item = data.item;
 			tmp.me.refreshParentWindow();
 			tmp.me.showModalBox('<strong class="text-success">Saved Successfully!</strong>', 'Saved Successfully!', true);
-			window.location = data.url; 
+//			window.location = data.url; 
 		});
 		return tmp.me;
 	}
@@ -585,8 +592,9 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 								tmp.startBox.writeAttribute('disabled', false).writeAttribute('value', '').select();
 							}
 						}).wrap(new Element('div', {'class': 'col-sm-12 prices-panel'})) })
-						.insert({'bottom': tmp.me._getListPanel('Suppliers:', tmp.me._item.supplierCodes, {'type': 'Supplier', 'value': 'Code'}, tmp.me._suppliers).wrap(new Element('div', {'class': 'col-sm-6 suppliers-panel'})) })
-						.insert({'bottom': tmp.me._getListPanel('Codes:', tmp.me._item.productCodes, {'type': 'Type', 'value': 'Code'}, tmp.me._codeTypes).wrap(new Element('div', {'class': 'col-sm-6 codes-panel'})) })
+						.insert({'bottom': tmp.me._getListPanel('Suppliers:', tmp.me._item.supplierCodes, {'type': 'Supplier', 'value': 'Code'}, tmp.me._suppliers).wrap(new Element('div', {'class': 'col-sm-4 suppliers-panel'})) })
+						.insert({'bottom': tmp.me._getListPanel('Codes:', tmp.me._item.productCodes, {'type': 'Type', 'value': 'Code'}, tmp.me._codeTypes).wrap(new Element('div', {'class': 'col-sm-4 codes-panel'})) })
+						.insert({'bottom': tmp.me._getListPanel('Locations:', tmp.me._item.locations, {'type': 'Type', 'value': 'value'}, tmp.me._locationTypes).wrap(new Element('div', {'class': 'col-sm-4 locations-panel'})) })
 					})
 					.insert({'bottom': new Element('div', {'class': 'row'})
 						.insert({'bottom': new Element('span', {'class': 'btn btn-primary pull-right col-sm-4', 'data-loading-text': 'saving ...'}).update('Save')

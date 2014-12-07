@@ -40,8 +40,9 @@ class DetailsController extends DetailsPageAbstract
 		$statuses = array_map(create_function('$a', 'return $a->getJson();'), ProductStatus::getAll());
 		$priceTypes = array_map(create_function('$a', 'return $a->getJson();'), ProductPriceType::getAll());
 		$codeTypes = array_map(create_function('$a', 'return $a->getJson();'), ProductCodeType::getAll());
+		$locationTypes = array_map(create_function('$a', 'return $a->getJson();'), PreferredLocationType::getAll());
 		
-		$js .= "pageJs.setPreData(" . json_encode($manufacturers) . ", " . json_encode($suppliers) . ", " . json_encode($statuses) . ", " . json_encode($priceTypes) . ", " . json_encode($codeTypes) . ")";
+		$js .= "pageJs.setPreData(" . json_encode($manufacturers) . ", " . json_encode($suppliers) . ", " . json_encode($statuses) . ", " . json_encode($priceTypes) . ", " . json_encode($codeTypes) . ", " . json_encode($locationTypes) . ")";
 		$js .= ".setCallbackId('getCategories', '" . $this->getCategoriesBtn->getUniqueID() . "')";
 		$js .= ".load()";
 		$js .= ".bindAllEventNObjects();";
@@ -193,6 +194,49 @@ class DetailsController extends DetailsPageAbstract
 		}
 		return $this;
 	}
+	private function _setLocation(Product &$product, $param)
+	{
+		if(isset($param->CallbackParameter->locations) && count($locations = $param->CallbackParameter->locations) > 0)
+		{
+			//delete all price first
+			$deleteIds = array();
+			foreach($locations as $location)
+			{
+				if(trim($location->active) === '0' && isset($location->id))
+					$deleteIds[] = trim($location->id);
+			}
+			if(count($deleteIds) > 0)
+				PreferredLocation::updateByCriteria('active = 0', 'id in (' . str_repeat('?', count($deleteIds)) . ')', $deleteIds);
+			
+			//update or create new
+			foreach($locations as $location)
+			{
+				if(isset($location->id) && in_array(trim($location->id), $deleteIds))
+					continue;
+				if(!($type = PreferredLocationType::get(trim($location->typeId))) instanceof PreferredLocationType)
+					continue;
+				
+				$locationName = trim($location->value);
+				$locs = Location::getAllByCriteria('name = ?', array($locationName), true, 1, 1);
+				$loc = (count($locs) > 0 ? $locs[0] : Location::create($locationName, $locationName));
+				if(!isset($location->id) || ($id = trim($location->id)) === '')
+				{
+					if(trim($location->active) === '1')
+						PreferredLocation::create($loc, $product, $type);
+					//if it's deactivated one, ignore
+				}
+				else if (($preferredLocation= PreferredLocation::get($id)) instanceof PreferredLocation)
+				{
+					$preferredLocation->setLocation($loc)
+						->setActive(trim($location->active) === '1')
+						->setProduct($product)
+						->setType($type)
+						->save();
+				}
+			}
+		}
+		return $this;
+	}
 	private function _setBarcodes(Product &$product, $param)
 	{
 		if(isset($param->CallbackParameter->productCodes) && count($productCodes = $param->CallbackParameter->productCodes) > 0)
@@ -286,7 +330,8 @@ class DetailsController extends DetailsPageAbstract
 				->_uploadImages($product, $param)
 				->_setSupplierCodes($product, $param)
 				->_setBarcodes($product, $param)
-				->_setPrices($product, $param);
+				->_setPrices($product, $param)
+				->_setLocation($product, $param);
 			
 			$product->save();
 			$results['url'] = '/product/' . $product->getId() . '.html';

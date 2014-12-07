@@ -653,6 +653,7 @@ class Product extends InfoEntityAbstract
 			$array['images'] = array_map(create_function('$a', 'return $a->getJson();'), $this->getImages());
 			$array['categories'] = array_map(create_function('$a', '$json = $a->getJson(); return $json["category"];'), Product_Category::getCategories($this));
 			$array['fullDescriptionAsset'] = (($asset = Asset::getAsset($this->getFullDescAssetId())) instanceof Asset ? $asset->getJson() : null) ;
+			$array['locations'] = array_map(create_function('$a', 'return $a->getJson();'), PreferredLocation::getPreferredLocations($this));
 		}
 		return parent::getJson($array, $reset);
 	}

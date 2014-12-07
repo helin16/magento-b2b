@@ -92,21 +92,17 @@ class PreferredLocation extends BaseEntityAbstract
 		return $this;
 	}
 	/**
-	 * Creating the Location based on sku
-	 * 
-	 * @param Location $location The sku of the Location
-	 * @param Product  $product  The product
-	 * 
-	 * @return Ambigous <Location, Ambigous, NULL, BaseEntityAbstract>
+	 * (non-PHPdoc)
+	 * @see BaseEntityAbstract::getJson()
 	 */
-	public static function create(Location $location, Product $product, PreferredLocationType $type)
+	public function getJson($extra = '', $reset = false)
 	{
-		$obj = new PreferredLocation();
-		$obj->setLocation($location)
-			->setProduct($product)
-			->setType($type)
-			->save();
-		return $obj;
+		$array = array();
+		if(!$this->isJsonLoaded($reset))
+		{
+			$array['value'] = $this->getLocation()->getName();
+		}
+		return parent::getJson($array, $reset);
 	}
 	/**
 	 * (non-PHPdoc)
@@ -122,6 +118,23 @@ class PreferredLocation extends BaseEntityAbstract
 		parent::__loadDaoMap();
 		
 		DaoMap::commit();
+	}
+	/**
+	 * Creating the Location based on sku
+	 *
+	 * @param Location $location The sku of the Location
+	 * @param Product  $product  The product
+	 *
+	 * @return Ambigous <Location, Ambigous, NULL, BaseEntityAbstract>
+	 */
+	public static function create(Location $location, Product $product, PreferredLocationType $type)
+	{
+		$obj = new PreferredLocation();
+		$obj->setLocation($location)
+		->setProduct($product)
+		->setType($type)
+		->save();
+		return $obj;
 	}
 	/**
 	 * Getting all the preferred locations
