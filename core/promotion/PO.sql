@@ -110,3 +110,9 @@ CREATE TABLE `preferredlocationtype` (
 
 #add column stockCalculated onto purchaseorderitem
 ALTER TABLE `purchaseorderitem` ADD `stockCalculated` TINYINT(1) NOT NULL DEFAULT '0' AFTER `totalPrice`, ADD INDEX (`stockCalculated`) ;
+
+#add column status onto order table
+ALTER TABLE `order` ADD `type` VARCHAR(10) NOT NULL DEFAULT '' AFTER `orderNo`, ADD INDEX (`type`) ;
+
+#add column isShipped onto orderitem
+ALTER TABLE `orderitem` ADD `isShipped` TINYINT(1) NOT NULL DEFAULT '0' AFTER `isPicked`, ADD INDEX (`isShipped`) ;

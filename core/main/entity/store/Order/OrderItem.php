@@ -51,6 +51,12 @@ class OrderItem extends BaseEntityAbstract
 	 */
 	private $isPicked = false;
 	/**
+	 * Whether the warehouse has shipped
+	 * 
+	 * @var bool
+	 */
+	private $isShipped = false;
+	/**
 	 * Whether this item has been ordered by purchasing
 	 * 
 	 * @var bool
@@ -216,6 +222,27 @@ class OrderItem extends BaseEntityAbstract
 	    return $this;
 	}
 	/**
+	 * Getter for isShipped
+	 *
+	 * @return Bool
+	 */
+	public function getIsShipped() 
+	{
+	    return trim($this->isPicked) === '1';
+	}
+	/**
+	 * Setter for isShipped
+	 *
+	 * @param string $value The isShipped
+	 *
+	 * @return OrderItem
+	 */
+	public function setIsShipped($value) 
+	{
+	    $this->isShipped = $value;
+	    return $this;
+	}
+	/**
 	 * Getter for isOrdered
 	 *
 	 * @return book
@@ -278,19 +305,37 @@ class OrderItem extends BaseEntityAbstract
 	public function preSave()
 	{
 		//if the isPicked changed
-		if(trim($this->getId()) !== '' && self::countByCriteria('id = ? and isPicked != ', array($this->getId(), $this->getIsPicked())) > 0) {
+		if(trim($this->getId()) !== '') {
 			$product = $this->getProduct();
-			//we are picking this product
-			if(intval($this->getIsPicked()) === 1) {
-				$product->setStockOnPO(($originStockOnPO = $item->getProduct()->getStockOnPO()) - $item->getQtyOrdered())
-					->setStockOnOrder(($originStockOnOrder = $item->getProduct()->getStockOnOrder()) + $item->getQtyOrdered());
-			} else {
-				$product->setStockOnPO(($originStockOnPO = $item->getProduct()->getStockOnPO()) + $item->getQtyOrdered())
-					->setStockOnOrder(($originStockOnOrder = $item->getProduct()->getStockOnOrder()) - $item->getQtyOrdered());
+			//for picked
+			if(self::countByCriteria('id = ? and isPicked != ?', array($this->getId(), $this->getIsPicked())) > 0) {
+				//we are picking this product
+				if(intval($this->getIsPicked()) === 1) {
+					$product->setStockOnHand(($originStockOnHand = $product->getStockOnHand()) - $this->getQtyOrdered())
+						->setStockOnOrder(($originStockOnOrder = $product->getStockOnOrder()) + $this->getQtyOrdered());
+					$this->addLog('This item is now marked as picked', Log::TYPE_SYSTEM);
+				} else {
+					$product->setStockOnHand(($originStockOnHand = $product->getStockOnHand()) + $this->getQtyOrdered())
+						->setStockOnOrder(($originStockOnOrder = $product->getStockOnOrder()) - $this->getQtyOrdered());
+					$this->addLog('This item is now Un-marked as picked', Log::TYPE_SYSTEM);
+				}
+				$product->save()
+					->addLog('StockOnPO(' . $originStockOnHand . ' => ' . $product->getStockOnHand() . ')', Log::TYPE_SYSTEM, 'STOCK_QTY_CHG', __CLASS__ . '::' . __FUNCTION__)
+					->addLog('StockOnOrder(' . $originStockOnOrder . ' => ' . $product->getStockOnOrder() . ')', Log::TYPE_SYSTEM, 'STOCK_QTY_CHG', __CLASS__ . '::' . __FUNCTION__);
 			}
-			$product->save()
-				->addLog('StockOnPO(' . $originStockOnPO . ' => ' . $item->getProduct()->getStockOnPO() . ')', Log::TYPE_SYSTEM, 'STOCK_QTY_CHG', __CLASS__ . '::' . __FUNCTION__)
-				->addLog('StockOnOrder(' . $originStockOnOrder . ' => ' . $item->getProduct()->getStockOnOrder() . ')', Log::TYPE_SYSTEM, 'STOCK_QTY_CHG', __CLASS__ . '::' . __FUNCTION__);
+			//for shipped
+			if(self::countByCriteria('id = ? and isShipped != ?', array($this->getId(), $this->getIsShipped())) > 0) {
+				//we are picking this product
+				if(intval($this->getIsShipped()) === 1) {
+					$product->setStockOnOrder(($originStockOnOrder = $product->getStockOnOrder()) - $this->getQtyOrdered());
+					$this->addLog('This item is now marked as SHIPPED', Log::TYPE_SYSTEM);
+				} else {
+					$product->setStockOnOrder(($originStockOnOrder = $product->getStockOnOrder()) + $this->getQtyOrdered());
+					$this->addLog('This item is now Un-marked as SHIPPED', Log::TYPE_SYSTEM);
+				}
+				$product->save()
+					->addLog('StockOnOrder(' . $originStockOnOrder . ' => ' . $product->getStockOnOrder() . ')', Log::TYPE_SYSTEM, 'STOCK_QTY_CHG', __CLASS__ . '::' . __FUNCTION__);
+			}
 		}
 	}
 	/**
@@ -308,12 +353,14 @@ class OrderItem extends BaseEntityAbstract
 		DaoMap::setIntType('totalPrice', 'double', '10,4');
 		DaoMap::setDateType('eta', 'datetime', true, null);
 		DaoMap::setBoolType('isPicked');
+		DaoMap::setBoolType('isShipped');
 		DaoMap::setBoolType('isOrdered');
 		DaoMap::setIntType('mageOrderId');
 		
 		parent::__loadDaoMap();
 		
 		DaoMap::createIndex('isPicked');
+		DaoMap::createIndex('isShipped');
 		DaoMap::createIndex('isOrdered');
 		DaoMap::createIndex('mageOrderId');
 		DaoMap::commit();
@@ -338,13 +385,13 @@ class OrderItem extends BaseEntityAbstract
 		else
 			$item = $items[0];
 		$item->setOrder($order)
-		->setProduct($product)
-		->setUnitPrice($unitPrice)
-		->setQtyOrdered($qty)
-		->setTotalPrice($totalPrice)
-		->setMageOrderId($mageOrderItemId)
-		->setEta($eta)
-		->save();
+			->setProduct($product)
+			->setUnitPrice($unitPrice)
+			->setQtyOrdered($qty)
+			->setTotalPrice($totalPrice)
+			->setMageOrderId($mageOrderItemId)
+			->setEta($eta)
+			->save();
 		return $item;
 	}
 	/**

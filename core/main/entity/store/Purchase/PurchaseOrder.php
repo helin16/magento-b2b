@@ -160,17 +160,11 @@ class PurchaseOrder extends BaseEntityAbstract
 	 */
 	public function setStatus($value) 
 	{
-	    $this->status = trim($value);
+		if(trim($this->getId()) !== "")
+			$this->pushStatus($value);
+		else
+	    	$this->status = trim($value);
 	    return $this;
-	}
-	/**
-	 * Getter for status options
-	 *
-	 * @return array
-	 */
-	public static function getStatusOptions()
-	{
-		return array(self::STATUS_NEW, self::STATUS_ORDERED, self::STATUS_RECEIVING, self::STATUS_CANCELED, self::STATUS_CLOSED, self::STATUS_RECEIVED);
 	}
 	/**
 	 * Getter for supplierContact
@@ -219,7 +213,7 @@ class PurchaseOrder extends BaseEntityAbstract
 	 *
 	 * @return string
 	 */
-	public function getshippingCost()
+	public function getShippingCost()
 	{
 		return $this->shippingCost;
 	}
@@ -230,7 +224,7 @@ class PurchaseOrder extends BaseEntityAbstract
 	 *
 	 * @return string
 	 */
-	public function setshippingCost($value)
+	public function setShippingCost($value)
 	{
 		$this->shippingCost = $value;
 		return $this;
@@ -240,7 +234,7 @@ class PurchaseOrder extends BaseEntityAbstract
 	 *
 	 * @return string
 	 */
-	public function gethandlingCost()
+	public function getHandlingCost()
 	{
 		return $this->handlingCost;
 	}
@@ -251,7 +245,7 @@ class PurchaseOrder extends BaseEntityAbstract
 	 *
 	 * @return string
 	 */
-	public function sethandlingCost($value)
+	public function setHandlingCost($value)
 	{
 		$this->handlingCost = $value;
 		return $this;
@@ -322,7 +316,7 @@ class PurchaseOrder extends BaseEntityAbstract
 		$oClass = new ReflectionClass (get_class($this));
 		foreach($oClass->getConstants() as $name => $value)
 		{
-			if(strpos($name, 'STATUS_') === 0 && $value === $status)
+			if(strpos($name, 'STATUS_') === 0 && trim($value) === trim($status))
 				return true;
 		}
 		return false;
@@ -395,7 +389,7 @@ class PurchaseOrder extends BaseEntityAbstract
 			throw new EntityException('Invalid status(=' . $status . ').');
 		if($status === ($oldStatus = $this->getStatus())) //no change of the status
 			return $this;
-		$this->setStatus($status);
+		$this->status = trim($status);
 		if(trim($this->getId()) !== '')
 		{
 			$msg = 'Changed status from "' . $oldStatus . '" to "' . $status . '"';
@@ -506,5 +500,14 @@ class PurchaseOrder extends BaseEntityAbstract
 			->setshippingCost($shippingCost)
 			->sethandlingCost($handlingCost)
 			->save();
+	}
+	/**
+	 * Getter for status options
+	 *
+	 * @return array
+	 */
+	public static function getStatusOptions()
+	{
+		return array(self::STATUS_NEW, self::STATUS_ORDERED, self::STATUS_RECEIVING, self::STATUS_CANCELED, self::STATUS_CLOSED, self::STATUS_RECEIVED);
 	}
 }

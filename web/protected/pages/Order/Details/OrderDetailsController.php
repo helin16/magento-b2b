@@ -66,8 +66,6 @@ class OrderDetailsController extends BPCPageAbstract
 			$js .= '.init("detailswrapper")';
 			$js .= '.load();';
 		return $js;
-		
-		Product
 	}
 	/**
 	 * 

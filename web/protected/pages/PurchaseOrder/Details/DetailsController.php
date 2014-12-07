@@ -181,8 +181,8 @@ class DetailsController extends DetailsPageAbstract
 				->setSupplierContactNumber($supplierContactNo)
 				->setshippingCost($shippingCost)
 				->sethandlingCost($handlingCost)
-				->save()
-				->pushStatus($status);
+				->setStatus($status)
+				->save();
 			$purchaseOrder->addComment($comment, Comments::TYPE_PURCHASING);
 			foreach ($param->CallbackParameter->newItems as $item) {
 				$productId = trim($item->product->id);

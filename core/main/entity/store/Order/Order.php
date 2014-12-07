@@ -467,24 +467,18 @@ class Order extends InfoEntityAbstract
 		}
 		if($this->_previousStatus instanceof OrderStatus && $this->_previousStatus->getId() !== $this->getStatus()->getId())
 		{
-			if(trim($this->_previousStatus->getId()) === trim(OrderStatus::ID_SHIPPED))
-				throw new EntityException('You can NOT change the status of a shipped order!');
-			
 			$infoType = OrderInfoType::get(OrderInfoType::ID_MAGE_ORDER_STATUS_BEFORE_CHANGE);
 			$orderInfos = OrderInfo::find($this, $infoType, false, 1, 1);
 			$orderInfo = count($orderInfos) === 0 ? null : $orderInfos[0];
 			OrderInfo::create($this, $infoType, $this->_previousStatus->getId(), $orderInfo);
 			$this->addLog('Changed Status from [' . $this->_previousStatus . '] to [' . $this->getStatus() .']', Log::TYPE_SYSTEM, 'Auto Log', get_class($this) . '::' . __FUNCTION__);
-			
-			if($this->getStatus()->getId() === OrderStatus::ID_SHIPPED) {
-				$items = OrderItem::getAllByCriteria('orderId = ? and isPicked = 1', array($this->getId()));
-				foreach($items as $item) {
-					$item->getProduct()
-						->setStockOnOrder(($originStockOnOrder = $item->getProduct()->getStockOnOrder()) - $item->getQtyOrdered())
-						->save()
-						->addLog('StockOnOrder(' . $originStockOnOrder . ' => ' . $item->getProduct()->getStockOnOrder() . ')', Log::TYPE_SYSTEM, 'STOCK_QTY_CHG', __CLASS__ . '::' . __FUNCTION__);
-					$item->addLog('This item is now shipped', Log::TYPE_SYSTEM, 'STOCK_QTY_CHG', __CLASS__ . '::' . __FUNCTION__);
-				}
+		}
+		
+		if(trim($this->getStatus()->getId()) === trim(OrderStatus::ID_SHIPPED)) {
+			$items = OrderItem::getAllByCriteria('orderId = ? and isPicked = 1', array($this->getId()));
+			foreach($items as $item) {
+				$item->setIsShipped(true)
+					->save();
 			}
 		}
 	}
