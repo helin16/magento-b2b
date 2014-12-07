@@ -612,4 +612,13 @@ class Order extends InfoEntityAbstract
 			->addLog('Order (OrderNo.=' . $order->getOrderNo() . ') created with status' . $order->getStatus()->getName(), Log::TYPE_SYSTEM);
 		return $order;
 	}
+	/**
+	 * Getting all the types of an order
+	 * 
+	 * @return multitype:string
+	 */
+	public static function getAllTypes()
+	{
+		return array(self::TYPE_QUOTE, self::TYPE_ORDER, self::TYPE_INVOICE);
+	}
 }
