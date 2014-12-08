@@ -116,3 +116,11 @@ ALTER TABLE `order` ADD `type` VARCHAR(10) NOT NULL DEFAULT '' AFTER `orderNo`, 
 
 #add column isShipped onto orderitem
 ALTER TABLE `orderitem` ADD `isShipped` TINYINT(1) NOT NULL DEFAULT '0' AFTER `isPicked`, ADD INDEX (`isShipped`) ;
+
+
+DELETE FROM `bpcinternal`.`purchaseorder` WHERE `purchaseorder`.`id` = 1001;
+DELETE FROM `bpcinternal`.`purchaseorder` WHERE `purchaseorder`.`id` = 1002;
+DELETE FROM `bpcinternal`.`purchaseorder` WHERE `purchaseorder`.`id` = 1003;
+DELETE FROM `bpcinternal`.`purchaseorder` WHERE `purchaseorder`.`id` = 1004;
+DELETE FROM `bpcinternal`.`purchaseorder` WHERE `purchaseorder`.`id` = 1005;
+
