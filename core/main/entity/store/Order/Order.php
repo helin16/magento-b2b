@@ -598,7 +598,7 @@ class Order extends InfoEntityAbstract
 			->setIsFromB2B($isFromB2B)
 			->setShippingAddr($shipAddr instanceof Address ? $shipAddr : $customer->getShippingAddress())
 			->setBillingAddr($billAddr instanceof Address ? $billAddr : $customer->getBillingAddress())
-			->passPaymentCheck($passPaymentCheck)
+			->setPassPaymentCheck($passPaymentCheck)
 			->save()
 			->addComment($comments, Comments::TYPE_NORMAL)
 			->addInfo(OrderInfoType::ID_CUS_EMAIL, $customer->getEmail())

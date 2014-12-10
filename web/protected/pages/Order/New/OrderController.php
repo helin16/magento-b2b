@@ -130,21 +130,49 @@ class OrderController extends BPCPageAbstract
 		$results = $errors = array();
 		try
 		{
-			var_dump($param->CallbackParameter);
+// 			var_dump($param->CallbackParameter->items);
 			
 			Dao::beginTransaction();
 			$customer = Customer::get(trim($param->CallbackParameter->customer->id));
 			if(!$customer instanceof Customer)
 				throw new Exception('Invalid Customer passed in!');
-			$paymentMethodId = PaymentMethod::get(trim($param->CallbackParameter->paymentMethodId));
-			if(!$paymentMethodId instanceof PaymentMethod)
-				throw new Exception('Invalid PaymentMethod passed in!');
-			$courierId = Courier::get(trim($param->CallbackParameter->courierId));
-			if(!$courierId instanceof Courier)
-				throw new Exception('Invalid Courier passed in!');
+			if (trim($param->CallbackParameter->paymentMethodId))
+			{
+				$paymentMethod = PaymentMethod::get(trim($param->CallbackParameter->paymentMethodId));
+				if(!$paymentMethod instanceof PaymentMethod)
+					throw new Exception('Invalid PaymentMethod passed in!');
+				$totalPaidAmount = trim($param->CallbackParameter->totalPaidAmount);
+			} else 
+			{
+				$paymentMethod = '';
+				$totalPaidAmount = '';
+			}
+			if(trim($param->CallbackParameter->courierId))
+			{
+				$courier = Courier::get(trim($param->CallbackParameter->courierId));
+				if(!$courier instanceof Courier)
+					throw new Exception('Invalid Courier passed in!');
+				$totalShippingCost = trim($param->CallbackParameter->totalShippingCost);
+			} else 
+			{
+				$courier = '';
+				$totalShippingCost = '';
+			}
+			
 			$comments = trim($param->CallbackParameter->comments);
-			$totalPaidAmount = trim($param->CallbackParameter->totalPaidAmount);
-			$totalShippingCost = trim($param->CallbackParameter->totalShippingCost);
+			$orderNo = null;
+			$order = Order::create($customer, $orderNo, $comments);
+			foreach ($param->CallbackParameter->items as $item)
+			{
+				$product = Product::get(trim($item->product->id));
+				if(!$product instanceof Product)
+					throw new Exception('Invalid Product passed in!');
+				$unitPrice = trim($item->product->unitPrice);
+				$qtyOrdered = trim($item->product->qtyOrdered);
+				$totalPrice = trim($item->product->totalPrice);
+				$products[] = $product;
+			}
+			var_dump($products);
 			
 // 			$supplierRefNum = trim($param->CallbackParameter->supplierRefNum);
 // 			$supplierContactName = trim($param->CallbackParameter->contactName);
