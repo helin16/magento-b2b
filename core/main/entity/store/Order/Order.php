@@ -52,7 +52,7 @@ class Order extends InfoEntityAbstract
 	 * 
 	 * @var number
 	 */
-	private $totalAmount;
+	private $totalAmount = 0;
 	/**
 	 * The total amount paid for the order
 	 *

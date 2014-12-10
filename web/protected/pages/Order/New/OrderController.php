@@ -167,40 +167,14 @@ class OrderController extends BPCPageAbstract
 				$product = Product::get(trim($item->product->id));
 				if(!$product instanceof Product)
 					throw new Exception('Invalid Product passed in!');
-				$unitPrice = trim($item->product->unitPrice);
-				$qtyOrdered = trim($item->product->qtyOrdered);
-				$totalPrice = trim($item->product->totalPrice);
-				$products[] = $product;
+				$unitPrice = trim($item->unitPrice);
+				$qtyOrdered = trim($item->qtyOrdered);
+				$totalPrice = trim($item->totalPrice);
+				
+				$order->addItem($product,$unitPrice,$qtyOrdered);
 			}
-			var_dump($products);
+			var_dump($order);
 			
-// 			$supplierRefNum = trim($param->CallbackParameter->supplierRefNum);
-// 			$supplierContactName = trim($param->CallbackParameter->contactName);
-// 			$supplierContactNo = trim($param->CallbackParameter->contactNo);
-// 			$shippingCost = trim($param->CallbackParameter->shippingCost);
-// 			$handlingCost = trim($param->CallbackParameter->handlingCost);
-// 			$comment = trim($param->CallbackParameter->comments);
-// 			$status = trim($param->CallbackParameter->status);
-// 			$purchaseOrder = PurchaseOrder::create($supplier,$supplierRefNum,$supplierContactName,$supplierContactNo,$shippingCost,$handlingCost);
-// 			$purchaseOrderTotalAmount = trim($param->CallbackParameter->totalAmount);
-// 			$purchaseOrderTotalPaid = trim($param->CallbackParameter->totalPaid);
-// 			$purchaseOrder->setTotalAmount($purchaseOrderTotalAmount)
-// 			->setTotalPaid($purchaseOrderTotalPaid)
-// 			->setStatus($status);
-// 			foreach ($param->CallbackParameter->items as $item) {
-// 				$productId = trim($item->product->id);
-// 				$productUnitPrice = trim($item->unitPrice);
-// 				$qtyOrdered = trim($item->qtyOrdered);
-// 				$productWtyOrdered = trim($item->qtyOrdered);
-// 				$productTotalPrice = trim($item->totalPrice);
-// 				$product = Product::get($productId);
-// 				if(!$product instanceof Product)
-// 					throw new Exception('Invalid Product passed in!');
-// 				$purchaseOrder->addItem($product,$supplier->getId(),$productUnitPrice,$qtyOrdered,'','',$productTotalPrice);
-// 			};
-// 			$purchaseOrder->save();
-// 			$purchaseOrder->addComment($comment, Comments::TYPE_SYSTEM);
-// 			$results['item'] = $purchaseOrder->getJson();
 			Dao::commitTransaction();
 		}
 		catch(Exception $ex)
