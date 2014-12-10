@@ -304,6 +304,8 @@ class OrderItem extends BaseEntityAbstract
 	 */
 	public function preSave()
 	{
+		if(trim($this->getMageOrderId()) === '')
+			$this->setMageOrderId('0');
 		//if the isPicked changed
 		if(trim($this->getId()) !== '') {
 			$product = $this->getProduct();
@@ -388,7 +390,7 @@ class OrderItem extends BaseEntityAbstract
 			->setProduct($product)
 			->setUnitPrice($unitPrice)
 			->setQtyOrdered($qty)
-			->setTotalPrice($totalPrice)
+			->setTotalPrice($totalPrice === null ? $unitPrice * $qty : $totalPrice)
 			->setMageOrderId($mageOrderItemId)
 			->setEta($eta)
 			->save();
