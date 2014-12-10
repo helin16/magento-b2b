@@ -462,7 +462,7 @@ class Order extends InfoEntityAbstract
 	{
 		if(trim($this->getOrderNo()) === '')
 		{
-			$this->setOrderNo('BPCO' .str_pad('0', 8, STR_PAD_LEFT))
+			$this->setOrderNo('BPCO' .str_pad($this->getId(), 8, '0', STR_PAD_LEFT))
 				->save();
 		}
 		if($this->_previousStatus instanceof OrderStatus && $this->_previousStatus->getId() !== $this->getStatus()->getId())
