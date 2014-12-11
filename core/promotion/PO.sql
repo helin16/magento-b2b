@@ -144,7 +144,6 @@ CREATE TABLE `productqtylog` (
 	,INDEX (`productId`)
 	,INDEX (`createdById`)
 	,INDEX (`updatedById`)
-	,INDEX (`name`)
 	,INDEX (`entityName`)
 	,INDEX (`entityId`)
 ) ENGINE=innodb DEFAULT CHARSET=utf8;
