@@ -130,38 +130,49 @@ class OrderController extends BPCPageAbstract
 		$results = $errors = array();
 		try
 		{
-// 			var_dump($param->CallbackParameter->items);
+// 			var_dump($param->CallbackParameter);
 			
 			Dao::beginTransaction();
 			$customer = Customer::get(trim($param->CallbackParameter->customer->id));
 			if(!$customer instanceof Customer)
 				throw new Exception('Invalid Customer passed in!');
+			
+			$totalPaymentDue = 0;
+			$order = Order::create($customer);
 			if (trim($param->CallbackParameter->paymentMethodId))
 			{
 				$paymentMethod = PaymentMethod::get(trim($param->CallbackParameter->paymentMethodId));
 				if(!$paymentMethod instanceof PaymentMethod)
 					throw new Exception('Invalid PaymentMethod passed in!');
+				$order->addInfo(OrderInfoType::ID_MAGE_ORDER_PAYMENT_METHOD, $paymentMethod->getName());
 				$totalPaidAmount = trim($param->CallbackParameter->totalPaidAmount);
-			} else 
+			} 
+			else 
 			{
 				$paymentMethod = '';
-				$totalPaidAmount = '';
+				$totalPaidAmount = 0;
 			}
 			if(trim($param->CallbackParameter->courierId))
 			{
 				$courier = Courier::get(trim($param->CallbackParameter->courierId));
 				if(!$courier instanceof Courier)
 					throw new Exception('Invalid Courier passed in!');
+				$order->addInfo(OrderInfoType::ID_MAGE_ORDER_SHIPPING_METHOD, $courier->getName());
 				$totalShippingCost = trim($param->CallbackParameter->totalShippingCost);
-			} else 
+			} 
+			else 
 			{
 				$courier = '';
-				$totalShippingCost = '';
+				$totalShippingCost = 0;
 			}
-			
+			$totalPaymentDue += $totalShippingCost; 
+			var_dump($totalPaidAmount);
+			var_dump($totalPaymentDue);
 			$comments = trim($param->CallbackParameter->comments);
-			$orderNo = null;
-			$order = Order::create($customer, $orderNo, $comments);
+			$order = $order->addComment($comments)
+				->setTotalPaid($totalPaidAmount);
+			
+			
 			foreach ($param->CallbackParameter->items as $item)
 			{
 				$product = Product::get(trim($item->product->id));
@@ -171,8 +182,11 @@ class OrderController extends BPCPageAbstract
 				$qtyOrdered = trim($item->qtyOrdered);
 				$totalPrice = trim($item->totalPrice);
 				
-				$order->addItem($product,$unitPrice,$qtyOrdered);
+				$totalPaymentDue += $totalPrice;
+				$order->addItem($product,$unitPrice, $qtyOrdered, $totalPrice);
 			}
+			$order->setTotalAmount($totalPaymentDue)
+				->save();
 			var_dump($order);
 			
 			Dao::commitTransaction();

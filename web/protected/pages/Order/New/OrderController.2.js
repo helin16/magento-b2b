@@ -49,6 +49,10 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			return tmp.me;
 		}
 		tmp.data.customer = tmp.me._customer;
+		tmp.data.items.each(function(item){
+			item.totalPrice = tmp.me.getValueFromCurrency(item.totalPrice);
+			item.unitPrice = tmp.me.getValueFromCurrency(item.unitPrice);
+		});
 		console.debug(tmp.data);
 		tmp.me.postAjax(tmp.me.getCallbackId('saveOrder'), tmp.data, {
 			
