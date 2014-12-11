@@ -437,7 +437,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 					$(this).select();
 				})
 			)
-			,'totalPrice': tmp.me._getFormGroup( null, new Element('input', {'class': 'input-sm', 'new-order-item': 'totalPrice', 'required': 'Required!', 'value': tmp.me.getCurrency(0)})
+			,'totalPrice': tmp.me._getFormGroup( null, new Element('input', {'class': 'input-sm', 'disabled': true, 'new-order-item': 'totalPrice', 'required': 'Required!', 'value': tmp.me.getCurrency(0)})
 				.observe('keyup', function(){
 					tmp.row =$(this).up('.item_row');
 					tmp.totalPrice = tmp.me.getValueFromCurrency($F(this));
