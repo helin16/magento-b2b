@@ -70,7 +70,6 @@ class Controller extends CRUDPageAbstract
             }
             
             $serachCriteria = isset($param->CallbackParameter->searchCriteria) ? json_decode(json_encode($param->CallbackParameter->searchCriteria), true) : array();
-            var_dump($serachCriteria);
             $stats = array();
             $where = array(1);
             $params = array();

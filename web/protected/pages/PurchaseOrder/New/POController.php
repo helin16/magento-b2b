@@ -161,7 +161,7 @@ class POController extends BPCPageAbstract
 		$results = $errors = array();
 		try
 		{
-			var_dump($param->CallbackParameter);die;
+// 			var_dump($param->CallbackParameter);
 			
 			Dao::beginTransaction();
 			$supplier = Supplier::get(trim($param->CallbackParameter->supplier->id));
@@ -192,8 +192,7 @@ class POController extends BPCPageAbstract
 			$purchaseOrderETA = trim($param->CallbackParameter->ETA);
 			$purchaseOrder->setTotalAmount($purchaseOrderTotalAmount)
 			->setTotalPaid($purchaseOrderTotalPaid)
-			->setEta($purchaseOrderETA)
-			->setStatus($status);
+			->setEta($purchaseOrderETA);
 			
 			foreach ($param->CallbackParameter->items as $item) {
 				$productId = trim($item->product->id);
@@ -205,7 +204,7 @@ class POController extends BPCPageAbstract
 					throw new Exception('Invalid Product passed in!');
 				$purchaseOrder->addItem($product,$productUnitPrice,$qtyOrdered);
 			};
-			$purchaseOrder->save();
+			$purchaseOrder->setStatus($status)->save();
 			$purchaseOrder->addComment($comment, Comments::TYPE_PURCHASING);
 			$results['item'] = $purchaseOrder->getJson();
 			Dao::commitTransaction();
