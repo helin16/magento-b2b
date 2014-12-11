@@ -40,6 +40,10 @@ class ProductController extends CRUDPageAbstract
 			$productCategoryArray[] = $os->getJson();
 		
 		$js = parent::_getEndJs();
+		if(($product = Product::get($this->Request['id']))  instanceof Product) {
+			$js .= "$('searchPanel').hide();";
+			$js .= "pageJs._singleProduct = true;";
+		} 
 		$js .= 'pageJs._loadManufactures('.json_encode($manufactureArray).')';
 		$js .= '._loadSuppliers('.json_encode($supplierArray).')';
 		$js .= '._loadCategories('.json_encode($productCategoryArray).')';
@@ -49,6 +53,10 @@ class ProductController extends CRUDPageAbstract
 		$js .= ".setCallbackId('priceMatching', '" . $this->priceMatchingBtn->getUniqueID() . "')";
 		$js .= ".getResults(true, " . $this->pageSize . ");";
 		return $js;
+	}
+	public function getRequestProductID()
+	{
+		return ($product = Product::get($this->Request['id']))  instanceof Product ? $product->getId() : '';
 	}
 	/**
 	 * Updating the full description of the product
@@ -86,21 +94,26 @@ class ProductController extends CRUDPageAbstract
             $class = trim($this->_focusEntity);
             if(!isset($param->CallbackParameter->searchCriteria) || count($serachCriteria = json_decode(json_encode($param->CallbackParameter->searchCriteria), true)) === 0)
                 throw new Exception('System Error: search criteria not provided!');
-            $pageNo = 1;
-            $pageSize = DaoQuery::DEFAUTL_PAGE_SIZE;
-            
-            if(isset($param->CallbackParameter->pagination))
-            {
-                $pageNo = $param->CallbackParameter->pagination->pageNo;
-                $pageSize = $param->CallbackParameter->pagination->pageSize * 3;
+            if(isset($serachCriteria['pro.id']) && ($product = Product::get($serachCriteria['pro.id'])) instanceof Product) {
+            	$objects = array($product);
+            	$stats = array('totalPages' => 1);
+            } else {
+	            $pageNo = 1;
+	            $pageSize = DaoQuery::DEFAUTL_PAGE_SIZE;
+	            
+	            if(isset($param->CallbackParameter->pagination))
+	            {
+	                $pageNo = $param->CallbackParameter->pagination->pageNo;
+	                $pageSize = $param->CallbackParameter->pagination->pageSize * 3;
+	            }
+	            
+	            $stats = array();
+	            $categoryIds = (!isset($serachCriteria['pro.productCategoryIds']) || is_null($serachCriteria['pro.productCategoryIds'])) ? array() : $serachCriteria['pro.productCategoryIds'];
+	            $supplierIds = (!isset($serachCriteria['pro.supplierIds']) || is_null($serachCriteria['pro.supplierIds'])) ? array() : $serachCriteria['pro.supplierIds'];
+	            $manufacturerIds = (!isset($serachCriteria['pro.manufacturerIds']) || is_null($serachCriteria['pro.manufacturerIds'])) ? array() : $serachCriteria['pro.manufacturerIds'];
+	            $productStatusIds = (!isset($serachCriteria['pro.productStatusIds']) || is_null($serachCriteria['pro.productStatusIds'])) ? array() : $serachCriteria['pro.productStatusIds'];
+	            $objects = Product::getProducts(trim($serachCriteria['pro.sku']), trim($serachCriteria['pro.name']), $supplierIds, $manufacturerIds, $categoryIds, $productStatusIds, trim($serachCriteria['pro.active']), $pageNo, $pageSize, array('pro.name' => 'asc'), $stats);
             }
-            
-            $stats = array();
-            $categoryIds = (!isset($serachCriteria['pro.productCategoryIds']) || is_null($serachCriteria['pro.productCategoryIds'])) ? array() : $serachCriteria['pro.productCategoryIds'];
-            $supplierIds = (!isset($serachCriteria['pro.supplierIds']) || is_null($serachCriteria['pro.supplierIds'])) ? array() : $serachCriteria['pro.supplierIds'];
-            $manufacturerIds = (!isset($serachCriteria['pro.manufacturerIds']) || is_null($serachCriteria['pro.manufacturerIds'])) ? array() : $serachCriteria['pro.manufacturerIds'];
-            $productStatusIds = (!isset($serachCriteria['pro.productStatusIds']) || is_null($serachCriteria['pro.productStatusIds'])) ? array() : $serachCriteria['pro.productStatusIds'];
-            $objects = Product::getProducts(trim($serachCriteria['pro.sku']), trim($serachCriteria['pro.name']), $supplierIds, $manufacturerIds, $categoryIds, $productStatusIds, trim($serachCriteria['pro.active']), $pageNo, $pageSize, array('pro.name' => 'asc'), $stats);
             $results['pageStats'] = $stats;
             $results['items'] = array();
             foreach($objects as $obj)

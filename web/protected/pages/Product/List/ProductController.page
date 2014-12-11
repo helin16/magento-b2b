@@ -13,6 +13,7 @@
 					</span>
 				</div>
 				<div class="panel-body search-panel" id="searchDiv">
+					<input type="hidden" search_field="pro.id" value="<%= $this->getRequestProductID() %>"/>
 					<div class="row">
 						<div class="col-md-4">
 							<div class="form-group form-group-sm input-group">
