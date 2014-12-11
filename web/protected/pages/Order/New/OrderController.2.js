@@ -54,8 +54,27 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			item.unitPrice = tmp.me.getValueFromCurrency(item.unitPrice);
 		});
 		console.debug(tmp.data);
+		tmp.btn = $$('.save-btn').first();
+		tmp.me._signRandID(tmp.btn);
 		tmp.me.postAjax(tmp.me.getCallbackId('saveOrder'), tmp.data, {
-			
+			'onLoading': function(sender, param) {
+				jQuery('#' + tmp.btn.id).button('loading');
+			}
+			,'onSuccess': function(sender, param) {
+				try {
+					tmp.result = tmp.me.getResp(param, false, true);
+					if(!tmp.result || !tmp.result.item)
+						return;
+					tmp.me._item = tmp.result.item;
+					tmp.me.showModalBox('Success', 'Saved successfully', false);
+					location.reload(); 
+				} catch(e) {
+					tmp.me.showModalBox('Error!', e, false);
+				}
+			}
+			,'onComplete': function(sender, param) {
+				jQuery('#' + tmp.btn.id).button('reset');
+			}
 		});
 		return tmp.me;
 	}
@@ -66,7 +85,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		var tmp = {};
 		tmp.me = this;
 		tmp.newDiv = new Element('span', {'class': 'btn-group'})
-			.insert({'bottom': new Element('span', {'class': 'btn btn-primary'})
+			.insert({'bottom': new Element('span', {'class': 'btn btn-primary save-btn'})
 				.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-ok-circle'}) })
 				.insert({'bottom': new Element('span').update(' save ') })
 				.observe('click', function() {

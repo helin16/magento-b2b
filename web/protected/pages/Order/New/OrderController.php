@@ -189,6 +189,7 @@ class OrderController extends BPCPageAbstract
 				->save();
 			var_dump($order);
 			
+			$results['item'] = $order->getJson();
 			Dao::commitTransaction();
 		}
 		catch(Exception $ex)
