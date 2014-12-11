@@ -394,7 +394,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			.insert({'bottom': new Element('tbody')
 				.insert({'bottom': tmp.me._getScanTableROW({
 						'serialNo': tmp.me._getFormGroup('',new Element('input', {'class': 'form-control', 'scanned-item': 'serialNo', 'type': 'text', 'placeholder': 'Serial Number:', 'required': true})), 
-						'unitPrice': tmp.me._getFormGroup('', new Element('input', {'class': 'form-control', 'scanned-item': 'unitPrice', 'type': 'value', 'placeholder': 'Unit Price:', 'validate_currency': 'Invalid currency', 'value': product.purchaseOrderItem ? product.purchaseOrderItem.unitPrice : ''})), 
+						'unitPrice': tmp.me._getFormGroup('', new Element('input', {'class': 'form-control', 'scanned-item': 'unitPrice', 'type': 'value', 'placeholder': 'Unit Price:', 'validate_currency': 'Invalid currency', 'value': product.purchaseOrderItem ? tmp.me.getValueFromCurrency(tmp.me.getCurrency(product.purchaseOrderItem.unitPrice)) : ''})), 
 						'invoiceNo': tmp.me._getFormGroup('', new Element('input', {'class': 'form-control', 'scanned-item': 'invoiceNo', 'type': 'text', 'placeholder': 'Inv. No.:'})), 
 						'comments': tmp.me._getFormGroup('', new Element('input', {'class': 'form-control', 'scanned-item': 'comments', 'type': 'text', 'placeholder': 'Comments:'})), 
 						'btns': new Element('span', {'class': 'btn-group btn-group-sm pull-right'})
