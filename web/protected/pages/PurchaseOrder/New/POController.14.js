@@ -117,6 +117,18 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					tmp.me._submitOrder(this);
 				})
 			})
+			
+			.insert({'bottom': new Element('span', {'class': 'btn btn-info', 'data-loading-text' : 'saving...'})
+				.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-send'}) })
+				.insert({'bottom': new Element('span').update(' submit ') })
+				.observe('click', function() {
+					tmp.selBox = new Element('select', {'save-order': 'status'});
+					tmp.selBox.insert({'bottom': new Element('option').update('ORDERED') });
+					$$('select[save-order="status"]').first().replace(tmp.selBox);
+					tmp.me._submitOrder($(this));
+				})
+			})
+			
 			.insert({'bottom': new Element('span', {'class': 'btn btn-default'})
 				.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-remove-sign'}) })
 				.insert({'bottom': new Element('span').update(' cancel ') })

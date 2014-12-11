@@ -161,6 +161,8 @@ class POController extends BPCPageAbstract
 		$results = $errors = array();
 		try
 		{
+			var_dump($param->CallbackParameter);die;
+			
 			Dao::beginTransaction();
 			$supplier = Supplier::get(trim($param->CallbackParameter->supplier->id));
 			if(!$supplier instanceof Supplier)
