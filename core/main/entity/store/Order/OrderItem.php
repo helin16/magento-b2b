@@ -382,10 +382,7 @@ class OrderItem extends BaseEntityAbstract
 	 */
 	public static function create(Order $order, Product $product, $unitPrice, $qty, $totalPrice, $mageOrderItemId, $eta = null)
 	{
-		if(count($items = self::getItems($order, $product)) === 0)
-			$item = new OrderItem();
-		else
-			$item = $items[0];
+		$item = new OrderItem();
 		$item->setOrder($order)
 			->setProduct($product)
 			->setUnitPrice($unitPrice)
