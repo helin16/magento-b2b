@@ -413,19 +413,34 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				.observe('click', function() {
 					$(this).select();
 				})
+				.observe('keydown', function(event){
+					tmp.txtBox = this;
+					tmp.row = $(this).up('.item_row');
+					tmp.me.keydown(event, function() {
+						tmp.row.down('.save-new-product-btn').click();
+					});
+					return false;
+				})
+				.observe('keyup', function(){
+					tmp.row =$(this).up('.item_row');
+					tmp.unitPrice = tmp.me.getValueFromCurrency($F(this));
+					tmp.qty = $F(tmp.row.down('[new-order-item="qtyOrdered"]'));
+					$(tmp.row.down('[new-order-item="totalPrice"]')).value = tmp.me.getCurrency( tmp.unitPrice * tmp.qty);
+				})
 			)
 			,'qtyOrdered': tmp.me._getFormGroup( null, new Element('input', {'class': 'input-sm', 'new-order-item': 'qtyOrdered', 'required': 'Required!', 'value': '1'})
-				.observe('change', function(){
+				.observe('keyup', function(){
 					tmp.row =$(this).up('.item_row');
 					tmp.unitPrice = tmp.me.getValueFromCurrency($F(tmp.row.down('[new-order-item=unitPrice]')));
 					tmp.qty = $F(this);
+					console.debug(tmp.unitPrice);
 					$(tmp.row.down('[new-order-item=totalPrice]')).value = tmp.me.getCurrency( tmp.unitPrice * tmp.qty);
 				})
 				.observe('click', function() {
 					$(this).select();
 				})
 			)
-			,'totalPrice': tmp.me._getFormGroup( null, new Element('input', {'class': 'input-sm', 'new-order-item': 'totalPrice', 'required': 'Required!', 'value': tmp.me.getCurrency(0)})
+			,'totalPrice': tmp.me._getFormGroup( null, new Element('input', {'class': 'input-sm', 'disabled': true, 'new-order-item': 'totalPrice', 'required': 'Required!', 'value': tmp.me.getCurrency(0)})
 				.observe('change', function(){
 					tmp.row =$(this).up('.item_row');
 					tmp.totalPrice = tmp.me.getValueFromCurrency($F(this));
@@ -438,7 +453,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			)
 			, 'btns': new Element('span', {'class': 'btn-group btn-group-sm pull-right'})
 					.insert({'bottom': new Element('span', {'class': 'btn btn-primary'})
-					.insert({'bottom': new Element('span', {'class': ' glyphicon glyphicon-floppy-saved'}) })
+					.insert({'bottom': new Element('span', {'class': ' glyphicon glyphicon-floppy-saved save-new-product-btn'}) })
 					.observe('click', function() {
 						tmp.me._addNewProductRow(this);
 					})
