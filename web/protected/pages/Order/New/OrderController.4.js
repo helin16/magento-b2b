@@ -436,6 +436,14 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					console.debug(tmp.unitPrice);
 					$(tmp.row.down('[new-order-item=totalPrice]')).value = tmp.me.getCurrency( tmp.unitPrice * tmp.qty);
 				})
+				.observe('keydown', function(event){
+					tmp.txtBox = this;
+					tmp.row = $(this).up('.item_row');
+					tmp.me.keydown(event, function() {
+						tmp.row.down('.save-new-product-btn').click();
+					});
+					return false;
+				})
 				.observe('click', function() {
 					$(this).select();
 				})
