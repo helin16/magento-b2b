@@ -154,6 +154,7 @@ class ReceivingItem extends BaseEntityAbstract
 				->addComment($msg, Comments::TYPE_WAREHOUSE);
 			$product->setStockOnPO(($origStockOnPO = $product->getStockOnPO()) + 1)
 				->setStockOnHand(($origStockOnHand = $product->getStockOnHand()) - 1)
+				->snapshotQty($this, 'Stock received')
 				->save()
 				->addLog('stockOnPO(' . $product->getStockOnPO() . ' => ' .$product->getStockOnPO() . ', stockOnHand (' . $origStockOnHand . ' => ' . $product->getStockOnHand() . ')', Log::TYPE_SYSTEM, 'STOCK_QTY_CHG', __CLASS__ . '::' . __FUNCTION__);
 		}

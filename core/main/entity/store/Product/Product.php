@@ -628,13 +628,45 @@ class Product extends InfoEntityAbstract
 		SupplierCode::updateByCriteria('active = 0', 'productId = ?', array($this->getId()));
 		return $this;
 	}
+	/**
+	 * Getting the locations
+	 * 
+	 * @param PreferredLocationType $type
+	 * @param string $activeOnly
+	 * @param string $pageNo
+	 * @param unknown $pageSize
+	 * @param unknown $orderBy
+	 * @param unknown $stats
+	 * 
+	 * @return Ambigous <Ambigous, multitype:, multitype:BaseEntityAbstract >
+	 */
 	public function getLocations(PreferredLocationType $type = null, $activeOnly = true, $pageNo = null, $pageSize = DaoQuery::DEFAUTL_PAGE_SIZE, $orderBy = array(), &$stats = array())
 	{
 		return PreferredLocation::getPreferredLocations($this, $type, $activeOnly, $pageNo, $pageSize, $orderBy, $stats);
 	}
+	/**
+	 * adding the location
+	 * 
+	 * @param PreferredLocationType $type
+	 * @param Location $location
+	 * @return Product
+	 */
 	public function addLocation(PreferredLocationType $type, Location $location)
 	{
 		PreferredLocation::create($location, $this, $type);
+		return $this;
+	}
+	/**
+	 * snapshot of the product qty
+	 * 
+	 * @param BaseEntityAbstract $entity
+	 * @param string $comments
+	 * 
+	 * @return Product
+	 */
+	public function snapshotQty(BaseEntityAbstract $entity = null, $comments = '')
+	{
+		productQtyLog::create($this, $entity, trim($comments));
 		return $this;
 	}
 	/**

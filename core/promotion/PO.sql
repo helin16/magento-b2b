@@ -124,3 +124,28 @@ DELETE FROM `bpcinternal`.`purchaseorder` WHERE `purchaseorder`.`id` = 1003;
 DELETE FROM `bpcinternal`.`purchaseorder` WHERE `purchaseorder`.`id` = 1004;
 DELETE FROM `bpcinternal`.`purchaseorder` WHERE `purchaseorder`.`id` = 1005;
 
+
+DROP TABLE IF EXISTS `productqtylog`;
+CREATE TABLE `productqtylog` (
+	`id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+	`productId` int(10) unsigned NULL DEFAULT NULL,
+	`stockOnHand` int(10) NOT NULL DEFAULT 0,
+	`stockOnOrder` int(10) NOT NULL DEFAULT 0,
+	`stockOnPO` int(10) NOT NULL DEFAULT 0,
+	`comments` varchar(255) NOT NULL DEFAULT '',
+	`entityName` varchar(100) NOT NULL DEFAULT '',
+	`entityId` int(10) unsigned NOT NULL DEFAULT 0,
+	`active` bool NOT NULL DEFAULT 1,
+	`created` datetime NOT NULL DEFAULT '0001-01-01 00:00:00',
+	`createdById` int(10) unsigned NOT NULL DEFAULT 0,
+	`updated` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+	`updatedById` int(10) unsigned NOT NULL DEFAULT 0,
+	PRIMARY KEY (`id`)
+	,INDEX (`productId`)
+	,INDEX (`createdById`)
+	,INDEX (`updatedById`)
+	,INDEX (`name`)
+	,INDEX (`entityName`)
+	,INDEX (`entityId`)
+) ENGINE=innodb DEFAULT CHARSET=utf8;
+

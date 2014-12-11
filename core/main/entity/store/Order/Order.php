@@ -480,7 +480,21 @@ class Order extends InfoEntityAbstract
 				$item->setIsShipped(true)
 					->save();
 			}
+			$this->changeToInvoice();
 		}
+	}
+	/**
+	 * changed the order to be a invoice
+	 * 
+	 * @return Ambigous <BaseEntityAbstract, GenericDAO>
+	 */
+	private function changeToInvoice()
+	{
+		return $this->setType(Order::TYPE_INVOICE)
+			->setInvNo('BPCINV' .str_pad($this->getId(), 8, '0', STR_PAD_LEFT))
+			->save()
+			->addComment('Changed this order to be an INVOCE with invoice no:' . $this->getInvNo() . ')', Comments::TYPE_SYSTEM)
+			->addLog('Changed this order to be an INVOCE with invoice no:' . $this->getInvNo() . ')', Log::TYPE_SYSTEM, __FUNCTION__);
 	}
 	/**
 	 * adding a item onto the order

@@ -314,11 +314,13 @@ class OrderItem extends BaseEntityAbstract
 				//we are picking this product
 				if(intval($this->getIsPicked()) === 1) {
 					$product->setStockOnHand(($originStockOnHand = $product->getStockOnHand()) - $this->getQtyOrdered())
-						->setStockOnOrder(($originStockOnOrder = $product->getStockOnOrder()) + $this->getQtyOrdered());
+						->setStockOnOrder(($originStockOnOrder = $product->getStockOnOrder()) + $this->getQtyOrdered())
+						->snapshotQty($this, 'Stock picked');
 					$this->addLog('This item is now marked as picked', Log::TYPE_SYSTEM);
 				} else {
 					$product->setStockOnHand(($originStockOnHand = $product->getStockOnHand()) + $this->getQtyOrdered())
-						->setStockOnOrder(($originStockOnOrder = $product->getStockOnOrder()) - $this->getQtyOrdered());
+						->setStockOnOrder(($originStockOnOrder = $product->getStockOnOrder()) - $this->getQtyOrdered())
+						->snapshotQty($this, 'Stock UN-picked');
 					$this->addLog('This item is now Un-marked as picked', Log::TYPE_SYSTEM);
 				}
 				$product->save()
@@ -329,10 +331,12 @@ class OrderItem extends BaseEntityAbstract
 			if(self::countByCriteria('id = ? and isShipped != ?', array($this->getId(), $this->getIsShipped())) > 0) {
 				//we are picking this product
 				if(intval($this->getIsShipped()) === 1) {
-					$product->setStockOnOrder(($originStockOnOrder = $product->getStockOnOrder()) - $this->getQtyOrdered());
+					$product->setStockOnOrder(($originStockOnOrder = $product->getStockOnOrder()) - $this->getQtyOrdered())
+						->snapshotQty($this, 'Stock shipped');
 					$this->addLog('This item is now marked as SHIPPED', Log::TYPE_SYSTEM);
 				} else {
-					$product->setStockOnOrder(($originStockOnOrder = $product->getStockOnOrder()) + $this->getQtyOrdered());
+					$product->setStockOnOrder(($originStockOnOrder = $product->getStockOnOrder()) + $this->getQtyOrdered())
+						->snapshotQty($this, 'Stock UNshipped');
 					$this->addLog('This item is now Un-marked as SHIPPED', Log::TYPE_SYSTEM);
 				}
 				$product->save()
