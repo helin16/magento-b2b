@@ -7,12 +7,12 @@
 			<div class="panel panel-default" id="searchPanel">
 				<div class="panel-heading">
 					<label for="showSearch">Show Search Criteria?</label>
-					<input id="showSearch" type="checkbox" onclick="pageJs.toggleSearchPanel($(this).up('#searchPanel').down('.panel-body'));">
+					<input id="showSearch" type="checkbox" checked onclick="pageJs.toggleSearchPanel($(this).up('#searchPanel').down('.panel-body'));">
 					<span class="pull-right">
 						<span id="searchBtn" class="btn btn-primary btn-sm" data-loading-text="searching ..." >Search</span>
 					</span>
 				</div>
-				<div class="panel-body search-panel" id="searchDiv" style="display: none; ">
+				<div class="panel-body search-panel" id="searchDiv">
 					<div class="row">
 						<div class="col-md-4">
 							<div class="form-group form-group-sm input-group">
