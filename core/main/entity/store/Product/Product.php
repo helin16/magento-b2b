@@ -666,7 +666,7 @@ class Product extends InfoEntityAbstract
 	 */
 	public function snapshotQty(BaseEntityAbstract $entity = null, $comments = '')
 	{
-		productQtyLog::create($this, $entity, trim($comments));
+		ProductQtyLog::create($this, $entity, trim($comments));
 		return $this;
 	}
 	/**
