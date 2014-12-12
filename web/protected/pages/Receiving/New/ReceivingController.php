@@ -186,9 +186,25 @@ class ReceivingController extends BPCPageAbstract
 				$product = Product::get(trim($item->product->id));
 				if(isset($item->product->EANcode) ) {
 					$EANcode = trim($item->product->EANcode);
+					$productcodes = ProductCode::getAllByCriteria('pro_code.productId = :code and pro_code.typeId = :typeId', array('code'=> $EANcode, 'typeId'=> ProductCodeType::ID_EAN), true, 1, 1);
+					if(sizeof($productcodes)) {
+						if(!$productcodes[0] instanceof ProductCode)
+							throw new Exception('Invalid ProductCode passed in!');
+						$productcodes[0]->setCode($EANcode);
+					} else {
+						ProductCode::create($product, ProductCodeType::get(ProductCodeType::ID_EAN), $EANcode);
+					}
 				}
 				if(isset($item->product->UPCcode) ) {
 					$UPCcode = trim($item->product->UPCcode);
+					$productcodes = ProductCode::getAllByCriteria('pro_code.productId = :code and pro_code.typeId = :typeId', array('code'=> $EANcode, 'typeId'=> ProductCodeType::ID_EAN), true, 1, 1);
+					if(sizeof($productcodes)) {
+						if(!$productcodes[0] instanceof ProductCode)
+							throw new Exception('Invalid ProductCode passed in!');
+						$productcodes[0]->setCode($EANcode);
+					} else {
+						ProductCode::create($product, ProductCodeType::get(ProductCodeType::ID_EAN), $EANcode);
+					}
 				}
 				
 				if(!$product instanceof Product)
