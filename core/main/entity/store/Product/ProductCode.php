@@ -91,45 +91,20 @@ class ProductCode extends BaseEntityAbstract
 		$this->code = $value;
 		return $this;
 	}
+	/**
+	 * (non-PHPdoc)
+	 * @see BaseEntityAbstract::getJson()
+	 */
+	public function getJson($extra = '', $reset = false)
+	{
+		$array = array();
+		if(!$this->isJsonLoaded($reset))
+		{
+			$array['type'] = $this->getType()->getJson();
+		}
+		return parent::getJson($array, $reset);
+	}
 	
-	/**
-	 * Creating a product code for a product and type
-	 * 
-	 * @param Product         $product
-	 * @param ProductCodeType $type
-	 * @param string          $code
-	 * 
-	 * @return ProductCode
-	 */
-	public static function create(Product $product, ProductCodeType $type, $code)
-	{
-		$class = __CLASS__;
-		$objects = self::getCodes($product, $type, true , 1, 1);
-		if($type->getAllowMultiple() !== true && count($objects) > 0)
-			throw new EntityException('Code Type(=' . $type->getName() . ') NOT allow multiple and there is one for this product already!');
-		$obj = new $class();
-		$obj->setProduct($product)
-			->setType($type)
-			->setCode(trim($code))
-			->save();
-		return $obj;
-	}
-	/**
-	 * Getting the productcodes
-	 * 
-	 * @param Product         $product
-	 * @param ProductCodeType $type
-	 * @param string          $activeOnly
-	 * @param string          $pageNo
-	 * @param array           $pageSize
-	 * @param array           $orderBy
-	 * 
-	 * @return Ambigous <multitype:, multitype:BaseEntityAbstract >
-	 */
-	public static function getCodes(Product $product, ProductCodeType $type, $activeOnly = true, $pageNo = null, $pageSize = DaoQuery::DEFAUTL_PAGE_SIZE, $orderBy = array(), &$stats = array())
-	{
-		return self::getAllByCriteria('productId = ? and typeId = ?', array($product->getId(), $type->getId()), $activeOnly , $pageNo, $pageSize, $orderBy, $stats);
-	}
 	/**
 	 * (non-PHPdoc)
 	 * @see BaseEntity::__loadDaoMap()
@@ -144,5 +119,43 @@ class ProductCode extends BaseEntityAbstract
 		
 		DaoMap::createIndex('code');
 		DaoMap::commit();
+	}
+	/**
+	 * Creating a product code for a product and type
+	 *
+	 * @param Product         $product
+	 * @param ProductCodeType $type
+	 * @param string          $code
+	 *
+	 * @return ProductCode
+	 */
+	public static function create(Product $product, ProductCodeType $type, $code)
+	{
+		$class = __CLASS__;
+		$objects = self::getCodes($product, $type, true , 1, 1);
+		if($type->getAllowMultiple() !== true && count($objects) > 0)
+			throw new EntityException('Code Type(=' . $type->getName() . ') NOT allow multiple and there is one for this product already!');
+		$obj = new $class();
+		$obj->setProduct($product)
+		->setType($type)
+		->setCode(trim($code))
+		->save();
+		return $obj;
+	}
+	/**
+	 * Getting the productcodes
+	 *
+	 * @param Product         $product
+	 * @param ProductCodeType $type
+	 * @param string          $activeOnly
+	 * @param string          $pageNo
+	 * @param array           $pageSize
+	 * @param array           $orderBy
+	 *
+	 * @return Ambigous <multitype:, multitype:BaseEntityAbstract >
+	 */
+	public static function getCodes(Product $product, ProductCodeType $type, $activeOnly = true, $pageNo = null, $pageSize = DaoQuery::DEFAUTL_PAGE_SIZE, $orderBy = array(), &$stats = array())
+	{
+		return self::getAllByCriteria('productId = ? and typeId = ?', array($product->getId(), $type->getId()), $activeOnly , $pageNo, $pageSize, $orderBy, $stats);
 	}
 }
