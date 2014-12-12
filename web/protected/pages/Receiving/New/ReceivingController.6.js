@@ -281,7 +281,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.me = this;
 		//header row
 		tmp.productListDiv = new Element('div', {'class': 'list-group', 'id': tmp.me._htmlIds.partsTable})
-			.insert({'bottom': tmp.newDiv = tmp.me._getProductRow({'product': {'sku': 'SKU', 'name': 'Product Name', 'qty': 'Qty'} }, true) });
+			.insert({'bottom': tmp.newDiv = tmp.me._getProductRow({'product': {'sku': 'SKU', 'name': 'Product Name', 'qty': 'Qty', 'EANcode': 'EAN code', 'UPCcode': 'UPC code'} }, true) });
 		tmp.newDiv.setStyle({cursor:'pointer'});
 		tmp.newDiv.observe('dblclick', function(event){
 			tmp.allClosed = true;
@@ -311,6 +311,34 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.me = this;
 		console.debug(orderItem);
 		tmp.isTitle = (isTitleRow || false);
+		tmp.EANcodeEl = new Element('div', {'class': 'form-group'} )
+			.insert({'bottom': new Element('input', {'class': 'form-control', 'save-item': 'EANcode', 'placeholder': 'EAN code', 'type': 'text'}) })
+			.observe('keydown', function(event){
+				tmp.txtBox = $(this);
+				tmp.me.keydown(event, function() {
+					tmp.txtBox.up('.product-head-row').down('[save-item="UPCcode"]').focus();
+					tmp.txtBox.up('.product-head-row').down('[save-item="UPCcode"]').select();
+				});
+				return false;
+			})
+			.observe('click', function(event){
+				Event.stop(event);
+				$(this).down('input').select();
+			});
+		tmp.UPCcodeEl = new Element('div', {'class': 'form-group'} )
+			.insert({'bottom': new Element('input', {'class': 'form-control', 'save-item': 'UPCcode', 'placeholder': 'UPC code', 'type': 'text'}) })
+			.observe('keydown', function(event){
+				tmp.txtBox = $(this);
+				tmp.me.keydown(event, function() {
+					tmp.txtBox.up('.item_row').down('[scanned-item="serialNo"]').focus();
+					tmp.txtBox.up('.item_row').down('[scanned-item="serialNo"]').select();
+				});
+				return false;
+			})
+			.observe('click', function(event){
+				Event.stop(event);
+				$(this).down('input').select();
+			});
 		tmp.row = new Element((tmp.isTitle === true ? 'strong' : 'div'), {'class': 'item_row list-group-item'})
 			.store('data', orderItem.product)
 			.insert({'bottom': tmp.infoRow = new Element('div', {'class': tmp.isTitle ? 'row btn-hide-row' : 'row btn-hide-row product-head-row'})
@@ -320,6 +348,12 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				.insert({'bottom': new Element('span', {'class': 'col-sm-1'})
 					.insert({'bottom': new Element('span', {'class': 'scannedQty'}).update(orderItem.product.qty ? orderItem.product.qty : (orderItem.product.id ? 0 : '') ) })
 					.insert({'bottom': new Element('span', {'class': 'orderedQty'}).update(orderItem.product.purchaseOrderItem ? '/' + orderItem.product.purchaseOrderItem.qty : '') })
+				})
+				.insert({'bottom': new Element('span', {'class': ' col-sm-2 EANcode'})
+					.update(orderItem.product.id ? tmp.EANcodeEl : orderItem.product.EANcode)
+				})
+				.insert({'bottom': new Element('span', {'class': ' col-sm-2 UPCcode'})
+					.update(orderItem.product.id ? tmp.UPCcodeEl : orderItem.product.UPCcode)
 				})
 				.insert({'bottom': tmp.btns = new Element('span', {'class': 'btns col-sm-1'}).update(orderItem.btns ? orderItem.btns : '') })
 			});
@@ -572,7 +606,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		
 		tmp.me._checkProduct(tmp.product, tmp.newRow.down('.product-head-row'));
 		
-		tmp.newRow.down('[scanned-item="serialNo"]').focus();
+		tmp.newRow.down('[save-item="EANcode"]').focus();
 		
 		tmp.me._focusNext(tmp.newRow,'serialNo','unitPrice');
 		tmp.me._focusNext(tmp.newRow,'unitPrice','invoiceNo');
