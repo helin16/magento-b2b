@@ -321,9 +321,18 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				});
 				return false;
 			})
+			.observe('change', function(event){
+				tmp.txtBox = $(this);
+				tmp.rowData = tmp.txtBox.up('.item_row.list-group-item').retrieve('data');
+				tmp.rowData.EANcode = $F(tmp.txtBox.down('[save-item]') );
+				if(tmp.rowData.EANcode)
+					tmp.txtBox.up('.item_row.list-group-item').store('data',tmp.rowData);
+				return false;
+			})
 			.observe('click', function(event){
 				Event.stop(event);
 				$(this).down('input').select();
+				return false;
 			});
 		tmp.UPCcodeEl = new Element('div', {'class': 'form-group'} )
 			.insert({'bottom': new Element('input', {'class': 'form-control', 'save-item': 'UPCcode', 'placeholder': 'UPC code', 'type': 'text'}) })
@@ -333,6 +342,14 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					tmp.txtBox.up('.item_row').down('[scanned-item="serialNo"]').focus();
 					tmp.txtBox.up('.item_row').down('[scanned-item="serialNo"]').select();
 				});
+				return false;
+			})
+			.observe('change', function(event){
+				tmp.txtBox = $(this);
+				tmp.rowData = tmp.txtBox.up('.item_row.list-group-item').retrieve('data');
+				tmp.rowData.UPCcode = $F(tmp.txtBox.down('[save-item]') );
+				if(tmp.rowData.UPCcode)
+					tmp.txtBox.up('.item_row.list-group-item').store('data',tmp.rowData);
 				return false;
 			})
 			.observe('click', function(event){

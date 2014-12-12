@@ -184,6 +184,13 @@ class ReceivingController extends BPCPageAbstract
 			
 			foreach ($products->matched as $item) {
 				$product = Product::get(trim($item->product->id));
+				if(isset($item->product->EANcode) ) {
+					$EANcode = trim($item->product->EANcode);
+				}
+				if(isset($item->product->UPCcode) ) {
+					$UPCcode = trim($item->product->UPCcode);
+				}
+				
 				if(!$product instanceof Product)
 					throw new Exception('Invalid Product passed in!');
 				
