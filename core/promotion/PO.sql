@@ -148,3 +148,6 @@ CREATE TABLE `productqtylog` (
 	,INDEX (`entityId`)
 ) ENGINE=innodb DEFAULT CHARSET=utf8;
 
+#product code type bug
+UPDATE `bpcinternal`.`productcodetype` SET `name` = 'UPC', `description` = 'Universal Product Code' WHERE `productcodetype`.`id` = 1;
+UPDATE `bpcinternal`.`productcodetype` SET `name` = 'EAN', `description` = 'European Article Number' WHERE `productcodetype`.`id` = 2;
