@@ -316,7 +316,10 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				.insert({'bottom': new Element('span', {'class': ' col-sm-3 productName'})
 					.insert({'bottom': orderItem.product.name ? orderItem.product.name : orderItem.product.barcode })
 				})
-				.insert({'bottom': new Element('span', {'class': 'col-sm-1 scannedQty'}).update(orderItem.product.qty ? orderItem.product.qty : '') })
+				.insert({'bottom': new Element('span', {'class': 'col-sm-1'})
+					.insert({'bottom': new Element('span', {'class': 'scannedQty'}).update(orderItem.product.qty ? orderItem.product.qty : 0) })
+					.insert({'bottom': new Element('span', {'class': 'orderedQty'}).update(orderItem.product.purchaseOrderItem ? '/' + orderItem.product.purchaseOrderItem.qty : '') })
+				})
 				.insert({'bottom': tmp.btns = new Element('span', {'class': 'btns col-sm-1'}).update(orderItem.btns ? orderItem.btns : '') })
 			});
 			tmp.infoRow.insert({'top': new Element('span', {'class': 'col-sm-2 productSku'}).update(orderItem.product.sku ? orderItem.product.sku : '') });
@@ -388,7 +391,6 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 	,_getScanTable: function(product) {
 		var tmp = {};
 		tmp.me = this;
-		console.debug(product);
 		tmp.table = new Element('table', {'class': 'table scanTable'})
 			.insert({'bottom': new Element('thead').update(tmp.me._getScanTableROW({'serialNo': 'Serial No.', 'unitPrice': 'Unit Price (Ex)', 'invoiceNo': 'Inv. No.', 'comments': 'Comments', 'btns': ''}, true)) })
 			.insert({'bottom': new Element('tbody')
@@ -412,6 +414,10 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 														if(!confirm('You are about to remove this entry.\n\nContinue?'))
 															return;
 														$(this).up('.item_row').down('.product-head-row .scannedQty').innerHTML--;
+														if ($(this).up('.item_row').down('.product-head-row .scannedQty').innerHTML > product.purchaseOrderItem.qty || !$(this).up('.item_row').down('.product-head-row .scannedQty').innerHTML)
+															$(this).up('.item_row').down('.product-head-row .scannedQty').setStyle({color: 'red'});
+														else
+															$(this).up('.item_row').down('.product-head-row .scannedQty').setStyle({color: 'inherit'});
 														if($(this).up('.item_row').down('.product-head-row .scannedQty').innerHTML == 0)
 															$(this).up('.item_row').down('.product-head-row .scannedQty').setStyle({color: 'red'});
 														$(this).up('.scanned-item-row').remove();
@@ -426,8 +432,10 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 											tmp.currentRow.down('input[scanned-item=serialNo]').clear().focus();
 											
 											$(this).up('.item_row').down('.scannedQty').innerHTML++;
-											
-											
+											if ($(this).up('.item_row').down('.product-head-row .scannedQty').innerHTML > product.purchaseOrderItem.qty || !$(this).up('.item_row').down('.product-head-row .scannedQty').innerHTML)
+												$(this).up('.item_row').down('.product-head-row .scannedQty').setStyle({color: 'red'});
+											else
+												$(this).up('.item_row').down('.product-head-row .scannedQty').setStyle({color: 'inherit'});
 										}
 									})
 							})
