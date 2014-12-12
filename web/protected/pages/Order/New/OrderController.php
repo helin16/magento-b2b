@@ -183,7 +183,9 @@ class OrderController extends BPCPageAbstract
 				$totalPrice = trim($item->totalPrice);
 				
 				$totalPaymentDue += $totalPrice;
-				$order->addItem($product,$unitPrice, $qtyOrdered, $totalPrice);
+				$orderItem = OrderItem::create($order, $product, $unitPrice, $qtyOrdered, $totalPrice);
+// 				foreach($item->serialNos as $serialNo)
+// 					$orderItem->addSellingItem($serialNo);
 			}
 			$order->setTotalAmount($totalPaymentDue)
 				->save();
