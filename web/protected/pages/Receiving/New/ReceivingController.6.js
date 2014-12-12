@@ -309,6 +309,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 	,_getProductRow: function(orderItem, isTitleRow) {
 		var tmp = {};
 		tmp.me = this;
+		console.debug(orderItem);
 		tmp.isTitle = (isTitleRow || false);
 		tmp.row = new Element((tmp.isTitle === true ? 'strong' : 'div'), {'class': 'item_row list-group-item'})
 			.store('data', orderItem.product)
@@ -317,7 +318,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					.insert({'bottom': orderItem.product.name ? orderItem.product.name : orderItem.product.barcode })
 				})
 				.insert({'bottom': new Element('span', {'class': 'col-sm-1'})
-					.insert({'bottom': new Element('span', {'class': 'scannedQty'}).update(orderItem.product.qty ? orderItem.product.qty : 0) })
+					.insert({'bottom': new Element('span', {'class': 'scannedQty'}).update(orderItem.product.qty ? orderItem.product.qty : (orderItem.product.id ? 0 : '') ) })
 					.insert({'bottom': new Element('span', {'class': 'orderedQty'}).update(orderItem.product.purchaseOrderItem ? '/' + orderItem.product.purchaseOrderItem.qty : '') })
 				})
 				.insert({'bottom': tmp.btns = new Element('span', {'class': 'btns col-sm-1'}).update(orderItem.btns ? orderItem.btns : '') })
