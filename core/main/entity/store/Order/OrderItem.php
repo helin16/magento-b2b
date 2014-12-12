@@ -299,6 +299,35 @@ class OrderItem extends BaseEntityAbstract
 	    return parent::getJson($array, $reset);
 	}
 	/**
+	 * Add a selling item
+	 * 
+	 * @param string $serialNo
+	 * @param string $description
+	 * 
+	 * @return OrderItem
+	 */
+	public function addSellingItem($serialNo, $description = '')
+	{
+		SellingItem::create($this, $serialNo, $description);
+		return $this;
+	}
+	/**
+	 * Getting the selling items
+	 * 
+	 * @param string $serialNo
+	 * @param string $description
+	 * @param string $activeOnly
+	 * @param int    $pageNo
+	 * @param int    $pageSize
+	 * @param array  $orderBy
+	 * @param array  $stats
+	 * @return Ambigous <Ambigous, multitype:, multitype:BaseEntityAbstract >
+	 */
+	public function getSellingItems($serialNo = '', $description = '', $activeOnly = true, $pageNo = null, $pageSize = DaoQuery::DEFAUTL_PAGE_SIZE, $orderBy = array(), &$stats = array())
+	{
+		return SellingItem::getSellingItems($this, $serialNo, $description, $this->getOrder(), $this->getProduct(), $activeOnly, $pageNo, $pageSize, $orderBy, $stats);
+	}
+	/**
 	 * (non-PHPdoc)
 	 * @see BaseEntityAbstract::preSave()
 	 */

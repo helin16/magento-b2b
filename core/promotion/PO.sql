@@ -151,3 +151,28 @@ CREATE TABLE `productqtylog` (
 #product code type bug
 UPDATE `bpcinternal`.`productcodetype` SET `name` = 'UPC', `description` = 'Universal Product Code' WHERE `productcodetype`.`id` = 1;
 UPDATE `bpcinternal`.`productcodetype` SET `name` = 'EAN', `description` = 'European Article Number' WHERE `productcodetype`.`id` = 2;
+
+
+#add sellingitem table
+DROP TABLE IF EXISTS `sellingitem`;
+CREATE TABLE `sellingitem` (
+	`id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+	`orderItemId` int(10) unsigned NOT NULL DEFAULT 0,
+	`orderId` int(10) unsigned NOT NULL DEFAULT 0,
+	`productId` int(10) unsigned NOT NULL DEFAULT 0,
+	`serialNo` varchar(100) NOT NULL DEFAULT '',
+	`description` varchar(255) NOT NULL DEFAULT '',
+	`active` bool NOT NULL DEFAULT 1,
+	`created` datetime NOT NULL DEFAULT '0001-01-01 00:00:00',
+	`createdById` int(10) unsigned NOT NULL DEFAULT 0,
+	`updated` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+	`updatedById` int(10) unsigned NOT NULL DEFAULT 0,
+	PRIMARY KEY (`id`)
+	,INDEX (`orderItemId`)
+	,INDEX (`orderId`)
+	,INDEX (`productId`)
+	,INDEX (`createdById`)
+	,INDEX (`updatedById`)
+	,INDEX (`serialNo`)
+	,INDEX (`description`)
+) ENGINE=innodb DEFAULT CHARSET=utf8;
