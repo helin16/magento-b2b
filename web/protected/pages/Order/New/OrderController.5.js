@@ -227,7 +227,8 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 						.observe('click', function(event){
 							Event.stop(event);
 							$productId = $(this).up('.search-product-result-row').retrieve('data').id;
-							tmp.me._openProductDetailPage($productId);
+							if($productId)
+								tmp.me._openProductDetailPage($productId);
 						})
 						.insert({'bottom': new Element('small', {'class': 'pull-right'}).update('SKU: ' + product.sku) })
 					})
@@ -247,11 +248,12 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 						.update(product.name) 
 						.insert({'bottom': new Element('small', {'class': 'btn btn-xs btn-info'})
 							.insert({'bottom': new Element('small', {'class': 'glyphicon glyphicon-new-window'} )})
-						})
-						.observe('click', function(event){
-							Event.stop(event);
-							$productId = product.id;
-							tmp.me._openProductDetailPage($productId);
+							.observe('click', function(event){
+								Event.stop(event);
+								$productId = product.id;
+								if($productId)
+									tmp.me._openProductDetailPage($productId);
+							})
 						})
 						.insert({'bottom': new Element('a', {'href': 'javascript: void(0);', 'class': 'text-danger pull-right', 'title': 'click to change the product'}) 
 							.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-remove'})  })
