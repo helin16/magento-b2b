@@ -160,8 +160,13 @@ class PurchaseOrder extends BaseEntityAbstract
 	 */
 	public function setStatus($value) 
 	{
-		if(trim($this->getId()) !== "")
-			$this->pushStatus($value);
+		if(trim($this->getId()) !== "") {
+			$oldStatuses = Dao::getResultsNative('select status from purchaseorder where id = ?', array($this->getId()));
+			if(count($oldStatuses) > 0 && ($oldStatus = trim($oldStatuses[0]['status'])) === trim($value))//no change of the status
+				$this->status = trim($value);
+			else
+				$this->pushStatus(trim($value));
+		}
 		else
 	    	$this->status = trim($value);
 	    return $this;
@@ -387,7 +392,8 @@ class PurchaseOrder extends BaseEntityAbstract
 	{
 		if(!$this->_validateStatus($status))
 			throw new EntityException('Invalid status(=' . $status . ').');
-		if($status === ($oldStatus = $this->getStatus())) //no change of the status
+		$oldStatuses = Dao::getResultsNative('select status from purchaseorder where id = ?', array($this->getId()));
+		if(count($oldStatuses) > 0 && ($oldStatus = trim($oldStatuses[0]['status'])) === trim($status))//no change of the status
 			return $this;
 		$this->status = trim($status);
 		if(trim($this->getId()) !== '')

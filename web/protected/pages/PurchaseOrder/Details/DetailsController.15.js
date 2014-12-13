@@ -959,6 +959,19 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		}
 		$(tmp.me._htmlIds.itemDiv).down('input[save-order="contactName"]').focus();
 		$(tmp.me._htmlIds.itemDiv).down('input[save-order="contactName"]').select();
+		
+		if (tmp.me._purchaseorder.status === 'RECEIVED' || tmp.me._purchaseorder.status === 'CLOSED') {
+			$$('input').each(function(input) {
+				input.disabled = true;
+			});
+			$$('select').each(function(input) {
+				input.disabled = true;
+			});
+			if(tmp.me._purchaseorder.status !== 'CLOSED') {
+				$('total-paid-amount').disabled = false;
+				$$('select[save-order="status"]').each(function(sel){sel.disabled = false;})
+			}
+		}
 		return tmp.me;
 	}
 });
