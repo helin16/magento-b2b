@@ -35,7 +35,10 @@ class ReceivingController extends BPCPageAbstract
 			$js .= ".setCallbackId('searchProduct', '" . $this->searchProductBtn->getUniqueID() . "')";
 			$js .= ".setCallbackId('saveOrder', '" . $this->saveOrderBtn->getUniqueID() . "')";
 			$js .= ".setCallbackId('checkProduct', '" . $this->checkProductBtn->getUniqueID() . "')";
-			$js .= ".init();";
+			if(isset($this->Request['poid']) && ($po = PurchaseOrder::get($this->Request['poid'])) instanceof PurchaseOrder)
+				$js .= ".init(" . json_encode($this->_getPOJson($po)) . ");";
+			else
+				$js .= ".init();";
 		return $js;
 	}
 	/**
@@ -63,24 +66,7 @@ class ReceivingController extends BPCPageAbstract
 				{
 					if(!$po instanceof PurchaseOrder)
 						throw new Exception('Invalid PurchaseOrder passed in!');
-					$array = $po->getJson();
-					$array['totalProdcutCount'] = $po->gettotalProdcutCount();
-					
-					$array['purchaseOrderItem'] = [];
-					foreach (PurchaseOrderItem::getAllByCriteria('po_item.purchaseOrderId = :purchaseOrderId', array('purchaseOrderId'=> $po->getId() ), true, 1, DaoQuery::DEFAUTL_PAGE_SIZE * 10) as $purchaseOrderItem) 
-					{
-						$product = $purchaseOrderItem->getProduct();
-						$EANcodes = ProductCode::getAllByCriteria('pro_code.productId = :productId and pro_code.typeId = :typeId', array('productId'=> $product->getId(), 'typeId'=> ProductCodeType::ID_EAN), true, 1, 1);
-						$EANcodes = count($EANcodes) ? $EANcodes[0]->getCode() : '';
-						$UPCcodes = ProductCode::getAllByCriteria('pro_code.productId = :productId and pro_code.typeId = :typeId', array('productId'=> $product->getId(), 'typeId'=> ProductCodeType::ID_UPC), true, 1, 1);
-						$UPCcodes = count($UPCcodes) ? $UPCcodes[0]->getCode() : '';
-						
-						$productArray = $product->getJson();
-						$productArray['codes'] = array('EAN'=>$EANcodes, 'UPC'=>$UPCcodes);
-						
-						$array['purchaseOrderItem'][] = array('purchaseOrderItem'=> $purchaseOrderItem->getJson(), 'product'=> $productArray);
-					}
-					$items[] = $array;
+					$items[] = $this->_getPOJson($po);
 				}
 				$results['items'] = $items;
 			}
@@ -90,6 +76,34 @@ class ReceivingController extends BPCPageAbstract
 			$errors[] = $ex->getMessage();
 		}
 		$param->ResponseData = StringUtilsAbstract::getJson($results, $errors);
+	}
+	/**
+	 * Getting the JSon for PurchaseOrder
+	 * 
+	 * @param PurchaseOrder $po
+	 * 
+	 * @return Ambigous <multitype:, multitype:multitype:string  NULL >
+	 */
+	private function _getPOJson(PurchaseOrder $po)
+	{
+		$array = $po->getJson();
+		$array['totalProdcutCount'] = $po->gettotalProdcutCount();
+			
+		$array['purchaseOrderItem'] = [];
+		foreach (PurchaseOrderItem::getAllByCriteria('po_item.purchaseOrderId = :purchaseOrderId', array('purchaseOrderId'=> $po->getId() ), true, 1, DaoQuery::DEFAUTL_PAGE_SIZE * 10) as $purchaseOrderItem)
+		{
+			$product = $purchaseOrderItem->getProduct();
+			$EANcodes = ProductCode::getAllByCriteria('pro_code.productId = :productId and pro_code.typeId = :typeId', array('productId'=> $product->getId(), 'typeId'=> ProductCodeType::ID_EAN), true, 1, 1);
+			$EANcodes = count($EANcodes) ? $EANcodes[0]->getCode() : '';
+			$UPCcodes = ProductCode::getAllByCriteria('pro_code.productId = :productId and pro_code.typeId = :typeId', array('productId'=> $product->getId(), 'typeId'=> ProductCodeType::ID_UPC), true, 1, 1);
+			$UPCcodes = count($UPCcodes) ? $UPCcodes[0]->getCode() : '';
+		
+			$productArray = $product->getJson();
+			$productArray['codes'] = array('EAN'=>$EANcodes, 'UPC'=>$UPCcodes);
+		
+			$array['purchaseOrderItem'][] = array('purchaseOrderItem'=> $purchaseOrderItem->getJson(), 'product'=> $productArray);
+		}
+		return $array;
 	}
 	/**
 	 * check product: if the PO contain such product
@@ -158,9 +172,10 @@ class ReceivingController extends BPCPageAbstract
 				if(!$product instanceof Product)
 					throw new Exception('Invalid Product passed in!');
 				$EANcodes = ProductCode::getAllByCriteria('pro_code.productId = :productId and pro_code.typeId = :typeId', array('productId'=> $product->getId(), 'typeId'=> ProductCodeType::ID_EAN), true, 1, 1);
-				$EANcodes = count($EANcodes) ? $EANcodes[0]->getCode() : '';
+				$EANcodes = count($EANcodes) > 0 ? $EANcodes[0]->getCode() : '';
+				
 				$UPCcodes = ProductCode::getAllByCriteria('pro_code.productId = :productId and pro_code.typeId = :typeId', array('productId'=> $product->getId(), 'typeId'=> ProductCodeType::ID_UPC), true, 1, 1);
-				$UPCcodes = count($UPCcodes) ? $UPCcodes[0]->getCode() : '';
+				$UPCcodes = count($UPCcodes) > 0 ? $UPCcodes[0]->getCode() : '';
 				
 				$array = $product->getJson();
 				$array['codes'] = array('EAN'=>$EANcodes, 'UPC'=>$UPCcodes);
@@ -223,7 +238,10 @@ class ReceivingController extends BPCPageAbstract
 					throw new Exception('Invalid Product passed in!');
 				
 				$serials = $item->serial;
+				$totalQty = 0;
 				foreach ($serials as $serial) {
+					$qty = trim($serial->qty);
+					$totalQty += intval($qty);
 					$serialNo = trim($serial->serialNo);
 					$unitPrice = trim($serial->unitPrice);
 					$invoiceNo = trim($serial->invoiceNo);
@@ -233,27 +251,20 @@ class ReceivingController extends BPCPageAbstract
 					$nofullReceivedItems = PurchaseOrderItem::getAllByCriteria('productId = ? and purchaseOrderId = ?', array($product->getId(), $purchaseOrder->getId()), true, 1, 1, array('po_item.receivedQty' => 'asc'));
 					if(count($nofullReceivedItems) > 0) {
 						$nofullReceivedItems[0]
-						->setReceivedQty($nofullReceivedItems[0]->getReceivedQty() + 1)
+						->setReceivedQty($nofullReceivedItems[0]->getReceivedQty() + $qty)
 						->save()
-						->addLog(Log::TYPE_SYSTEM, ($msg = 'received a product(SKU=' . $product->getSku() . ') by ' . Core::getUser()->getPerson()->getFullName() . '@' . trim(new UDate()) . '(UTC)'), __CLASS__ . '::' . __FUNCTION__)
+						->addLog(Log::TYPE_SYSTEM, ($msg = 'received ' . $qty . ' product(SKU=' . $product->getSku() . ') by ' . Core::getUser()->getPerson()->getFullName() . '@' . trim(new UDate()) . '(UTC)'), __CLASS__ . '::' . __FUNCTION__)
 						->addComment(Comments::TYPE_WAREHOUSE, $msg);
 					}
 					
 				}
 				
-				$purchaseOrder->addComment(Comments::TYPE_WAREHOUSE, 'received ' . count($serials) . ' product(SKU=' . $product->getSku() . ') by ' . Core::getUser()->getPerson()->getFullName() . '@' . trim(new UDate()) . '(UTC)');
+				$purchaseOrder->addComment(Comments::TYPE_WAREHOUSE, 'received ' . $totalQty . ' product(SKU=' . $product->getSku() . ') by ' . Core::getUser()->getPerson()->getFullName() . '@' . trim(new UDate()) . '(UTC)');
 			}
 			
 			$totalCount = PurchaseOrderItem::countByCriteria('active = 1 and purchaseOrderId = ? and receivedQty < qty', array($purchaseOrder->getId()));
-			if(trim($totalCount) === '0')
-			{
-				$purchaseOrder->setStatus(PurchaseOrder::STATUS_RECEIVED);
-			}
-			else
-			{
-				$purchaseOrder->setStatus(PurchaseOrder::STATUS_RECEIVING);
-			}
-			$purchaseOrder->save();
+			$purchaseOrder->setStatus(trim($totalCount) === '0' ? PurchaseOrder::STATUS_RECEIVED : PurchaseOrder::STATUS_RECEIVING)
+				->save();
 			
 			$results['item'] = $purchaseOrder->getJson();
 			Dao::commitTransaction();
