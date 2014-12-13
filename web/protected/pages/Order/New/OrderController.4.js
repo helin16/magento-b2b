@@ -334,7 +334,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.shippingCostGSTBox.update(tmp.me.getCurrency(tmp.shippingCostGST));
 		
 		tmp.totalPaidAmount = ($(tmp.me._htmlIds.totalPaidAmount) ? tmp.me.getValueFromCurrency($F(tmp.me._htmlIds.totalPaidAmount)) : 0);
-		tmp.totalPaymentDue = tmp.totalIncGST * 1 - tmp.totalPaidAmount;
+		tmp.totalPaymentDue = tmp.totalIncGST * 1 + tmp.totalShippingCost * 1 - tmp.totalPaidAmount * 1;
 		$$('.total-payment-due').each(function(item) {
 			tmp.newEl = new Element('strong', {'class': 'label'}).update(tmp.me.getCurrency(tmp.totalPaymentDue) + ' ');
 			if(tmp.totalPaymentDue * 1 < 0) {

@@ -130,7 +130,7 @@ class OrderController extends BPCPageAbstract
 		$results = $errors = array();
 		try
 		{
-			var_dump($param->CallbackParameter);
+// 			var_dump($param->CallbackParameter);
 			
 			Dao::beginTransaction();
 			$customer = Customer::get(trim($param->CallbackParameter->customer->id));
@@ -166,8 +166,6 @@ class OrderController extends BPCPageAbstract
 				$totalShippingCost = 0;
 			}
 			$totalPaymentDue += $totalShippingCost; 
-			var_dump($totalPaidAmount);
-			var_dump($totalPaymentDue);
 			$comments = trim($param->CallbackParameter->comments);
 			$order = $order->addComment($comments)
 				->setTotalPaid($totalPaidAmount);
@@ -184,12 +182,13 @@ class OrderController extends BPCPageAbstract
 				
 				$totalPaymentDue += $totalPrice;
 				$orderItem = OrderItem::create($order, $product, $unitPrice, $qtyOrdered, $totalPrice);
-				foreach($item->serials as $serialNo)
-					$orderItem->addSellingItem($serialNo);
+				if(isset($item->serials)){
+					foreach($item->serials as $serialNo)
+						$orderItem->addSellingItem($serialNo);
+				}
 			}
 			$order->setTotalAmount($totalPaymentDue)
 				->save();
-			var_dump($order);
 			
 			$results['item'] = $order->getJson();
 			Dao::commitTransaction();
