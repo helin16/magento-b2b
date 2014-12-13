@@ -413,7 +413,7 @@ class OrderItem extends BaseEntityAbstract
 	 *
 	 * @return Ambigous <OrderItem, BaseEntityAbstract>
 	 */
-	public static function create(Order $order, Product $product, $unitPrice, $qty, $totalPrice, $mageOrderItemId, $eta = null)
+	public static function create(Order $order, Product $product, $unitPrice, $qty, $totalPrice, $mageOrderItemId = 0, $eta = null)
 	{
 		$item = new OrderItem();
 		$item->setOrder($order)
