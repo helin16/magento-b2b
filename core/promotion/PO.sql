@@ -176,3 +176,6 @@ CREATE TABLE `sellingitem` (
 	,INDEX (`serialNo`)
 	,INDEX (`description`)
 ) ENGINE=innodb DEFAULT CHARSET=utf8;
+
+
+ALTER TABLE `order` ADD `invDate` datetime NOT NULL DEFAULT '0001-01-01 00:00:00' AFTER `invNo`, ADD INDEX (`invDate`) ;

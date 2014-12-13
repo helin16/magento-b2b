@@ -108,6 +108,12 @@ class Order extends InfoEntityAbstract
 	 */
 	private $_previousStatus = null;
 	/**
+	 * The date and time when this order becomes an invoice
+	 * 
+	 * @var UDate
+	 */
+	private $invDate;
+	/**
 	 * Getter for orderNo
 	 *
 	 * @return string
@@ -455,6 +461,36 @@ class Order extends InfoEntityAbstract
 		return AccessControl::canEditOrder($this, $role);
 	}
 	/**
+	 * Getter for invDate
+	 * 
+	 * @return invDate
+	 */
+	public function getInvDate()
+	{
+		return $this->invDate;
+	}
+	/**
+	 * Setter for the invDate
+	 * 
+	 * @param mixed $value
+	 * 
+	 * @return Order
+	 */
+	public function setInvDate($value)
+	{
+		$this->invDate = $value;
+		return $this;
+	}
+	/**
+	 * (non-PHPdoc)
+	 * @see BaseEntityAbstract::preSave()
+	 */
+	public function preSave()
+	{
+		if(trim($this->getInvDate()) === '')
+			$this->setInvDate(Udate::zeroDate());
+	}
+	/**
 	 * (non-PHPdoc)
 	 * @see BaseEntityAbstract::postSave()
 	 */
@@ -473,7 +509,6 @@ class Order extends InfoEntityAbstract
 			OrderInfo::create($this, $infoType, $this->_previousStatus->getId(), $orderInfo);
 			$this->addLog('Changed Status from [' . $this->_previousStatus . '] to [' . $this->getStatus() .']', Log::TYPE_SYSTEM, 'Auto Log', get_class($this) . '::' . __FUNCTION__);
 		}
-		
 		if(trim($this->getStatus()->getId()) === trim(OrderStatus::ID_SHIPPED)) {
 			$items = OrderItem::getAllByCriteria('orderId = ? and isPicked = 1', array($this->getId()));
 			foreach($items as $item) {
@@ -490,8 +525,11 @@ class Order extends InfoEntityAbstract
 	 */
 	private function changeToInvoice()
 	{
+		if(trim($this->getInvNo()) !== "")
+			return $this;
 		return $this->setType(Order::TYPE_INVOICE)
 			->setInvNo('BPCINV' .str_pad($this->getId(), 8, '0', STR_PAD_LEFT))
+			->setInvDate(new UDate())
 			->save()
 			->addComment('Changed this order to be an INVOCE with invoice no:' . $this->getInvNo() . ')', Comments::TYPE_SYSTEM)
 			->addLog('Changed this order to be an INVOCE with invoice no:' . $this->getInvNo() . ')', Log::TYPE_SYSTEM, __FUNCTION__);
@@ -557,6 +595,7 @@ class Order extends InfoEntityAbstract
 		DaoMap::setStringType('orderNo');
 		DaoMap::setStringType('type', 'varchar', 10);
 		DaoMap::setStringType('invNo');
+		DaoMap::setDateType('invDate');
 		DaoMap::setDateType('orderDate');
 		DaoMap::setManyToOne('customer', 'Customer', 'o_cust');
 		DaoMap::setIntType('totalAmount', 'Double', '10,4');
@@ -574,6 +613,7 @@ class Order extends InfoEntityAbstract
 		
 		DaoMap::createUniqueIndex('orderNo');
 		DaoMap::createIndex('invNo');
+		DaoMap::createIndex('invDate');
 		DaoMap::createIndex('type');
 		DaoMap::createIndex('orderDate');
 		DaoMap::createIndex('passPaymentCheck');
