@@ -368,10 +368,16 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 					row.supplierCodes ? tmp.me._getSupplierCodes(row.supplierCodes, isTitle) : ''
 			) })
 			.insert({'bottom': new Element(tmp.tag, {'class': 'qty col-xs-1 hidden-sm'}).update(
-					tmp.isTitle === true ? 'Qty' : new Element('div', {'class': 'row'})
-						.insert({'bottom': new Element(tmp.tag, {'class': 'stockOnPO col-xs-4', 'title': 'Stock on PurchaseOrder'}).update(row.stockOnPO) })
-						.insert({'bottom': new Element(tmp.tag, {'class': 'stockOnHand col-xs-4', 'title': 'Stock on hand'}).update(row.stockOnHand) })
-						.insert({'bottom': new Element(tmp.tag, {'class': 'stockOnOrder col-xs-4', 'title': 'Stock on Order'}).update(row.stockOnOrder) })
+					tmp.isTitle === true ? 
+							new Element('div', {'class': 'row'})
+								.insert({'bottom': new Element(tmp.tag, {'class': 'stockOnPO col-xs-4', 'title': 'Stock on PurchaseOrder'}).update('P') })
+								.insert({'bottom': new Element(tmp.tag, {'class': 'stockOnHand col-xs-4', 'title': 'Stock on hand'}).update('H') })
+								.insert({'bottom': new Element(tmp.tag, {'class': 'stockOnOrder col-xs-4', 'title': 'Stock on Order'}).update('O') })
+							: 
+							new Element('div', {'class': 'row'})
+								.insert({'bottom': new Element(tmp.tag, {'class': 'stockOnPO col-xs-4', 'title': 'Stock on PurchaseOrder'}).update(row.stockOnPO) })
+								.insert({'bottom': new Element(tmp.tag, {'class': 'stockOnHand col-xs-4', 'title': 'Stock on hand'}).update(row.stockOnHand) })
+								.insert({'bottom': new Element(tmp.tag, {'class': 'stockOnOrder col-xs-4', 'title': 'Stock on Order'}).update(row.stockOnOrder) })
 			) })
 			.insert({'bottom': new Element(tmp.tag, {'class': 'product_active col-xs-1  hidden-sm'})
 				.insert({'bottom': (tmp.isTitle === true ? row.active : new Element('input', {'type': 'checkbox', 'disabled': true, 'checked': row.active}) ) })
