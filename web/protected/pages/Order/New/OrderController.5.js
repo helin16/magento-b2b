@@ -170,6 +170,15 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				.store('data', orderItem)
 				.insert({'bottom': new Element(tmp.tag, {'class': 'productName col-xs-8'})
 					.insert({'bottom': orderItem.product.name })
+					.insert({'bottom': new Element('small', {'class': orderItem.product.id ? 'btn btn-xs btn-info' : 'hidden'})
+							.insert({'bottom': new Element('small', {'class': 'glyphicon glyphicon-new-window'} )})
+						})
+					.observe('click', function(event){
+						Event.stop(event);
+						$productId = orderItem.product.id;
+						if($productId)
+							tmp.me._openProductDetailPage($productId);
+					})
 				})
 				.insert({'bottom': new Element(tmp.tag, {'class': 'uprice col-xs-1'})
 					.insert({'bottom': (orderItem.unitPrice) })
@@ -202,7 +211,8 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		var tmp = {};
 		tmp.me = this;
 		tmp.defaultImgSrc = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjZWVlIi8+PHRleHQgdGV4dC1hbmNob3I9Im1pZGRsZSIgeD0iMzIiIHk9IjMyIiBzdHlsZT0iZmlsbDojYWFhO2ZvbnQtd2VpZ2h0OmJvbGQ7Zm9udC1zaXplOjEycHg7Zm9udC1mYW1pbHk6QXJpYWwsSGVsdmV0aWNhLHNhbnMtc2VyaWY7ZG9taW5hbnQtYmFzZWxpbmU6Y2VudHJhbCI+NjR4NjQ8L3RleHQ+PC9zdmc+';
-		tmp.newRow = new Element('a', {'class': 'list-group-item', 'href': 'javascript: void(0);'})
+		tmp.newRow = new Element('a', {'class': 'list-group-item search-product-result-row', 'href': 'javascript: void(0);'})
+			.store('data',product)
 			.insert({'bottom': new Element('div', {'class': 'row'})
 				.insert({'bottom': new Element('div', {'class': 'col-xs-2'})
 					.insert({'bottom': new Element('div', {'class': 'thumbnail'})
@@ -211,6 +221,14 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				})
 				.insert({'bottom': new Element('div', {'class': 'col-xs-10'})
 					.insert({'bottom': new Element('strong').update(product.name)
+						.insert({'bottom': new Element('small', {'class': 'btn btn-xs btn-info'})
+							.insert({'bottom': new Element('small', {'class': 'glyphicon glyphicon-new-window'} )})
+						})
+						.observe('click', function(event){
+							Event.stop(event);
+							$productId = $(this).up('.search-product-result-row').retrieve('data').id;
+							tmp.me._openProductDetailPage($productId);
+						})
 						.insert({'bottom': new Element('small', {'class': 'pull-right'}).update('SKU: ' + product.sku) })
 					})
 					.insert({'bottom': new Element('div')
@@ -227,6 +245,14 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					.addClassName('col-xs-2')
 					.insert({'after': new Element('div', {'class': 'col-xs-6'})
 						.update(product.name) 
+						.insert({'bottom': new Element('small', {'class': 'btn btn-xs btn-info'})
+							.insert({'bottom': new Element('small', {'class': 'glyphicon glyphicon-new-window'} )})
+						})
+						.observe('click', function(event){
+							Event.stop(event);
+							$productId = product.id;
+							tmp.me._openProductDetailPage($productId);
+						})
 						.insert({'bottom': new Element('a', {'href': 'javascript: void(0);', 'class': 'text-danger pull-right', 'title': 'click to change the product'}) 
 							.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-remove'})  })
 							.observe('click', function() {
@@ -776,7 +802,16 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			;
 		return tmp.newDiv;
 	}
-			
+	/**
+	 * Open PO page in a fancybox
+	 */
+	,_openProductDetailPage: function(id) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.newWindow = window.open('/products/' + id + '.html', 'Product Details', 'location=no, menubar=no, status=no, titlebar=no, fullscreen=yes, toolbar=no');
+		tmp.newWindow.focus();
+		return tmp.me;
+	}
 	,init: function(customer) {
 		var tmp = {};
 		tmp.me = this;
