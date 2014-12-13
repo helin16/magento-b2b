@@ -254,12 +254,11 @@ class ReceivingController extends BPCPageAbstract
 						->setReceivedQty($nofullReceivedItems[0]->getReceivedQty() + $qty)
 						->save()
 						->addLog(Log::TYPE_SYSTEM, ($msg = 'received ' . $qty . ' product(SKU=' . $product->getSku() . ') by ' . Core::getUser()->getPerson()->getFullName() . '@' . trim(new UDate()) . '(UTC)'), __CLASS__ . '::' . __FUNCTION__)
-						->addComment(Comments::TYPE_WAREHOUSE, $msg);
+						->addComment($msg, Comments::TYPE_WAREHOUSE);
 					}
-					
 				}
 				
-				$purchaseOrder->addComment(Comments::TYPE_WAREHOUSE, 'received ' . $totalQty . ' product(SKU=' . $product->getSku() . ') by ' . Core::getUser()->getPerson()->getFullName() . '@' . trim(new UDate()) . '(UTC)');
+				$purchaseOrder->addComment('received ' . $totalQty . ' product(SKU=' . $product->getSku() . ') by ' . Core::getUser()->getPerson()->getFullName() . '@' . trim(new UDate()) . '(UTC)', Comments::TYPE_WAREHOUSE) ;
 			}
 			
 			$totalCount = PurchaseOrderItem::countByCriteria('active = 1 and purchaseOrderId = ? and receivedQty < qty', array($purchaseOrder->getId()));
