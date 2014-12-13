@@ -15,7 +15,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		jQuery(".chosen").chosen({
 			disable_search_threshold: 10,
 			no_results_text: "Oops, nothing found!",
-			width: "95%"
+			width: "100%"
 		});
 		return this;
 	}
@@ -112,7 +112,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					tmp.resultDiv = $(tmp.me.resultDivId);
 					//reset div
 					if(tmp.reset === true) {
-						tmp.titleRow = {'orderNo': "Order Info.", 'custName': 'Customer Name', 'shippingAddr': 'Shipping Address', 'invNo': 'Invoice No.', 'status': {'name': 'Status'}, 'totalDue': 'Total Due', 'passPaymentCheck': 'Payment Cleared?'};
+						tmp.titleRow = {'orderNo': "Order Info.",'type': 'Type', 'custName': 'Customer Name', 'shippingAddr': 'Shipping Address', 'invNo': 'Invoice No.', 'status': {'name': 'Status'}, 'totalDue': 'Total Due', 'passPaymentCheck': 'Payment Cleared?'};
 						tmp.resultDiv.update(tmp.me._getResultRow(tmp.titleRow, true).wrap(new Element('thead')));
 					}
 					//remove next page button
@@ -326,19 +326,22 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			.insert({'bottom': new Element('td', {'class': 'orderInfo  col-xs-2'}).update(
 				tmp.isTitle ? row.orderNo : tmp.me._getOrderInfoCell(row)
 			) })
-			.insert({'bottom': new Element('td', {'class': 'order-date'}).update(
+			.insert({'bottom': new Element('td', {'class': 'order-date col-xs-1'}).update(
 					tmp.isTitle === true ? 'Order Date' : tmp.me.loadUTCTime(row.orderDate).toLocaleDateString()
+			) })
+			.insert({'bottom': new Element('td', {'class': 'order-type col-xs-1'}).update(
+					tmp.isTitle === true ? 'Type' : row.type
 			) })
 			.insert({'bottom': new Element('td', {'class': 'status col-middle col-xs-2', 'order_status': row.status.name}).update(
 					row.status ? row.status.name : ''
 			) })
-			.insert({'bottom': new Element('td', {'class': 'text-right', 'payment': true}).update(
+			.insert({'bottom': new Element('td', {'class': 'text-right col-xs-1', 'payment': true}).update(
 				tmp.isTitle ? 'Payments' : tmp.me._getPaymentCell(row)
 			) })		
-			.insert({'bottom': new Element('td', {'class': 'text-center', 'purchasing': true}).update(
+			.insert({'bottom': new Element('td', {'class': 'text-center col-xs-1', 'purchasing': true}).update(
 					tmp.isTitle ? 'Purchasing' : tmp.me._getPurchasingCell(row)
 			) })
-			.insert({'bottom': new Element('td', {'class': 'text-center', 'warehouse': true}).update(
+			.insert({'bottom': new Element('td', {'class': 'text-center col-xs-1', 'warehouse': true}).update(
 					tmp.isTitle ? 'Warehouse' : tmp.me._getWarehouseCell(row)
 			) })
 		;
