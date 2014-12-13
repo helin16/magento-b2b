@@ -55,7 +55,6 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			item.totalPrice = tmp.me.getValueFromCurrency(item.totalPrice);
 			item.unitPrice = tmp.me.getValueFromCurrency(item.unitPrice);
 		});
-		console.debug(tmp.data);
 		tmp.btn = $$('.save-btn').first();
 		tmp.me._signRandID(tmp.btn);
 		tmp.me.postAjax(tmp.me.getCallbackId('saveOrder'), tmp.data, {
@@ -68,8 +67,22 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					if(!tmp.result || !tmp.result.item)
 						return;
 					tmp.me._item = tmp.result.item;
-					tmp.me.showModalBox('Success', 'Saved successfully', false);
-					location.reload(); 
+					
+					tmp.me.showModalBox('<strong class="text-success">Success!</strong>', 
+							'<div>The new order is succussfully added.</div><br /><div><strong>Go to Order Details Page?</strong></div>'
+							+ '<div>'
+								+ '<span class="btn btn-primary" onclick="window.location = ' + "'"
+								+ '/orderdetails/' + tmp.result.item.id + '.html' + "'"
+								+ ';"><span class="glyphicon glyphicon-ok"></span> YES</span>'
+								+ '<span class="btn btn-default pull-right" data-dismiss="modal" onclick="window.location = ' + "'"
+								+ '/order/new.html' + "'"
+								+ ';"><span aria-hidden="true"><span class="glyphicon glyphicon-remove-sign"></span> NO</span></span>'
+							+ '</div>',
+					true);
+					
+//					tmp.me.showModalBox('Success', 'Saved successfully', false);
+//					location.reload(); 
+					
 				} catch(e) {
 					tmp.me.showModalBox('Error!', e, false);
 				}
@@ -211,7 +224,6 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		var tmp = {};
 		tmp.me = this;
 		tmp.defaultImgSrc = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjZWVlIi8+PHRleHQgdGV4dC1hbmNob3I9Im1pZGRsZSIgeD0iMzIiIHk9IjMyIiBzdHlsZT0iZmlsbDojYWFhO2ZvbnQtd2VpZ2h0OmJvbGQ7Zm9udC1zaXplOjEycHg7Zm9udC1mYW1pbHk6QXJpYWwsSGVsdmV0aWNhLHNhbnMtc2VyaWY7ZG9taW5hbnQtYmFzZWxpbmU6Y2VudHJhbCI+NjR4NjQ8L3RleHQ+PC9zdmc+';
-		console.debug(product);
 		tmp.newRow = new Element('a', {'class': 'list-group-item search-product-result-row', 'href': 'javascript: void(0);'})
 			.store('data',product)
 			.insert({'bottom': new Element('div', {'class': 'row'})
@@ -445,7 +457,6 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					if(!confirm('You remove this entry.\n\nContinue?'))
 						return;
 					tmp.row = $(this).up('.item_row');
-					console.debug(tmp.row.retrieve('data'));
 					tmp.me._recalculateSummary( 0 - tmp.me.getValueFromCurrency(tmp.row.retrieve('data').totalPrice) * 1 );
 					tmp.row.remove();
 				})
@@ -820,7 +831,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		return tmp.newDiv;
 	}
 	/**
-	 * Open PO page in a fancybox
+	 * Open product Details Page in new Window
 	 */
 	,_openProductDetailPage: function(id) {
 		var tmp = {};

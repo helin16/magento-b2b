@@ -957,6 +957,36 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			});
 	}
 	/**
+	 * Open order print in new Window
+	 */
+	,_openOrderPrintPage: function() {
+		var tmp = {};
+		tmp.me = this;
+		tmp.newWindow = window.open('/print/order/' + tmp.me._order.id + '.html', tmp.me._order.status.name + ' Order ' + tmp.me._order.orderNo, 'location=no, menubar=no, status=no, titlebar=no, fullscreen=yes, toolbar=no');
+		tmp.newWindow.onload = function(){
+			tmp.newWindow.document.title = tmp.me._order.status.name + ' Order ' + tmp.me._order.orderNo;
+			tmp.newWindow.focus();
+			tmp.newWindow.print();
+			tmp.newWindow.close();
+		}
+		return tmp.me;
+	}
+	/**
+	 * Open order delivery docket print page in new Window
+	 */
+	,_openDocketPrintPage: function() {
+		var tmp = {};
+		tmp.me = this;
+		tmp.newWindow = window.open('/printdocket/order/' + tmp.me._order.id + '.html', tmp.me._order.status.name + ' Order ' + tmp.me._order.orderNo, 'location=no, menubar=no, status=no, titlebar=no, fullscreen=yes, toolbar=no');
+		tmp.newWindow.onload = function(){
+			tmp.newWindow.document.title = tmp.me._order.status.name + ' Order ' + tmp.me._order.orderNo;
+			tmp.newWindow.focus();
+			tmp.newWindow.print();
+			tmp.newWindow.close();
+		}
+		return tmp.me;
+	}
+	/**
 	 * Getting the order information panel
 	 */
 	,_getInfoPanel: function() {
@@ -964,9 +994,27 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.me = this;
 		tmp.orderDate = tmp.me.loadUTCTime(tmp.me._order.orderDate);
 		return new Element('div', {'class': 'panel panel-default order-info-div'})
-			.insert({'bottom': new Element('div', {'class': 'panel-heading text-right'})
-				.insert({'bottom': new Element('small').update('Order Date: ') })
-				.insert({'bottom': new Element('strong').update( tmp.orderDate.toLocaleDateString() ) })
+			.insert({'bottom': new Element('div', {'class': 'panel-heading'})
+				.insert({'bottom': new Element('span', {'class': 'btn-group btn-group-xs'})
+					.insert({'bottom': new Element('span', {'class': 'btn btn-info btn-xs'})
+						.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-print'}) })
+						.observe('click', function() {
+							tmp.me._openOrderPrintPage();
+						})
+					})
+					
+					.insert({'bottom': new Element('span', {'class': 'btn btn-info btn-xs'})
+						.insert({'bottom': new Element('span', {'class': 'fa fa-ils'}) })
+						.observe('click', function() {
+							tmp.me._openDocketPrintPage();
+						})
+					})
+				})
+				
+				.insert({'bottom': new Element('span', {'class': 'pull-right text-right'})
+					.insert({'bottom': new Element('small').update('Order Date: ') })
+					.insert({'bottom': new Element('strong').update( tmp.orderDate.toLocaleDateString() ) })
+				})
 			})
 			.insert({'bottom': new Element('div', {'class': 'panel-body'})
 				.insert({'bottom': new Element('div', {'class': 'row'})
