@@ -769,7 +769,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 					tmp.me._submitOrder($(this));
 				})
 			})
-			.insert({'bottom': new Element('span', {'class': 'btn btn-info', 'data-loading-text' : 'saving...'})
+			.insert({'bottom': new Element('span', {'class': tmp.me._purchaseorder.status === 'NEW' ? 'btn btn-info' : 'hidden', 'data-loading-text' : 'saving...'})
 				.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-send'}) })
 				.insert({'bottom': new Element('span').update(' submit ') })
 				.observe('click', function() {
