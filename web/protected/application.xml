@@ -26,6 +26,8 @@
 			<url ServiceParameter="Order.New.OrderController" pattern="order/new.html" />
 			<!-- FrontEnd:: order print page -->
 			<url ServiceParameter="Order.Print.OrderPrintController" pattern="print/order/{orderId}.html" parameters.orderId="\d+"/>
+			<!-- FrontEnd:: order Delivery Docket print page -->
+			<url ServiceParameter="Order.PrintDeliveryDocket.OrderPrintController" pattern="printdocket/order/{orderId}.html" parameters.orderId="\d+"/>
 			<!-- FrontEnd:: order details page -->
 			<url ServiceParameter="Order.Details.OrderDetailsController" pattern="orderdetails/{orderId}.html" parameters.orderId="\d+"/>
 			
@@ -51,6 +53,7 @@
 			
 			<!-- FrontEnd:: product list page -->
 			<url ServiceParameter="Product.List.ProductController" pattern="products.html" />
+			<url ServiceParameter="Product.List.ProductController" pattern="products/{id}.html" parameters.id="\d+"/>
 			<!-- FrontEnd:: product details page -->
 			<url ServiceParameter="Product.Details.DetailsController" pattern="product/{id}.html" parameters.id="new"/>
 			<url ServiceParameter="Product.Details.DetailsController" pattern="product/{id}.html" parameters.id="\d+"/>
@@ -81,6 +84,11 @@
             <url ServiceParameter="PurchaseOrder.New.POController" pattern="purchase/{id}.html" parameters.id="new"/>
             <url ServiceParameter="PurchaseOrder.Details.DetailsController" pattern="purchase/{id}.html" parameters.id="\d+"/>
 
+			<!-- FrontEnd:: manufacturer list page -->
+			<url ServiceParameter="Location.List.ListController" pattern="locations.html" />
+			
+			<!-- FrontEnd:: manufacturer list page -->
+			<url ServiceParameter="PreferLocationType.List.ListController" pattern="locationtypes.html" />
 			
 			<!-- Statics::Order::Trend::Monthly page -->
 			<url ServiceParameter="Statics.Order.MthlyTrend.StaticsController" pattern="/statics/order/mthlytrend.html" />
