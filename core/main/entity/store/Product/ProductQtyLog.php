@@ -29,6 +29,12 @@ class ProductQtyLog extends InfoEntityAbstract
 	 */
 	private $stockOnOrder;
 	/**
+	 * The total value for all stock on hand units
+	 * 
+	 * @var double
+	 */
+	private $totalOnHandValue = 0;
+	/**
 	 * comments
 	 * @var string
 	 */
@@ -192,6 +198,27 @@ class ProductQtyLog extends InfoEntityAbstract
 		return $this;
 	}
 	/**
+	 * Getter for totalOnHandValue
+	 *
+	 * @return double
+	 */
+	public function getTotalOnHandValue  ()
+	{
+		return $this->totalOnHandValue ;
+	}
+	/**
+	 * Setter for totalOnHandValue
+	 *
+	 * @param double $value
+	 *
+	 * @return Product
+	 */
+	public function setTotalOnHandValue ($value )
+	{
+		$this->totalOnHandValue = $value;
+		return $this;
+	}
+	/**
 	 * (non-PHPdoc)
 	 * @see BaseEntity::__loadDaoMap()
 	 */
@@ -200,6 +227,7 @@ class ProductQtyLog extends InfoEntityAbstract
 		DaoMap::begin($this, 'pql');
 		DaoMap::setManyToOne('product', 'Product', 'pql_pro', true);
 		DaoMap::setIntType('stockOnHand', 'int', 10, false);
+		DaoMap::setIntType('totalOnHandValue', 'double', '10,4');
 		DaoMap::setIntType('stockOnOrder', 'int', 10, false);
 		DaoMap::setIntType('stockOnPO', 'int', 10, false);
 		DaoMap::setStringType('comments', 'varchar', 255);

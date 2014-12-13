@@ -45,6 +45,12 @@ class Product extends InfoEntityAbstract
 	 */
 	private $stockOnPO = 0;
 	/**
+	 * The total value for all stock on hand units
+	 * 
+	 * @var double
+	 */
+	private $totalOnHandValue = 0;
+	/**
 	 * Whether this order is imported from B2B
 	 * 
 	 * @var bool
@@ -473,6 +479,27 @@ class Product extends InfoEntityAbstract
 		$this->manufacturer = $value;
 		return $this;
 	}
+	/** 
+	 * Getter for totalOnHandValue 
+	 * 
+	 * @return double
+	 */
+	public function getTotalOnHandValue  ()
+	{
+		return $this->totalOnHandValue ;
+	}
+	/** 
+	 * Setter for totalOnHandValue 
+	 * 
+	 * @param double $value
+	 * 
+	 * @return Product
+	 */
+	public function setTotalOnHandValue ($value )
+	{
+		$this->totalOnHandValue = $value;
+		return $this;
+	}
 	/**
 	 * Adding a product image to the product
 	 * 
@@ -686,6 +713,7 @@ class Product extends InfoEntityAbstract
 			$array['categories'] = array_map(create_function('$a', '$json = $a->getJson(); return $json["category"];'), Product_Category::getCategories($this));
 			$array['fullDescriptionAsset'] = (($asset = Asset::getAsset($this->getFullDescAssetId())) instanceof Asset ? $asset->getJson() : null) ;
 			$array['locations'] = array_map(create_function('$a', 'return $a->getJson();'), PreferredLocation::getPreferredLocations($this));
+			$array['unitCost'] = $this->getUnitCost();
 		}
 		return parent::getJson($array, $reset);
 	}
@@ -707,6 +735,10 @@ class Product extends InfoEntityAbstract
 		if($exsitingSKU > 0)
 			throw new EntityException('The SKU(=' . $sku . ') is already exists!' );
 	}
+	public function getUnitCost()
+	{
+		return round(($this->getTotalOnHandValue() / intval($this->getStockOnHand())), 2);
+	}
 	/**
 	 * (non-PHPdoc)
 	 * @see BaseEntityAbstract::__toString()
@@ -714,6 +746,37 @@ class Product extends InfoEntityAbstract
 	public function __toString()
 	{
 		return trim($this->getName());
+	}
+	public function picked($qty, $comments = '', BaseEntityAbstract $entity = null)
+	{
+		return $this->setStockOnHand(($originStockOnHand = $this->getStockOnHand()) - $qty)
+			->setStockOnOrder(($originStockOnOrder = $this->getStockOnOrder()) + $qty)
+			->setTotalOnHandValue(($origTotalOnHandValue = $this->getTotalOnHandValue()) - ($qty * round(($origTotalOnHandValue / $originStockOnHand), 2)))
+			->snapshotQty($entity instanceof BaseEntityAbstract ? $entity : $this, (intval($qty) > 0 ? 'Stock picked' : 'stock UNPICKED') . ': ' . $comments)
+			->save()
+			->addLog('StockOnHand(' . $originStockOnHand . ' => ' . $this->getStockOnHand() . ')', Log::TYPE_SYSTEM, 'STOCK_QTY_CHG', __CLASS__ . '::' . __FUNCTION__)
+			->addLog('StockOnOrder(' . $originStockOnOrder . ' => ' . $this->getStockOnOrder() . ')', Log::TYPE_SYSTEM, 'STOCK_QTY_CHG', __CLASS__ . '::' . __FUNCTION__)
+			->addLog('TotalOnHandValue(' . $origTotalOnHandValue . ' => ' .$this->getTotalOnHandValue() . ')', Log::TYPE_SYSTEM, 'STOCK_VALUE_CHG', __CLASS__ . '::' . __FUNCTION__);
+	}
+	public function received($qty, $unitCost, $comments = '', BaseEntityAbstract $entity = null)
+	{
+		if(is_numeric($unitCost))
+			throw new EntityException('Unitcost of receiving product(SKU=' . $this->getSku() . ') is not a number!');
+		return $this->setStockOnPO(($origStockOnPO = $this->getStockOnPO()) - $qty)
+			->setStockOnHand(($origStockOnHand = $this->getStockOnHand()) + $qty)
+			->setTotalOnHandValue(($origTotalOnHandValue = $this->getTotalOnHandValue()) + $qty * $unitCost)
+			->snapshotQty($entity instanceof BaseEntityAbstract ? $entity : $this, 'Stock received: ' . $comments)
+			->save()
+			->addLog('StockOnPO(' . $origStockOnPO . ' => ' .$this->getStockOnPO() . ')', Log::TYPE_SYSTEM, 'STOCK_QTY_CHG', __CLASS__ . '::' . __FUNCTION__)
+			->addLog('StockOnHand(' . $origStockOnHand . ' => ' .$this->getStockOnHand() . ')', Log::TYPE_SYSTEM, 'STOCK_QTY_CHG', __CLASS__ . '::' . __FUNCTION__)
+			->addLog('TotalOnHandValue(' . $origTotalOnHandValue . ' => ' .$this->getTotalOnHandValue() . ')', Log::TYPE_SYSTEM, 'STOCK_VALUE_CHG', __CLASS__ . '::' . __FUNCTION__);
+	}
+	public function shipped($qty, $comments = '', BaseEntityAbstract $entity = null)
+	{
+		return $this->setStockOnOrder(($originStockOnOrder = $this->getStockOnOrder()) - $this->getQtyOrdered())
+			->snapshotQty($entity instanceof BaseEntityAbstract ? $entity : $this, 'Stock shipped')
+			->save()
+			->addLog('StockOnOrder(' . $originStockOnOrder . ' => ' . $this->getStockOnOrder() . ')', Log::TYPE_SYSTEM, 'STOCK_QTY_CHG', __CLASS__ . '::' . __FUNCTION__);
 	}
 	/**
 	 * (non-PHPdoc)
@@ -725,6 +788,7 @@ class Product extends InfoEntityAbstract
 		DaoMap::setStringType('sku', 'varchar', 50);
 		DaoMap::setStringType('name', 'varchar', 100);
 		DaoMap::setStringType('mageId', 'varchar', 10);
+		DaoMap::setIntType('totalOnHandValue', 'double', '10,4');
 		DaoMap::setIntType('stockOnHand', 'int', 10, false);
 		DaoMap::setIntType('stockOnOrder', 'int', 10, false);
 		DaoMap::setIntType('stockOnPO', 'int', 10, false);
@@ -744,6 +808,7 @@ class Product extends InfoEntityAbstract
 		DaoMap::createUniqueIndex('sku');
 		DaoMap::createIndex('name');
 		DaoMap::createIndex('mageId');
+		DaoMap::createIndex('totalOnHandValue');
 		DaoMap::createIndex('stockOnHand');
 		DaoMap::createIndex('stockOnOrder');
 		DaoMap::createIndex('stockOnPO');

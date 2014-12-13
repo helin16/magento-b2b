@@ -342,34 +342,23 @@ class OrderItem extends BaseEntityAbstract
 			if(self::countByCriteria('id = ? and isPicked != ?', array($this->getId(), $this->getIsPicked())) > 0) {
 				//we are picking this product
 				if(intval($this->getIsPicked()) === 1) {
-					$product->setStockOnHand(($originStockOnHand = $product->getStockOnHand()) - $this->getQtyOrdered())
-						->setStockOnOrder(($originStockOnOrder = $product->getStockOnOrder()) + $this->getQtyOrdered())
-						->snapshotQty($this, 'Stock picked');
+					$product->picked($this->getQtyOrdered(), '', $this);
 					$this->addLog('This item is now marked as picked', Log::TYPE_SYSTEM);
 				} else {
-					$product->setStockOnHand(($originStockOnHand = $product->getStockOnHand()) + $this->getQtyOrdered())
-						->setStockOnOrder(($originStockOnOrder = $product->getStockOnOrder()) - $this->getQtyOrdered())
-						->snapshotQty($this, 'Stock UN-picked');
+					$product->picked(0 - $this->getQtyOrdered(), '', $this);
 					$this->addLog('This item is now Un-marked as picked', Log::TYPE_SYSTEM);
 				}
-				$product->save()
-					->addLog('StockOnPO(' . $originStockOnHand . ' => ' . $product->getStockOnHand() . ')', Log::TYPE_SYSTEM, 'STOCK_QTY_CHG', __CLASS__ . '::' . __FUNCTION__)
-					->addLog('StockOnOrder(' . $originStockOnOrder . ' => ' . $product->getStockOnOrder() . ')', Log::TYPE_SYSTEM, 'STOCK_QTY_CHG', __CLASS__ . '::' . __FUNCTION__);
 			}
 			//for shipped
 			if(self::countByCriteria('id = ? and isShipped != ?', array($this->getId(), $this->getIsShipped())) > 0) {
 				//we are picking this product
 				if(intval($this->getIsShipped()) === 1) {
-					$product->setStockOnOrder(($originStockOnOrder = $product->getStockOnOrder()) - $this->getQtyOrdered())
-						->snapshotQty($this, 'Stock shipped');
+					$product->shipped($this->getQtyOrdered(), '', $this);
 					$this->addLog('This item is now marked as SHIPPED', Log::TYPE_SYSTEM);
 				} else {
-					$product->setStockOnOrder(($originStockOnOrder = $product->getStockOnOrder()) + $this->getQtyOrdered())
-						->snapshotQty($this, 'Stock UNshipped');
+					$product->shipped(0 - $this->getQtyOrdered(), '', $this);
 					$this->addLog('This item is now Un-marked as SHIPPED', Log::TYPE_SYSTEM);
 				}
-				$product->save()
-					->addLog('StockOnOrder(' . $originStockOnOrder . ' => ' . $product->getStockOnOrder() . ')', Log::TYPE_SYSTEM, 'STOCK_QTY_CHG', __CLASS__ . '::' . __FUNCTION__);
 			}
 		}
 	}
