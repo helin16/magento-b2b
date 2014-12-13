@@ -50,6 +50,12 @@ class Address extends BaseEntityAbstract
 	 */
 	private $country;
 	/**
+	 * screct key
+	 * 
+	 * @var string
+	 */
+	private $sKey;
+	/**
 	 * Getter for contactName
 	 *
 	 * @return string
@@ -68,6 +74,27 @@ class Address extends BaseEntityAbstract
 	public function setContactName($value) 
 	{
 	    $this->contactName = $value;
+	    return $this;
+	}
+	/**
+	 * Getter for sKey
+	 *
+	 * @return string
+	 */
+	public function getSKey() 
+	{
+	    return $this->sKey;
+	}
+	/**
+	 * Setter for sKey
+	 *
+	 * @param string $value The sKey
+	 *
+	 * @return Address
+	 */
+	public function setSKey($value) 
+	{
+	    $this->sKey = $value;
 	    return $this;
 	}
 	/**
@@ -197,38 +224,17 @@ class Address extends BaseEntityAbstract
 	    return $this;
 	}
 	/**
-	 * Creating a address object
-	 * 
-	 * @param string $street       The street line of the address
-	 * @param string $city         The city of the address
-	 * @param string $region       The region/state of the address
-	 * @param string $country      The country of the address
-	 * @param string $postCode     The postCode of the address
-	 * @param string $contactName  The contact name of the address
-	 * @param string $contactNo    The contact no of the address
-	 * 
-	 * @return Address
-	 */
-	public static function create($street, $city, $region, $country, $postCode, $contactName = '', $contactNo = '', Address &$exsitAddr = null)
-	{
-		$className = get_called_class();
-		$obj = ($exsitAddr instanceof Address ? $exsitAddr : new $className());
-		return $obj->setStreet($street)
-			->setCity($city)
-			->setRegion($region)
-			->setCountry($country)
-			->setPostCode($postCode)
-			->setContactName($contactName)
-			->setContactNo($contactNo)
-			->save();
-	}
-	/**
 	 * (non-PHPdoc)
 	 * @see BaseEntityAbstract::__toString()
 	 */
 	public function __toString()
 	{
 		return trim($this->getStreet() . ', ' . $this->getCity() . ' ' . $this->getRegion() . ' ' . $this->getCountry() . ' ' . $this->getPostCode() );
+	}
+	public function preSave()
+	{
+		if(trim($this->getSKey()) === '')
+			$this->setSKey($value)
 	}
 	/**
 	 * (non-PHPdoc)
@@ -258,9 +264,11 @@ class Address extends BaseEntityAbstract
 		DaoMap::setStringType('region','varchar', 20);
 		DaoMap::setStringType('country','varchar', 20);
 		DaoMap::setStringType('postCode','varchar', 10);
+		DaoMap::setStringType('sKey','varchar', 32);
 	
 		parent::__loadDaoMap();
 	
+		DaoMap::createIndex('sKey');
 		DaoMap::createIndex('contactName');
 		DaoMap::createIndex('contactNo');
 		DaoMap::createIndex('city');
@@ -269,5 +277,51 @@ class Address extends BaseEntityAbstract
 		DaoMap::createIndex('postCode');
 	
 		DaoMap::commit();
+	}
+	/**
+	 * Creating a address object
+	 *
+	 * @param string $street       The street line of the address
+	 * @param string $city         The city of the address
+	 * @param string $region       The region/state of the address
+	 * @param string $country      The country of the address
+	 * @param string $postCode     The postCode of the address
+	 * @param string $contactName  The contact name of the address
+	 * @param string $contactNo    The contact no of the address
+	 *
+	 * @return Address
+	 */
+	public static function create($street, $city, $region, $country, $postCode, $contactName = '', $contactNo = '', Address &$exsitAddr = null)
+	{
+		$obj = new Address();
+		if($exsitAddr instanceof Address)
+			$obj = $exsitAddr;
+		else if(count($sameAddresses = self::getAllByCriteria('`sKey` = ?'), array(self::getSKey($street, $city, $region, $country, $postCode, $contactName, $contactNo)), true, 1, 1) > 0)
+			return $sameAddresses[0];
+		return $obj->setStreet($street)
+			->setCity($city)
+			->setRegion($region)
+			->setCountry($country)
+			->setPostCode($postCode)
+			->setContactName($contactName)
+			->setContactNo($contactNo)
+			->save();
+	}
+	/**
+	 * Generating the skey for address
+	 * 
+	 * @param string $street
+	 * @param string $city
+	 * @param string $region
+	 * @param string $country
+	 * @param string $postCode
+	 * @param string $contactName
+	 * @param string $contactNo
+	 * 
+	 * @return string
+	 */
+	public static function getKey($street, $city, $region, $country, $postCode, $contactName = '', $contactNo = '')
+	{
+		return md5(trim(trim($this->getStreet()) . '|' . trim($this->getCity()) . '|' . trim($this->getRegion()) . '|' . trim($this->getCountry()) . '|' . trim($this->getPostCode()) . '|' . trim($contactName) . '|' . trim($contactNo)));
 	}
 }

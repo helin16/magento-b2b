@@ -181,3 +181,4 @@ CREATE TABLE `sellingitem` (
 ALTER TABLE `order` ADD `invDate` datetime NOT NULL DEFAULT '0001-01-01 00:00:00' AFTER `invNo`, ADD INDEX (`invDate`) ;
 ALTER TABLE `product` ADD `totalOnHandValue` double(10,4) NOT NULL DEFAULT '0.0000' AFTER `mageId`, ADD INDEX (`totalOnHandValue`) ;
 ALTER TABLE `productqtylog` ADD `totalOnHandValue` double(10,4) NOT NULL DEFAULT '0.0000' AFTER `stockOnHand`, ADD INDEX (`totalOnHandValue`) ;
+ALTER TABLE `address` ADD `sKey` varchar(32) NOT NULL DEFAULT '' AFTER `postCode`, ADD INDEX (`sKey`) ;
