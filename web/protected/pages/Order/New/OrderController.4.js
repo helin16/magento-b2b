@@ -3,7 +3,7 @@
  */
 var PageJs = new Class.create();
 PageJs.prototype = Object.extend(new BPCPageJs(), {
-	_htmlIds: {'itemDiv': '', 'searchPanel': 'search_panel', 'totalPriceExcludeGST': 'total_price_exclude_gst', 'totalPriceGST': 'total_price_gst', 'totalPriceIncludeGST': 'total_price_include_gst', 'totalPaidAmount': 'total-paid-amount', 'totalShippingCost': 'total-shipping-cost'}
+	_htmlIds: {'itemDiv': '', 'searchPanel': 'search_panel', 'totalPriceExcludeGST': 'total_price_exclude_gst', 'totalPriceGST': 'total_price_gst', 'totalPriceIncludeGST': 'total_price_include_gst', 'shippingCostIncludeGST': 'shipping_cost_include_gst', 'shippingCostGST': 'shipping_cost_gst', 'totalPaidAmount': 'total-paid-amount', 'totalShippingCost': 'total-shipping-cost'}
 	,_customer: null
 	/**
 	 * Setting the HTMLIDS
@@ -317,16 +317,21 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.totalIncGSTBox = $(tmp.me._htmlIds.totalPriceIncludeGST);
 		tmp.totalGSTBox = $(tmp.me._htmlIds.totalPriceGST);
 		tmp.totalExcGSTBox = $(tmp.me._htmlIds.totalPriceExcludeGST);
-		tmp.totalShippingCost = ($(tmp.me._htmlIds.totalShippingCost) ? tmp.me.getValueFromCurrency($F(tmp.me._htmlIds.totalShippingCost)) : 0);
+		tmp.shippingCostIncludeGSTBox = $(tmp.me._htmlIds.shippingCostIncludeGST);
+		tmp.shippingCostGSTBox = $(tmp.me._htmlIds.shippingCostGST);
+		tmp.totalShippingCostBox = $(tmp.me._htmlIds.totalShippingCost);
 		
-		tmp.totalIncGST = tmp.me.getValueFromCurrency(tmp.totalIncGSTBox.innerHTML) * 1 + tmp.totalShippingCost * 1 + amount * 1;
+		tmp.totalIncGST = tmp.me.getValueFromCurrency(tmp.totalIncGSTBox.innerHTML) * 1 + amount * 1;
 		tmp.totalExcGST = tmp.totalIncGST * 1 / 1.1;
 		tmp.totalGST = tmp.totalIncGST * 1 - tmp.totalExcGST * 1;
+		tmp.totalShippingCost = (tmp.totalShippingCostBox ? (tmp.me.getValueFromCurrency($F(tmp.totalShippingCostBox)) !== '' ? tmp.me.getValueFromCurrency($F(tmp.totalShippingCostBox)) : 0 ) : 0);
+		tmp.shippingCostGST = tmp.totalShippingCost * 1 - (tmp.totalShippingCost * 1 / 1.1);
 		
 		tmp.totalIncGSTBox.update(tmp.me.getCurrency(tmp.totalIncGST));
 		tmp.totalGSTBox.update(tmp.me.getCurrency(tmp.totalGST));
 		tmp.totalExcGSTBox.update(tmp.me.getCurrency(tmp.totalExcGST));
-		
+		tmp.shippingCostIncludeGSTBox.update(tmp.me.getCurrency(tmp.totalShippingCost));
+		tmp.shippingCostGSTBox.update(tmp.me.getCurrency(tmp.shippingCostGST));
 		
 		tmp.totalPaidAmount = ($(tmp.me._htmlIds.totalPaidAmount) ? tmp.me.getValueFromCurrency($F(tmp.me._htmlIds.totalPaidAmount)) : 0);
 		tmp.totalPaymentDue = tmp.totalIncGST * 1 - tmp.totalPaidAmount;
@@ -397,7 +402,8 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					if(!confirm('You remove this entry.\n\nContinue?'))
 						return;
 					tmp.row = $(this).up('.item_row');
-					tmp.me._recalculateSummary( 0 - tmp.row.retrieve('data').totalPrice * 1 );
+					console.debug(tmp.row.retrieve('data'));
+					tmp.me._recalculateSummary( 0 - tmp.me.getValueFromCurrency(tmp.row.retrieve('data').totalPrice) * 1 );
 					tmp.row.remove();
 				})
 			})
@@ -558,6 +564,14 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 						.insert({'bottom': new Element('td', {'class': 'col-xs-6 text-right active'}).update( new Element('strong').update('Total Incl. GST: ') ) }) 
 						.insert({'bottom': new Element('td', {'id': tmp.me._htmlIds.totalPriceIncludeGST, 'class': 'col-xs-6 active'}).update( tmp.me.getCurrency(0) ) })
 					})
+					.insert({'bottom': new Element('div') 
+						.insert({'bottom': new Element('td', {'class': 'col-xs-6 text-right active', 'style': 'border-top: 1px solid brown'}).update( new Element('strong').update('Shipping Cost Inc: ') ) }) 
+						.insert({'bottom': new Element('td', {'id': tmp.me._htmlIds.shippingCostIncludeGST, 'class': 'col-xs-6 active', 'style': 'border-top: 1px solid brown'}).update( tmp.me.getCurrency(0) ) })
+					})
+					.insert({'bottom': new Element('div') 
+						.insert({'bottom': new Element('td', {'class': 'col-xs-6 text-right active'}).update( new Element('strong').update('Shipping GST: ') ) }) 
+						.insert({'bottom': new Element('td', {'id': tmp.me._htmlIds.shippingCostGST, 'class': 'col-xs-6 active'}).update( tmp.me.getCurrency(0) ) })
+					})
 				})
 			})
 		});
@@ -591,7 +605,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 									tmp.btn = this;
 									$(tmp.btn).up('.row').down('.input-field').update($F(tmp.btn).blank() ? '' : 
 										tmp.paidAmountBox = new Element('input', {'id': tmp.me._htmlIds.totalPaidAmount, 'class': 'form-control input-sm', 'save-order': 'totalPaidAmount', 'placeholder': tmp.me.getCurrency(0), 'required': true, 'validate_currency': 'Invalid number provided!' })
-										.observe('change', function() {
+										.observe('keyup', function() {
 											tmp.me._recalculateSummary(0);
 										})
 									);
@@ -612,7 +626,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 									tmp.btn = this;
 									$(tmp.btn).up('.row').down('.input-field').update($F(tmp.btn).blank() ? '' : 
 										tmp.shippingCostBox = new Element('input', {'id': tmp.me._htmlIds.totalShippingCost, 'class': 'form-control input-sm', 'save-order': 'totalShippingCost', 'placeholder': tmp.me.getCurrency(0), 'required': true, 'validate_currency': 'Invalid number provided!' })
-										.observe('change', function() {
+										.observe('keyup', function() {
 											tmp.me._recalculateSummary(0);
 										})
 									);

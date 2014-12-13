@@ -130,7 +130,7 @@ class OrderController extends BPCPageAbstract
 		$results = $errors = array();
 		try
 		{
-// 			var_dump($param->CallbackParameter);
+			var_dump($param->CallbackParameter);
 			
 			Dao::beginTransaction();
 			$customer = Customer::get(trim($param->CallbackParameter->customer->id));
@@ -184,8 +184,8 @@ class OrderController extends BPCPageAbstract
 				
 				$totalPaymentDue += $totalPrice;
 				$orderItem = OrderItem::create($order, $product, $unitPrice, $qtyOrdered, $totalPrice);
-// 				foreach($item->serialNos as $serialNo)
-// 					$orderItem->addSellingItem($serialNo);
+				foreach($item->serials as $serialNo)
+					$orderItem->addSellingItem($serialNo);
 			}
 			$order->setTotalAmount($totalPaymentDue)
 				->save();
