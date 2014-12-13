@@ -69,7 +69,16 @@ class ReceivingController extends BPCPageAbstract
 					$array['purchaseOrderItem'] = [];
 					foreach (PurchaseOrderItem::getAllByCriteria('po_item.purchaseOrderId = :purchaseOrderId', array('purchaseOrderId'=> $po->getId() ), true, 1, DaoQuery::DEFAUTL_PAGE_SIZE * 10) as $purchaseOrderItem) 
 					{
-						$array['purchaseOrderItem'][] = array('purchaseOrderItem'=> $purchaseOrderItem->getJson(), 'product'=> $purchaseOrderItem->getProduct()->getJson());
+						$product = $purchaseOrderItem->getProduct();
+						$EANcodes = ProductCode::getAllByCriteria('pro_code.productId = :productId and pro_code.typeId = :typeId', array('productId'=> $product->getId(), 'typeId'=> ProductCodeType::ID_EAN), true, 1, 1);
+						$EANcodes = count($EANcodes) ? $EANcodes[0]->getCode() : '';
+						$UPCcodes = ProductCode::getAllByCriteria('pro_code.productId = :productId and pro_code.typeId = :typeId', array('productId'=> $product->getId(), 'typeId'=> ProductCodeType::ID_UPC), true, 1, 1);
+						$UPCcodes = count($UPCcodes) ? $UPCcodes[0]->getCode() : '';
+						
+						$productArray = $product->getJson();
+						$productArray['codes'] = array('EAN'=>$EANcodes, 'UPC'=>$UPCcodes);
+						
+						$array['purchaseOrderItem'][] = array('purchaseOrderItem'=> $purchaseOrderItem->getJson(), 'product'=> $productArray);
 					}
 					$items[] = $array;
 				}
@@ -148,7 +157,14 @@ class ReceivingController extends BPCPageAbstract
 			{
 				if(!$product instanceof Product)
 					throw new Exception('Invalid Product passed in!');
-				$items[] = $product->getJson();
+				$EANcodes = ProductCode::getAllByCriteria('pro_code.productId = :productId and pro_code.typeId = :typeId', array('productId'=> $product->getId(), 'typeId'=> ProductCodeType::ID_EAN), true, 1, 1);
+				$EANcodes = count($EANcodes) ? $EANcodes[0]->getCode() : '';
+				$UPCcodes = ProductCode::getAllByCriteria('pro_code.productId = :productId and pro_code.typeId = :typeId', array('productId'=> $product->getId(), 'typeId'=> ProductCodeType::ID_UPC), true, 1, 1);
+				$UPCcodes = count($UPCcodes) ? $UPCcodes[0]->getCode() : '';
+				
+				$array = $product->getJson();
+				$array['codes'] = array('EAN'=>$EANcodes, 'UPC'=>$UPCcodes);
+				$items[] = $array;
 			}
 			$results['items'] = $items;
 		}

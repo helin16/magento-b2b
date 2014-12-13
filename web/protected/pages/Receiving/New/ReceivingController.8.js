@@ -149,7 +149,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					'name': ''
 					,'id' : ''
 					,'qty': 0
-					,'barcode': tmp.searchTxt
+					,'barcode': ''
 			};
 			tmp.data = {
 					'product': tmp.product, 
@@ -312,7 +312,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		console.debug(orderItem);
 		tmp.isTitle = (isTitleRow || false);
 		tmp.EANcodeEl = new Element('div', {'class': 'form-group'} )
-			.insert({'bottom': new Element('input', {'class': 'form-control', 'save-item': 'EANcode', 'placeholder': 'EAN code', 'type': 'text'}) })
+			.insert({'bottom': new Element('input', {'class': 'form-control', 'save-item': 'EANcode', 'placeholder': 'EAN code', 'type': 'text', 'value': orderItem.product.codes ? (orderItem.product.codes.EAN ? orderItem.product.codes.EAN : '') : ''}) })
 			.observe('keydown', function(event){
 				tmp.txtBox = $(this);
 				tmp.me.keydown(event, function() {
@@ -335,7 +335,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				return false;
 			});
 		tmp.UPCcodeEl = new Element('div', {'class': 'form-group'} )
-			.insert({'bottom': new Element('input', {'class': 'form-control', 'save-item': 'UPCcode', 'placeholder': 'UPC code', 'type': 'text'}) })
+			.insert({'bottom': new Element('input', {'class': 'form-control', 'save-item': 'UPCcode', 'placeholder': 'UPC code', 'type': 'text', 'value': orderItem.product.codes ? (orderItem.product.codes.UPC ? orderItem.product.codes.UPC : '') : ''}) })
 			.observe('keydown', function(event){
 				tmp.txtBox = $(this);
 				tmp.me.keydown(event, function() {
@@ -565,7 +565,6 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				tmp.resultList = new Element('div', {'style': 'overflow: auto; max-height: 400px;'});
 				try {
 					tmp.result = tmp.me.getResp(param, false, true);
-					
 					if(!tmp.result || !tmp.result.items || tmp.result.items.size() === 0) {
 						tmp.lastRow.down('.productSku').insert({'bottom': new Element('strong', {'class': 'text-danger'}).update('No Product Found!') });
 						tmp.lastRow.down('.productName').insert({'top': new Element('span', {'class': ''}).update('Barcode: ') });
