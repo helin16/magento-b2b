@@ -42,7 +42,9 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			return tmp.me;
 		tmp.data.items = [];
 		$$('.order-item-row').each(function(item){
-			tmp.data.items.push(item.retrieve('data'));
+			tmp.array = item.retrieve('data');
+			tmp.array.serials = item.retrieve('serials');
+			tmp.data.items.push(tmp.array);
 		});
 		if(tmp.data.items.size() <= 0) {
 			tmp.me.showModalBox('<strong class="text-danger">Error</strong>', 'At least one order item is needed!', true);
@@ -163,6 +165,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.isTitle = (isTitleRow || false);
 		tmp.tag = (tmp.isTitle === true ? 'strong' : 'div');
 		tmp.row = new Element('div', {'class': ' list-group-item ' + (tmp.isTitle === true ? '' : 'item_row order-item-row')})
+			.store('data',orderItem)
 			.insert({'bottom': new Element('div', {'class': 'row'})
 				.store('data', orderItem)
 				.insert({'bottom': new Element(tmp.tag, {'class': 'productName col-xs-8'})
@@ -250,10 +253,12 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.btn = btn;
 		tmp.me._signRandID(tmp.btn);
 		tmp.searchTxtBox = $(tmp.btn).up('.product-autocomplete').down('.search-txt');
+		tmp.me._signRandID(tmp.searchTxtBox);
 		tmp.searchTxt = $F(tmp.searchTxtBox);
 		tmp.me.postAjax(tmp.me.getCallbackId('searchProduct'), {'searchTxt': tmp.searchTxt}, {
 			'onLoading': function() {
 				jQuery('#' + tmp.btn.id).button('loading');
+				jQuery('#' + tmp.searchTxtBox.id).button('loading');
 			}
 			,'onSuccess': function(sender, param) {
 				tmp.resultList = new Element('div', {'style': 'overflow: auto; max-height: 400px;'});
@@ -273,6 +278,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			}
 			,'onComplete': function(sender, param) {
 				jQuery('#' + tmp.btn.id).button('reset');
+				jQuery('#' + tmp.searchTxtBox.id).button('reset');
 			}
 		});
 		return tmp.me;
@@ -398,7 +404,6 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		};
 		
 		tmp.data.scanTable = tmp.me._getScanTable(tmp.data);
-		console.debug(tmp.data.scanTable);
 		tmp.currentRow.insert({'after': tmp.itemRow = tmp.me._getProductRow(tmp.data) });
 		
 		
@@ -418,10 +423,14 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			tmp.newDiv.insert({'bottom': new Element('input', {'class': 'form-control', 'scanned-item': 'serialNo', 'type': 'text', 'placeholder': 'Serial Number:'})
 				.observe('change', function() {
 					tmp.emptyIput = null;
+					tmp.serials = [];
 					$(this).up('.scanTable').getElementsBySelector('input[scanned-item="serialNo"]').each(function(input){
+						if(!$F(input).blank())
+							tmp.serials.push($F(input));
 						if(tmp.emptyIput === null && $F(input).blank())
 							tmp.emptyIput = input;
 					});
+					$(this).up('.order-item-row').store('serials', tmp.serials);
 					if(tmp.emptyIput !== null)
 						tmp.emptyIput.select();
 				})
@@ -469,7 +478,6 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					tmp.row =$(this).up('.item_row');
 					tmp.unitPrice = tmp.me.getValueFromCurrency($F(tmp.row.down('[new-order-item=unitPrice]')));
 					tmp.qty = $F(this);
-					console.debug(tmp.unitPrice);
 					$(tmp.row.down('[new-order-item=totalPrice]')).value = tmp.me.getCurrency( tmp.unitPrice * tmp.qty);
 				})
 				.observe('keydown', function(event){
@@ -628,14 +636,14 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.me = this;
 		tmp.newDiv = new Element('div')
 			.insert({'bottom': new Element('div', {'class': 'row'})
-				.insert({'bottom': new Element('div', {'class': 'col-sm-8'}).update(tmp.me._getCustomerInfoPanel()) })
-				.insert({'bottom': new Element('div', {'class': 'col-sm-4'}).update(tmp.me._getPaymentPanel()) })
+				.insert({'bottom': new Element('div', {'class': 'col-sm-12'}).update(tmp.me._getCustomerInfoPanel()) })
 			})
 			.insert({'bottom': new Element('div', {'class': 'row'})
 				.insert({'bottom': new Element('div', {'class': 'col-sm-12 panel panel-success'}).update(tmp.me._getPartsTable()) })
 			})
 			.insert({'bottom': new Element('div', {'class': 'row'})
-				.insert({'bottom': new Element('div', {'class': 'col-sm-12'}).update(tmp.me._saveBtns()) })
+				.insert({'bottom': new Element('div', {'class': 'col-sm-8'}).update(tmp.me._saveBtns()) })
+				.insert({'bottom': new Element('div', {'class': 'col-sm-4'}).update(tmp.me._getPaymentPanel()) })
 			})
 		return tmp.newDiv;
 	}
