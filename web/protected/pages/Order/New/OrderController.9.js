@@ -80,9 +80,6 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 							+ '</div>',
 					true);
 					
-//					tmp.me.showModalBox('Success', 'Saved successfully', false);
-//					location.reload(); 
-					
 				} catch(e) {
 					tmp.me.showModalBox('Error!', e, false);
 				}
@@ -181,7 +178,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			.store('data',orderItem)
 			.insert({'bottom': new Element('div', {'class': 'row'})
 				.store('data', orderItem)
-				.insert({'bottom': new Element(tmp.tag, {'class': 'productName col-xs-8'})
+				.insert({'bottom': new Element(tmp.tag, {'class': 'productName col-xs-7'})
 					.insert({'bottom': orderItem.product.name })
 					.insert({'bottom': new Element('small', {'class': orderItem.product.id ? 'btn btn-xs btn-info' : 'hidden'})
 							.insert({'bottom': new Element('small', {'class': 'glyphicon glyphicon-new-window'} )})
@@ -199,6 +196,9 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				.insert({'bottom': new Element(tmp.tag, {'class': 'qty col-xs-1'})
 					.insert({'bottom': (orderItem.qtyOrdered) })
 				})
+				.insert({'bottom': new Element(tmp.tag, {'class': 'discount col-xs-1'})
+					.insert({'bottom': (orderItem.discount) })
+				})
 				.insert({'bottom': new Element(tmp.tag, {'class': 'tprice col-xs-1'})
 					.insert({'bottom': (orderItem.totalPrice) })
 				})
@@ -206,13 +206,13 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			});
 		if(orderItem.product.sku) {
 			tmp.row.down('.productName')
-				.removeClassName('col-xs-8')
-				.addClassName('col-xs-6')
+				.removeClassName('col-xs-7')
+				.addClassName('col-xs-5')
 				.insert({'before': new Element(tmp.tag, {'class': 'productSku col-xs-2'}).update(orderItem.product.sku) });
 		}
 		if(orderItem.scanTable) {
 			tmp.row.insert({'bottom': new Element('div', {'class': 'row product-content-row'})
-				.insert({'bottom': new Element('span', {'class': 'col-sm-10 col-sm-offset-2'}).update(orderItem.scanTable) })
+				.insert({'bottom': new Element('span', {'class': 'col-sm-10 col-sm-offset-2', 'style': 'padding-top: 5px'}).update(orderItem.scanTable) })
 			});
 		}
 		return tmp.row;
@@ -271,7 +271,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					.update(product.sku)
 					.removeClassName('col-xs-8')
 					.addClassName('col-xs-2')
-					.insert({'after': new Element('div', {'class': 'col-xs-6'})
+					.insert({'after': new Element('div', {'class': 'col-xs-5'})
 						.update(product.name) 
 						.insert({'bottom': new Element('small', {'class': 'btn btn-xs btn-info'})
 							.insert({'bottom': new Element('small', {'class': 'glyphicon glyphicon-new-window'} )})
@@ -345,13 +345,12 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		var tmp = {};
 		tmp.me = this;
 		tmp.skuAutoComplete = tmp.me._getFormGroup( null, new Element('div', {'class': 'input-group input-group-sm product-autocomplete'})
-			.insert({'bottom': new Element('input', {'class': 'form-control search-txt visible-xs visible-sm visible-md visible-lg', 'new-order-item': 'product', 'required': 'Required!', 'placeholder': 'search SKU, NAME and any BARCODE for this product'})
+			.insert({'bottom': new Element('input', {'class': 'form-control search-txt visible-xs visible-sm visible-md visible-lg', 'new-order-item': 'product', 'required': true, 'placeholder': 'search SKU, NAME and any BARCODE for this product'})
 				.observe('keydown', function(event){
 					tmp.txtBox = this;
 					tmp.me.keydown(event, function() {
 						$(tmp.txtBox).up('.product-autocomplete').down('.search-btn').click();
 					});
-					return false;
 				})
 			})
 			.insert({'bottom': new Element('span', {'class': 'input-group-btn'}) 
@@ -434,6 +433,12 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			tmp.me._markFormGroupError(tmp.qtyOrderedBox, 'Invalid value provided!');
 			return ;
 		}
+		tmp.discountBox = tmp.currentRow.down('[new-order-item=discount]');
+		tmp.discount = tmp.me.getValueFromCurrency($F(tmp.discountBox));
+		if(tmp.discount.match(/^\d+(\.\d{1,2})?$/) === null) {
+			tmp.me._markFormGroupError(tmp.discountBox, 'Invalid value provided!');
+			return ;
+		}
 		tmp.totalPriceBox = tmp.currentRow.down('[new-order-item=totalPrice]');
 		tmp.totalPrice = tmp.me.getValueFromCurrency($F(tmp.totalPriceBox));
 		if(tmp.totalPrice.match(/^\d+(\.\d{1,2})?$/) === null) {
@@ -449,6 +454,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			'product': tmp.product, 
 			'unitPrice': tmp.me.getCurrency(tmp.unitPrice), 
 			'qtyOrdered': tmp.qtyOrdered, 
+			'discount' : tmp.discount,
 			'totalPrice': tmp.me.getCurrency(tmp.totalPrice),
 			'btns': new Element('span', {'class': 'pull-right'})
 				.insert({'bottom': new Element('span', {'class': 'btn btn-danger btn-xs'})
@@ -508,12 +514,13 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.skuAutoComplete = tmp.me._getNewProductProductAutoComplete();
 		tmp.data = {
 			'product': {'name': tmp.skuAutoComplete	}
-			,'unitPrice': tmp.me._getFormGroup( null, new Element('input', {'class': 'input-sm', 'new-order-item': 'unitPrice', 'required': 'Required!' , 'value': tmp.me.getCurrency(0)})
+			,'unitPrice': tmp.me._getFormGroup( null, new Element('input', {'class': 'input-sm', 'new-order-item': 'unitPrice', 'required': true, 'value': tmp.me.getCurrency(0)})
 				.observe('change', function(){
 					tmp.row =$(this).up('.item_row');
 					tmp.unitPrice = tmp.me.getValueFromCurrency($F(this));
+					tmp.discount = $F(tmp.row.down('[new-order-item=discount]'));
 					tmp.qty = $F(tmp.row.down('[new-order-item=qtyOrdered]'));
-					$(tmp.row.down('[new-order-item=totalPrice]')).value = tmp.me.getCurrency( tmp.unitPrice * tmp.qty);
+					$(tmp.row.down('[new-order-item=totalPrice]')).value = tmp.me.getCurrency( tmp.unitPrice * (1 - tmp.discount/100) * tmp.qty);
 				})
 				.observe('click', function() {
 					$(this).select();
@@ -524,21 +531,22 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					tmp.me.keydown(event, function() {
 						tmp.row.down('.save-new-product-btn').click();
 					});
-					return false;
 				})
 				.observe('keyup', function(){
 					tmp.row =$(this).up('.item_row');
 					tmp.unitPrice = tmp.me.getValueFromCurrency($F(this));
+					tmp.discount = $F(tmp.row.down('[new-order-item=discount]'));
 					tmp.qty = $F(tmp.row.down('[new-order-item="qtyOrdered"]'));
-					$(tmp.row.down('[new-order-item="totalPrice"]')).value = tmp.me.getCurrency( tmp.unitPrice * tmp.qty);
+					$(tmp.row.down('[new-order-item="totalPrice"]')).value = tmp.me.getCurrency( tmp.unitPrice * (1 - tmp.discount/100) * tmp.qty);
 				})
 			)
-			,'qtyOrdered': tmp.me._getFormGroup( null, new Element('input', {'class': 'input-sm', 'new-order-item': 'qtyOrdered', 'required': 'Required!', 'value': '1'})
+			,'qtyOrdered': tmp.me._getFormGroup( null, new Element('input', {'class': 'input-sm', 'new-order-item': 'qtyOrdered', 'required': true, 'value': '1'})
 				.observe('keyup', function(){
 					tmp.row =$(this).up('.item_row');
 					tmp.unitPrice = tmp.me.getValueFromCurrency($F(tmp.row.down('[new-order-item=unitPrice]')));
+					tmp.discount = $F(tmp.row.down('[new-order-item=discount]'));
 					tmp.qty = $F(this);
-					$(tmp.row.down('[new-order-item=totalPrice]')).value = tmp.me.getCurrency( tmp.unitPrice * tmp.qty);
+					$(tmp.row.down('[new-order-item=totalPrice]')).value = tmp.me.getCurrency( tmp.unitPrice * (1 - tmp.discount/100) * tmp.qty);
 				})
 				.observe('keydown', function(event){
 					tmp.txtBox = this;
@@ -546,13 +554,35 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					tmp.me.keydown(event, function() {
 						tmp.row.down('.save-new-product-btn').click();
 					});
-					return false;
 				})
 				.observe('click', function() {
 					$(this).select();
 				})
 			)
-			,'totalPrice': tmp.me._getFormGroup( null, new Element('input', {'class': 'input-sm', 'disabled': true, 'new-order-item': 'totalPrice', 'required': 'Required!', 'value': tmp.me.getCurrency(0)})
+			,'discount': tmp.me._getFormGroup( null, new Element('input', {'class': 'input-sm', 'new-order-item': 'discount', 'value': '0'})
+				.observe('keyup', function(){
+					if($F($(this)).blank() || $F($(this)) > 100) {
+						$(this).value = 0;
+						$(this).select();
+					}
+					tmp.row =$(this).up('.item_row');
+					tmp.unitPrice = tmp.me.getValueFromCurrency($F(tmp.row.down('[new-order-item=unitPrice]')));
+					tmp.qty = $F(tmp.row.down('[new-order-item=qtyOrdered]'));
+					tmp.discount = $F(this);
+					$(tmp.row.down('[new-order-item=totalPrice]')).value = tmp.me.getCurrency( tmp.unitPrice * (1 - tmp.discount/100) * tmp.qty);
+				})
+				.observe('keydown', function(event){
+					tmp.txtBox = this;
+					tmp.row = $(this).up('.item_row');
+					tmp.me.keydown(event, function() {
+						tmp.row.down('.save-new-product-btn').click();
+					});
+				})
+				.observe('click', function() {
+					$(this).select();
+				})
+			)
+			,'totalPrice': tmp.me._getFormGroup( null, new Element('input', {'class': 'input-sm', 'disabled': true, 'new-order-item': 'totalPrice', 'required': true, 'value': tmp.me.getCurrency(0)})
 				.observe('change', function(){
 					tmp.row =$(this).up('.item_row');
 					tmp.totalPrice = tmp.me.getValueFromCurrency($F(this));
@@ -595,7 +625,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.me = this;
 		//header row
 		tmp.productListDiv = new Element('div', {'class': 'list-group order_change_details_table'})
-			.insert({'bottom': tmp.me._getProductRow({'product': {'sku': 'SKU', 'name': 'Description'}, 'unitPrice': 'Unit Price', 'qtyOrdered': 'Qty', 'totalPrice': 'Total Price'}, true)
+			.insert({'bottom': tmp.me._getProductRow({'product': {'sku': 'SKU', 'name': 'Description'}, 'unitPrice': 'Unit Price', 'qtyOrdered': 'Qty', 'discount': 'Discount %', 'totalPrice': 'Total Price'}, true)
 			});
 		// tbody
 		tmp.productListDiv.insert({'bottom': tmp.me._getNewProductRow().addClassName('list-group-item-success') });
@@ -807,7 +837,6 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 							tmp.me.keydown(event, function() {
 								$(tmp.me._htmlIds.searchPanel).down('.search-btn').click();
 							});
-							return false;
 						})
 					})
 					.insert({'bottom': new Element('span', {'class': 'input-group-btn search-btn'})
