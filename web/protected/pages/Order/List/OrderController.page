@@ -26,19 +26,30 @@
 	                           <input id='invNo' type="text" class="form-control input-sm" placeholder="Invoice Number" search_field="ord.invNo" />
 	                       </div>
 	                   </div>
-	                   <div class="col-md-4 col-sm-6 col-xs-12">
+	                   <div class="col-md-3 col-sm-6 col-xs-12">
 	                       <div class="form-group form-group-sm input-group">
 	                           <label for="custName" class="input-group-addon">Customer Name: </label> 
 	                           <input id='custName' type="text" class="form-control input-sm" placeholder="Customer Name" search_field="ord.infos.<%= OrderInfoType::ID_CUS_NAME %>" />
 	                       </div>
 	                   </div>
-	                   <div class="col-md-2 col-sm-6 col-xs-12">
+	                   <div class="col-md-1 col-sm-6 col-xs-12">
 	                       <div class="form-group form-group-sm input-group">
 	                           <label for="status" class="input-group-addon">Paid: </label> 
 	                           <select search_field="ord.passPaymentCheck" class="form-control input-sm">
 	                               <option value=""></option>
 	                               <option value="1">YES</option>
 	                               <option value="0">NO</option>
+	                           </select>
+	                       </div>
+	                   </div>
+	                   <div class="col-md-2 col-sm-6 col-xs-12">
+	                       <div class="form-group form-group-sm input-group">
+	                           <label for="type" class="input-group-addon">Type: </label> 
+	                           <select search_field="ord.type" class="form-control input-sm">
+	                               <option value=""></option>
+	                               <option value="QUOTE">QUOTE</option>
+	                               <option value="ORDER">ORDER</option>
+	                               <option value="INVOICE">INVOICE</option>
 	                           </select>
 	                       </div>
 	                   </div>

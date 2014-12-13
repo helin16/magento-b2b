@@ -119,6 +119,12 @@ class OrderController extends BPCPageAbstract
 						$params = array_merge($params, $value);
 						break;
 					}
+					case 'ord.type': 
+					{
+						$where[] =  $field . " = ? ";
+						$params[] = $value;
+						break;
+					}
 					case 'ord.infos.' . OrderInfoType::ID_CUS_NAME:
 					{
 						$query->eagerLoad("Order.infos", 'inner join', 'x', 'x.orderId = ord.id and x.active = 1 and x.typeId = ' . OrderInfoType::ID_CUS_NAME);
