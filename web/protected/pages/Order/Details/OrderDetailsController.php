@@ -55,6 +55,7 @@ class OrderDetailsController extends BPCPageAbstract
 			$js .= '.setCallbackId("updateShippingInfo", "' . $this->updateShippingInfoBtn->getUniqueID() . '")';
 			$js .= '.setCallbackId("getPaymentDetails", "' . $this->getPaymentDetailsBtn->getUniqueID() . '")';
 			$js .= '.setCallbackId("clearETA", "' . $this->clearETABtn->getUniqueID() . '")';
+			$js .= '.setCallbackId("setOrderType", "' . $this->setOrderTypeBtn->getUniqueID() . '")';
 			$js .= '.setCallbackId("changeIsOrdered", "' . $this->changeIsOrderedBtn->getUniqueID() . '")';
 			$js .= '.setEditMode(' . $purchaseEdit . ', ' . $warehouseEdit . ', ' . $accounEdit . ', ' . $statusEdit . ')';
 			$js .= '.setOrder('. json_encode($order->getJson()) . ', ' . json_encode($orderItems) . ', ' . json_encode($orderStatuses) . ', ' . OrderStatus::ID_SHIPPED . ')';
@@ -425,7 +426,31 @@ class OrderDetailsController extends BPCPageAbstract
 		}
 		$param->ResponseData = StringUtilsAbstract::getJson($result, $error);
 	}
-	
+	public function setOrderType($sender, $param)
+	{
+		$results = $errors = array();
+		try
+		{
+			var_dump($param->CallbackParameter);
+			Dao::beginTransaction();
+			$type = trim($param->CallbackParameter->type);
+			$orderId = trim($param->CallbackParameter->id);
+			$order = Order::get($orderId);
+			if(!$order instanceof Order)
+				throw new Exception('Invalid Order passed in!');
+			if($order->getType() !== $type)
+				$order->setType($type);
+			
+			$results = $order->getJson();
+			Dao::commitTransaction();
+		}
+		catch(Exception $ex)
+		{
+			Dao::rollbackTransaction();
+			$errors[] = $ex->getMessage();
+		}
+		$param->ResponseData = StringUtilsAbstract::getJson($results, $errors);
+	}
 	public function clearETA($sender, $param)
 	{
 		$results = $errors = array();

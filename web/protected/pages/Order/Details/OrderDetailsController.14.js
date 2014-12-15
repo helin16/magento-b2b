@@ -986,6 +986,33 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		}
 		return tmp.me;
 	}
+	,_setOrderType: function(btn) {
+		var tmp = {};
+		tmp.me = pageJs;
+		tmp.btn = btn;
+		tmp.me._signRandID(tmp.btn);
+		tmp.me.order = tmp.me._order;
+		tmp.me.postAjax(tmp.me.getCallbackId('setOrderType'), tmp.me.order, {
+			'onLoading': function() {
+				jQuery('#' + tmp.btn.id).button('loading');
+			}
+			,'onSuccess': function(sender, param) {
+				try {
+					tmp.result = tmp.me.getResp(param, false, true);
+					console.debug(tmp.result);
+//					if(!tmp.result || !tmp.result.items || tmp.result.items.size() === 0)
+//						throw 'Nothing Found for: ' + tmp.searchTxt;
+					
+				} catch(e) {
+					tmp.resultList.update(tmp.me.getAlertBox('Error: ', e).addClassName('alert-danger'));
+				}
+			}
+			,'onComplete': function(sender, param) {
+				jQuery('#' + tmp.btn.id).button('reset');
+			}
+		});
+		return tmp.me;
+	}
 	/**
 	 * Getting the order information panel
 	 */
@@ -997,16 +1024,26 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			.insert({'bottom': new Element('div', {'class': 'panel-heading'})
 				.insert({'bottom': new Element('span', {'class': 'btn-group btn-group-xs'})
 					.insert({'bottom': new Element('span', {'class': 'btn btn-info btn-xs'})
+						.insert({'bottom': new Element('span', {'class': ''}).update('Print Order ') })
 						.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-print'}) })
 						.observe('click', function() {
 							tmp.me._openOrderPrintPage();
 						})
 					})
 					
-					.insert({'bottom': new Element('span', {'class': 'btn btn-info btn-xs'})
+					.insert({'bottom': new Element('span', {'class': 'btn btn-warning btn-xs', 'style': 'margin: 0 5px'})
+						.insert({'bottom': new Element('span', {'class': ''}).update('Print Delivery Docket ') })
 						.insert({'bottom': new Element('span', {'class': 'fa fa-ils'}) })
 						.observe('click', function() {
 							tmp.me._openDocketPrintPage();
+						})
+					})
+					.insert({'bottom': new Element('span', {'class': 'btn btn-success btn-xs'})
+						.insert({'bottom': new Element('span', {'class': ''}).update('Invoice ') })
+						.insert({'bottom': new Element('span', {'class': 'fa fa-credit-card'}) })
+						.observe('click', function() {
+							tmp.me._order.type = 'INVOICE';
+							tmp.me._setOrderType(this);
 						})
 					})
 				})
