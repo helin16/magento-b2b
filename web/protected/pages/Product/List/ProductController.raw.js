@@ -408,15 +408,12 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 				})
 			});
 		if(tmp.isTitle === false) {
-			tmp.row.observe('click', function(){
-				//display details of the selected item
+			tmp.me.observeClickNDbClick(tmp.row, function() {
 				tmp.me._displaySelectedProduct(row);
-			})
-			.observe('dblclick', function(event){
-				Event.stop(event);
+			}, function(){
 				if(tmp.me._singleProduct !== true)
 					tmp.me._openProductDetails(row);
-			})
+			});
 		}
 		return tmp.row;
 	}

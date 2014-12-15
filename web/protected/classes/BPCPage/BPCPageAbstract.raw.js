@@ -239,6 +239,29 @@ BPCPageJs.prototype = {
 		tmp.dateStrings = tmp.strings[0].split('-');
 		tmp.timeStrings = tmp.strings[1].split(':');
 		return new Date(Date.UTC(tmp.dateStrings[0], (tmp.dateStrings[1] * 1 - 1), tmp.dateStrings[2], tmp.timeStrings[0], tmp.timeStrings[1], tmp.timeStrings[2]));
-		
+	}
+	,observeClickNDbClick: function(element, clickFunc, dblClickFunc) {
+		var tmp = {};
+		tmp.me = this;
+		$(element).observe('click', function(){
+			if($(element).retrieve('alreadyclicked') === true) {
+				$(element).store('alreadyclicked', false);
+				if ($(element).retrieve('alreadyclickedTimeout')){
+					clearTimeout($(element).retrieve('alreadyclickedTimeout'));
+				}
+				if(typeof dblClickFunc === 'function') {
+					dblClickFunc();
+				}
+			} else {
+				$(element).store('alreadyclicked', true);
+				$(element).store('alreadyclickedTimeout', setTimeout(function(){
+					$(element).store('alreadyclicked', false); // reset when it happens
+					if(typeof clickFunc === 'function') {
+						clickFunc();
+					}
+		        },300));
+			}
+		});
+		return tmp.me;
 	}
 };
