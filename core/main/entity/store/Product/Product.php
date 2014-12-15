@@ -118,6 +118,11 @@ class Product extends InfoEntityAbstract
 	 */
 	protected $codes = array();
 	/**
+	 * the account number for accounting purpose
+	 * @var string
+	 */
+	private $invenAccNo = '';
+	/**
 	 * Getter for categories
 	 *
 	 * @return array()
@@ -500,6 +505,28 @@ class Product extends InfoEntityAbstract
 		$this->totalOnHandValue = $value;
 		return $this;
 	}
+	/** 
+	 * Getter for invenAccNo 
+	 * 
+	 * @return string
+	 */
+	public function getInvenAccNo  ()
+	{
+		return $this->invenAccNo ;
+	}
+	/** 
+	 * Setter for invenAccNo 
+	 * 
+	 * @param string $value
+	 * 
+	 * @return Product
+	 */
+	public function setInvenAccNo ($value )
+	{
+		$this->invenAccNo = $value;
+		return $this;
+	}
+	
 	/**
 	 * Adding a product image to the product
 	 * 
@@ -826,6 +853,7 @@ class Product extends InfoEntityAbstract
 		DaoMap::setIntType('stockOnHand', 'int', 10, false);
 		DaoMap::setIntType('stockOnOrder', 'int', 10, false);
 		DaoMap::setIntType('stockOnPO', 'int', 10, false);
+		DaoMap::setStringType('invenAccNo', 'varchar', 50);
 		DaoMap::setBoolType('isFromB2B');
 		DaoMap::setBoolType('sellOnWeb');
 		DaoMap::setManyToOne('status', 'ProductStatus', 'pro_status', true);
@@ -852,6 +880,7 @@ class Product extends InfoEntityAbstract
 		DaoMap::createIndex('sellOnWeb');
 		DaoMap::createIndex('asNewFromDate');
 		DaoMap::createIndex('asNewToDate');
+		DaoMap::createIndex('invenAccNo');
 		DaoMap::commit();
 	}
 	/**
@@ -880,7 +909,7 @@ class Product extends InfoEntityAbstract
 	 *
 	 * @return Ambigous <Product, Ambigous, NULL, BaseEntityAbstract>
 	 */
-	public static function create($sku, $name, $mageProductId = '', $stockOnHand = null, $stockOnOrder = null, $isFromB2B = false, $shortDescr = '', $fullDescr = '', Manufacturer $manufacturer = null)
+	public static function create($sku, $name, $mageProductId = '', $stockOnHand = null, $stockOnOrder = null, $isFromB2B = false, $shortDescr = '', $fullDescr = '', Manufacturer $manufacturer = null, $invenAccNo = null)
 	{
 		if(!($product = self::getBySku($sku)) instanceof Product)
 			$product = new Product();
@@ -897,13 +926,13 @@ class Product extends InfoEntityAbstract
 				$product->setStockOnOrder(intval($stockOnOrder));
 			if($stockOnHand !== null && is_numeric($stockOnHand))
 				$product->setStockOnHand(intval($stockOnHand));
-			if (($$fullDescr = trim($fullDescr)) !== '')
-			{
+			if($invenAccNo !== null && is_string($invenAccNo))
+				$product->setInvenAccNo(trim($invenAccNo));
+			if (($$fullDescr = trim($fullDescr)) !== '') {
 				$asset = Asset::registerAsset('full_desc_' . $sku, $fullDescr);
 				$product->setFullDescAssetId(trim($asset->getAssetId()));
 			}
-			if ($manufacturer instanceof Manufacturer)
-			{
+			if ($manufacturer instanceof Manufacturer) {
 				$product->setManufacturer($manufacturer);
 			}
 		}

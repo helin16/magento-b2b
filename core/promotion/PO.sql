@@ -183,3 +183,4 @@ ALTER TABLE `product` ADD `totalOnHandValue` double(10,4) NOT NULL DEFAULT '0.00
 ALTER TABLE `productqtylog` ADD `totalOnHandValue` double(10,4) NOT NULL DEFAULT '0.0000' AFTER `stockOnHand`, ADD INDEX (`totalOnHandValue`) ;
 ALTER TABLE `address` ADD `sKey` varchar(32) NOT NULL DEFAULT '' AFTER `postCode`, ADD INDEX (`sKey`) ;
 ALTER TABLE `order` ADD `pONo` varchar(50) NOT NULL DEFAULT '' AFTER `shippingAddrId`, ADD INDEX (`pONo`) ;
+ALTER TABLE `product` ADD `invenAccNo` varchar(20) NOT NULL DEFAULT '' AFTER `stockOnPO`, ADD INDEX (`invenAccNo`) ;
