@@ -735,9 +735,14 @@ class Product extends InfoEntityAbstract
 		if($exsitingSKU > 0)
 			throw new EntityException('The SKU(=' . $sku . ') is already exists!' );
 	}
+	/**
+	 * Getting the unit cost based on the total value and stock on Hand
+	 * 
+	 * @return number
+	 */
 	public function getUnitCost()
 	{
-		return round(($this->getTotalOnHandValue() / intval($this->getStockOnHand())), 2);
+		return intval($this->getStockOnHand()) === 0 ? 0 : round(($this->getTotalOnHandValue() / intval($this->getStockOnHand())), 2);
 	}
 	/**
 	 * (non-PHPdoc)
@@ -747,6 +752,15 @@ class Product extends InfoEntityAbstract
 	{
 		return trim($this->getName());
 	}
+	/**
+	 * A product is picked
+	 * 
+	 * @param int                $qty
+	 * @param string             $comments
+	 * @param BaseEntityAbstract $entity
+	 * 
+	 * @return Ambigous <BaseEntityAbstract, BaseEntityAbstract>
+	 */
 	public function picked($qty, $comments = '', BaseEntityAbstract $entity = null)
 	{
 		return $this->setStockOnHand(($originStockOnHand = $this->getStockOnHand()) - $qty)
@@ -758,6 +772,17 @@ class Product extends InfoEntityAbstract
 			->addLog('StockOnOrder(' . $originStockOnOrder . ' => ' . $this->getStockOnOrder() . ')', Log::TYPE_SYSTEM, 'STOCK_QTY_CHG', __CLASS__ . '::' . __FUNCTION__)
 			->addLog('TotalOnHandValue(' . $origTotalOnHandValue . ' => ' .$this->getTotalOnHandValue() . ')', Log::TYPE_SYSTEM, 'STOCK_VALUE_CHG', __CLASS__ . '::' . __FUNCTION__);
 	}
+	/**
+	 * A product is received
+	 * 
+	 * @param int                $qty
+	 * @param double             $unitCost
+	 * @param string             $comments
+	 * @param BaseEntityAbstract $entity
+	 * 
+	 * @throws EntityException
+	 * @return Ambigous <BaseEntityAbstract, BaseEntityAbstract>
+	 */
 	public function received($qty, $unitCost, $comments = '', BaseEntityAbstract $entity = null)
 	{
 		if(is_numeric($unitCost))
@@ -771,6 +796,15 @@ class Product extends InfoEntityAbstract
 			->addLog('StockOnHand(' . $origStockOnHand . ' => ' .$this->getStockOnHand() . ')', Log::TYPE_SYSTEM, 'STOCK_QTY_CHG', __CLASS__ . '::' . __FUNCTION__)
 			->addLog('TotalOnHandValue(' . $origTotalOnHandValue . ' => ' .$this->getTotalOnHandValue() . ')', Log::TYPE_SYSTEM, 'STOCK_VALUE_CHG', __CLASS__ . '::' . __FUNCTION__);
 	}
+	/**
+	 * A product is shipped
+	 * 
+	 * @param unknown            $qty
+	 * @param string             $comments
+	 * @param BaseEntityAbstract $entity
+	 * 
+	 * @return Ambigous <BaseEntityAbstract, BaseEntityAbstract>
+	 */
 	public function shipped($qty, $comments = '', BaseEntityAbstract $entity = null)
 	{
 		return $this->setStockOnOrder(($originStockOnOrder = $this->getStockOnOrder()) - $this->getQtyOrdered())

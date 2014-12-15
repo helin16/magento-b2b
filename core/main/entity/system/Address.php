@@ -238,7 +238,7 @@ class Address extends BaseEntityAbstract
 	public function preSave()
 	{
 		if(trim($this->getSKey()) === '')
-			$this->setSKey($value);
+			$this->setSKey(self::genSKey($this->getStreet(), $this->getCity(), $this->getRegion(), $this->getCountry(), $this->getPostCode(), $this->getContactName(), $this->getContactNo()));
 	}
 	/**
 	 * (non-PHPdoc)
@@ -300,7 +300,7 @@ class Address extends BaseEntityAbstract
 		$obj = new Address();
 		if($exsitAddr instanceof Address)
 			$obj = $exsitAddr;
-		else if(count($sameAddresses = self::getAllByCriteria('`sKey` = ?'), array(self::getSKey($street, $city, $region, $country, $postCode, $contactName, $contactNo)), true, 1, 1) > 0)
+		else if(count($sameAddresses = self::getAllByCriteria('`sKey` = ?', array(self::genSKey($street, $city, $region, $country, $postCode, $contactName, $contactNo)), true, 1, 1)) > 0)
 			return $sameAddresses[0];
 		return $obj->setStreet($street)
 			->setCity($city)
@@ -324,8 +324,8 @@ class Address extends BaseEntityAbstract
 	 * 
 	 * @return string
 	 */
-	public static function getKey($street, $city, $region, $country, $postCode, $contactName = '', $contactNo = '')
+	public static function genSKey($street, $city, $region, $country, $postCode, $contactName = '', $contactNo = '')
 	{
-		return md5(trim(trim($this->getStreet()) . '|' . trim($this->getCity()) . '|' . trim($this->getRegion()) . '|' . trim($this->getCountry()) . '|' . trim($this->getPostCode()) . '|' . trim($contactName) . '|' . trim($contactNo)));
+		return md5(trim(trim($street) . '|' . trim($city) . '|' . trim($region) . '|' . trim($country) . '|' . trim($postCode) . '|' . trim($contactName) . '|' . trim($contactNo)));
 	}
 }
