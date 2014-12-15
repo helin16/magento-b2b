@@ -55,8 +55,18 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			item.totalPrice = tmp.me.getValueFromCurrency(item.totalPrice);
 			item.unitPrice = tmp.me.getValueFromCurrency(item.unitPrice);
 		});
+		
+		tmp.shippAddrPanel = $$('.shipping-address.address-div').first();
+		if(tmp.shippAddrPanel) {
+			tmp.shippAddr = tmp.me._collectFormData(tmp.shippAddrPanel,'address-editable-field');
+			if(tmp.shippAddr === null) //some error in the shipping address
+				return tmp.me;
+			tmp.data.shippingAddr = tmp.shippAddr;
+		}
+		
 		tmp.btn = $$('.save-btn').first();
 		tmp.me._signRandID(tmp.btn);
+		console.debug(tmp.data);return;
 		tmp.me.postAjax(tmp.me.getCallbackId('saveOrder'), tmp.data, {
 			'onLoading': function(sender, param) {
 				jQuery('#' + tmp.btn.id).button('loading');
@@ -123,26 +133,57 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 	/**
 	 * Getting the address div
 	 */
-	,_getAddressDiv: function(title, addr) {
-		return new Element('div', {'class': 'address-div'})
+	,_getAddressDiv: function(title, addr, editable) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.editable = (editable || false);
+		tmp.newDiv = new Element('div', {'class': 'address-div'})
 			.insert({'bottom': new Element('strong').update(title) })
 			.insert({'bottom': new Element('dl', {'class': 'dl-horizontal dl-condensed'})
 				.insert({'bottom': new Element('dt')
 					.update(new Element('span', {'class': "glyphicon glyphicon-user", 'title': "Customer Name"}) ) 
 				})
-				.insert({'bottom': new Element('dd').update(addr.contactName) })
-				.insert({'bottom': new Element('dt')
-					.update(new Element('span', {'class': "glyphicon glyphicon-map-marker", 'title': "Address"}) ) 
-				})
 				.insert({'bottom': new Element('dd')
 					.insert({'bottom': new Element('div')
-						.insert({'bottom': new Element('div', {'class': 'street inlineblock'}).update(addr.street) })
-						.insert({'bottom': new Element('span', {'class': 'city inlineblock'}).update(addr.city + ' ') })
-						.insert({'bottom': new Element('span', {'class': 'region inlineblock'}).update(addr.region + ' ') })
-						.insert({'bottom': new Element('span', {'class': 'postcode inlineblock'}).update(addr.postCode) })
+						.insert({'bottom': new Element('div', {'class' : 'col-sm-6'}).update(
+							tmp.editable !== true ? addr.contactName : new Element('input', {'address-editable-field': 'contactName', 'required': true, 'class': 'form-control input-sm', 'placeholder': 'The name of contact person',  'value': addr.contactName})
+						) })
+						.insert({'bottom': new Element('div', {'class' : 'col-sm-6'}).update(
+								tmp.editable !== true ? addr.contactNo : new Element('input', {'address-editable-field': 'contactNo', 'class': 'form-control input-sm', 'placeholder': 'The contact number of contact person',  'value': addr.contactNo})
+						) })
 					})
 				})
-			})
+				.insert({'bottom': new Element('dt').update(
+					new Element('span', {'class': "glyphicon glyphicon-map-marker", 'title': "Address"}) 
+				) })
+				.insert({'bottom': new Element('dd')
+					.insert({'bottom': new Element('div')
+						.insert({'bottom': tmp.editable !== true ? addr.street : new Element('div', {'class': 'street col-sm-12'}).update(
+								new Element('input', {'address-editable-field': 'street', 'class': 'form-control input-sm', 'required': true, 'placeholder': 'Street Number and Street name',  'value': addr.street})
+						) })
+					})
+					.insert({'bottom': new Element('div')
+						.insert({'bottom': tmp.editable !== true ? addr.city + ' ' : new Element('div', {'class': 'city col-sm-6'}).update(
+								new Element('input', {'address-editable-field': 'city', 'class': 'form-control input-sm', 'required': true, 'placeholder': 'City / Suburb',  'value': addr.city})
+						) })
+						.insert({'bottom':  tmp.editable !== true ? addr.region + ' ' : new Element('div', {'class': 'region col-sm-3'}).update(
+								new Element('input', {'address-editable-field': 'region', 'class': 'form-control input-sm', 'required': true, 'placeholder': 'State / Province',  'value': addr.region})
+						) })
+						.insert({'bottom': tmp.editable !== true ? addr.postCode: new Element('div', {'class': 'postcode col-sm-3'}).update(
+								new Element('input', {'address-editable-field': 'postCode', 'class': 'form-control input-sm', 'required': true, 'placeholder': 'PostCode',  'value': addr.postCode})
+						) })
+					})
+					.insert({'bottom': new Element('div')
+						.insert({'bottom': tmp.editable !== true ? addr.country: new Element('div', {'class': 'postcode col-sm-4'}).update(
+								new Element('input', {'address-editable-field': 'country', 'class': 'form-control input-sm', 'required': true, 'placeholder': 'Country',  'value': addr.country})
+						) })
+					})
+				})
+			});
+		if(tmp.editable === true) {
+			tmp.newDiv.writeAttribute('address-editable', true);
+		}
+		return tmp.newDiv;
 	}
 	/**
 	 * getting the customer information div
@@ -153,15 +194,26 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.customer = tmp.me._customer;
 		tmp.newDiv = new Element('div', {'class': 'panel panel-success'})
 			.insert({'bottom': new Element('div', {'class': 'panel-heading'})
-				.insert({'bottom': new Element('strong').update('Creating order for: ' + tmp.customer.name + ' ') })
-				.insert({'bottom': ' <' })
-				.insert({'bottom': new Element('a', {'href': 'mailto:' + tmp.customer.email}).update(tmp.customer.email) })
-				.insert({'bottom': '>' })
+				.insert({'bottom': new Element('div', {'class': 'row'})
+					.insert({'bottom': new Element('div', {'class': 'col-sm-8'})
+						.insert({'bottom': new Element('strong').update('CREATING ORDER FOR:  ' + tmp.customer.name + ' ') })
+						.insert({'bottom': ' <' })
+						.insert({'bottom': new Element('a', {'href': 'mailto:' + tmp.customer.email}).update(tmp.customer.email) })
+						.insert({'bottom': '>' })
+					})
+					.insert({'bottom': new Element('div', {'class': 'col-sm-4 text-right'})
+						.insert({'bottom': new Element('strong').update('Total Payment Due: ') })
+						.insert({'bottom': new Element('span', {'class': 'total-payment-due badge'}).update(tmp.me.getCurrency(0) ) })
+					})
+				})
 			})
 			.insert({'bottom': new Element('div', {'class': 'panel-body'})
 				.insert({'bottom': new Element('div', {'class': 'row'})
+					.insert({'bottom': new Element('small').update(new Element('em').update(tmp.customer.description)) })
+				})
+				.insert({'bottom': new Element('div', {'class': 'row'})
 					.insert({'bottom': tmp.me._getAddressDiv("Billing Address: ", tmp.customer.address.billing).addClassName('col-xs-6') })
-					.insert({'bottom': tmp.me._getAddressDiv("Shipping Address: ", tmp.customer.address.shipping).addClassName('col-xs-6') })
+					.insert({'bottom': tmp.me._getAddressDiv("Shipping Address: ", tmp.customer.address.shipping, true).addClassName('col-xs-6').addClassName('shipping-address') })
 				 })
 			});
 		return tmp.newDiv;
@@ -397,9 +449,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			} else if (tmp.totalPaymentDue * 1 === 0) {
 				tmp.newEl.addClassName('label-success')
 					.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-ok'})});
-			} else {
-				tmp.newEl.addClassName('label-default');
-			}
+			} 
 			item.update(tmp.newEl);
 		})
 		return tmp.me;
@@ -625,10 +675,21 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.me = this;
 		//header row
 		tmp.productListDiv = new Element('div', {'class': 'list-group order_change_details_table'})
-			.insert({'bottom': tmp.me._getProductRow({'product': {'sku': 'SKU', 'name': 'Description'}, 'unitPrice': 'Unit Price', 'qtyOrdered': 'Qty', 'discount': 'Discount %', 'totalPrice': 'Total Price'}, true)
+			.insert({'bottom': tmp.me._getProductRow({'product': {'sku': 'SKU', 'name': 'Description'}, 'unitPrice': 'Unit Price<div><small>(inc GST)</small><div>', 'qtyOrdered': 'Qty', 'discount': 'Discount %', 'totalPrice': 'Total Price<div><small>(inc GST)</small><div>'}, true)
 			});
 		// tbody
 		tmp.productListDiv.insert({'bottom': tmp.me._getNewProductRow().addClassName('list-group-item-success') });
+		
+		tmp.shippingMethodSel = new Element('select', {'class': 'form-control input-sm', 'save-order': 'courierId'})
+			.insert({'bottom': new Element('option', {'value': ''}).update('Shipping Via:') });
+		tmp.me._shippingMethods.each(function(method){
+			tmp.shippingMethodSel.insert({'bottom': new Element('option', {'value': method.id}).update(method.name) });
+		})
+		tmp.paymentMethodSel = new Element('select', {'class': 'form-control input-sm', 'save-order': 'paymentMethodId'})
+			.insert({'bottom': new Element('option', {'value': ''}).update('Paid Via:') });
+		tmp.me._paymentMethods.each(function(method){
+			tmp.paymentMethodSel.insert({'bottom': new Element('option', {'value': method.id}).update(method.name) });
+		});
 		// tfooter
 		tmp.productListDiv.insert({'bottom': new Element('div', {'class': 'panel-footer'}) 
 			.insert({'bottom': new Element('div', {'class': 'row'}) 
@@ -636,95 +697,64 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 						.insert({'bottom': tmp.me._getFormGroup( 'Comments:', new Element('textarea', {'save-order': 'comments'}) ) })
 					}) 
 				.insert({'bottom': new Element('div', {'class': 'col-sm-4'})
-					.insert({'bottom': new Element('div')
+					.insert({'bottom': new Element('div', {'class': 'row'})
 						.insert({'bottom': new Element('div', {'class': 'col-xs-6 text-right active'}).update( new Element('strong').update('Total Excl. GST: ') ) }) 
 						.insert({'bottom': new Element('div', {'class': 'col-xs-6 active', 'id': tmp.me._htmlIds.totalPriceExcludeGST}).update( tmp.me.getCurrency(0) ) }) 
 					})
-					.insert({'bottom': new Element('div') 
+					.insert({'bottom': new Element('div', {'class': 'row'}) 
 						.insert({'bottom': new Element('div', {'class': 'col-xs-6 text-right active'}).update( new Element('strong').update('Total GST: ') ) }) 
 						.insert({'bottom': new Element('div', {'id': tmp.me._htmlIds.totalPriceGST, 'class': 'col-xs-6 active'}).update( tmp.me.getCurrency(0) ) }) 
 					})
-					.insert({'bottom': new Element('div') 
+					.insert({'bottom': new Element('div', {'class': 'row'}) 
 						.insert({'bottom': new Element('div', {'class': 'col-xs-6 text-right active'}).update( new Element('strong').update('Total Incl. GST: ') ) }) 
 						.insert({'bottom': new Element('div', {'id': tmp.me._htmlIds.totalPriceIncludeGST, 'class': 'col-xs-6 active'}).update( tmp.me.getCurrency(0) ) })
 					})
-					.insert({'bottom': new Element('div') 
-						.insert({'bottom': new Element('div', {'class': 'col-xs-6 text-right active', 'style': 'border-top: 1px solid brown'}).update( new Element('strong').update('Shipping Cost Inc: ') ) }) 
-						.insert({'bottom': new Element('div', {'id': tmp.me._htmlIds.shippingCostIncludeGST, 'class': 'col-xs-6 active', 'style': 'border-top: 1px solid brown'}).update( tmp.me.getCurrency(0) ) })
+					.insert({'bottom': new Element('div', {'class': 'row', 'style': 'border-bottom: 1px solid brown'}) 
+						.insert({'bottom': new Element('div', {'class': 'col-xs-6 text-right active'}).update( new Element('strong').update(
+							tmp.shippingMethodSel.observe('change', function() {
+								tmp.btn = this;
+								$(tmp.btn).up('.row').down('.input-field').update($F(tmp.btn).blank() ? tmp.me.getCurrency(0) : 
+									tmp.shippingCostBox = new Element('input', {'id': tmp.me._htmlIds.totalShippingCost, 'class': 'form-control input-sm', 'save-order': 'totalShippingCost', 'placeholder': tmp.me.getCurrency(0), 'required': true, 'validate_currency': 'Invalid number provided!' })
+									.observe('keyup', function() {
+										tmp.me._recalculateSummary(0);
+									})
+								);
+//								tmp.me._recalculateSummary(0);
+								if(tmp.shippingCostBox)
+									tmp.shippingCostBox.select();
+							})
+						) ) }) 
+						.insert({'bottom': new Element('div', {'id': tmp.me._htmlIds.shippingCostIncludeGST, 'class': 'col-xs-6 active input-field'}).update( tmp.me.getCurrency(0) ) })
 					})
-					.insert({'bottom': new Element('div') 
-						.insert({'bottom': new Element('div', {'class': 'col-xs-6 text-right active'}).update( new Element('strong').update('Shipping GST: ') ) }) 
+					.insert({'bottom': new Element('div', {'class': 'row'}) 
+						.insert({'bottom': new Element('div', {'class': 'col-xs-6 text-right active'}).update( new Element('strong').update('Total:') ) }) 
 						.insert({'bottom': new Element('div', {'id': tmp.me._htmlIds.shippingCostGST, 'class': 'col-xs-6 active'}).update( tmp.me.getCurrency(0) ) })
 					})
-				})
-			})
-		});
-		return tmp.productListDiv;
-	}
-	,_getPaymentPanel: function () {
-		var tmp = {};
-		tmp.me = this;
-		tmp.paymentMethodSel = new Element('select', {'class': '', 'save-order': 'paymentMethodId'})
-			.insert({'bottom': new Element('option', {'value': ''}).update('Payment Received via:') });
-		tmp.me._paymentMethods.each(function(method){
-			tmp.paymentMethodSel.insert({'bottom': new Element('option', {'value': method.id}).update(method.name) });
-		})
-		tmp.shippingMethodSel = new Element('select', {'class': '', 'save-order': 'courierId'})
-			.insert({'bottom': new Element('option', {'value': ''}).update('Please Select:') });
-		tmp.me._shippingMethods.each(function(method){
-			tmp.shippingMethodSel.insert({'bottom': new Element('option', {'value': method.id}).update(method.name) });
-		})
-		
-		tmp.newDiv = new Element('div', {'class': 'panel panel-success'})
-			.insert({'bottom': new Element('div', {'class':'panel-heading'})
-				.insert({'bottom': new Element('strong').update('Total Payment Due: ') })
-				.insert({'bottom': new Element('span', {'class': 'pull-right total-payment-due'}).update(tmp.me.getCurrency(0) ) })
-			})
-			.insert({'bottom': new Element('div', {'class':'list-group'})
-				.insert({'bottom': new Element('div', {'class': 'list-group-item'})
-					.insert({'bottom': new Element('div', {'class': 'row'})
-						.insert({'bottom': new Element('div', {'class': 'col-xs-6 text-right form-group', 'style': 'margin: 0px;'})
-							.insert({'bottom': tmp.paymentMethodSel.addClassName('form-control input-sm')
-								.observe('change', function() {
+					.insert({'bottom': new Element('div', {'class': 'row', 'style': 'border-bottom: 1px solid brown'}) 
+						.insert({'bottom': new Element('div', {'class': 'col-xs-6 text-right active'}).update( new Element('strong').update(
+							tmp.paymentMethodSel.observe('change', function() {
 									tmp.btn = this;
-									$(tmp.btn).up('.row').down('.input-field').update($F(tmp.btn).blank() ? '' : 
+									$(tmp.btn).up('.row').down('.input-field').update($F(tmp.btn).blank() ? tmp.me.getCurrency(0) : 
 										tmp.paidAmountBox = new Element('input', {'id': tmp.me._htmlIds.totalPaidAmount, 'class': 'form-control input-sm', 'save-order': 'totalPaidAmount', 'placeholder': tmp.me.getCurrency(0), 'required': true, 'validate_currency': 'Invalid number provided!' })
 										.observe('keyup', function() {
 											tmp.me._recalculateSummary(0);
 										})
 									);
-									tmp.me._recalculateSummary(0);
+//									tmp.me._recalculateSummary(0);
 									if(tmp.paidAmountBox)
 										tmp.paidAmountBox.select();
 								})
-							})
-						})
-						.insert({'bottom': new Element('div', {'class': 'col-xs-6 form-group input-field', 'style': 'margin: 0px;'}) })
+						) ) }) 
+						.insert({'bottom': new Element('div', {'id': tmp.me._htmlIds.shippingCostGST, 'class': 'col-xs-6 active input-field'}).update( tmp.me.getCurrency(0) ) })
+					})
+					.insert({'bottom': new Element('div', {'class': 'row'})
+						.insert({'bottom': new Element('h4', {'class': 'col-xs-6 text-right'}).update(new Element('strong').update('DUE:')) })
+						.insert({'bottom': new Element('div', {'class': 'col-xs-6 total-payment-due'}).update(tmp.me.getCurrency(0)) })
 					})
 				})
-				.insert({'bottom': new Element('div', {'class': 'list-group-item'})
-					.insert({'bottom': new Element('div', {'class': 'row'})
-						.insert({'bottom': new Element('div', {'class': 'col-xs-6 form-group', 'style': 'margin: 0px;'})
-							.insert({'bottom': tmp.shippingMethodSel.addClassName('form-control input-sm') 
-								.observe('change', function() {
-									tmp.btn = this;
-									$(tmp.btn).up('.row').down('.input-field').update($F(tmp.btn).blank() ? '' : 
-										tmp.shippingCostBox = new Element('input', {'id': tmp.me._htmlIds.totalShippingCost, 'class': 'form-control input-sm', 'save-order': 'totalShippingCost', 'placeholder': tmp.me.getCurrency(0), 'required': true, 'validate_currency': 'Invalid number provided!' })
-										.observe('keyup', function() {
-											tmp.me._recalculateSummary(0);
-										})
-									);
-									tmp.me._recalculateSummary(0);
-									if(tmp.shippingCostBox)
-										tmp.shippingCostBox.select();
-								})
-							})
-						})
-						.insert({'bottom': new Element('strong', {'class': 'col-xs-6 input-field'})})
-					}) 
-				})
-			});
-		return tmp.newDiv;
+			})
+		});
+		return tmp.productListDiv;
 	}
 	/**
 	 * Getting the div of the order view
@@ -740,8 +770,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				.insert({'bottom': new Element('div', {'class': 'col-sm-12 panel panel-success'}).update(tmp.me._getPartsTable()) })
 			})
 			.insert({'bottom': new Element('div', {'class': 'row'})
-				.insert({'bottom': new Element('div', {'class': 'col-sm-8'}).update(tmp.me._saveBtns()) })
-				.insert({'bottom': new Element('div', {'class': 'col-sm-4'}).update(tmp.me._getPaymentPanel()) })
+				.insert({'bottom': new Element('div', {'class': 'col-sm-12 text-right'}).update(tmp.me._saveBtns()) })
 			})
 		return tmp.newDiv;
 	}
