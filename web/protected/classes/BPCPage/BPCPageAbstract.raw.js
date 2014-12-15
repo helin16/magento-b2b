@@ -144,6 +144,7 @@ BPCPageJs.prototype = {
 				,'placement': 'bottom'
 				,'html': true
 				,'title': errMsg
+				,'content': errMsg
 			})
 			.tooltip('show');
 			$(input).observe('change', function(){
