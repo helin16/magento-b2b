@@ -17,10 +17,10 @@
                                     <div class="cname">BUDGET PC PTY LTD</div>
                                     <div class="abn">ABN 29 133 654 761</div>
                                     <span class="inlineblock dates">
-                                        <div class="dateRow"><span class="rowTitle inlineblock">Order Date: </span><span class="rowContent inlineblock"><%= $this->order->getOrderDate()->format('d/M/Y')%></span></div>
-                                        <div class="dateRow"><span class="rowTitle inlineblock">Invoice No.: </span><span class="rowContent inlineblock"></span></div>
-                                        <div class="dateRow"><span class="rowTitle inlineblock">PO No.: </span><span class="rowContent inlineblock"></span></div>
-                                        <div class="dateRow"><span class="rowTitle inlineblock">Terms: </span><span class="rowContent inlineblock"></span></div>
+                                        <div class="dateRow"><span class="rowTitle inlineblock">Order Date: </span><span class="rowContent inlineblock"><%= $this->order->getOrderDate()->format('d/M/Y') %></span></div>
+                                        <div class="dateRow"><span class="rowTitle inlineblock">Invoice No.: </span><span class="rowContent inlineblock"><%= $this->order->getInvNo()%></span></div>
+                                        <div class="dateRow"><span class="rowTitle inlineblock">Invoice Date.: </span><span class="rowContent inlineblock"><%= $this->order->getInvDate()->format('d/M/Y') %></span></div>
+                                        <div class="dateRow"><span class="rowTitle inlineblock">PO No.: </span><span class="rowContent inlineblock"><%= $this->order->getPONo() %></span></div>
                                     </span>
                                 </span>
                             </div>

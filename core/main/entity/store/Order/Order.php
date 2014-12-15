@@ -114,6 +114,12 @@ class Order extends InfoEntityAbstract
 	 */
 	private $invDate;
 	/**
+	 * The Purchase Order No for the customer
+	 * 
+	 * @var string
+	 */
+	private $pONo = '';
+	/**
 	 * Getter for orderNo
 	 *
 	 * @return string
@@ -482,6 +488,27 @@ class Order extends InfoEntityAbstract
 		return $this;
 	}
 	/**
+	 * Getter for pONo
+	 *
+	 * @return 
+	 */
+	public function getPONo() 
+	{
+	    return $this->pONo;
+	}
+	/**
+	 * Setter for pONo
+	 *
+	 * @param unkown $value The pONo
+	 *
+	 * @return Order
+	 */
+	public function setPONo($value) 
+	{
+	    $this->pONo = $value;
+	    return $this;
+	}
+	/**
 	 * (non-PHPdoc)
 	 * @see BaseEntityAbstract::preSave()
 	 */
@@ -605,6 +632,7 @@ class Order extends InfoEntityAbstract
 		DaoMap::setManyToOne('status', 'OrderStatus', 'o_status');
 		DaoMap::setManyToOne('billingAddr', 'Address', 'baddr');
 		DaoMap::setManyToOne('shippingAddr', 'Address', 'saddr');
+		DaoMap::setStringType('pONo', 'varchar', 50);
 		
 		DaoMap::setOneToMany('shippments', 'Shippment', 'o_ship');
 		DaoMap::setOneToMany('payments', 'Payment', 'py');
@@ -618,6 +646,7 @@ class Order extends InfoEntityAbstract
 		DaoMap::createIndex('orderDate');
 		DaoMap::createIndex('passPaymentCheck');
 		DaoMap::createIndex('isFromB2B');
+		DaoMap::createIndex('pONo');
 		DaoMap::commit();
 	}
 	/**

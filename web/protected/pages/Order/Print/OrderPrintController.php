@@ -73,7 +73,7 @@ class OrderPrintController extends BPCPageAbstract
 			return '';
 		$html = $address->getContactName() . '<br />';
 		$html .= $address->getStreet() . '<br />';
-		$html .= $address->getCity() . ' ' . $address->getRegion() . ' ' . $address->getPostCode() . '<br />';
+		$html .= $address->getCity() . ' ' . $address->getRegion() . ' ' . $address->getPostCode() . '<br />'; 
 		$html .= $address->getCountry();
 		return $html;
 	}
