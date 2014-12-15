@@ -439,7 +439,7 @@ class OrderDetailsController extends BPCPageAbstract
 			if(!$order instanceof Order)
 				throw new Exception('Invalid Order passed in!');
 			if($order->getType() !== $type)
-				$order->setType($type);
+				$order->setType($type)->save();
 			
 			$results = $order->getJson();
 			Dao::commitTransaction();
