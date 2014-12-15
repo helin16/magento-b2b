@@ -231,10 +231,14 @@ class Address extends BaseEntityAbstract
 	{
 		return trim($this->getStreet() . ', ' . $this->getCity() . ' ' . $this->getRegion() . ' ' . $this->getCountry() . ' ' . $this->getPostCode() );
 	}
+	/**
+	 * (non-PHPdoc)
+	 * @see BaseEntityAbstract::preSave()
+	 */
 	public function preSave()
 	{
 		if(trim($this->getSKey()) === '')
-			$this->setSKey($value)
+			$this->setSKey($value);
 	}
 	/**
 	 * (non-PHPdoc)
