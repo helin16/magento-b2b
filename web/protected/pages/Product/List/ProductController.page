@@ -2,6 +2,7 @@
 <com:Application.controls.fancybox.FancyBox />
 <com:Application.controls.chosen.Chosen />
 <com:TCallback ID="priceMatchingBtn" OnCallback = 'Page.priceMatching' />
+<com:TCallback ID="toggleActiveBtn" OnCallback = 'Page.toggleActive' />
 	<div class="pagewrapper productlistwraper">
 		<div class="col-xs-12">
 			<div class="panel panel-default" id="searchPanel">

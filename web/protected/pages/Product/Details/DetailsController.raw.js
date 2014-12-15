@@ -319,7 +319,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		tmp.newDiv = new Element('div', {'class': 'panel panel-default'})
 			.insert({'bottom': new Element('div', {'class': 'panel-heading'})
 				.insert({'bottom': new Element('a', {'href': 'javascript: void(0);', 'title': 'click to show/hide below'})
-					.insert({'bottom': new Element('strong').update(tmp.item.name ? 'Editing: ' + tmp.item.name : 'Creating new product: ') })
+					.insert({'bottom': new Element('strong').update(tmp.item.name ? 'Editing: ' + tmp.item.name : 'Creating: ') })
 					.observe('click', function() {
 						$(this).up('.panel').down('.panel-body').toggle();
 					})
@@ -332,9 +332,10 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 			})
 			.insert({'bottom': new Element('div', {'class': 'panel-body'})
 				.insert({'bottom': new Element('div', {'class': ''})
-					.insert({'bottom': new Element('div', {'class': 'col-sm-4'}).update(tmp.me._getFormGroup('Name', new Element('input', {'save-item': 'name', 'type': 'text', 'value': tmp.item.name ? tmp.item.name : ''}) ) ) })
-					.insert({'bottom': new Element('div', {'class': 'col-sm-4'}).update(tmp.me._getFormGroup('sku', new Element('input', {'save-item': 'sku', 'type': 'text', 'value': tmp.item.sku ? tmp.item.sku : ''}) ) ) })
-					.insert({'bottom': new Element('div', {'class': 'col-sm-4'}).update(tmp.me._getFormGroup('Status', 
+					.insert({'bottom': new Element('div', {'class': 'col-sm-4'}).update(tmp.me._getFormGroup('Name', new Element('input', {'save-item': 'name', 'type': 'text', 'required': true, 'value': tmp.item.name ? tmp.item.name : ''}) ) ) })
+					.insert({'bottom': new Element('div', {'class': 'col-sm-4'}).update(tmp.me._getFormGroup('sku', new Element('input', {'save-item': 'sku', 'type': 'text', 'required': true, 'value': tmp.item.sku ? tmp.item.sku : ''}) ) ) })
+					.insert({'bottom': new Element('div', {'class': 'col-sm-2'}).update(tmp.me._getFormGroup('Inventory Account No.', new Element('input', {'save-item': 'invenAccNo', 'required': true, 'type': 'text', 'value': tmp.item.invenAccNo ? tmp.item.invenAccNo : ''}) ) ) })
+					.insert({'bottom': new Element('div', {'class': 'col-sm-2'}).update(tmp.me._getFormGroup('Status', 
 							tmp.me._getSelBox(tmp.me._statuses, tmp.item.status ? tmp.item.status.id : null).writeAttribute('save-item', 'statusId').addClassName('chosen') 
 					) ) })
 				})
@@ -554,7 +555,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 			tmp.me._item = data.item;
 			tmp.me.refreshParentWindow();
 			tmp.me.showModalBox('<strong class="text-success">Saved Successfully!</strong>', 'Saved Successfully!', true);
-//			window.location = data.url; 
+			window.location = data.url; 
 		});
 		return tmp.me;
 	}

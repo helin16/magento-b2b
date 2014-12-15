@@ -320,6 +320,7 @@ class DetailsController extends DetailsPageAbstract
 				->setSellOnWeb($sellOnWeb)
 				->setAsNewFromDate(trim($param->CallbackParameter->asNewFromDate))
 				->setAsNewToDate(trim($param->CallbackParameter->asNewToDate))
+				->setInvenAccNo(trim($param->CallbackParameter->invenAccNo))
 				;
 			if(trim($product->getId()) === '')
 				$product->setIsFromB2B(false);
