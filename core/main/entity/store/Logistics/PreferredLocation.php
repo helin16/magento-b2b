@@ -101,6 +101,7 @@ class PreferredLocation extends BaseEntityAbstract
 		if(!$this->isJsonLoaded($reset))
 		{
 			$array['value'] = $this->getLocation()->getName();
+			$array['type'] = $this->getType()->getJson();
 		}
 		return parent::getJson($array, $reset);
 	}
@@ -131,9 +132,9 @@ class PreferredLocation extends BaseEntityAbstract
 	{
 		$obj = new PreferredLocation();
 		$obj->setLocation($location)
-		->setProduct($product)
-		->setType($type)
-		->save();
+			->setProduct($product)
+			->setType($type)
+			->save();
 		return $obj;
 	}
 	/**

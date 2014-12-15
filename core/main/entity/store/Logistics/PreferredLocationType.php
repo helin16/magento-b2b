@@ -11,6 +11,12 @@ class PreferredLocationType extends BaseEntityAbstract
 	const ID_PICKED = 2;
 	const ID_SHIPPED = 3;
 	/**
+	 * The cache of the object
+	 *
+	 * @var array
+	 */
+	protected static $_cache;
+	/**
 	 * The name of the PreferredLocationType
 	 * 
 	 * @var string
@@ -103,5 +109,20 @@ class PreferredLocationType extends BaseEntityAbstract
 		DaoMap::createUniqueIndex('name');
 		DaoMap::createIndex('description');
 		DaoMap::commit();
+	}
+	/**
+	 * Getting object
+	 *
+	 * @param int $typeId The id of the type
+	 *
+	 * @return InfoTypeAbstract
+	 */
+	public static function get($typeId)
+	{
+		if(!isset(self::$_cache[$typeId]))
+		{
+			self::$_cache[$typeId] = parent::get($typeId);
+		}
+		return self::$_cache[$typeId];
 	}
 }

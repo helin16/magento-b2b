@@ -9,7 +9,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 	,productStatuses: []
 	,_showRightPanel: false
 	,_getTitleRowData: function() {
-		return {'sku': 'SKU', 'name': 'Product Name', 'manufacturer' : {'name': 'Brand'}, 'supplierCodes': [{'supplier': {'name': 'Supplier'}, 'code': ''}],  'active': 'act?', 'stockOnOrder': 'OnOrder', 'stockOnHand': 'OnHand', 'stockOnPO': 'OnPO'};
+		return {'sku': 'SKU', 'name': 'Product Name','locations': 'Locations', 'manufacturer' : {'name': 'Brand'}, 'supplierCodes': [{'supplier': {'name': 'Supplier'}, 'code': ''}],  'active': 'act?', 'stockOnOrder': 'OnOrder', 'stockOnHand': 'OnHand', 'stockOnPO': 'OnPO'};
 	}
 	,toggleSearchPanel: function(panel) {
 		var tmp = {};
@@ -94,8 +94,10 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 			.observe('click', function(event) {
 				if(!$$('#showSearch').first().checked)
 					$$('#showSearch').first().click();
-				else
+				else {
+					tmp.me.deSelectProduct();
 					tmp.me.getSearchCriteria().getResults(true, tmp.me._pagination.pageSize);
+				}
 			});
 		$('searchDiv').getElementsBySelector('[search_field]').each(function(item) {
 			item.observe('keydown', function(event) {
@@ -117,6 +119,20 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 			tmp.supplierCodeString.push(isTitle === true ? 'Supplier' : '<abbr title="Code: '  + suppliercode.code + '">' + suppliercode.supplier.name + '</abbr>');
 		})
 		return tmp.supplierCodeString.join(', ');
+	}
+	/**
+	 * Getting the locations for a product
+	 */
+	,_getLocations: function (locations, isTitle) {
+		var tmp = {};
+		tmp.me = this;
+		if(isTitle === true)
+			return 'Locations';
+		tmp.locationStrings = [];
+		locations.each(function(location) {
+			tmp.locationStrings.push('<div><small><strong class="hidden-xs hide-when-info hidden-sm">' + location.type.name + ': </strong><abbr title="Type: '  + location.type.name + '">' + location.value + '</abbr></small></div>');
+		})
+		return tmp.locationStrings.join('');
 	}
 	/**
 	 * Displaying the price matching result
@@ -230,6 +246,62 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		tmp.me._showRightPanel = false;
 		return tmp.me;
 	}
+	,getResults: function(reset, pageSize) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.reset = (reset || false);
+		tmp.resultDiv = $(tmp.me.resultDivId);
+		
+		if(tmp.reset === true)
+			tmp.me._pagination.pageNo = 1;
+		tmp.me._pagination.pageSize = (pageSize || tmp.me._pagination.pageSize);
+		tmp.me.postAjax(tmp.me.getCallbackId('getItems'), {'pagination': tmp.me._pagination, 'searchCriteria': tmp.me._searchCriteria}, {
+			'onLoading': function () {
+				jQuery('#' + tmp.me.searchDivId + ' #searchBtn').button('loading');
+				//reset div
+				if(tmp.reset === true) {
+					tmp.resultDiv.update( new Element('tr').update( new Element('td').update( tmp.me.getLoadingImg() ) ) );
+				}
+			}
+			,'onSuccess': function(sender, param) {
+				try{
+					tmp.result = tmp.me.getResp(param, false, true);
+					if(!tmp.result)
+						return;
+					$(tmp.me.totalNoOfItemsId).update(tmp.result.pageStats.totalRows);
+					
+					//reset div
+					if(tmp.reset === true) {
+						tmp.resultDiv.update(tmp.me._getResultRow(tmp.me._getTitleRowData(), true).wrap(new Element('thead')));
+					}
+					//remove next page button
+					tmp.resultDiv.getElementsBySelector('.paginWrapper').each(function(item){
+						item.remove();
+					});
+					
+					//show all items
+					tmp.tbody = $(tmp.resultDiv).down('tbody');
+					if(!tmp.tbody)
+						$(tmp.resultDiv).insert({'bottom': tmp.tbody = new Element('tbody') });
+					tmp.result.items.each(function(item) {
+						tmp.tbody.insert({'bottom': tmp.me._getResultRow(item).addClassName('item_row').writeAttribute('item_id', item.id) });
+					});
+					if(tmp.me._singleProduct !== true) {
+						//show the next page button
+						if(tmp.result.pageStats.pageNumber < tmp.result.pageStats.totalPages)
+							tmp.resultDiv.insert({'bottom': tmp.me._getNextPageBtn().addClassName('paginWrapper') });
+					} else if(tmp.result.items.size() > 0) {
+						tmp.me._displaySelectedProduct(tmp.result.items[0]);
+					}
+				} catch (e) {
+					tmp.resultDiv.insert({'bottom': tmp.me.getAlertBox('Error', e).addClassName('alert-danger') });
+				}
+			}
+			,'onComplete': function() {
+				jQuery('#' + tmp.me.searchDivId + ' #searchBtn').button('reset');
+			}
+		});
+	}
 	/**
 	 * Displaying the selected product 
 	 */
@@ -305,17 +377,26 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 			})
 			.insert({'bottom': new Element(tmp.tag, {'class': 'product_name hidden-xs hide-when-info hidden-sm', 'style': (tmp.me._showRightPanel ? 'display: none' : '')}).update(row.name) })
 			.insert({'bottom': new Element(tmp.tag, {'class': 'product_price hidden-xs hide-when-info hidden-sm', 'style': (tmp.me._showRightPanel ? 'display: none' : '')}).update(tmp.isTitle === true ? 'Price' : (tmp.price.blank() ? '' : tmp.me.getCurrency(tmp.price))) })
-			.insert({'bottom': new Element(tmp.tag, {'class': 'manufacturer col-xs-1'}).update(row.manufacturer ? row.manufacturer.name : '') })
-			.insert({'bottom': new Element(tmp.tag, {'class': 'supplier col-xs-1 hidden-sm'}).update(
+			.insert({'bottom': new Element(tmp.tag, {'class': 'locations col-xs-1 hidden-sm'}).update(
+					row.locations ? tmp.me._getLocations(row.locations, isTitle) : ''
+			) })
+			.insert({'bottom': new Element(tmp.tag, {'class': 'manufacturer col-xs-1 hide-when-info'}).update(row.manufacturer ? row.manufacturer.name : '') })
+			.insert({'bottom': new Element(tmp.tag, {'class': 'supplier col-xs-1 hide-when-info hidden-sm'}).update(
 					row.supplierCodes ? tmp.me._getSupplierCodes(row.supplierCodes, isTitle) : ''
 			) })
 			.insert({'bottom': new Element(tmp.tag, {'class': 'qty col-xs-1 hidden-sm'}).update(
-					tmp.isTitle === true ? 'Qty' : new Element('div', {'class': 'row'})
-						.insert({'bottom': new Element(tmp.tag, {'class': 'stockOnPO col-xs-4', 'title': 'Stock on PurchaseOrder'}).update(row.stockOnPO) })
-						.insert({'bottom': new Element(tmp.tag, {'class': 'stockOnHand col-xs-4', 'title': 'Stock on hand'}).update(row.stockOnHand) })
-						.insert({'bottom': new Element(tmp.tag, {'class': 'stockOnOrder col-xs-4', 'title': 'Stock on Order'}).update(row.stockOnOrder) })
+					tmp.isTitle === true ? 
+							new Element('div', {'class': 'row'})
+								.insert({'bottom': new Element(tmp.tag, {'class': 'stockOnPO col-xs-4', 'title': 'Stock on PurchaseOrder'}).update('P') })
+								.insert({'bottom': new Element(tmp.tag, {'class': 'stockOnHand col-xs-4', 'title': 'Stock on hand'}).update('H') })
+								.insert({'bottom': new Element(tmp.tag, {'class': 'stockOnOrder col-xs-4', 'title': 'Stock on Order'}).update('O') })
+							: 
+							new Element('div', {'class': 'row'})
+								.insert({'bottom': new Element(tmp.tag, {'class': 'stockOnPO col-xs-4', 'title': 'Stock on PurchaseOrder'}).update(row.stockOnPO) })
+								.insert({'bottom': new Element(tmp.tag, {'class': 'stockOnHand col-xs-4', 'title': 'Stock on hand'}).update(row.stockOnHand) })
+								.insert({'bottom': new Element(tmp.tag, {'class': 'stockOnOrder col-xs-4', 'title': 'Stock on Order'}).update(row.stockOnOrder) })
 			) })
-			.insert({'bottom': new Element(tmp.tag, {'class': 'product_active col-xs-1  hidden-sm'})
+			.insert({'bottom': new Element(tmp.tag, {'class': 'product_active col-xs-1 hide-when-info hidden-sm'})
 				.insert({'bottom': (tmp.isTitle === true ? row.active : new Element('input', {'type': 'checkbox', 'disabled': true, 'checked': row.active}) ) })
 			})
 			.insert({'bottom': tmp.isTitle === true ? '' : new Element(tmp.tag, {'class': 'btns hidden-xs hide-when-info hidden-sm', 'style': (tmp.me._showRightPanel ? 'display: none' : '')})
@@ -327,12 +408,14 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 				})
 			});
 		if(tmp.isTitle === false) {
-			tmp.row.down('.sku-link').observe('click', function(){
+			tmp.row.observe('click', function(){
 				//display details of the selected item
 				tmp.me._displaySelectedProduct(row);
 			})
-			.observe('dblclick', function(){
-				tmp.me._openProductDetails(row);
+			.observe('dblclick', function(event){
+				Event.stop(event);
+				if(tmp.me._singleProduct !== true)
+					tmp.me._openProductDetails(row);
 			})
 		}
 		return tmp.row;
