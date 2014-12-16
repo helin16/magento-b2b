@@ -1000,7 +1000,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				try {
 					console.debug(123);
 					tmp.result = tmp.me.getResp(param, false, true);
-					location.reload();
+					window.location = document.URL;
 				} catch(e) {
 					tmp.resultList.update(tmp.me.getAlertBox('Error: ', e).addClassName('alert-danger'));
 				}
