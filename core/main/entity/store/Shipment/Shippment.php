@@ -81,42 +81,6 @@ class Shippment extends BaseEntityAbstract
 	 */
 	private $mageShipmentId = '';
 	/**
-	 * Creating a new shippment
-	 * 
-	 * @param Address $address
-	 * @param Courier $courier
-	 * @param string $consignmentNo
-	 * @param string $shippingDate
-	 * @param Order  $order
-	 * @param string $contactName
-	 * @param string $contactNo
-	 * @param number $noOfCartons
-	 * @param string $estShippingCost      The est shipping cost
-	 * @param string $actualShippingCost   The actual shipping cost
-	 * @param string $deliveryInstructions The delivery instructions
-	 * @param string $mageShipmentId       The magento shippment id
-	 * 
-	 * @return Shippment
-	 */
-	public static function create(Address $address, Courier $courier, $consignmentNo, $shippingDate, Order $order, $contactName, $contactNo = '' , $noOfCartons = 0, $estShippingCost = '0.00', $actualShippingCost = '0.00', $deliveryInstructions = '', $mageShipmentId = '')	
-	{
-		$shipment = new Shippment();
-		return $shipment->setAddress($address)
-			->setCourier($courier)
-			->setConNoteNo($consignmentNo)
-			->setOrder($order)
-			->setReceiver($contactName)
-			->setContact($contactNo)
-			->setShippingDate($shippingDate)
-			->setNoOfCartons($noOfCartons)
-			->setEstShippingCost($estShippingCost)
-			->setActualShippingCost($actualShippingCost)
-			->setDeliveryInstructions($deliveryInstructions)
-			->setMageShipmentId($mageShipmentId)
-			->setActive(true)
-			->save();
-	}
-	/**
 	 * Getter of the courier
 	 * 
 	 * @return Courier
@@ -416,5 +380,48 @@ class Shippment extends BaseEntityAbstract
 		DaoMap::createIndex('shippingDate');
 		DaoMap::createIndex('mageShipmentId');
 		DaoMap::commit();
+	}
+	/**
+	 * Creating a new shippment
+	 *
+	 * @param Address $address
+	 * @param Courier $courier
+	 * @param string $consignmentNo
+	 * @param string $shippingDate
+	 * @param Order  $order
+	 * @param string $contactName
+	 * @param string $contactNo
+	 * @param number $noOfCartons
+	 * @param string $estShippingCost      The est shipping cost
+	 * @param string $actualShippingCost   The actual shipping cost
+	 * @param string $deliveryInstructions The delivery instructions
+	 * @param string $mageShipmentId       The magento shippment id
+	 *
+	 * @return Shippment
+	 */
+	public static function create(Address $address, Courier $courier, $consignmentNo, $shippingDate, Order $order, $contactName, $contactNo = '' , $noOfCartons = 0, $estShippingCost = '0.00', $actualShippingCost = '0.00', $deliveryInstructions = '', $mageShipmentId = '')
+	{
+		$shipment = new Shippment();
+		if(($shippingDate = trim($shippingDate)) === '')
+			$shippingDate = new UDate();
+		$msg = 'Shipment create for Order(' . $order->getOrderNo() . ') to address(' . trim($address) . ') via Courier(' . $courier->getName() . ') with ConNote(=' . $consignmentNo . ') on ' . $shippingDate . '(UTC)';
+		$shippment = $shipment->setAddress($address)
+			->setCourier($courier)
+			->setConNoteNo(trim($consignmentNo))
+			->setOrder($order)
+			->setReceiver(trim($contactName))
+			->setContact(trim($contactNo))
+			->setShippingDate(trim($shippingDate))
+			->setNoOfCartons(trim($noOfCartons))
+			->setEstShippingCost(trim($estShippingCost))
+			->setActualShippingCost(trim($actualShippingCost))
+			->setDeliveryInstructions(trim($deliveryInstructions))
+			->setMageShipmentId(trim($mageShipmentId))
+			->setActive(true)
+			->save()
+			->addLog($msg, Log::TYPE_SYSTEM, '', __CLASS__ . '::' . __FUNCTION__);
+		$order->addComment($msg, Comments::TYPE_SYSTEM)
+			->addLog($msg, Log::TYPE_SYSTEM, '', __CLASS__ . '::' . __FUNCTION__);
+		return $shippment;
 	}
 }

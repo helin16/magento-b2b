@@ -15,7 +15,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		jQuery(".chosen").chosen({
 			disable_search_threshold: 10,
 			no_results_text: "Oops, nothing found!",
-			width: "95%"
+			width: "100%"
 		});
 		return this;
 	}
@@ -112,7 +112,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					tmp.resultDiv = $(tmp.me.resultDivId);
 					//reset div
 					if(tmp.reset === true) {
-						tmp.titleRow = {'orderNo': "Order Info.", 'custName': 'Customer Name', 'shippingAddr': 'Shipping Address', 'invNo': 'Invoice No.', 'status': {'name': 'Status'}, 'totalDue': 'Total Due', 'passPaymentCheck': 'Payment Cleared?'};
+						tmp.titleRow = {'orderNo': "Order Info.",'type': 'Type', 'custName': 'Customer Name', 'shippingAddr': 'Shipping Address', 'invNo': 'Invoice No.', 'status': {'name': 'Status'}, 'totalDue': 'Total Due', 'passPaymentCheck': 'Payment Cleared?'};
 						tmp.resultDiv.update(tmp.me._getResultRow(tmp.titleRow, true).wrap(new Element('thead')));
 					}
 					//remove next page button
@@ -145,8 +145,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					})
 					
 				} catch (e) {
-					console.error(e);
-					tmp.me.showModalBox('Error', e, true);
+					tmp.me.showModalBox('<strong class="text-danger">Error</strong>', e, true);
 				}
 			}
 			,'onComplete': function() {
@@ -207,7 +206,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			'fitToView'     : false,
 			'autoSize'      : false,
 			'type'			: 'iframe',
-			'href'			: '/orderdetails/' + row.id + '.html',
+			'href'			: '/orderdetails/' + row.id + '.html?blanklayout=1',
 			'beforeClose'	    : function() {
 				if($(tmp.me.resultDivId).down('.order_item[order_id=' + row.id + ']'))
 					$(tmp.me.resultDivId).down('.order_item[order_id=' + row.id + ']').replace(tmp.me._getResultRow($$('iframe.fancybox-iframe').first().contentWindow.pageJs._order));
@@ -242,24 +241,27 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			if(tmp.me._infoTypes['custEmail'] in row.infos && row.infos[tmp.me._infoTypes['custEmail']].length > 0)
 				tmp.custEmail = row.infos[tmp.me._infoTypes['custEmail']][0].value;
 		}
-		return new Element('div')
+		tmp.newDiv = new Element('div')
 			.insert({'bottom': tmp.me._getOpenDetailBtn(row) })
 			.insert({'bottom': ' '})
 			.insert({'bottom':  new Element('span')
-				.insert({'bottom': new Element('a', {'id': 'orderno-btn-' + row.id, 'class': 'orderNo visible-xs visible-sm visible-md visible-lg newPopover popovershipping', 'href': 'javascript:void(0);'})
+				.insert({'bottom': tmp.orderLink = new Element('a', {'id': 'orderno-btn-' + row.id, 'class': 'orderNo visible-xs visible-sm visible-md visible-lg newPopover popovershipping', 'href': 'javascript:void(0);'})
 					.update(row.orderNo) 
 					.insert({'bottom': new Element('div', {'style': 'display: none;', 'class': 'popover_content'}).update(tmp.me._getOrderDetailsDiv(row)) })
-					.observe('click', function() {
-						jQuery(this).popover('show');
-						jQuery('.popovershipping').not(this).popover('hide');
-					})
-					.observe('dblclick', function() {
-						jQuery(this).popover('hide');
-						tmp.me._openDetailsPage(row);
-					})
 				})
+			});
+		tmp.me.observeClickNDbClick(tmp.orderLink, 
+			function(event) {
+				tmp.btn = event.target;
+				jQuery(tmp.btn).popover('show');
+				jQuery('.popovershipping').not(tmp.btn).popover('hide');
+			}
+			, function(event) {
+				tmp.btn = event.target;
+				jQuery(tmp.btn).popover('hide');
+				tmp.me._openDetailsPage(row);
 			})
-		;
+		return tmp.newDiv;
 	}
 	
 	,_getPaymentCell: function(row) {
@@ -326,19 +328,22 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			.insert({'bottom': new Element('td', {'class': 'orderInfo  col-xs-2'}).update(
 				tmp.isTitle ? row.orderNo : tmp.me._getOrderInfoCell(row)
 			) })
-			.insert({'bottom': new Element('td', {'class': 'order-date'}).update(
+			.insert({'bottom': new Element('td', {'class': 'order-date col-xs-1'}).update(
 					tmp.isTitle === true ? 'Order Date' : tmp.me.loadUTCTime(row.orderDate).toLocaleDateString()
+			) })
+			.insert({'bottom': new Element('td', {'class': 'order-type col-xs-1'}).update(
+					tmp.isTitle === true ? 'Type' : row.type
 			) })
 			.insert({'bottom': new Element('td', {'class': 'status col-middle col-xs-2', 'order_status': row.status.name}).update(
 					row.status ? row.status.name : ''
 			) })
-			.insert({'bottom': new Element('td', {'class': 'text-right', 'payment': true}).update(
+			.insert({'bottom': new Element('td', {'class': 'text-right col-xs-1', 'payment': true}).update(
 				tmp.isTitle ? 'Payments' : tmp.me._getPaymentCell(row)
 			) })		
-			.insert({'bottom': new Element('td', {'class': 'text-center', 'purchasing': true}).update(
+			.insert({'bottom': new Element('td', {'class': 'text-center col-xs-1', 'purchasing': true}).update(
 					tmp.isTitle ? 'Purchasing' : tmp.me._getPurchasingCell(row)
 			) })
-			.insert({'bottom': new Element('td', {'class': 'text-center', 'warehouse': true}).update(
+			.insert({'bottom': new Element('td', {'class': 'text-center col-xs-1', 'warehouse': true}).update(
 					tmp.isTitle ? 'Warehouse' : tmp.me._getWarehouseCell(row)
 			) })
 		;

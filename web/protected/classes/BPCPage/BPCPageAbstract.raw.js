@@ -244,21 +244,21 @@ BPCPageJs.prototype = {
 	,observeClickNDbClick: function(element, clickFunc, dblClickFunc) {
 		var tmp = {};
 		tmp.me = this;
-		$(element).observe('click', function(){
+		$(element).observe('click', function(event){
 			if($(element).retrieve('alreadyclicked') === true) {
 				$(element).store('alreadyclicked', false);
 				if ($(element).retrieve('alreadyclickedTimeout')){
 					clearTimeout($(element).retrieve('alreadyclickedTimeout'));
 				}
 				if(typeof dblClickFunc === 'function') {
-					dblClickFunc();
+					dblClickFunc(event);
 				}
 			} else {
 				$(element).store('alreadyclicked', true);
 				$(element).store('alreadyclickedTimeout', setTimeout(function(){
 					$(element).store('alreadyclicked', false); // reset when it happens
 					if(typeof clickFunc === 'function') {
-						clickFunc();
+						clickFunc(event);
 					}
 		        },300));
 			}

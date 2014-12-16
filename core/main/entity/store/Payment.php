@@ -130,4 +130,27 @@ class Payment extends BaseEntityAbstract
 	
 		DaoMap::commit();
 	}
+	/**
+	 * Creating a payment for order
+	 * 
+	 * @param Order         $order
+	 * @param PaymentMethod $method
+	 * @param string        $value
+	 * 
+	 * @return Ambigous <BaseEntityAbstract, GenericDAO>
+	 */
+	public static function create(Order $order, PaymentMethod $method, $value)
+	{
+		$payment = new Payment();
+		$message = 'A payment via ' . $method->getName() . ' is made with value: ' . StringUtilsAbstract::getCurrency($value);
+		$payment = $payment->setOrder($order)
+			->setMethod($method)
+			->setValue($value)
+			->save()
+			->addComment($message, Comments::TYPE_SYSTEM)
+			->addLog($message, Log::TYPE_SYSTEM, '', __CLASS__ . '::' . __FUNCTION__);
+		$order->addComment($message, Comments::TYPE_SYSTEM)
+			->addLog($message, Log::TYPE_SYSTEM, '', __CLASS__ . '::' . __FUNCTION__);
+		return $payment;
+	}
 }

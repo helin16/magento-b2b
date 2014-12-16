@@ -101,7 +101,7 @@ class SellingItem extends BaseEntityAbstract
 	 */
 	public function setOrderItem(OrderItem $value)
 	{
-		$this->order = $value;
+		$this->orderItem = $value;
 		return $this;
 	}
 	/**
@@ -190,7 +190,8 @@ class SellingItem extends BaseEntityAbstract
 		$sellingItem = new SellingItem();
 		return $sellingItem->setOrderItem($orderItem)
 			->setSerialNo(trim($serialNo))
-			->setDescription(trim($description));
+			->setDescription(trim($description))
+			->save();
 	}
 	/**
 	 * Getting the selling item

@@ -511,6 +511,19 @@ class Order extends InfoEntityAbstract
 	    return $this;
 	}
 	/**
+	 * Adding a payment to this order
+	 * 
+	 * @param PaymentMethod $method
+	 * @param double         $value
+	 * 
+	 * @return Order
+	 */
+	public function addPayment(PaymentMethod $method, $value)
+	{
+		Payment::create($this, $method, $value);
+		return $this;
+	}
+	/**
 	 * (non-PHPdoc)
 	 * @see BaseEntityAbstract::preSave()
 	 */
@@ -665,16 +678,16 @@ class Order extends InfoEntityAbstract
 	}
 	/**
 	 * 
-	 * @param Customer $customer
-	 * @param string $orderNo
-	 * @param Order $status
-	 * @param string $orderDate
-	 * @param string $type
-	 * @param string $isFromB2B
-	 * @param Address $shipAddr
-	 * @param Address $billAddr
+	 * @param Customer    $customer
+	 * @param string      $orderNo
+	 * @param OrderStatus $status
+	 * @param string      $orderDate
+	 * @param string      $type
+	 * @param string      $isFromB2B
+	 * @param Address     $shipAddr
+	 * @param Address     $billAddr
 	 */
-	public static function create(Customer $customer, $type = self::TYPE_ORDER, $orderNo = null, $comments = '', Order $status = null, $orderDate = null, $isFromB2B = false, Address $shipAddr = null, Address $billAddr = null, $passPaymentCheck = false)
+	public static function create(Customer $customer, $type = self::TYPE_ORDER, $orderNo = null, $comments = '', OrderStatus $status = null, $orderDate = null, $isFromB2B = false, Address $shipAddr = null, Address $billAddr = null, $passPaymentCheck = false, $poNo = '')
 	{
 		$order = new Order();
 		$order->setOrderNo(trim($orderNo))
@@ -686,6 +699,7 @@ class Order extends InfoEntityAbstract
 			->setShippingAddr($shipAddr instanceof Address ? $shipAddr : $customer->getShippingAddress())
 			->setBillingAddr($billAddr instanceof Address ? $billAddr : $customer->getBillingAddress())
 			->setPassPaymentCheck($passPaymentCheck)
+			->setPONo(trim($poNo))
 			->save()
 			->addComment($comments, Comments::TYPE_NORMAL)
 			->addInfo(OrderInfoType::ID_CUS_EMAIL, $customer->getEmail())

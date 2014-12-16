@@ -400,7 +400,7 @@ class OrderItem extends BaseEntityAbstract
 	 * @param number  $mageOrderItemId The order_item_id from Magento
 	 * @param string  $eta
 	 *
-	 * @return Ambigous <OrderItem, BaseEntityAbstract>
+	 * @return OrderItem
 	 */
 	public static function create(Order $order, Product $product, $unitPrice, $qty, $totalPrice, $mageOrderItemId = 0, $eta = null)
 	{

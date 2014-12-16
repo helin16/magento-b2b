@@ -302,13 +302,13 @@ class Address extends BaseEntityAbstract
 			$obj = $exsitAddr;
 		else if(count($sameAddresses = self::getAllByCriteria('`sKey` = ?', array(self::genSKey($street, $city, $region, $country, $postCode, $contactName, $contactNo)), true, 1, 1)) > 0)
 			return $sameAddresses[0];
-		return $obj->setStreet($street)
-			->setCity($city)
-			->setRegion($region)
-			->setCountry($country)
-			->setPostCode($postCode)
-			->setContactName($contactName)
-			->setContactNo($contactNo)
+		return $obj->setStreet(trim($street))
+			->setCity(trim($city))
+			->setRegion(trim($region))
+			->setCountry(trim($country))
+			->setPostCode(trim($postCode))
+			->setContactName(trim($contactName))
+			->setContactNo(trim($contactNo))
 			->save();
 	}
 	/**

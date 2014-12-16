@@ -786,7 +786,7 @@ class Product extends InfoEntityAbstract
 	 * @param string             $comments
 	 * @param BaseEntityAbstract $entity
 	 * 
-	 * @return Ambigous <BaseEntityAbstract, BaseEntityAbstract>
+	 * @return Product
 	 */
 	public function picked($qty, $comments = '', BaseEntityAbstract $entity = null)
 	{
@@ -809,7 +809,7 @@ class Product extends InfoEntityAbstract
 	 * @param BaseEntityAbstract $entity
 	 * 
 	 * @throws EntityException
-	 * @return Ambigous <BaseEntityAbstract, BaseEntityAbstract>
+	 * @return Product
 	 */
 	public function received($qty, $unitCost, $comments = '', BaseEntityAbstract $entity = null)
 	{
@@ -831,11 +831,11 @@ class Product extends InfoEntityAbstract
 	 * @param string             $comments
 	 * @param BaseEntityAbstract $entity
 	 * 
-	 * @return Ambigous <BaseEntityAbstract, BaseEntityAbstract>
+	 * @return Product
 	 */
 	public function shipped($qty, $comments = '', BaseEntityAbstract $entity = null)
 	{
-		return $this->setStockOnOrder(($originStockOnOrder = $this->getStockOnOrder()) - $this->getQtyOrdered())
+		return $this->setStockOnOrder(($originStockOnOrder = $this->getStockOnOrder()) - $qty)
 			->snapshotQty($entity instanceof BaseEntityAbstract ? $entity : $this, 'Stock shipped')
 			->save()
 			->addLog('StockOnOrder(' . $originStockOnOrder . ' => ' . $this->getStockOnOrder() . ')', Log::TYPE_SYSTEM, 'STOCK_QTY_CHG', __CLASS__ . '::' . __FUNCTION__);

@@ -40,7 +40,7 @@ class OrderController extends BPCPageAbstract
 			$js .= ".setCallbackId('saveOrder', '" . $this->saveOrderBtn->getUniqueID() . "')";
 			$js .= ".setPaymentMethods(" . json_encode($paymentMethods) . ")";
 			$js .= ".setShippingMethods(" . json_encode($shippingMethods) . ")";
-			$js .= ".setOrderTypes(" . json_encode(Order::getAllTypes()) . ")";
+			$js .= ".setOrderTypes(" . json_encode(array_filter(Order::getAllTypes(), create_function('$a', 'return $a !== "INVOICE";'))) . ")";
 			$js .= ".init(" . json_encode($customer) . ");";
 		return $js;
 	}
@@ -137,13 +137,30 @@ class OrderController extends BPCPageAbstract
 				throw new Exception('Invalid Customer passed in!');
 			if(!isset($param->CallbackParameter->type) || ($type = trim($param->CallbackParameter->type)) === '' || !in_array($type, Order::getAllTypes()))
 				throw new Exception('Invalid type passed in!');
-			
+			$poNo = '';
+			if(isset($param->CallbackParameter->poNo) && (trim($param->CallbackParameter->poNo) !== '') )
+				$poNo = trim($param->CallbackParameter->poNo);
+			$shipped = false;
+			if(isset($param->CallbackParameter->shipped) && (intval($param->CallbackParameter->shipped)) === 1)
+				$shipped = true;
+			if(isset($param->CallbackParameter->shippingAddr))
+				$shippAddress = Address::create(
+					$param->CallbackParameter->shippingAddr->street, 
+					$param->CallbackParameter->shippingAddr->city, 
+					$param->CallbackParameter->shippingAddr->region, 
+					$param->CallbackParameter->shippingAddr->country,
+					$param->CallbackParameter->shippingAddr->postCode,
+					$param->CallbackParameter->shippingAddr->contactName,
+					$param->CallbackParameter->shippingAddr->contactNo
+				);
+			else
+				$shippAddress = $customer->getShippingAddress();
 			$printItAfterSave = false;
 			if(isset($param->CallbackParameter->printIt))
 				$printItAfterSave = (intval($param->CallbackParameter->printIt) === 1 ? true : false);
 			
+			$order = Order::create($customer, $type, null, '', OrderStatus::get(OrderStatus::ID_NEW), new UDate(), false, $shippAddress, $customer->getBillingAddress(), false, $poNo);
 			$totalPaymentDue = 0;
-			$order = Order::create($customer, $type);
 			if (trim($param->CallbackParameter->paymentMethodId))
 			{
 				$paymentMethod = PaymentMethod::get(trim($param->CallbackParameter->paymentMethodId));
@@ -151,6 +168,10 @@ class OrderController extends BPCPageAbstract
 					throw new Exception('Invalid PaymentMethod passed in!');
 				$order->addInfo(OrderInfoType::ID_MAGE_ORDER_PAYMENT_METHOD, $paymentMethod->getName());
 				$totalPaidAmount = trim($param->CallbackParameter->totalPaidAmount);
+				if($shipped === true) {
+					$order->setPassPaymentCheck(true)
+						->addPayment($paymentMethod, $totalPaidAmount);
+				}
 			} 
 			else 
 			{
@@ -164,6 +185,9 @@ class OrderController extends BPCPageAbstract
 					throw new Exception('Invalid Courier passed in!');
 				$order->addInfo(OrderInfoType::ID_MAGE_ORDER_SHIPPING_METHOD, $courier->getName());
 				$totalShippingCost = trim($param->CallbackParameter->totalShippingCost);
+				if($shipped === true) {
+					Shippment::create($shippAddress, $courier, '', new UDate(), $order, '');
+				}
 			} 
 			else 
 			{
@@ -174,7 +198,6 @@ class OrderController extends BPCPageAbstract
 			$comments = trim($param->CallbackParameter->comments);
 			$order = $order->addComment($comments)
 				->setTotalPaid($totalPaidAmount);
-			
 			
 			foreach ($param->CallbackParameter->items as $item)
 			{
@@ -191,6 +214,13 @@ class OrderController extends BPCPageAbstract
 					foreach($item->serials as $serialNo)
 						$orderItem->addSellingItem($serialNo);
 				}
+				if($shipped === true) {
+					$orderItem->setIsPicked(true)
+						->save();
+				}
+			}
+			if($shipped === true) {
+				$order->setStatus(OrderStatus::get(OrderStatus::ID_SHIPPED));
 			}
 			$order->setTotalAmount($totalPaymentDue)
 				->save();

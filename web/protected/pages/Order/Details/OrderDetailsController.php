@@ -14,6 +14,16 @@ class OrderDetailsController extends BPCPageAbstract
 	 */
 	public $menuItem = 'order';
 	/**
+	 * (non-PHPdoc)
+	 * @see TPage::onPreInit()
+	 */
+	public function onPreInit($param)
+	{
+		parent::onPreInit($param);
+		if(isset($_REQUEST['blanklayout']) && intval($_REQUEST['blanklayout']) === 1)
+			$this->getPage()->setMasterClass("Application.layout.BlankLayout");
+	}
+	/**
 	 * Getting The end javascript
 	 *
 	 * @return string
@@ -273,12 +283,7 @@ class OrderDetailsController extends BPCPageAbstract
 				throw new Exception('Additional Comment is Mandatory as the Paid Amount is not mathcing with the Total Amount!'); 
 			$notifyCust = (isset($params->CallbackParameter->payment->notifyCust) && intval($params->CallbackParameter->payment->notifyCust) === 1) ? true : false;
 			//save the payment
-			$payment = new Payment();
-			$payment->setOrder($order)
-				->setMethod($paymentMethod)
-				->setValue($paidAmount)
-				->setActive(true)
-				->save();
+			$order->addPayment($paymentMethod, $paidAmount);
 			//update the order
 			$totalPaidAmount = 0;
 			foreach($order->getPayments() as $payment)
