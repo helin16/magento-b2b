@@ -473,6 +473,8 @@ class Order extends InfoEntityAbstract
 	 */
 	public function getInvDate()
 	{
+		if(is_string($this->invDate))
+			$this->invDate = new UDate($this->invDate);
 		return $this->invDate;
 	}
 	/**
