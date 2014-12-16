@@ -667,11 +667,12 @@ class Order extends InfoEntityAbstract
 	 * @param string $orderNo
 	 * @param Order $status
 	 * @param string $orderDate
+	 * @param string $type
 	 * @param string $isFromB2B
 	 * @param Address $shipAddr
 	 * @param Address $billAddr
 	 */
-	public static function create(Customer $customer, $orderNo = null, $comments = '', Order $status = null, $orderDate = null, $isFromB2B = false, Address $shipAddr = null, Address $billAddr = null, $passPaymentCheck = false)
+	public static function create(Customer $customer, $type = self::TYPE_ORDER, $orderNo = null, $comments = '', Order $status = null, $orderDate = null, $isFromB2B = false, Address $shipAddr = null, Address $billAddr = null, $passPaymentCheck = false)
 	{
 		$order = new Order();
 		$order->setOrderNo(trim($orderNo))
@@ -679,6 +680,7 @@ class Order extends InfoEntityAbstract
 			->setStatus($status instanceof OrderStatus ? $status : OrderStatus::get(OrderStatus::ID_NEW))
 			->setOrderDate(trim($orderDate) === '' ? trim(new UDate()) : trim($orderDate))
 			->setIsFromB2B($isFromB2B)
+			->setType(trim($type) === '' ? self::TYPE_ORDER : trim($type))
 			->setShippingAddr($shipAddr instanceof Address ? $shipAddr : $customer->getShippingAddress())
 			->setBillingAddr($billAddr instanceof Address ? $billAddr : $customer->getBillingAddress())
 			->setPassPaymentCheck($passPaymentCheck)

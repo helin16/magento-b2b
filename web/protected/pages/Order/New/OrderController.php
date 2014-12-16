@@ -40,6 +40,7 @@ class OrderController extends BPCPageAbstract
 			$js .= ".setCallbackId('saveOrder', '" . $this->saveOrderBtn->getUniqueID() . "')";
 			$js .= ".setPaymentMethods(" . json_encode($paymentMethods) . ")";
 			$js .= ".setShippingMethods(" . json_encode($shippingMethods) . ")";
+			$js .= ".setOrderTypes(" . json_encode(Order::getAllTypes()) . ")";
 			$js .= ".init(" . json_encode($customer) . ");";
 		return $js;
 	}
@@ -130,15 +131,19 @@ class OrderController extends BPCPageAbstract
 		$results = $errors = array();
 		try
 		{
-// 			var_dump($param->CallbackParameter);
-			
 			Dao::beginTransaction();
 			$customer = Customer::get(trim($param->CallbackParameter->customer->id));
 			if(!$customer instanceof Customer)
 				throw new Exception('Invalid Customer passed in!');
+			if(!isset($param->CallbackParameter->type) || ($type = trim($param->CallbackParameter->type)) === '' || !in_array($type, Order::getAllTypes()))
+				throw new Exception('Invalid type passed in!');
+			
+			$printItAfterSave = false;
+			if(isset($param->CallbackParameter->printIt))
+				$printItAfterSave = (intval($param->CallbackParameter->printIt) === 1 ? true : false);
 			
 			$totalPaymentDue = 0;
-			$order = Order::create($customer);
+			$order = Order::create($customer, $type);
 			if (trim($param->CallbackParameter->paymentMethodId))
 			{
 				$paymentMethod = PaymentMethod::get(trim($param->CallbackParameter->paymentMethodId));
@@ -191,6 +196,8 @@ class OrderController extends BPCPageAbstract
 				->save();
 			
 			$results['item'] = $order->getJson();
+			if($printItAfterSave === true)
+				$results['printURL'] = '/print/order/' . $order->getId() . '.html';
 			Dao::commitTransaction();
 		}
 		catch(Exception $ex)
