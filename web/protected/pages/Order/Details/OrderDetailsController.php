@@ -431,17 +431,19 @@ class OrderDetailsController extends BPCPageAbstract
 		$results = $errors = array();
 		try
 		{
-			var_dump($param->CallbackParameter);
+// 			var_dump($param->CallbackParameter);
+			$items = array();
 			Dao::beginTransaction();
 			$type = trim($param->CallbackParameter->type);
 			$orderId = trim($param->CallbackParameter->id);
 			$order = Order::get($orderId);
 			if(!$order instanceof Order)
 				throw new Exception('Invalid Order passed in!');
-			if($order->getType() !== $type)
+			if($order->getType() !== $type && ($type === Order::TYPE_INVOICE || $type === Order::TYPE_ORDER || $type === Order::TYPE_QUOTE) )
 				$order->setType($type)->save();
 			
-			$results = $order->getJson();
+			$items[] = $order->getJson();
+			$results['items'] = $items;
 			Dao::commitTransaction();
 		}
 		catch(Exception $ex)

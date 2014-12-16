@@ -998,11 +998,9 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			}
 			,'onSuccess': function(sender, param) {
 				try {
+					console.debug(123);
 					tmp.result = tmp.me.getResp(param, false, true);
-					console.debug(tmp.result);
-//					if(!tmp.result || !tmp.result.items || tmp.result.items.size() === 0)
-//						throw 'Nothing Found for: ' + tmp.searchTxt;
-					
+					location.reload();
 				} catch(e) {
 					tmp.resultList.update(tmp.me.getAlertBox('Error: ', e).addClassName('alert-danger'));
 				}
@@ -1020,7 +1018,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		var tmp = {};
 		tmp.me = this;
 		tmp.orderDate = tmp.me.loadUTCTime(tmp.me._order.orderDate);
-		return new Element('div', {'class': 'panel panel-default order-info-div'})
+		tmp.newDiv =  new Element('div', {'class': 'panel panel-default order-info-div'})
 			.insert({'bottom': new Element('div', {'class': 'panel-heading'})
 				.insert({'bottom': new Element('span', {'class': 'btn-group btn-group-xs'})
 					.insert({'bottom': new Element('span', {'class': 'btn btn-info btn-xs'})
@@ -1038,8 +1036,8 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 							tmp.me._openDocketPrintPage();
 						})
 					})
-					.insert({'bottom': new Element('span', {'class': 'btn btn-success btn-xs'})
-						.insert({'bottom': new Element('span', {'class': ''}).update('Invoice ') })
+					.insert({'bottom': new Element('span', {'class': 'btn btn-success btn-xs invoice-btn'})
+						.insert({'bottom': new Element('span').update('Invoice ') })
 						.insert({'bottom': new Element('span', {'class': 'fa fa-credit-card'}) })
 						.observe('click', function() {
 							tmp.me._order.type = 'INVOICE';
@@ -1075,6 +1073,11 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					.insert({'bottom': new Element('div', {'class': 'col-xs-8'}).update( tmp.me.getCurrency(tmp.me._order.totalDue) ) })
 				})
 			});
+		if(tmp.me._order.type === 'INVOICE') {
+			tmp.newDiv.down('.invoice-btn').writeAttribute('disabled', true).down('span').update('INVOICED');
+		}
+			
+		return tmp.newDiv;
 	}
 	/**
 	 * bind Change EVENT to current box for currency formating
