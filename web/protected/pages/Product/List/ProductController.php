@@ -51,6 +51,7 @@ class ProductController extends CRUDPageAbstract
 		$js .= "._loadChosen()";
 		$js .= "._bindSearchKey()";
 		$js .= ".setCallbackId('priceMatching', '" . $this->priceMatchingBtn->getUniqueID() . "')";
+		$js .= ".setCallbackId('toggleActive', '" . $this->toggleActiveBtn->getUniqueID() . "')";
 		$js .= ".getResults(true, " . $this->pageSize . ");";
 		return $js;
 	}
@@ -121,7 +122,7 @@ class ProductController extends CRUDPageAbstract
         }
         catch(Exception $ex)
         {
-            $errors[] = $ex->getMessage() . $ex->getTraceAsString();
+            $errors[] = $ex->getMessage() ;
         }
         $param->ResponseData = StringUtilsAbstract::getJson($results, $errors);
     }
@@ -146,6 +147,30 @@ class ProductController extends CRUDPageAbstract
     		$msyPrice = $prices['companyPrices']['MSY'];
     		$prices['id'] = $id;
     		$results = $prices;
+    	}
+    	catch(Exception $ex)
+    	{
+    		$errors[] = $ex->getMessage();
+    	}
+    	$param->ResponseData = StringUtilsAbstract::getJson($results, $errors);
+    }
+    /**
+     * toggleActive
+     * 
+     * @param unknown $sender
+     * @param unknown $param
+     */
+    public function toggleActive($sender, $param)
+    {
+    	$results = $errors = array();
+    	try
+    	{
+    		$id = isset($param->CallbackParameter->productId) ? $param->CallbackParameter->productId : '';
+    		if(!($product = Product::get($id)) instanceof Product)
+    			throw new Exception('Invalid product!');
+    		$product->setActive(intval($param->CallbackParameter->active))
+    			->save();
+    		$results['item'] = $product->getJson();
     	}
     	catch(Exception $ex)
     	{

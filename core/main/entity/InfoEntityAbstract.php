@@ -71,7 +71,7 @@ class InfoEntityAbstract extends BaseEntityAbstract
 			throw new EntityException('You can NOT get information from a entity' . get_class($this) . ', setup the relationship first!');
 		
 		$InfoTypeClass = $class . 'Type';
-		$infoType = $InfoTypeClass::getFromCache($typeId);
+		$infoType = $InfoTypeClass::get($typeId);
 		if($overRideValue === true)
 		{
 			//clear all info

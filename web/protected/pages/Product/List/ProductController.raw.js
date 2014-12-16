@@ -9,7 +9,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 	,productStatuses: []
 	,_showRightPanel: false
 	,_getTitleRowData: function() {
-		return {'sku': 'SKU', 'name': 'Product Name','locations': 'Locations', 'manufacturer' : {'name': 'Brand'}, 'supplierCodes': [{'supplier': {'name': 'Supplier'}, 'code': ''}],  'active': 'act?', 'stockOnOrder': 'OnOrder', 'stockOnHand': 'OnHand', 'stockOnPO': 'OnPO'};
+		return {'sku': 'SKU', 'name': 'Product Name','locations': 'Locations', 'invenAccNo': 'AccNo.', 'manufacturer' : {'name': 'Brand'}, 'supplierCodes': [{'supplier': {'name': 'Supplier'}, 'code': ''}],  'active': 'act?', 'stockOnOrder': 'OnOrder', 'stockOnHand': 'OnHand', 'stockOnPO': 'OnPO'};
 	}
 	,toggleSearchPanel: function(panel) {
 		var tmp = {};
@@ -341,6 +341,25 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		tmp.newWindow = window.open('/product/' + product.id + '.html', 'Product Details for: ' + product.sku, 'location=no, menubar=no, status=no, titlebar=no, fullscreen=no, toolbar=no, width=1024');
 		tmp.newWindow.focus();
 	}
+	,toggleActive: function(active, product) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.me.postAjax(tmp.me.getCallbackId('toggleActive'), {'productId': product.id, 'active': active}, {
+			'onSuccess': function(sender, param) {
+				try{
+					tmp.result = tmp.me.getResp(param, false, true);
+					if(!tmp.result || !tmp.result.item)
+						return;
+					if($$('.product_item[product_id=' + product.id +']').size() >0) {
+						$$('.product_item[product_id=' + product.id +']').first().replace(tmp.me._getResultRow(tmp.result.item, false));
+					}
+				} catch (e) {
+					tmp.me.showModalBox('ERROR', e, true);
+				}
+			}
+		})
+		return tmp.me;
+	}
 	/**
 	 * Getting each row for displaying the result list
 	 */
@@ -380,6 +399,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 			.insert({'bottom': new Element(tmp.tag, {'class': 'locations col-xs-1 hidden-sm'}).update(
 					row.locations ? tmp.me._getLocations(row.locations, isTitle) : ''
 			) })
+			.insert({'bottom': new Element(tmp.tag, {'class': 'inventeryCode col-xs-1 hide-when-info'}).update(row.invenAccNo ? row.invenAccNo : '') })
 			.insert({'bottom': new Element(tmp.tag, {'class': 'manufacturer col-xs-1 hide-when-info'}).update(row.manufacturer ? row.manufacturer.name : '') })
 			.insert({'bottom': new Element(tmp.tag, {'class': 'supplier col-xs-1 hide-when-info hidden-sm'}).update(
 					row.supplierCodes ? tmp.me._getSupplierCodes(row.supplierCodes, isTitle) : ''
@@ -397,15 +417,42 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 								.insert({'bottom': new Element(tmp.tag, {'class': 'stockOnOrder col-xs-4', 'title': 'Stock on Order'}).update(row.stockOnOrder) })
 			) })
 			.insert({'bottom': new Element(tmp.tag, {'class': 'product_active col-xs-1 hide-when-info hidden-sm'})
-				.insert({'bottom': (tmp.isTitle === true ? row.active : new Element('input', {'type': 'checkbox', 'disabled': true, 'checked': row.active}) ) })
-			})
-			.insert({'bottom': tmp.isTitle === true ? '' : new Element(tmp.tag, {'class': 'btns hidden-xs hide-when-info hidden-sm', 'style': (tmp.me._showRightPanel ? 'display: none' : '')})
-				.insert({'bottom': new Element('span', {'class': 'btn btn-primary btn-xs'})
-					.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-pencil'}) })
-				})
-				.observe('click', function(){
-					tmp.me._openProductDetails(row);
-				})
+				.insert({'bottom': (tmp.isTitle === true ? row.active : 
+					new Element('div', {'class': 'row'}) 
+						.insert({'bottom': new Element('div', {'class': 'col-xs-4'})
+							.insert({'bottom': new Element('input', {'type': 'checkbox', 'disabled': true, 'checked': row.active}) })
+						})
+						.insert({'bottom': new Element('div', {'class': 'col-xs-4'})
+							.insert({'bottom': new Element('span', {'class': 'btn btn-primary btn-xs'})
+								.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-pencil'}) })
+							})
+							.observe('click', function(event){
+								Event.stop(event);
+								tmp.me._openProductDetails(row);
+							})
+						})
+						.insert({'bottom': new Element('div', {'class': 'col-xs-4'})
+							.insert({'bottom': (row.active === true ? 
+									new Element('span', {'class': 'btn btn-danger btn-xs'})
+										.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-trash'}) })
+										.observe('click', function(event) {
+											Event.stop(event);
+											tmp.btn = this;
+											if(confirm('You are about to deactivate this product.\n Continue?'))
+												tmp.me.toggleActive(false, row);
+										})
+									:
+									new Element('span', {'class': 'btn btn-success btn-xs'})
+										.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-repeat'}) })
+										.observe('click', function(event) {
+											Event.stop(event);
+											tmp.btn = this;
+											if(confirm('You are about to ReACTIVATE this product.\n Continue?'))
+												tmp.me.toggleActive(true, row);
+										})
+							) })
+						})
+				) })
 			});
 		if(tmp.isTitle === false) {
 			tmp.me.observeClickNDbClick(tmp.row, function() {
