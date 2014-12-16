@@ -790,9 +790,10 @@ class Product extends InfoEntityAbstract
 	 */
 	public function picked($qty, $comments = '', BaseEntityAbstract $entity = null)
 	{
+		$unitCost = $this->getUnitCost();
 		return $this->setStockOnHand(($originStockOnHand = $this->getStockOnHand()) - $qty)
 			->setStockOnOrder(($originStockOnOrder = $this->getStockOnOrder()) + $qty)
-			->setTotalOnHandValue(($origTotalOnHandValue = $this->getTotalOnHandValue()) - ($qty * round(($origTotalOnHandValue / $originStockOnHand), 2)))
+			->setTotalOnHandValue(($origTotalOnHandValue = $this->getTotalOnHandValue()) - ($qty * $unitCost))
 			->snapshotQty($entity instanceof BaseEntityAbstract ? $entity : $this, (intval($qty) > 0 ? 'Stock picked' : 'stock UNPICKED') . ': ' . $comments)
 			->save()
 			->addLog('StockOnHand(' . $originStockOnHand . ' => ' . $this->getStockOnHand() . ')', Log::TYPE_SYSTEM, 'STOCK_QTY_CHG', __CLASS__ . '::' . __FUNCTION__)
