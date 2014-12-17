@@ -33,7 +33,7 @@ class POController extends BPCPageAbstract
 		$paymentMethods =  array_map(create_function('$a', 'return $a->getJson();'), PaymentMethod::getAll());
 		$shippingMethods =  array_map(create_function('$a', 'return $a->getJson();'), Courier::getAll());
 		$statusOptions =  PurchaseOrder::getStatusOptions();
-		$customer = (isset($_REQUEST['customerid']) && ($customer = Customer::get(trim($_REQUEST['customerid']))) instanceof Customer) ? $customer->getJson() : null;
+		$supplier = (isset($_REQUEST['supplierid']) && ($supplier = Supplier::get(trim($_REQUEST['supplierid']))) instanceof Supplier) ? $supplier->getJson() : null;
 		$js .= "pageJs";
 			$js .= ".setHTMLIDs('detailswrapper')";
 			$js .= ".setCallbackId('searchSupplier', '" . $this->searchSupplierBtn->getUniqueID() . "')";
@@ -42,7 +42,7 @@ class POController extends BPCPageAbstract
 			$js .= ".setStatusOptions(" . json_encode($statusOptions) . ")";
 			$js .= ".setPaymentMethods(" . json_encode($paymentMethods) . ")";
 			$js .= ".setShippingMethods(" . json_encode($shippingMethods) . ")";
-			$js .= ".init(" . json_encode($customer) . ");";
+			$js .= ".init(" . json_encode($supplier) . ");";
 		return $js;
 	}
 	/**
