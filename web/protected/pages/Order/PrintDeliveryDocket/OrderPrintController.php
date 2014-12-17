@@ -33,6 +33,10 @@ class OrderPrintController extends BPCPageAbstract
 				die('Invalid Order!');
 		}
 	}
+	public function getInvDate()
+	{
+		return $this->order->getInvDate() == UDate::zeroDate() ? '' : $this->order->getInvDate()->format('d/M/Y');
+	}
 	/**
 	 * Getting the tr for each row
 	 * @param unknown $qty
@@ -55,9 +59,15 @@ class OrderPrintController extends BPCPageAbstract
 		$html = '';
 		foreach($this->order->getOrderItems() as  $index => $orderItem)
 		{
-			$uPrice = '';
-			$tPrice = '';
+			$uPrice = '$' . number_format($orderItem->getUnitPrice(), 2, '.', ',');
+			$tPrice = '$' . number_format($orderItem->getTotalPrice(), 2, '.', ',');
+			$sellingItems = array();
+			foreach($orderItem->getSellingItems() as $item) {
+				if($item->getSerialNo() !== '' )
+					$sellingItems[] = $item->getSerialNo();
+			}
 			$html .= $this->getRow($orderItem->getQtyOrdered(), $orderItem->getProduct()->getSku(), $orderItem->getProduct()->getname(), $uPrice, $tPrice, 'itemRow');
+			$html .= $this->getRow('', '<span class="pull-right">Serial No: </span>', '<div style="max-width: 517px; word-wrap: break-word;">' . implode(', ', $sellingItems) . '</div>', '', '', 'itemRow itemRow-serials');
 		}
 		for ( $i = 12; $i > $index; $i--)
 		{
