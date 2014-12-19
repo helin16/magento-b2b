@@ -335,16 +335,17 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				.insert({'bottom': new Element(tmp.tag, {'class': 'uprice col-xs-1'})
 					.insert({'bottom': (orderItem.unitPrice) })
 				})
-				.insert({'bottom': new Element(tmp.tag, {'class': 'qty col-xs-1'})
-					.insert({'bottom': (orderItem.qtyOrdered) })
-				})
-				.insert({'bottom': new Element(tmp.tag, {'class': 'discount col-xs-1'})
-					.insert({'bottom': (orderItem.discount) })
+				.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-1'})
+					.insert({'bottom': new Element('div')
+						.insert({'bottom': new Element('div', {'class': 'qty col-xs-6'}).update(orderItem.qtyOrdered) })
+						.insert({'bottom': new Element('div', {'class': 'discount col-xs-6'}).update(orderItem.discount) })
+					})
 				})
 				.insert({'bottom': new Element(tmp.tag, {'class': 'tprice col-xs-1'})
 					.insert({'bottom': (orderItem.totalPrice) })
 				})
-				.insert({'bottom': new Element(tmp.tag, {'class': 'btns  col-xs-1'}).update(orderItem.btns ? orderItem.btns : '') })
+				.insert({'bottom': new Element(tmp.tag, {'class': 'margin col-xs-1 text-right'}).update(orderItem.margin)})
+				.insert({'bottom': new Element(tmp.tag, {'class': 'btns col-xs-1 text-right'}).update(orderItem.btns) })
 			});
 		if(orderItem.product.sku) {
 			tmp.row.down('.productName')
@@ -410,16 +411,22 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					})
 					.insert({'bottom': new Element('div')
 						.insert({'bottom': new Element('small', {'class': 'col-xs-4'})
-							.insert({'bottom': new Element('span', {'style': ' font-style: italic'}).update('Stock on Hand: ') })
-							.insert({'bottom': new Element('strong').update(product.stockOnHand) })
+							.insert({'bottom': new Element('div', {'class': 'input-group', 'title': 'stock on HAND'})
+								.insert({'bottom': new Element('span', {'class': 'input-group-addon'}).update('SOH:') })
+								.insert({'bottom': new Element('strong', {'class': 'form-control'}).update(product.stockOnHand) })
+							})
 						})
 						.insert({'bottom': new Element('small', {'class': 'col-xs-4'})
-							.insert({'bottom': new Element('span', {'style': ' font-style: italic'}).update('Stock on Order: ') })
-							.insert({'bottom': new Element('strong').update(product.stockOnOrder) })
+							.insert({'bottom': new Element('div', {'class': 'input-group', 'title': 'stock on ORDER'})
+								.insert({'bottom': new Element('span', {'class': 'input-group-addon'}).update('SOO:') })
+								.insert({'bottom': new Element('strong', {'class': 'form-control'}).update(product.stockOnOrder) })
+							})
 						})
 						.insert({'bottom': new Element('small', {'class': 'col-xs-4'})
-							.insert({'bottom': new Element('span', {'style': ' font-style: italic'}).update('Stock on PO: ') })
-							.insert({'bottom': new Element('strong').update(product.stockOnPO) })
+							.insert({'bottom': new Element('div', {'class': 'input-group', 'title': 'stock on PO'})
+								.insert({'bottom': new Element('span', {'class': 'input-group-addon'}).update('SOP:') })
+								.insert({'bottom': new Element('strong', {'class': 'form-control'}).update(product.stockOnPO) })
+							})
 						})
 					})
 				})
@@ -453,8 +460,8 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					});
 				jQuery('#' + tmp.me.modalId).modal('hide');
 				tmp.retailPrice = product.prices.size() === 0 ? 0 : product.prices[0].price;
-				tmp.inputRow.down('[new-order-item=totalPrice]').writeAttribute('value', tmp.me.getCurrency(tmp.retailPrice));
 				tmp.inputRow.down('[new-order-item=unitPrice]').writeAttribute('value', tmp.me.getCurrency(tmp.retailPrice)).select();
+				tmp.me._calculateNewProductPrice(tmp.inputRow);
 			})
 			;
 		return tmp.newRow;
@@ -540,10 +547,12 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		//getting all the item row's total
 		tmp.totalPriceIncGSTNoDicount = 0;
 		tmp.totalPriceIncGSTWithDiscount = 0;
+		tmp.totalMargin = 0;
 		$$('.item_row.order-item-row').each(function(row) {
 			tmp.rowData = row.retrieve('data');
 			tmp.totalPriceIncGSTWithDiscount = tmp.totalPriceIncGSTWithDiscount * 1 + (tmp.me.getValueFromCurrency(tmp.rowData.totalPrice) * 1);
 			tmp.totalPriceIncGSTNoDicount = tmp.totalPriceIncGSTNoDicount * 1 + (tmp.me.getValueFromCurrency(tmp.rowData.unitPrice) * tmp.rowData.qtyOrdered);
+			tmp.totalMargin = tmp.totalMargin * 1 + tmp.me.getValueFromCurrency(tmp.rowData.margin); 
 		});
 		//calculate total price without GST
 		tmp.totalPriceExcGST = ((tmp.totalPriceIncGSTWithDiscount * 1) / 1.1);
@@ -568,7 +577,6 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		//calculate the total due
 		tmp.totalPaid = (jQuery('[order-price-summary="totalPaidAmount"]').length > 0 ? jQuery('[order-price-summary="totalPaidAmount"]').val() : 0);
 		tmp.totalDue = (tmp.subTotal * 1 - tmp.totalPaid * 1);
-		jQuery('[order-price-summary="total-payment-due"]').val(tmp.me.getCurrency(tmp.totalDue)).html(tmp.me.getCurrency(tmp.totalDue));
 		if(tmp.totalDue < 0) {
 			tmp.me.showModalBox(
 				'<h4 class="text-danger">Attention!</h4>', 
@@ -576,6 +584,11 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				true
 			);
 		}
+		jQuery('[order-price-summary="total-payment-due"]').val(tmp.me.getCurrency(tmp.totalDue)).html(tmp.me.getCurrency(tmp.totalDue));
+		
+		//display margin:
+		jQuery('[order-price-summary="total-margin"]').val(tmp.me.getCurrency(tmp.totalMargin)).html(tmp.me.getCurrency(tmp.totalMargin));
+		
 		return tmp.me;
 	}
 	/**
@@ -629,6 +642,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			'unitPrice': tmp.me.getCurrency(tmp.unitPrice), 
 			'qtyOrdered': tmp.qtyOrdered, 
 			'discount' : tmp.discount,
+			'margin': tmp.me.getCurrency(tmp.totalPrice * 1 - tmp.product.unitCost * tmp.qtyOrdered),
 			'totalPrice': tmp.me.getCurrency(tmp.totalPrice),
 			'btns': new Element('span', {'class': 'pull-right'})
 				.insert({'bottom': new Element('span', {'class': 'btn btn-danger btn-xs'})
@@ -680,6 +694,37 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		return tmp.newDiv;
 	}
 	/**
+	 * calculateNewProductPrice
+	 */
+	,_calculateNewProductPrice: function(row) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.row = row;
+		tmp.unitPrice = tmp.me.getValueFromCurrency( $F(tmp.row.down('[new-order-item=unitPrice]')) );
+		tmp.discount = $F(tmp.row.down('[new-order-item=discount]')).strip().replace('%', '');
+		tmp.qty = $F(tmp.row.down('[new-order-item=qtyOrdered]')).strip();
+		tmp.totalPrice = tmp.unitPrice * (1 - tmp.discount/100) * tmp.qty;
+		$(tmp.row.down('[new-order-item=totalPrice]')).value = tmp.me.getCurrency( tmp.totalPrice );
+		if(row.retrieve('product')) {
+			tmp.unitCost = row.retrieve('product').unitCost;
+			if(tmp.row.down('.margin'))
+				$(tmp.row.down('.margin')).update( tmp.me.getCurrency( tmp.totalPrice * 1 - tmp.unitCost * tmp.qty ) + (parseInt(tmp.unitCost) === 0 ? '<div><small class="label label-danger">No Cost Yet</small</div>' : '') );
+		}
+		return tmp.me;
+	}
+	/**
+	 * bindSubmit product row event
+	 */
+	,_bindSubmitNewProductRow: function(event, box) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.txtBox = box;
+		tmp.me.keydown(event, function() {
+			 $(tmp.txtBox).up('.item_row').down('.save-new-product-btn').click();
+		});
+		return tmp.me;
+	}
+	/**
 	 * Getting the new product row
 	 */
 	,_getNewProductRow: function() {
@@ -689,45 +734,22 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.data = {
 			'product': {'name': tmp.skuAutoComplete	}
 			,'unitPrice': tmp.me._getFormGroup( null, new Element('input', {'class': 'input-sm', 'new-order-item': 'unitPrice', 'required': true, 'value': tmp.me.getCurrency(0)})
-				.observe('change', function(){
-					tmp.row =$(this).up('.item_row');
-					tmp.unitPrice = tmp.me.getValueFromCurrency($F(this));
-					tmp.discount = $F(tmp.row.down('[new-order-item=discount]'));
-					tmp.qty = $F(tmp.row.down('[new-order-item=qtyOrdered]'));
-					$(tmp.row.down('[new-order-item=totalPrice]')).value = tmp.me.getCurrency( tmp.unitPrice * (1 - tmp.discount/100) * tmp.qty);
-				})
 				.observe('click', function() {
 					$(this).select();
 				})
 				.observe('keydown', function(event){
-					tmp.txtBox = this;
-					tmp.row = $(this).up('.item_row');
-					tmp.me.keydown(event, function() {
-						tmp.row.down('.save-new-product-btn').click();
-					});
+					tmp.me._bindSubmitNewProductRow(event, this);
 				})
 				.observe('keyup', function(){
-					tmp.row =$(this).up('.item_row');
-					tmp.unitPrice = tmp.me.getValueFromCurrency($F(this));
-					tmp.discount = $F(tmp.row.down('[new-order-item=discount]'));
-					tmp.qty = $F(tmp.row.down('[new-order-item="qtyOrdered"]'));
-					$(tmp.row.down('[new-order-item="totalPrice"]')).value = tmp.me.getCurrency( tmp.unitPrice * (1 - tmp.discount/100) * tmp.qty);
+					tmp.me._calculateNewProductPrice($(this).up('.item_row'));
 				})
 			)
 			,'qtyOrdered': tmp.me._getFormGroup( null, new Element('input', {'class': 'input-sm', 'new-order-item': 'qtyOrdered', 'required': true, 'value': '1'})
 				.observe('keyup', function(){
-					tmp.row =$(this).up('.item_row');
-					tmp.unitPrice = tmp.me.getValueFromCurrency($F(tmp.row.down('[new-order-item=unitPrice]')));
-					tmp.discount = $F(tmp.row.down('[new-order-item=discount]'));
-					tmp.qty = $F(this);
-					$(tmp.row.down('[new-order-item=totalPrice]')).value = tmp.me.getCurrency( tmp.unitPrice * (1 - tmp.discount/100) * tmp.qty);
+					tmp.me._calculateNewProductPrice($(this).up('.item_row'));
 				})
 				.observe('keydown', function(event){
-					tmp.txtBox = this;
-					tmp.row = $(this).up('.item_row');
-					tmp.me.keydown(event, function() {
-						tmp.row.down('.save-new-product-btn').click();
-					});
+					tmp.me._bindSubmitNewProductRow(event, this);
 				})
 				.observe('click', function() {
 					$(this).select();
@@ -739,34 +761,17 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 						$(this).value = 0;
 						$(this).select();
 					}
-					tmp.row =$(this).up('.item_row');
-					tmp.unitPrice = tmp.me.getValueFromCurrency($F(tmp.row.down('[new-order-item=unitPrice]')));
-					tmp.qty = $F(tmp.row.down('[new-order-item=qtyOrdered]'));
-					tmp.discount = $F(this);
-					$(tmp.row.down('[new-order-item=totalPrice]')).value = tmp.me.getCurrency( tmp.unitPrice * (1 - tmp.discount/100) * tmp.qty);
+					tmp.me._calculateNewProductPrice($(this).up('.item_row'));
 				})
 				.observe('keydown', function(event){
-					tmp.txtBox = this;
-					tmp.row = $(this).up('.item_row');
-					tmp.me.keydown(event, function() {
-						tmp.row.down('.save-new-product-btn').click();
-					});
+					tmp.me._bindSubmitNewProductRow(event, this);
 				})
 				.observe('click', function() {
 					$(this).select();
 				})
 			)
-			,'totalPrice': tmp.me._getFormGroup( null, new Element('input', {'class': 'input-sm', 'disabled': true, 'new-order-item': 'totalPrice', 'required': true, 'value': tmp.me.getCurrency(0)})
-				.observe('change', function(){
-					tmp.row =$(this).up('.item_row');
-					tmp.totalPrice = tmp.me.getValueFromCurrency($F(this));
-					tmp.qty = $F(tmp.row.down('[new-order-item=qtyOrdered]'));
-					$(tmp.row.down('[new-order-item=unitPrice]')).value = tmp.me.getCurrency( tmp.totalPrice / tmp.qty );
-				})
-				.observe('click', function() {
-					$(this).select();
-				})
-			)
+			,'totalPrice': tmp.me._getFormGroup( null, new Element('input', {'class': 'input-sm', 'disabled': true, 'new-order-item': 'totalPrice', 'required': true, 'value': tmp.me.getCurrency(0)}) )
+			,'margin': tmp.me.getCurrency(0)
 			, 'btns': new Element('span', {'class': 'btn-group btn-group-sm pull-right'})
 					.insert({'bottom': new Element('span', {'class': 'btn btn-primary'})
 					.insert({'bottom': new Element('span', {'class': ' glyphicon glyphicon-floppy-saved save-new-product-btn'}) })
@@ -799,7 +804,20 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.me = this;
 		//header row
 		tmp.productListDiv = new Element('div', {'class': 'list-group order_change_details_table'})
-			.insert({'bottom': tmp.me._getProductRow({'product': {'sku': 'SKU', 'name': 'Description'}, 'unitPrice': 'Unit Price<div><small>(inc GST)</small><div>', 'qtyOrdered': 'Qty', 'discount': 'Discount %', 'totalPrice': 'Total Price<div><small>(inc GST)</small><div>'}, true)
+			.insert({'bottom': tmp.me._getProductRow({'product': {'sku': 'SKU', 'name': 'Description'}, 
+				'unitPrice': 'Unit Price<div><small>(inc GST)</small><div>', 
+				'qtyOrdered': 'Qty', 
+				'margin': 'Margin', 
+				'discount': 'Disc. %', 
+				'totalPrice': 'Total Price<div><small>(inc GST)</small><div>'
+				,'btns': new Element('div')
+					.insert({'bottom': new Element('input', {'id': 'hide-margin-checkbox', 'type': 'checkbox', 'checked': true})
+						.observe('click', function(){
+							jQuery('.margin').toggle();
+						})
+					})
+					.insert({'bottom': new Element('label', {'for': 'hide-margin-checkbox'}).update(' Show Margin') })
+				}, true)
 			});
 		// tbody
 		tmp.productListDiv.insert({'bottom': tmp.me._getNewProductRow().addClassName('list-group-item-success') });
@@ -884,6 +902,10 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					.insert({'bottom': new Element('div', {'class': 'row'})
 						.insert({'bottom': new Element('h4', {'class': 'col-xs-6 text-right'}).update(new Element('strong').update('DUE:')) })
 						.insert({'bottom': new Element('h4', {'class': 'col-xs-6', 'order-price-summary': 'total-payment-due'}).update(tmp.me.getCurrency(0)) })
+					})
+					.insert({'bottom': new Element('div', {'class': 'row margin'})
+						.insert({'bottom': new Element('strong', {'class': 'col-xs-6 text-right'}).update(new Element('strong').update('Margin Total:')) })
+						.insert({'bottom': new Element('strong', {'class': 'col-xs-6', 'order-price-summary': 'total-payment-due'}).update(tmp.me.getCurrency(0)) })
 					})
 				})
 			});

@@ -69,6 +69,12 @@ class OrderItem extends BaseEntityAbstract
 	 */
 	private $mageOrderId = 0;
 	/**
+	 * The margin of each sale item
+	 * 
+	 * @var item
+	 */
+	private $margin = 0;
+	/**
 	 * Getter for order
 	 *
 	 * @return Order
@@ -285,6 +291,27 @@ class OrderItem extends BaseEntityAbstract
 	    return $this;
 	}
 	/**
+	 * Getter for margin
+	 *
+	 * @return double
+	 */
+	public function getMargin() 
+	{
+	    return $this->margin;
+	}
+	/**
+	 * Setter for margin
+	 *
+	 * @param int $value The margin
+	 *
+	 * @return OrderItem
+	 */
+	public function setMargin($value) 
+	{
+	    $this->margin = $value;
+	    return $this;
+	}
+	/**
 	 * (non-PHPdoc)
 	 * @see BaseEntityAbstract::getJson()
 	 */
@@ -380,13 +407,17 @@ class OrderItem extends BaseEntityAbstract
 		DaoMap::setBoolType('isShipped');
 		DaoMap::setBoolType('isOrdered');
 		DaoMap::setIntType('mageOrderId');
+		DaoMap::setIntType('margin', 'double', '10,4');
 		
 		parent::__loadDaoMap();
 		
 		DaoMap::createIndex('isPicked');
 		DaoMap::createIndex('isShipped');
 		DaoMap::createIndex('isOrdered');
-		DaoMap::createIndex('mageOrderId');
+		DaoMap::createIndex('qtyOrdered');
+		DaoMap::createIndex('unitPrice');
+		DaoMap::createIndex('totalPrice');
+		DaoMap::createIndex('margin');
 		DaoMap::commit();
 	}
 	/**
@@ -411,6 +442,7 @@ class OrderItem extends BaseEntityAbstract
 			->setQtyOrdered($qty)
 			->setTotalPrice($totalPrice === null ? $unitPrice * $qty : $totalPrice)
 			->setMageOrderId($mageOrderItemId)
+			->setMargin(StringUtilsAbstract::getValueFromCurrency($unitPrice) - StringUtilsAbstract::getValueFromCurrency($product->getUnitCost()))
 			->setEta($eta)
 			->save();
 		return $item;

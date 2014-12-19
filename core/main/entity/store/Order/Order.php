@@ -120,6 +120,12 @@ class Order extends InfoEntityAbstract
 	 */
 	private $pONo = '';
 	/**
+	 * The margin of each sale item
+	 *
+	 * @var item
+	 */
+	private $margin = 0;
+	/**
 	 * Getter for orderNo
 	 *
 	 * @return string
@@ -533,6 +539,27 @@ class Order extends InfoEntityAbstract
 			$this->setInvDate(Udate::zeroDate());
 	}
 	/**
+	 * Getter for margin
+	 *
+	 * @return double
+	 */
+	public function getMargin()
+	{
+		return $this->margin;
+	}
+	/**
+	 * Setter for margin
+	 *
+	 * @param int $value The margin
+	 *
+	 * @return OrderItem
+	 */
+	public function setMargin($value)
+	{
+		$this->margin = $value;
+		return $this;
+	}
+	/**
 	 * (non-PHPdoc)
 	 * @see BaseEntityAbstract::postSave()
 	 */
@@ -541,6 +568,7 @@ class Order extends InfoEntityAbstract
 		if(trim($this->getOrderNo()) === '')
 		{
 			$this->setOrderNo('BPCO' .str_pad($this->getId(), 8, '0', STR_PAD_LEFT))
+				->setMargin($this->getCalculatedTotalMargin())
 				->save();
 		}
 		if($this->_previousStatus instanceof OrderStatus && $this->_previousStatus->getId() !== $this->getStatus()->getId())
@@ -559,6 +587,18 @@ class Order extends InfoEntityAbstract
 			}
 			$this->changeToInvoice();
 		}
+	}
+	/**
+	 * calculate total margin for an order
+	 * 
+	 * @return number
+	 */
+	public function getCalculatedTotalMargin()
+	{
+		$totalMargin = 0;
+		foreach($this->getOrderItems() as $item)
+			$totalMargin += $item->getMargin();
+		return $totalMargin;
 	}
 	/**
 	 * changed the order to be a invoice
@@ -648,6 +688,7 @@ class Order extends InfoEntityAbstract
 		DaoMap::setManyToOne('billingAddr', 'Address', 'baddr');
 		DaoMap::setManyToOne('shippingAddr', 'Address', 'saddr');
 		DaoMap::setStringType('pONo', 'varchar', 50);
+		DaoMap::setIntType('margin', 'Double', '10,4');
 		
 		DaoMap::setOneToMany('shippments', 'Shippment', 'o_ship');
 		DaoMap::setOneToMany('payments', 'Payment', 'py');
@@ -662,6 +703,9 @@ class Order extends InfoEntityAbstract
 		DaoMap::createIndex('passPaymentCheck');
 		DaoMap::createIndex('isFromB2B');
 		DaoMap::createIndex('pONo');
+		DaoMap::createIndex('margin');
+		DaoMap::createIndex('totalAmount');
+		DaoMap::createIndex('totalPaid');
 		DaoMap::commit();
 	}
 	/**

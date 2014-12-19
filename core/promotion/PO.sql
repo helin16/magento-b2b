@@ -184,3 +184,6 @@ ALTER TABLE `productqtylog` ADD `totalOnHandValue` double(10,4) NOT NULL DEFAULT
 ALTER TABLE `address` ADD `sKey` varchar(32) NOT NULL DEFAULT '' AFTER `postCode`, ADD INDEX (`sKey`) ;
 ALTER TABLE `order` ADD `pONo` varchar(50) NOT NULL DEFAULT '' AFTER `shippingAddrId`, ADD INDEX (`pONo`) ;
 ALTER TABLE `product` ADD `invenAccNo` varchar(20) NOT NULL DEFAULT '' AFTER `stockOnPO`, ADD INDEX (`invenAccNo`) ;
+ALTER TABLE `orderitem` ADD `margin` double(10,4) NOT NULL DEFAULT '0.0000' AFTER `mageOrderId`, ADD INDEX (`margin`), ADD INDEX(`qtyOrdered`), ADD INDEX(`unitPrice`), ADD INDEX(`totalPrice`);
+ALTER TABLE `order` ADD `margin` double(10,4) NOT NULL DEFAULT '0.0000' AFTER `pONo`, ADD INDEX (`margin`), ADD INDEX(`totalAmount`), ADD INDEX(`totalPaid`);
+
