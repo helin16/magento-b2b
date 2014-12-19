@@ -39,7 +39,6 @@ class POController extends BPCPageAbstract
 			$js .= ".setCallbackId('searchSupplier', '" . $this->searchSupplierBtn->getUniqueID() . "')";
 			$js .= ".setCallbackId('searchProduct', '" . $this->searchProductBtn->getUniqueID() . "')";
 			$js .= ".setCallbackId('saveOrder', '" . $this->saveOrderBtn->getUniqueID() . "')";
-			$js .= ".setStatusOptions(" . json_encode($statusOptions) . ")";
 			$js .= ".setPaymentMethods(" . json_encode($paymentMethods) . ")";
 			$js .= ".setShippingMethods(" . json_encode($shippingMethods) . ")";
 			$js .= ".init(" . json_encode($supplier) . ");";
@@ -161,8 +160,6 @@ class POController extends BPCPageAbstract
 		$results = $errors = array();
 		try
 		{
-// 			var_dump($param->CallbackParameter);
-			
 			Dao::beginTransaction();
 			$supplier = Supplier::get(trim($param->CallbackParameter->supplier->id));
 			if(!$supplier instanceof Supplier)
@@ -171,12 +168,11 @@ class POController extends BPCPageAbstract
 			$supplierContactName = trim($param->CallbackParameter->supplier->contactName);
 			$supplierContactNo = trim($param->CallbackParameter->supplier->contactNo);
 			$supplierEmail = trim($param->CallbackParameter->supplier->email);
-			
-			if(!empty($supplierContactName) && $supplierContactName!==$supplier->getContactName())
+			if(!empty($supplierContactName) && $supplierContactName !== $supplier->getContactName())
 				$supplier->setContactName($supplierContactName);
-			if(!empty($supplierContactNo) && $supplierContactNo!==$supplier->getContactNo())
+			if(!empty($supplierContactNo) && $supplierContactNo !== $supplier->getContactNo())
 				$supplier->setContactNo($supplierContactNo);
-			if(!empty($supplierEmail) && $supplierEmail!==$supplier->getEmail())
+			if(!empty($supplierEmail) && $supplierEmail !== $supplier->getEmail())
 				$supplier->setEmail($supplierEmail);
 			$supplier->save();
 			
