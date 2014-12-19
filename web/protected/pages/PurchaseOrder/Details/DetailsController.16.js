@@ -71,7 +71,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 	,_openOrderPrintPage: function() {
 		var tmp = {};
 		tmp.me = this;
-		tmp.newWindow = window.open('/print/purchase/' + tmp.me._purchaseorder.id + '.html', tmp.me._purchaseorder.status + ' PO ' + tmp.me._purchaseorder.purchaseOrderNo, 'location=no, menubar=no, status=no, titlebar=no, fullscreen=yes, toolbar=no');
+		tmp.newWindow = window.open('/print/purchase/' + tmp.me._purchaseorder.id + '.html', tmp.me._purchaseorder.status + ' PO ' + tmp.me._purchaseorder.purchaseOrderNo, 'location=no, menubar=no, status=no, titlebar=no, fullscreen=no, toolbar=no, width=800');
 		tmp.newWindow.onload = function(){
 			tmp.newWindow.document.title = tmp.me._purchaseorder.status + ' Order ' + tmp.me._purchaseorder.purchaseOrderNo;
 			tmp.newWindow.focus();
