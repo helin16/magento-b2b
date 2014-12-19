@@ -195,18 +195,18 @@ class DetailsController extends DetailsPageAbstract
 					throw new Exception('Invalid Product passed in!');
 				$purchaseOrder->addItem($product,$productUnitPrice,$qtyOrdered,'','',$productTotalPrice) -> save();
 			};
-			foreach ($param->CallbackParameter->removedOldItems as $item) {
-				$productId = trim($item->product->id);
-				$productUnitPrice = trim($item->unitPrice);
-				$qtyOrdered = trim($item->qtyOrdered);
-				$productWtyOrdered = trim($item->qtyOrdered);
-				$productTotalPrice = trim($item->totalPrice);
-				$product = Product::get($productId);
-				if(!$product instanceof Product)
-					throw new Exception('Invalid Product passed in!');
-				$removedItemPOitem = PurchaseOrderItem::getAllByCriteria('purchaseOrderId = ? and productId = ?',array($purchaseOrder-> getId(), $product->getId()),true,1,1)[0];
-				$removedItemPOitem->setActive(false)->save();
-			};
+// 			foreach ($param->CallbackParameter->removedOldItems as $item) {
+// 				$productId = trim($item->product->id);
+// 				$productUnitPrice = trim($item->unitPrice);
+// 				$qtyOrdered = trim($item->qtyOrdered);
+// 				$productWtyOrdered = trim($item->qtyOrdered);
+// 				$productTotalPrice = trim($item->totalPrice);
+// 				$product = Product::get($productId);
+// 				if(!$product instanceof Product)
+// 					throw new Exception('Invalid Product passed in!');
+// 				$removedItemPOitem = PurchaseOrderItem::getAllByCriteria('purchaseOrderId = ? and productId = ?',array($purchaseOrder-> getId(), $product->getId()),true,1,1)[0];
+// 				$removedItemPOitem->setActive(false)->save();
+// 			};
 			$results['item'] = $purchaseOrder->getJson();
 			Dao::commitTransaction();
 		}
