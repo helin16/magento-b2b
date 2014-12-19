@@ -176,33 +176,28 @@ class POController extends BPCPageAbstract
 				$supplier->setEmail($supplierEmail);
 			$supplier->save();
 			
-			$supplierRefNum = trim($param->CallbackParameter->supplierRefNum);
-			$shippingCost = trim($param->CallbackParameter->shippingCost);
-			$handlingCost = trim($param->CallbackParameter->handlingCost);
-			$comment = trim($param->CallbackParameter->comments);
-			$status = trim($param->CallbackParameter->status);
-			
-			$purchaseOrder = PurchaseOrder::create($supplier,$supplierRefNum,$supplierContactName,$supplierContactNo,$shippingCost,$handlingCost);
-			$purchaseOrderTotalAmount = trim($param->CallbackParameter->totalAmount);
-			$purchaseOrderTotalPaid = trim($param->CallbackParameter->totalPaid);
-			$purchaseOrderETA = trim($param->CallbackParameter->ETA);
-			$purchaseOrder->setTotalAmount($purchaseOrderTotalAmount)
-			->setTotalPaid($purchaseOrderTotalPaid)
-			->setEta($purchaseOrderETA);
-			
+			$purchaseOrder = PurchaseOrder::create(
+					$supplier, 
+					trim($param->CallbackParameter->supplierRefNum), 
+					$supplierContactName,
+					$supplierContactNo,
+					StringUtilsAbstract::getValueFromCurrency(trim($param->CallbackParameter->shippingCost)), 
+					StringUtilsAbstract::getValueFromCurrency(trim($param->CallbackParameter->handlingCost))
+				)
+				->setTotalAmount(StringUtilsAbstract::getValueFromCurrency(trim($param->CallbackParameter->totalPaymentDue)))
+				->setEta(trim($param->CallbackParameter->eta))
+				->setStatus($param->CallbackParameter->submitToSupplier === true ? PurchaseOrder::STATUS_ORDERED : PurchaseOrder::STATUS_NEW)
+				->save()
+				->addComment(trim($param->CallbackParameter->comments), Comments::TYPE_PURCHASING);
 			foreach ($param->CallbackParameter->items as $item) {
-				$productId = trim($item->product->id);
-				$productUnitPrice = trim($item->unitPrice);
-				$qtyOrdered = trim($item->qtyOrdered);
-				$productTotalPrice = trim($item->totalPrice);
-				$product = Product::get($productId);
-				if(!$product instanceof Product)
+				if(!($product = Product::get(trim($item->productId))) instanceof Product)
 					throw new Exception('Invalid Product passed in!');
-				$purchaseOrder->addItem($product,$productUnitPrice,$qtyOrdered);
+				$purchaseOrder->addItem($product, StringUtilsAbstract::getValueFromCurrency(trim($item->unitPrice)), intval(trim($item->qtyOrdered)));
 			};
-			$purchaseOrder->setStatus($status)->save();
-			$purchaseOrder->addComment($comment, Comments::TYPE_PURCHASING);
 			$results['item'] = $purchaseOrder->getJson();
+			if(trim($confirmEmail = trim($param->CallbackParameter->confirmEmail)) !== '') {
+				//TODO:email supplier with the PO attached!!!
+			}
 			Dao::commitTransaction();
 		}
 		catch(Exception $ex)
