@@ -195,9 +195,9 @@ class POController extends BPCPageAbstract
 				$purchaseOrder->addItem($product, StringUtilsAbstract::getValueFromCurrency(trim($item->unitPrice)), intval(trim($item->qtyOrdered)));
 			};
 			$results['item'] = $purchaseOrder->getJson();
-			if(trim($confirmEmail = trim($param->CallbackParameter->confirmEmail)) !== '') {
-				//TODO:email supplier with the PO attached!!!
-			}
+// 			if(trim($confirmEmail = trim($param->CallbackParameter->confirmEmail)) !== '') {
+// 				//TODO:email supplier with the PO attached!!!
+// 			}
 			Dao::commitTransaction();
 		}
 		catch(Exception $ex)
