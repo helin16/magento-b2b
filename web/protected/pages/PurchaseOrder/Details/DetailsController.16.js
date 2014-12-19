@@ -66,6 +66,21 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		;
 	}
 	/**
+	 * Open order print in new Window
+	 */
+	,_openOrderPrintPage: function() {
+		var tmp = {};
+		tmp.me = this;
+		tmp.newWindow = window.open('/print/purchase/' + tmp.me._purchaseorder.id + '.html', tmp.me._purchaseorder.status + ' PO ' + tmp.me._purchaseorder.purchaseOrderNo, 'location=no, menubar=no, status=no, titlebar=no, fullscreen=yes, toolbar=no');
+		tmp.newWindow.onload = function(){
+			tmp.newWindow.document.title = tmp.me._purchaseorder.status + ' Order ' + tmp.me._purchaseorder.purchaseOrderNo;
+			tmp.newWindow.focus();
+			tmp.newWindow.print();
+			tmp.newWindow.close();
+		}
+		return tmp.me;
+	}
+	/**
 	 * This function should return you the edit div for this item
 	 */
 	,_getItemDiv: function() {
@@ -783,6 +798,13 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 					tmp.me._submitOrder($(this));
 				})
 			})
+			.insert({'bottom': new Element('span', {'class': 'btn btn-success'})
+						.insert({'bottom': new Element('span', {'class': ''}).update('Print Order ') })
+						.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-print'}) })
+						.observe('click', function() {
+							tmp.me._openOrderPrintPage();
+						})
+					})
 			.insert({'bottom': new Element('span', {'class': 'btn btn-default'})
 				.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-remove-sign'}) })
 				.insert({'bottom': new Element('span').update(' cancel ') })

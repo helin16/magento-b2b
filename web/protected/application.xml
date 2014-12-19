@@ -84,7 +84,9 @@
             <!-- FrontEnd:: PO details page -->
             <url ServiceParameter="PurchaseOrder.New.POController" pattern="purchase/{id}.html" parameters.id="new"/>
             <url ServiceParameter="PurchaseOrder.Details.DetailsController" pattern="purchase/{id}.html" parameters.id="\d+"/>
-
+			<!-- FrontEnd:: PO print page -->
+			<url ServiceParameter="PurchaseOrder.Print.POPrintController" pattern="print/purchase/{POId}.html" parameters.POId="\d+"/>
+			
 			<!-- FrontEnd:: Location list page -->
 			<url ServiceParameter="Location.List.ListController" pattern="locations.html" />
 			
