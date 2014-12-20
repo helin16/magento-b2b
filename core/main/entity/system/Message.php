@@ -292,7 +292,7 @@ class Message extends BaseEntityAbstract
 			->setSubject(trim($subject))
 			->setBody(trim($body))
 			->setType(trim($type))
-			->setAttachAssetIds($attacheAssetIds)
+			->setAttachAssetIds(implode(',', $attacheAssetIds))
 			->save();
 	}
 }
