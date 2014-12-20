@@ -95,6 +95,8 @@
 			
 			<!-- FrontEnd:: Log list page -->
 			<url ServiceParameter="Log.List.ListController" pattern="logs.html" />
+			<!-- FrontEnd:: Message list page -->
+			<url ServiceParameter="Message.List.ListController" pattern="messages.html" />
 			
 			<!-- Statics::Order::Trend::Monthly page -->
 			<url ServiceParameter="Statics.Order.MthlyTrend.StaticsController" pattern="/statics/order/mthlytrend.html" />

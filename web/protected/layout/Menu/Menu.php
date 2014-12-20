@@ -70,6 +70,7 @@ class Menu extends TTemplateControl
 			$array['Systems'] = array(
 					'icon' => '<span class="glyphicon glyphicon-cog"></span>',
 					'users' => array('url' => '/users.html', 'name' => 'Users', 'icon' => '<span class="glyphicon glyphicon-user"></span>'),
+					'messages' => array('url' => '/messages.html', 'name' => 'Messages', 'icon' => '<span class="glyphicon glyphicon-envelope"></span>'),
 					'logs' => array('url' => '/logs.html', 'name' => 'Logs', 'icon' => '<span class="fa fa-book"></span>'),
 					'systemsettings' => array('url' => '/systemsettings.html', 'name' => 'Settings', 'icon' => '<span class="glyphicon glyphicon-cog"></span>')
 			);
