@@ -36,7 +36,7 @@ abstract class MessageSender
 	private static function _getAndMarkMessages()
 	{
 		$randId = StringUtilsAbstract::getRandKey();
-		Message::updateByCriteria('transId = ? and status = ?', 'active = 1 and type = ? and status = ?', array($randId, Message::STATUS_SENDING, Message::TYPE_EMAIL, Message::STATUS_NEW));
+		Message::updateByCriteria('transId = ?, status = ?', 'active = 1 and type = ? and status = ?', array($randId, Message::STATUS_SENDING, Message::TYPE_EMAIL, Message::STATUS_NEW));
 		return Message::getAllByCriteria('transId = ? and type = ?', array($randId, Message::STATUS_SENDING));
 	}
 }
