@@ -9,7 +9,6 @@ abstract class EmailSender
 	public static function sendEmail($from, $to, $subject, $body, array $attachmentAssetIds = array())
 	{
 		$settings = json_decode(SystemSettings::getSettings(SystemSettings::TYPE_EMAIL_SENDING_SERVER), true);
-		var_dump($settings);
 		//Create a new PHPMailer instance
 		$mail = new PHPMailer;
 		//Tell PHPMailer to use SMTP
