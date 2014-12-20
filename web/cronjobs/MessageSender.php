@@ -1,4 +1,5 @@
 <?php
+require_once dirname(__FILE__) . '/../bootstrap.php';
 abstract class MessageSender
 {
 	public function run()
