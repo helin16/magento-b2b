@@ -56,5 +56,6 @@ require_once dirname(__FILE__) . '/../3rdParty/PHPExcel/Classes/PHPExcel.php';
 require_once dirname(__FILE__) . '/../3rdParty/PHPMailer/PHPMailerAutoload.php';
 require_once dirname(__FILE__) . '/../3rdParty/framework/prado.php';
 require_once dirname(__FILE__) . '/../3rdParty/HTML2PDF/html2pdf.class.php';
+require_once dirname(__FILE__) . '/../3rdParty/PHPMailer/PHPMailerAutoload.php';
 
 ?>

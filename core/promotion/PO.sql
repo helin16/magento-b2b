@@ -214,3 +214,7 @@ CREATE TABLE `message` (
 ) ENGINE=innodb DEFAULT CHARSET=utf8;
 
 ALTER TABLE `message` ADD `attachAssetIds` longtext NOT NULL AFTER `status`;
+
+# php mailer
+INSERT INTO `bpcinternal`.`systemsettings` (`id`, `type`, `value`, `description`, `active`, `created`, `createdById`, `updated`, `updatedById`) VALUES 
+	(NULL, 'sending_server_conf', '{"host":"mail.budgetpc.com.au","port":"587","SMTPAuth":true,"username":"noreply@budgetpc.com.au","password":"budget123pc","SMTPSecure":"ssl","SMTPDebug":2,"debugOutput":"html"}', 'SMTP sending server conf', '1', CURRENT_TIMESTAMP, '10', CURRENT_TIMESTAMP, '10');
