@@ -187,3 +187,28 @@ ALTER TABLE `product` ADD `invenAccNo` varchar(20) NOT NULL DEFAULT '' AFTER `st
 ALTER TABLE `orderitem` ADD `margin` double(10,4) NOT NULL DEFAULT '0.0000' AFTER `mageOrderId`, ADD INDEX (`margin`), ADD INDEX(`qtyOrdered`), ADD INDEX(`unitPrice`), ADD INDEX(`totalPrice`);
 ALTER TABLE `order` ADD `margin` double(10,4) NOT NULL DEFAULT '0.0000' AFTER `pONo`, ADD INDEX (`margin`), ADD INDEX(`totalAmount`), ADD INDEX(`totalPaid`);
 
+# add message table
+DROP TABLE IF EXISTS `message`;
+CREATE TABLE `message` (
+	`id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+	`transId` varchar(32) NOT NULL DEFAULT '',
+	`type` varchar(50) NOT NULL DEFAULT '',
+	`from` varchar(200) NOT NULL DEFAULT '',
+	`to` varchar(255) NOT NULL DEFAULT '',
+	`subject` varchar(200) NOT NULL DEFAULT '',
+	`body` longtext NOT NULL ,
+	`status` varchar(10) NOT NULL DEFAULT '',
+	`active` bool NOT NULL DEFAULT 1,
+	`created` datetime NOT NULL DEFAULT '0001-01-01 00:00:00',
+	`createdById` int(10) unsigned NOT NULL DEFAULT 0,
+	`updated` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+	`updatedById` int(10) unsigned NOT NULL DEFAULT 0,
+	PRIMARY KEY (`id`)
+	,INDEX (`createdById`)
+	,INDEX (`updatedById`)
+	,INDEX (`transId`)
+	,INDEX (`type`)
+	,INDEX (`from`)
+	,INDEX (`to`)
+	,INDEX (`status`)
+) ENGINE=innodb DEFAULT CHARSET=utf8;
