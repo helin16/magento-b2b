@@ -2,7 +2,7 @@
 require_once dirname(__FILE__) . '/../bootstrap.php';
 abstract class MessageSender
 {
-	public function run()
+	public static function run()
 	{
 		$start = self::_logMsg("== START: processing Messages ==");
 		$messages = self::_getAndMarkMessages();
