@@ -186,7 +186,8 @@ class OrderDetailsController extends BPCPageAbstract
 						SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_WSDL),
 						SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_USER),
 						SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_KEY)
-						)->changeOrderStatus($order, $order->getStatus()->getMageStatus(), $notificationMsg, true);
+						)->changeOrderStatus($order, $order->getStatus()->getMageStatus(), $notificationMsg, false);
+// 					EmailSender::addEmail('', $to, $subject, $this->_getNotifictionEmail($notificationMsg, $oder));
 					$order->addComment('An email notification has been sent to customer for: ' . $order->getStatus()->getName(), Comments::TYPE_SYSTEM);
 				}
 			}
@@ -199,6 +200,11 @@ class OrderDetailsController extends BPCPageAbstract
 		}
 		$params->ResponseData = StringUtilsAbstract::getJson($results, $errors);
 	}
+// 	private function _getNotifictionEmail($msg, $order)
+// 	{
+// 		$html = '';
+// 		return $html;
+// 	}
 	/**
 	 * 
 	 * @param unknown $sender

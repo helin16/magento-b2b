@@ -17,6 +17,7 @@ class SystemSettings extends BaseEntityAbstract
 	const TYPE_ASSET_ROOT_DIR = 'asset_root_dir';
 	const TYPE_PRODUCT_LAST_UPDATED = 'product_last_updated';
 	const TYPE_EMAIL_SENDING_SERVER = 'sending_server_conf';
+	const TYPE_EMAIL_DEFAULT_SYSTEM_EMAIL = 'sys_email_addr';
 	/**
 	 * The value of the setting
 	 * 
