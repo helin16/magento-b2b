@@ -241,7 +241,7 @@ class Message extends BaseEntityAbstract
 	 */
 	public function preSave()
 	{
-		if(!is_array($this->attachAssetIds))
+		if(is_array($this->attachAssetIds))
 			$this->attachAssetIds = implode(',', $this->attachAssetIds);
 	}
 	/**
