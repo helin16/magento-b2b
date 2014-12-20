@@ -4,11 +4,11 @@ abstract class MessageSender
 {
 	public static function run()
 	{
-		$start = self::_logMsg("== START: processing Messages ==");
+		$start = self::_logMsg("== START: processing Messages ==", __CLASS__, __FUNCTION__);
 		$messages = self::_getAndMarkMessages();
-		self::_logMsg("GOT " . count($messages) . ' Message(s): ');
+		self::_logMsg("GOT " . count($messages) . ' Message(s): ', __CLASS__, __FUNCTION__);
 		foreach	($messages as $message){
-			self::_logMsg("    Looping message(ID=" . $message->getId() . ': ');
+			self::_logMsg("    Looping message(ID=" . $message->getId() . ': ', __CLASS__, __FUNCTION__);
 			try {
 				Dao::beginTransaction();
 				EmailSender::sendEmail($message->getFrom(), $message->getTo(), $message->getSubject(), $message->getBody(), $message->getAttachmentAssetIdArray());
@@ -16,15 +16,17 @@ abstract class MessageSender
 					->save();
 				Dao::commitTransaction();
 				
-				self::_logMsg("    SUCCESS sending message(ID=" . $message->getId() . ': ' . $ex->getMessage());
+				self::_logMsg("    SUCCESS sending message(ID=" . $message->getId() . ': ' . $ex->getMessage(), __CLASS__, __FUNCTION__);
 			} catch(Exception $ex) {
 				Dao::rollbackTransaction();
 				$message->setStatus(Message::STATUS_FAILED)
 					->save();
-				self::_logMsg("    ERROR sending message(ID=" . $message->getId() . ': ' . $ex->getMessage());
-				self::_logMsg("    ERROR sending message(ID=" . $message->getId() . ': ' . $ex->getTraceAsString());
+				self::_logMsg("    ERROR sending message(ID=" . $message->getId() . ': ' . $ex->getMessage(), __CLASS__, __FUNCTION__);
+				self::_logMsg("    ERROR sending message(ID=" . $message->getId() . ': ' . $ex->getTraceAsString(), __CLASS__, __FUNCTION__);
 			}
 		}
+		$end = new UDate();
+		self::_logMsg("== FINISHED: " . count($messages) . " Message(s) == ", __CLASS__, __FUNCTION__);
 	}
 	private static function _logMsg($msg, $className, $funcName) {
 		$now = new UDate();
