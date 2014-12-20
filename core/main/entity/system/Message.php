@@ -8,7 +8,7 @@
  */
 class Message extends BaseEntityAbstract
 {
-	const TYPE_MESSAGE = 'Message';
+	const TYPE_EMAIL = 'EMAIL';
 	
 	const STATUS_NEW = 'NEW';
 	const STATUS_SENDING = 'SENDING';
@@ -52,11 +52,17 @@ class Message extends BaseEntityAbstract
 	 */
 	private $status = self::STATUS_NEW;
 	/**
-	 * caching the transid
+	 * Transaction ID
 	 * 
 	 * @var string
 	 */
-	private static $_transId = '';
+	private $transId = '';
+	/**
+	 * The comma separated assetIds
+	 * 
+	 * @var string
+	 */
+	private $attachAssetIds = '';
 	/**
 	 * Getter for the type
 	 * 
@@ -180,70 +186,54 @@ class Message extends BaseEntityAbstract
 	 */
 	public function setStatus($value) 
 	{
-	   if(trim($this->getId()) !== "") {
-			$oldStatuses = Dao::getResultsNative('select status from message where id = ?', array($this->getId()));
-			if(count($oldStatuses) > 0 && ($oldStatus = trim($oldStatuses[0]['status'])) === trim($value))//no change of the status
-				$this->status = trim($value);
-			else
-				$this->pushStatus(trim($value));
-		}
-		else
-	    	$this->status = trim($value);
+    	$this->status = trim($value);
 	    return $this;
 	}
 	/**
-	 * pushing the status of the status
-	 *
-	 * @param string $status The new status of the PO
-	 *
-	 * @throws EntityException
-	 * @return PurchaseOrder
-	 */
-	public function pushStatus($status)
-	{
-		if(!$this->_validateStatus($status))
-			throw new EntityException('Invalid status(=' . $status . ').');
-		$oldStatuses = Dao::getResultsNative('select status from purchaseorder where id = ?', array($this->getId()));
-		if(count($oldStatuses) > 0 && ($oldStatus = trim($oldStatuses[0]['status'])) === trim($status))//no change of the status
-			return $this;
-		$this->status = trim($status);
-		if(trim($this->getId()) !== '')
-		{
-			$msg = 'Changed status from "' . $oldStatus . '" to "' . $status . '"';
-			$this->addComment($msg, Comments::TYPE_SYSTEM)
-			->addLog($msg, Log::TYPE_SYSTEM);
-		}
-		return $this;
-	}
-	/**
-	 * validating the status
-	 *
-	 * @param string $status The status that we are validating
-	 *
-	 * @return boolean
-	 */
-	private function _validateStatus($status)
-	{
-		$oClass = new ReflectionClass (get_class($this));
-		foreach($oClass->getConstants() as $name => $value)
-		{
-			if(strpos($name, 'STATUS_') === 0 && trim($value) === trim($status))
-				return true;
-		}
-		return false;
-	}
-	/**
-	 * Getting the transid
-	 * 
-	 * @param string $salt The salt of making the trans id
+	 * Getter for the transId
 	 * 
 	 * @return string
 	 */
-	public static function getTransKey($salt = '')
+	public function getTransId() 
 	{
-		if(trim(self::$_transId) === '')
-			self::$_transId = StringUtilsAbstract::getRandKey($salt);
-		return self::$_transId;
+	    return $this->transId;
+	}
+	/**
+	 * Setter for the transId
+	 * 
+	 * @param string $value The transId of the message
+	 * 
+	 * @return Message
+	 */
+	public function setTransId($value) 
+	{
+    	$this->transId = trim($value);
+	    return $this;
+	}
+	/**
+	 * Getter for the attachAssetIds
+	 * 
+	 * @return array()
+	 */
+	public function getAttachAssetIds() 
+	{
+		if(is_string($this->attachAssetIds))
+	   		$this->attachAssetIds = array_map(create_function('$a', 'return trim($a);'), explode(',', $this->attachAssetIds));
+		return $this->attachAssetIds;
+	}
+	/**
+	 * Setter for the attachAssetIds
+	 * 
+	 * @param string $value The attachAssetIds of the message
+	 * 
+	 * @return Message
+	 */
+	public function setAttachAssetIds($value) 
+	{
+		if(is_string($value))
+			$value = array_map(create_function('$a', 'return trim($a);'), explode(',', trim($value)));
+    	$this->attachAssetIds = $value;
+	    return $this;
 	}
 	/**
 	 * (non-PHPdoc)
@@ -251,46 +241,8 @@ class Message extends BaseEntityAbstract
 	 */
 	public function preSave()
 	{
-	}
-	/**
-	 * Creating a instance of this
-	 *
-	 * @param string  $from
-	 * @param string  $to
-	 * @param string  $subject
-	 * @param string  $body
-	 * @param string  $type
-	 * @param string  $status
-	 *
-	 * @return Ambigous Message
-	 */
-	public static function create($from, $to, $subject, $body, $type, $status)
-	{
-		$name = trim($from);
-		$to = trim($to);
-		$subject = trim($subject);
-		$body = trim($body);
-		$type = trim($type);
-		$status = trim($status);
-		
-		$class = get_called_class();
-		$entity = new $class();
-		
-		return self::setFrom($from)
-		->setTo($to)
-		->setSubject($subject)
-		->setBody($body)
-		->setType($type)
-		->setStatus($status)
-		->save();
-	}
-	/**
-	 * (non-PHPdoc)
-	 * @see BaseEntityAbstract::getJson()
-	 */
-	public function getJson($extra = '', $reset = false)
-	{
-		return parent::getJson($array, $reset);
+		if(!is_array($this->attachAssetIds))
+			$this->attachAssetIds = implode(',', $this->attachAssetIds);
 	}
 	/**
 	 * (non-PHPdoc)
@@ -307,6 +259,7 @@ class Message extends BaseEntityAbstract
 		DaoMap::setStringType('subject', 'varchar', 200);
 		DaoMap::setStringType('body', 'longtext');
 		DaoMap::setStringType('status', 'varchar', 10);
+		DaoMap::setStringType('attachAssetIds', 'longtext');
 		
 		parent::__loadDaoMap();
 	
@@ -317,5 +270,33 @@ class Message extends BaseEntityAbstract
 		DaoMap::createIndex('status');
 	
 		DaoMap::commit();
+	}
+	/**
+	 * Creating a instance of this
+	 *
+	 * @param string  $from
+	 * @param string  $to
+	 * @param string  $subject
+	 * @param string  $body
+	 * @param string  $type
+	 * @param string  $status
+	 *
+	 * @return Message
+	 */
+	public static function create($from, $to, $subject, $body, $type, $attachmentAssets = array())
+	{
+		$attacheAssetIds = array();
+		foreach($attachmentAssets as $asset) {
+			if($asset instanceof Asset)
+				$attacheAssetIds[] = trim($asset->getAssetId());
+		}
+		$entity = new Message();
+		return $entity->setFrom(trim($from))
+			->setTo(trim($to))
+			->setSubject(trim($subject))
+			->setBody(trim($body))
+			->setType(trim($type))
+			->setAttachAssetIds($attacheAssetIds)
+			->save();
 	}
 }

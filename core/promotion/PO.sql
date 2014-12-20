@@ -212,3 +212,5 @@ CREATE TABLE `message` (
 	,INDEX (`to`)
 	,INDEX (`status`)
 ) ENGINE=innodb DEFAULT CHARSET=utf8;
+
+ALTER TABLE `message` ADD `attachAssetIds` longtext NOT NULL AFTER `status`;
