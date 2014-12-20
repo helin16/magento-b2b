@@ -251,13 +251,13 @@ abstract class Dao
             $params['created'] = $entity->getCreated();
             if(!$params['created'] instanceof UDate)
             {
-                $params['created'] = $now;
+                $params['created'] = trim($now);
                 $entity->setCreated($now);
             }
             $params['updated'] = $entity->getUpdated();
             if(!$params['updated'] instanceof UDate)
             {
-                $params['updated'] = $now;
+                $params['updated'] = trim($now);
                 $entity->setUpdated($now);
             }
             self::_execSql($qry->generateForInsert(), $params, $id);
