@@ -10,7 +10,7 @@ abstract class MessageSender
 			self::_logMsg("    Looping message(ID=" . $message->getId() . ': ');
 			try {
 				Dao::beginTransaction();
-				EmailSender::sendEmail($message->getFrom(), $message->getTo(), $message->getSubject(), $message->getBody(), $message->getAttachAssetIds());
+				EmailSender::sendEmail($message->getFrom(), $message->getTo(), $message->getSubject(), $message->getBody(), $message->getAttachmentAssetIdArray());
 				$message->setStatus(Message::STATUS_SENT)
 					->save();
 				Dao::commitTransaction();

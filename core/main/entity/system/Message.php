@@ -217,8 +217,6 @@ class Message extends BaseEntityAbstract
 	 */
 	public function getAttachAssetIds() 
 	{
-		if(is_string($this->attachAssetIds))
-	   		$this->attachAssetIds = array_map(create_function('$a', 'return trim($a);'), explode(',', $this->attachAssetIds));
 		return $this->attachAssetIds;
 	}
 	/**
@@ -230,19 +228,17 @@ class Message extends BaseEntityAbstract
 	 */
 	public function setAttachAssetIds($value) 
 	{
-		if(is_string($value))
-			$value = array_map(create_function('$a', 'return trim($a);'), explode(',', trim($value)));
     	$this->attachAssetIds = $value;
 	    return $this;
 	}
 	/**
-	 * (non-PHPdoc)
-	 * @see BaseEntityAbstract::preSave()
+	 * Getting the array of assetids
+	 * 
+	 * @return multitype:string
 	 */
-	public function preSave()
+	public function getAttachmentAssetIdArray()
 	{
-		if(is_array($this->attachAssetIds))
-			$this->attachAssetIds = implode(',', $this->attachAssetIds);
+   		return array_map(create_function('$a', 'return trim($a);'), explode(',', $this->getAttachAssetIds()));
 	}
 	/**
 	 * (non-PHPdoc)
