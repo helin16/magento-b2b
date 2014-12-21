@@ -7,9 +7,7 @@
  */
 class PreferredLocationType extends BaseEntityAbstract
 {
-	const ID_RECEIVED = 1;
-	const ID_PICKED = 2;
-	const ID_SHIPPED = 3;
+	const ID_WAREHOUSE = 1;
 	/**
 	 * The cache of the object
 	 *

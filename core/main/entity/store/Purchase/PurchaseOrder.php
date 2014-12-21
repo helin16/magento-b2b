@@ -374,10 +374,19 @@ class PurchaseOrder extends BaseEntityAbstract
 	 */
 	public function postSave()
 	{
-		if(trim($this->getPurchaseOrderNo()) === '')
-		{
+		if(trim($this->getPurchaseOrderNo()) === '') {
 			$this->setPurchaseOrderNo(self::PO_NO_PRE . str_pad($this->getId(), 6, '0', STR_PAD_LEFT))
 				->save();
+		}
+		//if the order status is ordered, then calculated the
+		if(trim($this->getStatus()) === PurchaseOrder::STATUS_ORDERED) {
+			$items = PurchaseOrderItem::getAllByCriteria('purchaseOrderId = ? and stockCalculated = 0', array($this->getId()));
+			foreach($items as $item) {
+				$item->getProduct()->ordered($item->getQty(), '', $item);
+				$item->setStockCalculated(true)
+				->save()
+				->addLog('Marked this item for StockOnPO and stockCalculated', Log::TYPE_SYSTEM, 'STOCK_QTY_CHG', __CLASS__ . '::' . __FUNCTION__);
+			}
 		}
 	}
 	/**
@@ -401,19 +410,6 @@ class PurchaseOrder extends BaseEntityAbstract
 			$msg = 'Changed status from "' . $oldStatus . '" to "' . $status . '"';
 			$this->addComment($msg, Comments::TYPE_SYSTEM)
 				->addLog($msg, Log::TYPE_SYSTEM);
-			//if the order status is ordered, then calculated the 
-			if($status === PurchaseOrder::STATUS_ORDERED) {
-				$items = PurchaseOrderItem::getAllByCriteria('purchaseOrderId = ? and stockCalculated = 0', array($this->getId()));
-				foreach($items as $item) {
-					$item->getProduct()
-						->setStockOnPO(($originStockOnPO = $item->getProduct()->getStockOnPO()) + $item->getQty())
-						->save()
-						->addLog('StockOnPO(' . $originStockOnPO . ' => ' . $item->getProduct()->getStockOnPO() . ')', Log::TYPE_SYSTEM, 'STOCK_QTY_CHG', __CLASS__ . '::' . __FUNCTION__);
-					$item->setStockCalculated(true)
-						->save()
-						->addLog('Marked this item for StockOnPO and stockCalculated', Log::TYPE_SYSTEM, 'STOCK_QTY_CHG', __CLASS__ . '::' . __FUNCTION__);
-				}
-			}
 		}
 		return $this;
 	}

@@ -825,6 +825,23 @@ class Product extends InfoEntityAbstract
 			->addLog('TotalOnHandValue(' . $origTotalOnHandValue . ' => ' .$this->getTotalOnHandValue() . ')', Log::TYPE_SYSTEM, 'STOCK_VALUE_CHG', __CLASS__ . '::' . __FUNCTION__);
 	}
 	/**
+	 * A product is ordered from supplier
+	 * 
+	 * @param int                $qty
+	 * @param string             $comments
+	 * @param BaseEntityAbstract $entity
+	 * 
+	 * @throws EntityException
+	 * @return Product
+	 */
+	public function ordered($qty, $comments = '', BaseEntityAbstract $entity = null)
+	{
+		return $this->setStockOnPO(($origStockOnPO = $this->getStockOnPO()) + $qty)
+			->snapshotQty($entity instanceof BaseEntityAbstract ? $entity : $this, 'Stock ordered from supplier: ' . $comments)
+			->save()
+			->addLog('StockOnPO(' . $origStockOnPO . ' => ' .$this->getStockOnPO() . ')', Log::TYPE_SYSTEM, 'STOCK_QTY_CHG', __CLASS__ . '::' . __FUNCTION__);
+	}
+	/**
 	 * A product is shipped
 	 * 
 	 * @param unknown            $qty

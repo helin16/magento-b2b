@@ -362,8 +362,11 @@ class OrderItem extends BaseEntityAbstract
 	{
 		if(trim($this->getMageOrderId()) === '')
 			$this->setMageOrderId('0');
-		//if the isPicked changed
-		if(trim($this->getId()) !== '') {
+		
+		//when brandnew, calculate margin
+		if(trim($this->getId()) === '') {
+			$this->setMargin(StringUtilsAbstract::getValueFromCurrency($this->getTotalPrice()) - StringUtilsAbstract::getValueFromCurrency($product->getUnitCost()) * intval($this->getQtyOrdered()));
+		} else { //if the isPicked changed
 			$product = $this->getProduct();
 			//for picked
 			if(self::countByCriteria('id = ? and isPicked != ?', array($this->getId(), $this->getIsPicked())) > 0) {
@@ -442,7 +445,6 @@ class OrderItem extends BaseEntityAbstract
 			->setQtyOrdered($qty)
 			->setTotalPrice($totalPrice === null ? $unitPrice * $qty : $totalPrice)
 			->setMageOrderId($mageOrderItemId)
-			->setMargin(StringUtilsAbstract::getValueFromCurrency($unitPrice) - StringUtilsAbstract::getValueFromCurrency($product->getUnitCost()))
 			->setEta($eta)
 			->save();
 		return $item;
