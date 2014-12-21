@@ -181,8 +181,8 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.me = this;
 		tmp.newDiv = new Element('div')
 			.insert({'bottom': new Element('div', {'class': 'row'})
-				.insert({'bottom': new Element('div', {'class': 'col-sm-6'}).update(tmp.me._getSupplierInfoPanel()) })
-				.insert({'bottom': new Element('div', {'class': 'col-sm-6'}).update(tmp.me._getPaymentPanel()) })
+				.insert({'bottom': new Element('div', {'class': 'col-sm-9'}).update(tmp.me._getSupplierInfoPanel()) })
+				.insert({'bottom': new Element('div', {'class': 'col-sm-3'}).update(tmp.me._getPaymentPanel()) })
 			})
 			.insert({'bottom': new Element('div', {'class': 'row'})
 				.insert({'bottom': new Element('div', {'class': 'col-sm-12'}).update(tmp.me._getPartsTable()) })
@@ -208,33 +208,49 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.supplier = tmp.purchaseOrder.supplier;
 		tmp.newDiv = new Element('div', {'class': 'panel panel-warning', 'id': tmp.me._htmlIds.supplierInfoPanel})
 			.insert({'bottom': new Element('div', {'class': 'panel-heading'})
-				.insert({'bottom': new Element('span').update('Receiving items for PO: ') 
-					.insert({'bottom': new Element('strong').update(tmp.purchaseOrder.purchaseOrderNo + ' ') })
-				})
-				.insert({'bottom': new Element('div', {'class': 'pull-right'})
-					.insert({'bottom': new Element('strong').update('Status: ') })
-					.insert({'bottom': tmp.me._getOrderStatus() })
+				.insert({'bottom': new Element('div', {'class': 'row'})
+					.insert({'bottom': new Element('div', {'class': 'col-xs-8'})
+						.insert({'bottom': new Element('span').update('Receiving items for PO: ') 
+							.insert({'bottom': new Element('strong').update(tmp.purchaseOrder.purchaseOrderNo + ' ') })
+						})
+					})
+					.insert({'bottom': new Element('div', {'class': 'col-xs-4 text-right'})
+						.insert({'bottom': new Element('span').update('Status: ') })
+						.insert({'bottom': new Element('strong').update(tmp.me._purchaseOrder.status) })
+					})
 				})
 			})
 			.insert({'bottom': new Element('div', {'class': 'panel-body', 'style': 'padding: 0 10px'})
 				.insert({'bottom': new Element('div', {'class': 'row'})
-					.insert({'bottom': new Element('div', {'class': 'col-sm-3'}).update(tmp.me._getFormGroup('Name', new Element('input', {'disabled': true, 'type': 'text', 'value': tmp.supplier.name ? tmp.supplier.name : ''}) ) ) })
-					.insert({'bottom': new Element('div', {'class': 'col-sm-3'}).update(tmp.me._getFormGroup('Contact Name', new Element('input', {'disabled': true, 'type': 'text', 'value': tmp.purchaseOrder.supplierContact ? tmp.purchaseOrder.supplierContact : tmp.supplier.contactName}) ) ) })
-					.insert({'bottom': new Element('div', {'class': 'col-sm-3'}).update(tmp.me._getFormGroup('Contact Number', new Element('input', {'disabled': true, 'type': 'value', 'value': tmp.purchaseOrder.supplierContactNumber ? tmp.purchaseOrder.supplierContactNumber : tmp.supplier.contactNo}) ) ) })
-					.insert({'bottom': new Element('div', {'class': 'col-sm-3'}).update(tmp.me._getFormGroup('Supplier Ref Num', new Element('input', {'disabled': true, 'type': 'text', 'value': tmp.purchaseOrder.supplierRefNo ? tmp.purchaseOrder.supplierRefNo : ''}) ) ) })
+					.insert({'bottom': new Element('div', {'class': 'col-sm-3'})
+						.insert({'bottom': new Element('strong').update('Supplier Name:') })
+						.insert({'bottom': new Element('div', {'style': 'padding: 2px 8px'}).update(tmp.supplier.name ? tmp.supplier.name : '') })
+					})
+					.insert({'bottom': new Element('div', {'class': 'col-sm-3'})
+						.insert({'bottom': new Element('strong').update('Contact Name:') })
+						.insert({'bottom': new Element('div', {'style': 'padding: 2px 8px'}).update(tmp.purchaseOrder.supplierContact ? tmp.purchaseOrder.supplierContact : tmp.supplier.contactName) })
+					})
+					.insert({'bottom': new Element('div', {'class': 'col-sm-3'})
+						.insert({'bottom': new Element('strong').update('Contact Number:') })
+						.insert({'bottom': new Element('div', {'style': 'padding: 2px 8px'}).update(tmp.purchaseOrder.supplierContactNumber ? tmp.purchaseOrder.supplierContactNumber : tmp.supplier.supplierContactNumber) })
+					})
+					.insert({'bottom': new Element('div', {'class': 'col-sm-3'})
+						.insert({'bottom': new Element('strong').update('Contact Email:') })
+						.insert({'bottom': new Element('div', {'style': 'padding: 2px 8px'}).update(tmp.supplier.email) })
+					})
+				})
+				.insert({'bottom': new Element('div', {'class': 'row'})
+					.insert({'bottom': new Element('div', {'class': 'col-sm-3'})
+						.insert({'bottom': new Element('strong').update('Order Date:') })
+						.insert({'bottom': new Element('div', {'style': 'padding: 2px 8px'}).update(tmp.me._purchaseOrder.orderDate ? tmp.me.loadUTCTime(tmp.me._purchaseOrder.orderDate).toLocaleString() : '') })
+					})
+					.insert({'bottom': new Element('div', {'class': 'col-sm-3'})
+						.insert({'bottom': new Element('strong').update('Supplier Ref Number:') })
+						.insert({'bottom': new Element('div', {'style': 'padding: 2px 8px'}).update(tmp.purchaseOrder.supplierRefNo) })
+					})
 				 })
 			});
 		return tmp.newDiv;
-	}
-	/**
-	 * Getting the order status dropdown list
-	 */
-	,_getOrderStatus: function () {
-		var tmp = {};
-		tmp.me = this;
-		tmp.selBox = new Element('select', {'disabled': true})
-			.insert({'bottom': new Element('option').update(tmp.me._purchaseOrder.status) });
-		return tmp.selBox;
 	}
 	/**
 	 * Getting the form group
@@ -254,22 +270,36 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.totalAmountExGstEl = new Element('input', {'disabled': true, 'class': 'text-right', 'value': tmp.purchaseOrder.totalAmount ? tmp.purchaseOrder.totalAmount : 0});
 		tmp.totalPaidEl = new Element('input', {'disabled': true, 'class': 'text-right', 'value': tmp.purchaseOrder.totalPaid ? tmp.purchaseOrder.totalPaid : 0});
 		
+		tmp.totalAmount = (tmp.purchaseOrder.totalAmount ? tmp.purchaseOrder.totalAmount : 0) ;
+		tmp.totalPaid = (tmp.purchaseOrder.totalPaid ? tmp.purchaseOrder.totalPaid : 0) ;
+		tmp.totalDue = tmp.totalAmount * 1 - tmp.totalPaid * 1;
+		
 		tmp.newDiv = new Element('div', {'class': 'panel panel-warning', 'id': tmp.me._htmlIds.paymentPanel})
-			.insert({'bottom': new Element('div', {'class':'panel-heading'})
-				.insert({'bottom': new Element('strong').update('Payment Info: ') })
-				
-				.insert({'bottom': new Element('div', {'class': 'pull-right'})
-				.insert({'bottom': new Element('strong').update('Order Date: ') })
-				.insert({'bottom': new Element('input', {'class': 'datepicker', 'disabled': true, 'value': (tmp.me._purchaseOrder.orderDate ? tmp.me._purchaseOrder.orderDate : '') }) })
+			.insert({'bottom': new Element('div', {'class':'panel-heading text-right'})
+				.insert({'bottom': new Element('div')
+					.insert({'bottom': new Element('strong').update('Payment Due: ') })
+					.insert({'bottom': new Element('span', {'class': 'badge'}).update( tmp.me.getCurrency(tmp.totalDue) )  })
 				})
 			})
 			.insert({'bottom': new Element('div', {'class': 'panel-body', 'style': 'padding: 0 10px'})
 				.insert({'bottom': new Element('div', {'class': 'row'})
-					.insert({'bottom': new Element('div', {'class': 'col-sm-3'}).update(tmp.me._getFormGroup('Total Ex GST', new Element('input', {'disabled': true, 'type': 'text', 'value': tmp.purchaseOrder.totalAmount ? tmp.me.getCurrency(tmp.purchaseOrder.totalAmount) : ''}) ) ) })
-					.insert({'bottom': new Element('div', {'class': 'col-sm-3'}).update(tmp.me._getFormGroup('Contact Name', new Element('input', {'disabled': true, 'type': 'text', 'value': tmp.purchaseOrder.totalPaid ? tmp.me.getCurrency(tmp.purchaseOrder.totalPaid) : ''}) ) ) })
-					.insert({'bottom': new Element('div', {'class': 'col-sm-3'}).update(tmp.me._getFormGroup('Contact Number', new Element('input', {'disabled': true, 'type': 'value', 'value': tmp.purchaseOrder.shippingCost ? tmp.me.getCurrency(tmp.purchaseOrder.shippingCost) : ''}) ) ) })
-					.insert({'bottom': new Element('div', {'class': 'col-sm-3'}).update(tmp.me._getFormGroup('Supplier Ref Num', new Element('input', {'disabled': true, 'type': 'text', 'value': tmp.purchaseOrder.handlingCost ? tmp.me.getCurrency(tmp.purchaseOrder.handlingCost) : ''}) ) ) })
-				 })
+					.insert({'bottom': new Element('div', {'class': 'col-xs-7 text-right'}).update(new Element('strong').update('Total Inc GST:')) })
+					.insert({'bottom': new Element('div', {'class': 'col-xs-5'}).update( tmp.me.getCurrency(tmp.totalAmount) ) })
+				})
+				.insert({'bottom': new Element('div', {'class': 'row'})
+					.insert({'bottom': new Element('div', {'class': 'col-xs-7 text-right'}).update(new Element('strong').update('Total Paid:')) })
+					.insert({'bottom': new Element('div', {'class': 'col-xs-5'}).update( tmp.me.getCurrency(tmp.totalPaid) ) })
+				})
+				.insert({'bottom': new Element('div', {'class': 'row'})
+					.insert({'bottom': new Element('div', {'class': 'col-xs-7 text-right'}).update(new Element('strong').update('Total Due:')) })
+					.insert({'bottom': new Element('div', {'class': 'col-xs-5'}).update( tmp.me.getCurrency(tmp.totalDue) ) })
+				})
+					
+//					.insert({'bottom': new Element('div', {'class': 'col-sm-3'}).update(tmp.me._getFormGroup('Total Ex GST', new Element('input', {'disabled': true, 'type': 'text', 'value': tmp.purchaseOrder.totalAmount ? tmp.me.getCurrency(tmp.purchaseOrder.totalAmount) : ''}) ) ) })
+//					.insert({'bottom': new Element('div', {'class': 'col-sm-3'}).update(tmp.me._getFormGroup('Contact Name', new Element('input', {'disabled': true, 'type': 'text', 'value': tmp.purchaseOrder.totalPaid ? tmp.me.getCurrency(tmp.purchaseOrder.totalPaid) : ''}) ) ) })
+//					.insert({'bottom': new Element('div', {'class': 'col-sm-3'}).update(tmp.me._getFormGroup('Contact Number', new Element('input', {'disabled': true, 'type': 'value', 'value': tmp.purchaseOrder.shippingCost ? tmp.me.getCurrency(tmp.purchaseOrder.shippingCost) : ''}) ) ) })
+//					.insert({'bottom': new Element('div', {'class': 'col-sm-3'}).update(tmp.me._getFormGroup('Supplier Ref Num', new Element('input', {'disabled': true, 'type': 'text', 'value': tmp.purchaseOrder.handlingCost ? tmp.me.getCurrency(tmp.purchaseOrder.handlingCost) : ''}) ) ) })
+//				 })
 			});
 		return tmp.newDiv;
 	}
@@ -281,7 +311,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.me = this;
 		//header row
 		tmp.productListDiv = new Element('div', {'class': 'list-group', 'id': tmp.me._htmlIds.partsTable})
-			.insert({'bottom': tmp.newDiv = tmp.me._getProductRow({'product': {'sku': 'SKU', 'name': 'Product Name', 'qty': 'Qty', 'EANcode': 'EAN code', 'UPCcode': 'UPC code'} }, true) });
+			.insert({'bottom': tmp.newDiv = tmp.me._getProductRow({'product': {'sku': 'SKU', 'name': 'Product Name', 'qty': 'Qty', 'EANcode': 'EAN code', 'UPCcode': 'UPC code', 'wareLocation': 'Warehouse Location'} }, true) });
 		tmp.newDiv.setStyle({cursor:'pointer'});
 		tmp.newDiv.observe('dblclick', function(event){
 			tmp.allClosed = true;
@@ -315,10 +345,8 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			.observe('keydown', function(event){
 				tmp.txtBox = $(this);
 				tmp.me.keydown(event, function() {
-					tmp.txtBox.up('.product-head-row').down('[save-item="UPCcode"]').focus();
 					tmp.txtBox.up('.product-head-row').down('[save-item="UPCcode"]').select();
 				});
-				return false;
 			})
 			.observe('change', function(event){
 				tmp.txtBox = $(this);
@@ -326,22 +354,18 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				tmp.rowData.EANcode = $F(tmp.txtBox.down('[save-item]') );
 				if(tmp.rowData.EANcode)
 					tmp.txtBox.up('.item_row.list-group-item').store('data',tmp.rowData);
-				return false;
 			})
 			.observe('click', function(event){
 				Event.stop(event);
-				$(this).down('input').select();
-				return false;
+				$(this).select();
 			});
 		tmp.UPCcodeEl = new Element('div', {'class': 'form-group'} )
 			.insert({'bottom': new Element('input', {'class': 'form-control', 'save-item': 'UPCcode', 'placeholder': 'UPC code', 'type': 'text', 'value': orderItem.product.codes ? (orderItem.product.codes.UPC ? orderItem.product.codes.UPC : '') : ''}) })
 			.observe('keydown', function(event){
 				tmp.txtBox = $(this);
 				tmp.me.keydown(event, function() {
-					tmp.txtBox.up('.item_row').down('[scanned-item="serialNo"]').focus();
-					tmp.txtBox.up('.item_row').down('[scanned-item="serialNo"]').select();
+					tmp.txtBox.up('.item_row').down('[save-item="wareLocation"]').select();
 				});
-				return false;
 			})
 			.observe('change', function(event){
 				tmp.txtBox = $(this);
@@ -349,21 +373,40 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				tmp.rowData.UPCcode = $F(tmp.txtBox.down('[save-item]') );
 				if(tmp.rowData.UPCcode)
 					tmp.txtBox.up('.item_row.list-group-item').store('data',tmp.rowData);
-				return false;
 			})
 			.observe('click', function(event){
 				Event.stop(event);
-				$(this).down('input').select();
+				$(this).select();
+			});
+		tmp.wareLocationEL = new Element('div', {'class': 'form-group'} )
+			.insert({'bottom': new Element('input', {'class': 'form-control', 'save-item': 'wareLocation', 'placeholder': 'Warehouse Location', 'type': 'text', 'value': orderItem.product.locations ? (orderItem.product.warehouseLocation ? orderItem.product.warehouseLocation : '') : ''}) })
+			.observe('keydown', function(event){
+				tmp.txtBox = $(this);
+				tmp.me.keydown(event, function() {
+					tmp.txtBox.up('.item_row').down('[scanned-item="serialNo"]').select();
+				});
+			})
+			.observe('change', function(event){
+				tmp.txtBox = $(this);
+				tmp.rowData = tmp.txtBox.up('.item_row.list-group-item').retrieve('data');
+				tmp.rowData.warehouseLocation = $F(tmp.txtBox.down('[save-item]') );
+				if(tmp.rowData.UPCcode)
+					tmp.txtBox.up('.item_row.list-group-item').store('data',tmp.rowData);
+			})
+			.observe('click', function(event){
+				Event.stop(event);
+				$(this).select();
 			});
 		if(tmp.me._canReceive() !== true) {
 			tmp.EANcodeEl.down('input[save-item=EANcode]').disabled = true;
 			tmp.UPCcodeEl.down('input[save-item=UPCcode]').disabled = true;
+			tmp.wareLocationEL.down('input[save-item=wareLocation]').disabled = true;
 			orderItem.btns = '';
 		}
 		tmp.row = new Element((tmp.isTitle === true ? 'strong' : 'div'), {'class': 'item_row list-group-item'})
 			.store('data', orderItem.product)
 			.insert({'bottom': tmp.infoRow = new Element('div', {'class': tmp.isTitle ? 'row btn-hide-row' : 'row btn-hide-row product-head-row'})
-				.insert({'bottom': new Element('span', {'class': ' col-sm-3 productName'})
+				.insert({'bottom': new Element('span', {'class': ' col-sm-2 productName'})
 					.insert({'bottom': orderItem.product.name ? orderItem.product.name : orderItem.product.barcode })
 				})
 				.insert({'bottom': new Element('span', {'class': 'col-sm-1'})
@@ -375,6 +418,9 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				})
 				.insert({'bottom': new Element('span', {'class': ' col-sm-2 UPCcode'})
 					.update(orderItem.product.id ? tmp.UPCcodeEl : orderItem.product.UPCcode)
+				})
+				.insert({'bottom': new Element('span', {'class': ' col-sm-2 wareLocation'})
+					.update(orderItem.product.id ? tmp.wareLocationEL : orderItem.product.wareLocation)
 				})
 				.insert({'bottom': tmp.btns = new Element('span', {'class': 'btns col-sm-1'}).update(orderItem.btns ? orderItem.btns : '') })
 			});
@@ -719,7 +765,6 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		if(tmp.row.down('[scanned-item="' + tmp.from + '"]')) {
 			tmp.row.down('[scanned-item="' + tmp.from + '"]').observe('keydown', function(event){
 				tmp.me.keydown(event, function() {
-					tmp.row.down('[scanned-item="' + tmp.to + '"]').focus();
 					tmp.row.down('[scanned-item="' + tmp.to + '"]').select();
 				});
 				return false;

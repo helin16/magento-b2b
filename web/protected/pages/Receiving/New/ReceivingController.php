@@ -90,16 +90,19 @@ class ReceivingController extends BPCPageAbstract
 		$array['totalProdcutCount'] = $po->gettotalProdcutCount();
 			
 		$array['purchaseOrderItem'] = [];
-		foreach (PurchaseOrderItem::getAllByCriteria('po_item.purchaseOrderId = :purchaseOrderId', array('purchaseOrderId'=> $po->getId() ), true, 1, DaoQuery::DEFAUTL_PAGE_SIZE * 10) as $purchaseOrderItem)
+		foreach (PurchaseOrderItem::getAllByCriteria('po_item.purchaseOrderId = :purchaseOrderId', array('purchaseOrderId'=> $po->getId() )) as $purchaseOrderItem)
 		{
 			$product = $purchaseOrderItem->getProduct();
 			$EANcodes = ProductCode::getAllByCriteria('pro_code.productId = :productId and pro_code.typeId = :typeId', array('productId'=> $product->getId(), 'typeId'=> ProductCodeType::ID_EAN), true, 1, 1);
 			$EANcodes = count($EANcodes) ? $EANcodes[0]->getCode() : '';
 			$UPCcodes = ProductCode::getAllByCriteria('pro_code.productId = :productId and pro_code.typeId = :typeId', array('productId'=> $product->getId(), 'typeId'=> ProductCodeType::ID_UPC), true, 1, 1);
 			$UPCcodes = count($UPCcodes) ? $UPCcodes[0]->getCode() : '';
+			$warehouseLocations = PreferredLocation::getAllByCriteria('productId = :productId and typeId = :typeId', array('productId'=> $product->getId(), 'typeId'=> PreferredLocationType::ID_WAREHOUSE), true, 1, 1);
+			$warehouseLocation = count($warehouseLocations) ? $warehouseLocations[0]->getLocation()->getName() : '';
 		
 			$productArray = $product->getJson();
 			$productArray['codes'] = array('EAN'=>$EANcodes, 'UPC'=>$UPCcodes);
+			$productArray['warehouseLocation'] = $warehouseLocation;
 		
 			$array['purchaseOrderItem'][] = array('purchaseOrderItem'=> $purchaseOrderItem->getJson(), 'product'=> $productArray);
 		}
@@ -215,6 +218,9 @@ class ReceivingController extends BPCPageAbstract
 			
 			foreach ($products->matched as $item) {
 				$product = Product::get(trim($item->product->id));
+				if(!$product instanceof Product)
+					throw new Exception('Invalid Product passed in!');
+				
 				if(isset($item->product->EANcode) ) {
 					$EANcode = trim($item->product->EANcode);
 					$productcodes = ProductCode::getAllByCriteria('pro_code.productId = :productId and pro_code.typeId = :typeId', array('productId'=> $product->getId(), 'typeId'=> ProductCodeType::ID_EAN), true, 1, 1);
@@ -233,9 +239,12 @@ class ReceivingController extends BPCPageAbstract
 						ProductCode::create($product, ProductCodeType::get(ProductCodeType::ID_UPC), $UPCcode);
 					}
 				}
-				
-				if(!$product instanceof Product)
-					throw new Exception('Invalid Product passed in!');
+				if(isset($item->product->warehouseLocation) ) {
+					$locationName = trim($item->product->warehouseLocation);
+					$locs = Location::getAllByCriteria('name = ?', array($locationName), true, 1, 1);
+					$loc = (count($locs) > 0 ? $locs[0] : Location::create($locationName, $locationName));
+					$product->addLocation(PreferredLocationType::get(PreferredLocationType::ID_WAREHOUSE), $loc);
+				}
 				
 				$serials = $item->serial;
 				$totalQty = 0;
