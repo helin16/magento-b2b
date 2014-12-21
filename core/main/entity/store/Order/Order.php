@@ -588,6 +588,10 @@ class Order extends InfoEntityAbstract
 				->setMargin($this->getCalculatedTotalMargin())
 				->save();
 		}
+		
+		if(trim($this->getType()) === trim(self::TYPE_INVOICE))
+			$this->changeToInvoice();
+		
 		//if the order is now SHIPPED
 		if(trim($this->getStatus()->getId()) === trim(OrderStatus::ID_SHIPPED)) {
 			$items = OrderItem::getAllByCriteria('orderId = ? and isPicked = 1', array($this->getId()));
