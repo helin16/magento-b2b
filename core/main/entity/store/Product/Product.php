@@ -769,7 +769,7 @@ class Product extends InfoEntityAbstract
 	 */
 	public function getUnitCost()
 	{
-		return intval($this->getStockOnHand()) === 0 ? 0 : round(($this->getTotalOnHandValue() / intval($this->getStockOnHand())), 2);
+		return intval($this->getStockOnHand()) === 0 ? 0 : round(abs($this->getTotalOnHandValue()) / abs(intval($this->getStockOnHand())), 2);
 	}
 	/**
 	 * (non-PHPdoc)
