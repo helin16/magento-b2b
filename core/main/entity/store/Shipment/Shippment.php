@@ -419,9 +419,9 @@ class Shippment extends BaseEntityAbstract
 			->setMageShipmentId(trim($mageShipmentId))
 			->setActive(true)
 			->save()
-			->addLog($msg, Log::TYPE_SYSTEM, '', __CLASS__ . '::' . __FUNCTION__);
+			->addLog($msg, Log::TYPE_SYSTEM, get_class($shippment) . '_CREATION', __CLASS__ . '::' . __FUNCTION__);
 		$order->addComment($msg, Comments::TYPE_SYSTEM)
-			->addLog($msg, Log::TYPE_SYSTEM, '', __CLASS__ . '::' . __FUNCTION__);
+			->addLog($msg, Log::TYPE_SYSTEM, 'Auto Log', __CLASS__ . '::' . __FUNCTION__);
 		return $shippment;
 	}
 }

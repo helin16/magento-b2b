@@ -262,7 +262,7 @@ class ReceivingController extends BPCPageAbstract
 						$nofullReceivedItems[0]
 						->setReceivedQty($nofullReceivedItems[0]->getReceivedQty() + $qty)
 						->save()
-						->addLog(Log::TYPE_SYSTEM, ($msg = 'received ' . $qty . ' product(SKU=' . $product->getSku() . ') by ' . Core::getUser()->getPerson()->getFullName() . '@' . trim(new UDate()) . '(UTC)'), __CLASS__ . '::' . __FUNCTION__)
+						->addLog(Log::TYPE_SYSTEM, ($msg = 'received ' . $qty . ' product(SKU=' . $product->getSku() . ') by ' . Core::getUser()->getPerson()->getFullName() . '@' . trim(new UDate()) . '(UTC)'), 'Auto Log', __CLASS__ . '::' . __FUNCTION__)
 						->addComment($msg, Comments::TYPE_WAREHOUSE);
 					}
 				}

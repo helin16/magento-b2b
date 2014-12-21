@@ -246,8 +246,8 @@ class PurchaseOrderItem extends BaseEntityAbstract
 			->setReceivedQty($receivedQty)
 			->setTotalPrice(trim($totalPrice) !== '' ? $totalPrice : ($unitPrice * $qty))
 			->save()
-			->addLog($msg, Log::TYPE_SYSTEM);
-		$po->addLog($msg, Log::TYPE_SYSTEM);
+			->addLog($msg, Log::TYPE_SYSTEM, 'Auto Log', __CLASS__ . '::' . __FUNCTION__);
+		$po->addLog($msg, Log::TYPE_SYSTEM, 'Auto Log', __CLASS__ . '::' . __FUNCTION__);
 		return $entity;
 	}
 }

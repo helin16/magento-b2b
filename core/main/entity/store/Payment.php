@@ -148,9 +148,9 @@ class Payment extends BaseEntityAbstract
 			->setValue($value)
 			->save()
 			->addComment($message, Comments::TYPE_SYSTEM)
-			->addLog($message, Log::TYPE_SYSTEM, '', __CLASS__ . '::' . __FUNCTION__);
+			->addLog($message, Log::TYPE_SYSTEM, get_class($payment) . '_CREATION', __CLASS__ . '::' . __FUNCTION__);
 		$order->addComment($message, Comments::TYPE_SYSTEM)
-			->addLog($message, Log::TYPE_SYSTEM, '', __CLASS__ . '::' . __FUNCTION__);
+			->addLog($message, Log::TYPE_SYSTEM, 'Auto Log', __CLASS__ . '::' . __FUNCTION__);
 		return $payment;
 	}
 }

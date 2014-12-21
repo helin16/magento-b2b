@@ -150,7 +150,7 @@ class ReceivingItem extends BaseEntityAbstract
 		//if a receiving item gets deactivate, then stockonHand needs to be changed
 		if(trim($this->getId()) !== '' && intval($this->getActive()) === 0 ) {
 			$msg = 'ReceivedIem for Product(SKU=' . $product . '), unitPrice=' . $unitPrice . ', serialNo=' . $serialNo . ', invoiceNo=' . $invoiceNo . ' has now been deactivated.';
-			$po->addLog($msg, Log::TYPE_SYSTEM, Log::TYPE_SYSTEM, '', __CLASS__ . '::' . __FUNCTION__)
+			$po->addLog($msg, Log::TYPE_SYSTEM, Log::TYPE_SYSTEM, get_class($this) . '_DEACTIVATION', __CLASS__ . '::' . __FUNCTION__)
 				->addComment($msg, Comments::TYPE_WAREHOUSE);
 			$product->received(1, $this->getUnitPrice(), '', $this);
 		}
@@ -197,8 +197,8 @@ class ReceivingItem extends BaseEntityAbstract
 			->setSerialNo($serialNo)
 			->save()
 			->addComment($comments, Comments::TYPE_WAREHOUSE)
-			->addLog($msg, Log::TYPE_SYSTEM, Log::TYPE_SYSTEM, '', __CLASS__ . '::' . __FUNCTION__);
-		$po->addLog($msg, Log::TYPE_SYSTEM, Log::TYPE_SYSTEM, '', __CLASS__ . '::' . __FUNCTION__)
+			->addLog($msg, Log::TYPE_SYSTEM, Log::TYPE_SYSTEM, get_class($entity) . '_CREATE', __CLASS__ . '::' . __FUNCTION__);
+		$po->addLog($msg, Log::TYPE_SYSTEM, Log::TYPE_SYSTEM, 'Auto Log', __CLASS__ . '::' . __FUNCTION__)
 			->addComment($msg, Comments::TYPE_WAREHOUSE);
 		$product->setStockOnPO(($origStockOnPO = $product->getStockOnPO()) - 1)
 			->setStockOnHand(($origStockOnHand = $product->getStockOnHand()) + 1)

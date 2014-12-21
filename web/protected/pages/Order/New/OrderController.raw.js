@@ -320,7 +320,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			.store('data',orderItem)
 			.insert({'bottom': new Element('div', {'class': 'row'})
 				.store('data', orderItem)
-				.insert({'bottom': new Element(tmp.tag, {'class': 'productName col-xs-7'})
+				.insert({'bottom': new Element(tmp.tag, {'class': 'productName col-xs-6'})
 					.insert({'bottom': orderItem.product.name })
 					.insert({'bottom': new Element('small', {'class': orderItem.product.id ? 'btn btn-xs btn-info' : 'hidden'})
 							.insert({'bottom': new Element('small', {'class': 'glyphicon glyphicon-new-window'} )})
@@ -335,7 +335,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				.insert({'bottom': new Element(tmp.tag, {'class': 'uprice col-xs-1'})
 					.insert({'bottom': (orderItem.unitPrice) })
 				})
-				.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-1'})
+				.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-2'})
 					.insert({'bottom': new Element('div')
 						.insert({'bottom': new Element('div', {'class': 'qty col-xs-6'}).update(orderItem.qtyOrdered) })
 						.insert({'bottom': new Element('div', {'class': 'discount col-xs-6'}).update(orderItem.discount) })
@@ -349,8 +349,8 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			});
 		if(orderItem.product.sku) {
 			tmp.row.down('.productName')
-				.removeClassName('col-xs-7')
-				.addClassName('col-xs-5')
+				.removeClassName('col-xs-6')
+				.addClassName('col-xs-4')
 				.insert({'before': new Element(tmp.tag, {'class': 'productSku col-xs-2'}).update(orderItem.product.sku) });
 		}
 		if(orderItem.scanTable) {
@@ -438,7 +438,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					.update(product.sku)
 					.removeClassName('col-xs-8')
 					.addClassName('col-xs-2')
-					.insert({'after': new Element('div', {'class': 'col-xs-5'})
+					.insert({'after': new Element('div', {'class': 'col-xs-4'})
 						.update(product.name) 
 						.insert({'bottom': new Element('small', {'class': 'btn btn-xs btn-info'})
 							.insert({'bottom': new Element('small', {'class': 'glyphicon glyphicon-new-window'} )})
@@ -811,12 +811,12 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				'discount': 'Disc. %', 
 				'totalPrice': 'Total Price<div><small>(inc GST)</small><div>'
 				,'btns': new Element('div')
+					.insert({'bottom': new Element('label', {'for': 'hide-margin-checkbox'}).update('Show Margin ') })
 					.insert({'bottom': new Element('input', {'id': 'hide-margin-checkbox', 'type': 'checkbox', 'checked': true})
 						.observe('click', function(){
 							jQuery('.margin').toggle();
 						})
 					})
-					.insert({'bottom': new Element('label', {'for': 'hide-margin-checkbox'}).update(' Show Margin') })
 				}, true)
 			});
 		// tbody

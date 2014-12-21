@@ -365,7 +365,7 @@ class OrderItem extends BaseEntityAbstract
 		
 		//when brandnew, calculate margin
 		if(trim($this->getId()) === '') {
-			$this->setMargin(StringUtilsAbstract::getValueFromCurrency($this->getTotalPrice()) - StringUtilsAbstract::getValueFromCurrency($product->getUnitCost()) * intval($this->getQtyOrdered()));
+			$this->setMargin(StringUtilsAbstract::getValueFromCurrency($this->getTotalPrice()) - StringUtilsAbstract::getValueFromCurrency($this->getProduct()->getUnitCost()) * intval($this->getQtyOrdered()));
 		} else { //if the isPicked changed
 			$product = $this->getProduct();
 			//for picked
@@ -373,10 +373,10 @@ class OrderItem extends BaseEntityAbstract
 				//we are picking this product
 				if(intval($this->getIsPicked()) === 1) {
 					$product->picked($this->getQtyOrdered(), '', $this);
-					$this->addLog('This item is now marked as picked', Log::TYPE_SYSTEM);
+					$this->addLog('This item is now marked as picked', Log::TYPE_SYSTEM, 'Auto Log', __CLASS__ . '::' . __FUNCTION__);
 				} else {
 					$product->picked(0 - $this->getQtyOrdered(), '', $this);
-					$this->addLog('This item is now Un-marked as picked', Log::TYPE_SYSTEM);
+					$this->addLog('This item is now Un-marked as picked', Log::TYPE_SYSTEM, 'Auto Log', __CLASS__ . '::' . __FUNCTION__);
 				}
 			}
 			//for shipped
@@ -384,10 +384,10 @@ class OrderItem extends BaseEntityAbstract
 				//we are picking this product
 				if(intval($this->getIsShipped()) === 1) {
 					$product->shipped($this->getQtyOrdered(), '', $this);
-					$this->addLog('This item is now marked as SHIPPED', Log::TYPE_SYSTEM);
+					$this->addLog('This item is now marked as SHIPPED', Log::TYPE_SYSTEM, 'Auto Log', __CLASS__ . '::' . __FUNCTION__);
 				} else {
 					$product->shipped(0 - $this->getQtyOrdered(), '', $this);
-					$this->addLog('This item is now Un-marked as SHIPPED', Log::TYPE_SYSTEM);
+					$this->addLog('This item is now Un-marked as SHIPPED', Log::TYPE_SYSTEM, 'Auto Log', __CLASS__ . '::' . __FUNCTION__);
 				}
 			}
 		}

@@ -409,7 +409,7 @@ class PurchaseOrder extends BaseEntityAbstract
 		{
 			$msg = 'Changed status from "' . $oldStatus . '" to "' . $status . '"';
 			$this->addComment($msg, Comments::TYPE_SYSTEM)
-				->addLog($msg, Log::TYPE_SYSTEM);
+				->addLog($msg, Log::TYPE_SYSTEM, 'PO_STATUS_CHANGE', __CLASS__ . '::' . __FUNCTION__);
 		}
 		return $this;
 	}

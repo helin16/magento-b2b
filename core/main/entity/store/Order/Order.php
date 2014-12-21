@@ -102,12 +102,6 @@ class Order extends InfoEntityAbstract
 	 */
 	private $isFromB2B;
 	/**
-	 * The Preivous Status pri to change
-	 * 
-	 * @var OrderStatus
-	 */
-	private $_previousStatus = null;
-	/**
 	 * The date and time when this order becomes an invoice
 	 * 
 	 * @var UDate
@@ -231,8 +225,6 @@ class Order extends InfoEntityAbstract
 	 */
 	public function setStatus($value) 
 	{
-		if($this->status !== null)
-			$this->_previousStatus = $this->getStatus();
 	    $this->status = $value;
 	    return $this;
 	}
@@ -530,15 +522,6 @@ class Order extends InfoEntityAbstract
 		return $this;
 	}
 	/**
-	 * (non-PHPdoc)
-	 * @see BaseEntityAbstract::preSave()
-	 */
-	public function preSave()
-	{
-		if(trim($this->getInvDate()) === '')
-			$this->setInvDate(Udate::zeroDate());
-	}
-	/**
 	 * Getter for margin
 	 *
 	 * @return double
@@ -560,6 +543,40 @@ class Order extends InfoEntityAbstract
 		return $this;
 	}
 	/**
+	 * Getting the order's previous status
+	 * 
+	 * @return Ambigous <Ambigous, BaseEntityAbstract, NULL, SimpleXMLElement>
+	 */
+	public function getPreviousStatus()
+	{
+		$prevouseStatusId = $this->getInfo(OrderInfoType::ID_MAGE_ORDER_STATUS_BEFORE_CHANGE, true);
+		if(count($prevouseStatusId) > 0)
+			return OrderStatus::get($prevouseStatusId[0]);
+		return null;
+	}
+	/**
+	 * (non-PHPdoc)
+	 * @see BaseEntityAbstract::preSave()
+	 */
+	public function preSave()
+	{
+		if(trim($this->getInvDate()) === '')
+			$this->setInvDate(Udate::zeroDate());
+		if(trim($this->getId()) !== '')
+		{
+			//status changed
+			$originalOrder = self::get($this->getId());
+			if($originalOrder instanceof Order && $originalOrder->getStatus()->getId() !== $this->getStatus()->getId())
+			{
+				$infoType = OrderInfoType::get(OrderInfoType::ID_MAGE_ORDER_STATUS_BEFORE_CHANGE);
+				$orderInfos = OrderInfo::find($this, $infoType, false, 1, 1);
+				$orderInfo = count($orderInfos) === 0 ? null : $orderInfos[0];
+				OrderInfo::create($this, $infoType, $originalOrder->getStatus()->getId(), $orderInfo);
+				$this->addLog('Changed Status from [' . $originalOrder->getStatus()->getName() . '] to [' . $this->getStatus() .']', Log::TYPE_SYSTEM, 'Auto Log', get_class($this) . '::' . __FUNCTION__);
+			}
+		}
+	}
+	/**
 	 * (non-PHPdoc)
 	 * @see BaseEntityAbstract::postSave()
 	 */
@@ -571,14 +588,7 @@ class Order extends InfoEntityAbstract
 				->setMargin($this->getCalculatedTotalMargin())
 				->save();
 		}
-		if($this->_previousStatus instanceof OrderStatus && $this->_previousStatus->getId() !== $this->getStatus()->getId())
-		{
-			$infoType = OrderInfoType::get(OrderInfoType::ID_MAGE_ORDER_STATUS_BEFORE_CHANGE);
-			$orderInfos = OrderInfo::find($this, $infoType, false, 1, 1);
-			$orderInfo = count($orderInfos) === 0 ? null : $orderInfos[0];
-			OrderInfo::create($this, $infoType, $this->_previousStatus->getId(), $orderInfo);
-			$this->addLog('Changed Status from [' . $this->_previousStatus . '] to [' . $this->getStatus() .']', Log::TYPE_SYSTEM, 'Auto Log', get_class($this) . '::' . __FUNCTION__);
-		}
+		//if the order is now SHIPPED
 		if(trim($this->getStatus()->getId()) === trim(OrderStatus::ID_SHIPPED)) {
 			$items = OrderItem::getAllByCriteria('orderId = ? and isPicked = 1', array($this->getId()));
 			foreach($items as $item) {
@@ -613,8 +623,8 @@ class Order extends InfoEntityAbstract
 			->setInvNo('BPCINV' .str_pad($this->getId(), 8, '0', STR_PAD_LEFT))
 			->setInvDate(new UDate())
 			->save()
-			->addComment('Changed this order to be an INVOCE with invoice no:' . $this->getInvNo() . ')', Comments::TYPE_SYSTEM)
-			->addLog('Changed this order to be an INVOCE with invoice no:' . $this->getInvNo() . ')', Log::TYPE_SYSTEM, __FUNCTION__);
+			->addComment('Changed this order to be an INVOCE with invoice no: ' . $this->getInvNo(), Comments::TYPE_SYSTEM, 'Auto Log', __CLASS__ . '::' . __FUNCTION__)
+			->addLog('Changed this order to be an INVOCE with invoice no: ' . $this->getInvNo(), Log::TYPE_SYSTEM, 'Auto Log', __CLASS__ . '::' . __FUNCTION__);
 	}
 	/**
 	 * adding a item onto the order
@@ -748,7 +758,7 @@ class Order extends InfoEntityAbstract
 			->addComment($comments, Comments::TYPE_NORMAL)
 			->addInfo(OrderInfoType::ID_CUS_EMAIL, $customer->getEmail())
 			->addInfo(OrderInfoType::ID_CUS_NAME, $customer->getName())
-			->addLog('Order (OrderNo.=' . $order->getOrderNo() . ') created with status' . $order->getStatus()->getName(), Log::TYPE_SYSTEM);
+			->addLog('Order (OrderNo.=' . $order->getOrderNo() . ') created with status: ' . $order->getStatus()->getName(), Log::TYPE_SYSTEM, 'Auto Log', __CLASS__ . '::' . __FUNCTION__);
 		return $order;
 	}
 	/**

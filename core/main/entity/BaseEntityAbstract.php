@@ -427,7 +427,7 @@ abstract class BaseEntityAbstract
      */
     public function addLog($msg, $type, $comments = '', $funcName = '')
     {
-    	Log::LogEntity($this, $msg, $type, $comments = '', $funcName = '');
+    	Log::LogEntity($this, $msg, $type, $comments, $funcName);
     	return $this;
     }
     /**

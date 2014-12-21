@@ -154,7 +154,7 @@ class Log extends BaseEntityAbstract
 	 * 
 	 * @return Log
 	 */
-	public function settype($value) 
+	public function setType($value) 
 	{
 	    $this->type = $value;
 	    return $this;
@@ -213,13 +213,12 @@ class Log extends BaseEntityAbstract
 	 */
 	public static function logging($entityId, $entityName, $msg, $type, $comments = '', $funcName = '')
 	{
-		$className = __CLASS__;
-		$log = new $className();
+		$log = new Log();
 		return $log->setTransId(self::getTransKey())
 			->setEntityId($entityId)
 			->setEntityName($entityName)
 			->setMsg($msg)
-			->settype($type)
+			->setType($type)
 			->setComments($comments)
 			->setFuncName($funcName)
 			->save();

@@ -67,7 +67,7 @@ class ListController extends CRUDPageAbstract
 				$params[] = '%' . $type . '%';
 			}
 			$stats = array();
-			$objects = $class::getAllByCriteria(implode(' AND ', $where), $params, false, $pageNo, $pageSize, array('log.id' => 'asc'), $stats);
+			$objects = $class::getAllByCriteria(implode(' AND ', $where), $params, false, $pageNo, $pageSize, array('log.id' => 'desc'), $stats);
 			$results['pageStats'] = $stats;
 			$results['items'] = array();
 			foreach($objects as $obj)
