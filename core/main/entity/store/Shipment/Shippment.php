@@ -401,11 +401,11 @@ class Shippment extends BaseEntityAbstract
 	 */
 	public static function create(Address $address, Courier $courier, $consignmentNo, $shippingDate, Order $order, $contactName, $contactNo = '' , $noOfCartons = 0, $estShippingCost = '0.00', $actualShippingCost = '0.00', $deliveryInstructions = '', $mageShipmentId = '')
 	{
-		$shipment = new Shippment();
+		$shippment = new Shippment();
 		if(($shippingDate = trim($shippingDate)) === '')
 			$shippingDate = new UDate();
 		$msg = 'Shipment create for Order(' . $order->getOrderNo() . ') to address(' . trim($address) . ') via Courier(' . $courier->getName() . ') with ConNote(=' . $consignmentNo . ') on ' . $shippingDate . '(UTC)';
-		$shippment = $shipment->setAddress($address)
+		$shippment = $shippment->setAddress($address)
 			->setCourier($courier)
 			->setConNoteNo(trim($consignmentNo))
 			->setOrder($order)
