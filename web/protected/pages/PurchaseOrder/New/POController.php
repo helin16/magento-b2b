@@ -158,9 +158,11 @@ class POController extends BPCPageAbstract
 	public function saveOrder($sender, $param)
 	{
 		$results = $errors = array();
+		$daoStart = false;
 		try
 		{
 			Dao::beginTransaction();
+			$daoStart = true;
 			$supplier = Supplier::get(trim($param->CallbackParameter->supplier->id));
 			if(!$supplier instanceof Supplier)
 				throw new Exception('Invalid Supplier passed in!');
@@ -194,14 +196,27 @@ class POController extends BPCPageAbstract
 					throw new Exception('Invalid Product passed in!');
 				$purchaseOrder->addItem($product, StringUtilsAbstract::getValueFromCurrency(trim($item->unitPrice)), intval(trim($item->qtyOrdered)));
 			};
-			$results['item'] = $purchaseOrder->getJson();
-// 			if(trim($confirmEmail = trim($param->CallbackParameter->confirmEmail)) !== '') {
-// 				//TODO:email supplier with the PO attached!!!
-// 			}
+			
 			Dao::commitTransaction();
+			$daoStart = false;
+			$results['item'] = $purchaseOrder->getJson();
+			if(trim($confirmEmail = trim($param->CallbackParameter->confirmEmail)) !== '') {
+				$html2pdf = new HTML2PDF('P', 'A4', 'en');
+				//      $html2pdf->setModeDebug();
+				$html2pdf->setDefaultFont('Arial');
+				$content = ComScriptCURL::readUrl('/print/purchase/' . $purchaseOrder->getId() . '.html');
+				$html2pdf->writeHTML('<page>' . $content . '</page>', false);
+				
+				$fileName = $purchaseOrder->getPurchaseOrderNo() . '.pdf';
+				$asset = Asset::registerAsset($fileName, $html2pdf->Output($fileName, 'S'));
+				EmailSender::addEmail('', $confirmEmail, 'BudgetPC Purchase Request', 'Please Find the attached PurchaseOrder from BudgetPC.', array($asset));
+				$purchaseOrder->addComment('An email sent to "' . $confirmEmail . '" with the attachment: ' . $fileName, Comments::TYPE_PURCHASING);
+			}
 		}
 		catch(Exception $ex)
 		{
+			if($daoStart === true)
+				Dao::rollbackTransaction();
 			$errors[] = $ex->getMessage();
 		}
 		$param->ResponseData = StringUtilsAbstract::getJson($results, $errors);

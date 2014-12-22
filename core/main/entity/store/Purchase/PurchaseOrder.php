@@ -260,10 +260,11 @@ class PurchaseOrder extends BaseEntityAbstract
 	 *
 	 * @return string
 	 */
-	public function getTotalProdcutCount()
+	public function getTotalProductCount()
 	{
-		$this->totalProdcutCount = PurchaseOrderItem::countByCriteria('purchaseOrderId = ?', array($this->getId()));
-		return $this->totalProdcutCount;
+		$sql = "select sum(qty) `qty` from purchaseorderitem where active = 1 and purchaseOrderId = ? ";
+		$result = Dao::getSingleResultNative($sql, array($this->getId()));
+		return $result['qty'];
 	}
 	/**
 	 * Getter for orderDate
@@ -476,6 +477,7 @@ class PurchaseOrder extends BaseEntityAbstract
 		if(!$this->isJsonLoaded($reset))
 		{
 			$array['supplier'] = $this->getSupplier() instanceof Supplier ? $this->getSupplier()->getJson() : array();
+			$array['totalProductCount'] = $this->getTotalProductCount();
 		}
 		return parent::getJson($array, $reset);
 	}

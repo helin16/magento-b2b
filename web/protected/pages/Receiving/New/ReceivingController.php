@@ -87,7 +87,7 @@ class ReceivingController extends BPCPageAbstract
 	private function _getPOJson(PurchaseOrder $po)
 	{
 		$array = $po->getJson();
-		$array['totalProdcutCount'] = $po->gettotalProdcutCount();
+		$array['totalProdcutCount'] = $po->getTotalProductCount();
 			
 		$array['purchaseOrderItem'] = [];
 		foreach (PurchaseOrderItem::getAllByCriteria('po_item.purchaseOrderId = :purchaseOrderId', array('purchaseOrderId'=> $po->getId() )) as $purchaseOrderItem)

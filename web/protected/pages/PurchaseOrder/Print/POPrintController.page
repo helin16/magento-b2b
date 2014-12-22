@@ -10,7 +10,7 @@
                                 <span class="inlineblock logo">
                                     <img src="/themes/default/images/logo.png" style="padding: 0px; margin: 0px;display: block;"/>
                                     <span class="inlineblock orderno">
-                                        Order No.: <%= $this->order->getPurchaseOrderNo()%>
+                                        Purchase Order No.: <%= $this->order->getPurchaseOrderNo()%>
                                     </span>
                                 </span>
                                 <span class="inlineblock info">
@@ -20,7 +20,7 @@
                                         <div class="dateRow"><span class="rowTitle inlineblock">Order Date: </span><span class="rowContent inlineblock"><%= $this->order->getOrderDate()->format('d/M/Y') %></span></div>
                                         <div class="dateRow"><span class="rowTitle inlineblock">Supplier: </span><span class="rowContent inlineblock"><%= $this->order->getSupplier()->getName() %></span></div>
                                         <div class="dateRow"><span class="rowTitle inlineblock">Supplier Ref.: </span><span class="rowContent inlineblock"><%= $this->order->getSupplierRefNo() %></span></div>
-                                        <div class="dateRow"><span class="rowTitle inlineblock">Total Prodcuts: </span><span class="rowContent inlineblock"><%= $this->order->getTotalProdcutCount() %></span></div>
+                                        <div class="dateRow"><span class="rowTitle inlineblock">Total Prodcuts: </span><span class="rowContent inlineblock"><%= $this->order->getTotalProductCount() %></span></div>
                                     </span>
                                 </span>
                             </div>
