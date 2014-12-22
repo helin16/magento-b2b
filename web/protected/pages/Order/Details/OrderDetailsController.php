@@ -188,13 +188,14 @@ class OrderDetailsController extends BPCPageAbstract
 				$notificationMsg = trim(OrderNotificationTemplateControl::getMessage($order->getStatus()->getName(), $order));
 				if($notificationMsg !== '')
 				{
-					B2BConnector::getConnector(B2BConnector::CONNECTOR_TYPE_ORDER,
-						SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_WSDL),
-						SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_USER),
-						SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_KEY)
-						)->changeOrderStatus($order, $order->getStatus()->getMageStatus(), $notificationMsg, false);
+// 					B2BConnector::getConnector(B2BConnector::CONNECTOR_TYPE_ORDER,
+// 						SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_WSDL),
+// 						SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_USER),
+// 						SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_KEY)
+// 						)->changeOrderStatus($order, $order->getStatus()->getMageStatus(), $notificationMsg, false);
 					$emailTitle = 'Your Order ' . $order->getOrderNo() . ' has been updated';
-					EmailSender::addEmail('', $order->getCustomer()->getEmail(), $emailTitle, $this->_getNotifictionEmail($order, $emailBody, $emailTitle));
+					// $order->getCustomer()->getEmail()
+					EmailSender::addEmail('', 'frank@budgetpc.com.au', $emailTitle, $this->_getNotifictionEmail($order, $emailBody, $emailTitle));
 					$order->addComment('An email notification has been sent to customer for: ' . $order->getStatus()->getName(), Comments::TYPE_SYSTEM);
 				}
 			}
@@ -224,8 +225,8 @@ class OrderDetailsController extends BPCPageAbstract
 		$html .= '<div>' . $emailBody['productUpdate'] . '</div><br/>';
 		$html .= '<p style="font-size:12px; line-height:16px; margin:0;">';
 		$html .= 'If you have any questions, please feel free to contact us at ';
-		$html .= '<a href="mailto:sales@budgetpc.com.au" style="color:#1E7EC8;">sales@budgetpc.com.au<script cf-hash="f9e31" type="text/javascript">';
-		$html .= 'or by phone at +61 3 9541 9000.';
+		$html .= '<a href="mailto:sales@budgetpc.com.au" style="color:#1E7EC8;">sales@budgetpc.com.au</a>';
+		$html .= ' or by phone at +61 3 9541 9000.';
 		$html .= '</p></td></tr>';
 		$html .= '<tr><td style="background:#EAEAEA; text-align:center;" align="center" bgcolor="#EAEAEA"><center><p style="font-size:12px; margin:0;">Thank you again, <strong></strong></p></center></td></tr>';
 		$html .= '</tbody></table></td></tr></table>';
