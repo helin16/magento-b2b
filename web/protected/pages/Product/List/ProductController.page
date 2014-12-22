@@ -17,20 +17,20 @@
 					<input type="hidden" search_field="pro.id" value="<%= $this->getRequestProductID() %>"/>
 					<div class="row">
 						<div class="col-md-2">
-							<div class="form-group form-group-sm input-group">
-	                           <label class="input-group-addon">SKU:</label>
+							<div class="form-group form-group-sm">
+	                           <label>SKU:</label>
 	                           <input type="text" search_field="pro.sku" placeholder="The SKU of the product" class="form-control input-sm">
 	                       </div>
 						</div>
 						<div class="col-md-2">
-							<div class="form-group form-group-sm input-group">
-	                           <label class="input-group-addon">Name:</label>
+							<div class="form-group form-group-sm">
+	                           <label>Name:</label>
 	                           <input type="text" search_field="pro.name" placeholder="The name of the product" class="form-control input-sm">
 	                       </div>
 						</div>
 						<div class="col-md-1">
-                            <div class="form-group form-group-sm input-group">
-                               <label class="input-group-addon">Active:</label>
+                            <div class="form-group form-group-sm">
+                               <label>Active:</label>
                                <select search_field="pro.active" class="form-control input-sm">
                                     <option value="1">YES</option>
                                     <option value="0">NO</option>
@@ -39,32 +39,32 @@
                            </div>
                         </div>
 						<div class="col-md-1">
-							<div class="form-group form-group-sm input-group">
-	                           <label class="input-group-addon">Status:</label>
+							<div class="form-group form-group-sm">
+	                           <label>Status:</label>
 	                           <div class="form-control" style="padding: 0px; height: 100%;">
                                     <select search_field="pro.productStatusIds" multiple class="chosen"></select>
                                 </div>
 	                       </div>
 						</div>
 						<div class="col-md-2">
-							<div class="form-group form-group-sm input-group">
-				                <label class="input-group-addon">Manufacturers: </label>
+							<div class="form-group form-group-sm">
+				                <label>Manufacturers: </label>
 				                <div class="form-control" style="padding: 0px; height: 100%;">
 					                <select search_field="pro.manufacturerIds" multiple class="chosen"></select>
 				                </div>
 	                        </div>
                         </div>
                         <div class="col-md-2">
-	                        <div class="form-group form-group-sm input-group">
-				                <label class="input-group-addon">Suppliers: </label>
+	                        <div class="form-group form-group-sm">
+				                <label>Suppliers: </label>
 				                <div class="form-control" style="padding: 0px; height: 100%;">
 				                	<select search_field="pro.supplierIds" multiple class="chosen"></select>
 		                        </div>
 	                        </div>
 						</div>
                         <div class="col-md-2">
-	                        <div class="form-group form-group-sm input-group">
-				                <label class="input-group-addon">Categories: </label>
+	                        <div class="form-group form-group-sm">
+				                <label>Categories: </label>
 				                <div class="form-control" style="padding: 0px; height: 100%;">
 				                	<select search_field="pro.productCategoryIds" multiple class="chosen"></select>
 		                        </div>
