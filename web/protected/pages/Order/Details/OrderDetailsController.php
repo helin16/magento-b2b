@@ -194,8 +194,7 @@ class OrderDetailsController extends BPCPageAbstract
 						SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_KEY)
 						)->changeOrderStatus($order, $order->getStatus()->getMageStatus(), $notificationMsg, false);
 					$emailTitle = 'Your Order ' . $order->getOrderNo() . ' has been updated';
-// 					var_dump($order->getCustomer()->getEmail());
-					EmailSender::addEmail('', 'frank@budgetpc.com.au', $emailTitle, $this->_getNotifictionEmail($order, $emailBody, $emailTitle));
+					EmailSender::addEmail('', $order->getCustomer()->getEmail(), $emailTitle, $this->_getNotifictionEmail($order, $emailBody, $emailTitle));
 					$order->addComment('An email notification has been sent to customer for: ' . $order->getStatus()->getName(), Comments::TYPE_SYSTEM);
 				}
 			}
@@ -215,7 +214,7 @@ class OrderDetailsController extends BPCPageAbstract
 		$html .= '<tr><td style="padding:20px 0 20px 0" align="center" valign="top">';
 		$html .= '<table style="border:1px solid #E0E0E0;" bgcolor="#FFFFFF" border="0" cellpadding="10" cellspacing="0" width="650">';
 		$html .= '<tbody><tr>';
-		$html .= '<td valign="top"><a href="http://budgetpc.com.au/index.php/"><img src="http://budgetpc.com.au/media/buyshop/default//New-logo005.png" alt="Budget PC Super Store" style="margin-bottom:10px;" border="0"></a></td>';
+		$html .= '<td valign="top"><a href="http://budgetpc.com.au/index.php/"><img src="http://budgetpc.com.au/media/buyshop/default/New-logo005.png" alt="Budget PC Super Store" style="margin-bottom:10px;" border="0"></a></td>';
 		$html .= '</tr><tr><td valign="top">';
 		$html .= '<h1 style="font-size:22px; font-weight:normal; line-height:22px; margin:0 0 11px 0;">';
 		$html .= 'Dear '. $order->getCustomer()->getName() . '</h1>';
@@ -224,7 +223,7 @@ class OrderDetailsController extends BPCPageAbstract
 		$html .= '</p>';
 		$html .= '<div>' . $emailBody['productUpdate'] . '</div><br/>';
 		$html .= '<p style="font-size:12px; line-height:16px; margin:0;">';
-		$html .= 'If you have any questions, please feel free to contact us at';
+		$html .= 'If you have any questions, please feel free to contact us at ';
 		$html .= '<a href="mailto:sales@budgetpc.com.au" style="color:#1E7EC8;">sales@budgetpc.com.au<script cf-hash="f9e31" type="text/javascript">';
 		$html .= 'or by phone at +61 3 9541 9000.';
 		$html .= '</p></td></tr>';
