@@ -99,6 +99,7 @@ class OrderDetailsController extends BPCPageAbstract
 			$hasETA = false;
 			$allPicked = true;
 			$commentType = ($for === Comments::TYPE_PURCHASING ? Comments::TYPE_PURCHASING : Comments::TYPE_WAREHOUSE);
+			$emailBody['productUpdate'] = '<table border="1" style="width:100%">';
 			foreach($params->CallbackParameter->items as $orderItemId => $obj)
 			{
 				if(!($orderItem = OrderItem::get($orderItemId)) instanceof OrderItem)
@@ -113,6 +114,7 @@ class OrderDetailsController extends BPCPageAbstract
 						$orderItem->setIsOrdered(false);
 						$orderItem->setEta(trim(UDate::zeroDate()));
 						$commentString = 'product(SKU=' . $sku .') marked as in stock';
+						$emailBody['productUpdate'] .= '<tr>' . '<td>' . $sku . '</td>' . '<td>' . $orderItem->getProduct()->getName() . '</td>' . '<td>' . 'In Stock' . '</td>';
 					}
 					else
 					{
@@ -128,6 +130,7 @@ class OrderDetailsController extends BPCPageAbstract
 						if($comments !== '')
 						{
 							$commentString = 'Added ETA[' . $eta . '] for product(SKU=' . $sku .'): ' . $comments;
+							$emailBody['productUpdate'] .= '<tr>' . '<td>' . $sku . '</td>' . '<td>' . $orderItem->getProduct()->getName() . '</td>' . '<td>' . 'ETA: ' . $eta->format('d/M/Y') . '</td>';
 						}
 						$hasETA = true;
 					}
@@ -138,6 +141,7 @@ class OrderDetailsController extends BPCPageAbstract
 					$picked = (trim($obj->isPicked) === '1') ? true : false;
 					$orderItem->setIsPicked($picked);
 					$commentString = ($picked ? '' : 'NOT ') . 'Picked product(SKU=' . $sku .'): ' . $comments;
+					$emailBody['productUpdate'] .= '<tr>' . '<td>' . $sku . '</td>' . '<td>' . $orderItem->getProduct()->getName() . '</td>' . '<td>' . $picked ? 'Picked by Warehouse' : '' . '</td>';
 					if($picked === true) //clear ETA
 					{
 						$orderItem->setIsOrdered(false);
@@ -149,7 +153,7 @@ class OrderDetailsController extends BPCPageAbstract
 						$allPicked = false;
 					}
 				}
-				
+				$emailBody['productUpdate'] .= '</table>';
 				$commentString .= ($notifyCustomer === true ? ' !!!NOTIFICATION SENT TO CUSTOMER!!! ' : '');
 				$order->addComment($commentString, $commentType);
 				$orderItem->addComment($commentString, $commentType)
@@ -165,6 +169,7 @@ class OrderDetailsController extends BPCPageAbstract
 				else
 					$order->setStatus(OrderStatus::get(OrderStatus::ID_STOCK_CHECKED_BY_PURCHASING));
 				$order->addComment('Changed from [' . $status . '] to [' . $order->getStatus() . ']', Comments::TYPE_SYSTEM);
+				$emailBody['orderUpdate'] = 'Order status changed from [' . $status . '] to [' . $order->getStatus() . ']';
 			}
 			else if($for === Comments::TYPE_WAREHOUSE)
 			{
@@ -173,6 +178,7 @@ class OrderDetailsController extends BPCPageAbstract
 				else
 					$order->setStatus(OrderStatus::get(OrderStatus::ID_INSUFFICIENT_STOCK));
 				$order->addComment('Changed from [' . $status . '] to [' . $order->getStatus() . ']', Comments::TYPE_SYSTEM);
+				$emailBody['orderUpdate'] = 'Order status changed from [' . $status . '] to [' . $order->getStatus() . ']';
 			}
 			$order->save();
 			
@@ -187,7 +193,9 @@ class OrderDetailsController extends BPCPageAbstract
 						SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_USER),
 						SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_KEY)
 						)->changeOrderStatus($order, $order->getStatus()->getMageStatus(), $notificationMsg, false);
-// 					EmailSender::addEmail('', $to, $subject, $this->_getNotifictionEmail($notificationMsg, $oder));
+					$emailTitle = 'Your Order ' . $order->getOrderNo() . ' has been updated';
+// 					var_dump($order->getCustomer()->getEmail());
+					EmailSender::addEmail('', 'frank@budgetpc.com.au', $emailTitle, $this->_getNotifictionEmail($order, $emailBody, $emailTitle));
 					$order->addComment('An email notification has been sent to customer for: ' . $order->getStatus()->getName(), Comments::TYPE_SYSTEM);
 				}
 			}
@@ -200,11 +208,30 @@ class OrderDetailsController extends BPCPageAbstract
 		}
 		$params->ResponseData = StringUtilsAbstract::getJson($results, $errors);
 	}
-// 	private function _getNotifictionEmail($msg, $order)
-// 	{
-// 		$html = '';
-// 		return $html;
-// 	}
+	private function _getNotifictionEmail($order, $emailBody, $emailTitle = '')
+	{
+		$html = '';
+		$html .= '<table cellspacing="0" cellpadding="0" border="0" height="100%" width="100%">';
+		$html .= '<tr><td style="padding:20px 0 20px 0" align="center" valign="top">';
+		$html .= '<table style="border:1px solid #E0E0E0;" bgcolor="#FFFFFF" border="0" cellpadding="10" cellspacing="0" width="650">';
+		$html .= '<tbody><tr>';
+		$html .= '<td valign="top"><a href="http://budgetpc.com.au/index.php/"><img src="http://budgetpc.com.au/media/buyshop/default//New-logo005.png" alt="Budget PC Super Store" style="margin-bottom:10px;" border="0"></a></td>';
+		$html .= '</tr><tr><td valign="top">';
+		$html .= '<h1 style="font-size:22px; font-weight:normal; line-height:22px; margin:0 0 11px 0;">';
+		$html .= 'Dear '. $order->getCustomer()->getName() . '</h1>';
+		$html .= '<p style="font-size:12px; line-height:16px; margin:0 0 10px 0;">';
+		$html .= $emailTitle;
+		$html .= '</p>';
+		$html .= '<div>' . $emailBody['productUpdate'] . '</div><br/>';
+		$html .= '<p style="font-size:12px; line-height:16px; margin:0;">';
+		$html .= 'If you have any questions, please feel free to contact us at';
+		$html .= '<a href="mailto:sales@budgetpc.com.au" style="color:#1E7EC8;">sales@budgetpc.com.au<script cf-hash="f9e31" type="text/javascript">';
+		$html .= 'or by phone at +61 3 9541 9000.';
+		$html .= '</p></td></tr>';
+		$html .= '<tr><td style="background:#EAEAEA; text-align:center;" align="center" bgcolor="#EAEAEA"><center><p style="font-size:12px; margin:0;">Thank you again, <strong></strong></p></center></td></tr>';
+		$html .= '</tbody></table></td></tr></table>';
+		return $html;
+	}
 	/**
 	 * 
 	 * @param unknown $sender
