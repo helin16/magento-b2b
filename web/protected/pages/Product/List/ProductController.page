@@ -78,8 +78,8 @@
 			<div class="panel panel-default">
 				<div class="panel-heading">
 					Found <label id="total-found-count">0</label> Products:
-					<span class="pull-right btn btn-sm btn-success">
-						<span class="fa fa-plus" onclick="pageJs._openProductDetails('new')" />
+					<span class="pull-right btn btn-sm btn-success" onclick="pageJs._openProductDetails('new')">
+						<span class="fa fa-plus" />
 					</span>
 				</div>
 				<div class="table-responsive">
