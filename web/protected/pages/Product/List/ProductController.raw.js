@@ -338,7 +338,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 	 */
 	,_openProductDetails: function(product) {
 		var tmp = {};
-		tmp.newWindow = window.open('/product/' + product.id + '.html', 'Product Details for: ' + product.sku, 'location=no, menubar=no, status=no, titlebar=no, fullscreen=no, toolbar=no, width=1024');
+		tmp.newWindow = window.open('/product/' + product.id + '.html', 'Product Details for: ' + product.sku, 'scrollbars=yes, location=no, menubar=no, status=no, titlebar=no, fullscreen=no, toolbar=no, width=1024');
 		tmp.newWindow.focus();
 	}
 	,toggleActive: function(active, product) {
