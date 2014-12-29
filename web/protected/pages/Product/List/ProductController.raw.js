@@ -422,17 +422,16 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 						.insert({'bottom': new Element('div', {'class': 'col-xs-4'})
 							.insert({'bottom': new Element('input', {'type': 'checkbox', 'disabled': true, 'checked': row.active}) })
 						})
-						.insert({'bottom': new Element('div', {'class': 'col-xs-4'})
-							.insert({'bottom': new Element('span', {'class': 'btn btn-primary btn-xs'})
-								.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-pencil'}) })
-							})
-							.observe('click', function(event){
-								Event.stop(event);
-								tmp.me._openProductDetails(row);
-							})
-						})
-						.insert({'bottom': new Element('div', {'class': 'col-xs-4'})
-							.insert({'bottom': (row.active === true ? 
+						.insert({'bottom': new Element('div', {'class': 'col-xs-8'})
+							.insert({'bottom': new Element('div', {'class': 'btn-group'})
+								.insert({'bottom': new Element('span', {'class': 'btn btn-primary btn-xs'})
+									.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-pencil'}) })
+								})
+								.observe('click', function(event){
+									Event.stop(event);
+									tmp.me._openProductDetails(row);
+								})
+								.insert({'bottom': (row.active === true ? 
 									new Element('span', {'class': 'btn btn-danger btn-xs'})
 										.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-trash'}) })
 										.observe('click', function(event) {
@@ -450,7 +449,8 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 											if(confirm('You are about to ReACTIVATE this product.\n Continue?'))
 												tmp.me.toggleActive(true, row);
 										})
-							) })
+								) })
+							})
 						})
 				) })
 			});
