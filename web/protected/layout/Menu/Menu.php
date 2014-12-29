@@ -41,7 +41,8 @@ class Menu extends TTemplateControl
 				'manufacturers' => array('url' => '/manufacturers.html', 'name' => 'Manufactures'),
 				'suppliers' => array('url' => '/suppliers.html', 'name' => 'Suppliers'),
 				'productcodetypes' => array('url' => '/productcodetypes.html', 'name' => 'Product Code Types', 'icon' => '<span class="glyphicon glyphicon-barcode"></span>'),
-				'productcategories' => array('url' => '/productcategories.html', 'name' => 'Product Categories')
+				'productcategories' => array('url' => '/productcategories.html', 'name' => 'Product Categories'),
+				'productquantities' => array('url' => '/productquantities.html', 'name' => 'Product Quantity')
 			);
 		if(AccessControl::canAccessOrderItemsPage(Core::getRole()) )
 			$array['Purchase'] = array(
