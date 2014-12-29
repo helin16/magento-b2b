@@ -45,11 +45,23 @@ class Product extends InfoEntityAbstract
 	 */
 	private $stockOnPO = 0;
 	/**
+	 * The quantity in parts for build
+	 * 
+	 * @var int
+	 */
+	private $stockInParts = 0;
+	/**
 	 * The total value for all stock on hand units
 	 * 
 	 * @var double
 	 */
 	private $totalOnHandValue = 0;
+	/**
+	 * The total value for all stock on parts for build
+	 * 
+	 * @var double
+	 */
+	private $totalInPartsValue = 0;
 	/**
 	 * Whether this order is imported from B2B
 	 * 
@@ -118,10 +130,20 @@ class Product extends InfoEntityAbstract
 	 */
 	protected $codes = array();
 	/**
-	 * the account number for accounting purpose
+	 * the asset number for accounting purpose
 	 * @var string
 	 */
-	private $invenAccNo = '';
+	private $assetAccNo = '';
+	/**
+	 * the revenue number for accounting purpose
+	 * @var string
+	 */
+	private $revenueAccNo = '';
+	/**
+	 * the cost number for accounting purpose
+	 * @var string
+	 */
+	private $costAccNo = '';
 	/**
 	 * Getter for categories
 	 *
@@ -378,6 +400,27 @@ class Product extends InfoEntityAbstract
 	    return $this;
 	}
 	/**
+	 * Getter for stockInParts
+	 *
+	 * @return 
+	 */
+	public function getStockInParts() 
+	{
+	    return $this->stockInParts;
+	}
+	/**
+	 * Setter for stockInParts
+	 *
+	 * @param int $value The stockInParts
+	 *
+	 * @return Product
+	 */
+	public function setStockInParts($value) 
+	{
+	    $this->stockInParts = $value;
+	    return $this;
+	}
+	/**
 	 * Getter for isFromB2B
 	 *
 	 * @return bool
@@ -506,24 +549,87 @@ class Product extends InfoEntityAbstract
 		return $this;
 	}
 	/** 
-	 * Getter for invenAccNo 
+	 * Getter for totalInPartsValue 
+	 * 
+	 * @return double
+	 */
+	public function getTotalInPartsValue  ()
+	{
+		return $this->totalInPartsValue ;
+	}
+	/** 
+	 * Setter for totalInPartsValue 
+	 * 
+	 * @param double $value
+	 * 
+	 * @return Product
+	 */
+	public function setTotalInPartsValue ($value )
+	{
+		$this->totalInPartsValue = $value;
+		return $this;
+	}
+	/** 
+	 * Getter for assetAccNo 
 	 * 
 	 * @return string
 	 */
-	public function getInvenAccNo  ()
+	public function getAssetAccNo  ()
 	{
-		return $this->invenAccNo ;
+		return $this->assetAccNo ;
 	}
 	/** 
-	 * Setter for invenAccNo 
+	 * Setter for assetAccNo 
 	 * 
 	 * @param string $value
 	 * 
 	 * @return Product
 	 */
-	public function setInvenAccNo ($value )
+	public function setAssetAccNo ($value )
 	{
-		$this->invenAccNo = $value;
+		$this->assetAccNo = $value;
+		return $this;
+	}
+	/** 
+	 * Getter for revenueAccNo 
+	 * 
+	 * @return string
+	 */
+	public function getRevenueAccNo  ()
+	{
+		return $this->revenueAccNo ;
+	}
+	/** 
+	 * Setter for revenueAccNo 
+	 * 
+	 * @param string $value
+	 * 
+	 * @return Product
+	 */
+	public function setRevenueAccNo ($value )
+	{
+		$this->revenueAccNo = $value;
+		return $this;
+	}
+	/** 
+	 * Getter for costAccNo 
+	 * 
+	 * @return string
+	 */
+	public function getCostAccNo  ()
+	{
+		return $this->costAccNo ;
+	}
+	/** 
+	 * Setter for costAccNo 
+	 * 
+	 * @param string $value
+	 * 
+	 * @return Product
+	 */
+	public function setCostAccNo ($value )
+	{
+		$this->costAccNo = $value;
 		return $this;
 	}
 	
@@ -868,10 +974,14 @@ class Product extends InfoEntityAbstract
 		DaoMap::setStringType('name', 'varchar', 100);
 		DaoMap::setStringType('mageId', 'varchar', 10);
 		DaoMap::setIntType('totalOnHandValue', 'double', '10,4');
+		DaoMap::setIntType('totalInPartsValue', 'double', '10,4');
 		DaoMap::setIntType('stockOnHand', 'int', 10, false);
 		DaoMap::setIntType('stockOnOrder', 'int', 10, false);
 		DaoMap::setIntType('stockOnPO', 'int', 10, false);
-		DaoMap::setStringType('invenAccNo', 'varchar', 50);
+		DaoMap::setIntType('stockInParts', 'int', 10, false);
+		DaoMap::setStringType('assetAccNo', 'varchar', 10);
+		DaoMap::setStringType('revenueAccNo', 'varchar', 10);
+		DaoMap::setStringType('costAccNo', 'varchar', 10);
 		DaoMap::setBoolType('isFromB2B');
 		DaoMap::setBoolType('sellOnWeb');
 		DaoMap::setManyToOne('status', 'ProductStatus', 'pro_status', true);
@@ -889,16 +999,20 @@ class Product extends InfoEntityAbstract
 		DaoMap::createIndex('name');
 		DaoMap::createIndex('mageId');
 		DaoMap::createIndex('totalOnHandValue');
+		DaoMap::createIndex('totalInPartsValue');
 		DaoMap::createIndex('stockOnHand');
 		DaoMap::createIndex('stockOnOrder');
 		DaoMap::createIndex('stockOnPO');
+		DaoMap::createIndex('stockInParts');
 		DaoMap::createIndex('isFromB2B');
 		DaoMap::createIndex('shortDescription');
 		DaoMap::createIndex('fullDescAssetId');
 		DaoMap::createIndex('sellOnWeb');
 		DaoMap::createIndex('asNewFromDate');
 		DaoMap::createIndex('asNewToDate');
-		DaoMap::createIndex('invenAccNo');
+		DaoMap::createIndex('assetAccNo');
+		DaoMap::createIndex('revenueAccNo');
+		DaoMap::createIndex('costAccNo');
 		DaoMap::commit();
 	}
 	/**
@@ -927,7 +1041,7 @@ class Product extends InfoEntityAbstract
 	 *
 	 * @return Ambigous <Product, Ambigous, NULL, BaseEntityAbstract>
 	 */
-	public static function create($sku, $name, $mageProductId = '', $stockOnHand = null, $stockOnOrder = null, $isFromB2B = false, $shortDescr = '', $fullDescr = '', Manufacturer $manufacturer = null, $invenAccNo = null)
+	public static function create($sku, $name, $mageProductId = '', $stockOnHand = null, $stockOnOrder = null, $isFromB2B = false, $shortDescr = '', $fullDescr = '', Manufacturer $manufacturer = null, $assetAccNo = null, $revenueAccNo = null, $costAccNo = null)
 	{
 		if(!($product = self::getBySku($sku)) instanceof Product)
 			$product = new Product();
@@ -944,8 +1058,12 @@ class Product extends InfoEntityAbstract
 				$product->setStockOnOrder(intval($stockOnOrder));
 			if($stockOnHand !== null && is_numeric($stockOnHand))
 				$product->setStockOnHand(intval($stockOnHand));
-			if($invenAccNo !== null && is_string($invenAccNo))
-				$product->setInvenAccNo(trim($invenAccNo));
+			if($assetAccNo !== null && is_string($assetAccNo))
+				$product->setAssetAccNo(trim($assetAccNo));
+			if($revenueAccNo !== null && is_string($revenueAccNo))
+				$product->setRevenueAccNo(trim($revenueAccNo));
+			if($costAccNo !== null && is_string($costAccNo))
+				$product->setCostAccNo(trim($costAccNo));
 			if (($$fullDescr = trim($fullDescr)) !== '') {
 				$asset = Asset::registerAsset('full_desc_' . $sku, $fullDescr);
 				$product->setFullDescAssetId(trim($asset->getAssetId()));
