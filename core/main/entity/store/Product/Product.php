@@ -51,6 +51,12 @@ class Product extends InfoEntityAbstract
 	 */
 	private $stockInParts = 0;
 	/**
+	 * The quantity in RMA for build
+	 * 
+	 * @var int
+	 */
+	private $stockInRMA = 0;
+	/**
 	 * The total value for all stock on hand units
 	 * 
 	 * @var double
@@ -418,6 +424,27 @@ class Product extends InfoEntityAbstract
 	public function setStockInParts($value) 
 	{
 	    $this->stockInParts = $value;
+	    return $this;
+	}
+	/**
+	 * Getter for stockInRMA
+	 *
+	 * @return 
+	 */
+	public function getStockInRMA() 
+	{
+	    return $this->stockInRMA;
+	}
+	/**
+	 * Setter for stockInRMA
+	 *
+	 * @param int $value The stockInRMA
+	 *
+	 * @return Product
+	 */
+	public function setStockInRMA($value) 
+	{
+	    $this->stockInRMA = $value;
 	    return $this;
 	}
 	/**
@@ -979,6 +1006,7 @@ class Product extends InfoEntityAbstract
 		DaoMap::setIntType('stockOnOrder', 'int', 10, false);
 		DaoMap::setIntType('stockOnPO', 'int', 10, false);
 		DaoMap::setIntType('stockInParts', 'int', 10, false);
+		DaoMap::setIntType('stockInRMA', 'int', 10, false);
 		DaoMap::setStringType('assetAccNo', 'varchar', 10);
 		DaoMap::setStringType('revenueAccNo', 'varchar', 10);
 		DaoMap::setStringType('costAccNo', 'varchar', 10);
@@ -1004,6 +1032,7 @@ class Product extends InfoEntityAbstract
 		DaoMap::createIndex('stockOnOrder');
 		DaoMap::createIndex('stockOnPO');
 		DaoMap::createIndex('stockInParts');
+		DaoMap::createIndex('stockInRMA');
 		DaoMap::createIndex('isFromB2B');
 		DaoMap::createIndex('shortDescription');
 		DaoMap::createIndex('fullDescAssetId');
