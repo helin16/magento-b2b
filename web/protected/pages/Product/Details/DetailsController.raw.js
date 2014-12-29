@@ -334,8 +334,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 				.insert({'bottom': new Element('div', {'class': ''})
 					.insert({'bottom': new Element('div', {'class': 'col-sm-4'}).update(tmp.me._getFormGroup('Name', new Element('input', {'save-item': 'name', 'type': 'text', 'required': true, 'value': tmp.item.name ? tmp.item.name : ''}) ) ) })
 					.insert({'bottom': new Element('div', {'class': 'col-sm-4'}).update(tmp.me._getFormGroup('sku', new Element('input', {'save-item': 'sku', 'type': 'text', 'required': true, 'value': tmp.item.sku ? tmp.item.sku : ''}) ) ) })
-					.insert({'bottom': new Element('div', {'class': 'col-sm-2'}).update(tmp.me._getFormGroup('Inventory Account No.', new Element('input', {'save-item': 'invenAccNo', 'required': true, 'type': 'text', 'value': tmp.item.invenAccNo ? tmp.item.invenAccNo : ''}) ) ) })
-					.insert({'bottom': new Element('div', {'class': 'col-sm-2'}).update(tmp.me._getFormGroup('Status', 
+					.insert({'bottom': new Element('div', {'class': 'col-sm-4'}).update(tmp.me._getFormGroup('Status', 
 							tmp.me._getSelBox(tmp.me._statuses, tmp.item.status ? tmp.item.status.id : null).writeAttribute('save-item', 'statusId').addClassName('chosen') 
 					) ) })
 				})
@@ -560,6 +559,30 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		return tmp.me;
 	}
 	/**
+	 * account info penl
+	 */
+	,_getAccInfoDiv: function(product) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.item = product;
+		tmp.newDiv = new Element('div', {'class': 'panel panel-default'})
+			.insert({'bottom': new Element('div', {'class': 'panel-heading'})
+				.insert({'bottom': new Element('a', {'href': 'javascript: void(0);', 'title': 'click to show/hide content below'})
+					.insert({'bottom': new Element('strong').update('Accounting Info') })
+					.observe('click', function() {
+						$(this).up('.panel').down('.panel-body').toggle();
+					})
+				})
+				.insert({'bottom': tmp.uploadDiv = new Element('span', {'class': 'pull-right new-btn-panel'}) })
+			})
+			.insert({'bottom': new Element('div', {'class': 'panel-body'}) 
+				.insert({'bottom': new Element('div', {'class': 'col-sm-4'}).update(tmp.me._getFormGroup('Asset Account No.', new Element('input', {'save-item': 'assetAccNo', 'required': true, 'type': 'text', 'value': tmp.item.assetAccNo ? tmp.item.assetAccNo : ''}) ) ) })
+				.insert({'bottom': new Element('div', {'class': 'col-sm-4'}).update(tmp.me._getFormGroup('Revenue Account No.', new Element('input', {'save-item': 'revenueAccNo', 'required': true, 'type': 'text', 'value': tmp.item.revenueAccNo ? tmp.item.revenueAccNo : ''}) ) ) })
+				.insert({'bottom': new Element('div', {'class': 'col-sm-4'}).update(tmp.me._getFormGroup('Cost Account No.', new Element('input', {'save-item': 'costAccNo', 'required': true, 'type': 'text', 'value': tmp.item.costAccNo ? tmp.item.costAccNo : ''}) ) ) })
+			});
+		return tmp.newDiv;
+	}
+	/**
 	 * displaying the item
 	 */
 	,_getItemDiv: function() {
@@ -574,6 +597,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 				.insert({'bottom': new Element('div', {'class': 'col-sm-8'})
 					.insert({'bottom': new Element('div', {'class': 'row'})
 						.insert({'bottom': tmp.me._getSummaryDiv(tmp.me._item).wrap(new Element('div', {'class': 'col-sm-12'})) })
+						.insert({'bottom': tmp.me._getAccInfoDiv(tmp.me._item).wrap(new Element('div', {'class': 'col-sm-12'})) })
 						.insert({'bottom': tmp.me._getListPanel('Prices:', tmp.me._item.prices, {'type': 'Type', 'value': 'Price', 'start': 'From', 'end': 'To'}, tmp.me._priceTypes, function(e){
 							tmp.selectedPriceType = null;
 							tmp.selBox = e.target;
