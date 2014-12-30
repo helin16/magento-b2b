@@ -212,6 +212,7 @@ class DetailsController extends DetailsPageAbstract
 		}
 		catch(Exception $ex)
 		{
+			Dao::rollbackTransaction();
 			$errors[] = $ex->getMessage();
 		}
 		$param->ResponseData = StringUtilsAbstract::getJson($results, $errors);
@@ -260,7 +261,6 @@ class DetailsController extends DetailsPageAbstract
 			$results['item'] = $perchaseorder->getJson();
 			
 			Dao::commitTransaction();
-
 		}
 		catch(Exception $ex)
 		{
