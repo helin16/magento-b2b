@@ -1,4 +1,3 @@
-<%@MasterClass="Application.layout.BlankLayout"%>
 <com:TContent ID="MainContent">
 	<com:TDatePicker Style="display:none;"/>
 	<com:Application.controls.fancybox.FancyBox />

@@ -200,7 +200,7 @@ class POController extends BPCPageAbstract
 			Dao::commitTransaction();
 			$daoStart = false;
 			$results['item'] = $purchaseOrder->getJson();
-			if(trim($confirmEmail = trim($param->CallbackParameter->confirmEmail)) !== '') {
+			if(isset($param->CallbackParameter->confirmEmail) && (trim($confirmEmail = trim($param->CallbackParameter->confirmEmail)) !== '')) {
 				$html2pdf = new HTML2PDF('P', 'A4', 'en');
 				//      $html2pdf->setModeDebug();
 				$html2pdf->setDefaultFont('Arial');
