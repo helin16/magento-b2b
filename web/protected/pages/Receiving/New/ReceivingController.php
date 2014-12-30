@@ -279,6 +279,7 @@ class ReceivingController extends BPCPageAbstract
 		}
 		catch(Exception $ex)
 		{
+			Dao::rollbackTransaction();
 			$errors[] = $ex->getMessage();
 		}
 		$param->ResponseData = StringUtilsAbstract::getJson($results, $errors);
