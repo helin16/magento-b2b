@@ -5,14 +5,17 @@ require_once '../bootstrap.php';
 echo '<pre>';
 Core::setUser(UserAccount::get(UserAccount::ID_SYSTEM_ACCOUNT));
 
+// configuration
 $fileName = "SKU-match-16K.csv";
 $codeType = 'UPC';
-$start = memory_get_usage();
 
-echo '<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css">';
+$start = memory_get_usage(); // monite mem usage
+
+echo '<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css">'; // optional, bootstrap just for looking
 
     try
     {
+    	// validate csv
     	if(!sizeof($fileName))
     		throw new Exception('Invalid File Name!');
     	if(trim($codeType) === 'UPC' || trim($codeType) === 'upc')
@@ -49,13 +52,15 @@ echo '<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3
     			$myobCode = str_replace(' ', '', $myobCode); // remove all whitespace
     			if(count($products = ProductCode::getAllByCriteria('pro_code.productId = ? and pro_code.typeId = ?', array($product->getId(), ProductCodeType::ID_UPC), false, 1, 1) ) > 0 )
     			{
-    				$products[0]->setCode(trim($myobCode));
-    				$totalExist++;
+    				// if product with such code exist
+    				$products[0]->setCode(trim($myobCode))->save();
+    				$totalExist++; // just a counter
     			}
     			else
     			{
+    				// if it's a new code for such product
     				ProductCode::create($product, $productCodeType, trim($myobCode));
-    				$totalNew++;
+    				$totalNew++;  // just a counter
     			}
     			echo '<td>' . $myobCode . '</td>';
     		}
@@ -66,9 +71,10 @@ echo '<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3
     		$sku = $myobCode = $position = $products = $product = null;
     	}
     	echo '</tbody></table>';
+    	// result summery, note: all count starts at 1
     	echo '<br/><b>Total Count: ' .$totalCount . '</b>(exist: '. $totalExist . ', new: '. $totalNew . ')';
     }
-    catch(HTML2PDF_exception $e) {
+    catch(Exception $e) {
         echo $e;
         exit;
     }
