@@ -41,7 +41,7 @@ echo '<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3
     			$sku = $data[0];
     			if(!($product = Product::getBySku($sku)) instanceof Product)
     				throw new Exception('Invalid Product!');
-    			echo '<td>' . $sku . '</td>';
+    			echo '<td><a target="_blank" href="/product/' . $product->getId() . '.html">' . $sku . '</a></td>';
     		}
     		else throw new Exception('first column title must be sku');
     		if($fileTitle[1] === 'MYOB-code' || $fileTitle[1] === 'myob-code' || $fileTitle[1] === 'code' || $fileTitle[1] === 'CODE')
