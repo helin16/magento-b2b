@@ -29,11 +29,27 @@ class ProductQtyLog extends InfoEntityAbstract
 	 */
 	private $stockOnOrder;
 	/**
+	 * log for stock in parts for build
+	 * @var int
+	 */
+	private $stockInParts;
+	/**
+	 * log for stock in RMA
+	 * @var int
+	 */
+	private $stockInRMA;
+	/**
 	 * The total value for all stock on hand units
 	 * 
 	 * @var double
 	 */
 	private $totalOnHandValue = 0;
+	/**
+	 * The total value for all stock on parts units
+	 * 
+	 * @var double
+	 */
+	private $totalInPartsValue = 0;
 	/**
 	 * comments
 	 * @var string
@@ -135,6 +151,48 @@ class ProductQtyLog extends InfoEntityAbstract
 		return $this;
 	}
 	/**
+	 * Getter for stockInParts
+	 * 
+	 * @return int
+	 */
+	public function getStockInParts()
+	{
+		return $this->stockInParts;
+	}
+	/**
+	 * Setter for the stockInParts
+	 * 
+	 * @param mixed $value
+	 * 
+	 * @return ProductQtyLog
+	 */
+	public function setStockInParts($value)
+	{
+		$this->stockInParts = $value;
+		return $this;
+	}
+	/**
+	 * Getter for stockInRMA
+	 * 
+	 * @return int
+	 */
+	public function getStockInRMA()
+	{
+		return $this->stockInRMA;
+	}
+	/**
+	 * Setter for the stockInRMA
+	 * 
+	 * @param mixed $value
+	 * 
+	 * @return ProductQtyLog
+	 */
+	public function setStockInRMA($value)
+	{
+		$this->stockInRMA = $value;
+		return $this;
+	}
+	/**
 	 * Getter for comments
 	 * 
 	 * @return string
@@ -216,6 +274,27 @@ class ProductQtyLog extends InfoEntityAbstract
 	public function setTotalOnHandValue ($value )
 	{
 		$this->totalOnHandValue = $value;
+		return $this;
+	}
+	/**
+	 * Getter for totalInPartsValue
+	 *
+	 * @return double
+	 */
+	public function getTotalInPartsValue  ()
+	{
+		return $this->totalInPartsValue ;
+	}
+	/**
+	 * Setter for totalInPartsValue
+	 *
+	 * @param double $value
+	 *
+	 * @return Product
+	 */
+	public function setTotalInPartsValue ($value )
+	{
+		$this->totalInPartsValue = $value;
 		return $this;
 	}
 	/**
