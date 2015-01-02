@@ -41,8 +41,7 @@ class Menu extends TTemplateControl
 				'manufacturers' => array('url' => '/manufacturers.html', 'name' => 'Manufactures'),
 				'suppliers' => array('url' => '/suppliers.html', 'name' => 'Suppliers'),
 				'productcodetypes' => array('url' => '/productcodetypes.html', 'name' => 'Product Code Types', 'icon' => '<span class="glyphicon glyphicon-barcode"></span>'),
-				'productcategories' => array('url' => '/productcategories.html', 'name' => 'Product Categories'),
-				'productquantities' => array('url' => '/productquantities.html', 'name' => 'Product Quantity')
+				'productcategories' => array('url' => '/productcategories.html', 'name' => 'Product Categories')
 			);
 		if(AccessControl::canAccessOrderItemsPage(Core::getRole()) )
 			$array['Purchase'] = array(
@@ -64,7 +63,8 @@ class Menu extends TTemplateControl
 					'icon' => '<span class="fa fa-arrows"></span>',
 					'Receiving' =>array('url' => '/receiving.html', 'name' => 'Receiving Products', 'icon' => '<span class="fa fa-home"></span>'),
 					'Locations' =>array('url' => '/locations.html', 'name' => 'Locations', 'icon' => '<span class="fa fa-arrows"></span>'),
-					'PreferLocationTypes' =>array('url' => '/locationtypes.html', 'name' => 'Prefer Location Types', 'icon' => '<span class="glyphicon glyphicon-tasks"></span>')
+					'PreferLocationTypes' =>array('url' => '/locationtypes.html', 'name' => 'Prefer Location Types', 'icon' => '<span class="glyphicon glyphicon-tasks"></span>'),
+					'productquantities' => array('url' => '/productquantities.html', 'name' => 'Stocktake', 'icon'=> '<span class="fa fa-building-o"></span>')
 			);
 		if(AccessControl::canAccessUsersPage(Core::getRole()) )
 		{
