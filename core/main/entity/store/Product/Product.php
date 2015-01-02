@@ -1002,15 +1002,18 @@ class Product extends InfoEntityAbstract
 	{
 		if(is_numeric($stockOnHand) || is_numeric($stockOnOrder) || is_numeric($stockInParts) || is_numeric($stockInRMA))
 			throw new Exception('At least one of these quuanties needed: stockOnHand, stockOnOrder, stockInParts or stockInRMA');
+		$unitCost = $this->getUnitCost();
 		$originalProduct = self::get($this->getId());
 		if(($stockOnHand = trim($stockOnHand)) !== trim($originalProduct->getStockOnHand())) {
-			$this->setStockOnHand($stockOnHand);
+			$this->setTotalOnHandValue($stockOnHand * $unitCost)
+				->setStockOnHand($stockOnHand);
 		}
 		if(($stockOnOrder = trim($stockOnOrder)) !== trim($originalProduct->getStockOnOrder())) {
 			$this->setStockOnOrder($stockOnOrder);
 		}
 		if(($stockInParts = trim($stockInParts)) !== trim($originalProduct->getStockInParts())) {
-			$this->setStockInParts($stockInParts);
+			$this->setTotalInPartsValue($stockInParts * $unitCost)
+				->setStockInParts($stockInParts);
 		}
 		if(($stockInRMA = trim($stockInRMA)) !== trim($originalProduct->getStockInRMA())) {
 			$this->setStockInRMA($stockInRMA);
@@ -1018,7 +1021,8 @@ class Product extends InfoEntityAbstract
 		if(($stockOnPO = trim($stockOnPO)) !== trim($originalProduct->getstockOnPO())) {
 			$this->setStockOnPO($stockOnPO);
 		}
-		$this->save();
+		$this->snapshotQty($this, 'Stock Changed')
+			->save()
 		return $this;
 	}
 	/**

@@ -228,8 +228,11 @@ class ProductQtyLog extends InfoEntityAbstract
 		DaoMap::setManyToOne('product', 'Product', 'pql_pro', true);
 		DaoMap::setIntType('stockOnHand', 'int', 10, false);
 		DaoMap::setIntType('totalOnHandValue', 'double', '10,4');
+		DaoMap::setIntType('totalInPartsValue', 'double', '10,4');
 		DaoMap::setIntType('stockOnOrder', 'int', 10, false);
 		DaoMap::setIntType('stockOnPO', 'int', 10, false);
+		DaoMap::setIntType('stockInParts', 'int', 10, false);
+		DaoMap::setIntType('stockInRMA', 'int', 10, false);
 		DaoMap::setStringType('comments', 'varchar', 255);
 		DaoMap::setStringType('entityName', 'varchar', 100);
 		DaoMap::setIntType('entityId', 'int', 10, true, 0);
@@ -237,7 +240,6 @@ class ProductQtyLog extends InfoEntityAbstract
 		
 		DaoMap::createIndex('name');
 		DaoMap::createIndex('entityName');
-		DaoMap::createIndex('entityId');
 		DaoMap::commit();
 	}
 	/**
