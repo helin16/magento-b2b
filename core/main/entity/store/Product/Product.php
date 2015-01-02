@@ -1004,26 +1004,32 @@ class Product extends InfoEntityAbstract
 			throw new Exception('At least one of these quuanties needed: stockOnHand, stockOnOrder, stockInParts or stockInRMA');
 		$unitCost = $this->getUnitCost();
 		$originalProduct = self::get($this->getId());
-		if(($stockOnHand = trim($stockOnHand)) !== trim($originalProduct->getStockOnHand())) {
+		if(($stockOnHand = trim($stockOnHand)) !== trim($origStockOnHand = $originalProduct->getStockOnHand())) {
 			$this->setTotalOnHandValue($stockOnHand * $unitCost)
 				->setStockOnHand($stockOnHand);
 		}
-		if(($stockOnOrder = trim($stockOnOrder)) !== trim($originalProduct->getStockOnOrder())) {
+		if(($stockOnOrder = trim($stockOnOrder)) !== trim($origStockOnOrder = $originalProduct->getStockOnOrder())) {
 			$this->setStockOnOrder($stockOnOrder);
 		}
-		if(($stockInParts = trim($stockInParts)) !== trim($originalProduct->getStockInParts())) {
+		if(($stockInParts = trim($stockInParts)) !== trim($origStockInParts = $originalProduct->getStockInParts())) {
 			$this->setTotalInPartsValue($stockInParts * $unitCost)
 				->setStockInParts($stockInParts);
 		}
-		if(($stockInRMA = trim($stockInRMA)) !== trim($originalProduct->getStockInRMA())) {
+		if(($stockInRMA = trim($stockInRMA)) !== trim($origStockInRMA = $originalProduct->getStockInRMA())) {
 			$this->setStockInRMA($stockInRMA);
 		}
-		if(($stockOnPO = trim($stockOnPO)) !== trim($originalProduct->getstockOnPO())) {
+		if(($stockOnPO = trim($stockOnPO)) !== trim($origStockOnPO = $originalProduct->getStockOnPO())) {
 			$this->setStockOnPO($stockOnPO);
 		}
-		$this->snapshotQty($this, 'Stock Changed')
+		$msg = 'Stock changed: StockOnHand [' . $origStockOnHand . ' => ' . $this->getStockOnHand() . '], '
+					. 'StockOnOrder [' . $origStockOnOrder . ' => ' . $this->getStockOnOrder() . '], '
+					. 'StockInParts [' . $origStockInParts . ' => ' . $this->getStockInParts() . '], '
+					. 'StockInRMA [' . $origStockInRMA . ' => ' . $this->getStockInRMA() . '], '
+					. 'StockOnPO [' . $origStockOnPO . ' => ' . $this->getStockOnPO() . ']';
+		return $this->snapshotQty($this, 'Stock Changed')
 			->save()
-		return $this;
+			->addComment($msg, Comments::TYPE_SYSTEM)
+			->addLog($msg, Log::TYPE_SYSTEM, 'STOCK_CHANGED', __CLASS__ . "::" . __FUNCTION__);
 	}
 	/**
 	 * (non-PHPdoc)
