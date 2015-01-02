@@ -50,11 +50,25 @@ echo '<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3
     			$position = strpos($myobCode, '-');
     			$myobCode = substr($myobCode, $position+1);	// get everything after first dash
     			$myobCode = str_replace(' ', '', $myobCode); // remove all whitespace
-    			if(count($products = ProductCode::getAllByCriteria('pro_code.productId = ? and pro_code.typeId = ?', array($product->getId(), ProductCodeType::ID_UPC), false, 1, 1) ) > 0 )
+    			echo '<td>' . $myobCode . '</td>';
+    			if(count($productCodes = ProductCode::getAllByCriteria('pro_code.typeId = ? and pro_code.code = ?', array($productCodeType->getId(), $myobCode), false ) ) > 0 )
     			{
-    				// if product with such code exist
-    				$products[0]->setCode(trim($myobCode))->save();
-    				$totalExist++; // just a counter
+	    			echo '<td>' . $productCodes[0]->getProduct()->getSku() . '</td>';
+    				// any product with such code with such code type
+    				foreach ($productCodes as $productCode)
+    				{
+    					if($productCode->getProduct() === $product) // if is this product
+    					{
+    						$productCode->setActive(true);
+    						$productCode->setCode($myobCode);
+    						$productCode->save();
+    					}
+    					else // if not this product with such code with such code type, deactive it
+    					{
+    						$productCode->setActive(false)->save();
+    					}
+    					$totalExist++;
+    				}
     			}
     			else
     			{
@@ -62,7 +76,6 @@ echo '<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3
     				ProductCode::create($product, $productCodeType, trim($myobCode));
     				$totalNew++;  // just a counter
     			}
-    			echo '<td>' . $myobCode . '</td>';
     		}
     		else throw new Exception('first column title must be MYOB-code');
     		echo '</tr>';
