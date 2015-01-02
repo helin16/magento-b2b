@@ -991,6 +991,37 @@ class Product extends InfoEntityAbstract
 			->addLog('StockOnOrder(' . $originStockOnOrder . ' => ' . $this->getStockOnOrder() . ')', Log::TYPE_SYSTEM, 'STOCK_QTY_CHG', __CLASS__ . '::' . __FUNCTION__);
 	}
 	/**
+	 * A product is stocktake
+	 * 
+	 * @param int $stockOnHand
+	 * @param int $stockOnOrder
+	 * @param int $stockInParts
+	 * @param int $stockInRMA
+	 */
+	public function stockChanged($stockOnHand = null, $stockOnOrder = null, $stockInParts = null, $stockInRMA = null, $stockOnPO = null)
+	{
+		if(is_numeric($stockOnHand) || is_numeric($stockOnOrder) || is_numeric($stockInParts) || is_numeric($stockInRMA))
+			throw new Exception('At least one of these quuanties needed: stockOnHand, stockOnOrder, stockInParts or stockInRMA');
+		$originalProduct = self::get($this->getId());
+		if(($stockOnHand = trim($stockOnHand)) !== trim($originalProduct->getStockOnHand())) {
+			$this->setStockOnHand($stockOnHand);
+		}
+		if(($stockOnOrder = trim($stockOnOrder)) !== trim($originalProduct->getStockOnOrder())) {
+			$this->setStockOnOrder($stockOnOrder);
+		}
+		if(($stockInParts = trim($stockInParts)) !== trim($originalProduct->getStockInParts())) {
+			$this->setStockInParts($stockInParts);
+		}
+		if(($stockInRMA = trim($stockInRMA)) !== trim($originalProduct->getStockInRMA())) {
+			$this->setStockInRMA($stockInRMA);
+		}
+		if(($stockOnPO = trim($stockOnPO)) !== trim($originalProduct->getstockOnPO())) {
+			$this->setStockOnPO($stockOnPO);
+		}
+		$this->save();
+		return $this;
+	}
+	/**
 	 * (non-PHPdoc)
 	 * @see BaseEntity::__loadDaoMap()
 	 */
