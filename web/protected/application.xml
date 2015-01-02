@@ -94,7 +94,7 @@
 			<url ServiceParameter="PreferLocationType.List.ListController" pattern="locationtypes.html" />
 			
 			<!-- FrontEnd:: Stocktack page -->
-			<url ServiceParameter="Stocktack.List.ListController" pattern="stocktack.html" />
+			<url ServiceParameter="Stocktake.List.ListController" pattern="stocktack.html" />
 			
 			<!-- FrontEnd:: Log list page -->
 			<url ServiceParameter="Log.List.ListController" pattern="logs.html" />
