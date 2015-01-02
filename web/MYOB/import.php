@@ -7,7 +7,7 @@ Core::setUser(UserAccount::get(UserAccount::ID_SYSTEM_ACCOUNT));
 
 // configuration
 $fileName = "SKU-match-16K.csv";
-$codeType = 'UPC';
+$codeType = 'EAN';
 
 $start = memory_get_usage(); // monite mem usage
 
