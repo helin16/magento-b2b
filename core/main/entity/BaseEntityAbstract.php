@@ -387,7 +387,8 @@ abstract class BaseEntityAbstract
      */
     public function addComment($comments, $type = Comments::TYPE_NORMAL, $groupId = '')
     {
-    	Comments::addComments($this, $comments, $type, $groupId);
+    	if(!strlen(trim($comments)))
+    		Comments::addComments($this, $comments, $type, $groupId);
     	return $this;
     }
     /**
