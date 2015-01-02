@@ -99,13 +99,12 @@ class ListController extends BPCPageAbstract
 			var_dump($param->CallbackParameter);
 			Dao::beginTransaction();
 			$items = array();
-			$comment = trim($param->CallbackParameter->comments);
 			foreach ($param->CallbackParameter->products as $item)
 			{
 				if(!($product = Product::get(trim($item->id))) instanceof Product)
 					throw new Exception('Invalid Product passed in!');
-				if(($stockOnPO = trim($item->stockOnPO)) !== $product->getstockOnPO())
-					$product->setStockOnPO($stockOnPO);
+				if(($stockInParts = trim($item->stockInParts)) !== $product->getStockInParts())
+					$product->setStockInParts($stockInParts);
 				if(($stockOnHand = trim($item->stockOnHand)) !== $product->getStockOnHand())
 					$product->setStockOnHand($stockOnHand);
 				if(($stockOnOrder = trim($item->stockOnOrder)) !== $product->getStockOnOrder())
@@ -113,7 +112,7 @@ class ListController extends BPCPageAbstract
 				if(($stockInRMA = trim($item->stockInRMA)) !== $product->getStockInRMA())
 					$product->setStockInRMA($stockInRMA);
 			}
-			$product->addComment(Comments::TYPE_WAREHOUSE, $comment)->save();
+			$product->save();
 			
 			$results['item'] = $product->getJson();
 			
