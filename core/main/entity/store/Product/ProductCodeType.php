@@ -10,6 +10,7 @@ class ProductCodeType extends BaseEntityAbstract
 {
 	const ID_UPC = 1;
 	const ID_EAN = 2;
+	const ID_MYOB = 3;
 	/**
 	 * The name of the product
 	 * 
