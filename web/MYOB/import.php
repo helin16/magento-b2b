@@ -6,7 +6,9 @@ echo '<pre>';
 Core::setUser(UserAccount::get(UserAccount::ID_SYSTEM_ACCOUNT));
 
 // configuration
-$fileName = "SKU-match-16K.csv";
+// $fileName = "SKU-match-16K.csv";
+// $fileName = "2015-01-02-MYOB-ME-PS-LCD.csv";
+$fileName = "2015-01-02-MYOB-BAG-CA-CPU-DW-GC-HD-MB-NB.csv";
 $codeType = 'EAN';
 
 $start = memory_get_usage(); // monite mem usage
@@ -15,6 +17,8 @@ echo '<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3
 
     try
     {
+    	Dao::beginTransaction();
+    	
     	// validate csv
     	if(!sizeof($fileName))
     		throw new Exception('Invalid File Name!');
@@ -33,61 +37,68 @@ echo '<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3
     		echo '<th>' . $title . '</th>';
     	echo '</tr></thead><tbody>';
     	
-    	$totalCount = $totalExist = $totalNew = 0;
+    	$totalCount = $totalExist = $totalNew = $totalMYOBExist = $totalMYOBNew =  $totalError = $row = 0;
     	while (($data = fgetcsv($handle, 100000, ',')) !== FALSE) {
+    		$row++;
     		echo '<tr>';
     		if($fileTitle[0] === 'sku' || $fileTitle[0] === 'SKU')
     		{
-    			$sku = $data[0];
-    			if(!($product = Product::getBySku($sku)) instanceof Product)
-    				throw new Exception('Invalid Product!');
-    			echo '<td><a target="_blank" href="/product/' . $product->getId() . '.html">' . $sku . '</a></td>';
+    			if(!empty($sku = trim($data[0])))
+    			{
+	    			if(!($product = Product::getBySku($sku)) instanceof Product)
+	    				throw new Exception('<pre>Invalid Product SKU!' . ' SKU: '. $sku . ', myob-code: '. trim($data[1]) . ', in ' . $fileName . ' line '. ($row+1) );
+	    			echo '<td><a target="_blank" href="/product/' . $product->getId() . '.html">' . $sku . '</a></td>';
+    			}
     		}
-    		else throw new Exception('first column title must be sku');
-    		if($fileTitle[1] === 'MYOB-code' || $fileTitle[1] === 'myob-code' || $fileTitle[1] === 'code' || $fileTitle[1] === 'CODE')
+    		else throw new Exception('<pre>first column title must be sku');
+    		if($fileTitle[1] === 'MYOB-code' || $fileTitle[1] === 'Item ' . "#" || $fileTitle[1] === 'code' || $fileTitle[1] === 'CODE')
     		{
-    			$myobCode = $data[1];
-    			$position = strpos($myobCode, '-');
-    			$myobCode = substr($myobCode, $position+1);	// get everything after first dash
-    			$myobCode = str_replace(' ', '', $myobCode); // remove all whitespace
-    			echo '<td>' . $myobCode . '</td>';
-    			if(count($productCodes = ProductCode::getAllByCriteria('pro_code.typeId = ? and pro_code.code = ?', array($productCodeType->getId(), $myobCode), false ) ) > 0 )
+    			if(!empty($myobCode = trim($data[1])) && !empty(trim($sku)))
     			{
-	    			echo '<td>' . $productCodes[0]->getProduct()->getSku() . '</td>';
-    				// any product with such code with such code type
-    				foreach ($productCodes as $productCode)
-    				{
-    					if($productCode->getProduct() === $product) // if is this product
-    					{
-    						$productCode->setActive(true);
-    						$productCode->setCode($myobCode);
-    						$productCode->save();
-    					}
-    					else // if not this product with such code with such code type, deactive it
-    					{
-    						$productCode->setActive(false)->save();
-    					}
-    					$totalExist++;
-    				}
-    			}
-    			else
-    			{
-    				// if it's a new code for such product
-    				ProductCode::create($product, $productCodeType, trim($myobCode));
-    				$totalNew++;  // just a counter
+	    			$position = strpos($myobCode, '-');
+	    			$myobCode = substr($myobCode, $position+1);	// get everything after first dash
+	    			$myobCode = str_replace(' ', '', $myobCode); // remove all whitespace
+	    			echo '<td>' . $myobCode . '</td>';
+	    			echo '<td>' . $product->getSku() . '</td>';
+	    			
+	    				if(count($productCodes = ProductCode::getAllByCriteria('pro_code.typeId = ? and pro_code.productId = ?', array($productCodeType->getId(), $product->getId()), true,1 ,1 ) ) > 0 )
+	    				{
+	    					$productCodes[0]->setCode($myobCode)->save();
+	    					$totalExist++;
+	    				}
+	    				else
+	    				{
+	    					ProductCode::create($product, $productCodeType, trim($myobCode));
+		    				$totalNew++;  // just a counter
+	    				}
+	    				
+	    				// MYOB code
+	    				if(count($productCodes = ProductCode::getAllByCriteria('pro_code.typeId = ? and pro_code.productId = ?', array(ProductCodeType::ID_MYOB, $product->getId()), true,1 ,1 ) ) > 0 )
+	    				{
+	    					$productCodes[0]->setCode($myobCode)->save();
+	    					$totalMYOBExist++;
+	    				}
+	    				else
+	    				{
+	    					ProductCode::create($product, ProductCodeType::get(ProductCodeType::ID_MYOB), trim($myobCode));
+		    				$totalMYOBNew++;  // just a counter
+	    				}
     			}
     		}
-    		else throw new Exception('first column title must be MYOB-code');
+    		else throw new Exception('<pre>2nd column title must be MYOB-code');
     		echo '</tr>';
     		$totalCount ++;
     		// clear up
     		$sku = $myobCode = $position = $products = $product = null;
     	}
     	echo '</tbody></table>';
-    	// result summery, note: all count starts at 1
-    	echo '<br/><b>Total Count: ' .$totalCount . '</b>(exist: '. $totalExist . ', new: '. $totalNew . ')';
+    	// result summery, note: all count starts at 0
+    	echo '<br/><b>Total Count: ' .$totalCount . '</b>(exist: '. $totalExist . ', new: '. $totalNew . ', MYOBexist: '. $totalMYOBExist . ', MYOBnew: '. $totalMYOBNew/* .  ', Error: ' . $totalError*/ . ')';
+    	
+    	Dao::commitTransaction();
     }
     catch(Exception $e) {
+    	Dao::rollbackTransaction();
         echo $e;
         exit;
     }
