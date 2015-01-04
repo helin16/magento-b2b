@@ -55,7 +55,7 @@ echo '<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3
     		if($fileTitle[1] === 'MYOB-code' || $fileTitle[1] === 'Item ' . "#" || $fileTitle[1] === 'code' || $fileTitle[1] === 'CODE')
     		{
     			$myobCode = trim($data[1]);
-    			if(!empty($myobCode) && !empty(trim($sku)))
+    			if(!empty($myobCode) && !empty($sku))
     			{
 	    			$position = strpos($myobCode, '-');
 	    			$myobCode = substr($myobCode, $position+1);	// get everything after first dash
