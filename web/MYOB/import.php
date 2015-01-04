@@ -43,7 +43,8 @@ echo '<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3
     		echo '<tr>';
     		if($fileTitle[0] === 'sku' || $fileTitle[0] === 'SKU')
     		{
-    			if(!empty($sku = trim($data[0])))
+    			$sku = trim($data[0]);
+    			if(!empty($sku))
     			{
 	    			if(!($product = Product::getBySku($sku)) instanceof Product)
 	    				throw new Exception('<pre>Invalid Product SKU!' . ' SKU: '. $sku . ', myob-code: '. trim($data[1]) . ', in ' . $fileName . ' line '. ($row+1) );
@@ -53,7 +54,8 @@ echo '<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3
     		else throw new Exception('<pre>first column title must be sku');
     		if($fileTitle[1] === 'MYOB-code' || $fileTitle[1] === 'Item ' . "#" || $fileTitle[1] === 'code' || $fileTitle[1] === 'CODE')
     		{
-    			if(!empty($myobCode = trim($data[1])) && !empty(trim($sku)))
+    			$myobCode = trim($data[1]);
+    			if(!empty($myobCode) && !empty(trim($sku)))
     			{
 	    			$position = strpos($myobCode, '-');
 	    			$myobCode = substr($myobCode, $position+1);	// get everything after first dash
