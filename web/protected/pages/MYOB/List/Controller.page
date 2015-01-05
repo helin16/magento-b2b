@@ -1,0 +1,78 @@
+<com:TContent ID="MainContent">
+	<com:Application.controls.fancybox.FancyBox />
+	<com:Application.controls.chosen.Chosen />
+	<com:TCallback ID="getOrdersBtn" onCallBack="Page.getOrders" />
+	<div class="row">
+	   <div class="col-md-9">
+	       <div class="panel panel-default searchPanel">
+	           <div class="panel-heading">
+	               <label for="showSearch">Show Search Criteria?</label>
+	               <input type="checkbox" id="showSearch" checked onclick="$(this).up('.searchPanel').down('.panel-body').toggle();"/>
+	               <span class="pull-right">
+	               		<span id="searchBtn" class="btn btn-primary btn-sm" data-loading-text="Searching..." onclick="pageJs.getSearchCriteria().getResults(true, <%= $this->orderPageSize %>);" >Search</span>
+	               </span>
+	           </div>
+	           <div class="panel-body" role="form" id='searchDiv'>
+	               <div class='row'>
+	                   <div class="col-md-3 col-sm-6 col-xs-12">
+	                       <div class="form-group form-group-sm input-group">
+	                           <label for="orderNo" class="input-group-addon">Order No: </label>
+	                           <input id='orderNo' type="text" class="form-control input-sm" placeholder="Order No" search_field="ord.orderNo" />
+	                       </div>
+	                   </div>
+	                   <div class="col-md-3 col-sm-6 col-xs-12">
+	                       <div class="form-group form-group-sm input-group">
+	                           <label for="invNo" class="input-group-addon">Inv No: </label>
+	                           <input id='invNo' type="text" class="form-control input-sm" placeholder="Invoice Number" search_field="ord.invNo" />
+	                       </div>
+	                   </div>
+	                   <div class="col-md-3 col-sm-6 col-xs-12">
+	                       <div class="form-group form-group-sm input-group">
+	                           <label for="custName" class="input-group-addon">Customer Name: </label> 
+	                           <input id='custName' type="text" class="form-control input-sm" placeholder="Customer Name" search_field="ord.infos.<%= OrderInfoType::ID_CUS_NAME %>" />
+	                       </div>
+	                   </div>
+	                   <div class="col-md-1 col-sm-6 col-xs-12">
+	                       <div class="form-group form-group-sm input-group">
+	                           <label for="status" class="input-group-addon">Paid: </label> 
+	                           <select search_field="ord.passPaymentCheck" class="form-control input-sm">
+	                               <option value=""></option>
+	                               <option value="1">YES</option>
+	                               <option value="0">NO</option>
+	                           </select>
+	                       </div>
+	                   </div>
+	                   <div class="col-md-2 col-sm-6 col-xs-12">
+	                       <div class="form-group form-group-sm input-group">
+	                           <label for="type" class="input-group-addon">Type: </label> 
+	                           <select search_field="ord.type" class="form-control input-sm">
+	                               <option value=""></option>
+	                               <option value="QUOTE">QUOTE</option>
+	                               <option value="ORDER">ORDER</option>
+	                               <option value="INVOICE">INVOICE</option>
+	                           </select>
+	                       </div>
+	                   </div>
+	                   <div class="col-xs-12">
+		                   <div class="form-group form-group-sm input-group">
+		                       <label for="status" class="input-group-addon">Status: </label>
+		                       <select search_field="ord.status" id="orderStatusId" multiple class="chosen"></select>
+		                   </div>
+                        </div>
+	               </div>
+	           </div>
+			</div>
+			<div class="panel panel-default">
+			     <div class="panel-heading">
+                   <span id='total_no_of_items'>0</span> Orders Found!
+                 </div>
+                 <div class="table-responsive">
+	                 <table class="table table-hover" id="resultDiv"></table>
+                 </div>
+			</div>
+	   </div>
+	   <div class="col-md-3">
+	       <com:Application.controls.latest_eta_box.LatestETAPanel />
+	   </div>
+	</div>
+</com:TContent>

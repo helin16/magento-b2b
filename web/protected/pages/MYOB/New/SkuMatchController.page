@@ -1,0 +1,5 @@
+<com:TContent ID="MainContent">
+	<com:Application.controls.fancybox.FancyBox />
+	<com:Application.controls.jsSaveAs.jsSaveAs />
+	<div id="sku_match_div"></div>
+</com:TContent>
