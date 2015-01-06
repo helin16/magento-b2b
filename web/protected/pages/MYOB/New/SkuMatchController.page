@@ -1,5 +1,6 @@
 <com:TContent ID="MainContent">
 	<com:Application.controls.fancybox.FancyBox />
+	<com:Application.controls.chosen.Chosen />
 	<com:Application.controls.jsSaveAs.jsSaveAs />
 	<com:TCallback ID="getAllCodeForProductBtn" OnCallback="getAllCodeForProduct" />
 	<div class="pagewrapper">

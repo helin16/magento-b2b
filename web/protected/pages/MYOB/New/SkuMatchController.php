@@ -31,12 +31,17 @@ class SkuMatchController extends BPCPageAbstract
 	 */
 	protected function _getEndJs()
 	{
+		$productCodeTypes = array(ProductCodeType::get(ProductCodeType::ID_EAN)->getJson());
+		foreach(ProductCodeType::getAll() as $item)
+			if($item->getId() != ProductCodeType::ID_EAN and $item->getId() != ProductCodeType::ID_MYOB)
+				$productCodeTypes[] = $item->getJson();
+		
 		$js = parent::_getEndJs();
 		// Setup the dnd listeners.
 		$js .= 'pageJs';
-		$js .= ".setHTMLIDs('sku_match_div')";
+		$js .= ".setHTMLIDs('sku_match_div', 'product_code_type_dropdown')";
 		$js .= '.setCallbackId("getAllCodeForProduct", "' . $this->getAllCodeForProductBtn->getUniqueID() . '")';
-		$js .= '.load();';
+		$js .= '.load(' . json_encode($productCodeTypes) . ');';
 		return $js;
 	}
 	
@@ -46,21 +51,16 @@ class SkuMatchController extends BPCPageAbstract
 		$result = $errors = $items = array();
 		try
 		{
-// 			var_dump($param->CallbackParameter);
-			
 			$index = $param->CallbackParameter->index;
 			$sku = trim($param->CallbackParameter->sku);
-			$code = trim($param->CallbackParameter->code);
-// 			$productCodeTypeId = trim($param->CallbackParameter->productCodeType->id);
+			$code = isset($param->CallbackParameter->code) ? trim($param->CallbackParameter->code) : '';
 			
 			if(empty($sku))
 				throw new Exception('Invalid SKU passed in! Line: ' . $index);
 			if(empty($code))
 				throw new Exception('Invalid MYOB code passed in! Line: ' . $index);
-// 			if(empty($productCodeTypeId) || !($productCodeType = ProductCodeType::get($productCodeTypeId)) instanceof ProductCodeType)
-// 				throw new Exception('Invalid ProductCodeType passed in! Line: ' . $index);
-			$productCodeType = ProductCodeType::get(ProductCodeType::ID_EAN);
-			
+			if(!($productCodeType = ProductCodeType::getAllByCriteria('pro_code_type.name = ?', array(trim($param->CallbackParameter->productCodeType)), true, 1, 1)[0]) instanceof ProductCodeType) 
+				throw new Exception('Invalid Product Code Type passed in!');
 			
 			//assume a non-title row contains at lease a number
 			if(($this->checkContainNumber($sku) || $this->checkContainNumber($code))) // is not a title row
