@@ -5,7 +5,7 @@ var PageJs = new Class.create();
 PageJs.prototype = Object.extend(new BPCPageJs(), {
 	id_wrapper: '' //the html id of the wrapper
 	,_acceptableTypes: ['csv']
-	,csvFileLineFormat: ['sku', 'code']
+	,csvFileLineFormat: ['sku', 'myobItemNo', 'assetAccNo', 'revenueAccNo', 'costAccNo']
 	,_fileReader: null
 	,_uploadedData: {}
 	,_htmlIds: {}
@@ -61,7 +61,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				search_contains: true,
 				inherit_select_classes: true,
 				no_results_text: "No code type found!",
-				width: "150px"
+				width: "150px",
 		});
 		return this;
 	}
@@ -200,7 +200,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		
 		//collect data
 		tmp.data = [];
-		tmp.headerRow = 'SKU, MYOB Code, code';
+		tmp.headerRow = 'sku, myobItemNo, barcode, assetAccNo, revenueAccNo, costAccNo';
 		$H(tmp.me._companyAliases).each(function(alias){
 			tmp.headerRow = tmp.headerRow + ', ' + alias.key;
 		});
@@ -231,8 +231,8 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.data = tmp.me._uploadedData[dataKeys[dataKeyIndex]];
 		tmp.data.productCodeType = tmp.me._productCodeTypes;
 		tmp.newRow = new Element('tr', {'class': 'result_row info'})
-			.insert({'bottom': new Element('td').update(tmp.data.sku) })
-			.insert({'bottom': new Element('td').update(tmp.data.code) });
+			.insert({'bottom': new Element('td').update(tmp.data.sku ? tmp.data.sku : 'Blank SKU!') })
+			.insert({'bottom': new Element('td').update(tmp.data.code ? tmp.data.code : 'Blank code!') });
 		tmp.me.postAjax(tmp.me.getCallbackId('getAllCodeForProduct'), tmp.data, {
 			'onLoading': function(sender, param) {
 				listGroupDiv.insert({'bottom': tmp.newRow });
@@ -244,13 +244,15 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 						tmp.newRow.update('');
 						return;
 					}
-					
 					tmp.newRow.update('').removeClassName('info').addClassName('result-done').store('data', tmp.result.item)
 						.insert({'bottom': new Element('td')
 							.insert({'bottom': new Element('a', {'href': ('/product/' + tmp.result.item.product.id + '.html'), 'target': '_blank' }).update(tmp.result.item.product.sku) })
 						})
-						.insert({'bottom': new Element('td').update(tmp.result.item.MYOBcode) })
-						.insert({'bottom': new Element('td').update(tmp.result.item.code) });
+						.insert({'bottom': new Element('td', {'class': tmp.result.item.MYOBcode ? '' : 'warning'}).update(tmp.result.item.MYOBcode ? tmp.result.item.MYOBcode : 'Blank') })
+						.insert({'bottom': new Element('td', {'class': tmp.result.item.code ? '' : 'warning'}).update(tmp.result.item.code ? tmp.result.item.code : 'No barcode updated') })
+						.insert({'bottom': new Element('td', {'class': tmp.result.item.assetAccNo ? '' : 'warning'}).update(tmp.result.item.assetAccNo ? tmp.result.item.assetAccNo : 'No assetAccNo updated') })
+						.insert({'bottom': new Element('td', {'class': tmp.result.item.revenueAccNo ? '' : 'warning'}).update(tmp.result.item.revenueAccNo ? tmp.result.item.revenueAccNo : 'No revenueAccNo updated') })
+						.insert({'bottom': new Element('td', {'class': tmp.result.item.costAccNo ? '' : 'warning'}).update(tmp.result.item.costAccNo ? tmp.result.item.costAccNo : 'No costAccNo updated') });
 				}  catch (e) {
 					tmp.newRow.update('').removeClassName('info').addClassName('danger').store('data', tmp.data)
 						.insert({'bottom': new Element('td').update(tmp.data.sku ? tmp.data.sku : 'Blank SKU!') })
@@ -308,8 +310,11 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		//get header row
 		tmp.theadRow = new Element('tr')
 			.insert({'bottom': new Element('th').update('SKU') })
-			.insert({'bottom': new Element('th').update('MYOB code') })
-			.insert({'bottom': new Element('th').update('code') });
+			.insert({'bottom': new Element('th').update('MYOB Item #') })
+			.insert({'bottom': new Element('th').update('Barcode') })
+			.insert({'bottom': new Element('th').update('Asset Acc #') })
+			.insert({'bottom': new Element('th').update('Revenue Acc #') })
+			.insert({'bottom': new Element('th').update('Cost Acc #') });
 		
 		$(tmp.me.id_wrapper).update(
 			new Element('div', {'class': 'price_search_result panel panel-danger table-responsive'})

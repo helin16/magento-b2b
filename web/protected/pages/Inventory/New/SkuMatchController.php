@@ -51,14 +51,20 @@ class SkuMatchController extends BPCPageAbstract
 		$result = $errors = $items = array();
 		try
 		{
+			var_dump($param->CallbackParameter);
+			
 			$index = $param->CallbackParameter->index;
 			$sku = trim($param->CallbackParameter->sku);
-			$code = isset($param->CallbackParameter->code) ? trim($param->CallbackParameter->code) : '';
+			$code = isset($param->CallbackParameter->myobItemNo) ? trim($param->CallbackParameter->myobItemNo) : '';
+			$assetAccNo = isset($param->CallbackParameter->assetAccNo) ? trim($param->CallbackParameter->assetAccNo) : '';
+			$revenueAccNo = isset($param->CallbackParameter->revenueAccNo) ? trim($param->CallbackParameter->revenueAccNo) : '';
+			$costAccNo = isset($param->CallbackParameter->costAccNo) ? trim($param->CallbackParameter->costAccNo) : '';
+			
 			
 			if(empty($sku))
 				throw new Exception('Invalid SKU passed in! Line: ' . $index);
-			if(empty($code))
-				throw new Exception('Invalid MYOB code passed in! Line: ' . $index);
+// 			if(empty($code))
+// 				throw new Exception('Invalid MYOB code passed in! Line: ' . $index);
 			if(!($productCodeType = ProductCodeType::getAllByCriteria('pro_code_type.name = ?', array(trim($param->CallbackParameter->productCodeType)), true, 1, 1)[0]) instanceof ProductCodeType) 
 				throw new Exception('Invalid Product Code Type passed in!');
 			
@@ -70,7 +76,7 @@ class SkuMatchController extends BPCPageAbstract
 				if(!($product instanceof Product))
 					throw new Exception('Invalid SKU passed in! Line: ' . $index);
 				
-				$items = $this->updateProductCode($product, $code, $productCodeType);
+				$items = $this->updateProductCode($product, $code, $productCodeType, $assetAccNo, $revenueAccNo, $costAccNo);
 			}
 			
 			$result['item'] = $items;
@@ -82,7 +88,7 @@ class SkuMatchController extends BPCPageAbstract
 		$param->ResponseData = StringUtilsAbstract::getJson($result, $errors);
 	}
 	
-	private function updateProductCode($product, $myobCode, $productCodeType)
+	private function updateProductCode(Product $product, $myobCode, $productCodeType, $assetAccNo = '', $revenueAccNo = '', $costAccNo = '')
 	{
 		try
 		{
@@ -104,30 +110,46 @@ class SkuMatchController extends BPCPageAbstract
 			$result['product'] = $product->getJson();
 			$result['code']= $myobCodeAfter;
 			$result['MYOBcode'] = $myobCode;
+			$result['assetAccNo'] = $assetAccNo;
+			$result['revenueAccNo'] = $revenueAccNo;
+			$result['costAccNo'] = $costAccNo;
 			
 			// if such code type for such product exist, update it to the new one
-			if(count($productCodes = ProductCode::getAllByCriteria('pro_code.typeId = ? and pro_code.productId = ?', array($productCodeType->getId(), $product->getId()), true,1 ,1 ) ) > 0 )
+			if(!empty($myobCode))
 			{
-				$productCodes[0]->setCode($myobCodeAfter)->save();
-				$result['codeNew'] = false;
-			}
-			else // create a new one
-			{
-				$newCode = ProductCode::create($product, $productCodeType, trim($myobCode));
-				$result['codeNew'] = true;
+				if(count($productCodes = ProductCode::getAllByCriteria('pro_code.typeId = ? and pro_code.productId = ?', array($productCodeType->getId(), $product->getId()), true,1 ,1 ) ) > 0 )
+				{
+					$productCodes[0]->setCode($myobCodeAfter)->save();
+					$result['codeNew'] = false;
+				}
+				else // create a new one
+				{
+					$newCode = ProductCode::create($product, $productCodeType, trim($myobCode));
+					$result['codeNew'] = true;
+				}
 			}
     
 			// do the same for MYOB code (NOTE: have to have MYOB code in code type !!!)
-			if(count($productCodes = ProductCode::getAllByCriteria('pro_code.typeId = ? and pro_code.productId = ?', array(ProductCodeType::ID_MYOB, $product->getId()), true,1 ,1 ) ) > 0 )
+			if(!empty($myobCode))
 			{
-				$productCodes[0]->setCode($myobCode)->save();
-				$result['MYOBcodeNew'] = false;
+				if(count($productCodes = ProductCode::getAllByCriteria('pro_code.typeId = ? and pro_code.productId = ?', array(ProductCodeType::ID_MYOB, $product->getId()), true,1 ,1 ) ) > 0 )
+				{
+					$productCodes[0]->setCode($myobCode)->save();
+					$result['MYOBcodeNew'] = false;
+				}
+				else
+				{
+					ProductCode::create($product, ProductCodeType::get(ProductCodeType::ID_MYOB), trim($myobCode));
+					$result['MYOBcodeNew'] = true;
+				}
 			}
-			else
-			{
-				ProductCode::create($product, ProductCodeType::get(ProductCodeType::ID_MYOB), trim($myobCode));
-				$result['MYOBcodeNew'] = true;
-			}
+    
+			if(!empty($assetAccNo))
+				$product->setAssetAccNo($assetAccNo)->save();
+			if(!empty($revenueAccNo))
+				$product->setRevenueAccNo($revenueAccNo)->save();
+			if(!empty($costAccNo))
+				$product->setCostAccNo($costAccNo)->save();
 			 
 			Dao::commitTransaction();
 			
@@ -139,7 +161,6 @@ class SkuMatchController extends BPCPageAbstract
 			exit;
 		}
 	}
-	
 	private function checkContainNumber($string)
 	{
 		return preg_match('/[0-9]+/', $string);
