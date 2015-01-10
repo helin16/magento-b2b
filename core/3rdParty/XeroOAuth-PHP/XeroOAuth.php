@@ -15,7 +15,9 @@ class XeroOAuth {
 	var $_xero_consumer_options;
 	var $_action;
 	var $_nonce_chars;
-	
+	public static function getBasePath() {
+		return trim(dirname(__FILE__));
+	}
 	/**
 	 * Creates a new XeroOAuth object
 	 *
