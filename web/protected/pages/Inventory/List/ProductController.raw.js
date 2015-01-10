@@ -9,7 +9,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 	,productStatuses: []
 	,_showRightPanel: false
 	,_getTitleRowData: function() {
-		return {'sku': 'SKU', 'name': 'Product Name','locations': 'Locations', 'invenAccNo': 'AccNo.', 'manufacturer' : {'name': 'Brand'}, 'supplierCodes': [{'supplier': {'name': 'Supplier'}, 'code': ''}],  'active': 'act?', 'stockOnOrder': 'OnOrder', 'stockOnHand': 'OnHand', 'stockOnPO': 'OnPO'};
+		return {'sku': 'SKU', 'name': 'Product Name', 'assetAccNo': 'Asset Acc #', 'revenueAccNo': 'Revenue Acc #', 'costAccNo': 'Cost Acc #', 'locations': 'Locations', 'invenAccNo': 'AccNo.', 'manufacturer' : {'name': 'Brand'}, 'supplierCodes': [{'supplier': {'name': 'Supplier'}, 'code': ''}],  'active': 'act?', 'stockOnOrder': 'OnOrder', 'stockOnHand': 'OnHand', 'stockOnPO': 'OnPO'};
 	}
 	,toggleSearchPanel: function(panel) {
 		var tmp = {};
@@ -367,6 +367,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 	,_getResultRow: function(row, isTitle) {
 		var tmp = {};
 		tmp.me = this;
+		console.debug(row);
 		tmp.tag = (tmp.isTitle === true ? 'th' : 'td');
 		tmp.isTitle = (isTitle || false);
 		tmp.price = '';
@@ -397,28 +398,9 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 			})
 			.insert({'bottom': new Element(tmp.tag, {'class': 'product_name hidden-xs hide-when-info hidden-sm', 'style': (tmp.me._showRightPanel ? 'display: none' : '')}).update(row.name) })
 			.insert({'bottom': new Element(tmp.tag, {'class': 'product_price hidden-xs hide-when-info hidden-sm', 'style': (tmp.me._showRightPanel ? 'display: none' : '')}).update(tmp.isTitle === true ? 'Price' : (tmp.price.blank() ? '' : tmp.me.getCurrency(tmp.price))) })
-			.insert({'bottom': new Element(tmp.tag, {'class': 'locations col-xs-1 hidden-sm'}).update(
-					row.locations ? tmp.me._getLocations(row.locations, isTitle) : ''
-			) })
-			.insert({'bottom': new Element(tmp.tag, {'class': 'inventeryCode col-xs-1 hide-when-info'}).update(row.invenAccNo ? row.invenAccNo : '') })
-			.insert({'bottom': new Element(tmp.tag, {'class': 'manufacturer col-xs-1 hide-when-info'}).update(row.manufacturer ? row.manufacturer.name : '') })
-			.insert({'bottom': new Element(tmp.tag, {'class': 'supplier col-xs-1 hide-when-info hidden-sm'}).update(
-					row.supplierCodes ? tmp.me._getSupplierCodes(row.supplierCodes, isTitle) : ''
-			) })
-			.insert({'bottom': new Element(tmp.tag, {'class': 'qty col-xs-1 hidden-sm'}).update(
-					tmp.isTitle === true ? 
-							new Element('div', {'class': 'row'})
-								.insert({'bottom': new Element(tmp.tag, {'class': 'stockOnPO col-xs-3', 'title': 'Stock on PurchaseOrder'}).update('P') })
-								.insert({'bottom': new Element(tmp.tag, {'class': 'stockOnHand col-xs-3', 'title': 'Stock on hand'}).update('H') })
-								.insert({'bottom': new Element(tmp.tag, {'class': 'stockOnOrder col-xs-3', 'title': 'Stock on Order'}).update('O') })
-								.insert({'bottom': new Element(tmp.tag, {'class': 'stockOnOrder col-xs-3', 'title': 'Stock on RMA'}).update('R') })
-							: 
-							new Element('div', {'class': 'row'})
-								.insert({'bottom': new Element(tmp.tag, {'class': 'stockOnPO col-xs-3', 'title': 'Stock on PurchaseOrder'}).update(row.stockOnPO) })
-								.insert({'bottom': new Element(tmp.tag, {'class': 'stockOnHand col-xs-3', 'title': 'Stock on hand'}).update(row.stockOnHand) })
-								.insert({'bottom': new Element(tmp.tag, {'class': 'stockOnOrder col-xs-3', 'title': 'Stock on Order'}).update(row.stockOnOrder) })
-								.insert({'bottom': new Element(tmp.tag, {'class': 'stockInRMA col-xs-3', 'title': 'Stock on Order'}).update(row.stockInRMA) })
-			) })
+			.insert({'bottom': new Element(tmp.tag, {'class': 'assetAccNo col-xs-1 hide-when-info'}).update(row.assetAccNo ? row.assetAccNo : '') })
+			.insert({'bottom': new Element(tmp.tag, {'class': 'revenueAccNo col-xs-1 hide-when-info'}).update(row.revenueAccNo ? row.revenueAccNo : '') })
+			.insert({'bottom': new Element(tmp.tag, {'class': 'costAccNo col-xs-1 hide-when-info'}).update(row.costAccNo ? row.costAccNo : '') })
 			.insert({'bottom': new Element(tmp.tag, {'class': 'product_active col-xs-1 hide-when-info hidden-sm'})
 				.insert({'bottom': (tmp.isTitle === true ? row.active : 
 					new Element('div', {'class': 'row'}) 
