@@ -43,7 +43,8 @@ class Menu extends TTemplateControl
 				'productcodetypes' => array('url' => '/productcodetypes.html', 'name' => 'Product Code Types', 'icon' => '<span class="glyphicon glyphicon-barcode"></span>'),
 				'productcategories' => array('url' => '/productcategories.html', 'name' => 'Product Categories'),
 				'productquantities' => array('url' => '/stocktack.html', 'name' => 'Stocktake', 'icon'=> '<span class="fa fa-building-o"></span>'),
-				'myob' => array('url' => '/myob/new.html', 'name' => 'MYOB Sku Match', 'icon'=> '<span class="fa fa-yelp"></span>')
+				'newInventory' => array('url' => '/inventory.html', 'name' => 'Inventory', 'icon'=> '<span class="fa fa-fire"></span>'),
+				'inventory' => array('url' => '/inventory/new.html', 'name' => 'Inventory Ajustment', 'icon'=> '<span class="fa fa-yelp"></span>')
 			);
 		if(AccessControl::canAccessOrderItemsPage(Core::getRole()) )
 			$array['Purchase'] = array(

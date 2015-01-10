@@ -64,10 +64,10 @@
 			<!-- FrontEnd:: product category list page -->
 			<url ServiceParameter="ProductCategory.List.ListController" pattern="productcategories.html" />
 			
-			<!-- FrontEnd:: MYOB Sku match list page -->
-			<url ServiceParameter="MYOB.List.Controller" pattern="myob.html" />
-			<!-- FrontEnd:: MYOB Sku match new page -->
-			<url ServiceParameter="MYOB.New.SkuMatchController" pattern="myob/new.html" />
+			<!-- FrontEnd:: Inventory list page -->
+			<url ServiceParameter="Inventory.List.ProductController" pattern="inventory.html" />
+			<!-- FrontEnd:: Inventory new page -->
+			<url ServiceParameter="Inventory.New.SkuMatchController" pattern="inventory/new.html" />
 			
 			<!-- FrontEnd:: manufacturer list page -->
 			<url ServiceParameter="Manufacturer.List.ListController" pattern="manufacturers.html" />
