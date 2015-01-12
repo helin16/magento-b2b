@@ -1,5 +1,5 @@
 <?php
-class XeroConnector
+abstract class XeroConnectorAbstract
 {
 	const CUSTOMER_KEY = 'AYLWASFOHUTMKN5KKVG3OSMQTX4ERK';
 	const CUSTOMER_SECRET = 'A5CIIOWLOTY1516WFQEARSHUZKLXW9';
@@ -29,16 +29,17 @@ class XeroConnector
 	 */
 	public static function get()
 	{
-		if(!self::$_connector instanceof XeroConnector)
-			self::$_connector = new XeroConnector();
-		return self::$_connector;
+		$class = get_called_class();
+		if(!isset(self::$_connector[$class]) || !self::$_connector[$class] instanceof $class)
+			self::$_connector[$class] = new $class();
+		return self::$_connector[$class];
 	}
 	/**
 	 * Getting the XeroOAuth object from 3rdParty
 	 * 
 	 * @return XeroOAuth
 	 */
-	private function _getOAuth()
+	protected function _getOAuth()
 	{
 		if($this->_oauth instanceof XeroOAuth)
 			return $this->_getSession()->_oauth;
@@ -87,23 +88,6 @@ class XeroConnector
 			$this->_oauth->config ['oauth_session_handle'] = $session['session_handle'];
 		}
 		return $this;
-	}
-	/**
-	 * Getting the items
-	 * 
-	 * @param unknown $params
-	 * 
-	 * @throws Exception
-	 * @return SimpleXMLElement|null
-	 */
-	public function getItems($params = array())
-	{
-		$auth = $this->_getOAuth();
-		$auth->request('GET', $auth->url('Items', 'core'), $params);
-		if (intval($auth->response['code']) !== self::RESPONSE_CODE_SUCCESS)
-			throw new Exception('Error' .  $auth->response['response']);
-		$response = $auth->parseResponse($auth->response['response'], $auth->response['format']);
-		return isset($response->Items) ? $response->Items : null;
 	}
 }
 
