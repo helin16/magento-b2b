@@ -1,7 +1,7 @@
 <?php
-class XeroConnector_Account extends XeroConnectorAbstract
+class XeroConnector_Contact extends XeroConnectorAbstract
 {
-	private $_xmlType = "account";
+	private $_xmlType = "contact";
 	
 	/**
 	 * Getting the Accounts
@@ -11,11 +11,11 @@ class XeroConnector_Account extends XeroConnectorAbstract
 	 * @throws Exception
 	 * @return SimpleXMLElement|null
 	 */
-	public function getAccounts($params = array())
+	public function getContacts($params = array())
 	{
 		$auth = $this->_getOAuth();
 		
-		$auth->request('GET', $auth->url('Accounts', 'core'), $params);
+		$auth->request('GET', $auth->url('Contacts', 'core'), $params);
 		if (intval($auth->response['code']) !== self::RESPONSE_CODE_SUCCESS)
 			throw new Exception('Error' .  $auth->response['response']);
 		
@@ -48,29 +48,6 @@ class XeroConnector_Account extends XeroConnectorAbstract
 	{
 		return $this->_updateAccounts($params, $input);
 	}
-	
-	/**
-	 * 
-	 * @param unknown $params
-	 * @param string $glue
-	 * @return multitype:string
-	 */
-	// 	private function mapQueryParam($params = array(), $glue = "AND")
-	// 	{
-	// 		$mainCriteria = $output = array();
-	// 		if(is_array($params) && isset($params['where']) && count($params['where']) > 0)
-	// 		{
-	// 			foreach($param['where'] as $key => $value)
-	// 				$mainCriteria[] = trim($key)." ".trim($value['operator'])." ".trim($value['value']);
-				
-	// 			$output['Where'] = implode(" ".trim($glue)." ", $mainCriteria);
-	// 		}
-			
-	// 		if(is_array($params) && isset($params['order']))
-	// 			$output['Order'] = trim($params['order']);
-			
-	// 		return $output;
-	// 	}
 	
 	/**
 	 * get the xml for that entity
