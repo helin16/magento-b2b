@@ -97,7 +97,7 @@ class XeroConnector_Item extends XeroConnectorAbstract
 	 */
 	public function createItem($params = array(), $code, $description = '', $salesUnitPrice = 0, $salesAccountCode = 0, $purchaseUnitPrice = 0, $purchaseAccountCode = 0, $purchaseTaxType = '')
 	{
-		return $this->updateItems($params, $code, $description, $salesUnitPrice, $salesAccountCode, $purchaseUnitPrice, $purchaseAccountCode, $purchaseTaxType);
+		return $this->updateItems($params,trim($code), trim($description), trim($salesUnitPrice), trim($salesAccountCode), trim($purchaseUnitPrice), trim($purchaseAccountCode), trim($purchaseTaxType));
 	}
 	/**
 	 * update the item (public)
@@ -116,7 +116,7 @@ class XeroConnector_Item extends XeroConnectorAbstract
 	 */
 	public function updateItem($params = array(), $code, $description = '', $salesUnitPrice = 0, $salesAccountCode = 0, $purchaseUnitPrice = 0, $purchaseAccountCode = 0, $purchaseTaxType = '')
 	{
-		return $this->updateItems($params, $code, $description, $salesUnitPrice, $salesAccountCode, $purchaseUnitPrice, $purchaseAccountCode, $purchaseTaxType);
+		return $this->updateItems($params,trim($code), trim($description), trim($salesUnitPrice), trim($salesAccountCode), trim($purchaseUnitPrice), trim($purchaseAccountCode), trim($purchaseTaxType));
 	}
 	/**
 	 * Getting all items
