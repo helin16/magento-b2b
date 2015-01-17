@@ -25,7 +25,7 @@ abstract class XeroConnectorAbstract
 	/**
 	 * Getting XeroConnector from the cache
 	 * 
-	 * @return XeroConnector
+	 * @return XeroConnectorAbstract
 	 */
 	public static function get()
 	{

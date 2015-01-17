@@ -2,6 +2,15 @@
 class XeroConnector_Contacts extends XeroConnectorAbstract
 {
 	/**
+	 * Getting XeroConnector from the cache
+	 *
+	 * @return XeroConnector_Contacts
+	 */
+	public static function get()
+	{
+		return parent::get();
+	}
+	/**
 	 * Getting a fake xml element for product
 	 *
 	 * @param unknown $code Item code
@@ -117,13 +126,6 @@ class XeroConnector_Contacts extends XeroConnectorAbstract
 	 * create the item (public)
 	 *
 	 * @param unknown $params
-	 * @param unknown $code Item code
-	 * @param unknown $description Item description
-	 * @param unknown $salesUnitPrice Item unit price for sales
-	 * @param unknown $salesAccountCode Account code for sales
-	 * @param unknown $purchaseTaxType Tax type for PO
-	 * @param unknown $purchaseUnitPrice Unit price for PO
-	 * @param unknown $purchaseAccountCode Account code for PO
 	 *
 	 * @throws Exception
 	 * @return SimpleXMLElement|null
@@ -135,14 +137,7 @@ class XeroConnector_Contacts extends XeroConnectorAbstract
 	/**
 	 * update the item (public)
 	 *
-	 * @param unknown $params
-	 * @param unknown $code Item code
-	 * @param unknown $description Item description
-	 * @param unknown $salesUnitPrice Item unit price for sales
-	 * @param unknown $salesAccountCode Account code for sales
-	 * @param unknown $purchaseTaxType Tax type for PO
-	 * @param unknown $purchaseUnitPrice Unit price for PO
-	 * @param unknown $purchaseAccountCode Account code for PO
+	 * @param array $params
 	 *
 	 * @throws Exception
 	 * @return SimpleXMLElement|null
