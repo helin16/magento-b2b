@@ -15,8 +15,9 @@ class XeroConnector_Contacts extends XeroConnectorAbstract
 	 * @return SimpleXMLElement
 	 */
 	private function _getFakeXml(array $params) {
-		print_r($params);
-		$xml = $this->getXML()->addChild('Contact');
+		$parentXml = $this->getXML();
+		$xml = $parentXml->addChild('Contact');
+		var_dump($xml->asXML());
 		// compulsory filed(s)
 		if(empty($params['name']))
 			throw new Exception('Name is required for Contact');
@@ -30,7 +31,7 @@ class XeroConnector_Contacts extends XeroConnectorAbstract
 		if(!empty($params['email']))
 			$xml->EmailAddress = $params['email'];
 		// Address
-		if(!empty($params['addresses']) && count($params['addresses']))
+		if(!empty($params['addresses']) && count($params['addresses']) > 0 ) 
 		{
 			$addressesXML = $xml->addChild('Addresses');
 			foreach ($params['addresses'] as $address)
@@ -41,13 +42,10 @@ class XeroConnector_Contacts extends XeroConnectorAbstract
 				{
 					$addressXML->addChild('AddressType', $address['addressType']);
 					// AddressLine(s)
-					$lineCount = 1;
-					foreach ($address['addressLines'] as $addressLine)
+					foreach ($address['addressLines'] as $index => $addressLine)
 					{
-						$addressXML->addChild(('AddressLine' . $lineCount), $addressLine);
-						$lineCount++;
+						$addressXML->addChild(('AddressLine' . ($index + 1)), $addressLine);
 					}
-					unset($lineCount);
 					// City
 					if(!empty($address['city']))
 						$addressXML->City = $address['city'];
@@ -68,7 +66,7 @@ class XeroConnector_Contacts extends XeroConnectorAbstract
 			if(!empty($params['defaultCurrency']))
 				$xml->DefaultCurrency = $params['defaultCurrency'];
 		}
-		return $xml;
+		return $parentXml;
 	}
 	/**
 	 * Getting the items
@@ -85,7 +83,7 @@ class XeroConnector_Contacts extends XeroConnectorAbstract
 		if (intval($auth->response['code']) !== self::RESPONSE_CODE_SUCCESS)
 			throw new Exception('Error' .  $auth->response['response']);
 		$response = $auth->parseResponse($auth->response['response'], $auth->response['format']);
-		return isset($response->Items) ? $response->Items : null;
+		return isset($response->Contacts) ? $response->Contacts : null;
 	}
 	/**
 	 * create/update the items
@@ -106,7 +104,7 @@ class XeroConnector_Contacts extends XeroConnectorAbstract
 	{
 		$auth = $this->_getOAuth();
 			$xml = $this->_getFakeXml($params);
-			var_dump($xml);
+			var_dump($xml->asXML());
 			$xml = $this->_removeXMLHeader($xml);
 			$auth->request('POST', $auth->url('Contacts', 'core'), $params, $xml);
 			var_dump($auth->response);
@@ -164,5 +162,20 @@ class XeroConnector_Contacts extends XeroConnectorAbstract
 	public function getAll()
 	{
 		return $this->getContacts(array());
+	}
+	/**
+	 * Getting one by Contact Id
+	 * 
+	 * @param unknown $value Contact Id
+	 * @throws Exception
+	 * @return Ambigous <NULL, SimpleXMLElement>
+	 */
+	public function getByContactId($value)
+	{
+		if(empty($value))
+			throw new Exception('Invalid Contact Id passed in');
+		return count($this->getContacts(array('Where' => 'ContactID==Guid("' . trim($value) . '")'))) ?
+			$this->getContacts(array('Where' => 'ContactID==Guid("' . trim($value) . '")'))
+			: null;
 	}
 }
