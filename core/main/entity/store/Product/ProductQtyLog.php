@@ -335,6 +335,8 @@ class ProductQtyLog extends InfoEntityAbstract
 			->setStockOnHand($product->getStockOnHand())
 			->setStockOnOrder($product->getStockOnOrder())
 			->setStockOnPO($product->getstockOnPO())
+			->setStockInParts($product->getStockInParts())
+			->setStockInRMA($product->getStockInRMA())
 			->setComments($comments);
 		if($entity instanceof BaseEntityAbstract) {
 			$log->setEntityName(get_class($entity))
