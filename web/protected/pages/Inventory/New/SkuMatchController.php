@@ -124,7 +124,7 @@ class SkuMatchController extends BPCPageAbstract
 				}
 				else // create a new one
 				{
-					$newCode = ProductCode::create($product, $productCodeType, trim($myobCode));
+					$newCode = ProductCode::create($product, $productCodeType, trim($myobCodeAfter));
 					$result['codeNew'] = true;
 				}
 			}
