@@ -88,6 +88,7 @@ class XeroConnector_Contacts extends XeroConnectorAbstract
 	private function getContacts($params = array())
 	{
 		$auth = $this->_getOAuth();
+		
 		$auth->request('GET', $auth->url('Contacts', 'core'), $params);
 		if (intval($auth->response['code']) !== self::RESPONSE_CODE_SUCCESS)
 			throw new Exception('Error' .  $auth->response['response']);

@@ -24,11 +24,19 @@ class XeroConnector_Account extends XeroConnectorAbstract
 		return isset($response->Accounts) ? $response->Accounts : null;
 	}
 	
+	public function getAccountByCode($code)
+	{
+		if(($code = trim($code)) === '')
+			return false;
+		
+		return $this->getAccounts(array("Where" => "Code == '".$code."'"));
+	}
+	
 	private function _updateAccounts($params = array(), array $input = array())
 	{
 		$auth = $this->_getOAuth();
 		
-		$xml = self::getXML($this->_xmlType, $input);
+		$xml = self::getXML($input);
 		$xml = $this->_removeXMLHeader($xml);
 		
 		$auth->request('POST', $auth->url('Accounts', 'core'), $params, $xml);
@@ -36,7 +44,7 @@ class XeroConnector_Account extends XeroConnectorAbstract
 			throw new Exception('Error' .  $auth->response['response']);
 		$response = $auth->parseResponse($auth->response['response'], $auth->response['format']);
 		
-		return isset($response->Accounts) ? $response->Items : null;
+		return isset($response->Accounts) ? $response->Accounts : null;
 	}
 	
 	public function createAccount($params = array(), array $input = array())
