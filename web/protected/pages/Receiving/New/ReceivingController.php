@@ -206,7 +206,6 @@ class ReceivingController extends BPCPageAbstract
 		$results = $errors = array();
 		try
 		{
-// 			var_dump($param->CallbackParameter);
 			Dao::beginTransaction();
 			$items = array();
 			$purchaseOrder = PurchaseOrder::get(trim($param->CallbackParameter->purchaseOrder->id));

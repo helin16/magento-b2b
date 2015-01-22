@@ -338,7 +338,6 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 	 */
 	,_openProductDetails: function(product) {
 		var tmp = {};
-		console.debug(product);
 		tmp.newWindow = window.open('/product/' + (product == 'new' ? product : product.id) + '.html', 'Product Details for: ' + product.sku, 'scrollbars=yes, location=no, menubar=no, status=no, titlebar=no, fullscreen=no, toolbar=no, width=1024');
 		tmp.newWindow.focus();
 	}
@@ -367,7 +366,6 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 	,_getResultRow: function(row, isTitle) {
 		var tmp = {};
 		tmp.me = this;
-		console.debug(row);
 		tmp.tag = (tmp.isTitle === true ? 'th' : 'td');
 		tmp.isTitle = (isTitle || false);
 		tmp.price = '';

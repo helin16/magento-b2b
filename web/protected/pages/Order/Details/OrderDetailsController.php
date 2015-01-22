@@ -469,7 +469,6 @@ class OrderDetailsController extends BPCPageAbstract
 		$results = $errors = array();
 		try
 		{
-// 			var_dump($param->CallbackParameter);
 			$items = array();
 			Dao::beginTransaction();
 			$type = trim($param->CallbackParameter->type);

@@ -143,7 +143,6 @@ class OrderController extends BPCPageAbstract
 			$results['items'] = array();
 			foreach($orders as $order)
 			{
-				var_dump($order->getJson());
 				$results['items'][] = $order->getJson();
 			}
 		}

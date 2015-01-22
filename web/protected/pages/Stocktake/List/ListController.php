@@ -96,7 +96,6 @@ class ListController extends BPCPageAbstract
 		$results = $errors = array();
 		try
 		{
-			var_dump($param->CallbackParameter);
 			Dao::beginTransaction();
 			$items = array();
 			foreach ($param->CallbackParameter->products as $item)

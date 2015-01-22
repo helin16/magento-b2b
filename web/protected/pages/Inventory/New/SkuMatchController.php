@@ -51,8 +51,6 @@ class SkuMatchController extends BPCPageAbstract
 		$result = $errors = $items = array();
 		try
 		{
-			var_dump($param->CallbackParameter);
-			
 			$index = $param->CallbackParameter->index;
 			$sku = trim($param->CallbackParameter->sku);
 			$code = isset($param->CallbackParameter->myobItemNo) ? trim($param->CallbackParameter->myobItemNo) : '';
