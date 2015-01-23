@@ -33,7 +33,7 @@ class EntityToPDF
 		switch($class)
 		{
 			case 'Order': {
-				$conent = self::_order($entity);
+				$content = self::_order($entity);
 				break;
 			}
 			case 'PurchaseOrder': {
@@ -60,8 +60,9 @@ class EntityToPDF
 	private static function _order(Order $entity)
 	{
 		$templateString = self::_getTemplateFile($entity, 'order.tpl');
-		$values = array();
-		return str_replace(array_keys($values), array_values($values), $templateString);
+		$values = self::_getDefaultValues();
+		$values['orderNo'] = $entity->getOrderNo();
+		return self::_bindData($templateString, $values);
 	}
 	/**
 	 * getting the PurchaseOrder pdf string
@@ -73,8 +74,33 @@ class EntityToPDF
 	private static function _purchaseOrder(PurchaseOrder $entity)
 	{
 		$templateString = self::_getTemplateFile($entity, 'purchaseorder.tpl');
-		$values = array();
-		return str_replace(array_keys($values), array_values($values), $templateString);
+		$values = self::_getDefaultValues();
+		return self::_bindData($templateString, $values);
+	}
+	/**
+	 * Binding some data to the template string
+	 *
+	 * @param unknown $templateString
+	 * @param array   $values
+	 *
+	 * @return string
+	 */
+	private static function _bindData($templateString, array $values = array())
+	{
+		return str_replace(array_map(create_function('$a', 'return "{" . $a . "}";'), array_keys($values)), array_values($values), $templateString);
+	}
+	/**
+	 * Getting the default value for the templates
+	 *
+	 * @return multitype:string
+	 */
+	private static function _getDefaultValues()
+	{
+		return array(
+			'imgDir' => ($imgDir = self::$_templateDir . DIRECTORY_SEPARATOR . 'images')
+			,'logoUrl' => $imgDir . '/logo.png'
+			,'headerSepUrl' => $imgDir . '/inv_sep.png'
+		);
 	}
 	/**
 	 * Getting the template file of entity's pdf
@@ -86,13 +112,13 @@ class EntityToPDF
 	 */
 	private static function _getTemplateFile(BaseEntityAbstract $entity, $fileName)
 	{
-		if(!isset(self::$_templateDir[get_class($entity)])) {
+		$entityClass = get_class($entity);
+		if(!isset(self::$_tempCache[$entityClass])) {
 			$fileName = self::$_templateDir . $fileName;
 			if(!is_file($fileName))
 				throw new CoreException('System Error: no such a template file:' . $fileName);
-			$content = file_get_contents($fileName);
-			self::$_templateDir[get_class($entity)] = $content;
+			self::$_tempCache[$entityClass] = file_get_contents($fileName);
 		}
-		return self::$_templateDir[get_class($entity)];
+		return self::$_tempCache[$entityClass];
 	}
 }
