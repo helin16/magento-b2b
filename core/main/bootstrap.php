@@ -2,7 +2,7 @@
 date_default_timezone_set('UTC');
 /**
  * Boostrapper for the Core module
- * 
+ *
  * @package Core
  * @author  lhe
  */
@@ -10,9 +10,9 @@ abstract class SystemCoreAbstract
 {
     /**
      * autoloading function
-     * 
+     *
      * @param string $className The class that we are trying to autoloading
-     * 
+     *
      * @return boolean Whether we loaded the class
      */
 	public static function autoload($className)
@@ -38,6 +38,7 @@ abstract class SystemCoreAbstract
 			$base . '/utils/connector/magento/',
 			$base . '/utils/connector/magento/Order/',
 			$base . '/utils/html_parser/',
+			$base . '/utils/PDF/',
 		);
 		foreach ($autoloadPaths as $path)
 		{
