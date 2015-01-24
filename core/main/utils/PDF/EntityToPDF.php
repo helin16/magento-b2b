@@ -20,16 +20,20 @@ class EntityToPDF
 	 * @throws CoreException
 	 * @return HTML2PDF
 	 */
-	public static function getPDF(BaseEntityAbstract $entity)
+	public static function getPDF(BaseEntityAbstract $entity, $method = '')
 	{
 		$class = get_class($entity);
 		switch($class)
 		{
 			case 'Order': {
-				$url = 'print/order/' . $entity->getId() . '.html';
+				if(trim($method) === 'docket')
+					$url = 'printdocket/order/' . $entity->getId() . '.html';
+				else
+					$url = 'print/order/' . $entity->getId() . '.html';
 				break;
 			}
 			case 'PurchaseOrder': {
+				$url = 'print/purchase/' . $entity->getId() . '.html';
 				break;
 			}
 			default: {
