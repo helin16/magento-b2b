@@ -719,28 +719,28 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 					.insert({'bottom': new Element('div', {'class': 'row small'})
 						.insert({'bottom': new Element('span', {'class': 'btn btn-link btn-xs', 'style': product.minProductPrice ? '': 'display:none'}).update('Minimum product price: ')
 							.insert({'bottom': new Element('strong').update(tmp.me.getCurrency(product.minProductPrice)) })
-						})
-						.observe('click', function(event) {
-							Event.stop(event);
-							tmp.me._openPOPage(product.minProductPriceId);
+							.observe('click', function(event) {
+								Event.stop(event);
+								tmp.me._openPOPage(product.minProductPriceId);
+							})
 						})
 					})
 					.insert({'bottom': new Element('div', {'class': 'row small'})
 						.insert({'bottom': new Element('span', {'class': 'btn btn-link btn-xs', 'style': product.lastSupplierPrice ? '': 'display:none'}).update('Last supplier price: ')
 							.insert({'bottom': new Element('strong').update(tmp.me.getCurrency(product.lastSupplierPrice)) })
-						})
-						.observe('click', function(event) {
-							Event.stop(event);
-							tmp.me._openPOPage(product.lastSupplierPriceId);
+							.observe('click', function(event) {
+								Event.stop(event);
+								tmp.me._openPOPage(product.lastSupplierPriceId);
+							})
 						})
 					})
 					.insert({'bottom': new Element('div', {'class': 'row small'})
 						.insert({'bottom': new Element('span', {'class': 'btn btn-link btn-xs', 'style': product.minSupplierPrice ? '': 'display:none'}).update('Minimum supplier price: ')
 							.insert({'bottom': new Element('strong').update(tmp.me.getCurrency(product.minSupplierPrice)) })
-						})
-						.observe('click', function(event) {
-							Event.stop(event);
-							tmp.me._openPOPage(product.minSupplierPriceId);
+							.observe('click', function(event) {
+								Event.stop(event);
+								tmp.me._openPOPage(product.minSupplierPriceId);
+							})
 						})
 					})
 					
@@ -763,9 +763,9 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 						})
 					});
 				jQuery('#' + tmp.me.modalId).modal('hide');
-				tmp.retailPrice = product.prices.size() === 0 ? 0 : product.prices[0].price;
-				tmp.inputRow.down('[new-order-item=totalPrice]').writeAttribute('value', tmp.me.getCurrency(tmp.retailPrice));
-				tmp.inputRow.down('[new-order-item=unitPrice]').writeAttribute('value', tmp.me.getCurrency(tmp.retailPrice)).select();
+				tmp.inputRow.down('[new-order-item=totalPrice]').writeAttribute('value', tmp.me.getCurrency(product.minProductPrice));
+				tmp.inputRow.down('[new-order-item=qtyOrdered]').writeAttribute('value', 1);
+				tmp.inputRow.down('[new-order-item=unitPrice]').writeAttribute('value', tmp.me.getCurrency(product.minProductPrice)).select();
 			})
 			;
 		return tmp.newRow;
