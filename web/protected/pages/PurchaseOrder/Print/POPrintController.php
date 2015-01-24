@@ -28,7 +28,7 @@ class POPrintController extends BPCPageAbstract
 		parent::onLoad($param);
 		if(!$this->isPostBack)
 		{
-			$this->order = PurchaseOrder::get($this->Request['orderId']);
+			$this->order = PurchaseOrder::get($this->Request['POId']);
 			if(!$this->order instanceof PurchaseOrder)
 				die('Invalid Order!');
 			if(isset($_REQUEST['pdf']) && intval($_REQUEST['pdf']) === 1)
