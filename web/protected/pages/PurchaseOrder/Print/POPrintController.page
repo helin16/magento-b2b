@@ -41,9 +41,9 @@
                     <tr>
                         <td colspan=6>
                             <div class="order_payments">
-                                <span class="payment_details inlineblock box">
-                                	<span class="comment_title">Comments: </span>
-                                    <span><%= $this->getComments() %></span>
+                                <span class="comments_details inlineblock box">
+                                	<b class="print-row">Comments: </b>
+                                    <%= $this->getComments() %>
                                 </span>
                                 <span class="payment_summary inlineblock box">
                                     <%= $this->getPaymentSummary() %>

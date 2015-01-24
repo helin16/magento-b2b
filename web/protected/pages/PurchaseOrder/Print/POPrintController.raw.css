@@ -382,3 +382,12 @@ table.orderview .order_company_details .details_title {
     color: #BBBBBB;
     padding: 10px 10px 5px;
 }
+.comments_details .print-row{
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+table.orderview .order_payments .comments_details {
+    margin-right: 2px;
+    width: 65%;
+}
