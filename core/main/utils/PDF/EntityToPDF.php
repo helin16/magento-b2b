@@ -61,8 +61,86 @@ class EntityToPDF
 	{
 		$templateString = self::_getTemplateFile($entity, 'order.tpl');
 		$values = self::_getDefaultValues();
+		
 		$values['orderNo'] = $entity->getOrderNo();
+		$values['OrderDate'] = $entity->getOrderDate()->format('d/M/Y');
+		$values['InvNo'] = $entity->getInvNo();
+		$values['InvDate'] = $entity->getInvDate() == UDate::zeroDate() ? '' : $entity->getInvDate()->format('d/M/Y');
+		$values['PONo'] = $entity->getPONo();
+		$values['AddressBilling'] = self::getAddress($entity->getBillingAddr());
+		$values['AddressShipping'] = self::getAddress($entity->getShippingAddr());
+		$values['headerRow'] = self::getRow('QTY', 'SKU', 'NAME', 'Unit Price', 'Total Price', 'header');
+		$values['productDiv'] = self::getProductDiv($entity);
+		$values['UpdatedByPerson'] = $entity->getUpdatedBy()->getPerson()->getFullName();
+		$values['PaymentSummary'] = self::getPaymentSummary($entity);
 		return self::_bindData($templateString, $values);
+	}
+	private static function getProductDiv(Order $order)
+	{
+		$html = '';
+		foreach($order->getOrderItems() as  $index => $orderItem)
+		{
+			$uPrice = '$' . number_format($orderItem->getUnitPrice(), 2, '.', ',');
+			$tPrice = '$' . number_format($orderItem->getTotalPrice(), 2, '.', ',');
+			$sellingItems = array();
+			foreach($orderItem->getSellingItems() as $item) {
+				if($item->getSerialNo() !== '' )
+					$sellingItems[] = $item->getSerialNo();
+			}
+			$html .= self::getRow($orderItem->getQtyOrdered(), $orderItem->getProduct()->getSku(), $orderItem->getProduct()->getname(), $uPrice, $tPrice, 'itemRow');
+			$html .= self::getRow('', '<span class="pull-right">Serial No: </span>', '<div style="max-width: 367px; word-wrap: break-word;">' . implode(', ', $sellingItems) . '</div>', '', '', 'itemRow itemRow-serials');
+		}
+		for ( $i = 12; $i > $index; $i--)
+		{
+		$html .= self::getRow('&nbsp;', '&nbsp;', '&nbsp;', '&nbsp;', '&nbsp;', 'itemRow');
+		}
+		return $html;
+	}
+	/**
+	 * Getting the tr for each row
+	 * @param unknown $qty
+	 * @param unknown $sku
+	 * @param unknown $name
+	 * @param unknown $uprice
+	 * @param unknown $tprice
+	 * @return string
+	 */
+	private static function getRow($qty, $sku, $name, $uprice, $tprice, $rowClass="")
+	{
+		return "<tr class='$rowClass'><td class='qty'>$qty</td><td class='sku'>$sku</td><td class='name'>$name</td><td class='uprice'>$uprice</td><td class='tprice'>$tprice</td></tr>";
+	}
+	private static function getPaymentSummary(Order $order)
+	{
+		$total = $order->getTotalAmount();
+		$totalNoGST = $total / 1.1;
+		$gst = $total - $totalNoGST;
+		$html = self::_getPaymentSummaryRow('Total:', '$' . number_format($totalNoGST, 2, '.', ','), 'grandTotalNoGST');
+		$html .= self::_getPaymentSummaryRow('GST:', '$' . number_format($gst, 2, '.', ','), 'gst');
+		$html .= self::_getPaymentSummaryRow('Total(inc-GST):', '$' . number_format($total, 2, '.', ','), 'grandTotal');
+		$html .= self::_getPaymentSummaryRow('Paid to Date:', '$' . number_format($order->getTotalPaid(), 2, '.', ','), 'paidTotal');
+		$overDueClass = $order->getTotalDue() > 0 ? 'overdue' : '';
+		$html .= self::_getPaymentSummaryRow('Balance Due:', '$' . number_format($order->getTotalDue(), 2, '.', ','), 'dueTotal ' . $overDueClass);
+		return $html;
+	}
+	private static function _getPaymentSummaryRow($title, $content, $class='')
+	{
+		$html = '<div class="print-row ' . $class . '">';
+		$html .= '<span class="details_title inlineblock">';
+		$html .= $title;
+		$html .= '</span>';
+		$html .= '<span class="details_content inlineblock">';
+		$html .= $content;
+		$html .= '</span>';
+		$html .= '</div>';
+		return $html;
+	}
+	private static function getAddress(Address $address)
+	{
+		$html = $address->getContactName() . '<br />';
+		$html .= $address->getStreet() . '<br />';
+		$html .= $address->getCity() . ' ' . $address->getRegion() . ' ' . $address->getPostCode() . '<br />';
+		$html .= $address->getCountry();
+		return $html;
 	}
 	/**
 	 * getting the PurchaseOrder pdf string
@@ -75,6 +153,19 @@ class EntityToPDF
 	{
 		$templateString = self::_getTemplateFile($entity, 'purchaseorder.tpl');
 		$values = self::_getDefaultValues();
+		
+		$values['orderNo'] = $entity->getOrderNo();
+		$values['OrderDate'] = $entity->getOrderDate()->format('d/M/Y');
+		$values['InvNo'] = $entity->getSupplier()->getName();
+		$values['InvDate'] = $entity->getInvDate() == UDate::zeroDate() ? '' : $entity->getInvDate()->format('d/M/Y');
+		$values['PONo'] = $entity->getPONo();
+		$values['AddressBilling'] = self::getAddress($entity->getBillingAddr());
+		$values['AddressShipping'] = self::getAddress($entity->getShippingAddr());
+		$values['headerRow'] = self::getRow('QTY', 'SKU', 'NAME', 'Unit Price', 'Total Price', 'header');
+		$values['productDiv'] = self::getProductDiv($entity);
+		$values['UpdatedByPerson'] = $entity->getUpdatedBy()->getPerson()->getFullName();
+		$values['PaymentSummary'] = self::getPaymentSummary($entity);
+		
 		return self::_bindData($templateString, $values);
 	}
 	/**
