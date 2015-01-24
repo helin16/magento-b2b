@@ -53,7 +53,7 @@ class EntityToPDF
 	/**
 	 * converting a Order to be a pdf content string
 	 *
-	 * @param Order $entity
+	 * @param PurchaseOrder $entity
 	 *
 	 * @return string
 	 */
@@ -70,12 +70,36 @@ class EntityToPDF
 		$values['AddressBilling'] = self::getAddress($entity->getBillingAddr());
 		$values['AddressShipping'] = self::getAddress($entity->getShippingAddr());
 		$values['headerRow'] = self::getRow('QTY', 'SKU', 'NAME', 'Unit Price', 'Total Price', 'header');
-		$values['productDiv'] = self::getProductDiv($entity);
+		$values['productDiv'] = self::getOrderProductDiv($entity);
 		$values['UpdatedByPerson'] = $entity->getUpdatedBy()->getPerson()->getFullName();
 		$values['PaymentSummary'] = self::getPaymentSummary($entity);
 		return self::_bindData($templateString, $values);
 	}
-	private static function getProductDiv(Order $order)
+	/**
+	 * getting the PurchaseOrder pdf string
+	 *
+	 * @param PurchaseOrder $entity
+	 *
+	 * @return string
+	 */
+	private static function _purchaseOrder(PurchaseOrder $entity)
+	{
+		$templateString = self::_getTemplateFile($entity, 'purchaseorder.tpl');
+		$values = self::_getDefaultValues();
+		
+		$values['orderNo'] = $entity->getPurchaseOrderNo();
+		$values['OrderDate'] = $entity->getOrderDate()->format('d/M/Y');
+		$values['Supplier'] = $entity->getSupplier()->getName();
+		$values['SupplierRef'] = $entity->getSupplierRefNo();
+		$values['TotalProductCount'] = $entity->getTotalProductCount();
+		$values['headerRow'] = self::getRow('QTY', 'SKU', 'NAME', 'Unit Price', 'Total Price', 'header');
+		$values['productDiv'] = self::getPOProductDiv($entity);
+		$values['UpdatedByPerson'] = $entity->getUpdatedBy()->getPerson()->getFullName();
+		$values['PaymentSummary'] = self::getPaymentSummary($entity);
+		
+		return self::_bindData($templateString, $values);
+	}
+	private static function getOrderProductDiv(Order $order)
 	{
 		$html = '';
 		foreach($order->getOrderItems() as  $index => $orderItem)
@@ -96,6 +120,22 @@ class EntityToPDF
 		}
 		return $html;
 	}
+	private static function getPOProductDiv(PurchaseOrder $order)
+	{
+		$html = '';
+		$purchaseOrderItems = PurchaseOrderItem::getAllByCriteria('purchaseOrderId = ?', array($order->getId() ) );
+		foreach($purchaseOrderItems as  $index => $orderItem)
+		{
+			$uPrice = '$' . number_format($orderItem->getUnitPrice(), 2, '.', ',');
+			$tPrice = '$' . number_format($orderItem->getTotalPrice(), 2, '.', ',');
+			$html .= self::getRow($orderItem->getQty(), $orderItem->getProduct()->getSku(), $orderItem->getProduct()->getname(), $uPrice, $tPrice, 'itemRow');
+		}
+		for ( $i = 12; $i > $index; $i--)
+		{
+			$html .= self::getRow('&nbsp;', '&nbsp;', '&nbsp;', '&nbsp;', '&nbsp;', 'itemRow');
+		}
+		return $html;
+	}
 	/**
 	 * Getting the tr for each row
 	 * @param unknown $qty
@@ -109,17 +149,35 @@ class EntityToPDF
 	{
 		return "<tr class='$rowClass'><td class='qty'>$qty</td><td class='sku'>$sku</td><td class='name'>$name</td><td class='uprice'>$uprice</td><td class='tprice'>$tprice</td></tr>";
 	}
-	private static function getPaymentSummary(Order $order)
+	private static function getPaymentSummary($order)
 	{
-		$total = $order->getTotalAmount();
-		$totalNoGST = $total / 1.1;
-		$gst = $total - $totalNoGST;
-		$html = self::_getPaymentSummaryRow('Total:', '$' . number_format($totalNoGST, 2, '.', ','), 'grandTotalNoGST');
-		$html .= self::_getPaymentSummaryRow('GST:', '$' . number_format($gst, 2, '.', ','), 'gst');
-		$html .= self::_getPaymentSummaryRow('Total(inc-GST):', '$' . number_format($total, 2, '.', ','), 'grandTotal');
-		$html .= self::_getPaymentSummaryRow('Paid to Date:', '$' . number_format($order->getTotalPaid(), 2, '.', ','), 'paidTotal');
-		$overDueClass = $order->getTotalDue() > 0 ? 'overdue' : '';
-		$html .= self::_getPaymentSummaryRow('Balance Due:', '$' . number_format($order->getTotalDue(), 2, '.', ','), 'dueTotal ' . $overDueClass);
+		$html = '';
+		if($order instanceof Order)
+		{
+			$total = $order->getTotalAmount();
+			$totalNoGST = $total / 1.1;
+			$gst = $total - $totalNoGST;
+			$html = self::_getPaymentSummaryRow('Total:', '$' . number_format($totalNoGST, 2, '.', ','), 'grandTotalNoGST');
+			$html .= self::_getPaymentSummaryRow('GST:', '$' . number_format($gst, 2, '.', ','), 'gst');
+			$html .= self::_getPaymentSummaryRow('Total(inc-GST):', '$' . number_format($total, 2, '.', ','), 'grandTotal');
+			$html .= self::_getPaymentSummaryRow('Paid to Date:', '$' . number_format($order->getTotalPaid(), 2, '.', ','), 'paidTotal');
+			$overDueClass = $order->getTotalDue() > 0 ? 'overdue' : '';
+			$html .= self::_getPaymentSummaryRow('Balance Due:', '$' . number_format($order->getTotalDue(), 2, '.', ','), 'dueTotal ' . $overDueClass);
+		} 
+		else if($order instanceof PurchaseOrder)
+		{
+			$total = $order->getTotalAmount();
+			$totalNoGST = $total / 1.1;
+			$gst = $total - $totalNoGST;
+			$totalDue = $total - $order->getTotalPaid();
+			$html = self::_getPaymentSummaryRow('Total:', '$' . number_format($totalNoGST, 2, '.', ','), 'grandTotalNoGST');
+			$html .= self::_getPaymentSummaryRow('GST:', '$' . number_format($gst, 2, '.', ','), 'gst');
+			$html .= self::_getPaymentSummaryRow('Total(inc-GST):', '$' . number_format($total, 2, '.', ','), 'grandTotal');
+			$html .= self::_getPaymentSummaryRow('Paid to Date:', '$' . number_format($order->getTotalPaid(), 2, '.', ','), 'paidTotal');
+			$overDueClass = $totalDue > 0 ? 'overdue' : '';
+			$html .= self::_getPaymentSummaryRow('Balance Due:', '$' . number_format($totalDue, 2, '.', ','), 'dueTotal ' . $overDueClass);
+		}
+		else throw new Exception(__CLASS__ . '::' . __FUNCTION__ . ': must pass in Order or PurchaseOrder');
 		return $html;
 	}
 	private static function _getPaymentSummaryRow($title, $content, $class='')
@@ -141,32 +199,6 @@ class EntityToPDF
 		$html .= $address->getCity() . ' ' . $address->getRegion() . ' ' . $address->getPostCode() . '<br />';
 		$html .= $address->getCountry();
 		return $html;
-	}
-	/**
-	 * getting the PurchaseOrder pdf string
-	 *
-	 * @param PurchaseOrder $entity
-	 *
-	 * @return string
-	 */
-	private static function _purchaseOrder(PurchaseOrder $entity)
-	{
-		$templateString = self::_getTemplateFile($entity, 'purchaseorder.tpl');
-		$values = self::_getDefaultValues();
-		
-		$values['orderNo'] = $entity->getOrderNo();
-		$values['OrderDate'] = $entity->getOrderDate()->format('d/M/Y');
-		$values['InvNo'] = $entity->getSupplier()->getName();
-		$values['InvDate'] = $entity->getInvDate() == UDate::zeroDate() ? '' : $entity->getInvDate()->format('d/M/Y');
-		$values['PONo'] = $entity->getPONo();
-		$values['AddressBilling'] = self::getAddress($entity->getBillingAddr());
-		$values['AddressShipping'] = self::getAddress($entity->getShippingAddr());
-		$values['headerRow'] = self::getRow('QTY', 'SKU', 'NAME', 'Unit Price', 'Total Price', 'header');
-		$values['productDiv'] = self::getProductDiv($entity);
-		$values['UpdatedByPerson'] = $entity->getUpdatedBy()->getPerson()->getFullName();
-		$values['PaymentSummary'] = self::getPaymentSummary($entity);
-		
-		return self::_bindData($templateString, $values);
 	}
 	/**
 	 * Binding some data to the template string
