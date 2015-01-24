@@ -78,6 +78,17 @@ class POPrintController extends BPCPageAbstract
 		}
 		return $html;
 	}
+	public function getComments()
+	{
+		$result = '';
+		$comments = Comments::getAllByCriteria('entityName = ? AND type = ?', array('PurchaseOrder', Comments::TYPE_PURCHASING), true, 1, DaoQuery::DEFAUTL_PAGE_SIZE, array('comm.id'=> 'desc'));
+		foreach ($comments as $comment)
+		{
+			$result .= $comment->getComments() . ' ';
+		}
+		return $result;
+		
+	}
 	public function getPaymentSummary()
 	{
 		$total = $this->order->getTotalAmount();
