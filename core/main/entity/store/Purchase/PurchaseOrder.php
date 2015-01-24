@@ -162,7 +162,7 @@ class PurchaseOrder extends BaseEntityAbstract
 	{
 		if(trim($this->getId()) !== "") {
 			$oldStatuses = Dao::getResultsNative('select status from purchaseorder where id = ?', array($this->getId()));
-			if(count($oldStatuses) > 0 && ($oldStatus = trim($oldStatuses[0]['status'])) === trim($value))//no change of the status
+			if(count($oldStatuses) > 0 && (trim($oldStatuses[0]['status'])) === trim($value))//no change of the status
 				$this->status = trim($value);
 			else
 				$this->pushStatus(trim($value));

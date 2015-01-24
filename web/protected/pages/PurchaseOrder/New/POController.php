@@ -32,7 +32,6 @@ class POController extends BPCPageAbstract
 		
 		$paymentMethods =  array_map(create_function('$a', 'return $a->getJson();'), PaymentMethod::getAll());
 		$shippingMethods =  array_map(create_function('$a', 'return $a->getJson();'), Courier::getAll());
-		$statusOptions =  PurchaseOrder::getStatusOptions();
 		$supplier = (isset($_REQUEST['supplierid']) && ($supplier = Supplier::get(trim($_REQUEST['supplierid']))) instanceof Supplier) ? $supplier->getJson() : null;
 		$js .= "pageJs";
 			$js .= ".setHTMLIDs('detailswrapper')";
@@ -201,16 +200,10 @@ class POController extends BPCPageAbstract
 			$daoStart = false;
 			$results['item'] = $purchaseOrder->getJson();
 			if(isset($param->CallbackParameter->confirmEmail) && (trim($confirmEmail = trim($param->CallbackParameter->confirmEmail)) !== '')) {
-				$html2pdf = new HTML2PDF('P', 'A4', 'en');
-				//      $html2pdf->setModeDebug();
-				$html2pdf->setDefaultFont('Arial');
-				$content = ComScriptCURL::readUrl('/print/purchase/' . $purchaseOrder->getId() . '.html');
-				$html2pdf->writeHTML('<page>' . $content . '</page>', false);
-				
-				$fileName = $purchaseOrder->getPurchaseOrderNo() . '.pdf';
-				$asset = Asset::registerAsset($fileName, $html2pdf->Output($fileName, 'S'));
-				EmailSender::addEmail('', $confirmEmail, 'BudgetPC Purchase Request', 'Please Find the attached PurchaseOrder from BudgetPC.', array($asset));
-				$purchaseOrder->addComment('An email sent to "' . $confirmEmail . '" with the attachment: ' . $fileName, Comments::TYPE_PURCHASING);
+				$pdfFile = EntityToPDF::getPDF($purchaseOrder);
+				$asset = Asset::registerAsset($purchaseOrder->getPurchaseOrderNo() . '.pdf', $pdfFile);
+				EmailSender::addEmail('', $confirmEmail, 'BudgetPC Purchase Order', 'Please Find the attached PurchaseOrder from BudgetPC.', array($asset));
+				$purchaseOrder->addComment('An email sent to "' . $confirmEmail . '" with the attachment: ' . $asset->getAssetId(), Comments::TYPE_PURCHASING);
 			}
 		}
 		catch(Exception $ex)

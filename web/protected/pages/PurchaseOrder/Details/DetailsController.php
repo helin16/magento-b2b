@@ -101,9 +101,7 @@ class DetailsController extends DetailsPageAbstract
 			
 			$supplierID = isset($param->CallbackParameter->supplierID) ? trim($param->CallbackParameter->supplierID) : '';
 			Product::getQuery()->eagerLoad('Product.codes', 'left join');
-			Dao::$debug = true;
 			$products = Product::getAllByCriteria($where, $params, true, 1, DaoQuery::DEFAUTL_PAGE_SIZE, array('pro.sku' => 'asc'));
-			Dao::$debug = false;
 			foreach($products as $product)
 			{
 				$array = $product->getJson();
@@ -188,25 +186,13 @@ class DetailsController extends DetailsPageAbstract
 				$productId = trim($item->product->id);
 				$productUnitPrice = trim($item->unitPrice);
 				$qtyOrdered = trim($item->qtyOrdered);
-				$productWtyOrdered = trim($item->qtyOrdered);
 				$productTotalPrice = trim($item->totalPrice);
 				$product = Product::get($productId);
 				if(!$product instanceof Product)
 					throw new Exception('Invalid Product passed in!');
-				$purchaseOrder->addItem($product,$productUnitPrice,$qtyOrdered,'','',$productTotalPrice) -> save();
+				$purchaseOrder->addItem($product, $productUnitPrice, $qtyOrdered, '', '', $productTotalPrice)
+					->save();
 			};
-// 			foreach ($param->CallbackParameter->removedOldItems as $item) {
-// 				$productId = trim($item->product->id);
-// 				$productUnitPrice = trim($item->unitPrice);
-// 				$qtyOrdered = trim($item->qtyOrdered);
-// 				$productWtyOrdered = trim($item->qtyOrdered);
-// 				$productTotalPrice = trim($item->totalPrice);
-// 				$product = Product::get($productId);
-// 				if(!$product instanceof Product)
-// 					throw new Exception('Invalid Product passed in!');
-// 				$removedItemPOitem = PurchaseOrderItem::getAllByCriteria('purchaseOrderId = ? and productId = ?',array($purchaseOrder-> getId(), $product->getId()),true,1,1)[0];
-// 				$removedItemPOitem->setActive(false)->save();
-// 			};
 			$results['item'] = $purchaseOrder->getJson();
 			Dao::commitTransaction();
 		}
@@ -231,28 +217,20 @@ class DetailsController extends DetailsPageAbstract
 			if(!$perchaseorder instanceof PurchaseOrder)
 				throw new Exception('Invalid Purchase Order passed in!');
 			$purchaseOrderNo = trim($param->CallbackParameter->purchaseOrderNo);
-			$id = !isset($param->CallbackParameter->id) ? '' : trim($param->CallbackParameter->id);
-			$active = !is_numeric($param->CallbackParameter->id) ? '' : trim($param->CallbackParameter->active);
-			$supplieName = !is_numeric($param->CallbackParameter->supplierName) ? '' : trim($param->CallbackParameter->supplierName);
 			$supplierId = trim($param->CallbackParameter->supplierId);
 			$supplier = Supplier::get($supplierId);
-			$supplierContactName = trim($param->CallbackParameter->supplierContactName);
 			$orderDate = trim($param->CallbackParameter->orderDate);
 			$totalAmount = trim($param->CallbackParameter->totalAmount);
 			$totalPaid = trim($param->CallbackParameter->totalPaid);
 			
 			if(isset($param->CallbackParameter->id)) {
-			$perchaseorder->setPurchaseOrderNo($purchaseOrderNo)
-				->setSupplier($supplier)
-				->setSupplierRefNo($supplierId)
-// 				->setSupplierContact($supplierContactName)
-				->setOrderDate($orderDate)
-				->setTotalAmount($totalAmount)
-				->setTotalPaid($totalPaid)
-			;
-// 			if(trim($perchaseorder->getId()) === '')
-// 				$perchaseorder->setIsFromB2B(false);
-			$perchaseorder->save();
+				$perchaseorder->setPurchaseOrderNo($purchaseOrderNo)
+					->setSupplier($supplier)
+					->setSupplierRefNo($supplierId)
+					->setOrderDate($orderDate)
+					->setTotalAmount($totalAmount)
+					->setTotalPaid($totalPaid)
+					->save();
 			} else {
 // 				PurchaseOrder::
 			}
