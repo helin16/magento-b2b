@@ -795,7 +795,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 							tmp.selBox.insert({'bottom': new Element('option').update(status) });
 					});
 					$$('select[save-order="status"]').first().replace(tmp.selBox);
-					tmp.me._submitOrder($(this));
+					tmp.me._submitOrder($(this), true);
 				})
 			})
 			.insert({'bottom': new Element('span', {'class': 'btn btn-success'})
@@ -821,10 +821,11 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		;
 		return tmp.newDiv;
 	}
-	,_submitOrder: function(btn) {
+	,_submitOrder: function(btn, isSubmit) {
 		var tmp = {};
 		tmp.me = this;
 		tmp.btn = btn;
+		tmp.isSubmit = (isSubmit === true ? true : false);
 		tmp.data = tmp.me._collectFormData($(tmp.me._htmlIds.itemDiv),'save-order');
 		if(tmp.data === null)
 			return tmp.me;
@@ -846,6 +847,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		tmp.data.handlingCost = tmp.data.handlingCost ? tmp.me.getValueFromCurrency(tmp.data.handlingCost) : '';
 		tmp.data.shippingCost = tmp.data.shippingCost ? tmp.me.getValueFromCurrency(tmp.data.shippingCost) : '';
 		tmp.me._signRandID(tmp.btn);
+		tmp.data.isSubmit = tmp.isSubmit;
 		tmp.me.postAjax(tmp.me.getCallbackId('saveOrder'), tmp.data, {
 			'onLoading': function(sender, param) {
 				jQuery('#' + tmp.btn.id).button('loading');
