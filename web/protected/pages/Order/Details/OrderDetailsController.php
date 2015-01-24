@@ -183,7 +183,7 @@ class OrderDetailsController extends BPCPageAbstract
 			$order->save();
 			
 			//notify customer
-			if($notifyCustomer === true)
+			if($notifyCustomer === true && $order->getIsFromB2B() === true)
 			{
 				$notificationMsg = trim(OrderNotificationTemplateControl::getMessage($order->getStatus()->getName(), $order));
 				if($notificationMsg !== '')
@@ -330,7 +330,7 @@ class OrderDetailsController extends BPCPageAbstract
 			Comments::addComments($payment, $commentString, Comments::TYPE_ACCOUNTING);
 			
 			//notify the customer
-			if($notifyCust === true)
+			if($notifyCust === true && $order->getIsFromB2B() === true)
 			{
 				$notificationMsg = trim(OrderNotificationTemplateControl::getMessage('paid', $order));
 				if($notificationMsg !== '')
@@ -411,7 +411,7 @@ class OrderDetailsController extends BPCPageAbstract
 			$result['shipment'] = $shipment->getJson();
 			
 			//add shipment information
-			if($notifyCust === true)
+			if($notifyCust === true && $order->getIsFromB2B() === true)
 			{
 				$templateName = (trim($shipment->getCourier()->getId()) === trim(Courier::ID_LOCAL_PICKUP) ? 'local_pickup' : $order->getStatus()->getName());
 				$notificationMsg = trim(OrderNotificationTemplateControl::getMessage($templateName, $order));
