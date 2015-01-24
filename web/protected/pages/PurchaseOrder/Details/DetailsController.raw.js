@@ -117,7 +117,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		tmp.purchaseOrder = tmp.me._purchaseorder;
 		tmp.newDiv = new Element('div', {'class': 'panel panel-info'})
 			.insert({'bottom': new Element('div', {'class': 'panel-heading'})
-				.insert({'bottom': new Element('strong').update('Editing purchase order for: ' + tmp.supplier.name + ' ') })
+				.insert({'bottom': new Element('strong').update('Editing PO ' + tmp.purchaseOrder.purchaseOrderNo + ' for ' + tmp.supplier.name + ' ') })
 				.insert({'bottom': new Element('div', {'class': 'pull-right'})
 					.insert({'bottom': new Element('strong', {'style': 'padding-left: 10px'}).update('ETA: ') })
 					.insert({'bottom': new Element('input', {'style': 'max-height:19px', 'class': 'datepicker', 'save-order': 'ETA', 'type': 'date', 'value': tmp.purchaseOrder.eta ? tmp.purchaseOrder.eta : ''}) })
