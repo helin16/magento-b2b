@@ -847,13 +847,14 @@ class Product extends InfoEntityAbstract
 	 * snapshot of the product qty
 	 * 
 	 * @param BaseEntityAbstract $entity
-	 * @param string $comments
+	 * @param string             $type
+	 * @param string             $comments
 	 * 
 	 * @return Product
 	 */
-	public function snapshotQty(BaseEntityAbstract $entity = null, $comments = '')
+	public function snapshotQty(BaseEntityAbstract $entity = null, $type = '', $comments = '')
 	{
-		ProductQtyLog::create($this, $entity, trim($comments));
+		ProductQtyLog::create($this, $type, $entity, trim($comments));
 		return $this;
 	}
 	/**
@@ -927,7 +928,7 @@ class Product extends InfoEntityAbstract
 		return $this->setStockOnHand(($originStockOnHand = $this->getStockOnHand()) - $qty)
 			->setStockOnOrder(($originStockOnOrder = $this->getStockOnOrder()) + $qty)
 			->setTotalOnHandValue(($origTotalOnHandValue = $this->getTotalOnHandValue()) - ($qty * $unitCost))
-			->snapshotQty($entity instanceof BaseEntityAbstract ? $entity : $this, (intval($qty) > 0 ? 'Stock picked' : 'stock UNPICKED') . ': ' . $comments)
+			->snapshotQty($entity instanceof BaseEntityAbstract ? $entity : $this, ProductQtyLog::TYPE_SALES_ORDER, (intval($qty) > 0 ? 'Stock picked' : 'stock UNPICKED') . ': ' . $comments)
 			->save()
 			->addLog('StockOnHand(' . $originStockOnHand . ' => ' . $this->getStockOnHand() . ')', Log::TYPE_SYSTEM, 'STOCK_QTY_CHG', __CLASS__ . '::' . __FUNCTION__)
 			->addLog('StockOnOrder(' . $originStockOnOrder . ' => ' . $this->getStockOnOrder() . ')', Log::TYPE_SYSTEM, 'STOCK_QTY_CHG', __CLASS__ . '::' . __FUNCTION__)
@@ -951,7 +952,7 @@ class Product extends InfoEntityAbstract
 		return $this->setStockOnPO(($origStockOnPO = $this->getStockOnPO()) - $qty)
 			->setStockOnHand(($origStockOnHand = $this->getStockOnHand()) + $qty)
 			->setTotalOnHandValue(($origTotalOnHandValue = $this->getTotalOnHandValue()) + $qty * $unitCost)
-			->snapshotQty($entity instanceof BaseEntityAbstract ? $entity : $this, 'Stock received: ' . $comments)
+			->snapshotQty($entity instanceof BaseEntityAbstract ? $entity : $this, ProductQtyLog::TYPE_PO, 'Stock received: ' . $comments)
 			->save()
 			->addLog('StockOnPO(' . $origStockOnPO . ' => ' .$this->getStockOnPO() . ')', Log::TYPE_SYSTEM, 'STOCK_QTY_CHG', __CLASS__ . '::' . __FUNCTION__)
 			->addLog('StockOnHand(' . $origStockOnHand . ' => ' .$this->getStockOnHand() . ')', Log::TYPE_SYSTEM, 'STOCK_QTY_CHG', __CLASS__ . '::' . __FUNCTION__)
@@ -970,7 +971,7 @@ class Product extends InfoEntityAbstract
 	public function ordered($qty, $comments = '', BaseEntityAbstract $entity = null)
 	{
 		return $this->setStockOnPO(($origStockOnPO = $this->getStockOnPO()) + $qty)
-			->snapshotQty($entity instanceof BaseEntityAbstract ? $entity : $this, 'Stock ordered from supplier: ' . $comments)
+			->snapshotQty($entity instanceof BaseEntityAbstract ? $entity : $this, ProductQtyLog::TYPE_STOCK_MOVE_INTERNAL, 'Stock ordered from supplier: ' . $comments)
 			->save()
 			->addLog('StockOnPO(' . $origStockOnPO . ' => ' .$this->getStockOnPO() . ')', Log::TYPE_SYSTEM, 'STOCK_QTY_CHG', __CLASS__ . '::' . __FUNCTION__);
 	}
@@ -986,7 +987,7 @@ class Product extends InfoEntityAbstract
 	public function shipped($qty, $comments = '', BaseEntityAbstract $entity = null)
 	{
 		return $this->setStockOnOrder(($originStockOnOrder = $this->getStockOnOrder()) - $qty)
-			->snapshotQty($entity instanceof BaseEntityAbstract ? $entity : $this, 'Stock shipped')
+			->snapshotQty($entity instanceof BaseEntityAbstract ? $entity : $this, ProductQtyLog::TYPE_STOCK_MOVE_INTERNAL, 'Stock shipped')
 			->save()
 			->addLog('StockOnOrder(' . $originStockOnOrder . ' => ' . $this->getStockOnOrder() . ')', Log::TYPE_SYSTEM, 'STOCK_QTY_CHG', __CLASS__ . '::' . __FUNCTION__);
 	}
@@ -1026,7 +1027,7 @@ class Product extends InfoEntityAbstract
 					. 'StockInParts [' . $origStockInParts . ' => ' . $this->getStockInParts() . '], '
 					. 'StockInRMA [' . $origStockInRMA . ' => ' . $this->getStockInRMA() . '], '
 					. 'StockOnPO [' . $origStockOnPO . ' => ' . $this->getStockOnPO() . ']';
-		return $this->snapshotQty($this, 'Stock Changed')
+		return $this->snapshotQty($this,  ProductQtyLog::TYPE_STOCK_ADJ, 'Stock Changed')
 			->save()
 			->addComment($msg, Comments::TYPE_SYSTEM)
 			->addLog($msg, Log::TYPE_SYSTEM, 'STOCK_CHANGED', __CLASS__ . "::" . __FUNCTION__);
