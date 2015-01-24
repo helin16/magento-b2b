@@ -81,13 +81,12 @@ class POPrintController extends BPCPageAbstract
 	public function getComments()
 	{
 		$html = '';
-		$comments = Comments::getAllByCriteria('entityName = ? AND type = ? AND entityId = ?', array('PurchaseOrder', Comments::TYPE_PURCHASING, $this->order->getId()), true, 1, DaoQuery::DEFAUTL_PAGE_SIZE, array('comm.id'=> 'desc'));
+		$comments = Comments::getAllByCriteria('entityName = ? AND type = ? AND entityId = ?', array('PurchaseOrder', Comments::TYPE_PURCHASING, $this->order->getId()), true, 1, 5, array('comm.id'=> 'desc'));
 		if(count($comments) === 0)
 			return '';
-		for( $i = 0; $i <5; $i++)
+		foreach($comments as $comment)
 		{
-			if(($comment = $comments[$i]) instanceof Comments)
-				$html .= '<div class="print-row">' . $comment->getComments() . '</div>';
+			$html .= '<div class="print-row">' . $comment->getComments() . '</div>';
 		}
 		return $html;
 	}
