@@ -28,9 +28,17 @@ class POPrintController extends BPCPageAbstract
 		parent::onLoad($param);
 		if(!$this->isPostBack)
 		{
-			$this->order = PurchaseOrder::get($this->Request['POId']);
+			$this->order = PurchaseOrder::get($this->Request['orderId']);
 			if(!$this->order instanceof PurchaseOrder)
-				die('Invalid PurchaseOrder!');
+				die('Invalid Order!');
+			if(isset($_REQUEST['pdf']) && intval($_REQUEST['pdf']) === 1)
+			{
+				$file = EntityToPDF::getPDF($this->order);
+				header('Content-Type: application/pdf');
+				// The PDF source is in original.pdf
+				readfile($file);
+				die;
+			}
 		}
 	}
 	public function getInvDate()
