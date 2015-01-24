@@ -38,9 +38,10 @@ class EntityToPDF
 		}
 		$url .= "?user=" . Core::getUser()->getUserName() . '&pass=' . Core::getUser()->getPassword();
 		$command = 'wkhtmltopdf --disable-javascript "http://localhost/' . $url . '" ' . ($file = '/tmp/' . md5(new UDate()) . '.pdf');
-		exec($command);
+		$output = '';
+		exec($command, $output);
 		if(!is_file($file))
-			throw new Exception('Could NOT generate pdf @' . $file . ': ' . $command);
+			throw new Exception('Could NOT generate pdf @' . $file . ': ' . $command . ' OUTPUT: ' . $output);
 		return $file;
 	}
 }
