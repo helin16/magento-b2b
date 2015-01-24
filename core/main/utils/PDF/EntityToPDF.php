@@ -40,7 +40,7 @@ class EntityToPDF
 		$command = 'wkhtmltopdf --disable-javascript "http://localhost/' . $url . '" ' . ($file = '/tmp/' . md5(new UDate()) . '.pdf');
 		exec($command);
 		if(!is_file($file))
-			throw new Exception('Could NOT generate pdf @' . $file);
+			throw new Exception('Could NOT generate pdf @' . $file . ': ' . $command);
 		return $file;
 	}
 }
