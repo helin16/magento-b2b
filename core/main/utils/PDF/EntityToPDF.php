@@ -37,7 +37,9 @@ class EntityToPDF
 			}
 		}
 		$url .= "?user=" . Core::getUser()->getUserName() . '&pass=' . Core::getUser()->getPassword();
-		$output = exec('wkhtmltopdf --disable-javascript http://localhost/' . $url . ' /tmp/' . md5(new UDate()) . '.pdf');
+		$command = 'wkhtmltopdf --disable-javascript http://localhost/' . $url . ' /tmp/' . md5(new UDate()) . '.pdf';
+		var_dump($command);
+		$output = exec($command);
 		var_dump($output);
 	}
 }
