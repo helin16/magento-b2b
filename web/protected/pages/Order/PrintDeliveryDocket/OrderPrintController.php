@@ -33,7 +33,7 @@ class OrderPrintController extends BPCPageAbstract
 				die('Invalid Order!');
 			if(isset($_REQUEST['pdf']) && intval($_REQUEST['pdf']) === 1)
 			{
-				$file = EntityToPDF::getPDF($this->order);
+				$file = EntityToPDF::getPDF($this->order, 'docket');
 				header('Content-Type: application/pdf');
 				// The PDF source is in original.pdf
 				readfile($file);
