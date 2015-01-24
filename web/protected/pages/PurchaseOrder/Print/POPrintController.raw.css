@@ -390,4 +390,5 @@ table.orderview .order_company_details .details_title {
 table.orderview .order_payments .comments_details {
     margin-right: 2px;
     width: 65%;
+    color: red;
 }

@@ -42,14 +42,14 @@
                         <td colspan=6>
                             <div class="order_payments">
                                 <span class="comments_details inlineblock box">
-                                	<b class="print-row">Comments: </b>
+                                	<b class="print-row" style="color:black !important;">Comments: </b>
                                     <%= $this->getComments() %>
                                 </span>
                                 <span class="payment_summary inlineblock box">
                                     <%= $this->getPaymentSummary() %>
                                 </span>
                             </div>
-                            <div class="order_tc box">
+                            <div class="order_tc box hidden">
                                 <div class="tc_title">Terms and conditions of sale</div>
                                 <div class="tc_details">
                                     <ol>
