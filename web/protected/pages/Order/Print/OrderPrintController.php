@@ -31,6 +31,14 @@ class OrderPrintController extends BPCPageAbstract
 			$this->order = Order::get($this->Request['orderId']);
 			if(!$this->order instanceof Order)
 				die('Invalid Order!');
+			if(isset($_REQUEST['pdf']) && intval($_REQUEST['pdf']) === 1)
+			{
+				$file = EntityToPDF::getPDF($this->order);
+				header('Content-Type: application/pdf');
+				// The PDF source is in original.pdf
+				readfile($file);
+				die;
+			}
 		}
 	}
 	public function getInvDate()
