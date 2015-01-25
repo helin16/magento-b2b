@@ -179,6 +179,8 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 	,_getViewOfPurchaseOrder: function() {
 		var tmp = {};
 		tmp.me = this;
+		tmp.purchaseOrder = tmp.me._purchaseOrder;
+		tmp.totalAmount = (tmp.purchaseOrder.totalAmount ? tmp.purchaseOrder.totalAmount : 0);
 		tmp.newDiv = new Element('div')
 			.insert({'bottom': new Element('div', {'class': 'row'})
 				.insert({'bottom': new Element('div', {'class': 'col-sm-9'}).update(tmp.me._getSupplierInfoPanel()) })
@@ -187,14 +189,26 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			.insert({'bottom': new Element('div', {'class': 'row'})
 				.insert({'bottom': new Element('div', {'class': 'col-sm-12'}).update(tmp.me._getPartsTable()) })
 			})
-			.insert({'bottom': new Element('div', {'class': 'row', 'style': 'padding: 0 15px'})
+			.insert({'bottom': new Element('div', {'class': 'row'}).setStyle('padding: 0 15px')
 				.insert({'bottom': new Element('div', {'class': 'col-sm-1'})
 					.insert({'bottom': new Element('label', {'class': 'control-label'}).update('Comment: ') })
 				})
 				.insert({'bottom': new Element('div', {'class': 'col-sm-9'})
-					.insert({'bottom': new Element('textarea', {'save-order': 'comments', 'style': 'height:33px; width: 100%;'}) })
+					.insert({'bottom': new Element('textarea', {'save-order': 'comments', 'rows': 4}).setStyle('width: 100%;') })
 				})
-				.insert({'bottom': new Element('div', {'class': 'col-sm-2'}).update(tmp.me._saveBtns()) })
+				.insert({'bottom': new Element('div', {'class': 'col-sm-2'})
+					.insert({'bottom': new Element('div')
+						.insert({'bottom': new Element('div', {'class': 'row'}).setStyle('border-bottom: 1px #ccc solid; padding: 4px 0;')
+							.insert({'bottom': new Element('div', {'class': 'col-xs-8 text-right'}).update('<strong>Total Ordered Value:</strong>') })
+							.insert({'bottom': new Element('div', {'class': 'col-xs-4'}).update(tmp.me.getCurrency(tmp.totalAmount)) })
+						})
+						.insert({'bottom': new Element('div', {'class': 'row'}).setStyle('border-bottom: 1px #ccc solid; padding: 4px 0;')
+							.insert({'bottom': new Element('div', {'class': 'col-xs-8  text-right'}).update('<strong>Total Received Value:</strong>') })
+							.insert({'bottom': new Element('div', {'class': 'col-xs-4', 'summary': 'total-recieved-value'}).update(tmp.me.getCurrency(tmp.purchaseOrder.totalRecievedValue)) })
+						})
+					})
+					.insert({'bottom': tmp.me._saveBtns().setStyle('padding: 4px 0;') })
+				})
 			});
 		return tmp.newDiv;
 	}
@@ -493,6 +507,20 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			.insert({'bottom': new Element(tmp.tag, {'class': 'btns'}).update(item.btns ? item.btns : '') });
 		return tmp.newDiv;
 	}
+	,_updateTotalRecievedValue: function() {
+		var tmp = {};
+		tmp.me = this;
+		tmp.totalScanedValue = 0;
+		$$('.scanned-item-row').each(function(item) {
+			tmp.qtyBox =item.down('[scanned-item="qty"]');
+			tmp.unitPriceBox =item.down('[scanned-item="unitPrice"]');
+			if(!item.hasClassName('new-scan-row') && tmp.qtyBox && tmp.unitPriceBox) {
+				tmp.totalScanedValue = tmp.totalScanedValue * 1 + (tmp.me.getValueFromCurrency($F(tmp.unitPriceBox)) * $F(tmp.qtyBox));
+			}
+		});
+		jQuery('[summary="total-recieved-value"]').html(tmp.me.getCurrency(tmp.totalScanedValue)).val(tmp.me.getCurrency(tmp.totalScanedValue));
+		return tmp.me;
+	}
 	,_getScanTable: function(product) {
 		var tmp = {};
 		tmp.me = this;
@@ -552,6 +580,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 												$(this).up('.item_row').down('.product-head-row .scannedQty').setStyle({color: 'red'});
 											else
 												$(this).up('.item_row').down('.product-head-row .scannedQty').setStyle({color: 'inherit'});
+											tmp.me._updateTotalRecievedValue();
 										}
 									})
 							})

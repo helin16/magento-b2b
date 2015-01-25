@@ -88,6 +88,7 @@ class ReceivingController extends BPCPageAbstract
 	{
 		$array = $po->getJson();
 		$array['totalProdcutCount'] = $po->getTotalProductCount();
+		$array['totalRecievedValue'] = $po->getTotalRecievedValue();
 			
 		$array['purchaseOrderItem'] = [];
 		foreach (PurchaseOrderItem::getAllByCriteria('po_item.purchaseOrderId = :purchaseOrderId', array('purchaseOrderId'=> $po->getId() )) as $purchaseOrderItem)
@@ -254,15 +255,15 @@ class ReceivingController extends BPCPageAbstract
 					$unitPrice = trim($serial->unitPrice);
 					$invoiceNo = trim($serial->invoiceNo);
 					$comments = trim($serial->comments);
-					ReceivingItem::create($purchaseOrder, $product, $unitPrice, $serialNo, $invoiceNo, $comments);
+					ReceivingItem::create($purchaseOrder, $product, $unitPrice, $qty, $serialNo, $invoiceNo, $comments);
 					
 					$nofullReceivedItems = PurchaseOrderItem::getAllByCriteria('productId = ? and purchaseOrderId = ?', array($product->getId(), $purchaseOrder->getId()), true, 1, 1, array('po_item.receivedQty' => 'asc'));
 					if(count($nofullReceivedItems) > 0) {
 						$nofullReceivedItems[0]
-						->setReceivedQty($nofullReceivedItems[0]->getReceivedQty() + $qty)
-						->save()
-						->addLog(Log::TYPE_SYSTEM, ($msg = 'received ' . $qty . ' product(SKU=' . $product->getSku() . ') by ' . Core::getUser()->getPerson()->getFullName() . '@' . trim(new UDate()) . '(UTC)'), 'Auto Log', __CLASS__ . '::' . __FUNCTION__)
-						->addComment($msg, Comments::TYPE_WAREHOUSE);
+							->setReceivedQty($nofullReceivedItems[0]->getReceivedQty() + $qty)
+							->save()
+							->addLog(Log::TYPE_SYSTEM, ($msg = 'received ' . $qty . ' product(SKU=' . $product->getSku() . ') by ' . Core::getUser()->getPerson()->getFullName() . '@' . trim(new UDate()) . '(UTC)'), 'Auto Log', __CLASS__ . '::' . __FUNCTION__)
+							->addComment($msg, Comments::TYPE_WAREHOUSE);
 					}
 				}
 				

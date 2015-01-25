@@ -1,0 +1,1 @@
+ALTER TABLE `receivingitem` ADD `qty` INT(10) NOT NULL DEFAULT '1' AFTER `invoiceNo`, ADD INDEX (`qty`) ;

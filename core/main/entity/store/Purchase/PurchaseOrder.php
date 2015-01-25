@@ -370,6 +370,22 @@ class PurchaseOrder extends BaseEntityAbstract
 		return $this;
 	}
 	/**
+	 * Getting the total recieved value for this PO
+	 * @return number
+	 */
+	public function getTotalRecievedValue()
+	{
+		$receivedItems = ReceivingItem::getAllByCriteria('purchaseOrderId = ?', array($this->getId()));
+		if(count($receivedItems) === 0)
+			return 0;
+		$totalValue = 0;
+		foreach($receivedItems as $item)
+		{
+			$totalValue = $totalValue + ($item->getUnitPrice() * $item->getQty());
+		}
+		return $totalValue;
+	}
+	/**
 	 * (non-PHPdoc)
 	 * @see BaseEntityAbstract::postSave()
 	 */
