@@ -102,19 +102,24 @@ class ListController extends BPCPageAbstract
 			{
 				if(!($product = Product::get(trim($item->id))) instanceof Product)
 					throw new Exception('Invalid Product passed in!');
-				if(($stockInParts = trim($item->stockInParts)) !== $product->getStockInParts())
-					$product->setStockInParts($stockInParts);
+				if(($stockOnPO = trim($item->stockOnPO)) !== $product->getstockOnPO())
+					$product->setStockOnPO($stockOnPO);
 				if(($stockOnHand = trim($item->stockOnHand)) !== $product->getStockOnHand())
 					$product->setStockOnHand($stockOnHand);
 				if(($stockOnOrder = trim($item->stockOnOrder)) !== $product->getStockOnOrder())
 					$product->setStockOnOrder($stockOnOrder);
 				if(($stockInRMA = trim($item->stockInRMA)) !== $product->getStockInRMA())
 					$product->setStockInRMA($stockInRMA);
+				if(($stockInParts = trim($item->stockInParts)) !== $product->getStockInParts())
+					$product->setStockInParts($stockInParts);
+				if(($totalInPartsValue = trim($item->totalInPartsValue)) !== $product->getTotalInPartsValue())
+					$product->setTotalInPartsValue($totalInPartsValue);
+				if(($totalOnHandValue = trim($item->totalOnHandValue)) !== $product->getTotalOnHandValue())
+					$product->setTotalOnHandValue($totalOnHandValue);
 			}
 			$product->save();
 			
 			$results['item'] = $product->getJson();
-			
 			Dao::commitTransaction();
 		}
 		catch(Exception $ex)

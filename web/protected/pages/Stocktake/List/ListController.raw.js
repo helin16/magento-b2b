@@ -56,13 +56,58 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			});
 		tmp.stockInRMAEl = new Element('div', {'class': 'form-group'} )
 			.insert({'bottom': new Element('input', {'class': 'form-control', 'save-item': 'stockInRMA', 'placeholder': 'Stock In RMA', 'type': 'value', 'value': orderItem.product.stockInRMA ? orderItem.product.stockInRMA : 0}) })
+			.observe('keydown', function(event){
+				tmp.txtBox = $(this);
+				tmp.me.keydown(event, function() {
+					tmp.txtBox.up('.item_row').down('[save-item="stockInParts"]').select();
+				});
+			})
 			.observe('click', function(event){
 				$(this).down('input').select();
+			});
+		tmp.stockInPartsEl = new Element('div', {'class': 'form-group'} )
+			.insert({'bottom': new Element('input', {'class': 'form-control', 'save-item': 'stockInParts', 'placeholder': 'Stock In Parts', 'type': 'value', 'value': orderItem.product.stockInParts ? orderItem.product.stockInParts : 0}) })
+			.observe('keydown', function(event){
+				tmp.txtBox = $(this);
+				tmp.me.keydown(event, function() {
+					tmp.txtBox.up('.item_row').down('[save-item="totalInPartsValue"]').select();
+				});
+			})
+			.observe('click', function(event){
+				$(this).down('input').select();
+			});
+		tmp.totalInPartsValueEl = new Element('div', {'class': 'form-group'} )
+			.insert({'bottom': new Element('input', {'class': 'form-control', 'save-item': 'totalInPartsValue', 'placeholder': 'Total In Parts Value', 'type': 'value', 'value': orderItem.product.totalInPartsValue ? tmp.me.getCurrency(orderItem.product.totalInPartsValue) : tmp.me.getCurrency(0)}) })
+			.observe('keydown', function(event){
+				tmp.txtBox = $(this);
+				tmp.me.keydown(event, function() {
+					tmp.txtBox.up('.item_row').down('[save-item="totalOnHandValue"]').select();
+				});
+			})
+			.observe('click', function(event){
+				$(this).down('input').select();
+			})
+			.observe('change', function(event){
+				$(this).down('input').value = tmp.me.getCurrency($(this).down('input').value);
+			});
+		tmp.totalOnHandValueEl = new Element('div', {'class': 'form-group'} )
+			.insert({'bottom': new Element('input', {'class': 'form-control', 'save-item': 'totalOnHandValue', 'placeholder': 'Total On Hand Value', 'type': 'value', 'value': orderItem.product.totalOnHandValue ? tmp.me.getCurrency(orderItem.product.totalOnHandValue) : tmp.me.getCurrency(0)}) })
+			.observe('keydown', function(event){
+				tmp.txtBox = $(this);
+				tmp.me.keydown(event, function() {
+					$(tmp.me._htmlIds.barcodeInput).focus();
+				});
+			})
+			.observe('click', function(event){
+				$(this).down('input').select();
+			})
+			.observe('change', function(event){
+				$(this).down('input').value = tmp.me.getCurrency($(this).down('input').value);
 			});
 		tmp.row = new Element((tmp.isTitle === true ? 'strong' : 'div'), {'class': 'item_row list-group-item'})
 			.store('data', orderItem.product)
 			.insert({'bottom': tmp.infoRow = new Element('div', {'class': tmp.isTitle ? 'row btn-hide-row' : 'row btn-hide-row product-head-row'})
-				.insert({'bottom': new Element('span', {'class': ' col-sm-5 productName'})
+				.insert({'bottom': new Element('span', {'class': ' col-sm-2 productName'})
 					.insert({'bottom': orderItem.product.name ? orderItem.product.name : orderItem.product.barcode })
 				})
 				.insert({'bottom': new Element('span', {'class': ' col-sm-1 StockOnPO'})
@@ -76,6 +121,15 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				})
 				.insert({'bottom': new Element('span', {'class': ' col-sm-1 StockInRMA'})
 					.update(orderItem.product.id ? tmp.stockInRMAEl : orderItem.product.stockInRMA)
+				})
+				.insert({'bottom': new Element('span', {'class': ' col-sm-1 StockInParts'})
+					.update(orderItem.product.id ? tmp.stockInPartsEl : orderItem.product.stockInParts)
+				})
+				.insert({'bottom': new Element('span', {'class': ' col-sm-1 TotalInPartsValue'})
+					.update(orderItem.product.id ? tmp.totalInPartsValueEl : orderItem.product.totalInPartsValue)
+				})
+				.insert({'bottom': new Element('span', {'class': ' col-sm-1 TotalOnHandValue'})
+					.update(orderItem.product.id ? tmp.totalOnHandValueEl : orderItem.product.totalOnHandValue)
 				})
 				.insert({'bottom': tmp.btns = new Element('span', {'class': 'btns col-sm-1'}).update(orderItem.btns ? orderItem.btns : '') })
 			});
@@ -213,7 +267,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 							tmp.me._selectProduct(tmp.data.product,tmp.lastRow);
 						else
 							tmp.me.showModalBox('Product ' + tmp.data.product.name + ' already in the list!', '<b>SKU</b>: ' + tmp.data.product.sku + ', <b>Name</b>: ' + tmp.data.product.name, false);
-						$(tmp.me._htmlIds.barcodeInput).focus();
+						$$('[save-item="stockOnPO"]').first().click();
 					}
 				} catch(e) {
 					tmp.resultList.update(tmp.me.getAlertBox('Error: ', e).addClassName('alert-danger'));
@@ -297,7 +351,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				if(!tmp.me._checkProductExist(product)) {
 					tmp.me._selectProduct(product,tmp.lastRow);
 					jQuery('#' + tmp.me.modalId).modal('hide');
-					$(tmp.me._htmlIds.barcodeInput).focus();
+					$$('[save-item="stockOnPO"]').first().click();
 				}
 				else {
 					jQuery('#' + tmp.me.modalId).modal('hide');
@@ -354,6 +408,9 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				tmp.product.stockOnHand = tmp.formData.stockOnHand;
 				tmp.product.stockOnOrder = tmp.formData.stockOnOrder;
 				tmp.product.stockInRMA = tmp.formData.stockInRMA;
+				tmp.product.stockInParts = tmp.formData.stockInParts;
+				tmp.product.totalInPartsValue = tmp.me.getValueFromCurrency(tmp.formData.totalInPartsValue);
+				tmp.product.totalOnHandValue = tmp.me.getValueFromCurrency(tmp.formData.totalOnHandValue);
 				tmp.data.products.push(tmp.product);
 			}
 		});
@@ -363,7 +420,6 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			tmp.me.showModalBox('<strong class="text-danger">Error</strong>', 'At least one item is needed!', true);
 			return tmp.me;
 		}
-			
 		tmp.me._signRandID(tmp.btn);
 		tmp.me.postAjax(tmp.me.getCallbackId('saveQuantities'), tmp.data, {
 			'onLoading': function(sender, param) {
@@ -404,7 +460,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.me = this;
 		//header row
 		tmp.productListDiv = new Element('div', {'class': 'list-group', 'id': tmp.me._htmlIds.productsTable})
-			.insert({'bottom': tmp.newDiv = tmp.me._getProductRow({'product': {'sku': 'SKU', 'name': 'Product Name', 'stockOnPO': 'PO', 'stockOnHand': 'Hand', 'stockOnOrder': 'Order', 'stockInRMA': 'RMA'} }, true).addClassName('item-title-row') });
+			.insert({'bottom': tmp.newDiv = tmp.me._getProductRow({'product': {'sku': 'SKU', 'name': 'Product Name', 'stockOnPO': 'PO', 'stockOnHand': 'Hand', 'stockOnOrder': 'Order', 'stockInRMA': 'RMA', 'stockInParts': 'Parts', 'totalInPartsValue': 'V: Parts', 'totalOnHandValue': 'V: Hand'} }, true).addClassName('item-title-row') });
 		tmp.newDiv.setStyle({cursor:'pointer'});
 		tmp.productListDiv.insert({'bottom': tmp.me._getNewProductRow()});
 		return new Element('div', {'class': 'panel panel-warning'}).insert({'bottom':  tmp.productListDiv});
