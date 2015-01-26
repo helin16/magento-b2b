@@ -542,11 +542,12 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 	,_getProductRow: function(orderItem, isTitleRow) {
 		var tmp = {};
 		tmp.me = this;
+		console.debug(orderItem);
 		tmp.isTitle = (isTitleRow || false);
 		tmp.tag = (tmp.isTitle === true ? 'th' : 'td');
 		return new Element('tr', {'class': (tmp.isTitle === true ? '' : 'productRow'), 'order_item_id': orderItem.id})
 			.store('data', orderItem)
-			.insert({'bottom': new Element(tmp.tag, {'class': 'productName'}).update(orderItem.product.name + (tmp.isTitle === true ?  '' : "<small class='pull-right'><strong>SKU: </strong>" + orderItem.product.sku + '</small>')) })
+			.insert({'bottom': new Element(tmp.tag, {'class': 'productName'}).update(orderItem.itemDescription ? orderItem.itemDescription : orderItem.product.name + (tmp.isTitle === true ?  '' : "<small class='pull-right'><strong>SKU: </strong>" + orderItem.product.sku + '</small>')) })
 			.insert({'bottom': new Element(tmp.tag, {'class': 'uprice'}).update(tmp.isTitle === true ? orderItem.unitPrice : tmp.me.getCurrency(orderItem.unitPrice)) })
 			.insert({'bottom': new Element(tmp.tag, {'class': 'qty'}).update(orderItem.qtyOrdered) })
 			.insert({'bottom': new Element(tmp.tag, {'class': 'tprice'}).update(tmp.isTitle === true ? orderItem.totalPrice : tmp.me.getCurrency(orderItem.totalPrice)) })
