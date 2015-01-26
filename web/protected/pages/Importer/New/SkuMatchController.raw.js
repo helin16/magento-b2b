@@ -294,7 +294,6 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 						tmp.newRow.update('');
 						return;
 					}
-					console.debug(tmp.result.item);
 					tmp.newRow.removeClassName('info').addClassName('result-done').store('data', tmp.result.item).down('th')
 						.setStyle({
 							'cursor': 'pointer',
