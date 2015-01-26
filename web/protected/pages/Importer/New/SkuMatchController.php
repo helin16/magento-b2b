@@ -31,7 +31,7 @@ class SkuMatchController extends BPCPageAbstract
 	 */
 	protected function _getEndJs()
 	{
-		$importDataTypes = array('myob_ean'=> 'MYOB EAN', 'myob_upc'=> 'MYOB UPC', 'stocktake' => 'Stocktack');
+		$importDataTypes = array('myob_ean'=> 'MYOB EAN', 'myob_upc'=> 'MYOB UPC', 'stocktake' => 'Stocktack', 'accounting' => 'Accounting');
 		
 		$js = parent::_getEndJs();
 		$js .= 'pageJs';
@@ -86,6 +86,16 @@ class SkuMatchController extends BPCPageAbstract
 					
 					$result['item'] = $item->getJson();
 					break;
+				case 'accounting':
+					$index = $param->CallbackParameter->index;
+					if(!isset($param->CallbackParameter->sku) || ($sku = trim($param->CallbackParameter->sku)) === '' || !($product = Product::getBySku($sku)) instanceof Product)
+						throw new Exception('Invalid sku passed in! (line ' . $index .')');
+					$result['path'] = 'product';
+					$item = $this->updateAccountingInfo($product
+							, trim($param->CallbackParameter->assetAccNo), trim($param->CallbackParameter->costAccNo), trim($param->CallbackParameter->revenueAccNo));
+					
+					$result['item'] = $item->getJson();
+					break;
 				default:
 					throw new Exception('Invalid upload type passed in!');
 			}
@@ -95,6 +105,42 @@ class SkuMatchController extends BPCPageAbstract
 			$errors[] = $ex->getMessage();
 		}
 		$param->ResponseData = StringUtilsAbstract::getJson($result, $errors);
+	}
+	/**
+	 * update accounting info for xero
+	 * 
+	 * @param Product $product
+	 * @param number $assetAccNo
+	 * @param number $costAccNo
+	 * @param number $revenueAccNo
+	 * 
+	 * @return Product
+	 */
+	private function updateAccountingInfo(Product $product, $assetAccNo = 0, $costAccNo = 0, $revenueAccNo = 0)
+	{
+		try
+		{
+			Dao::beginTransaction();
+			if(!empty($assetAccNo))
+				$product->addLog('Product (ID=' . $product->getId() . ') now assetAccNo = ' . $assetAccNo, Log::TYPE_SYSTEM)
+				->setAssetAccNo($assetAccNo);
+			if(!empty($costAccNo))
+				$product->addLog('Product (ID=' . $product->getId() . ') now costAccNo = ' . $costAccNo, Log::TYPE_SYSTEM)
+				->setCostAccNo($costAccNo);
+			if(!empty($revenueAccNo))
+				$product->addLog('Product (ID=' . $product->getId() . ') now revenueAccNo = ' . $revenueAccNo, Log::TYPE_SYSTEM)
+				->setRevenueAccNo($revenueAccNo);
+			$product->save();
+			
+			Dao::commitTransaction();
+			
+			return $product;
+		}
+		catch(Exception $e) {
+			Dao::rollbackTransaction();
+			echo $e;
+			exit;
+		}
 	}
 	/**
 	 * update stock tack
