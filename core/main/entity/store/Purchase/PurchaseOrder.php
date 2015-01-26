@@ -401,8 +401,8 @@ class PurchaseOrder extends BaseEntityAbstract
 			foreach($items as $item) {
 				$item->getProduct()->ordered($item->getQty(), '', $item);
 				$item->setStockCalculated(true)
-				->save()
-				->addLog('Marked this item for StockOnPO and stockCalculated', Log::TYPE_SYSTEM, 'STOCK_QTY_CHG', __CLASS__ . '::' . __FUNCTION__);
+					->save()
+					->addLog('Marked this item for StockOnPO and stockCalculated', Log::TYPE_SYSTEM, 'STOCK_QTY_CHG', __CLASS__ . '::' . __FUNCTION__);
 			}
 		}
 	}

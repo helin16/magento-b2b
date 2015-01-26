@@ -394,7 +394,7 @@ class OrderItem extends BaseEntityAbstract
 		
 		//when brandnew, calculate margin
 		if(trim($this->getId()) === '') {
-			$this->setMargin(StringUtilsAbstract::getValueFromCurrency($this->getTotalPrice()) - StringUtilsAbstract::getValueFromCurrency($this->getProduct()->getUnitCost()) * intval($this->getQtyOrdered()));
+			$this->setMargin(StringUtilsAbstract::getValueFromCurrency($this->getTotalPrice()) - StringUtilsAbstract::getValueFromCurrency($this->getProduct()->getUnitCost()) * 1.1 * intval($this->getQtyOrdered()));
 			if(trim($this->getItemDescription()) === '')
 				$this->setItemDescription($this->getProduct()->getName());
 		} else { //if the isPicked changed

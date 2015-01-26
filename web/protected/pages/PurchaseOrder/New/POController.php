@@ -187,7 +187,7 @@ class POController extends BPCPageAbstract
 				)
 				->setTotalAmount(StringUtilsAbstract::getValueFromCurrency(trim($param->CallbackParameter->totalPaymentDue)))
 				->setEta(trim($param->CallbackParameter->eta))
-				->setStatus($param->CallbackParameter->submitToSupplier === true ? PurchaseOrder::STATUS_ORDERED : PurchaseOrder::STATUS_NEW)
+				->setStatus(PurchaseOrder::STATUS_NEW)
 				->save()
 				->addComment(trim($param->CallbackParameter->comments), Comments::TYPE_PURCHASING);
 			foreach ($param->CallbackParameter->items as $item) {
@@ -195,6 +195,10 @@ class POController extends BPCPageAbstract
 					throw new Exception('Invalid Product passed in!');
 				$purchaseOrder->addItem($product, StringUtilsAbstract::getValueFromCurrency(trim($item->unitPrice)), intval(trim($item->qtyOrdered)));
 			};
+			if($param->CallbackParameter->submitToSupplier === true) {
+				$purchaseOrder->setStatus( PurchaseOrder::STATUS_ORDERED )
+					->save();
+			}
 			
 			Dao::commitTransaction();
 			$daoStart = false;

@@ -553,7 +553,8 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			tmp.rowData = row.retrieve('data');
 			tmp.totalPriceIncGSTWithDiscount = tmp.totalPriceIncGSTWithDiscount * 1 + (tmp.me.getValueFromCurrency(tmp.rowData.totalPrice) * 1);
 			tmp.totalPriceIncGSTNoDicount = tmp.totalPriceIncGSTNoDicount * 1 + (tmp.me.getValueFromCurrency(tmp.rowData.unitPrice) * tmp.rowData.qtyOrdered);
-			tmp.totalMargin = tmp.totalMargin * 1 + tmp.me.getValueFromCurrency(tmp.rowData.margin); 
+			if(tmp.rowData.margin)
+				tmp.totalMargin = tmp.totalMargin * 1 + tmp.me.getValueFromCurrency(tmp.rowData.margin) * 1; 
 		});
 		//calculate total price without GST
 		tmp.totalPriceExcGST = ((tmp.totalPriceIncGSTWithDiscount * 1) / 1.1);
@@ -645,7 +646,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			'unitPrice': tmp.me.getCurrency(tmp.unitPrice), 
 			'qtyOrdered': tmp.qtyOrdered, 
 			'discount' : tmp.discount,
-			'margin': tmp.me.getCurrency(tmp.totalPrice * 1 - tmp.product.unitCost * tmp.qtyOrdered),
+			'margin': tmp.me.getCurrency(parseFloat(tmp.totalPrice) - parseFloat(tmp.product.unitCost * 1.1 * tmp.qtyOrdered)),
 			'totalPrice': tmp.me.getCurrency(tmp.totalPrice),
 			'btns': new Element('span', {'class': 'pull-right'})
 				.insert({'bottom': new Element('span', {'class': 'btn btn-danger btn-xs'})
@@ -654,8 +655,8 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					if(!confirm('You remove this entry.\n\nContinue?'))
 						return;
 					tmp.row = $(this).up('.item_row');
-					tmp.me._recalculateSummary();
 					tmp.row.remove();
+					tmp.me._recalculateSummary();
 				})
 			})
 		};
@@ -711,7 +712,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		if(row.retrieve('product')) {
 			tmp.unitCost = row.retrieve('product').unitCost;
 			if(tmp.row.down('.margin'))
-				$(tmp.row.down('.margin')).update( tmp.me.getCurrency( tmp.totalPrice * 1 - tmp.unitCost * tmp.qty ) + (parseInt(tmp.unitCost) === 0 ? '<div><small class="label label-danger">No Cost Yet</small</div>' : '') );
+				$(tmp.row.down('.margin')).update( tmp.me.getCurrency( tmp.totalPrice * 1 - tmp.unitCost * 1.1 * tmp.qty ) + (parseInt(tmp.unitCost) === 0 ? '<div><small class="label label-danger">No Cost Yet</small</div>' : '') );
 		}
 		return tmp.me;
 	}
@@ -861,7 +862,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 						.insert({'bottom': new Element('div', {'order-price-summary': 'totalDiscount', 'class': 'col-xs-6'}).update( tmp.me.getCurrency(0) ) })
 					})
 					.insert({'bottom': new Element('div', {'class': 'row'}) 
-						.insert({'bottom': new Element('div', {'class': 'col-xs-6 text-right'}).update( new Element('strong').update('Total Incl. GST: ') ) }) 
+						.insert({'bottom': new Element('div', {'class': 'col-xs-6 text-right'}).update( new Element('strong').update('Sub Total Incl. GST: ') ) }) 
 						.insert({'bottom': new Element('div', {'order-price-summary': 'totalPriceIncludeGST', 'class': 'col-xs-6'}).update( tmp.me.getCurrency(0) ) })
 					})
 					.insert({'bottom': new Element('div', {'class': 'row', 'style': 'border-bottom: 1px solid brown'}) 
@@ -882,7 +883,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 						.insert({'bottom': new Element('div', {'class': 'col-xs-6 input-field'}).update( tmp.me.getCurrency(0) ) })
 					})
 					.insert({'bottom': new Element('div', {'class': 'row'}) 
-						.insert({'bottom': new Element('div', {'class': 'col-xs-6 text-right'}).update( new Element('strong').update('Sub-Total:') ) }) 
+						.insert({'bottom': new Element('div', {'class': 'col-xs-6 text-right'}).update( new Element('strong').update('Total Incl. GST:') ) }) 
 						.insert({'bottom': new Element('strong', {'order-price-summary': 'subTotal', 'class': 'col-xs-6'}).update( tmp.me.getCurrency(0) ) })
 					})
 					.insert({'bottom': new Element('div', {'class': 'row', 'style': 'border-bottom: 1px solid brown'}) 
@@ -907,8 +908,8 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 						.insert({'bottom': new Element('h4', {'class': 'col-xs-6', 'order-price-summary': 'total-payment-due'}).update(tmp.me.getCurrency(0)) })
 					})
 					.insert({'bottom': new Element('div', {'class': 'row margin'})
-						.insert({'bottom': new Element('strong', {'class': 'col-xs-6 text-right'}).update(new Element('strong').update('Margin Total:')) })
-						.insert({'bottom': new Element('strong', {'class': 'col-xs-6', 'order-price-summary': 'total-payment-due'}).update(tmp.me.getCurrency(0)) })
+						.insert({'bottom': new Element('strong', {'class': 'col-xs-6 text-right'}).update(new Element('strong').update('Margin Total Incl. GST:')) })
+						.insert({'bottom': new Element('strong', {'class': 'col-xs-6', 'order-price-summary': 'total-margin'}).update(tmp.me.getCurrency(0)) })
 					})
 				})
 			});

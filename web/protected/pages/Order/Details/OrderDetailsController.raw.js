@@ -542,7 +542,6 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 	,_getProductRow: function(orderItem, isTitleRow) {
 		var tmp = {};
 		tmp.me = this;
-		console.debug(orderItem);
 		tmp.isTitle = (isTitleRow || false);
 		tmp.tag = (tmp.isTitle === true ? 'th' : 'td');
 		return new Element('tr', {'class': (tmp.isTitle === true ? '' : 'productRow'), 'order_item_id': orderItem.id})
@@ -935,8 +934,8 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		}
 		return new Element('div', {'class': 'panel panel-default'})
 			.insert({'bottom': new Element('div', {'class': 'panel-heading'})
-				.insert({'bottom': new Element('strong').update(tmp.me._order.orderNo)
-				})
+				.insert({'bottom': new Element('strong').update(tmp.me._order.type + ': ') })
+				.insert({'bottom': new Element('strong').update(tmp.me._order.orderNo) })
 				.insert({'bottom': new Element('span', {'class': 'pull-right'})
 					.update('Status: ') 
 					.insert({'bottom': tmp.me._getOrderStatus() })
@@ -1023,7 +1022,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			.insert({'bottom': new Element('div', {'class': 'panel-heading'})
 				.insert({'bottom': new Element('span', {'class': 'btn-group btn-group-xs'})
 					.insert({'bottom': new Element('span', {'class': 'btn btn-info btn-xs'})
-						.insert({'bottom': new Element('span', {'class': ''}).update('Print Order ') })
+						.insert({'bottom': new Element('span', {'class': ''}).update('Print ') })
 						.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-print'}) })
 						.observe('click', function() {
 							tmp.me._openOrderPrintPage();
@@ -1079,7 +1078,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				})
 			});
 		if(tmp.me._order.type === 'INVOICE') {
-			tmp.newDiv.down('.invoice-btn').writeAttribute('disabled', true).down('span').update('INVOICED');
+			tmp.newDiv.down('.invoice-btn').writeAttribute('disabled', true).down('span').update('INVOICED ');
 		}
 			
 		return tmp.newDiv;
@@ -1260,6 +1259,10 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				})
 			}
 		});
+		if(tmp.me._order.type === 'QUOTE')
+			jQuery('.panel').removeClass('panel-default').addClass('panel-warning');
+		if(tmp.me._order.type === 'ORDER')
+			jQuery('.panel').removeClass('panel-default').addClass('panel-success');
 		return tmp.me;
 	}
 });

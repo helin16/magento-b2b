@@ -193,17 +193,21 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				.insert({'bottom': new Element('div', {'class': 'col-sm-1'})
 					.insert({'bottom': new Element('label', {'class': 'control-label'}).update('Comment: ') })
 				})
-				.insert({'bottom': new Element('div', {'class': 'col-sm-9'})
+				.insert({'bottom': new Element('div', {'class': 'col-sm-8'})
 					.insert({'bottom': new Element('textarea', {'save-order': 'comments', 'rows': 4}).setStyle('width: 100%;') })
 				})
-				.insert({'bottom': new Element('div', {'class': 'col-sm-2'})
+				.insert({'bottom': new Element('div', {'class': 'col-sm-3'})
 					.insert({'bottom': new Element('div')
 						.insert({'bottom': new Element('div', {'class': 'row'}).setStyle('border-bottom: 1px #ccc solid; padding: 4px 0;')
-							.insert({'bottom': new Element('div', {'class': 'col-xs-8 text-right'}).update('<strong>Total Ordered Value:</strong>') })
+							.insert({'bottom': new Element('div', {'class': 'col-xs-8 text-right'}).update('<strong>Total Ordered Value(Inc):</strong>') })
 							.insert({'bottom': new Element('div', {'class': 'col-xs-4'}).update(tmp.me.getCurrency(tmp.totalAmount)) })
 						})
 						.insert({'bottom': new Element('div', {'class': 'row'}).setStyle('border-bottom: 1px #ccc solid; padding: 4px 0;')
-							.insert({'bottom': new Element('div', {'class': 'col-xs-8  text-right'}).update('<strong>Total Received Value:</strong>') })
+							.insert({'bottom': new Element('div', {'class': 'col-xs-8  text-right'}).update('<strong>Total Received Value(Ex):</strong>') })
+							.insert({'bottom': new Element('div', {'class': 'col-xs-4', 'summary': 'total-recieved-value-ex'}).update(tmp.me.getCurrency(tmp.purchaseOrder.totalRecievedValue)) })
+						})
+						.insert({'bottom': new Element('div', {'class': 'row'}).setStyle('border-bottom: 1px #ccc solid; padding: 4px 0;')
+							.insert({'bottom': new Element('div', {'class': 'col-xs-8  text-right'}).update('<strong>Total Received Value(Inc):</strong>') })
 							.insert({'bottom': new Element('div', {'class': 'col-xs-4', 'summary': 'total-recieved-value'}).update(tmp.me.getCurrency(tmp.purchaseOrder.totalRecievedValue)) })
 						})
 					})
@@ -518,7 +522,9 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				tmp.totalScanedValue = tmp.totalScanedValue * 1 + (tmp.me.getValueFromCurrency($F(tmp.unitPriceBox)) * $F(tmp.qtyBox));
 			}
 		});
-		jQuery('[summary="total-recieved-value"]').html(tmp.me.getCurrency(tmp.totalScanedValue)).val(tmp.me.getCurrency(tmp.totalScanedValue));
+		tmp.totalValueInc = tmp.totalScanedValue * 1.1;
+		jQuery('[summary="total-recieved-value-ex"]').html(tmp.me.getCurrency(tmp.totalScanedValue)).val(tmp.me.getCurrency(tmp.totalScanedValue));
+		jQuery('[summary="total-recieved-value"]').html(tmp.me.getCurrency(tmp.totalValueInc)).val(tmp.me.getCurrency(tmp.totalValueInc));
 		return tmp.me;
 	}
 	,_getScanTable: function(product) {

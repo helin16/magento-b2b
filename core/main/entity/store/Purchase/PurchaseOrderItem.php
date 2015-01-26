@@ -201,6 +201,16 @@ class PurchaseOrderItem extends BaseEntityAbstract
 	}
 	/**
 	 * (non-PHPdoc)
+	 * 
+	 * @see BaseEntityAbstract::preSave()
+	 */
+	public function preSave()
+	{
+		if(trim($this->getQty()) === '0')
+			throw new EntityException('You can NOT save a purchaseorder item with Qty = 0.');
+	}
+	/**
+	 * (non-PHPdoc)
 	 * @see HydraEntity::__loadDaoMap()
 	 */
 	public function __loadDaoMap()
