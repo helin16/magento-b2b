@@ -31,53 +31,64 @@ class SkuMatchController extends BPCPageAbstract
 	 */
 	protected function _getEndJs()
 	{
-		$productCodeTypes = array(ProductCodeType::get(ProductCodeType::ID_EAN)->getJson());
-		foreach(ProductCodeType::getAll() as $item)
-			if($item->getId() != ProductCodeType::ID_EAN and $item->getId() != ProductCodeType::ID_MYOB)
-				$productCodeTypes[] = $item->getJson();
+		$importDataTypes = array('myob_ean'=> 'MYOB EAN', 'myob_upc'=> 'MYOB UPC', 'stocktake' => 'Stocktack');
 		
 		$js = parent::_getEndJs();
-		// Setup the dnd listeners.
 		$js .= 'pageJs';
-		$js .= ".setHTMLIDs('sku_match_div', 'product_code_type_dropdown')";
+		$js .= ".setHTMLIDs('importer_div', 'import_type_dropdown')";
 		$js .= '.setCallbackId("getAllCodeForProduct", "' . $this->getAllCodeForProductBtn->getUniqueID() . '")';
-		$js .= '.load(' . json_encode($productCodeTypes) . ');';
+		$js .= '.load(' . json_encode($importDataTypes) . ');';
 		return $js;
 	}
-	
-
 	public function getAllCodeForProduct($sender, $param)
 	{
-		$result = $errors = $items = array();
+		$result = $errors = $item = array();
 		try
 		{
-			$index = $param->CallbackParameter->index;
-			$sku = trim($param->CallbackParameter->sku);
-			$code = isset($param->CallbackParameter->myobItemNo) ? trim($param->CallbackParameter->myobItemNo) : '';
-			$assetAccNo = isset($param->CallbackParameter->assetAccNo) ? trim($param->CallbackParameter->assetAccNo) : '';
-			$revenueAccNo = isset($param->CallbackParameter->revenueAccNo) ? trim($param->CallbackParameter->revenueAccNo) : '';
-			$costAccNo = isset($param->CallbackParameter->costAccNo) ? trim($param->CallbackParameter->costAccNo) : '';
-			
-			
-			if(empty($sku))
-				throw new Exception('Invalid SKU passed in! Line: ' . $index);
-// 			if(empty($code))
-// 				throw new Exception('Invalid MYOB code passed in! Line: ' . $index);
-			if(!($productCodeType = ProductCodeType::getAllByCriteria('pro_code_type.name = ?', array(trim($param->CallbackParameter->productCodeType)), true, 1, 1)[0]) instanceof ProductCodeType) 
-				throw new Exception('Invalid Product Code Type passed in!');
-			
-			//assume a non-title row contains at lease a number
-			if(($this->checkContainNumber($sku) || $this->checkContainNumber($code))) // is not a title row
+			if(!isset($param->CallbackParameter->importDataTypes) || ($type = trim($param->CallbackParameter->importDataTypes)) === '' || ($type = trim($param->CallbackParameter->importDataTypes)) === 'Select a Import Type')
+				throw new Exception('Invalid upload type passed in!');
+
+			switch ($type)
 			{
-				$product = Product::getBySku($sku);
-				
-				if(!($product instanceof Product))
-					throw new Exception('Invalid SKU passed in! Line: ' . $index);
-				
-				$items = $this->updateProductCode($product, $code, $productCodeType, $assetAccNo, $revenueAccNo, $costAccNo);
+				case 'myob_ean':
+					$index = $param->CallbackParameter->index;
+					if(!isset($param->CallbackParameter->sku) || ($sku = trim($param->CallbackParameter->sku)) === '' || !($product = Product::getBySku($sku)) instanceof Product)
+						throw new Exception('Invalid sku passed in! (line ' . $index .')');
+					if(!isset($param->CallbackParameter->itemNo) || ($itemNo = trim($param->CallbackParameter->itemNo)) === '')
+						throw new Exception('Invalid itemNo passed in! (line ' . $index .')');
+					$result['path'] = 'product';
+					$productType = ProductCodeType::get(ProductCodeType::ID_EAN);
+					$item = $this->updateProductCode($product, $itemNo, $productType);
+// 					$eanCode = ProductCode::getAllByCriteria('productId = ? AND typeId = ?', array($item->getId(), $productType->getId()));
+// 					var_dump($item->getJson(array('ean_code'=> $eanCode[0]->getCode())));
+// 					$result['item'] = $item->getJson(array('ean_code'=> $eanCode[0]->getCode()));
+					$result['item'] = $item->getJson();
+					break;
+				case 'myob_upc':
+					$index = $param->CallbackParameter->index;
+					if(!isset($param->CallbackParameter->sku) || ($name = trim($param->CallbackParameter->sku)) === '')
+						throw new Exception('Invalid sku passed in! (line ' . $index .')');
+					if(!isset($param->CallbackParameter->itemNo) || ($code = trim($param->CallbackParameter->itemNo)) === '')
+						throw new Exception('Invalid itemNo passed in! (line ' . $index .')');
+					$result['path'] = 'product';
+					$item = $this->updateProductCode($product, $itemNo, ProductCodeType::get(ProductCodeType::ID_UPC));
+
+					$result['item'] = $item->getJson();
+					break;
+				case 'stocktake':
+					$index = $param->CallbackParameter->index;
+					if(!isset($param->CallbackParameter->sku) || ($sku = trim($param->CallbackParameter->sku)) === '' || !($product = Product::getBySku($sku)) instanceof Product)
+						throw new Exception('Invalid sku passed in! (line ' . $index .')');
+					$result['path'] = 'product';
+					$item = $this->updateStocktack($product
+							, trim($param->CallbackParameter->stockOnPO), trim($param->CallbackParameter->stockOnHand), trim($param->CallbackParameter->stockInRMA), trim($param->CallbackParameter->stockInParts)
+							, trim($param->CallbackParameter->totalInPartsValue), trim($param->CallbackParameter->totalOnHandValue));
+					
+					$result['item'] = $item->getJson();
+					break;
+				default:
+					throw new Exception('Invalid upload type passed in!');
 			}
-			
-			$result['item'] = $items;
 		}
 		catch(Exception $ex)
 		{
@@ -85,8 +96,67 @@ class SkuMatchController extends BPCPageAbstract
 		}
 		$param->ResponseData = StringUtilsAbstract::getJson($result, $errors);
 	}
-	
-	private function updateProductCode(Product $product, $myobCode, $productCodeType, $assetAccNo = '', $revenueAccNo = '', $costAccNo = '')
+	/**
+	 * update stock tack
+	 * 
+	 * @param Product $product
+	 * @param number $stockOnPO
+	 * @param number $stockOnHand
+	 * @param number $stockInRMA
+	 * @param number $stockInParts
+	 * @param number $totalInPartsValue
+	 * @param number $totalOnHandValue
+	 * 
+	 * @return Product
+	 */
+	private function updateStocktack(Product $product, $stockOnPO = 0, $stockOnHand = 0, $stockInRMA = 0, $stockInParts = 0, $totalInPartsValue = 0, $totalOnHandValue = 0)
+	{
+		try
+		{
+			Dao::beginTransaction();
+			if(!empty($stockOnPO))
+				$product->addLog('Product (ID=' . $product->getId() . ') now stockOnPO = ' . $stockOnPO, Log::TYPE_SYSTEM)
+					->setStockOnPO($stockOnPO);
+			if(!empty($stockOnHand))
+				$product->addLog('Product (ID=' . $product->getId() . ') now stockOnHand = ' . $stockOnHand, Log::TYPE_SYSTEM)
+					->setStockOnHand($stockOnHand);
+			if(!empty($stockInRMA))
+				$product->addLog('Product (ID=' . $product->getId() . ') now stockInRMA = ' . $stockInRMA, Log::TYPE_SYSTEM)
+					->setStockInRMA($stockInRMA);
+			if(!empty($stockInParts))
+				$product->addLog('Product (ID=' . $product->getId() . ') now stockInParts = ' . $stockInParts, Log::TYPE_SYSTEM)
+					->setStockInParts($stockInParts);
+			if(!empty($totalInPartsValue))
+				$product->addLog('Product (ID=' . $product->getId() . ') now totalInPartsValue = ' . $totalInPartsValue, Log::TYPE_SYSTEM)
+					->setTotalInPartsValue($totalInPartsValue);
+			if(!empty($totalOnHandValue))
+				$product->addLog('Product (ID=' . $product->getId() . ') now totalOnHandValue = ' . $totalOnHandValue, Log::TYPE_SYSTEM)
+					->setTotalOnHandValue($totalOnHandValue);
+			$product->save();
+			
+			Dao::commitTransaction();
+			
+			return $product;
+		}
+		catch(Exception $e) {
+			Dao::rollbackTransaction();
+			echo $e;
+			exit;
+		}
+	}
+	/**
+	 * Update product code
+	 * 
+	 * @param Product $product
+	 * @param unknown $myobCode
+	 * @param ProductCodeType $productCodeType
+	 * @param string $assetAccNo
+	 * @param string $revenueAccNo
+	 * @param string $costAccNo
+	 * 
+	 * @return Product
+	 */
+	private function updateProductCode(Product $product, $myobCode, ProductCodeType $productCodeType, $assetAccNo = '', $revenueAccNo = '', $costAccNo = '')
 	{
 		try
 		{
@@ -151,7 +221,7 @@ class SkuMatchController extends BPCPageAbstract
 			 
 			Dao::commitTransaction();
 			
-			return $result;
+			return $product;
 		}
 		catch(Exception $e) {
 			Dao::rollbackTransaction();

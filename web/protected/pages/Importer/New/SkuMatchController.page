@@ -4,6 +4,6 @@
 	<com:Application.controls.jsSaveAs.jsSaveAs />
 	<com:TCallback ID="getAllCodeForProductBtn" OnCallback="getAllCodeForProduct" />
 	<div class="pagewrapper">
-		<div id="sku_match_div" class="contentDiv"></div>
+		<div id="importer_div" class="contentDiv"></div>
 	</div>
 </com:TContent>

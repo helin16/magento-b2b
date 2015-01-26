@@ -64,10 +64,11 @@
 			<!-- FrontEnd:: product category list page -->
 			<url ServiceParameter="ProductCategory.List.ListController" pattern="productcategories.html" />
 			
-			<!-- FrontEnd:: Inventory list page -->
-			<url ServiceParameter="Inventory.List.ProductController" pattern="inventory.html" />
-			<!-- FrontEnd:: Inventory new page -->
-			<url ServiceParameter="Inventory.New.SkuMatchController" pattern="inventory/new.html" />
+			<!-- FrontEnd:: Accounting Info list page -->
+			<url ServiceParameter="Accounting.List.ProductController" pattern="accounting.html" />
+			
+			<!-- FrontEnd:: Importer page -->
+			<url ServiceParameter="Importer.New.SkuMatchController" pattern="importer/new.html" />
 			
 			<!-- FrontEnd:: manufacturer list page -->
 			<url ServiceParameter="Manufacturer.List.ListController" pattern="manufacturers.html" />
