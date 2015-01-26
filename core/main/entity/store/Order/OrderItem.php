@@ -468,13 +468,14 @@ class OrderItem extends BaseEntityAbstract
 	 *
 	 * @return OrderItem
 	 */
-	public static function create(Order $order, Product $product, $unitPrice, $qty, $totalPrice, $mageOrderItemId = 0, $eta = null)
+	public static function create(Order $order, Product $product, $unitPrice, $qty, $totalPrice, $mageOrderItemId = 0, $eta = null, $itemDescription = '')
 	{
 		$item = new OrderItem();
 		$item->setOrder($order)
 			->setProduct($product)
 			->setUnitPrice($unitPrice)
 			->setQtyOrdered($qty)
+			->setItemDescription($itemDescription)
 			->setTotalPrice($totalPrice === null ? $unitPrice * $qty : $totalPrice)
 			->setMageOrderId($mageOrderItemId)
 			->setEta($eta)

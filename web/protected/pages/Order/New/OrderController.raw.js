@@ -64,7 +64,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.data.items = [];
 		$$('.order-item-row').each(function(item){
 			tmp.itemData = item.retrieve('data');
-			tmp.data.items.push({'product': {'id': tmp.itemData.product.id}, 'unitPrice': tmp.itemData.unitPrice, 'qtyOrdered': tmp.itemData.qtyOrdered, 'totalPrice': tmp.itemData.totalPrice, 'serials': item.retrieve('serials') });
+			tmp.data.items.push({'product': {'id': tmp.itemData.product.id}, 'itemDescription': tmp.itemData.itemDescription,'unitPrice': tmp.itemData.unitPrice, 'qtyOrdered': tmp.itemData.qtyOrdered, 'totalPrice': tmp.itemData.totalPrice, 'serials': item.retrieve('serials') });
 		});
 		if(tmp.data.items.size() <= 0) {
 			tmp.me.showModalBox('<strong class="text-danger">Error</strong>', 'At least one order item is needed!', true);
@@ -321,16 +321,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			.insert({'bottom': new Element('div', {'class': 'row'})
 				.store('data', orderItem)
 				.insert({'bottom': new Element(tmp.tag, {'class': 'productName col-xs-6'})
-					.insert({'bottom': orderItem.product.name })
-					.insert({'bottom': new Element('small', {'class': orderItem.product.id ? 'btn btn-xs btn-info' : 'hidden'})
-							.insert({'bottom': new Element('small', {'class': 'glyphicon glyphicon-new-window'} )})
-						})
-					.observe('click', function(event){
-						Event.stop(event);
-						$productId = orderItem.product.id;
-						if($productId)
-							tmp.me._openProductDetailPage($productId);
-					})
+					.insert({'bottom': orderItem.itemDescription ? orderItem.itemDescription : orderItem.product.name })
 				})
 				.insert({'bottom': new Element(tmp.tag, {'class': 'uprice col-xs-1'})
 					.insert({'bottom': (orderItem.unitPrice) })
@@ -351,7 +342,17 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			tmp.row.down('.productName')
 				.removeClassName('col-xs-6')
 				.addClassName('col-xs-4')
-				.insert({'before': new Element(tmp.tag, {'class': 'productSku col-xs-2'}).update(orderItem.product.sku) });
+				.insert({'before': new Element(tmp.tag, {'class': 'productSku col-xs-2'}).update(orderItem.product.sku) 
+					.insert({'bottom': new Element('small', {'class': orderItem.product.id ? 'btn btn-xs btn-info' : 'hidden'})
+						.insert({'bottom': new Element('small', {'class': 'glyphicon glyphicon-new-window'} )})
+						.observe('click', function(event){
+							Event.stop(event);
+							$productId = orderItem.product.id;
+							if($productId)
+								tmp.me._openProductDetailPage($productId);
+						})
+					})
+				});
 		}
 		if(orderItem.scanTable) {
 			tmp.row.insert({'bottom': new Element('div', {'class': 'row product-content-row'})
@@ -438,25 +439,25 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					.update(product.sku)
 					.removeClassName('col-xs-8')
 					.addClassName('col-xs-2')
+					.insert({'bottom': new Element('small', {'class': 'btn btn-xs btn-info'})
+						.insert({'bottom': new Element('small', {'class': 'glyphicon glyphicon-new-window'} )})
+						.observe('click', function(event){
+							Event.stop(event);
+							$productId = product.id;
+							if($productId)
+								tmp.me._openProductDetailPage($productId);
+						})
+					})
+					.insert({'bottom': new Element('a', {'href': 'javascript: void(0);', 'class': 'text-danger pull-right', 'title': 'click to change the product'}) 
+						.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-remove'})  })
+						.observe('click', function() {
+							tmp.newRow = tmp.me._getNewProductRow();
+							$(this).up('.new-order-item-input').replace(tmp.newRow);
+							tmp.newRow.down('[new-order-item=product]').select();
+						})
+					})
 					.insert({'after': new Element('div', {'class': 'col-xs-4'})
-						.update(product.name) 
-						.insert({'bottom': new Element('small', {'class': 'btn btn-xs btn-info'})
-							.insert({'bottom': new Element('small', {'class': 'glyphicon glyphicon-new-window'} )})
-							.observe('click', function(event){
-								Event.stop(event);
-								$productId = product.id;
-								if($productId)
-									tmp.me._openProductDetailPage($productId);
-							})
-						})
-						.insert({'bottom': new Element('a', {'href': 'javascript: void(0);', 'class': 'text-danger pull-right', 'title': 'click to change the product'}) 
-							.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-remove'})  })
-							.observe('click', function() {
-								tmp.newRow = tmp.me._getNewProductRow();
-								$(this).up('.new-order-item-input').replace(tmp.newRow);
-								tmp.newRow.down('[new-order-item=product]').select();
-							})
-						})
+						.update(new Element('textarea', {'new-order-item': 'itemDescription'}).setStyle('width: 100%').update(product.name)) 
 					});
 				jQuery('#' + tmp.me.modalId).modal('hide');
 				tmp.retailPrice = product.prices.size() === 0 ? 0 : product.prices[0].price;
@@ -636,9 +637,11 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.currentRow.getElementsBySelector('.form-group.has-error .form-control').each(function(control){
 			$(control).retrieve('clearErrFunc')();
 		});
+		tmp.itemDescription = $F(tmp.currentRow.down('[new-order-item=itemDescription]')).replace(/\n/g, "<br />");
 		//get all data
 		tmp.data = {
 			'product': tmp.product, 
+			'itemDescription': tmp.itemDescription,
 			'unitPrice': tmp.me.getCurrency(tmp.unitPrice), 
 			'qtyOrdered': tmp.qtyOrdered, 
 			'discount' : tmp.discount,

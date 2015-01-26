@@ -642,9 +642,9 @@ class Order extends InfoEntityAbstract
 	 *
 	 * @return PurchaseOrder
 	 */
-	public function addItem(Product $product, $unitPrice = '0.0000', $qty = 1, $description = '', $totalPrice = null, $mageOrderItemId = null, $eta = null)
+	public function addItem(Product $product, $unitPrice = '0.0000', $qty = 1, $description = '', $totalPrice = null, $mageOrderItemId = null, $eta = null, $itemDescription= '')
 	{
-		OrderItem::create($this, $product, $unitPrice, $qty, $totalPrice, $mageOrderItemId, $eta);
+		OrderItem::create($this, $product, $unitPrice, $qty, $totalPrice, $mageOrderItemId, $eta, $itemDescription);
 		return $this;
 	}
 	/**
