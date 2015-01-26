@@ -246,7 +246,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					.insert({'bottom': new Element('div', {'class': 'col-sm-3'}).update(tmp.me._getFormGroup('Contact Name', new Element('input', {'save-order': 'contactName', 'placeholder': 'The name of the contact person', 'type': 'text', 'value': tmp.supplier.contactName ? tmp.supplier.contactName : ''}) ) ) })
 					.insert({'bottom': new Element('div', {'class': 'col-sm-3'}).update(tmp.me._getFormGroup('Contact Number', new Element('input', {'save-order': 'contactNo', 'placeholder': 'The contact number of the sales person',  'value': tmp.supplier.contactNo ? tmp.supplier.contactNo : ''}) ) ) })
 					.insert({'bottom': new Element('div', {'class': 'col-sm-3'}).update(tmp.me._getFormGroup('Contact Email', new Element('input', {'save-order': 'contactEmail', 'placeholder': 'The email of the supplier', 'type': 'email', 'value': tmp.supplier.email ? tmp.supplier.email : ''}) ) ) })
-					.insert({'bottom': new Element('div', {'class': 'col-sm-3'}).update(tmp.me._getFormGroup('Supplier Ref Num', new Element('input', {'required': 'required', 'placeholder': 'The supplier invoice number / supplier reference number',  'save-order': 'supplierRefNum', 'type': 'text', 'value': ''}) ) ) })
+					.insert({'bottom': new Element('div', {'class': 'col-sm-3'}).update(tmp.me._getFormGroup('PO Ref Num', new Element('input', {'required': 'required', 'placeholder': 'The supplier invoice number / PO reference number',  'save-order': 'supplierRefNum', 'type': 'text', 'value': ''}) ) ) })
 				 })
 			});
 		return tmp.newDiv;

@@ -5,7 +5,7 @@ var PageJs = new Class.create();
 
 PageJs.prototype = Object.extend(new CRUDPageJs(), {
 	_getTitleRowData: function() {
-		return {'totalAmount': 'Total Amount', 'totalPaid': 'Total Paid', 'purchaseOrderNo': 'PO Number', 'supplier': {'name': 'Supplier'}, 'status': 'Status', 'supplierRefNo': 'Supplier Ref.', 'orderDate': 'Order Date', 'active': 'Active'};
+		return {'totalAmount': 'Total Amount', 'totalPaid': 'Total Paid', 'purchaseOrderNo': 'PO Number', 'supplier': {'name': 'Supplier'}, 'status': 'Status', 'supplierRefNo': 'PO Ref.', 'orderDate': 'Order Date', 'active': 'Active'};
 		
 	}
 	,_loadChosen: function () {
