@@ -75,6 +75,12 @@ class OrderItem extends BaseEntityAbstract
 	 */
 	private $margin = 0;
 	/**
+	 * The item description of the order item
+	 * 
+	 * @var string
+	 */
+	private $itemDescription = '';
+	/**
 	 * Getter for order
 	 *
 	 * @return Order
@@ -311,6 +317,29 @@ class OrderItem extends BaseEntityAbstract
 	    $this->margin = $value;
 	    return $this;
 	}
+	
+	/**
+	 * Getter for itemDescription
+	 *
+	 * @return string
+	 */
+	public function getItemDescription() 
+	{
+	    return $this->itemDescription;
+	}
+	/**
+	 * Setter for itemDescription
+	 *
+	 * @param int $value The itemDescription
+	 *
+	 * @return OrderItem
+	 */
+	public function setItemDescription($value) 
+	{
+	    $this->itemDescription = $value;
+	    return $this;
+	}
+	
 	/**
 	 * (non-PHPdoc)
 	 * @see BaseEntityAbstract::getJson()
@@ -366,6 +395,8 @@ class OrderItem extends BaseEntityAbstract
 		//when brandnew, calculate margin
 		if(trim($this->getId()) === '') {
 			$this->setMargin(StringUtilsAbstract::getValueFromCurrency($this->getTotalPrice()) - StringUtilsAbstract::getValueFromCurrency($this->getProduct()->getUnitCost()) * intval($this->getQtyOrdered()));
+			if(trim($this->getItemDescription()) === '')
+				$this->setItemDescription($this->getProduct()->getName());
 		} else { //if the isPicked changed
 			$product = $this->getProduct();
 			//for picked
@@ -411,6 +442,7 @@ class OrderItem extends BaseEntityAbstract
 		DaoMap::setBoolType('isOrdered');
 		DaoMap::setIntType('mageOrderId');
 		DaoMap::setIntType('margin', 'double', '10,4');
+		DaoMap::setStringType('itemDescription', 'varchar', '255');
 		
 		parent::__loadDaoMap();
 		

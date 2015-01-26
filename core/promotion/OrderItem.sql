@@ -1,0 +1,1 @@
+ALTER TABLE `orderitem` ADD `itemDescription` VARCHAR(255) NOT NULL DEFAULT '' AFTER `margin`;
