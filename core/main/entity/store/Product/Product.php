@@ -861,9 +861,9 @@ class Product extends InfoEntityAbstract
 	 * (non-PHPdoc)
 	 * @see BaseEntityAbstract::getJson()
 	 */
-	public function getJson($extra = '', $reset = false)
+	public function getJson($extra = array(), $reset = false)
 	{
-		$array = array();
+		$array = $extra;
 		if(!$this->isJsonLoaded($reset))
 		{
 			$array['prices'] = array_map(create_function('$a', 'return $a->getJson();'), $this->getPrices());
@@ -947,7 +947,7 @@ class Product extends InfoEntityAbstract
 	 */
 	public function received($qty, $unitCost, $comments = '', BaseEntityAbstract $entity = null)
 	{
-		if(!is_numeric($unitCost))
+		if(is_numeric($unitCost))
 			throw new EntityException('Unitcost of receiving product(SKU=' . $this->getSku() . ') is not a number!');
 		return $this->setStockOnPO(($origStockOnPO = $this->getStockOnPO()) - $qty)
 			->setStockOnHand(($origStockOnHand = $this->getStockOnHand()) + $qty)
