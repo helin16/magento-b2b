@@ -1,6 +1,6 @@
 <?php
-require_once dirname(__FILE__) . '/../../../../bootstrap.php';
-
+require_once dirname(__FILE__) . '/../../../bootstrap.php';
+Core::setUser(UserAccount::get(UserAccount::ID_SYSTEM_ACCOUNT));
 class ExportAbstract
 {
 	protected static $_debug = false;
@@ -9,10 +9,14 @@ class ExportAbstract
 	public static function run($debug = false)
 	{
 		self::$_debug = $debug;
-		$objPHPExcel = self::_getOutput();
+		if($debug)
+			echo '<pre>';
+		$class = get_called_class();
+		$objPHPExcel = $class::_getOutput();
 		if(!$objPHPExcel instanceof PHPExcel)
 			throw new Exception('System Error: can NOT generate CSV without PHPExcel object!');
-		$filePath = self::$_rootDir . '/' . trim(new UDate()) . '.csv';
+		// Set document properties
+		$filePath = self::$_rootDir . '/' . md5(new UDate()) . '.csv';
 		$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'CSV')->setDelimiter(',')
 			->setEnclosure('"')
 			->setLineEnding("\r\n")
@@ -20,7 +24,7 @@ class ExportAbstract
 			->save($filePath);
 		if(!is_file($filePath))
 			throw new Exception('System Error: can NOT generate CSV to:' . $filePath);
-		$asset = Asset::registerAsset(self::_getAttachedFileName(), file_get_contents($filePath));
+		$asset = Asset::registerAsset($class::_getAttachedFileName(), file_get_contents($filePath));
 		self::_mailOut($asset);
 	}
 	/**
