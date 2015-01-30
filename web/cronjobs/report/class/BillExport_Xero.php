@@ -1,13 +1,13 @@
 <?php
 class BillExport_Xero extends ExportAbstract
 {
-	const DEFAULT_DUE_DATE = "+7 day";
+	const DEFAULT_DUE_DELAY = "+7 day";
 	protected static function _getData()
 	{
 		$now = new UDate();
 		$now->setTimeZone('Australia/Melbourne');
 		$now->modify('-1 day');
-		$dataType = 'updated';
+		$dataType = 'created';
 		$receivingItems = ReceivingItem::getAllByCriteria($dataType . ' > :fromDate and ' . $dataType . ' < :toDate', array('fromDate' => $now->format('Y-m-d') . ' 00:00:00', 'toDate' => $now->format('Y-m-d') . '23:59:59'));
 		$return = array();
 		foreach($receivingItems as $receivingItem)
@@ -26,14 +26,14 @@ class BillExport_Xero extends ExportAbstract
 				,'PORegion'=> ''
 				,'POPostalCode'=> ''
 				,'POCountry'=> ''
-				,'InvoiceNumber' => $purchaseOrder->getSupplierRefNo()
-				,'InvoiceDate' => $purchaseOrder->getUpdated()->setTimeZone('Australia/Melbourne')->__toString()
-				,'DueDate' => $purchaseOrder->getUpdated()->setTimeZone('Australia/Melbourne')->modify(self::DEFAULT_DUE_DATE)->__toString()
+				,'InvoiceNumber' => $receivingItem->getInvoiceNo()
+				,'InvoiceDate' => $now->modify('+1 day')->__toString()
+				,'DueDate' => $now->modify('+1 day')->modify(self::DEFAULT_DUE_DELAY)->__toString()
 				,'InventoryItemCode' => $product->getSku()
 				,'Description'=> $product->getShortDescription()
 				,'Quantity'=> $receivingItem->getQty()
 				,'UnitAmount'=> $receivingItem->getUnitPrice()
-				,'AccountCode'=> $product->getRevenueAccNo()
+				,'AccountCode'=> $product->getCostAccNo()
 				,'TaxType'=> "GST on Income"
 				,'TrackingName1'=> ''
 				,'TrackingOption1'=> ''
