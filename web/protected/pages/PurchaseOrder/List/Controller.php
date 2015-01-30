@@ -104,7 +104,7 @@ class Controller extends CRUDPageAbstract
             		case 'po.orderDate_to':
             			{
             				$where[] =  'po.orderDate <= ?';
-            				$params[] = $value;
+            				$params[] = str_replace(' 00:00:00', ' 23:59:59', $value);
             				break;
             			}
             		case 'po.supplierIds':
