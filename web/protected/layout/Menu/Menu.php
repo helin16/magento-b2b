@@ -43,6 +43,7 @@ class Menu extends TTemplateControl
 				'productcodetypes' => array('url' => '/productcodetypes.html', 'name' => 'Product Code Types', 'icon' => '<span class="glyphicon glyphicon-barcode"></span>'),
 				'productcategories' => array('url' => '/productcategories.html', 'name' => 'Product Categories'),
 				'productquantities' => array('url' => '/stocktack.html', 'name' => 'Stocktake', 'icon'=> '<span class="fa fa-building-o"></span>'),
+				'productquantitylog' => array('url' => '/productqtylog.html', 'name' => 'Qty Log', 'icon'=> '<span class="fa fa-shirtsinbulk"></span>'),
 				'accounting' => array('url' => '/accounting.html', 'name' => 'Accounting Info', 'icon'=> '<span class="fa fa-buysellads"></span>'),
 				'importer' => array('url' => '/importer/new.html', 'name' => 'Importer', 'icon'=> '<span class="fa fa-viacoin"></span>')
 			);
