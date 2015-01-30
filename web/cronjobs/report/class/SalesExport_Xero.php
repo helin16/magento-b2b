@@ -73,7 +73,6 @@ class SalesExport_Xero extends ExportAbstract
 				,'Reference'=> ''
 				,'InvoiceDate' => $order->getInvDate()->setTimeZone('Australia/Melbourne')->__toString()
 				,'DueDate' => $order->getInvDate()->setTimeZone('Australia/Melbourne')->modify(self::DEFAULT_DUE_DATE)->__toString()
-				,'InventoryItemCode'=> ''
 			);
 			foreach($order->getOrderItems() as $orderItem)
 			{

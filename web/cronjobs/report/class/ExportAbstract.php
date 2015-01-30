@@ -11,8 +11,7 @@ class ExportAbstract
 		self::$_debug = $debug;
 		if($debug)
 			echo '<pre>';
-		$class = get_called_class();
-		$objPHPExcel = $class::_getOutput();
+		$objPHPExcel = self::_getOutput();
 		if(!$objPHPExcel instanceof PHPExcel)
 			throw new Exception('System Error: can NOT generate CSV without PHPExcel object!');
 		// Set document properties
@@ -24,6 +23,7 @@ class ExportAbstract
 			->save($filePath);
 		if(!is_file($filePath))
 			throw new Exception('System Error: can NOT generate CSV to:' . $filePath);
+		$class = get_called_class();
 		$asset = Asset::registerAsset($class::_getAttachedFileName(), file_get_contents($filePath));
 		self::_mailOut($asset);
 	}
@@ -42,7 +42,49 @@ class ExportAbstract
 	/**
 	 * @return PHPExcel
 	 */
-	protected static function _getOutput(){}
+	protected static function _getOutput()
+	{
+		$class = get_called_class();
+		$phpexcel= new PHPExcel();
+		$data = $class::_getData();
+		$activeSheet = $phpexcel->setActiveSheetIndex(0);
+		if(count($data) === 0)
+		{
+			$activeSheet->setCellValue('A1', 'Nothing to export!');
+			return $phpexcel;
+		}
+		$letter = 'A';
+		$number = 1; // excel start at 1 NOT 0
+		// header row
+		foreach($data as $row)
+		{
+			foreach($row as $key => $value)
+			{
+				if(self::$_debug)
+					echo $letter . $number . ': ' . $key . "\n";
+				$activeSheet->setCellValue($letter++ . $number, $key);
+			}
+			$number++;
+			$letter = 'A';
+			if(self::$_debug)
+				echo "\n";
+			break; // only need the header
+		}
+		foreach($data as $row)
+		{
+			foreach($row as $col)
+			{
+				if(self::$_debug)
+					echo $letter . $number . ': ' . $col . "\n";
+				$activeSheet->setCellValue($letter++ . $number, $col);
+			}
+			$number++;
+			$letter = 'A';
+			if(self::$_debug)
+				echo "\n";
+		}		
+		return $phpexcel;
+	}
 	/**
 	 * Mailing the file out to someone
 	 * 
@@ -53,18 +95,7 @@ class ExportAbstract
 		$assets = array();
 		if($asset instanceof Asset)
 			$assets[] = $asset;
-		EmailSender::addEmail('', '', self::_getMailTitle(), self::_getMailBody(), $assets);
-	}
-	protected static function _getMailTitle()
-	{
-		return '';
-	}
-	protected static function _getMailBody()
-	{
-		return '';
-	}
-	protected static function _getAttachedFileName()
-	{
-		return 'unknow.csv';
+		$class = get_called_class();
+		EmailSender::addEmail('', '', $class::_getMailTitle(), $class::_getMailBody(), $assets);
 	}
 }
