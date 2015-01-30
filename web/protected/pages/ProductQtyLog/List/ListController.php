@@ -29,10 +29,13 @@ class ListController extends CRUDPageAbstract
 	 */
 	protected function _getEndJs()
 	{
+		$from = isset($this->Request['from']) ? $this->Request['from'] : ''; 
+		$to = isset($this->Request['to']) ? $this->Request['to'] : '';
 		$js = parent::_getEndJs();
 		$js .= "pageJs";
 		$js .= "._bindSearchKey()";
 		$js .= "._loadDataPicker()";
+		$js .= ".setPreData(" . json_encode($from) . ", " . json_encode($to) . ")";
 		$js .= ".getResults(true, " . $this->pageSize . ");";
 		return $js;
 	}
