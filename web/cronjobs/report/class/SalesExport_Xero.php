@@ -10,8 +10,14 @@ class SalesExport_Xero extends ExportAbstract
 		$phpexcel= new PHPExcel();
 		$data = self::_getData();
 		$activeSheet = $phpexcel->setActiveSheetIndex(0);
+		if(count($data) === 0)
+		{
+			$activeSheet->setCellValue('A1', 'Nothing to export!');
+			return $phpexcel;
+		}
 		$letter = 'A';
 		$number = 1; // excel start at 1 NOT 0
+		// header row
 		foreach($data as $row)
 		{
 			foreach($row as $key => $value)
@@ -31,7 +37,7 @@ class SalesExport_Xero extends ExportAbstract
 			foreach($row as $col)
 			{
 				if(parent::$_debug)
-					echo $letter . $number . ': ' . $key . "\n";
+					echo $letter . $number . ': ' . $col . "\n";
 				$activeSheet->setCellValue($letter++ . $number, $col);
 			}
 			$number++;
@@ -45,7 +51,7 @@ class SalesExport_Xero extends ExportAbstract
 	{
 		$now = new UDate();
 		$now->setTimeZone('Australia/Melbourne');
-		$now->modify('-6 day');
+		$now->modify('-1 day');
 		$orders = Order::getAllByCriteria('invDate > :fromDate and invDate < :toDate', array('fromDate' => $now->format('Y-m-d') . ' 00:00:00', 'toDate' => $now->format('Y-m-d') . '23:59:59'));
 		$return = array();
 		foreach($orders as $order)
