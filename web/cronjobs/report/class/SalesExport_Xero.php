@@ -96,11 +96,11 @@ class SalesExport_Xero extends ExportAbstract
 		}
 		return $return;
 	}
-	protected static function getMailTitle()
+	protected static function _getMailTitle()
 	{
 		return 'Sales Export for Xero from last day';
 	}
-	protected static function getMailBody()
+	protected static function _getMailBody()
 	{
 		return 'Please find the attached export from BudgetPC internal system for all the sales from last day to import to xero.';
 	}
