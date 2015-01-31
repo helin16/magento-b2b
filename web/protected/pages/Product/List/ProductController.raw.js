@@ -361,6 +361,16 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		return tmp.me;
 	}
 	/**
+	 * Open product qty log Page in new Window
+	 */
+	,_openProductQtyLogPage: function(id) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.newWindow = window.open('/productqtylog.html?productid=' + id, 'Product Details', 'width=1920, location=no, scrollbars=yes, menubar=no, status=no, titlebar=no, fullscreen=no, toolbar=no');
+		tmp.newWindow.focus();
+		return tmp.me;
+	}
+	/**
 	 * Getting each row for displaying the result list
 	 */
 	,_getResultRow: function(row, isTitle) {
@@ -369,6 +379,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		tmp.tag = (tmp.isTitle === true ? 'th' : 'td');
 		tmp.isTitle = (isTitle || false);
 		tmp.price = '';
+		console.debug(row);
 		if(row.prices) {
 			row.prices.each(function(price) {
 				if(price.type && parseInt(price.type.id) === 1) {
@@ -423,7 +434,12 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 								.insert({'bottom': new Element(tmp.tag, {'class': 'stockInRMA col-xs-2', 'title': 'Stock on Parts'}).update(row.stockInParts) })
 								.insert({'bottom': new Element(tmp.tag, {'class': 'stockInRMA col-xs-1', 'title': 'Total In Parts Value'}).update(tmp.me.getCurrency(row.totalInPartsValue)) })
 								.insert({'bottom': new Element(tmp.tag, {'class': 'stockInRMA col-xs-1', 'title': 'Total On Hand Value'}).update(tmp.me.getCurrency(row.totalOnHandValue)) })
-			) })
+					)
+					.observe('click', function(e){
+						Event.stop(e);
+						tmp.me._openProductQtyLogPage(row.id);
+					})
+			})
 			.insert({'bottom': new Element(tmp.tag, {'class': 'product_active col-xs-1 hide-when-info hidden-sm'})
 				.insert({'bottom': (tmp.isTitle === true ? row.active : 
 					new Element('div', {'class': 'row'}) 
@@ -434,10 +450,10 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 							.insert({'bottom': new Element('div', {'class': 'btn-group'})
 								.insert({'bottom': new Element('span', {'class': 'btn btn-primary btn-xs'})
 									.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-pencil'}) })
-								})
-								.observe('click', function(event){
-									Event.stop(event);
-									tmp.me._openProductDetails(row);
+									.observe('click', function(event){
+										Event.stop(event);
+										tmp.me._openProductDetails(row);
+									})
 								})
 								.insert({'bottom': (row.active === true ? 
 									new Element('span', {'class': 'btn btn-danger btn-xs'})
