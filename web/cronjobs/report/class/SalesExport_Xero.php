@@ -47,7 +47,7 @@ class SalesExport_Xero extends ExportAbstract
 		}			
 		return $phpexcel;
 	}
-	private static function _getData()
+	protected static function _getData()
 	{
 		$now = new UDate();
 		$now->setTimeZone('Australia/Melbourne');
