@@ -11,17 +11,30 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 				, 'product': {'name': 'Product', 'sku': 'sku'}
 				};
 	}
-	,setPreData: function(from, to) {
+	,setPreData: function(from, to, productId) {
 		var tmp = {};
 		tmp.me = this;
 		tmp.from = (from || false);
 		tmp.to = (to || false);
+		tmp.productId = (productId || false);
 		if(tmp.from !== false)
 			$('searchDiv').down('[search_field="pql.createdDate_from"]').value = tmp.from.replace(/["']/g, "");
 		if(tmp.to !== false)
 			$('searchDiv').down('[search_field="pql.createdDate_to"]').value = tmp.to.replace(/["']/g, "");
-		if(tmp.from || tmp.to)
+		if(tmp.productId !== false)
+			$('searchDiv').down('[search_field="pql.product"]').value = tmp.productId.replace(/["']/g, "");
+		if(tmp.from || tmp.to || tmp.productId)
 			$('searchPanel').down('#searchBtn').click();
+		return tmp.me;
+	}
+	/**
+	 * Open product Details Page in new Window
+	 */
+	,_openProductDetailPage: function(id) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.newWindow = window.open('/products/' + id + '.html', 'Product Details', 'width=1920, location=no, scrollbars=yes, menubar=no, status=no, titlebar=no, fullscreen=no, toolbar=no');
+		tmp.newWindow.focus();
 		return tmp.me;
 	}
 	/**
@@ -111,13 +124,20 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 	,_getResultRow: function(row, isTitle) {
 		var tmp = {};
 		tmp.me = this;
-		console.debug(row);
 		tmp.tag = (tmp.isTitle === true ? 'th' : 'td');
 		tmp.isTitle = (isTitle || false);
 		tmp.row = new Element('tr', {'class': (tmp.isTitle === true ? '' : 'btn-hide-row')}).store('data', row)
 			.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-1'}).update(row.created) })
-			.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-1'}).update(row.product.sku) })
-			.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-1'}).update(row.product.name) })
+			.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-1'}).update(row.product.sku) 
+				.observe('dblclick', function(){
+					tmp.me._openProductDetailPage(row.product.id);
+				})	
+			})
+			.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-1'}).update(row.product.name) 
+				.observe('dblclick', function(){
+					tmp.me._openProductDetailPage(row.product.id);
+				})
+			})
 			.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-1'}).update(tmp.me.getTypeName(row.type)) })
 			.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-1'}).update(tmp.isTitle ? row.stockOnHand : row.stockOnHand + '(' + tmp.me.getNumber(row.stockOnHandVar) + ')') })
 			.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-1'}).update(tmp.isTitle ? row.stockOnOrder : row.stockOnOrder + '(' + tmp.me.getNumber(row.stockOnOrderVar) + ')') })

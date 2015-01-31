@@ -31,11 +31,12 @@ class ListController extends CRUDPageAbstract
 	{
 		$from = isset($this->Request['from']) ? $this->Request['from'] : ''; 
 		$to = isset($this->Request['to']) ? $this->Request['to'] : '';
+		$productId = isset($this->Request['productid']) ? $this->Request['productid'] : '';
 		$js = parent::_getEndJs();
 		$js .= "pageJs";
 		$js .= "._bindSearchKey()";
 		$js .= "._loadDataPicker()";
-		$js .= ".setPreData(" . json_encode($from) . ", " . json_encode($to) . ")";
+		$js .= ".setPreData(" . json_encode($from) . ", " . json_encode($to) . ", " . json_encode($productId) . ")";
 		$js .= ".getResults(true, " . $this->pageSize . ");";
 		return $js;
 	}
@@ -62,9 +63,16 @@ class ListController extends CRUDPageAbstract
 			}
 			
 			$serachCriteria = isset($param->CallbackParameter->searchCriteria) ? json_decode(json_encode($param->CallbackParameter->searchCriteria), true) : array();
-				
+			var_dump($serachCriteria);
 			$where = array(1);
 			$params = array();
+			if(isset($serachCriteria['pql.product']) && ($skuORid = trim($serachCriteria['pql.product'])) !== '')
+			{
+				ProductQtyLog::getQuery()->eagerLoad('ProductQtyLog.product', 'inner join', 'pql_pro');
+				$where[] = '(pql_pro.sku = ? or pql_pro.id = ?)';
+				$params[] = $skuORid;
+				$params[] = $skuORid;
+			}
 			if(isset($serachCriteria['pql.createdDate_from']) && ($from = trim($serachCriteria['pql.createdDate_from'])) !== '')
 			{
 				$where[] = 'pql.created >= ?';
