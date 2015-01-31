@@ -316,7 +316,8 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		var tmp = {};
 		tmp.me = this;
 		tmp.defaultImgSrc = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjZWVlIi8+PHRleHQgdGV4dC1hbmNob3I9Im1pZGRsZSIgeD0iMzIiIHk9IjMyIiBzdHlsZT0iZmlsbDojYWFhO2ZvbnQtd2VpZ2h0OmJvbGQ7Zm9udC1zaXplOjEycHg7Zm9udC1mYW1pbHk6QXJpYWwsSGVsdmV0aWNhLHNhbnMtc2VyaWY7ZG9taW5hbnQtYmFzZWxpbmU6Y2VudHJhbCI+NjR4NjQ8L3RleHQ+PC9zdmc+';
-		tmp.newRow = new Element('a', {'class': 'list-group-item', 'href': 'javascript: void(0);'})
+		tmp.newRow = new Element('a', {'class': 'list-group-item search-product-result-row', 'href': 'javascript: void(0);'})
+			.store('data',product)
 			.insert({'bottom': new Element('div', {'class': 'row'})
 				.insert({'bottom': new Element('div', {'class': 'col-xs-2'})
 					.insert({'bottom': new Element('div', {'class': 'thumbnail'})
@@ -327,6 +328,16 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					.insert({'bottom': new Element('div', {'class': 'row'})
 						.insert({'bottom': new Element('strong').update(product.name)
 							.insert({'bottom': new Element('small', {'class': '', 'style': 'padding-left: 10px;'}).update('SKU: ' + product.sku) })
+						})
+						.insert({'bottom': new Element('small', {'class': 'btn btn-xs btn-info'})
+							.insert({'bottom': new Element('small', {'class': 'glyphicon glyphicon-new-window'} )})
+							.observe('click', function(event){
+								Event.stop(event);
+								$productId = $(this).up('.search-product-result-row').retrieve('data').id;
+								console.debug($productId);
+								if($productId)
+									tmp.me._openProductDetailPage($productId);
+							})
 						})
 						.insert({'bottom': new Element('div')
 							.insert({'bottom': new Element('small').update(product.shortDescription) })
@@ -366,6 +377,15 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				searchTxtBox.up('.productName')
 					.writeAttribute('colspan', false)
 					.update(product.sku)
+					.insert({'bottom': new Element('small', {'class': 'btn btn-xs btn-info'})
+						.insert({'bottom': new Element('small', {'class': 'glyphicon glyphicon-new-window'} )})
+						.observe('click', function(event){
+							Event.stop(event);
+							$productId = product.id;
+							if($productId)
+								tmp.me._openProductDetailPage($productId);
+						})
+					})
 					.insert({'after': new Element('td')
 						.update(product.name) 
 						.insert({'bottom': new Element('a', {'href': 'javascript: void(0);', 'class': 'text-danger pull-right', 'title': 'click to change the product'}) 
@@ -396,6 +416,19 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		return tmp.me;
 	}
 	/**
+	 * Open new Order page in new Window
+	 */
+	,_openNewProductPage: function() {
+		var tmp = {};
+		tmp.me = this;
+		tmp.newWindow = window.open('/product/new.html', 'New Product Page', 'width=1300, location=no, scrollbars=yes, menubar=no, status=no, titlebar=no, fullscreen=no, toolbar=no');
+		tmp.newWindow.onload = function(){
+			tmp.newWindow.document.title = 'New Product Page';
+			tmp.newWindow.focus();
+		}
+		return tmp.me;
+	}
+	/**
 	 * Ajax: searching the product based on a string
 	 */
 	,_searchProduct: function(btn) {
@@ -414,7 +447,14 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				try {
 					tmp.result = tmp.me.getResp(param, false, true);
 					if(!tmp.result || !tmp.result.items || tmp.result.items.size() === 0)
-						throw 'Nothing Found for: ' + tmp.searchTxt;
+						throw new Element('span')
+							.insert({'bottom': new Element('span').update('Nothing Found for: ' + tmp.searchTxt)})
+							.insert({'bottom': new Element('span', {'class': 'btn btn-success btn-xs pull-right'})
+								.insert({'bottom': new Element('i', {'class': 'fa fa-plus', 'title': 'add new product'})})
+								.observe('click', function(e){
+									tmp.me._openNewProductPage();
+								})
+							});
 					tmp.me._signRandID(tmp.searchTxtBox);
 					tmp.result.items.each(function(product) {
 						tmp.resultList.insert({'bottom': tmp.me._getSearchPrductResultRow(product, tmp.searchTxtBox) });
@@ -429,6 +469,16 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				jQuery('#' + tmp.btn.id).button('reset');
 			}
 		});
+		return tmp.me;
+	}
+	/**
+	 * Open product Details Page in new Window
+	 */
+	,_openProductDetailPage: function(id) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.newWindow = window.open('/products/' + id + '.html', 'Product Details', 'width=1920, location=no, scrollbars=yes, menubar=no, status=no, titlebar=no, fullscreen=no, toolbar=no');
+		tmp.newWindow.focus();
 		return tmp.me;
 	}
 	/**
