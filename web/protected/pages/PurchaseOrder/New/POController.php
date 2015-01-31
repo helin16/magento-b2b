@@ -200,7 +200,6 @@ class POController extends BPCPageAbstract
 					->save();
 			}
 			
-			Dao::commitTransaction();
 			$daoStart = false;
 			$results['item'] = $purchaseOrder->getJson();
 			if(isset($param->CallbackParameter->confirmEmail) && (trim($confirmEmail = trim($param->CallbackParameter->confirmEmail)) !== '')) {
@@ -209,6 +208,7 @@ class POController extends BPCPageAbstract
 				EmailSender::addEmail('purchasing@budgetpc.com.au', $confirmEmail, 'BudgetPC Purchase Order', 'Please Find the attached PurchaseOrder from BudgetPC.', array($asset));
 				$purchaseOrder->addComment('An email sent to "' . $confirmEmail . '" with the attachment: ' . $asset->getAssetId(), Comments::TYPE_PURCHASING);
 			}
+			Dao::commitTransaction();
 		}
 		catch(Exception $ex)
 		{
