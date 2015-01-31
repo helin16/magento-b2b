@@ -27,7 +27,7 @@ class BillExport_Xero extends ExportAbstract
 				,'POPostalCode'=> ''
 				,'POCountry'=> ''
 				,'InvoiceNumber' => $receivingItem->getInvoiceNo()
-				,'InvoiceDate' => $now->modify('+1 day')->__toString()
+				,'InvoiceDate' => ''
 				,'DueDate' => $now->modify('+1 day')->modify(self::DEFAULT_DUE_DELAY)->__toString()
 				,'InventoryItemCode' => $product->getSku()
 				,'Description'=> $product->getShortDescription()
