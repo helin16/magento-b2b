@@ -366,7 +366,6 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 	,_getResultRow: function(row, isTitle) {
 		var tmp = {};
 		tmp.me = this;
-		console.debug(row);
 		tmp.tag = (tmp.isTitle === true ? 'th' : 'td');
 		tmp.isTitle = (isTitle || false);
 		tmp.price = '';
