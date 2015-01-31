@@ -16,7 +16,7 @@ class BillExport_Xero extends ExportAbstract
 			$supplier = $purchaseOrder->getSupplier();
 			$product = $receivingItem->getProduct();
 			$return[] = array(
-				'ContactName' => $supplier->getContactName()
+				'ContactName' => $supplier->Name()
 				,'EmailAddress'=> $supplier->getEmail()
 				,'POAddressLine1'=> ''
 				,'POAddressLine2'=> ''
@@ -33,8 +33,8 @@ class BillExport_Xero extends ExportAbstract
 				,'Description'=> $product->getShortDescription()
 				,'Quantity'=> $receivingItem->getQty()
 				,'UnitAmount'=> $receivingItem->getUnitPrice()
-				,'AccountCode'=> $product->getCostAccNo()
-				,'TaxType'=> "GST on Income"
+				,'AccountCode'=> $product->getAssetAccNo()
+				,'TaxType'=> "GST on Expense"
 				,'TrackingName1'=> ''
 				,'TrackingOption1'=> ''
 				,'TrackingName2'=> ''

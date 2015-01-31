@@ -59,7 +59,7 @@ class SalesExport_Xero extends ExportAbstract
 			//common fields
 			$customer = $order->getCustomer();
 			$row = array(
-				'CustomerName' => $customer->getName()
+				'ContactName' => $customer->getName()
 				,'EmailAddress'=> $customer->getEmail()
 				,'POAddressLine1'=> ''
 				,'POAddressLine2'=> ''
