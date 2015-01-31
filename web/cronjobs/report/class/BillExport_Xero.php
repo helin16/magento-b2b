@@ -16,7 +16,7 @@ class BillExport_Xero extends ExportAbstract
 			$supplier = $purchaseOrder->getSupplier();
 			$product = $receivingItem->getProduct();
 			$return[] = array(
-				'ContactName' => $supplier->Name()
+				'ContactName' => $supplier->getName()
 				,'EmailAddress'=> $supplier->getEmail()
 				,'POAddressLine1'=> ''
 				,'POAddressLine2'=> ''
