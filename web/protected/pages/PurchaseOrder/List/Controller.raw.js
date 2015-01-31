@@ -212,7 +212,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 	,_openNewPage: function(row) {
 		var tmp = {};
 		tmp.me = this;
-		tmp.newWindow = window.open('/purchase/new.html', 'PO Details','width=1300px, location=no, menubar=no, status=no, titlebar=no, fullscreen=no, toolbar=no');
+		tmp.newWindow = window.open('/purchase/new.html', 'PO Details','width=1300, location=no, scrollbars=yes, menubar=no, status=no, titlebar=no, fullscreen=no, toolbar=no');
 		tmp.newWindow.focus();
 		return tmp.me;
 	}

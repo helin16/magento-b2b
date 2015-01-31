@@ -139,7 +139,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 							+ '</div>',
 					false);
 					if(tmp.result.printURL) {
-						tmp.printWindow = window.open(tmp.result.printURL, 'Printing Order', 'location=no, menubar=no, status=no, titlebar=no, fullscreen=no, toolbar=no, width=800');
+						tmp.printWindow = window.open(tmp.result.printURL, 'Printing Order', 'width=1300, location=no, scrollbars=yes, menubar=no, status=no, titlebar=no, fullscreen=no, toolbar=no');
 						tmp.printWindow.print();
 					}
 				} catch(e) {
@@ -1072,7 +1072,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 	,_openProductDetailPage: function(id) {
 		var tmp = {};
 		tmp.me = this;
-		tmp.newWindow = window.open('/products/' + id + '.html', 'Product Details', 'location=no, menubar=no, status=no, titlebar=no, fullscreen=yes, toolbar=no');
+		tmp.newWindow = window.open('/products/' + id + '.html', 'Product Details', 'width=1300, location=no, scrollbars=yes, menubar=no, status=no, titlebar=no, fullscreen=no, toolbar=no');
 		tmp.newWindow.focus();
 		return tmp.me;
 	}

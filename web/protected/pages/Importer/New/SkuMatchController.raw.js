@@ -261,7 +261,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 	,_openDetailPage: function(path, id) {
 		var tmp = {};
 		tmp.me = this;
-		tmp.newWindow = window.open('/' + path + '/' + id + '.html', path + ' details', 'location=no, menubar=no, status=no, titlebar=no, fullscreen=yes, toolbar=no');
+		tmp.newWindow = window.open('/' + path + '/' + id + '.html', path + ' details', 'width=1300, location=no, scrollbars=yes, menubar=no, status=no, titlebar=no, fullscreen=no, toolbar=no');
 		tmp.newWindow.focus();
 		return tmp.me;
 	}
