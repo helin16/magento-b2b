@@ -16,7 +16,7 @@ class ExportAbstract
 			throw new Exception('System Error: can NOT generate CSV without PHPExcel object!');
 		// Set document properties
 		$filePath = self::$_rootDir . '/' . md5(new UDate()) . '.csv';
-		$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'CSV')->setDelimiter(',')
+		PHPExcel_IOFactory::createWriter($objPHPExcel, 'CSV')->setDelimiter(',')
 			->setEnclosure('"')
 			->setLineEnding("\r\n")
 			->setSheetIndex(0)
@@ -96,6 +96,11 @@ class ExportAbstract
 		if($asset instanceof Asset)
 			$assets[] = $asset;
 		$class = get_called_class();
-		EmailSender::addEmail('', '', $class::_getMailTitle(), $class::_getMailBody(), $assets);
+		$michaelEmail = 'michael.y@budgetpc.com.au';
+		$helinEmail = 'helin16@gmail.com';
+		$xixiEmail = 'xitan@budgetpc.com.au';
+		$accountEmail = 'accounts@budgetpc.com.au';
+		EmailSender::addEmail('', $michaelEmail, $class::_getMailTitle(), $class::_getMailBody(), $assets);
+		EmailSender::addEmail('', $helinEmail, $class::_getMailTitle(), $class::_getMailBody(), $assets);
 	}
 }
