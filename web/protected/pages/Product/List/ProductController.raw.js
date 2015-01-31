@@ -379,7 +379,6 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		tmp.tag = (tmp.isTitle === true ? 'th' : 'td');
 		tmp.isTitle = (isTitle || false);
 		tmp.price = '';
-		console.debug(row);
 		if(row.prices) {
 			row.prices.each(function(price) {
 				if(price.type && parseInt(price.type.id) === 1) {
@@ -415,30 +414,30 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 			.insert({'bottom': new Element(tmp.tag, {'class': 'supplier col-xs-1 hide-when-info hidden-sm'}).update(
 					row.supplierCodes ? tmp.me._getSupplierCodes(row.supplierCodes, isTitle) : ''
 			) })
-			.insert({'bottom': new Element(tmp.tag, {'class': 'qty col-xs-1 hidden-sm'}).update(
+			.insert({'bottom': new Element(tmp.tag, {'class': 'qty col-xs-3 hidden-sm'}).update(
 					tmp.isTitle === true ? 
 							new Element('div', {'class': 'row'})
-								.insert({'bottom': new Element(tmp.tag, {'class': 'stockOnPO col-xs-2', 'title': 'Stock on PurchaseOrder'}).update('PO') })
-								.insert({'bottom': new Element(tmp.tag, {'class': 'stockOnPO col-xs-2', 'title': 'Stock on hand'}).update('H') })
-								.insert({'bottom': new Element(tmp.tag, {'class': 'stockOnOrder col-xs-2', 'title': 'Stock on Order'}).update('O') })
-								.insert({'bottom': new Element(tmp.tag, {'class': 'stockOnOrder col-xs-2', 'title': 'Stock on RMA'}).update('R') })
-								.insert({'bottom': new Element(tmp.tag, {'class': 'stockOnOrder col-xs-2', 'title': 'Stock on Parts'}).update('PT') })
-								.insert({'bottom': new Element(tmp.tag, {'class': 'stockOnOrder col-xs-1', 'title': 'Total In Parts Value'}).update('PV') })
-								.insert({'bottom': new Element(tmp.tag, {'class': 'stockOnOrder col-xs-1', 'title': 'Total On Hand Value'}).update('HV') })
+								.insert({'bottom': new Element('div', {'class': 'col-xs-1', 'title': 'Stock on PurchaseOrder'}).update('PO') })
+								.insert({'bottom': new Element('div', {'class': 'col-xs-2', 'title': 'Stock on hand'}).update('H') })
+								.insert({'bottom': new Element('div', {'class': 'col-xs-3', 'title': 'Total On Hand Value'}).update('HV') })
+								.insert({'bottom': new Element('div', {'class': 'col-xs-1', 'title': 'Stock on Order'}).update('O') })
+								.insert({'bottom': new Element('div', {'class': 'col-xs-1', 'title': 'Stock on RMA'}).update('R') })
+								.insert({'bottom': new Element('div', {'class': 'col-xs-1', 'title': 'Stock on Parts'}).update('PT') })
+								.insert({'bottom': new Element('div', {'class': 'col-xs-3', 'title': 'Total In Parts Value'}).update('PV') })
 							: 
 							new Element('div', {'class': 'row'})
-								.insert({'bottom': new Element(tmp.tag, {'class': 'stockOnPO col-xs-2', 'title': 'Stock on PurchaseOrder'}).update(row.stockOnPO) })
-								.insert({'bottom': new Element(tmp.tag, {'class': 'stockOnHand col-xs-2', 'title': 'Stock on hand'}).update(row.stockOnHand) })
-								.insert({'bottom': new Element(tmp.tag, {'class': 'stockOnOrder col-xs-2', 'title': 'Stock on Order'}).update(row.stockOnOrder) })
-								.insert({'bottom': new Element(tmp.tag, {'class': 'stockInRMA col-xs-2', 'title': 'Stock on Order'}).update(row.stockInRMA) })
-								.insert({'bottom': new Element(tmp.tag, {'class': 'stockInRMA col-xs-2', 'title': 'Stock on Parts'}).update(row.stockInParts) })
-								.insert({'bottom': new Element(tmp.tag, {'class': 'stockInRMA col-xs-1', 'title': 'Total In Parts Value'}).update(tmp.me.getCurrency(row.totalInPartsValue)) })
-								.insert({'bottom': new Element(tmp.tag, {'class': 'stockInRMA col-xs-1', 'title': 'Total On Hand Value'}).update(tmp.me.getCurrency(row.totalOnHandValue)) })
+								.insert({'bottom': new Element('div', {'class': 'col-xs-1', 'title': 'Stock on PurchaseOrder'}).update(row.stockOnPO) })
+								.insert({'bottom': new Element('div', {'class': 'col-xs-2', 'title': 'Stock on hand'}).update(row.stockOnHand) })
+								.insert({'bottom': new Element('div', {'class': 'col-xs-3', 'title': 'Total On Hand Value'}).update(tmp.me.getCurrency(row.totalOnHandValue)) })
+								.insert({'bottom': new Element('div', {'class': 'col-xs-1', 'title': 'Stock on Order'}).update(row.stockOnOrder) })
+								.insert({'bottom': new Element('div', {'class': 'col-xs-1', 'title': 'Stock on RMA'}).update(row.stockInRMA) })
+								.insert({'bottom': new Element('div', {'class': 'col-xs-1', 'title': 'Stock on Parts'}).update(row.stockInParts) })
+								.insert({'bottom': new Element('div', {'class': 'col-xs-3', 'title': 'Total In Parts Value'}).update(tmp.me.getCurrency(row.totalInPartsValue)) })
+								.observe('click', function(e){
+									Event.stop(e);
+									tmp.me._openProductQtyLogPage(row.id);
+								})
 					)
-					.observe('click', function(e){
-						Event.stop(e);
-						tmp.me._openProductQtyLogPage(row.id);
-					})
 			})
 			.insert({'bottom': new Element(tmp.tag, {'class': 'product_active col-xs-1 hide-when-info hidden-sm'})
 				.insert({'bottom': (tmp.isTitle === true ? row.active : 
