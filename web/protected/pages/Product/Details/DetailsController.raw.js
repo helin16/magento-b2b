@@ -12,6 +12,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 	,_locationTypes: []                          //pre defined data: locationTypes
 	,_productTreeId: 'product_category_tree' //the html id of the tree
 	,_imgPanelId: 'images_panel'             //the html id of the iamges panel
+	,_readOnlyMode: false
 	/**
 	 * Getting a form group for forms
 	 */
@@ -204,7 +205,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		var tmp = {};
 		tmp.me = this;
 		tmp.fullDescriptioAssetId = item.fullDescAssetId ? item.fullDescAssetId : '';
-		tmp.loadFullBtn = !item.id ? tmp.me._getRichTextEditor('') : new Element('span', {'class': 'btn btn-default'}).update('click to show the full description editor')
+		tmp.loadFullBtn = !item.id ? tmp.me._getRichTextEditor('') : new Element('span', {'class': 'btn btn-default btn-loadFullDesc'}).update('click to show the full description editor')
 			.observe('click', function(){
 				tmp.btn = $(this);
 				if(!item.fullDescriptionAsset) {
@@ -217,8 +218,14 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 						url: item.fullDescriptionAsset.url,
 						success: function(result) {
 							tmp.newTextarea = tmp.me._getRichTextEditor(result);
-							$(tmp.btn).replace(tmp.newTextarea);
-							tmp.me._loadRichTextEditor(tmp.newTextarea);
+							if(!tmp.me._readOnlyMode) {
+								$(tmp.btn).replace(tmp.newTextarea);
+								tmp.me._loadRichTextEditor(tmp.newTextarea);
+							} else {
+								$$('.fullDescriptionEl').first().replace(
+									new Element('div', {'class': 'col-sm-12'}).update(tmp.me._getFormGroup('Full Description:', new Element('input', {'type': 'text', 'disabled': true, 'value': result ? result : ''}) ) )
+								)
+							}
 						}
 					})
 				}
@@ -357,7 +364,18 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 					.insert({'bottom': new Element('div', {'class': 'col-sm-12'}).update(tmp.me._getFormGroup('Short Description:', new Element('input', {'save-item': 'shortDescription', 'type': 'text', 'value': tmp.item.shortDescription ? tmp.item.shortDescription : ''}) ) ) })
 				})
 				.insert({'bottom': new Element('div', {'class': ''})
-					.insert({'bottom': new Element('div', {'class': 'col-sm-12'}).update(tmp.me._getFullDescriptionPanel(tmp.item) ) })
+					.insert({'bottom': new Element('div', {'class': 'col-sm-12 fullDescriptionEl'}).update(tmp.me._getFullDescriptionPanel(tmp.item) ) })
+				})
+				.insert({'bottom': new Element('div', {'class': ''})
+					.insert({'bottom': new Element('div', {'class': 'col-sm-3'}).update(tmp.me._getFormGroup('Stock On Hand', new Element('input', {'save-item': 'stockOnHand', 'type': 'value', 'disabled': true, 'value': tmp.item.stockOnHand ? tmp.item.stockOnHand : ''}) ) ) })
+					.insert({'bottom': new Element('div', {'class': 'col-sm-3'}).update(tmp.me._getFormGroup('Stock On Hand Value', new Element('input', {'save-item': 'totalOnHandValue', 'type': 'value', 'disabled': true, 'value': tmp.item.totalOnHandValue ? tmp.me.getCurrency(tmp.item.totalOnHandValue) : ''}) ) ) })
+					.insert({'bottom': new Element('div', {'class': 'col-sm-3'}).update(tmp.me._getFormGroup('Stock In Parts', new Element('input', {'save-item': 'stockInParts', 'type': 'value', 'disabled': true, 'value': tmp.item.stockInParts ? tmp.item.stockInParts : ''}) ) ) })
+					.insert({'bottom': new Element('div', {'class': 'col-sm-3'}).update(tmp.me._getFormGroup('Stock In Parts Value', new Element('input', {'save-item': 'totalOnHandValue', 'type': 'value', 'disabled': true, 'value': tmp.item.totalOnHandValue ? tmp.me.getCurrency(tmp.item.totalOnHandValue) : ''}) ) ) })
+				})
+				.insert({'bottom': new Element('div', {'class': ''})
+					.insert({'bottom': new Element('div', {'class': 'col-sm-3'}).update(tmp.me._getFormGroup('Stock On Order', new Element('input', {'save-item': 'stockOnOrder', 'type': 'value', 'disabled': true, 'value': tmp.item.stockOnOrder ? tmp.item.stockOnOrder : ''}) ) ) })
+					.insert({'bottom': new Element('div', {'class': 'col-sm-3'}).update(tmp.me._getFormGroup('Stock On PO', new Element('input', {'save-item': 'stockOnPO', 'type': 'value', 'disabled': true, 'value': tmp.item.stockOnPO ? tmp.item.stockOnPO : ''}) ) ) })
+					.insert({'bottom': new Element('div', {'class': 'col-sm-3'}).update(tmp.me._getFormGroup('Stock In RMA', new Element('input', {'save-item': 'stockInRMA', 'type': 'value', 'disabled': true, 'value': tmp.item.stockInRMA ? tmp.item.stockInRMA : ''}) ) ) })
 				})
 			});
 		return tmp.newDiv;
@@ -679,5 +697,14 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		if(tmp.newPObtn) {
 			tmp.parentWindow.pageJs.selectProduct(tmp.me._item, tmp.newPObtn);
 		}
+	}
+	,readOnlyMode: function(){
+		var tmp = {};
+		tmp.me = this;
+		tmp.me._readOnlyMode = true;
+		$$('.btn.btn-loadFullDesc').first().click();
+		jQuery("input").prop("disabled", true);
+		jQuery("select").prop("disabled", true);
+		jQuery(".btn").remove();
 	}
 });
