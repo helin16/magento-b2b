@@ -535,14 +535,38 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			.insert({'bottom': new Element('tbody')
 				.insert({'bottom': tmp.me._getScanTableROW({
 						'qty': tmp.me._getFormGroup('',new Element('input', {'class': 'form-control', 'scanned-item': 'qty', 'type': 'text', 'placeholder': 'How many you received.', 'required': true, 'value': 1})
-							.observe('change', function() {
+							.observe('keyup', function() {
 								tmp.serialNoBox = $(this).up('.scanned-item-row').down('[scanned-item=serialNo]');
 								if($F(this) > 1) {
 									tmp.serialNoBox.setValue('No S/N, as qty > 1').disabled = true;
 								} else {
 									tmp.serialNoBox.setValue('').disabled = false;
-									tmp.serialNoBox.select();
 								}
+							})
+							.observe('click', function() {
+								$(this).select();
+								tmp.serialNoBox = $(this).up('.scanned-item-row').down('[scanned-item=serialNo]');
+								if($F(this) > 1) {
+									tmp.serialNoBox.setValue('No S/N, as qty > 1').disabled = true;
+								} else {
+									tmp.serialNoBox.setValue('').disabled = false;
+								}
+							})
+							.observe('keydown', function(event) {
+								tmp.qtyBox = $(this);
+								tmp.serialNoBox = tmp.qtyBox.up('.scanned-item-row').down('[scanned-item=serialNo]');
+								tmp.unitPriceBox = tmp.qtyBox.up('.scanned-item-row').down('[scanned-item=unitPrice]');
+								tmp.me.keydown(event, function() {
+									if($F(tmp.qtyBox) > 1) {
+										tmp.serialNoBox.setValue('No S/N, as qty > 1').disabled = true;
+										tmp.unitPriceBox.focus();
+										tmp.unitPriceBox.select();
+									} else {
+										tmp.serialNoBox.setValue('').disabled = false;
+										tmp.serialNoBox.focus();
+										tmp.serialNoBox.select();
+									}
+								});
 							})
 						), 
 						'serialNo': tmp.me._getFormGroup('',new Element('input', {'class': 'form-control', 'scanned-item': 'serialNo', 'type': 'text', 'placeholder': 'Serial Number:', 'required': true})), 
@@ -579,7 +603,9 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 											
 											tmp.currentRow.insert({'after': tmp.newRow});
 											tmp.currentRow.down('input[scanned-item=comments]').clear();
-											tmp.currentRow.down('input[scanned-item=serialNo]').clear().focus();
+											tmp.currentRow.down('input[scanned-item=serialNo]').clear();
+											tmp.currentRow.down('input[scanned-item=qty]').value = 1;
+											tmp.currentRow.down('input[scanned-item=qty]').click();
 											
 											$(this).up('.item_row').down('.scannedQty').innerHTML++;
 											if ($(this).up('.item_row').down('.product-head-row .scannedQty').innerHTML > product.purchaseOrderItem.qty || !$(this).up('.item_row').down('.product-head-row .scannedQty').innerHTML)
