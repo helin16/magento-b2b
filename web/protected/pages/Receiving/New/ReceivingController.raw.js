@@ -600,12 +600,24 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 											tmp.newRow.removeClassName('warning new-scan-row').addClassName('btn-hide-row');
 											tmp.newRow.down('.scanned-item-save-btn').remove();
 											tmp.newRow.down('.btns').replace(tmp.newDeleteBtn);
+											tmp.newRow.down('input[scanned-item=qty]').disable();
+											tmp.newRow.down('input[scanned-item=serialNo]').disable();
+											tmp.newRow.down('input[scanned-item=unitPrice]')
+												.observe('click',function(){
+													$(this).focus(); $(this).select();
+												})
+												.observe('keyup',function(){
+													tmp.unitPriceBox = $(this);
+													if(!tmp.unitPriceBox.up('.scanned-item-row').hasClassName('new-scan-row'))
+														tmp.me._updateTotalRecievedValue();
+												});
 											
 											tmp.currentRow.insert({'after': tmp.newRow});
 											tmp.currentRow.down('input[scanned-item=comments]').clear();
 											tmp.currentRow.down('input[scanned-item=serialNo]').clear();
 											tmp.currentRow.down('input[scanned-item=qty]').value = 1;
 											tmp.currentRow.down('input[scanned-item=qty]').click();
+											
 											
 											$(this).up('.item_row').down('.scannedQty').innerHTML++;
 											if ($(this).up('.item_row').down('.product-head-row .scannedQty').innerHTML > product.purchaseOrderItem.qty || !$(this).up('.item_row').down('.product-head-row .scannedQty').innerHTML)
