@@ -6,6 +6,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 	_htmlIds: {'itemDiv': '', 'searchPanel': 'search_panel'}
 	,_supplier: null
 	,_item: null
+	,_searchTxtBox: null
 	/**
 	 * Setting the HTMLIDS
 	 */
@@ -334,7 +335,6 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 							.observe('click', function(event){
 								Event.stop(event);
 								$productId = $(this).up('.search-product-result-row').retrieve('data').id;
-								console.debug($productId);
 								if($productId)
 									tmp.me._openProductDetailPage($productId);
 							})
@@ -405,6 +405,38 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			;
 		return tmp.newRow;
 	}
+	,selectProduct: function(product, btn) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.inputRow = tmp.me._searchTxtBox.up('.new-order-item-input').store('product', product);
+		tmp.me._searchTxtBox.up('.productName')
+			.writeAttribute('colspan', false)
+			.update(product.sku)
+			.insert({'bottom': new Element('small', {'class': 'btn btn-xs btn-info'})
+				.insert({'bottom': new Element('small', {'class': 'glyphicon glyphicon-new-window'} )})
+				.observe('click', function(event){
+					Event.stop(event);
+					$productId = product.id;
+					if($productId)
+						tmp.me._openProductDetailPage($productId);
+				})
+			})
+			.insert({'after': new Element('td')
+				.update(product.name) 
+				.insert({'bottom': new Element('a', {'href': 'javascript: void(0);', 'class': 'text-danger pull-right', 'title': 'click to change the product'}) 
+					.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-remove'})  })
+					.observe('click', function() {
+						tmp.newRow = tmp.me._getNewProductRow();
+						$(this).up('.new-order-item-input').replace(tmp.newRow);
+						tmp.newRow.down('[new-order-item=product]').select();
+					})
+				})
+			});
+		jQuery('#' + tmp.me.modalId).modal('hide');
+		tmp.inputRow.down('[new-order-item=totalPrice]').writeAttribute('value', tmp.me.getCurrency(product.minProductPrice));
+		tmp.inputRow.down('[new-order-item=qtyOrdered]').writeAttribute('value', 1);
+		tmp.inputRow.down('[new-order-item=unitPrice]').writeAttribute('value', tmp.me.getCurrency(product.minProductPrice)).select();
+	}
 	/**
 	 * Open PO page in a fancybox
 	 */
@@ -418,10 +450,10 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 	/**
 	 * Open new Order page in new Window
 	 */
-	,_openNewProductPage: function() {
+	,_openNewProductPage: function(btnId) {
 		var tmp = {};
 		tmp.me = this;
-		tmp.newWindow = window.open('/product/new.html', 'New Product Page', 'width=1300, location=no, scrollbars=yes, menubar=no, status=no, titlebar=no, fullscreen=no, toolbar=no');
+		tmp.newWindow = window.open('/product/new.html?btnidnewpo=' + btnId, 'New Product Page', 'width=1300, location=no, scrollbars=yes, menubar=no, status=no, titlebar=no, fullscreen=no, toolbar=no');
 		tmp.newWindow.onload = function(){
 			tmp.newWindow.document.title = 'New Product Page';
 			tmp.newWindow.focus();
@@ -452,10 +484,13 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 							.insert({'bottom': new Element('span', {'class': 'btn btn-success btn-xs pull-right'})
 								.insert({'bottom': new Element('i', {'class': 'fa fa-plus', 'title': 'add new product'})})
 								.observe('click', function(e){
-									tmp.me._openNewProductPage();
+									tmp.newProductBtn = $(this);
+									tmp.me._signRandID(tmp.newProductBtn);
+									tmp.me._openNewProductPage(tmp.newProductBtn.id);
 								})
 							});
 					tmp.me._signRandID(tmp.searchTxtBox);
+					tmp.me._searchTxtBox = tmp.searchTxtBox;
 					tmp.result.items.each(function(product) {
 						tmp.resultList.insert({'bottom': tmp.me._getSearchPrductResultRow(product, tmp.searchTxtBox) });
 					});
@@ -845,18 +880,13 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				.insert({'bottom': new Element('strong').update('Creating a new order for: ') })
 				.insert({'bottom': new Element('span', {'class': 'input-group col-sm-6'})
 					.insert({'bottom': new Element('input', {'class': 'form-control search-txt init-focus', 'placeholder': 'Supplier name'}) 
-						.observe('keyup', function(event){
-							if(!document.getElementsByClassName('loading-img').length) {
-								tmp.txtBox = this;
-								$(tmp.me._htmlIds.searchPanel).down('.search-btn').click();
-							}
-						})
 						.observe('keydown', function(event){
 							tmp.txtBox = this;
 							tmp.me.keydown(event, function() {
 								if(tmp.txtBox.up('#'+pageJs._htmlIds.searchPanel).down('.item_row')!=undefined && tmp.txtBox.up('#'+pageJs._htmlIds.searchPanel).down('tbody').getElementsBySelector('.item_row').length===1) {
 									tmp.txtBox.up('#'+pageJs._htmlIds.searchPanel).down('tbody .item_row .btn').click();
-								};
+								}
+								else $(tmp.me._htmlIds.searchPanel).down('.search-btn').click();
 							});
 							return false;
 						})

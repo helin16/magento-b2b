@@ -6,6 +6,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 	_manufacturers: []
 	,_suppliers: []
 	,_statuses: []
+	,_btnIdNewPO: null						 //pre defined data: btn id from new PO page	
 	,_priceTypes: []                         //pre defined data: productCodeType
 	,_codeTypes: []                          //pre defined data: productCodeType
 	,_locationTypes: []                          //pre defined data: locationTypes
@@ -22,13 +23,16 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 	/**
 	 * Set some pre defined data before javascript start
 	 */
-	,setPreData: function(manufacturers, suppliers, statuses, priceTypes, codeTypes, locationTypes) {
+	,setPreData: function(manufacturers, suppliers, statuses, priceTypes, codeTypes, locationTypes, btnIdNewPO) {
 		this._manufacturers = manufacturers;
 		this._suppliers = suppliers;
 		this._statuses = statuses;
 		this._priceTypes = priceTypes;
 		this._codeTypes = codeTypes;
 		this._locationTypes = locationTypes;
+		this._btnIdNewPO = (btnIdNewPO || false);
+		if(this._btnIdNewPO)
+			this._btnIdNewPO = (btnIdNewPO.replace(/["']/g, "") || false);
 		return this;
 	}
 	/**
@@ -553,8 +557,8 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 				throw 'System Error: no return product url';
 			tmp.me._item = data.item;
 			tmp.me.refreshParentWindow();
-			tmp.me.showModalBox('<strong class="text-success">Saved Successfully!</strong>', 'Saved Successfully!', true);
-			window.location = data.url; 
+//			tmp.me.showModalBox('<strong class="text-success">Saved Successfully!</strong>', 'Saved Successfully!', true);
+//			window.location = data.url; 
 		});
 		return tmp.me;
 	}
@@ -670,6 +674,10 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 			tmp.row.replace(tmp.parentWindow.pageJs._getResultRow(tmp.me._item));
 			if(tmp.row.hasClassName('success'))
 				tmp.row.addClassName('success');
+		}
+		tmp.newPObtn = $(tmp.parentWindow.document.body).down('#' + tmp.me._btnIdNewPO);
+		if(tmp.newPObtn) {
+			tmp.parentWindow.pageJs.selectProduct(tmp.me._item, tmp.newPObtn);
 		}
 	}
 });

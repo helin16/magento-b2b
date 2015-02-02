@@ -34,6 +34,7 @@ class DetailsController extends DetailsPageAbstract
 	 */
 	protected function _getEndJs()
 	{
+		$btnIdnewPO = (isset($_REQUEST['btnidnewpo']) && (trim($_REQUEST['btnidnewpo']) !== '')) ? trim($_REQUEST['btnidnewpo']) : null;
 		$js = parent::_getEndJs();
 		$manufacturers = array_map(create_function('$a', 'return $a->getJson();'), Manufacturer::getAll());
 		$suppliers = array_map(create_function('$a', 'return $a->getJson();'), Supplier::getAll());
@@ -42,7 +43,8 @@ class DetailsController extends DetailsPageAbstract
 		$codeTypes = array_map(create_function('$a', 'return $a->getJson();'), ProductCodeType::getAll());
 		$locationTypes = array_map(create_function('$a', 'return $a->getJson();'), PreferredLocationType::getAll());
 		
-		$js .= "pageJs.setPreData(" . json_encode($manufacturers) . ", " . json_encode($suppliers) . ", " . json_encode($statuses) . ", " . json_encode($priceTypes) . ", " . json_encode($codeTypes) . ", " . json_encode($locationTypes) . ")";
+		$js .= "pageJs.setPreData(" . json_encode($manufacturers) . ", " . json_encode($suppliers) . ", " . json_encode($statuses) . ", " . json_encode($priceTypes)
+									 . ", " . json_encode($codeTypes) . ", " . json_encode($locationTypes) . ", " . json_encode($btnIdnewPO) . ")";
 		$js .= ".setCallbackId('getCategories', '" . $this->getCategoriesBtn->getUniqueID() . "')";
 		$js .= ".load()";
 		$js .= ".bindAllEventNObjects();";
