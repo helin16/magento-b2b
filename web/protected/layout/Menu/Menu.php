@@ -42,10 +42,10 @@ class Menu extends TTemplateControl
 				'suppliers' => array('url' => '/suppliers.html', 'name' => 'Suppliers'),
 				'productcodetypes' => array('url' => '/productcodetypes.html', 'name' => 'Product Code Types', 'icon' => '<span class="glyphicon glyphicon-barcode"></span>'),
 				'productcategories' => array('url' => '/productcategories.html', 'name' => 'Product Categories'),
-				'productquantities' => array('url' => '/stocktack.html', 'name' => 'Stocktake', 'icon'=> '<span class="fa fa-building-o"></span>'),
-				'productquantitylog' => array('url' => '/productqtylog.html', 'name' => 'Qty Log', 'icon'=> '<span class="fa fa-shirtsinbulk"></span>'),
-				'accounting' => array('url' => '/accounting.html', 'name' => 'Accounting Info', 'icon'=> '<span class="fa fa-buysellads"></span>'),
-				'importer' => array('url' => '/importer/new.html', 'name' => 'Importer', 'icon'=> '<span class="fa fa-viacoin"></span>')
+				'stockadjustment' => array('url' => '/stockadjustment.html', 'name' => 'Stock Adjustment', 'icon'=> '<span class=""></span>'),
+				'productquantitylog' => array('url' => '/productqtylog.html', 'name' => 'Qty Log', 'icon'=> '<span class=""></span>'),
+				'accounting' => array('url' => '/accounting.html', 'name' => 'Accounting Info', 'icon'=> '<span class=""></span>'),
+				'importer' => array('url' => '/importer/new.html', 'name' => 'Importer', 'icon'=> '<span class="fa fa-bars"></span>')
 			);
 		if(AccessControl::canAccessOrderItemsPage(Core::getRole()) )
 			$array['Purchase'] = array(
@@ -68,7 +68,7 @@ class Menu extends TTemplateControl
 					'Receiving' =>array('url' => '/receiving.html', 'name' => 'Receiving Products', 'icon' => '<span class="fa fa-home"></span>'),
 					'Locations' =>array('url' => '/locations.html', 'name' => 'Locations', 'icon' => '<span class="fa fa-arrows"></span>'),
 					'PreferLocationTypes' =>array('url' => '/locationtypes.html', 'name' => 'Prefer Location Types', 'icon' => '<span class="glyphicon glyphicon-tasks"></span>'),
-					'productquantities' => array('url' => '/stocktack.html', 'name' => 'Stocktake', 'icon'=> '<span class="fa fa-building-o"></span>')
+					'stockadjustment' => array('url' => '/stockadjustment.html', 'name' => 'Stock Adjustment', 'icon'=> '<span class=""></span>')
 			);
 		if(AccessControl::canAccessUsersPage(Core::getRole()) )
 		{

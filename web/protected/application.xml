@@ -102,8 +102,8 @@
 			<!-- FrontEnd:: Prefer Location Type list page -->
 			<url ServiceParameter="PreferLocationType.List.ListController" pattern="locationtypes.html" />
 			
-			<!-- FrontEnd:: Stocktack page -->
-			<url ServiceParameter="Stocktake.List.ListController" pattern="stocktack.html" />
+			<!-- FrontEnd:: Stock Adjustment page -->
+			<url ServiceParameter="StockAdjustment.List.ListController" pattern="stockadjustment.html" />
 			
 			<!-- FrontEnd:: Log list page -->
 			<url ServiceParameter="Log.List.ListController" pattern="logs.html" />
