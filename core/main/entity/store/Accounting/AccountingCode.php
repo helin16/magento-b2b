@@ -127,7 +127,8 @@ class AccountingCode extends BaseEntityAbstract
 	 */
 	public static function create($typeId, $code, $description = '')
 	{
-		$item = new AccountingCode();
+		$existings = AccountingCode::getAllByCriteria('code = ? AND typeId = ?', array($code, $typeId), true, 1, 1);
+		$item = count($existings) > 0 ? $existings[0] : new AccountingCode();
 		return $item->setTypeId($typeId)
 			->setCode($code)
 			->setDescription(trim($description))
