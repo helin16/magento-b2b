@@ -42,12 +42,14 @@ class DetailsController extends DetailsPageAbstract
 		$priceTypes = array_map(create_function('$a', 'return $a->getJson();'), ProductPriceType::getAll());
 		$codeTypes = array_map(create_function('$a', 'return $a->getJson();'), ProductCodeType::getAll());
 		$locationTypes = array_map(create_function('$a', 'return $a->getJson();'), PreferredLocationType::getAll());
+		$accountingCodes = array_map(create_function('$a', 'return array("id"=> $a->getId(), "code"=> $a->getCode(), "description"=> $a->getDescription(), "type"=> $a->getTypeId());'), AccountingCode::getAll());
 		
 		$js .= "pageJs.setPreData(" . json_encode($manufacturers) . ", " . json_encode($suppliers) . ", " . json_encode($statuses) . ", " . json_encode($priceTypes)
-									 . ", " . json_encode($codeTypes) . ", " . json_encode($locationTypes) . ", " . json_encode($btnIdnewPO) . ")";
+									 . ", " . json_encode($codeTypes) . ", " . json_encode($locationTypes) . ", " . json_encode($btnIdnewPO) . ", " . json_encode($accountingCodes) . ")";
 		$js .= ".setCallbackId('getCategories', '" . $this->getCategoriesBtn->getUniqueID() . "')";
 		$js .= ".load()";
-		$js .= ".bindAllEventNObjects();";
+		$js .= ".bindAllEventNObjects()";
+		$js .= "._loadChosen();";
 		return $js;
 	}
 	/**
@@ -300,7 +302,7 @@ class DetailsController extends DetailsPageAbstract
 	{
 		$results = $errors = array();
 		try
-		{
+		{	
 			Dao::beginTransaction();
 			$product = !isset($param->CallbackParameter->id) ? new Product() : Product::get(trim($param->CallbackParameter->id));
 			if(!$product instanceof Product)

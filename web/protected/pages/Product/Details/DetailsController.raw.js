@@ -13,6 +13,8 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 	,_productTreeId: 'product_category_tree' //the html id of the tree
 	,_imgPanelId: 'images_panel'             //the html id of the iamges panel
 	,_readOnlyMode: false
+	,_accountingCodes: []
+	,_selectTypeTxt: 'Select One...'
 	/**
 	 * Getting a form group for forms
 	 */
@@ -24,7 +26,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 	/**
 	 * Set some pre defined data before javascript start
 	 */
-	,setPreData: function(manufacturers, suppliers, statuses, priceTypes, codeTypes, locationTypes, btnIdNewPO) {
+	,setPreData: function(manufacturers, suppliers, statuses, priceTypes, codeTypes, locationTypes, btnIdNewPO, accountingCodes) {
 		this._manufacturers = manufacturers;
 		this._suppliers = suppliers;
 		this._statuses = statuses;
@@ -34,6 +36,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		this._btnIdNewPO = (btnIdNewPO || false);
 		if(this._btnIdNewPO)
 			this._btnIdNewPO = (btnIdNewPO.replace(/["']/g, "") || false);
+		this._accountingCodes = accountingCodes;
 		return this;
 	}
 	/**
@@ -208,7 +211,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		tmp.loadFullBtn = !item.id ? tmp.me._getRichTextEditor('') : new Element('span', {'class': 'btn btn-default btn-loadFullDesc'}).update('click to show the full description editor')
 			.observe('click', function(){
 				tmp.btn = $(this);
-				if(!item.fullDescriptionAsset) {
+				if(!item.fullDescriptionAsset && !tmp.me._readOnlyMode) {
 					tmp.newTextarea = tmp.me._getRichTextEditor('');
 					$(tmp.btn).replace(tmp.newTextarea);
 					tmp.me._loadRichTextEditor(tmp.newTextarea);
@@ -581,6 +584,63 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		return tmp.me;
 	}
 	/**
+	 * initiating the chosen input
+	 */
+	,_loadChosen: function () {
+		var tmp = {};
+		tmp.me = this;
+		jQuery(".chosen").chosen({
+			search_contains: true,
+			inherit_select_classes: true,
+			no_results_text: "No code type found!",
+			width: "100%"
+		});
+		jQuery('.chosen[save-item="assetAccNo"]')
+			.change(function(data){
+				tmp.data = $(this).down('[value="' + $F($(this)) + '"]').retrieve('data')
+				tmp.revenueEl = $$('.chosen[save-item="revenueAccNo"]').first();
+				tmp.costEl = $$('.chosen[save-item="costAccNo"]').first();
+				if(/*$F(tmp.revenueEl) === tmp.me._selectTypeTxt && */$F($(this)) !== tmp.me._selectTypeTxt) {
+					tmp.revenueEl.getElementsBySelector('option[selected="selected"]').each(function(item){item.removeAttribute('selected')});
+					tmp.revenueEl.down('option[description="' + tmp.data.description + '"]').writeAttribute('selected', true);
+					jQuery('.chosen[save-item="revenueAccNo"]').trigger("chosen:updated");
+					tmp.costEl.getElementsBySelector('option[selected="selected"]').each(function(item){item.removeAttribute('selected')});
+					tmp.costEl.down('option[description="' + tmp.data.description + '"]').writeAttribute('selected', true);
+					jQuery('.chosen[save-item="costAccNo"]').trigger("chosen:updated");
+				}
+			});
+		return this;
+	}
+	,_getAccCodeSelectEl: function(type) {
+		var tmp = {};
+		tmp.me = this;
+		switch(type) {
+			case('assetAccNo'):
+				tmp.type = 1;
+				break
+			case('revenueAccNo'):
+				tmp.type = 4;
+				break;
+			case('costAccNo'):
+				tmp.type = 5;
+				break;
+			default:
+				tmp.showModelBox('Error', 'Invalid Account Code Type');
+		}
+		tmp.selectEl = new Element('select', {'class': 'chosen', 'save-item': type, 'data-placeholder': type,}).setStyle('z-index: 9999;')
+			.insert({'bottom': new Element('option', {'value': tmp.me._selectTypeTxt}).update(tmp.me._selectTypeTxt) });
+		tmp.me._signRandID(tmp.selectEl);
+		
+		tmp.me._accountingCodes.each(function(item){
+			if(item.type == tmp.type) {
+				tmp.selectEl.insert({'bottom': tmp.option = new Element('option', {'value': item.code, 'description': item.description}).store('data',item).update(item.description) });
+				if(item.code === tmp.me._item.assetAccNo || item.code === tmp.me._item.revenueAccNo || item.code === tmp.me._item.costAccNo)
+					tmp.option.writeAttribute('selected', true);
+			}
+		});
+		return tmp.selectEl;
+	}
+	/**
 	 * account info penl
 	 */
 	,_getAccInfoDiv: function(product) {
@@ -597,10 +657,31 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 				})
 				.insert({'bottom': tmp.uploadDiv = new Element('span', {'class': 'pull-right new-btn-panel'}) })
 			})
-			.insert({'bottom': new Element('div', {'class': 'panel-body'}) 
-				.insert({'bottom': new Element('div', {'class': 'col-sm-4'}).update(tmp.me._getFormGroup('Asset Account No.', new Element('input', {'save-item': 'assetAccNo', 'required': true, 'type': 'text', 'value': tmp.item.assetAccNo ? tmp.item.assetAccNo : ''}) ) ) })
-				.insert({'bottom': new Element('div', {'class': 'col-sm-4'}).update(tmp.me._getFormGroup('Revenue Account No.', new Element('input', {'save-item': 'revenueAccNo', 'required': true, 'type': 'text', 'value': tmp.item.revenueAccNo ? tmp.item.revenueAccNo : ''}) ) ) })
-				.insert({'bottom': new Element('div', {'class': 'col-sm-4'}).update(tmp.me._getFormGroup('Cost Account No.', new Element('input', {'save-item': 'costAccNo', 'required': true, 'type': 'text', 'value': tmp.item.costAccNo ? tmp.item.costAccNo : ''}) ) ) })
+			.insert({'bottom': new Element('div', {'class': 'panel-body'}).setStyle('height: 200px;') 
+				.insert({'bottom': new Element('div', {'class': 'col-sm-4'})
+					.insert({'bottom': new Element('div', {'class': 'form-group form-group-sm'})
+						.insert({'bottom': new Element('label').update('Asset Account No.') })
+						.insert({'bottom': new Element('div', {'class': 'form-control chosen-container'}).setStyle("padding: 0px; height: 100%;")
+							.insert({'bottom': tmp.me._getAccCodeSelectEl('assetAccNo')})
+						})
+					})
+				})
+				.insert({'bottom': new Element('div', {'class': 'col-sm-4'})
+					.insert({'bottom': new Element('div', {'class': 'form-group form-group-sm'})
+						.insert({'bottom': new Element('label').update('Revenue Account No.') })
+						.insert({'bottom': new Element('div', {'class': 'form-control chosen-container'}).setStyle("padding: 0px; height: 100%;")
+							.insert({'bottom': tmp.me._getAccCodeSelectEl('revenueAccNo')})
+						})
+					})
+				})
+				.insert({'bottom': new Element('div', {'class': 'col-sm-4'})
+					.insert({'bottom': new Element('div', {'class': 'form-group form-group-sm'})
+						.insert({'bottom': new Element('label').update('Cost Account No.') })
+						.insert({'bottom': new Element('div', {'class': 'form-control chosen-container'}).setStyle("padding: 0px; height: 100%;")
+							.insert({'bottom': tmp.me._getAccCodeSelectEl('costAccNo')})
+						})
+					})
+				})
 			});
 		return tmp.newDiv;
 	}
