@@ -949,9 +949,19 @@ class Product extends InfoEntityAbstract
 	{
 		if(!is_numeric($unitCost))
 			throw new EntityException('Unitcost of receiving product(SKU=' . $this->getSku() . ') is not a number!');
+		
+		$origStockOnHand = $this->getStockOnHand();
+		$newStockOnHand = ($origStockOnHand + $qty);
+		$origTotalOnHandValue = $this->getTotalOnHandValue();
+		if($origStockOnHand < 0) {
+			$newStockOnHandValue = $newStockOnHand * $unitCost;
+		} else {
+			$newStockOnHandValue = ($origTotalOnHandValue + $qty * $unitCost);
+		}
+		
 		return $this->setStockOnPO(($origStockOnPO = $this->getStockOnPO()) - $qty)
-			->setStockOnHand(($origStockOnHand = $this->getStockOnHand()) + $qty)
-			->setTotalOnHandValue(($origTotalOnHandValue = $this->getTotalOnHandValue()) + $qty * $unitCost)
+			->setStockOnHand($newStockOnHand)
+			->setTotalOnHandValue($newStockOnHandValue)
 			->snapshotQty($entity instanceof BaseEntityAbstract ? $entity : $this, ProductQtyLog::TYPE_PO, 'Stock received: ' . $comments)
 			->save()
 			->addLog('StockOnPO(' . $origStockOnPO . ' => ' .$this->getStockOnPO() . ')', Log::TYPE_SYSTEM, 'STOCK_QTY_CHG', __CLASS__ . '::' . __FUNCTION__)
