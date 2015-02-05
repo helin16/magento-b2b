@@ -60,7 +60,8 @@ class Menu extends TTemplateControl
 		if(AccessControl::canAccessOrderItemsPage(Core::getRole()) )
 			$array['Accounts'] = array(
 					'icon' => '<span class="glyphicon glyphicon-time"></span>',
-					'PaymentMethod' =>array('url' => '/paymentmethod.html', 'name' => 'Payment Method', 'icon' => '<span class="glyphicon glyphicon-record"></span>')
+					'PaymentMethod' =>array('url' => '/paymentmethod.html', 'name' => 'Payment Method', 'icon' => '<span class="glyphicon glyphicon-record"></span>'),
+					'accounting' => array('url' => '/accounting.html', 'name' => 'Accounting Info', 'icon'=> '<span class=""></span>')
 			);
 		if(AccessControl::canAccessOrderItemsPage(Core::getRole()) )
 			$array['Logistics'] = array(
