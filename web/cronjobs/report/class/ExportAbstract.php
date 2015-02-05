@@ -1,6 +1,6 @@
 <?php
 require_once dirname(__FILE__) . '/../../../bootstrap.php';
-Core::setUser(UserAccount::get(UserAccount::ID_SYSTEM_ACCOUNT));
+
 class ExportAbstract
 {
 	protected static $_debug = false;
@@ -100,7 +100,14 @@ class ExportAbstract
 		$helinEmail = 'helin16@gmail.com';
 		$xixiEmail = 'xitan@budgetpc.com.au';
 		$accountEmail = 'accounts@budgetpc.com.au';
+		$marketingEmail = 'marketing@budgetpc.com.au';
+		$salesEmail = 'sales@budgetpc.com.au';
+		
 		EmailSender::addEmail('', $michaelEmail, $class::_getMailTitle(), $class::_getMailBody(), $assets);
 		EmailSender::addEmail('', $helinEmail, $class::_getMailTitle(), $class::_getMailBody(), $assets);
+		EmailSender::addEmail('', $xixiEmail, $class::_getMailTitle(), $class::_getMailBody(), $assets);
+		EmailSender::addEmail('', $accountEmail, $class::_getMailTitle(), $class::_getMailBody(), $assets);
+		EmailSender::addEmail('', $marketingEmail, $class::_getMailTitle(), $class::_getMailBody(), $assets);
+		EmailSender::addEmail('', $salesEmail, $class::_getMailTitle(), $class::_getMailBody(), $assets);
 	}
 }
