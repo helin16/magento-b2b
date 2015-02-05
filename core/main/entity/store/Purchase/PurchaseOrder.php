@@ -404,6 +404,14 @@ class PurchaseOrder extends BaseEntityAbstract
 					->save()
 					->addLog('Marked this item for StockOnPO and stockCalculated', Log::TYPE_SYSTEM, 'STOCK_QTY_CHG', __CLASS__ . '::' . __FUNCTION__);
 			}
+		} else if(trim($this->getStatus()) === PurchaseOrder::STATUS_CANCELED || intval($this->getActive()) === 1) {
+			$items = PurchaseOrderItem::getAllByCriteria('purchaseOrderId = ? and stockCalculated = 1', array($this->getId()));
+			foreach($items as $item) {
+				$item->getProduct()->ordered(0 - $item->getQty(), '', $item);
+				$item->setStockCalculated(false)
+					->save()
+					->addLog('UNMarked this item for StockOnPO and stockCalculated', Log::TYPE_SYSTEM, 'STOCK_QTY_CHG', __CLASS__ . '::' . __FUNCTION__);
+			}
 		}
 	}
 	/**
