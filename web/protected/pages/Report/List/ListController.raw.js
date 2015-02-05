@@ -20,7 +20,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				jQuery('#' + btn.id).button('loading');
 			}
 			,'onSuccess': function(sender, param) {
-				tmp.me.showModalBox('Success', '<h2>Report generated!</h2>');
+				tmp.me.showModalBox('Success', '<h4>Report will be sent to nominated emails <b>shortly</b></h4>');
 				location.reload();
 			}
 			,'onComplete': function(sender, param) {
@@ -39,7 +39,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				jQuery('#' + btn.id).button('loading');
 			}
 			,'onSuccess': function(sender, param) {
-				tmp.me.showModalBox('Success', '<h2>Report generated!</h2>');
+				tmp.me.showModalBox('Success', '<h4>Report will be sent to nominated emails <b>shortly</b></h4>');
 				location.reload();
 			}
 			,'onComplete': function(sender, param) {
