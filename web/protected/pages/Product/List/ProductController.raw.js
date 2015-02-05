@@ -414,25 +414,15 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 			.insert({'bottom': new Element(tmp.tag, {'class': 'supplier col-xs-1 hide-when-info hidden-sm'}).update(
 					row.supplierCodes ? tmp.me._getSupplierCodes(row.supplierCodes, isTitle) : ''
 			) })
-			.insert({'bottom': new Element(tmp.tag, {'class': 'qty col-xs-3 hidden-sm'}).update(
+			.insert({'bottom': new Element(tmp.tag, {'class': 'qty col-xs-1 hidden-sm'}).update(
 					tmp.isTitle === true ? 
 							new Element('div', {'class': 'row'})
-								.insert({'bottom': new Element('div', {'class': 'col-xs-1', 'title': 'Stock on PurchaseOrder'}).update('PO') })
-								.insert({'bottom': new Element('div', {'class': 'col-xs-2', 'title': 'Stock on hand'}).update('H') })
-								.insert({'bottom': new Element('div', {'class': 'col-xs-3', 'title': 'Total On Hand Value'}).update('HV') })
-								.insert({'bottom': new Element('div', {'class': 'col-xs-1', 'title': 'Stock on Order'}).update('O') })
-								.insert({'bottom': new Element('div', {'class': 'col-xs-1', 'title': 'Stock on RMA'}).update('R') })
-								.insert({'bottom': new Element('div', {'class': 'col-xs-1', 'title': 'Stock on Parts'}).update('PT') })
-								.insert({'bottom': new Element('div', {'class': 'col-xs-3', 'title': 'Total In Parts Value'}).update('PV') })
+								.insert({'bottom': new Element('div', {'class': 'col-xs-6', 'title': 'Stock on PurchaseOrder'}).update('OH') })
+								.insert({'bottom': new Element('div', {'class': 'col-xs-6', 'title': 'Stock on hand'}).update('OHV') })
 							: 
 							new Element('div', {'class': 'row'})
-								.insert({'bottom': new Element('div', {'class': 'col-xs-1', 'title': 'Stock on PurchaseOrder'}).update(row.stockOnPO) })
-								.insert({'bottom': new Element('div', {'class': 'col-xs-2', 'title': 'Stock on hand'}).update(row.stockOnHand) })
-								.insert({'bottom': new Element('div', {'class': 'col-xs-3', 'title': 'Total On Hand Value'}).update(tmp.me.getCurrency(row.totalOnHandValue)) })
-								.insert({'bottom': new Element('div', {'class': 'col-xs-1', 'title': 'Stock on Order'}).update(row.stockOnOrder) })
-								.insert({'bottom': new Element('div', {'class': 'col-xs-1', 'title': 'Stock on RMA'}).update(row.stockInRMA) })
-								.insert({'bottom': new Element('div', {'class': 'col-xs-1', 'title': 'Stock on Parts'}).update(row.stockInParts) })
-								.insert({'bottom': new Element('div', {'class': 'col-xs-3', 'title': 'Total In Parts Value'}).update(tmp.me.getCurrency(row.totalInPartsValue)) })
+								.insert({'bottom': new Element('div', {'class': 'col-xs-6', 'title': 'Stock on PurchaseOrder'}).update(row.stockOnHand) })
+								.insert({'bottom': new Element('div', {'class': 'col-xs-6', 'title': 'Stock on hand'}).update((row.totalOnHandValue != 0 && row.stockOnHand != 0) ? (row.totalOnHandValue/row.stockOnHand) : 'N/A') })
 								.observe('click', function(e){
 									Event.stop(e);
 									tmp.me._openProductQtyLogPage(row.id);
