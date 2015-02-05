@@ -422,7 +422,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 							: 
 							new Element('div', {'class': 'row'})
 								.insert({'bottom': new Element('div', {'class': 'col-xs-6', 'title': 'Stock on Hand'}).update(row.stockOnHand) })
-								.insert({'bottom': new Element('div', {'class': 'col-xs-6', 'title': 'Average Cost'}).update((row.totalOnHandValue != 0 && row.stockOnHand != 0) ? (row.totalOnHandValue/row.stockOnHand) : 'N/A') })
+								.insert({'bottom': new Element('div', {'class': 'col-xs-6', 'title': 'Average Cost'}).update((row.totalOnHandValue != 0 && row.stockOnHand != 0) ? tmp.me.getCurrency(row.totalOnHandValue/row.stockOnHand) : 'N/A') })
 								.observe('click', function(e){
 									Event.stop(e);
 									tmp.me._openProductQtyLogPage(row.id);
