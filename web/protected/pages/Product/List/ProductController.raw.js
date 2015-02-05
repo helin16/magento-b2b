@@ -417,12 +417,12 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 			.insert({'bottom': new Element(tmp.tag, {'class': 'qty col-xs-1 hidden-sm'}).update(
 					tmp.isTitle === true ? 
 							new Element('div', {'class': 'row'})
-								.insert({'bottom': new Element('div', {'class': 'col-xs-6', 'title': 'Stock on PurchaseOrder'}).update('OH') })
-								.insert({'bottom': new Element('div', {'class': 'col-xs-6', 'title': 'Stock on hand'}).update('OHV') })
+								.insert({'bottom': new Element('div', {'class': 'col-xs-6', 'title': 'Stock on Hand'}).update('SH') })
+								.insert({'bottom': new Element('div', {'class': 'col-xs-6', 'title': 'Average Cost'}).update('Cost') })
 							: 
 							new Element('div', {'class': 'row'})
-								.insert({'bottom': new Element('div', {'class': 'col-xs-6', 'title': 'Stock on PurchaseOrder'}).update(row.stockOnHand) })
-								.insert({'bottom': new Element('div', {'class': 'col-xs-6', 'title': 'Stock on hand'}).update((row.totalOnHandValue != 0 && row.stockOnHand != 0) ? (row.totalOnHandValue/row.stockOnHand) : 'N/A') })
+								.insert({'bottom': new Element('div', {'class': 'col-xs-6', 'title': 'Stock on Hand'}).update(row.stockOnHand) })
+								.insert({'bottom': new Element('div', {'class': 'col-xs-6', 'title': 'Average Cost'}).update((row.totalOnHandValue != 0 && row.stockOnHand != 0) ? (row.totalOnHandValue/row.stockOnHand) : 'N/A') })
 								.observe('click', function(e){
 									Event.stop(e);
 									tmp.me._openProductQtyLogPage(row.id);
