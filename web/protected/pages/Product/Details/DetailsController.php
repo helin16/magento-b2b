@@ -35,7 +35,6 @@ class DetailsController extends DetailsPageAbstract
 	protected function _getEndJs()
 	{
 		$btnIdnewPO = (isset($_REQUEST['btnidnewpo']) && (trim($_REQUEST['btnidnewpo']) !== '')) ? trim($_REQUEST['btnidnewpo']) : null;
-		$js = parent::_getEndJs();
 		$manufacturers = array_map(create_function('$a', 'return $a->getJson();'), Manufacturer::getAll());
 		$suppliers = array_map(create_function('$a', 'return $a->getJson();'), Supplier::getAll());
 		$statuses = array_map(create_function('$a', 'return $a->getJson();'), ProductStatus::getAll());
@@ -44,12 +43,15 @@ class DetailsController extends DetailsPageAbstract
 		$locationTypes = array_map(create_function('$a', 'return $a->getJson();'), PreferredLocationType::getAll());
 		$accountingCodes = array_map(create_function('$a', 'return array("id"=> $a->getId(), "code"=> $a->getCode(), "description"=> $a->getDescription(), "type"=> $a->getTypeId());'), AccountingCode::getAll());
 		
+		$js = parent::_getEndJs();
 		$js .= "pageJs.setPreData(" . json_encode($manufacturers) . ", " . json_encode($suppliers) . ", " . json_encode($statuses) . ", " . json_encode($priceTypes)
 									 . ", " . json_encode($codeTypes) . ", " . json_encode($locationTypes) . ", " . json_encode($btnIdnewPO) . ", " . json_encode($accountingCodes) . ")";
 		$js .= ".setCallbackId('getCategories', '" . $this->getCategoriesBtn->getUniqueID() . "')";
 		$js .= ".load()";
 		$js .= ".bindAllEventNObjects()";
 		$js .= "._loadChosen();";
+		if(!AccessControl::canEditProduct(Core::getRole()))
+			$js .= "pageJs.readOnlyMode();";
 		return $js;
 	}
 	/**

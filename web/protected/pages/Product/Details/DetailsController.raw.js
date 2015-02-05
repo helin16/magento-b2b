@@ -369,17 +369,6 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 				.insert({'bottom': new Element('div', {'class': ''})
 					.insert({'bottom': new Element('div', {'class': 'col-sm-12 fullDescriptionEl'}).update(tmp.me._getFullDescriptionPanel(tmp.item) ) })
 				})
-				.insert({'bottom': new Element('div', {'class': ''})
-					.insert({'bottom': new Element('div', {'class': 'col-sm-3'}).update(tmp.me._getFormGroup('Stock On Hand', new Element('input', {'save-item': 'stockOnHand', 'type': 'value', 'disabled': true, 'value': tmp.item.stockOnHand ? tmp.item.stockOnHand : ''}) ) ) })
-					.insert({'bottom': new Element('div', {'class': 'col-sm-3'}).update(tmp.me._getFormGroup('Stock On Hand Value', new Element('input', {'save-item': 'totalOnHandValue', 'type': 'value', 'disabled': true, 'value': tmp.item.totalOnHandValue ? tmp.me.getCurrency(tmp.item.totalOnHandValue) : ''}) ) ) })
-					.insert({'bottom': new Element('div', {'class': 'col-sm-3'}).update(tmp.me._getFormGroup('Stock In Parts', new Element('input', {'save-item': 'stockInParts', 'type': 'value', 'disabled': true, 'value': tmp.item.stockInParts ? tmp.item.stockInParts : ''}) ) ) })
-					.insert({'bottom': new Element('div', {'class': 'col-sm-3'}).update(tmp.me._getFormGroup('Stock In Parts Value', new Element('input', {'save-item': 'totalOnHandValue', 'type': 'value', 'disabled': true, 'value': tmp.item.totalOnHandValue ? tmp.me.getCurrency(tmp.item.totalOnHandValue) : ''}) ) ) })
-				})
-				.insert({'bottom': new Element('div', {'class': ''})
-					.insert({'bottom': new Element('div', {'class': 'col-sm-3'}).update(tmp.me._getFormGroup('Stock On Order', new Element('input', {'save-item': 'stockOnOrder', 'type': 'value', 'disabled': true, 'value': tmp.item.stockOnOrder ? tmp.item.stockOnOrder : ''}) ) ) })
-					.insert({'bottom': new Element('div', {'class': 'col-sm-3'}).update(tmp.me._getFormGroup('Stock On PO', new Element('input', {'save-item': 'stockOnPO', 'type': 'value', 'disabled': true, 'value': tmp.item.stockOnPO ? tmp.item.stockOnPO : ''}) ) ) })
-					.insert({'bottom': new Element('div', {'class': 'col-sm-3'}).update(tmp.me._getFormGroup('Stock In RMA', new Element('input', {'save-item': 'stockInRMA', 'type': 'value', 'disabled': true, 'value': tmp.item.stockInRMA ? tmp.item.stockInRMA : ''}) ) ) })
-				})
 			});
 		return tmp.newDiv;
 	}
@@ -640,6 +629,38 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		});
 		return tmp.selectEl;
 	}
+	,_getStockDev: function(product) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.item = product;
+		tmp.newDiv = new Element('div', {'class': 'panel panel-default'})
+			.insert({'bottom': new Element('div', {'class': 'panel-heading'})
+				.insert({'bottom': new Element('a', {'href': 'javascript: void(0);', 'title': 'click to show/hide content below'})
+					.insert({'bottom': new Element('strong').update('Stock Info') 
+						.insert({'bottom': new Element('span', {'class': 'pull-right'}).update('Average Cost: ' + ((tmp.item.totalOnHandValue != 0 && tmp.item.stockOnHand != 0) ? (tmp.item.totalOnHandValue / tmp.item.stockOnHand) : 'N/A'))})
+					})
+					.observe('click', function() {
+						$(this).up('.panel').down('.panel-body').toggle();
+					})
+				})
+				.insert({'bottom': tmp.uploadDiv = new Element('span', {'class': 'pull-right new-btn-panel'}) })
+			})
+			.insert({'bottom': new Element('div', {'class': 'panel-body'}).setStyle('display: none;')
+				.insert({'bottom': new Element('div', {'class': ''})
+					.insert({'bottom': new Element('div', {'class': 'col-sm-3'}).update(tmp.me._getFormGroup('Stock On Hand', new Element('input', {'save-item': 'stockOnHand', 'type': 'value', 'disabled': true, 'value': tmp.item.stockOnHand ? tmp.item.stockOnHand : ''}) ) ) })
+					.insert({'bottom': new Element('div', {'class': 'col-sm-3'}).update(tmp.me._getFormGroup('Stock On Hand Value', new Element('input', {'save-item': 'totalOnHandValue', 'type': 'value', 'disabled': true, 'value': tmp.item.totalOnHandValue ? tmp.me.getCurrency(tmp.item.totalOnHandValue) : ''}) ) ) })
+					.insert({'bottom': new Element('div', {'class': 'col-sm-3'}).update(tmp.me._getFormGroup('Stock In Parts', new Element('input', {'save-item': 'stockInParts', 'type': 'value', 'disabled': true, 'value': tmp.item.stockInParts ? tmp.item.stockInParts : ''}) ) ) })
+					.insert({'bottom': new Element('div', {'class': 'col-sm-3'}).update(tmp.me._getFormGroup('Stock In Parts Value', new Element('input', {'save-item': 'totalOnHandValue', 'type': 'value', 'disabled': true, 'value': tmp.item.totalOnHandValue ? tmp.me.getCurrency(tmp.item.totalOnHandValue) : ''}) ) ) })
+				})
+				.insert({'bottom': new Element('div', {'class': ''})
+					.insert({'bottom': new Element('div', {'class': 'col-sm-3'}).update(tmp.me._getFormGroup('Stock On Order', new Element('input', {'save-item': 'stockOnOrder', 'type': 'value', 'disabled': true, 'value': tmp.item.stockOnOrder ? tmp.item.stockOnOrder : ''}) ) ) })
+					.insert({'bottom': new Element('div', {'class': 'col-sm-3'}).update(tmp.me._getFormGroup('Stock On PO', new Element('input', {'save-item': 'stockOnPO', 'type': 'value', 'disabled': true, 'value': tmp.item.stockOnPO ? tmp.item.stockOnPO : ''}) ) ) })
+					.insert({'bottom': new Element('div', {'class': 'col-sm-3'}).update(tmp.me._getFormGroup('Stock In RMA', new Element('input', {'save-item': 'stockInRMA', 'type': 'value', 'disabled': true, 'value': tmp.item.stockInRMA ? tmp.item.stockInRMA : ''}) ) ) })
+					.insert({'bottom': new Element('div', {'class': 'col-sm-3'}).update(tmp.me._getFormGroup('Average Cost', new Element('input', {'save-item': 'stockInRMA', 'type': 'value', 'disabled': true, 'value': (tmp.item.totalOnHandValue != 0 && tmp.item.stockOnHand != 0) ? (tmp.item.totalOnHandValue / tmp.item.stockOnHand) : 'N/A'}) ) ) })
+				})
+			});
+		return tmp.newDiv;
+	}
 	/**
 	 * account info penl
 	 */
@@ -647,7 +668,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		var tmp = {};
 		tmp.me = this;
 		tmp.item = product;
-		tmp.newDiv = new Element('div', {'class': 'panel panel-default'})
+		tmp.newDiv = new Element('div', {'class': 'panel panel-default'}).setStyle('overflow: unset !important;')
 			.insert({'bottom': new Element('div', {'class': 'panel-heading'})
 				.insert({'bottom': new Element('a', {'href': 'javascript: void(0);', 'title': 'click to show/hide content below'})
 					.insert({'bottom': new Element('strong').update('Accounting Info') })
@@ -657,7 +678,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 				})
 				.insert({'bottom': tmp.uploadDiv = new Element('span', {'class': 'pull-right new-btn-panel'}) })
 			})
-			.insert({'bottom': new Element('div', {'class': 'panel-body'}).setStyle('height: 200px;') 
+			.insert({'bottom': new Element('div', {'class': 'panel-body'}).setStyle('overflow: unset !important;') 
 				.insert({'bottom': new Element('div', {'class': 'col-sm-4'})
 					.insert({'bottom': new Element('div', {'class': 'form-group form-group-sm'})
 						.insert({'bottom': new Element('label').update('Asset Account No.') })
@@ -700,6 +721,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 				.insert({'bottom': new Element('div', {'class': 'col-sm-8'})
 					.insert({'bottom': new Element('div', {'class': 'row'})
 						.insert({'bottom': tmp.me._getSummaryDiv(tmp.me._item).wrap(new Element('div', {'class': 'col-sm-12'})) })
+						.insert({'bottom': tmp.me._getStockDev(tmp.me._item).wrap(new Element('div', {'class': 'col-sm-12'})) })
 						.insert({'bottom': tmp.me._getAccInfoDiv(tmp.me._item).wrap(new Element('div', {'class': 'col-sm-12'})) })
 						.insert({'bottom': tmp.me._getListPanel('Prices:', tmp.me._item.prices, {'type': 'Type', 'value': 'Price', 'start': 'From', 'end': 'To'}, tmp.me._priceTypes, function(e){
 							tmp.selectedPriceType = null;
