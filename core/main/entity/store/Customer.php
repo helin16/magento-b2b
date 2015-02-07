@@ -157,7 +157,7 @@ class Customer extends BaseEntityAbstract
 	 *
 	 * @return Customer
 	 */
-	public function setBillingAddress(Address $value)
+	public function setBillingAddress(Address $value = null)
 	{
 	    $this->billingAddress = $value;
 	    return $this;
