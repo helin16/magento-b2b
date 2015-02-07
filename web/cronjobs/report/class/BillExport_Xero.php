@@ -5,10 +5,11 @@ class BillExport_Xero extends ExportAbstract
 	protected static function _getData()
 	{
 		$now = new UDate();
-		$now->setTimeZone('Australia/Melbourne');
 		$now->modify('-1 day');
 		$dataType = 'created';
 		$receivingItems = ReceivingItem::getAllByCriteria($dataType . ' > :fromDate and ' . $dataType . ' < :toDate', array('fromDate' => $now->format('Y-m-d') . ' 00:00:00', 'toDate' => $now->format('Y-m-d') . '23:59:59'));
+		$now = new UDate();
+		$now->setTimeZone('Australia/Melbourne');
 		$return = array();
 		foreach($receivingItems as $receivingItem)
 		{
@@ -28,7 +29,7 @@ class BillExport_Xero extends ExportAbstract
 				,'POCountry'=> ''
 				,'InvoiceNumber' => $receivingItem->getInvoiceNo()
 				,'InvoiceDate' => ''
-				,'DueDate' => $now->modify('+1 day')->modify(self::DEFAULT_DUE_DELAY)->__toString()
+				,'DueDate' => trim($now->modify(self::DEFAULT_DUE_DELAY))
 				,'InventoryItemCode' => $product->getSku()
 				,'Description'=> $product->getShortDescription()
 				,'Quantity'=> $receivingItem->getQty()

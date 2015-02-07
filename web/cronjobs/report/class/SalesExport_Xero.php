@@ -49,10 +49,10 @@ class SalesExport_Xero extends ExportAbstract
 	}
 	protected static function _getData()
 	{
-		$now = new UDate();
-		$now->setTimeZone('Australia/Melbourne');
-		$now->modify('-1 day');
-		$orders = Order::getAllByCriteria('invDate > :fromDate and invDate < :toDate', array('fromDate' => $now->format('Y-m-d') . ' 00:00:00', 'toDate' => $now->format('Y-m-d') . '23:59:59'));
+		$yesterday = new UDate();
+		$yesterday->modify('-1 day');
+		$orders = Order::getAllByCriteria('invDate > :fromDate and invDate < :toDate', array('fromDate' => $yesterday->format('Y-m-d') . ' 00:00:00', 'toDate' => $yesterday->format('Y-m-d') . '23:59:59'));
+		
 		$return = array();
 		foreach($orders as $order)
 		{
