@@ -211,7 +211,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				.insert({'bottom': new Element('dd')
 					.insert({'bottom': new Element('div')
 						.insert({'bottom': new Element('div', {'class' : 'col-sm-6'}).update(
-							tmp.editable !== true ? addr.contactName : new Element('input', {'address-editable-field': 'contactName', 'required': true, 'class': 'form-control input-sm', 'placeholder': 'The name of contact person',  'value': addr.contactName})
+							tmp.editable !== true ? addr.contactName : new Element('input', {'address-editable-field': 'contactName', 'class': 'form-control input-sm', 'placeholder': 'The name of contact person',  'value': addr.contactName})
 						) })
 						.insert({'bottom': new Element('div', {'class' : 'col-sm-6'}).update(
 								tmp.editable !== true ? addr.contactNo : new Element('input', {'address-editable-field': 'contactNo', 'class': 'form-control input-sm', 'placeholder': 'The contact number of contact person',  'value': addr.contactNo})
@@ -224,23 +224,23 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				.insert({'bottom': new Element('dd')
 					.insert({'bottom': new Element('div')
 						.insert({'bottom': tmp.editable !== true ? addr.street : new Element('div', {'class': 'street col-sm-12'}).update(
-								new Element('input', {'address-editable-field': 'street', 'class': 'form-control input-sm', 'required': true, 'placeholder': 'Street Number and Street name',  'value': addr.street})
+								new Element('input', {'address-editable-field': 'street', 'class': 'form-control input-sm', 'placeholder': 'Street Number and Street name',  'value': addr.street})
 						) })
 					})
 					.insert({'bottom': new Element('div')
 						.insert({'bottom': tmp.editable !== true ? addr.city + ' ' : new Element('div', {'class': 'city col-sm-6'}).update(
-								new Element('input', {'address-editable-field': 'city', 'class': 'form-control input-sm', 'required': true, 'placeholder': 'City / Suburb',  'value': addr.city})
+								new Element('input', {'address-editable-field': 'city', 'class': 'form-control input-sm', 'placeholder': 'City / Suburb',  'value': addr.city})
 						) })
 						.insert({'bottom':  tmp.editable !== true ? addr.region + ' ' : new Element('div', {'class': 'region col-sm-3'}).update(
-								new Element('input', {'address-editable-field': 'region', 'class': 'form-control input-sm', 'required': true, 'placeholder': 'State / Province',  'value': addr.region})
+								new Element('input', {'address-editable-field': 'region', 'class': 'form-control input-sm', 'placeholder': 'State / Province',  'value': addr.region})
 						) })
 						.insert({'bottom': tmp.editable !== true ? addr.postCode: new Element('div', {'class': 'postcode col-sm-3'}).update(
-								new Element('input', {'address-editable-field': 'postCode', 'class': 'form-control input-sm', 'required': true, 'placeholder': 'PostCode',  'value': addr.postCode})
+								new Element('input', {'address-editable-field': 'postCode', 'class': 'form-control input-sm', 'placeholder': 'PostCode',  'value': addr.postCode})
 						) })
 					})
 					.insert({'bottom': new Element('div')
 						.insert({'bottom': tmp.editable !== true ? addr.country: new Element('div', {'class': 'postcode col-sm-4'}).update(
-								new Element('input', {'address-editable-field': 'country', 'class': 'form-control input-sm', 'required': true, 'placeholder': 'Country',  'value': addr.country})
+								new Element('input', {'address-editable-field': 'country', 'class': 'form-control input-sm', 'placeholder': 'Country',  'value': addr.country})
 						) })
 					})
 				})
