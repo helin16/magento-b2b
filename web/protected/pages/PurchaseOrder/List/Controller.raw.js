@@ -135,14 +135,14 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		tmp.me = this;
 		tmp.tag = (tmp.isTitle === true ? 'th' : 'td');
 		tmp.isTitle = (isTitle || false);
-		tmp.row = new Element('tr', {'class': (tmp.isTitle === true ? 'item_top_row' : 'btn-hide-row item_row') + (row.active == 0 ? ' danger' : ''), 'item_id': (tmp.isTitle === true ? '' : row.id)}).store('data', row)
+		tmp.row = new Element('tr', {'class': (tmp.isTitle === true ? 'item_top_row' : 'btn-hide-row item_row po_item') + (row.active == 0 ? ' danger' : ''), 'item_id': (tmp.isTitle === true ? '' : row.id)}).store('data', row)
 			.insert({'bottom': new Element(tmp.tag, {'class': 'purchaseOrderNo col-xs-1'}).update(row.purchaseOrderNo)})
 				.observe('dblclick', function(){
 					if(!isTitle)
 						tmp.me._openEditPage(row);
 				})
 				.observe('click', function(){
-					tmp.me._highlightSelectedRow(this.down('.btn'));
+					//tmp.me._highlightSelectedRow(this.down('.btn'));
 				})
 			.insert({'bottom': new Element(tmp.tag, {'class': 'orderDate col-xs-1'}).update(tmp.me.loadUTCTime(row.orderDate).toLocaleString())})
 			.insert({'bottom': new Element(tmp.tag, {'class': 'supplierId col-xs-1'}).update(row.supplier.name ? row.supplier.name : '')})
@@ -151,15 +151,20 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 			.insert({'bottom': new Element(tmp.tag, {'class': 'ETA col-xs-1'}).update(!tmp.isTitle ? row.eta ? tmp.me.loadUTCTime(row.eta).toDateString() : '' : 'ETA')})
 			.insert({'bottom': new Element(tmp.tag, {'class': 'totalAmount col-xs-1'}).update(!tmp.isTitle ? tmp.me.getCurrency(row.totalAmount) : 'Total Amount')})
 			.insert({'bottom': new Element(tmp.tag, {'class': 'totalPaid col-xs-1'}).update(!tmp.isTitle ? row.totalPaid ? tmp.me.getCurrency(row.totalPaid) : '' : 'Total Paid')})
-			.insert({'bottom': new Element(tmp.tag, {'class': 'status col-xs-1'}).update(row.status)})
+			.insert({'bottom': new Element(tmp.tag, {'class': 'status col-xs-1', 'order_status': row.status}).update(row.status)})
 			.insert({'bottom': tmp.btns = new Element(tmp.tag, {'class': 'col-xs-1 text-right'}) 	});
 		if(tmp.isTitle !== true)
 			tmp.btns.insert({'bottom': new Element('div', {'class': 'btn-group'})
+				.insert({'bottom': !(row.id && (row.status === 'ORDERED' || row.status === 'RECEIVING'))  ? '' : new Element('span', {'class': 'btn btn-success btn-sm', 'title': 'Receiving Items'}).update('Receiving')
+					.observe('click', function(){
+						tmp.newWindow = window.open('/receiving/' + row.id + '.html', 'PO Details','width=1300, location=no, scrollbars=yes, menubar=no, status=no, titlebar=no, fullscreen=no, toolbar=no');
+						tmp.newWindow.focus();
+					})
+				})
 				.insert({'bottom': new Element('span', {'class': 'btn btn-default btn-sm', 'title': 'Edit'})
 					.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-pencil'}) })
 					.observe('click', function(){
 							tmp.me._openEditPage(row);
-							tmp.me._highlightSelectedRow(this);
 					})
 				})
 				.insert({'bottom': new Element('span', {'class': 'btn btn-danger btn-sm', 'title': 'Delete'})
@@ -169,7 +174,6 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 							return false;
 						if(row.active)
 							tmp.me._deactivateItem(this);
-						tmp.me._highlightSelectedRow(this);
 					})
 				})
 			});
@@ -235,7 +239,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 					if(!tmp.result.item)
 						throw 'errror';
 					$$('[item_id="'+ tmp.result.item.id +'"]').first().replace(tmp.me._getResultRow(tmp.result.item, false));
-					tmp.me._highlightSelectedRow($$('[item_id="'+ tmp.result.item.id +'"]').first().down('.glyphicon.glyphicon-trash'));
+					//tmp.me._highlightSelectedRow($$('[item_id="'+ tmp.result.item.id +'"]').first().down('.glyphicon.glyphicon-trash'));
 				} catch(e) {
 					tmp.me.showModalBox('<span class="text-danger">ERROR</span>', e, true);
 				}
