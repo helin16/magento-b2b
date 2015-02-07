@@ -87,6 +87,7 @@ class POController extends BPCPageAbstract
 		{
 			$items = array();
 			$searchTxt = isset($param->CallbackParameter->searchTxt) ? trim($param->CallbackParameter->searchTxt) : '';
+			$pageNo = isset($param->CallbackParameter->pageNo) ? trim($param->CallbackParameter->pageNo) : '1';
 			$where = 'pro_pro_code.code = :searchExact or pro.name like :searchTxt OR sku like :searchTxt';
 			$params = array('searchExact' => $searchTxt , 'searchTxt' => '%' . $searchTxt . '%');
 			
@@ -100,10 +101,10 @@ class POController extends BPCPageAbstract
 					$params[$key] = '%' . implode('%', $comboArray) . '%';
 				}
 			}
-			
+			$stats = array();
 			$supplierID = isset($param->CallbackParameter->supplierID) ? trim($param->CallbackParameter->supplierID) : '';
 			Product::getQuery()->eagerLoad('Product.codes', 'left join');
-			$products = Product::getAllByCriteria($where, $params, true, 1, DaoQuery::DEFAUTL_PAGE_SIZE, array('pro.sku' => 'asc'));
+			$products = Product::getAllByCriteria($where, $params, true, $pageNo, DaoQuery::DEFAUTL_PAGE_SIZE, array('pro.sku' => 'asc'), $stats);
 			foreach($products as $product)
 			{
 				$array = $product->getJson();
@@ -138,6 +139,7 @@ class POController extends BPCPageAbstract
 				$items[] = $array;
 			}
 			$results['items'] = $items;
+			$results['pagination'] = $stats;
 		}
 		catch(Exception $ex)
 		{

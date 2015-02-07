@@ -463,19 +463,24 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 	/**
 	 * Ajax: searching the product based on a string
 	 */
-	,_searchProduct: function(btn) {
+	,_searchProduct: function(btn, pageNo, afterFunc) {
 		var tmp = {};
 		tmp.me = this;
 		tmp.btn = btn;
+		tmp.showMore = $(btn).retrieve('showMore') === true ? true : false;
+		tmp.pageNo = (pageNo || 1);
 		tmp.me._signRandID(tmp.btn);
-		tmp.searchTxtBox = $(tmp.btn).up('.product-autocomplete').down('.search-txt');
+		tmp.searchTxtBox = !$(tmp.btn).up('.product-autocomplete') || !$(tmp.btn).up('.product-autocomplete').down('.search-txt') ? $($(tmp.btn).retrieve('searchBoxId')) : $(tmp.btn).up('.product-autocomplete').down('.search-txt');
 		tmp.searchTxt = $F(tmp.searchTxtBox);
-		tmp.me.postAjax(tmp.me.getCallbackId('searchProduct'), {'searchTxt': tmp.searchTxt, 'supplierID': tmp.me._supplier.id}, {
+		tmp.me.postAjax(tmp.me.getCallbackId('searchProduct'), {'searchTxt': tmp.searchTxt, 'supplierID': tmp.me._supplier.id, 'pageNo': tmp.pageNo}, {
 			'onLoading': function() {
 				jQuery('#' + tmp.btn.id).button('loading');
 			}
 			,'onSuccess': function(sender, param) {
-				tmp.resultList = new Element('div', {'style': 'overflow: auto; max-height: 400px;'});
+				if(tmp.showMore === false)
+					tmp.resultList = new Element('div', {'class': 'search-product-list'});
+				else
+					tmp.resultList = $(btn).up('.search-product-list');
 				try {
 					tmp.result = tmp.me.getResp(param, false, true);
 					if(!tmp.result || !tmp.result.items || tmp.result.items.size() === 0)
@@ -494,11 +499,27 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					tmp.result.items.each(function(product) {
 						tmp.resultList.insert({'bottom': tmp.me._getSearchPrductResultRow(product, tmp.searchTxtBox) });
 					});
+					if(typeof(afterFunc) === 'function')
+						afterFunc();
+					if(tmp.result.pagination.pageNumber < tmp.result.pagination.totalPages) {
+						tmp.resultList.insert({'bottom': new Element('a', {'class': 'item-group-item'})
+							.insert({'bottom': new Element('span', {'class': 'btn btn-primary', 'data-loading-text': 'Getting more ...'}).update('Show Me More') })
+							.observe('click', function(){
+								tmp.newBtn = $(this);
+								$(tmp.newBtn).store('searchBoxId', tmp.searchTxtBox.id);
+								$(tmp.newBtn).store('showMore', true);
+								tmp.me._searchProduct(this, tmp.pageNo * 1 + 1, function() {
+									$(tmp.newBtn).remove();
+								});
+							})
+						});
+					}
 					tmp.resultList.addClassName('list-group'); 
 				} catch(e) {
 					tmp.resultList.update(tmp.me.getAlertBox('Error: ', e).addClassName('alert-danger'));
 				}
-				tmp.me.showModalBox('Products that has: ' + tmp.searchTxt, tmp.resultList, false);
+				if(tmp.showMore === false)
+					tmp.me.showModalBox('Products that has: ' + tmp.searchTxt, tmp.resultList, false);
 			}
 			,'onComplete': function(sender, param) {
 				jQuery('#' + tmp.btn.id).button('reset');
