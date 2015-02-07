@@ -302,8 +302,6 @@ class Address extends BaseEntityAbstract
 		$obj = new Address();
 		if($exsitAddr instanceof Address)
 			$obj = $exsitAddr;
-		else if(count($sameAddresses = self::getAllByCriteria('`sKey` = ?', array(self::genSKey($street, $city, $region, $country, $postCode, $contactName, $contactNo)), true, 1, 1)) > 0)
-			return $sameAddresses[0];
 		return $obj->setStreet(trim($street))
 			->setCity(trim($city))
 			->setRegion(trim($region))
