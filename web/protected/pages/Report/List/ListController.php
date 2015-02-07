@@ -31,18 +31,40 @@ class ListController extends BPCPageAbstract
 	protected function _getEndJs()
 	{
 		$js = parent::_getEndJs();
-		$js .= "pageJs.setCallbackId('salesReport', '" . $this->salesReportBtn->getUniqueID() . "')";
-		$js .= ".setCallbackId('billsReport', '" . $this->billsReportBtn->getUniqueID() . "')";
+		$js .= "pageJs.setCallbackId('genReportBtn', '" . $this->genReportBtn->getUniqueID() . "')";
 		$js .= ".bindBtns();";
 		return $js;
 	}
-	public function salesReport($sender, $params)
+	public function genReport($sender, $params)
 	{
-		SalesExport_Xero::run();
-	}
-	public function billsReport($sender, $params)
-	{
-		BillExport_Xero::run();
+		$results = $errors = array();
+		try {
+			Dao::beginTransaction();
+			if(isset($param->CallbackParameter->type) && ($type = trim($param->CallbackParameter->type)) === '')
+				throw new Exception('SYSTEM ERROR: invalid type passed in.');
+			switch(strtolower($type)) {
+				case 'sales_daily': {
+					SalesExport_Xero::run();
+					break;
+				}
+				case 'supplier_bill_daily':  {
+					BillExport_Xero::run();
+					break;
+				}
+				case 'item_list': {
+					ItemExport_Xero::run();
+					break;
+				}
+				default: {
+					throw new Exception('SYSTEM ERROR: invalid type passed in: ' . $type);
+				}
+			}
+			Dao::commitTransaction();
+		} catch(Exception $ex) {
+			Dao::rollbackTransaction();
+			$error[] = $ex->getMessage();
+		}
+		$params->ResponseData = StringUtilsAbstract::getJson($results, $errors);
 	}
 }
 ?>
