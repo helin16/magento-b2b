@@ -534,7 +534,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			.insert({'bottom': new Element('thead').update(tmp.me._getScanTableROW({'qty': 'Qty', 'serialNo': 'Serial No.', 'unitPrice': 'Unit Price (Ex)', 'invoiceNo': 'Inv. No.', 'comments': 'Comments', 'btns': ''}, true)) })
 			.insert({'bottom': new Element('tbody')
 				.insert({'bottom': tmp.me._getScanTableROW({
-						'qty': tmp.me._getFormGroup('',new Element('input', {'class': 'form-control', 'scanned-item': 'qty', 'type': 'text', 'placeholder': 'How many you received.', 'required': true, 'value': 1})
+						'qty': tmp.me._getFormGroup('',new Element('input', {'class': 'form-control', 'scanned-item': 'qty', 'type': 'text', 'placeholder': 'How many you received.', 'required': true, 'value': 1, 'validate_currency': 'Invalid qty'})
 							.observe('keyup', function() {
 								tmp.serialNoBox = $(this).up('.scanned-item-row').down('[scanned-item=serialNo]');
 								if($F(this) > 1) {
@@ -587,7 +587,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 													.observe('click', function(event) {
 														if(!confirm('You are about to remove this entry.\n\nContinue?'))
 															return;
-														$(this).up('.item_row').down('.product-head-row .scannedQty').innerHTML--;
+														$(this).up('.item_row').down('.product-head-row .scannedQty').innerHTML = $(this).up('.item_row').down('.product-head-row .scannedQty').innerHTML * 1 - tmp.data.qty * 1;
 														if ($(this).up('.item_row').down('.product-head-row .scannedQty').innerHTML > product.purchaseOrderItem.qty || !$(this).up('.item_row').down('.product-head-row .scannedQty').innerHTML)
 															$(this).up('.item_row').down('.product-head-row .scannedQty').setStyle({color: 'red'});
 														else
@@ -614,12 +614,12 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 											
 											tmp.currentRow.insert({'after': tmp.newRow});
 											tmp.currentRow.down('input[scanned-item=comments]').clear();
-											tmp.currentRow.down('input[scanned-item=serialNo]').clear();
+											tmp.currentRow.down('input[scanned-item=serialNo]').clear().disabled = false;
 											tmp.currentRow.down('input[scanned-item=qty]').value = 1;
-											tmp.currentRow.down('input[scanned-item=qty]').click();
+											tmp.currentRow.down('input[scanned-item=serialNo]').select();
 											
 											
-											$(this).up('.item_row').down('.scannedQty').innerHTML++;
+											$(this).up('.item_row').down('.scannedQty').innerHTML = (this).up('.item_row').down('.scannedQty').innerHTML * 1 + tmp.data.qty * 1;
 											if ($(this).up('.item_row').down('.product-head-row .scannedQty').innerHTML > product.purchaseOrderItem.qty || !$(this).up('.item_row').down('.product-head-row .scannedQty').innerHTML)
 												$(this).up('.item_row').down('.product-head-row .scannedQty').setStyle({color: 'red'});
 											else
@@ -950,13 +950,9 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					tmp.result = tmp.me.getResp(param, false, true);
 					if(!tmp.result || !tmp.result.item)
 						return;
-					if(tmp.result.item.status === 'RECEIVING') {
-						tmp.me.showModalBox('Success', '<h4><strong>Saved Successfully! </strong></h4>');
-						window.location = document.URL;
-					} else {
-						tmp.me.showModalBox('<strong class="text-success">Success!</strong>', '<h3>Saved successfully</h3>', true);
-						window.location = document.URL;
-					}
+					tmp.me.showModalBox('<strong class="text-success">Success!</strong>', '<h3>Saved successfully</h3>', true);
+					tmp.me.refreshParentWindow(tmp.result.item);
+					window.location = document.URL;
 				} catch(e) {
 					tmp.me.showModalBox('Error!', e, false);
 				}
@@ -966,6 +962,17 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			}
 		});
 		return tmp.me;
+	}
+	,refreshParentWindow: function(po) {
+		var tmp = {};
+		tmp.me = this;
+		if(!window.opener)
+			return;
+		tmp.parentWindow = window.opener;
+		tmp.row = $(tmp.parentWindow.document.body).down('#' + tmp.parentWindow.pageJs.resultDivId + ' .item_row[item_id=' + po.id + ']');
+		if(tmp.row) {
+			tmp.row.replace(tmp.parentWindow.pageJs._getResultRow(po));
+		}
 	}
 	/**
 	 * Getting the search product result row
