@@ -155,7 +155,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 			.insert({'bottom': tmp.btns = new Element(tmp.tag, {'class': 'col-xs-1 text-right'}) 	});
 		if(tmp.isTitle !== true)
 			tmp.btns.insert({'bottom': new Element('div', {'class': 'btn-group'})
-				.insert({'bottom': !(row.id && (row.status === 'ORDERED' || row.status === 'RECEIVING'))  ? '' : new Element('span', {'class': 'btn btn-success btn-sm', 'title': 'Receiving Items'}).update('Receiving')
+				.insert({'bottom': (!(row.id && (row.status === 'ORDERED' || row.status === 'RECEIVING')) || row.active !== true)  ? '' : new Element('span', {'class': 'btn btn-success btn-sm', 'title': 'Receiving Items'}).update('Receiving')
 					.observe('click', function(){
 						tmp.newWindow = window.open('/receiving/' + row.id + '.html', 'PO Details','width=1300, location=no, scrollbars=yes, menubar=no, status=no, titlebar=no, fullscreen=no, toolbar=no');
 						tmp.newWindow.focus();

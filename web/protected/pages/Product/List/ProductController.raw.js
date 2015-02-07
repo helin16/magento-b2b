@@ -386,7 +386,8 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 				}
 			});
 		}
-		tmp.row = new Element('tr', {'class': 'visible-xs visible-md visible-lg visible-sm ' + (tmp.isTitle === true ? '' : 'product_item'), 'product_id' : row.id}).store('data', row)
+		tmp.row = new Element('tr', {'class': 'visible-xs visible-md visible-lg visible-sm ' + (tmp.isTitle === true ? '' : 'product_item'), 'product_id' : row.id})
+			.store('data', row)
 			.insert({'bottom': new Element(tmp.tag, {'class': 'sku', 'title': row.name})
 				.insert({'bottom': new Element('span', {'style': 'margin: 0 5px 0 0;'})
 					.insert({'bottom': new Element('input', {'type': 'checkbox', 'class': 'product-selected'})
@@ -401,6 +402,9 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 					})
 				})
 				.insert({'bottom':tmp.isTitle === true ? row.sku : new Element('a', {'href': 'javascript: void(0);', 'class': 'sku-link'})
+					.observe('click', function(){
+						tmp.me._displaySelectedProduct(row);
+					})
 					.update(row.sku)
 				}) 
 			})
@@ -417,13 +421,16 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 			.insert({'bottom': new Element(tmp.tag, {'class': 'qty col-xs-2 hidden-sm'}).update(
 					tmp.isTitle === true ? 
 							new Element('div', {'class': 'row'})
-								.insert({'bottom': new Element('div', {'class': 'col-xs-6 hide-when-info', 'title': 'Stock on Hand'}).update('SH') })
-								.insert({'bottom': new Element('div', {'class': 'col-xs-6', 'title': 'Average Cost'}).update('Cost') })
+								.insert({'bottom': new Element('div', {'class': 'col-xs-4 hide-when-info', 'title': 'Stock on Hand'}).update('SH') })
+								.insert({'bottom': new Element('div', {'class': 'col-xs-4', 'title': 'Average Cost'}).update('Cost') })
+								.insert({'bottom': new Element('div', {'class': 'col-xs-4 hide-when-info', 'title': 'Stock On PO'}).update('SP') })
 							: 
 							new Element('div', {'class': 'row'})
-								.insert({'bottom': new Element('div', {'class': 'col-xs-6 hide-when-info', 'title': 'Stock on Hand'}).update(row.stockOnHand) })
-								.insert({'bottom': new Element('div', {'class': 'col-xs-6', 'title': 'Average Cost'}).update((row.totalOnHandValue != 0 && row.stockOnHand != 0) ? tmp.me.getCurrency(row.totalOnHandValue/row.stockOnHand) : 'N/A') })
-								.observe('click', function(e){
+								.setStyle("cursor: pointer")
+								.insert({'bottom': new Element('div', {'class': 'col-xs-4 hide-when-info', 'title': 'Stock on Hand'}).update(row.stockOnHand) })
+								.insert({'bottom': new Element('div', {'class': 'col-xs-4', 'title': 'Average Cost'}).update((row.totalOnHandValue != 0 && row.stockOnHand != 0) ? tmp.me.getCurrency(row.totalOnHandValue/row.stockOnHand) : 'N/A') })
+								.insert({'bottom': new Element('div', {'class': 'col-xs-4 hide-when-info', 'title': 'Stock On PO'}).update(row.stockOnPO) })
+								.observe('dbclick', function(e){
 									Event.stop(e);
 									tmp.me._openProductQtyLogPage(row.id);
 								})
@@ -469,7 +476,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 			});
 		if(tmp.isTitle === false) {
 			tmp.me.observeClickNDbClick(tmp.row, function() {
-				tmp.me._displaySelectedProduct(row);
+				//tmp.me._displaySelectedProduct(row);
 			}, function(){
 				if(tmp.me._singleProduct !== true)
 					tmp.me._openProductDetails(row);

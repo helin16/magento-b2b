@@ -396,18 +396,27 @@ class PurchaseOrder extends BaseEntityAbstract
 				->save();
 		}
 		//if the order status is ordered, then calculated the
-		if(trim($this->getStatus()) === PurchaseOrder::STATUS_ORDERED) {
+		if(intval($this->getActive()) === 0) {
+			$items = PurchaseOrderItem::getAllByCriteria('purchaseOrderId = ? and stockCalculated = 1', array($this->getId()));
+			foreach($items as $item) {
+				$item->getProduct()->ordered(0 - $item->getQty(), 'PO(' . $this->getPurchaseOrderNo() . ') is CANCELLED or Deactivated', $item);
+				$item->setStockCalculated(false)
+				->save()
+				->addLog('UNMarked this item for StockOnPO and stockCalculated', Log::TYPE_SYSTEM, 'STOCK_QTY_CHG', __CLASS__ . '::' . __FUNCTION__);
+			}
+		}
+		else if(trim($this->getStatus()) === PurchaseOrder::STATUS_ORDERED) {
 			$items = PurchaseOrderItem::getAllByCriteria('purchaseOrderId = ? and stockCalculated = 0', array($this->getId()));
 			foreach($items as $item) {
-				$item->getProduct()->ordered($item->getQty(), '', $item);
+				$item->getProduct()->ordered($item->getQty(), 'PO(' . $this->getPurchaseOrderNo() . ') is ordered now.', $item);
 				$item->setStockCalculated(true)
 					->save()
 					->addLog('Marked this item for StockOnPO and stockCalculated', Log::TYPE_SYSTEM, 'STOCK_QTY_CHG', __CLASS__ . '::' . __FUNCTION__);
 			}
-		} else if(trim($this->getStatus()) === PurchaseOrder::STATUS_CANCELED || intval($this->getActive()) === 0) {
+		} else if(trim($this->getStatus()) === PurchaseOrder::STATUS_CANCELED) {
 			$items = PurchaseOrderItem::getAllByCriteria('purchaseOrderId = ? and stockCalculated = 1', array($this->getId()));
 			foreach($items as $item) {
-				$item->getProduct()->ordered(0 - $item->getQty(), '', $item);
+				$item->getProduct()->ordered(0 - $item->getQty(), 'PO(' . $this->getPurchaseOrderNo() . ') is CANCELLED or Deactivated', $item);
 				$item->setStockCalculated(false)
 					->save()
 					->addLog('UNMarked this item for StockOnPO and stockCalculated', Log::TYPE_SYSTEM, 'STOCK_QTY_CHG', __CLASS__ . '::' . __FUNCTION__);

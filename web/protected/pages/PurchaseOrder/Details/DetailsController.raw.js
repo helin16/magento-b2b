@@ -889,7 +889,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		tmp.parentWindow = window.opener;
 		tmp.row = $(tmp.parentWindow.document.body).down('#' + tmp.parentWindow.pageJs.resultDivId + ' .item_row[item_id=' + tmp.me._item.id + ']');
 		if(tmp.row) {
-			tmp.row.replace(tmp.parentWindow.pageJs._getResultRow(tmp.me._item).addClassName('success'));
+			tmp.row.replace(tmp.parentWindow.pageJs._getResultRow(tmp.me._item));
 		}
 	}
 	/**
