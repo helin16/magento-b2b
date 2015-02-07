@@ -51,6 +51,10 @@ class ListController extends BPCPageAbstract
 					BillExport_Xero::run();
 					break;
 				}
+				case 'manual_journal': {
+					ManualJournalExport_Xero::run();
+					break;
+				}
 				case 'item_list': {
 					ItemExport_Xero::run();
 					break;

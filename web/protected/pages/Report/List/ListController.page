@@ -2,13 +2,16 @@
 <com:TCallback ID="genReportBtn" onCallback="genReport" />
 	<div class="pagewrapper item-list-wrapper">
 		<div class="row">
-			<div class="col-lg-4">
+			<div class="col-lg-3">
 				<div class="btn btn-lg btn-default pull-right gen-report-btn" data-loading-text="Loading..." data-type="sales_daily">Sales Report</div>
 			</div>
-			<div class="col-lg-4">
+			<div class="col-lg-3">
 				<div class="btn btn-lg btn-default  gen-report-btn" data-loading-text="Loading..." data-type="supplier_bill_daily">Bill Report</div>
 			</div>
-			<div class="col-lg-4">
+			<div class="col-lg-3">
+				<div class="btn btn-lg btn-default  gen-report-btn" data-loading-text="Loading..." data-type="manual_journal">Item List</div>
+			</div>
+			<div class="col-lg-3">
 				<div class="btn btn-lg btn-default  gen-report-btn" data-loading-text="Loading..." data-type="item_list">Item List</div>
 			</div>
 		</div>
