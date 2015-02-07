@@ -297,6 +297,8 @@ class Address extends BaseEntityAbstract
 	 */
 	public static function create($street, $city, $region, $country, $postCode, $contactName = '', $contactNo = '', Address &$exsitAddr = null)
 	{
+		if(trim($street) === '' && trim($city) === '' && trim($region) === '' && trim($country) === '' && trim($postCode) === '' && trim($contactName = '') === '' && trim($contactNo) === '')
+			return null;
 		$obj = new Address();
 		if($exsitAddr instanceof Address)
 			$obj = $exsitAddr;

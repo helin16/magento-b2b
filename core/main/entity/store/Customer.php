@@ -37,7 +37,7 @@ class Customer extends BaseEntityAbstract
 	 * 
 	 * @var Address
 	 */
-	protected $billingAddress;
+	protected $billingAddress = null;
 	/**
 	 * The shipping of this customer
 	 * 
@@ -249,7 +249,7 @@ class Customer extends BaseEntityAbstract
 	 * 
 	 * @return Ambigous <GenericDAO, BaseEntityAbstract>
 	 */
-	public static function create($name, $contactNo, $email, Address $billingAddr, $isFromB2B = false, $description = '', Address $shippingAddr = null, $mageId = 0)
+	public static function create($name, $contactNo, $email, Address $billingAddr = null, $isFromB2B = false, $description = '', Address $shippingAddr = null, $mageId = 0)
 	{
 		$name = trim($name);
 		$contactNo = trim($contactNo);
