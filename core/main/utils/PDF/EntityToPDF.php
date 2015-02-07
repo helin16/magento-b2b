@@ -41,10 +41,11 @@ class EntityToPDF
 			}
 		}
 		$url .= "?user=" . Core::getUser()->getUserName() . '&pass=' . Core::getUser()->getPassword();
+		$url = $_SERVER["HTTP_HOST"] . ' / ' . $url ;
 		if($class == 'Order' && $method == '')		
-			$command = '/usr/local/bin/wkhtmltopdf -B 0 -T 0 --disable-javascript "' . $_SERVER["HTTP_HOST"] . $url . '" ' . ($file = '/tmp/' . md5(new UDate()) . '.pdf');
+			$command = '/usr/local/bin/wkhtmltopdf -B 0 -T 0 --disable-javascript "' . $url . '" ' . ($file = '/tmp/' . md5(new UDate()) . '.pdf');
 		else
-			$command = '/usr/local/bin/wkhtmltopdf --disable-javascript "http://localhost/'  . $_SERVER["HTTP_HOST"]  . $url . '" ' . ($file = '/tmp/' . md5(new UDate()) . '.pdf');
+			$command = '/usr/local/bin/wkhtmltopdf --disable-javascript "' . $url . '" ' . ($file = '/tmp/' . md5(new UDate()) . '.pdf');
 		var_dump($command);
 		$output = '';
 		exec($command, $output);
