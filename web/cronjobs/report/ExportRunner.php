@@ -8,3 +8,7 @@ SalesExport_Xero::run(true);
 //run bill export for xero
 require_once dirname(__FILE__) . '/class/BillExport_Xero.php';
 BillExport_Xero::run(true);
+
+//run item list export for xero
+require_once dirname(__FILE__) . '/class/ItemExport_Xero.php';
+ItemExport_Xero::run(true);
