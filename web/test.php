@@ -11,7 +11,8 @@ if(!($entity = $entityName::get($entityId)) instanceof BaseEntityAbstract)
 	die('Invalid ' . $entityName . ' provided: ' . $entityId);
 Core::setUser(UserAccount::get(UserAccount::ID_SYSTEM_ACCOUNT));
 $pdf = EntityToPDF::getPDF($entity);
-header('Content-Type: application/pdf');
+echo $pdf;
+// header('Content-Type: application/pdf');
 // The PDF source is in original.pdf
-readfile($pdf);
+// readfile($pdf);
 ?>
