@@ -4,7 +4,7 @@ require_once dirname(__FILE__) . '/../../../bootstrap.php';
 class ExportAbstract
 {
 	protected static $_debug = false;
-	private static $_rootDir = '/tmp/export/';
+	private static $_rootDir = '/tmp/export';
 	
 	public static function run($debug = false)
 	{
