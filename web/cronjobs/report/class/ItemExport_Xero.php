@@ -1,4 +1,5 @@
 <?php
+ini_set('memory_limit','1024M');
 class ItemExport_Xero extends ExportAbstract
 {
 	protected static function _getData()
@@ -7,11 +8,10 @@ class ItemExport_Xero extends ExportAbstract
 		$myobCodeType = ProductCodeType::get(ProductCodeType::ID_MYOB);
 		foreach(Product::getAll(false) as $product)
 		{
-			$fullDescription = Asset::getAsset($product->getFullDescAssetId());
 			$myobCodes = ProductCode::getCodes($product, $myobCodeType, true, 1, 1);
 			$return[] = array(
 				'sku' => $product->getSku()
-				,'description'=> $fullDescription instanceof Asset ? file_get_contents($fullDescription->getPath()) : ''
+				,'short description'=> $product->getShortDescription()
 				,'assetAccNo'=> $product->getAssetAccNo()
 				,'revenueAccNo'=> $product->getRevenueAccNo()
 				,'costAccNo'=> $product->getCostAccNo()
