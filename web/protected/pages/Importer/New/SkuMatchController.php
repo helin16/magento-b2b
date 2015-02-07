@@ -85,8 +85,10 @@ class SkuMatchController extends BPCPageAbstract
 					break;
 				case 'accounting':
 					$index = $param->CallbackParameter->index;
-					if(!isset($param->CallbackParameter->sku) || ($sku = trim($param->CallbackParameter->sku)) === '' || !($product = Product::getBySku($sku)) instanceof Product)
+					if(!isset($param->CallbackParameter->sku) || ($sku = trim($param->CallbackParameter->sku)) === '')
 						throw new Exception('Invalid sku passed in! (line ' . $index .')');
+					if(!($product = Product::getBySku($sku)) instanceof Product)
+						$product = Product::create($sku, $sku);
 					$result['path'] = 'product';
 					$item = $this->updateAccountingInfo($product
 							, trim($param->CallbackParameter->assetAccNo), trim($param->CallbackParameter->costAccNo), trim($param->CallbackParameter->revenueAccNo));
