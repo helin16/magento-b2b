@@ -7,11 +7,11 @@ if($entityName === '')
 $entityId = isset($_REQUEST['entityid']) ? trim($_REQUEST['entityid']) : '';
 if($entityId === '')
 	die('Entity ID is NOT provided!');
-if(($entity = $entityName::get($entityId)) instanceof BaseEntityAbstract)
+if(!($entity = $entityName::get($entityId)) instanceof BaseEntityAbstract)
 	die('Invalid ' . $entityName . ' provided: ' . $entityId);
 Core::setUser(UserAccount::get(UserAccount::ID_SYSTEM_ACCOUNT));
-$pdf1 = EntityToPDF::getPDF($entity);
+$pdf = EntityToPDF::getPDF($entity);
 header('Content-Type: application/pdf');
 // The PDF source is in original.pdf
-readfile($pdf)
+readfile($pdf);
 ?>
