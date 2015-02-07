@@ -65,10 +65,15 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 									window.location = document.URL;
 								})
 							})
-							.insert({'bottom': new Element('a', {'class': 'btn btn-info', 'href': '/purchase/' + tmp.result.item.id + '.html'}).update('View the details')
+							.insert({'bottom': new Element('a', {'class': 'btn btn-info goto-details', 'href': '/purchase/' + tmp.result.item.id + '.html'}).update('View the details')
 							})
 						})
 					tmp.me.showModalBox('<strong class="text-success">Success</strong>', tmp.newDiv , false);
+					jQuery('#' + tmp.me.modalId).on('hide.bs.modal', function (event) {
+						if(tmp.newDiv.down('.goto-details')) {
+							tmp.newDiv.down('.goto-details').click();
+						}
+					});
 				} catch(e) {
 					tmp.me.showModalBox('<strong class="text-danger">Error:</strong>', e, false);
 					$(tmp.me._htmlIds.itemDiv).show();
