@@ -16,15 +16,15 @@ class ExportAbstract
 			throw new Exception('System Error: can NOT generate CSV without PHPExcel object!');
 		// Set document properties
 		$filePath = self::$_rootDir . '/' . md5(new UDate()) . '.csv';
-		PHPExcel_IOFactory::createWriter($objPHPExcel, 'CSV')->setDelimiter(',')
+		$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'CSV')->setDelimiter(',')
 			->setEnclosure('"')
 			->setLineEnding("\r\n")
-			->setSheetIndex(0)
-			->save($filePath);
-		if(!is_file($filePath))
-			throw new Exception('System Error: can NOT generate CSV to:' . $filePath);
+			->setSheetIndex(0);
+		ob_start();
+		$objWriter->save('php://output');
+		$excelOutput = ob_get_clean();
 		$class = get_called_class();
-		$asset = Asset::registerAsset($class::_getAttachedFileName(), file_get_contents($filePath));
+		$asset = Asset::registerAsset($class::_getAttachedFileName(), $excelOutput);
 		self::_mailOut($asset);
 	}
 	/**
