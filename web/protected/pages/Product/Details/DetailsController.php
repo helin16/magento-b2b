@@ -350,7 +350,7 @@ class DetailsController extends DetailsPageAbstract
 		catch(Exception $ex)
 		{
 			Dao::rollbackTransaction();
-			$errors[] = $ex->getMessage() . $ex->getTraceAsString();
+			$errors[] = $ex->getMessage();
 		}
 		$param->ResponseData = StringUtilsAbstract::getJson($results, $errors);
 	}

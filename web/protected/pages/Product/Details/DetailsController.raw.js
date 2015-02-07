@@ -567,8 +567,8 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 				throw 'System Error: no return product url';
 			tmp.me._item = data.item;
 			tmp.me.refreshParentWindow();
-//			tmp.me.showModalBox('<strong class="text-success">Saved Successfully!</strong>', 'Saved Successfully!', true);
-//			window.location = data.url; 
+			tmp.me.showModalBox('<strong class="text-success">Saved Successfully!</strong>', 'Saved Successfully!', true);
+			window.location = data.url; 
 		});
 		return tmp.me;
 	}
