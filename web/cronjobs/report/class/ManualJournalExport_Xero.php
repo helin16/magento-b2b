@@ -6,12 +6,11 @@ class ManualJournalExport_Xero extends ExportAbstract
 		$now = new UDate();
 		$now->modify('-1 day');
 		$dataType = 'created';
-		$items = ProductQtyLog::getAllByCriteria($dataType . ' > :fromDate and ' . $dataType . ' < :toDate and type in (:type1, :type2, :type3)', 
+		$items = ProductQtyLog::getAllByCriteria($dataType . ' > :fromDate and ' . $dataType . ' < :toDate and type in (:type1, :type2)', 
 				array('fromDate' => $now->format('Y-m-d') . ' 00:00:00', 
 					'toDate' => $now->format('Y-m-d') . '23:59:59',
 					'type1' => ProductQtyLog::TYPE_SALES_ORDER,
-					'type2' => ProductQtyLog::TYPE_STOCK_ADJ,
-					'type3' => ProductQtyLog::TYPE_PO
+					'type2' => ProductQtyLog::TYPE_STOCK_ADJ
 			)
 		);
 		
@@ -25,14 +24,27 @@ class ManualJournalExport_Xero extends ExportAbstract
 				'Narration' => $item->getId()
 				,'Date'=> $item->getCreated()->setTimeZone('Australia/Melbourne')
 				,'Description'=> $product->getSku()
-				,'AccountCode'=> ''
+				,'AccountCode'=> $product->getAssetAccNo()
+				,'TaxRate'=> 'BAS Excluded'
+				,'Amount'=> 0 - $item->getTotalOnHandValueVar() 
+				,'TrackingName1'=> $item->getType()
+				,'TrackingOption1'=> ''
+				,'TrackingName2'=> ''
+				,'TrackingOption2'=> ''
+			);
+			$return[] = array(
+				'Narration' => $item->getId()
+				,'Date'=> $item->getCreated()->setTimeZone('Australia/Melbourne')
+				,'Description'=> $product->getSku()
+				,'AccountCode'=> $product->getCostAccNo()
 				,'TaxRate'=> 'BAS Excluded'
 				,'Amount'=> $item->getTotalOnHandValueVar()
 				,'TrackingName1'=> $item->getType()
 				,'TrackingOption1'=> ''
 				,'TrackingName2'=> ''
 				,'TrackingOption2'=> ''
-			);
+			);;
+			$data1 = array_co
 		}
 		return $return;
 	}
