@@ -22,25 +22,25 @@ class ReceivingItem extends BaseEntityAbstract
 	protected $purchaseOrder;
 	/**
 	 * The unitprice of each item
-	 * 
+	 *
 	 * @var double
 	 */
 	private $unitPrice;
 	/**
 	 * The serial number
-	 * 
+	 *
 	 * @var string
 	 */
 	private $serialNo;
 	/**
 	 * The invoiceNo
-	 * 
+	 *
 	 * @var string
 	 */
 	private $invoiceNo;
 	/**
 	 * Qty
-	 * 
+	 *
 	 * @var int
 	 */
 	private $qty = 1;
@@ -93,7 +93,7 @@ class ReceivingItem extends BaseEntityAbstract
 	 *
 	 * @return double
 	 */
-	public function getUnitPrice() 
+	public function getUnitPrice()
 	{
 	    return $this->unitPrice;
 	}
@@ -104,7 +104,7 @@ class ReceivingItem extends BaseEntityAbstract
 	 *
 	 * @return ReceivingItem
 	 */
-	public function setUnitPrice($value) 
+	public function setUnitPrice($value)
 	{
 	    $this->unitPrice = $value;
 	    return $this;
@@ -114,7 +114,7 @@ class ReceivingItem extends BaseEntityAbstract
 	 *
 	 * @return string
 	 */
-	public function getInvoiceNo() 
+	public function getInvoiceNo()
 	{
 	    return $this->invoiceNo;
 	}
@@ -125,7 +125,7 @@ class ReceivingItem extends BaseEntityAbstract
 	 *
 	 * @return ReceivingItem
 	 */
-	public function setInvoiceNo($value) 
+	public function setInvoiceNo($value)
 	{
 	    $this->invoiceNo = $value;
 	    return $this;
@@ -135,7 +135,7 @@ class ReceivingItem extends BaseEntityAbstract
 	 *
 	 * @return string
 	 */
-	public function getSerialNo() 
+	public function getSerialNo()
 	{
 	    return $this->serialNo;
 	}
@@ -146,7 +146,7 @@ class ReceivingItem extends BaseEntityAbstract
 	 *
 	 * @return ReceivingItem
 	 */
-	public function setSerialNo($value) 
+	public function setSerialNo($value)
 	{
 	    $this->serialNo = $value;
 	    return $this;
@@ -156,7 +156,7 @@ class ReceivingItem extends BaseEntityAbstract
 	 *
 	 * @return int
 	 */
-	public function getQty() 
+	public function getQty()
 	{
 	    return $this->qty;
 	}
@@ -167,7 +167,7 @@ class ReceivingItem extends BaseEntityAbstract
 	 *
 	 * @return ReceivingItem
 	 */
-	public function setQty($qty) 
+	public function setQty($qty)
 	{
 	    $this->qty = $qty;
 	    return $this;
@@ -195,19 +195,33 @@ class ReceivingItem extends BaseEntityAbstract
 	}
 	/**
 	 * (non-PHPdoc)
+	 * @see BaseEntityAbstract::getJson()
+	 */
+	public function getJson($extra = '', $reset = false)
+	{
+		$array = array();
+	    if(!$this->isJsonLoaded($reset)) {
+		    $array['createdBy'] = $this->getCreatedBy() instanceof UserAccount ?$this->getCreatedBy()->getJson() : array();
+		    $array['product'] = $this->getProduct() instanceof Product ?$this->getProduct()->getJson() : array();
+		    $array['purchaseOrder'] = $this->getPurchaseOrder() instanceof PurchaseOrder ? $this->getPurchaseOrder()->getJson() : array();
+	    }
+	    return parent::getJson($array, $reset);
+	}
+	/**
+	 * (non-PHPdoc)
 	 * @see HydraEntity::__loadDaoMap()
 	 */
 	public function __loadDaoMap()
 	{
 		DaoMap::begin($this, 'rec_item');
-	
+
 		DaoMap::setManyToOne('purchaseOrder', 'PurchaseOrder', 'rec_item_po');
 		DaoMap::setManyToOne('product', 'Product', 'rec_item_pro');
 		DaoMap::setIntType('unitPrice', 'double', '10,4');
 		DaoMap::setStringType('serialNo', 'varchar', '10');
 		DaoMap::setStringType('invoiceNo', 'varchar', '10');
 		DaoMap::setIntType('qty');
-		
+
 		parent::__loadDaoMap();
 		DaoMap::createIndex('serialNo');
 		DaoMap::createIndex('unitPrice');
@@ -217,13 +231,13 @@ class ReceivingItem extends BaseEntityAbstract
 	}
 	/**
 	 * creating a receiving Item
-	 * 
+	 *
 	 * @param PurchaseOrder $po
 	 * @param Product       $product
 	 * @param double        $unitPrice
 	 * @param string        $serialNo
 	 * @param string        $invoiceNo
-	 * 
+	 *
 	 * @return PurchaseOrderItem
 	 */
 	public static function create(PurchaseOrder $po, Product $product, $unitPrice = '0.0000', $qty = 1, $serialNo = '', $invoiceNo = '', $comments = "")

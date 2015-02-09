@@ -16,10 +16,10 @@
 		<module id="security" class="TSecurityManager" EncryptionKey="BPCinternal" ValidationKey="bfb9e1b24ba6308e39495a4a78f35d70" />
 		<module id="request" class="THttpRequest" UrlManager="friendly-url" />
 		<module id="friendly-url" class="System.Web.TUrlMapping" EnableCustomUrl="true" UrlPrefix="/">
-		
+
 			<!-- FrontEnd:: login page -->
 			<url ServiceParameter="Login.LoginController" pattern="login.html" />
-			
+
 			<!-- FrontEnd:: order list page -->
 			<url ServiceParameter="Order.List.OrderController" pattern="order.html" />
 			<!-- FrontEnd:: order new page -->
@@ -30,64 +30,64 @@
 			<url ServiceParameter="Order.PrintDeliveryDocket.OrderPrintController" pattern="printdocket/order/{orderId}.html" parameters.orderId="\d+"/>
 			<!-- FrontEnd:: order details page -->
 			<url ServiceParameter="Order.Details.OrderDetailsController" pattern="orderdetails/{orderId}.html" parameters.orderId="\d+"/>
-			
+
 			<!-- FrontEnd:: orderitem list page -->
 			<url ServiceParameter="OrderItem.List.OrderItemController" pattern="orderitems.html"/>
-			
+
 			<!-- FrontEnd:: user page -->
 			<url ServiceParameter="User.List.UsersController" pattern="users.html" />
 			<!-- FrontEnd:: user edit page -->
 			<url ServiceParameter="User.Details.UsersController" pattern="/useraccount/{action}.html" parameters.action="add"/>
 			<url ServiceParameter="User.Details.UsersController" pattern="/useraccount/{action}/{id}.html" parameters.action="edit" parameters.id="\d+"/>
-			
+
 			<!-- FrontEnd:: me page -->
 			<url ServiceParameter="User.Me.MeController" pattern="{id}.html" parameters.id="me"/>
-			
+
 			<!-- FrontEnd:: system settings page -->
 			<url ServiceParameter="System.Settings.List.ListController" pattern="systemsettings.html" parameters.id="me"/>
-			
+
 			<!-- FrontEnd:: Price Match page -->
 			<url ServiceParameter="PriceMatch.PriceMatchController" pattern="pricematch.html" />
 			<!-- FrontEnd:: Price Match Companypage -->
 			<url ServiceParameter="PriceMatch.Company.List.PriceMatchCompanyListController" pattern="pricematchcompanies.html" />
-			
+
 			<!-- FrontEnd:: product list page -->
 			<url ServiceParameter="Product.List.ProductController" pattern="products.html" />
 			<url ServiceParameter="Product.List.ProductController" pattern="products/{id}.html" parameters.id="\d+"/>
 			<!-- FrontEnd:: product details page -->
 			<url ServiceParameter="Product.Details.DetailsController" pattern="product/{id}.html" parameters.id="new"/>
 			<url ServiceParameter="Product.Details.DetailsController" pattern="product/{id}.html" parameters.id="\d+"/>
-			
+
 			<!-- FrontEnd:: product code type list page -->
 			<url ServiceParameter="ProductCodeType.List.ListController" pattern="productcodetypes.html" />
-			
+
 			<!-- FrontEnd:: product category list page -->
 			<url ServiceParameter="ProductCategory.List.ListController" pattern="productcategories.html" />
-			
+
 			<!-- FrontEnd:: product qty log list page -->
 			<url ServiceParameter="ProductQtyLog.List.ListController" pattern="productqtylog.html" />
-			
+
 			<!-- FrontEnd:: Accounting Info list page -->
 			<url ServiceParameter="Accounting.List.ProductController" pattern="accounting.html" />
-			
+
 			<!-- FrontEnd:: Importer page -->
 			<url ServiceParameter="Importer.New.SkuMatchController" pattern="importer/new.html" />
-			
+
 			<!-- FrontEnd:: manufacturer list page -->
 			<url ServiceParameter="Manufacturer.List.ListController" pattern="manufacturers.html" />
 			<!-- FrontEnd:: supplier list page -->
 			<url ServiceParameter="Supplier.List.ListController" pattern="suppliers.html" />
-			
+
 			<!-- FrontEnd:: cutomer list page -->
 			<url ServiceParameter="Customer.List.ListController" pattern="customer.html" />
 			<!-- FrontEnd:: customer details page -->
 			<url ServiceParameter="Customer.Details.DetailsController" pattern="customer/{id}.html" parameters.id="new"/>
 			<url ServiceParameter="Customer.Details.DetailsController" pattern="customer/{id}.html" parameters.id="\d+"/>
-			
+
 			<!-- FrontEnd:: receiving page -->
 			<url ServiceParameter="Receiving.New.ReceivingController" pattern="receiving.html" />
 			<url ServiceParameter="Receiving.New.ReceivingController" pattern="receiving/{poid}.html" parameters.poid="\d+"/>
-			
+
             <!-- FrontEnd:: PO list page -->
             <url ServiceParameter="PurchaseOrder.List.Controller" pattern="purchase.html" />
             <!-- FrontEnd:: PO details page -->
@@ -95,37 +95,40 @@
             <url ServiceParameter="PurchaseOrder.Details.DetailsController" pattern="purchase/{id}.html" parameters.id="\d+"/>
 			<!-- FrontEnd:: PO print page -->
 			<url ServiceParameter="PurchaseOrder.Print.POPrintController" pattern="print/purchase/{POId}.html" parameters.POId="\d+"/>
-			
+
 			<!-- FrontEnd:: Location list page -->
 			<url ServiceParameter="Location.List.ListController" pattern="locations.html" />
-			
+
 			<!-- FrontEnd:: Prefer Location Type list page -->
 			<url ServiceParameter="PreferLocationType.List.ListController" pattern="locationtypes.html" />
-			
+
 			<!-- FrontEnd:: Stock Adjustment page -->
 			<url ServiceParameter="StockAdjustment.List.ListController" pattern="stockadjustment.html" />
-			
+
+			<!-- FrontEnd:: serial number searching page -->
+			<url ServiceParameter="Receiving.List.Controller" pattern="serialnumbers.html" />
+
 			<!-- FrontEnd:: Log list page -->
 			<url ServiceParameter="Log.List.ListController" pattern="logs.html" />
 			<!-- FrontEnd:: Message list page -->
 			<url ServiceParameter="Message.List.ListController" pattern="messages.html" />
-			
+
 			<!-- Statics::Order::Trend::Monthly page -->
 			<url ServiceParameter="Statics.Order.MthlyTrend.StaticsController" pattern="/statics/order/mthlytrend.html" />
 			<!-- Statics::Product::Trend::Sales -->
 			<url ServiceParameter="Statics.Product.SalesTrend.StaticsController" pattern="/statics/product/salestrend.html" />
 			<!-- Statics::Product::Trend::Price -->
 			<url ServiceParameter="Statics.Product.PriceTrend.StaticsController" pattern="/statics/product/pricetrend.html" />
-			
+
 			<!-- FrontEnd:: paymentmethod list page -->
 			<url ServiceParameter="PaymentMethod.List.ListController" pattern="paymentmethod.html" />
-			
+
 			<!-- FrontEnd:: Report page -->
 			<url ServiceParameter="Report.List.ListController" pattern="report.html" />
-			
+
 			<!-- asset service -->
 			<url ServiceId="asset" ServiceParameter="" pattern="asset/{method}" parameters.method="get" />
-			
+
 			<!-- ajax service -->
 			<url ServiceId='ajax' ServiceParameter="" pattern="ajax/{method}" parameters.method="\w+"  />
 		</module>
@@ -144,7 +147,7 @@
 				<module id="users" class="Application.classes.WebUser.WebUserManager" />
 			</modules>
 		</service>
-		
+
 		<service id = "ajax" class = "Application.pages.Ajax.AjaxController"></service>
 
 		<service id="asset" class="Application.pages.Asset.AssetController"></service>

@@ -38,6 +38,7 @@ class Menu extends TTemplateControl
 			$array['Products'] = array(
 				'icon' => '<span class="glyphicon glyphicon-th-list"></span>',
 				'products' => array('url' => '/products.html', 'name' => 'Products', 'icon' => '<span class="glyphicon glyphicon-th-list"></span>'),
+				'serialNumbers' => array('url' => '/serialnumbers.html', 'name' => 'Serial Numbers', 'icon' => '<span class="glyphicon glyphicon-search"></span>'),
 				'manufacturers' => array('url' => '/manufacturers.html', 'name' => 'Manufactures'),
 				'suppliers' => array('url' => '/suppliers.html', 'name' => 'Suppliers'),
 				'productcodetypes' => array('url' => '/productcodetypes.html', 'name' => 'Product Code Types', 'icon' => '<span class="glyphicon glyphicon-barcode"></span>'),
@@ -53,6 +54,7 @@ class Menu extends TTemplateControl
 				'PurchaseOrder' =>array('url' => '/purchase.html', 'name' => 'Purchase Orders', 'icon' => '<span class="glyphicon glyphicon-shopping-cart"></span>'),
 				'NEW PO' =>array('url' => '/purchase/new.html', 'name' => 'NEW PO', 'icon' => '<span class="glyphicon glyphicon-plus"></span>'),
 				'Receiving' =>array('url' => '/receiving.html', 'name' => 'Receiving PO', 'icon' => '<span class="fa fa-home"></span>'),
+				'serialNumbers' => array('url' => '/serialnumbers.html', 'name' => 'Serial Numbers', 'icon' => '<span class="glyphicon glyphicon-search"></span>'),
 				'priceMatch' => array('url' => '/pricematch.html', 'name' => 'Price Match', 'icon' => '<span class="glyphicon glyphicon-usd"></span>' )
 			);
 		if(AccessControl::canAccessOrderItemsPage(Core::getRole()) )
@@ -68,6 +70,7 @@ class Menu extends TTemplateControl
 			$array['Logistics'] = array(
 					'icon' => '<span class="fa fa-arrows"></span>',
 					'Receiving' =>array('url' => '/receiving.html', 'name' => 'Receiving Products', 'icon' => '<span class="fa fa-home"></span>'),
+					'serialNumbers' => array('url' => '/serialnumbers.html', 'name' => 'Serial Numbers', 'icon' => '<span class="glyphicon glyphicon-search"></span>'),
 					'Locations' =>array('url' => '/locations.html', 'name' => 'Locations', 'icon' => '<span class="fa fa-arrows"></span>'),
 					'PreferLocationTypes' =>array('url' => '/locationtypes.html', 'name' => 'Prefer Location Types', 'icon' => '<span class="glyphicon glyphicon-tasks"></span>'),
 					'stockadjustment' => array('url' => '/stockadjustment.html', 'name' => 'Stock Adjustment', 'icon'=> '<span class=""></span>')
