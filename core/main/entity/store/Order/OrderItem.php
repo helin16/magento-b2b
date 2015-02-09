@@ -484,6 +484,7 @@ class OrderItem extends BaseEntityAbstract
 		DaoMap::createIndex('unitPrice');
 		DaoMap::createIndex('totalPrice');
 		DaoMap::createIndex('margin');
+		DaoMap::createIndex('unitCost');
 		DaoMap::commit();
 	}
 	/**
