@@ -1,0 +1,1 @@
+ALTER TABLE `orderitem` ADD `unitCost` DOUBLE(10,4) NOT NULL DEFAULT '0.0000' AFTER `margin`, ADD INDEX (`unitCost`) ;
