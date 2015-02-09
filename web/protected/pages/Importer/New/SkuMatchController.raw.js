@@ -142,11 +142,14 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			case 'myob_upc':
 				tmp.me.csvFileLineFormat = ['sku', 'itemNo'];
 				break;
-			case 'stocktake':
+			case 'stockAdjustment':
 				tmp.me.csvFileLineFormat = ['sku', 'stockOnPO', 'stockOnHand', 'stockOnOrder', 'stockInRMA', 'stockInParts' , 'totalInPartsValue', 'totalOnHandValue'];
 				break;
 			case 'accounting':
 				tmp.me.csvFileLineFormat = ['sku', 'assetAccNo', 'costAccNo', 'revenueAccNo'];
+				break;
+			case 'accountingCode':
+				tmp.me.csvFileLineFormat = ['description', 'code'];
 				break;
 			default:
 				tmp.me.csvFileLineFormat = [];
@@ -261,7 +264,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 	,_openDetailPage: function(path, id) {
 		var tmp = {};
 		tmp.me = this;
-		tmp.newWindow = window.open('/' + path + '/' + id + '.html', path + ' details', 'location=no, menubar=no, status=no, titlebar=no, fullscreen=yes, toolbar=no');
+		tmp.newWindow = window.open('/' + path + '/' + id + '.html', path + ' details', 'width=1300, location=no, scrollbars=yes, menubar=no, status=no, titlebar=no, fullscreen=no, toolbar=no');
 		tmp.newWindow.focus();
 		return tmp.me;
 	}
@@ -290,18 +293,21 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			,'onSuccess': function (sender, param) {
 				try {
 					tmp.result = tmp.me.getResp(param, false, true);
-					if(!tmp.result.item.id || !tmp.result.path) {
+					if(!tmp.result.item.id) {
 						tmp.newRow.update('');
 						return;
 					}
 					tmp.newRow.removeClassName('info').addClassName('result-done').store('data', tmp.result.item).down('th')
-						.setStyle({
-							'cursor': 'pointer',
-					    	'text-decoration': 'underline'
-						})
-						.observe('click',function(){
-							tmp.me._openDetailPage(tmp.result.path, tmp.result.item.id);
-						});
+					if(tmp.result.path) {
+						tmp.newRow.down('th')
+							.setStyle({
+								'cursor': 'pointer',
+						    	'text-decoration': 'underline'
+							})
+							.observe('click',function(){
+								tmp.me._openDetailPage(tmp.result.path, tmp.result.item.id);
+							});
+					}
 				}  catch (e) {
 					tmp.newRow.removeClassName('info').addClassName('danger').store('data', tmp.data)
 						.insert({'bottom': new Element('td',{'colspan': 2}).update('<strong>ERROR:</strong>' + e) });

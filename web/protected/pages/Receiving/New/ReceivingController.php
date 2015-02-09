@@ -99,8 +99,7 @@ class ReceivingController extends BPCPageAbstract
 			$UPCcodes = ProductCode::getAllByCriteria('pro_code.productId = :productId and pro_code.typeId = :typeId', array('productId'=> $product->getId(), 'typeId'=> ProductCodeType::ID_UPC), true, 1, 1);
 			$UPCcodes = count($UPCcodes) ? $UPCcodes[0]->getCode() : '';
 			$warehouseLocations = PreferredLocation::getAllByCriteria('productId = :productId and typeId = :typeId', array('productId'=> $product->getId(), 'typeId'=> PreferredLocationType::ID_WAREHOUSE), true, 1, 1);
-			$warehouseLocation = count($warehouseLocations) ? $warehouseLocations[0]->getLocation()->getName() : '';
-		
+			$warehouseLocation = (count($warehouseLocations) > 0 && $warehouseLocations[0]->getLocation() instanceof Location) ? $warehouseLocations[0]->getLocation()->getName() : '';
 			$productArray = $product->getJson();
 			$productArray['codes'] = array('EAN'=>$EANcodes, 'UPC'=>$UPCcodes);
 			$productArray['warehouseLocation'] = $warehouseLocation;
@@ -239,8 +238,8 @@ class ReceivingController extends BPCPageAbstract
 						ProductCode::create($product, ProductCodeType::get(ProductCodeType::ID_UPC), $UPCcode);
 					}
 				}
-				if(isset($item->product->warehouseLocation) ) {
-					$locationName = trim($item->product->warehouseLocation);
+				if(isset($item->product->warehouseLocation) && ($locationName = trim($item->product->warehouseLocation)) !== '') {
+					var_dump($item->product->warehouseLocation);
 					$locs = Location::getAllByCriteria('name = ?', array($locationName), true, 1, 1);
 					$loc = (count($locs) > 0 ? $locs[0] : Location::create($locationName, $locationName));
 					$product->addLocation(PreferredLocationType::get(PreferredLocationType::ID_WAREHOUSE), $loc);

@@ -30,7 +30,7 @@ class POPrintController extends BPCPageAbstract
 		{
 			$this->order = PurchaseOrder::get($this->Request['POId']);
 			if(!$this->order instanceof PurchaseOrder)
-				die('Invalid Order!');
+				die('Invalid Purchase Order!');
 			if(isset($_REQUEST['pdf']) && intval($_REQUEST['pdf']) === 1)
 			{
 				$file = EntityToPDF::getPDF($this->order);

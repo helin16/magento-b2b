@@ -38,7 +38,22 @@ Abstract class AccessControl
 		}
 		return self::$_cache['accessOrderStatusIds'][$role->getId()];
 	}
-	
+	public static function canEditProduct(Role $role)
+	{
+		switch($role->getId())
+		{
+			case Role::ID_STORE_MANAGER:
+			case Role::ID_SYSTEM_ADMIN:
+			case Role::ID_PURCHASING:
+				{
+					return true;
+				}
+			default:
+				{
+					return false;
+				}
+		}
+	}
 	public static function canEditOrder(Order $order, Role $role)
 	{
 		$canAcessOrderByStatus = in_array($order->getStatus()->getId(), self::canAccessOrderStatusIds($role));
@@ -79,6 +94,7 @@ Abstract class AccessControl
 		{
 			case Role::ID_STORE_MANAGER:
 			case Role::ID_SYSTEM_ADMIN:
+			case Role::ID_SALES:
 				{
 					return true;
 				}

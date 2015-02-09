@@ -6,11 +6,15 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 	_manufacturers: []
 	,_suppliers: []
 	,_statuses: []
+	,_btnIdNewPO: null						 //pre defined data: btn id from new PO page	
 	,_priceTypes: []                         //pre defined data: productCodeType
 	,_codeTypes: []                          //pre defined data: productCodeType
 	,_locationTypes: []                          //pre defined data: locationTypes
 	,_productTreeId: 'product_category_tree' //the html id of the tree
 	,_imgPanelId: 'images_panel'             //the html id of the iamges panel
+	,_readOnlyMode: false
+	,_accountingCodes: []
+	,_selectTypeTxt: 'Select One...'
 	/**
 	 * Getting a form group for forms
 	 */
@@ -22,13 +26,17 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 	/**
 	 * Set some pre defined data before javascript start
 	 */
-	,setPreData: function(manufacturers, suppliers, statuses, priceTypes, codeTypes, locationTypes) {
+	,setPreData: function(manufacturers, suppliers, statuses, priceTypes, codeTypes, locationTypes, btnIdNewPO, accountingCodes) {
 		this._manufacturers = manufacturers;
 		this._suppliers = suppliers;
 		this._statuses = statuses;
 		this._priceTypes = priceTypes;
 		this._codeTypes = codeTypes;
 		this._locationTypes = locationTypes;
+		this._btnIdNewPO = (btnIdNewPO || false);
+		if(this._btnIdNewPO)
+			this._btnIdNewPO = (btnIdNewPO.replace(/["']/g, "") || false);
+		this._accountingCodes = accountingCodes;
 		return this;
 	}
 	/**
@@ -200,10 +208,10 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		var tmp = {};
 		tmp.me = this;
 		tmp.fullDescriptioAssetId = item.fullDescAssetId ? item.fullDescAssetId : '';
-		tmp.loadFullBtn = !item.id ? tmp.me._getRichTextEditor('') : new Element('span', {'class': 'btn btn-default'}).update('click to show the full description editor')
+		tmp.loadFullBtn = !item.id ? tmp.me._getRichTextEditor('') : new Element('span', {'class': 'btn btn-default btn-loadFullDesc'}).update('click to show the full description editor')
 			.observe('click', function(){
 				tmp.btn = $(this);
-				if(!item.fullDescriptionAsset) {
+				if(!item.fullDescriptionAsset && !tmp.me._readOnlyMode) {
 					tmp.newTextarea = tmp.me._getRichTextEditor('');
 					$(tmp.btn).replace(tmp.newTextarea);
 					tmp.me._loadRichTextEditor(tmp.newTextarea);
@@ -213,8 +221,14 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 						url: item.fullDescriptionAsset.url,
 						success: function(result) {
 							tmp.newTextarea = tmp.me._getRichTextEditor(result);
-							$(tmp.btn).replace(tmp.newTextarea);
-							tmp.me._loadRichTextEditor(tmp.newTextarea);
+							if(!tmp.me._readOnlyMode) {
+								$(tmp.btn).replace(tmp.newTextarea);
+								tmp.me._loadRichTextEditor(tmp.newTextarea);
+							} else {
+								$$('.fullDescriptionEl').first().replace(
+									new Element('div', {'class': 'col-sm-12'}).update(tmp.me._getFormGroup('Full Description:', new Element('input', {'type': 'text', 'disabled': true, 'value': result ? result : ''}) ) )
+								)
+							}
 						}
 					})
 				}
@@ -353,7 +367,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 					.insert({'bottom': new Element('div', {'class': 'col-sm-12'}).update(tmp.me._getFormGroup('Short Description:', new Element('input', {'save-item': 'shortDescription', 'type': 'text', 'value': tmp.item.shortDescription ? tmp.item.shortDescription : ''}) ) ) })
 				})
 				.insert({'bottom': new Element('div', {'class': ''})
-					.insert({'bottom': new Element('div', {'class': 'col-sm-12'}).update(tmp.me._getFullDescriptionPanel(tmp.item) ) })
+					.insert({'bottom': new Element('div', {'class': 'col-sm-12 fullDescriptionEl'}).update(tmp.me._getFullDescriptionPanel(tmp.item) ) })
 				})
 			});
 		return tmp.newDiv;
@@ -559,13 +573,102 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		return tmp.me;
 	}
 	/**
+	 * initiating the chosen input
+	 */
+	,_loadChosen: function () {
+		var tmp = {};
+		tmp.me = this;
+		jQuery(".chosen").chosen({
+			search_contains: true,
+			inherit_select_classes: true,
+			no_results_text: "No code type found!",
+			width: "100%"
+		});
+		jQuery('.chosen[save-item="assetAccNo"]')
+			.change(function(data){
+				tmp.data = $(this).down('[value="' + $F($(this)) + '"]').retrieve('data')
+				tmp.revenueEl = $$('.chosen[save-item="revenueAccNo"]').first();
+				tmp.costEl = $$('.chosen[save-item="costAccNo"]').first();
+				if(/*$F(tmp.revenueEl) === tmp.me._selectTypeTxt && */$F($(this)) !== tmp.me._selectTypeTxt) {
+					tmp.revenueEl.getElementsBySelector('option[selected="selected"]').each(function(item){item.removeAttribute('selected')});
+					tmp.revenueEl.down('option[description="' + tmp.data.description + '"]').writeAttribute('selected', true);
+					jQuery('.chosen[save-item="revenueAccNo"]').trigger("chosen:updated");
+					tmp.costEl.getElementsBySelector('option[selected="selected"]').each(function(item){item.removeAttribute('selected')});
+					tmp.costEl.down('option[description="' + tmp.data.description + '"]').writeAttribute('selected', true);
+					jQuery('.chosen[save-item="costAccNo"]').trigger("chosen:updated");
+				}
+			});
+		return this;
+	}
+	,_getAccCodeSelectEl: function(type) {
+		var tmp = {};
+		tmp.me = this;
+		switch(type) {
+			case('assetAccNo'):
+				tmp.type = 1;
+				break
+			case('revenueAccNo'):
+				tmp.type = 4;
+				break;
+			case('costAccNo'):
+				tmp.type = 5;
+				break;
+			default:
+				tmp.showModelBox('Error', 'Invalid Account Code Type');
+		}
+		tmp.selectEl = new Element('select', {'class': 'chosen', 'save-item': type, 'data-placeholder': type,}).setStyle('z-index: 9999;')
+			.insert({'bottom': new Element('option', {'value': tmp.me._selectTypeTxt}).update(tmp.me._selectTypeTxt) });
+		tmp.me._signRandID(tmp.selectEl);
+		
+		tmp.me._accountingCodes.each(function(item){
+			if(item.type == tmp.type) {
+				tmp.selectEl.insert({'bottom': tmp.option = new Element('option', {'value': item.code, 'description': item.description}).store('data',item).update(item.description) });
+				if(item.code === tmp.me._item.assetAccNo || item.code === tmp.me._item.revenueAccNo || item.code === tmp.me._item.costAccNo)
+					tmp.option.writeAttribute('selected', true);
+			}
+		});
+		return tmp.selectEl;
+	}
+	,_getStockDev: function(product) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.item = product;
+		tmp.newDiv = new Element('div', {'class': 'panel panel-default'})
+			.insert({'bottom': new Element('div', {'class': 'panel-heading'})
+				.insert({'bottom': new Element('a', {'href': 'javascript: void(0);', 'title': 'click to show/hide content below'})
+					.insert({'bottom': new Element('strong').update('Stock Info') 
+						.insert({'bottom': new Element('span', {'class': 'pull-right'}).update('Average Cost: ' + ((tmp.item.totalOnHandValue != 0 && tmp.item.stockOnHand != 0) ? tmp.me.getCurrency(tmp.item.totalOnHandValue / tmp.item.stockOnHand) : 'N/A'))})
+					})
+					.observe('click', function() {
+						$(this).up('.panel').down('.panel-body').toggle();
+					})
+				})
+				.insert({'bottom': tmp.uploadDiv = new Element('span', {'class': 'pull-right new-btn-panel'}) })
+			})
+			.insert({'bottom': new Element('div', {'class': 'panel-body'}).setStyle('display: none;')
+				.insert({'bottom': new Element('div', {'class': ''})
+					.insert({'bottom': new Element('div', {'class': 'col-sm-3'}).update(tmp.me._getFormGroup('Stock On Hand', new Element('input', {'save-item': 'stockOnHand', 'type': 'value', 'disabled': true, 'value': tmp.item.stockOnHand ? tmp.item.stockOnHand : ''}) ) ) })
+					.insert({'bottom': new Element('div', {'class': 'col-sm-3'}).update(tmp.me._getFormGroup('Stock On Hand Value', new Element('input', {'save-item': 'totalOnHandValue', 'type': 'value', 'disabled': true, 'value': tmp.item.totalOnHandValue ? tmp.me.getCurrency(tmp.item.totalOnHandValue) : ''}) ) ) })
+					.insert({'bottom': new Element('div', {'class': 'col-sm-3'}).update(tmp.me._getFormGroup('Stock In Parts', new Element('input', {'save-item': 'stockInParts', 'type': 'value', 'disabled': true, 'value': tmp.item.stockInParts ? tmp.item.stockInParts : ''}) ) ) })
+					.insert({'bottom': new Element('div', {'class': 'col-sm-3'}).update(tmp.me._getFormGroup('Stock In Parts Value', new Element('input', {'save-item': 'totalOnHandValue', 'type': 'value', 'disabled': true, 'value': tmp.item.totalOnHandValue ? tmp.me.getCurrency(tmp.item.totalOnHandValue) : ''}) ) ) })
+				})
+				.insert({'bottom': new Element('div', {'class': ''})
+					.insert({'bottom': new Element('div', {'class': 'col-sm-3'}).update(tmp.me._getFormGroup('Stock On Order', new Element('input', {'save-item': 'stockOnOrder', 'type': 'value', 'disabled': true, 'value': tmp.item.stockOnOrder ? tmp.item.stockOnOrder : ''}) ) ) })
+					.insert({'bottom': new Element('div', {'class': 'col-sm-3'}).update(tmp.me._getFormGroup('Stock On PO', new Element('input', {'save-item': 'stockOnPO', 'type': 'value', 'disabled': true, 'value': tmp.item.stockOnPO ? tmp.item.stockOnPO : ''}) ) ) })
+					.insert({'bottom': new Element('div', {'class': 'col-sm-3'}).update(tmp.me._getFormGroup('Stock In RMA', new Element('input', {'save-item': 'stockInRMA', 'type': 'value', 'disabled': true, 'value': tmp.item.stockInRMA ? tmp.item.stockInRMA : ''}) ) ) })
+					.insert({'bottom': new Element('div', {'class': 'col-sm-3'}).update(tmp.me._getFormGroup('Average Cost', new Element('input', {'save-item': 'stockInRMA', 'type': 'value', 'disabled': true, 'value': (tmp.item.totalOnHandValue != 0 && tmp.item.stockOnHand != 0) ? tmp.me.getCurrency(tmp.item.totalOnHandValue / tmp.item.stockOnHand) : 'N/A'}) ) ) })
+				})
+			});
+		return tmp.newDiv;
+	}
+	/**
 	 * account info penl
 	 */
 	,_getAccInfoDiv: function(product) {
 		var tmp = {};
 		tmp.me = this;
 		tmp.item = product;
-		tmp.newDiv = new Element('div', {'class': 'panel panel-default'})
+		tmp.newDiv = new Element('div', {'class': 'panel panel-default'}).setStyle('overflow: unset !important;')
 			.insert({'bottom': new Element('div', {'class': 'panel-heading'})
 				.insert({'bottom': new Element('a', {'href': 'javascript: void(0);', 'title': 'click to show/hide content below'})
 					.insert({'bottom': new Element('strong').update('Accounting Info') })
@@ -575,10 +678,31 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 				})
 				.insert({'bottom': tmp.uploadDiv = new Element('span', {'class': 'pull-right new-btn-panel'}) })
 			})
-			.insert({'bottom': new Element('div', {'class': 'panel-body'}) 
-				.insert({'bottom': new Element('div', {'class': 'col-sm-4'}).update(tmp.me._getFormGroup('Asset Account No.', new Element('input', {'save-item': 'assetAccNo', 'required': true, 'type': 'text', 'value': tmp.item.assetAccNo ? tmp.item.assetAccNo : ''}) ) ) })
-				.insert({'bottom': new Element('div', {'class': 'col-sm-4'}).update(tmp.me._getFormGroup('Revenue Account No.', new Element('input', {'save-item': 'revenueAccNo', 'required': true, 'type': 'text', 'value': tmp.item.revenueAccNo ? tmp.item.revenueAccNo : ''}) ) ) })
-				.insert({'bottom': new Element('div', {'class': 'col-sm-4'}).update(tmp.me._getFormGroup('Cost Account No.', new Element('input', {'save-item': 'costAccNo', 'required': true, 'type': 'text', 'value': tmp.item.costAccNo ? tmp.item.costAccNo : ''}) ) ) })
+			.insert({'bottom': new Element('div', {'class': 'panel-body'}).setStyle('overflow: unset !important;') 
+				.insert({'bottom': new Element('div', {'class': 'col-sm-4'})
+					.insert({'bottom': new Element('div', {'class': 'form-group form-group-sm'})
+						.insert({'bottom': new Element('label').update('Asset Account No.') })
+						.insert({'bottom': new Element('div', {'class': 'form-control chosen-container'}).setStyle("padding: 0px; height: 100%;")
+							.insert({'bottom': tmp.me._getAccCodeSelectEl('assetAccNo')})
+						})
+					})
+				})
+				.insert({'bottom': new Element('div', {'class': 'col-sm-4'})
+					.insert({'bottom': new Element('div', {'class': 'form-group form-group-sm'})
+						.insert({'bottom': new Element('label').update('Revenue Account No.') })
+						.insert({'bottom': new Element('div', {'class': 'form-control chosen-container'}).setStyle("padding: 0px; height: 100%;")
+							.insert({'bottom': tmp.me._getAccCodeSelectEl('revenueAccNo')})
+						})
+					})
+				})
+				.insert({'bottom': new Element('div', {'class': 'col-sm-4'})
+					.insert({'bottom': new Element('div', {'class': 'form-group form-group-sm'})
+						.insert({'bottom': new Element('label').update('Cost Account No.') })
+						.insert({'bottom': new Element('div', {'class': 'form-control chosen-container'}).setStyle("padding: 0px; height: 100%;")
+							.insert({'bottom': tmp.me._getAccCodeSelectEl('costAccNo')})
+						})
+					})
+				})
 			});
 		return tmp.newDiv;
 	}
@@ -597,6 +721,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 				.insert({'bottom': new Element('div', {'class': 'col-sm-8'})
 					.insert({'bottom': new Element('div', {'class': 'row'})
 						.insert({'bottom': tmp.me._getSummaryDiv(tmp.me._item).wrap(new Element('div', {'class': 'col-sm-12'})) })
+						.insert({'bottom': tmp.me._getStockDev(tmp.me._item).wrap(new Element('div', {'class': 'col-sm-12'})) })
 						.insert({'bottom': tmp.me._getAccInfoDiv(tmp.me._item).wrap(new Element('div', {'class': 'col-sm-12'})) })
 						.insert({'bottom': tmp.me._getListPanel('Prices:', tmp.me._item.prices, {'type': 'Type', 'value': 'Price', 'start': 'From', 'end': 'To'}, tmp.me._priceTypes, function(e){
 							tmp.selectedPriceType = null;
@@ -671,5 +796,18 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 			if(tmp.row.hasClassName('success'))
 				tmp.row.addClassName('success');
 		}
+		tmp.newPObtn = $(tmp.parentWindow.document.body).down('#' + tmp.me._btnIdNewPO);
+		if(tmp.newPObtn) {
+			tmp.parentWindow.pageJs.selectProduct(tmp.me._item, tmp.newPObtn);
+		}
+	}
+	,readOnlyMode: function(){
+		var tmp = {};
+		tmp.me = this;
+		tmp.me._readOnlyMode = true;
+		$$('.btn.btn-loadFullDesc').first().click();
+		jQuery("input").prop("disabled", true);
+		jQuery("select").prop("disabled", true);
+		jQuery(".btn").remove();
 	}
 });

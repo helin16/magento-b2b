@@ -31,7 +31,7 @@ class SkuMatchController extends BPCPageAbstract
 	 */
 	protected function _getEndJs()
 	{
-		$importDataTypes = array('myob_ean'=> 'MYOB EAN', 'myob_upc'=> 'MYOB UPC', 'stocktake' => 'Stocktack', 'accounting' => 'Accounting');
+		$importDataTypes = array('myob_ean'=> 'MYOB EAN', 'myob_upc'=> 'MYOB UPC', 'stockAdjustment' => 'Stock Adjustment', 'accounting' => 'Accounting Code for Products', 'accountingCode' => 'Accounting Code for Categories');
 		
 		$js = parent::_getEndJs();
 		$js .= 'pageJs';
@@ -59,23 +59,20 @@ class SkuMatchController extends BPCPageAbstract
 					$result['path'] = 'product';
 					$productType = ProductCodeType::get(ProductCodeType::ID_EAN);
 					$item = $this->updateProductCode($product, $itemNo, $productType);
-// 					$eanCode = ProductCode::getAllByCriteria('productId = ? AND typeId = ?', array($item->getId(), $productType->getId()));
-// 					var_dump($item->getJson(array('ean_code'=> $eanCode[0]->getCode())));
-// 					$result['item'] = $item->getJson(array('ean_code'=> $eanCode[0]->getCode()));
 					$result['item'] = $item->getJson();
 					break;
 				case 'myob_upc':
 					$index = $param->CallbackParameter->index;
-					if(!isset($param->CallbackParameter->sku) || ($name = trim($param->CallbackParameter->sku)) === '')
+					if(!isset($param->CallbackParameter->sku) || ($sku = trim($param->CallbackParameter->sku)) === '' || !($product = Product::getBySku($sku)) instanceof Product)
 						throw new Exception('Invalid sku passed in! (line ' . $index .')');
-					if(!isset($param->CallbackParameter->itemNo) || ($code = trim($param->CallbackParameter->itemNo)) === '')
+					if(!isset($param->CallbackParameter->itemNo) || ($itemNo = trim($param->CallbackParameter->itemNo)) === '')
 						throw new Exception('Invalid itemNo passed in! (line ' . $index .')');
 					$result['path'] = 'product';
-					$item = $this->updateProductCode($product, $itemNo, ProductCodeType::get(ProductCodeType::ID_UPC));
-
+					$productType = ProductCodeType::get(ProductCodeType::ID_UPC);
+					$item = $this->updateProductCode($product, $itemNo, $productType);
 					$result['item'] = $item->getJson();
 					break;
-				case 'stocktake':
+				case 'stockAdjustment':
 					$index = $param->CallbackParameter->index;
 					if(!isset($param->CallbackParameter->sku) || ($sku = trim($param->CallbackParameter->sku)) === '' || !($product = Product::getBySku($sku)) instanceof Product)
 						throw new Exception('Invalid sku passed in! (line ' . $index .')');
@@ -88,11 +85,24 @@ class SkuMatchController extends BPCPageAbstract
 					break;
 				case 'accounting':
 					$index = $param->CallbackParameter->index;
-					if(!isset($param->CallbackParameter->sku) || ($sku = trim($param->CallbackParameter->sku)) === '' || !($product = Product::getBySku($sku)) instanceof Product)
+					if(!isset($param->CallbackParameter->sku) || ($sku = trim($param->CallbackParameter->sku)) === '')
 						throw new Exception('Invalid sku passed in! (line ' . $index .')');
+					if(!($product = Product::getBySku($sku)) instanceof Product)
+						$product = Product::create($sku, $sku);
 					$result['path'] = 'product';
 					$item = $this->updateAccountingInfo($product
 							, trim($param->CallbackParameter->assetAccNo), trim($param->CallbackParameter->costAccNo), trim($param->CallbackParameter->revenueAccNo));
+					
+					$result['item'] = $item->getJson();
+					break;
+				case 'accountingCode':
+					$index = $param->CallbackParameter->index;
+					if(!isset($param->CallbackParameter->description) || ($description = trim($param->CallbackParameter->description)) === '')
+						throw new Exception('Invalid description passed in! (line ' . $index .')');
+					if(!isset($param->CallbackParameter->code) || ($code = trim($param->CallbackParameter->code)) === '' || !is_numeric($code))
+						throw new Exception('Invalid Code passed in! (line ' . $index .')');
+					$result['path'] = '';
+					$item = $this->updateAccountingCode($description, $code);
 					
 					$result['item'] = $item->getJson();
 					break;
@@ -105,6 +115,27 @@ class SkuMatchController extends BPCPageAbstract
 			$errors[] = $ex->getMessage();
 		}
 		$param->ResponseData = StringUtilsAbstract::getJson($result, $errors);
+	}
+	private function updateAccountingCode($description, $code)
+	{
+		try
+		{
+			Dao::beginTransaction();
+			
+			$typeId = $this->leftMostNum($code);
+			
+			if(!empty($description) && !empty($code) && !empty($typeId))
+				$accountingCode = AccountingCode::create($typeId, $code, $description);
+			
+			Dao::commitTransaction();
+				
+			return $accountingCode;
+		}
+		catch(Exception $e) {
+			Dao::rollbackTransaction();
+			echo $e;
+			exit;
+		}
 	}
 	/**
 	 * update accounting info for xero
@@ -274,6 +305,9 @@ class SkuMatchController extends BPCPageAbstract
 			echo $e;
 			exit;
 		}
+	}
+	private function leftMostNum($num) {
+		return intval(floor($num/pow(10,(floor((log10($num)))))));
 	}
 	private function checkContainNumber($string)
 	{

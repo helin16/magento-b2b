@@ -41,13 +41,15 @@ class EntityToPDF
 			}
 		}
 		$url .= "?user=" . Core::getUser()->getUserName() . '&pass=' . Core::getUser()->getPassword();
+		$url = 'http://' . $_SERVER["HTTP_HOST"] . '/' . $url ;
 		if($class == 'Order' && $method == '')		
-			$command = '/usr/local/bin/wkhtmltopdf -B 0 -T 0 --disable-javascript "http://localhost/' . $url . '" ' . ($file = '/tmp/' . md5(new UDate()) . '.pdf');
+			$command = '/usr/local/bin/wkhtmltopdf -B 0 -T 0 --disable-javascript "' . $url . '" ' . ($file = '/tmp/' . md5(new UDate()) . '.pdf');
 		else
-			$command = '/usr/local/bin/wkhtmltopdf --disable-javascript "http://localhost/' . $url . '" ' . ($file = '/tmp/' . md5(new UDate()) . '.pdf');
+			$command = '/usr/local/bin/wkhtmltopdf --disable-javascript "' . $url . '" ' . ($file = '/tmp/' . md5(new UDate()) . '.pdf');
 		var_dump($command);
 		$output = '';
 		exec($command, $output);
+		sleep(1);
 		if(!is_file($file))
 			throw new Exception('Could NOT generate pdf @' . $file);
 		return $file;

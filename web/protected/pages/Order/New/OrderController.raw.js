@@ -139,7 +139,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 							+ '</div>',
 					false);
 					if(tmp.result.printURL) {
-						tmp.printWindow = window.open(tmp.result.printURL, 'Printing Order', 'location=no, menubar=no, status=no, titlebar=no, fullscreen=no, toolbar=no, width=800');
+						tmp.printWindow = window.open(tmp.result.printURL, 'Printing Order', 'width=1300, location=no, scrollbars=yes, menubar=no, status=no, titlebar=no, fullscreen=no, toolbar=no');
 						tmp.printWindow.print();
 					}
 				} catch(e) {
@@ -211,7 +211,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				.insert({'bottom': new Element('dd')
 					.insert({'bottom': new Element('div')
 						.insert({'bottom': new Element('div', {'class' : 'col-sm-6'}).update(
-							tmp.editable !== true ? addr.contactName : new Element('input', {'address-editable-field': 'contactName', 'required': true, 'class': 'form-control input-sm', 'placeholder': 'The name of contact person',  'value': addr.contactName})
+							tmp.editable !== true ? addr.contactName : new Element('input', {'address-editable-field': 'contactName', 'class': 'form-control input-sm', 'placeholder': 'The name of contact person',  'value': addr.contactName})
 						) })
 						.insert({'bottom': new Element('div', {'class' : 'col-sm-6'}).update(
 								tmp.editable !== true ? addr.contactNo : new Element('input', {'address-editable-field': 'contactNo', 'class': 'form-control input-sm', 'placeholder': 'The contact number of contact person',  'value': addr.contactNo})
@@ -224,23 +224,23 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				.insert({'bottom': new Element('dd')
 					.insert({'bottom': new Element('div')
 						.insert({'bottom': tmp.editable !== true ? addr.street : new Element('div', {'class': 'street col-sm-12'}).update(
-								new Element('input', {'address-editable-field': 'street', 'class': 'form-control input-sm', 'required': true, 'placeholder': 'Street Number and Street name',  'value': addr.street})
+								new Element('input', {'address-editable-field': 'street', 'class': 'form-control input-sm', 'placeholder': 'Street Number and Street name',  'value': addr.street})
 						) })
 					})
 					.insert({'bottom': new Element('div')
 						.insert({'bottom': tmp.editable !== true ? addr.city + ' ' : new Element('div', {'class': 'city col-sm-6'}).update(
-								new Element('input', {'address-editable-field': 'city', 'class': 'form-control input-sm', 'required': true, 'placeholder': 'City / Suburb',  'value': addr.city})
+								new Element('input', {'address-editable-field': 'city', 'class': 'form-control input-sm', 'placeholder': 'City / Suburb',  'value': addr.city})
 						) })
 						.insert({'bottom':  tmp.editable !== true ? addr.region + ' ' : new Element('div', {'class': 'region col-sm-3'}).update(
-								new Element('input', {'address-editable-field': 'region', 'class': 'form-control input-sm', 'required': true, 'placeholder': 'State / Province',  'value': addr.region})
+								new Element('input', {'address-editable-field': 'region', 'class': 'form-control input-sm', 'placeholder': 'State / Province',  'value': addr.region})
 						) })
 						.insert({'bottom': tmp.editable !== true ? addr.postCode: new Element('div', {'class': 'postcode col-sm-3'}).update(
-								new Element('input', {'address-editable-field': 'postCode', 'class': 'form-control input-sm', 'required': true, 'placeholder': 'PostCode',  'value': addr.postCode})
+								new Element('input', {'address-editable-field': 'postCode', 'class': 'form-control input-sm', 'placeholder': 'PostCode',  'value': addr.postCode})
 						) })
 					})
 					.insert({'bottom': new Element('div')
 						.insert({'bottom': tmp.editable !== true ? addr.country: new Element('div', {'class': 'postcode col-sm-4'}).update(
-								new Element('input', {'address-editable-field': 'country', 'class': 'form-control input-sm', 'required': true, 'placeholder': 'Country',  'value': addr.country})
+								new Element('input', {'address-editable-field': 'country', 'class': 'form-control input-sm', 'placeholder': 'Country',  'value': addr.country})
 						) })
 					})
 				})
@@ -470,21 +470,28 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 	/**
 	 * Ajax: searching the product based on a string
 	 */
-	,_searchProduct: function(btn) {
+	,_searchProduct: function(btn, pageNo, afterFunc) {
 		var tmp = {};
 		tmp.me = this;
 		tmp.btn = btn;
+		tmp.showMore = $(btn).retrieve('showMore') === true ? true : false;
+		tmp.pageNo = (pageNo || 1);
 		tmp.me._signRandID(tmp.btn);
-		tmp.searchTxtBox = $(tmp.btn).up('.product-autocomplete').down('.search-txt');
+		tmp.searchTxtBox = !$(tmp.btn).up('.product-autocomplete') || !$(tmp.btn).up('.product-autocomplete').down('.search-txt') ? $($(tmp.btn).retrieve('searchBoxId')) : $(tmp.btn).up('.product-autocomplete').down('.search-txt');
+		
 		tmp.me._signRandID(tmp.searchTxtBox);
 		tmp.searchTxt = $F(tmp.searchTxtBox);
-		tmp.me.postAjax(tmp.me.getCallbackId('searchProduct'), {'searchTxt': tmp.searchTxt}, {
+		
+		tmp.me.postAjax(tmp.me.getCallbackId('searchProduct'), {'searchTxt': tmp.searchTxt, 'pageNo': tmp.pageNo}, {
 			'onLoading': function() {
 				jQuery('#' + tmp.btn.id).button('loading');
 				jQuery('#' + tmp.searchTxtBox.id).button('loading');
 			}
 			,'onSuccess': function(sender, param) {
-				tmp.resultList = new Element('div', {'style': 'overflow: auto; max-height: 400px;'});
+				if(tmp.showMore === false)
+					tmp.resultList = new Element('div', {'class': 'search-product-list'});
+				else
+					tmp.resultList = $(btn).up('.search-product-list');
 				try {
 					tmp.result = tmp.me.getResp(param, false, true);
 					if(!tmp.result || !tmp.result.items || tmp.result.items.size() === 0)
@@ -497,7 +504,23 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				} catch(e) {
 					tmp.resultList.update(tmp.me.getAlertBox('Error: ', e).addClassName('alert-danger'));
 				}
-				tmp.me.showModalBox('Products that has: ' + tmp.searchTxt, tmp.resultList, false);
+				if(typeof(afterFunc) === 'function')
+					afterFunc();
+				if(tmp.result.pagination.pageNumber < tmp.result.pagination.totalPages) {
+					tmp.resultList.insert({'bottom': new Element('a', {'class': 'item-group-item'})
+						.insert({'bottom': new Element('span', {'class': 'btn btn-primary', 'data-loading-text': 'Getting more ...'}).update('Show Me More') })
+						.observe('click', function(){
+							tmp.newBtn = $(this);
+							$(tmp.newBtn).store('searchBoxId', tmp.searchTxtBox.id);
+							$(tmp.newBtn).store('showMore', true);
+							tmp.me._searchProduct(this, tmp.pageNo * 1 + 1, function() {
+								$(tmp.newBtn).remove();
+							});
+						})
+					});
+				}
+				if(tmp.showMore === false)
+					tmp.me.showModalBox('Products that has: ' + tmp.searchTxt, tmp.resultList, false);
 			}
 			,'onComplete': function(sender, param) {
 				jQuery('#' + tmp.btn.id).button('reset');
@@ -1072,7 +1095,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 	,_openProductDetailPage: function(id) {
 		var tmp = {};
 		tmp.me = this;
-		tmp.newWindow = window.open('/products/' + id + '.html', 'Product Details', 'location=no, menubar=no, status=no, titlebar=no, fullscreen=yes, toolbar=no');
+		tmp.newWindow = window.open('/product/' + id + '.html', 'Product Details', 'width=1300, location=no, scrollbars=yes, menubar=no, status=no, titlebar=no, fullscreen=no, toolbar=no');
 		tmp.newWindow.focus();
 		return tmp.me;
 	}

@@ -6,6 +6,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 	_htmlIds: {'itemDiv': '', 'searchPanel': 'search_panel'}
 	,_supplier: null
 	,_item: null
+	,_searchTxtBox: null
 	/**
 	 * Setting the HTMLIDS
 	 */
@@ -64,10 +65,15 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 									window.location = document.URL;
 								})
 							})
-							.insert({'bottom': new Element('a', {'class': 'btn btn-info', 'href': '/purchase/' + tmp.result.item.id + '.html'}).update('View the details')
+							.insert({'bottom': new Element('a', {'class': 'btn btn-info goto-details', 'href': '/purchase/' + tmp.result.item.id + '.html'}).update('View the details')
 							})
 						})
 					tmp.me.showModalBox('<strong class="text-success">Success</strong>', tmp.newDiv , false);
+					jQuery('#' + tmp.me.modalId).on('hide.bs.modal', function (event) {
+						if(tmp.newDiv.down('.goto-details')) {
+							tmp.newDiv.down('.goto-details').click();
+						}
+					});
 				} catch(e) {
 					tmp.me.showModalBox('<strong class="text-danger">Error:</strong>', e, false);
 					$(tmp.me._htmlIds.itemDiv).show();
@@ -316,7 +322,8 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		var tmp = {};
 		tmp.me = this;
 		tmp.defaultImgSrc = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjZWVlIi8+PHRleHQgdGV4dC1hbmNob3I9Im1pZGRsZSIgeD0iMzIiIHk9IjMyIiBzdHlsZT0iZmlsbDojYWFhO2ZvbnQtd2VpZ2h0OmJvbGQ7Zm9udC1zaXplOjEycHg7Zm9udC1mYW1pbHk6QXJpYWwsSGVsdmV0aWNhLHNhbnMtc2VyaWY7ZG9taW5hbnQtYmFzZWxpbmU6Y2VudHJhbCI+NjR4NjQ8L3RleHQ+PC9zdmc+';
-		tmp.newRow = new Element('a', {'class': 'list-group-item', 'href': 'javascript: void(0);'})
+		tmp.newRow = new Element('a', {'class': 'list-group-item search-product-result-row', 'href': 'javascript: void(0);'})
+			.store('data',product)
 			.insert({'bottom': new Element('div', {'class': 'row'})
 				.insert({'bottom': new Element('div', {'class': 'col-xs-2'})
 					.insert({'bottom': new Element('div', {'class': 'thumbnail'})
@@ -327,6 +334,15 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					.insert({'bottom': new Element('div', {'class': 'row'})
 						.insert({'bottom': new Element('strong').update(product.name)
 							.insert({'bottom': new Element('small', {'class': '', 'style': 'padding-left: 10px;'}).update('SKU: ' + product.sku) })
+						})
+						.insert({'bottom': new Element('small', {'class': 'btn btn-xs btn-info'})
+							.insert({'bottom': new Element('small', {'class': 'glyphicon glyphicon-new-window'} )})
+							.observe('click', function(event){
+								Event.stop(event);
+								$productId = $(this).up('.search-product-result-row').retrieve('data').id;
+								if($productId)
+									tmp.me._openProductDetailPage($productId);
+							})
 						})
 						.insert({'bottom': new Element('div')
 							.insert({'bottom': new Element('small').update(product.shortDescription) })
@@ -366,6 +382,15 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				searchTxtBox.up('.productName')
 					.writeAttribute('colspan', false)
 					.update(product.sku)
+					.insert({'bottom': new Element('small', {'class': 'btn btn-xs btn-info'})
+						.insert({'bottom': new Element('small', {'class': 'glyphicon glyphicon-new-window'} )})
+						.observe('click', function(event){
+							Event.stop(event);
+							$productId = product.id;
+							if($productId)
+								tmp.me._openProductDetailPage($productId);
+						})
+					})
 					.insert({'after': new Element('td')
 						.update(product.name) 
 						.insert({'bottom': new Element('a', {'href': 'javascript: void(0);', 'class': 'text-danger pull-right', 'title': 'click to change the product'}) 
@@ -385,50 +410,136 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			;
 		return tmp.newRow;
 	}
+	,selectProduct: function(product, btn) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.inputRow = tmp.me._searchTxtBox.up('.new-order-item-input').store('product', product);
+		tmp.me._searchTxtBox.up('.productName')
+			.writeAttribute('colspan', false)
+			.update(product.sku)
+			.insert({'bottom': new Element('small', {'class': 'btn btn-xs btn-info'})
+				.insert({'bottom': new Element('small', {'class': 'glyphicon glyphicon-new-window'} )})
+				.observe('click', function(event){
+					Event.stop(event);
+					$productId = product.id;
+					if($productId)
+						tmp.me._openProductDetailPage($productId);
+				})
+			})
+			.insert({'after': new Element('td')
+				.update(product.name) 
+				.insert({'bottom': new Element('a', {'href': 'javascript: void(0);', 'class': 'text-danger pull-right', 'title': 'click to change the product'}) 
+					.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-remove'})  })
+					.observe('click', function() {
+						tmp.newRow = tmp.me._getNewProductRow();
+						$(this).up('.new-order-item-input').replace(tmp.newRow);
+						tmp.newRow.down('[new-order-item=product]').select();
+					})
+				})
+			});
+		jQuery('#' + tmp.me.modalId).modal('hide');
+		tmp.inputRow.down('[new-order-item=totalPrice]').writeAttribute('value', tmp.me.getCurrency(product.minProductPrice));
+		tmp.inputRow.down('[new-order-item=qtyOrdered]').writeAttribute('value', 1);
+		tmp.inputRow.down('[new-order-item=unitPrice]').writeAttribute('value', tmp.me.getCurrency(product.minProductPrice)).select();
+	}
 	/**
 	 * Open PO page in a fancybox
 	 */
 	,_openPOPage: function(id) {
 		var tmp = {};
 		tmp.me = this;
-		tmp.newWindow = window.open('/purchase/' + id + '.html', 'Product Details', 'location=no, menubar=no, status=no, titlebar=no, fullscreen=yes, toolbar=no');
+		tmp.newWindow = window.open('/purchase/' + id + '.html', 'Product Details', 'width=1300, location=no, scrollbars=yes, menubar=no, status=no, titlebar=no, fullscreen=no, toolbar=no');
 		tmp.newWindow.focus();
+		return tmp.me;
+	}
+	/**
+	 * Open new Order page in new Window
+	 */
+	,_openNewProductPage: function(btnId) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.newWindow = window.open('/product/new.html?btnidnewpo=' + btnId, 'New Product Page', 'width=1300, location=no, scrollbars=yes, menubar=no, status=no, titlebar=no, fullscreen=no, toolbar=no');
+		tmp.newWindow.onload = function(){
+			tmp.newWindow.document.title = 'New Product Page';
+			tmp.newWindow.focus();
+		}
 		return tmp.me;
 	}
 	/**
 	 * Ajax: searching the product based on a string
 	 */
-	,_searchProduct: function(btn) {
+	,_searchProduct: function(btn, pageNo, afterFunc) {
 		var tmp = {};
 		tmp.me = this;
 		tmp.btn = btn;
+		tmp.showMore = $(btn).retrieve('showMore') === true ? true : false;
+		tmp.pageNo = (pageNo || 1);
 		tmp.me._signRandID(tmp.btn);
-		tmp.searchTxtBox = $(tmp.btn).up('.product-autocomplete').down('.search-txt');
+		tmp.searchTxtBox = !$(tmp.btn).up('.product-autocomplete') || !$(tmp.btn).up('.product-autocomplete').down('.search-txt') ? $($(tmp.btn).retrieve('searchBoxId')) : $(tmp.btn).up('.product-autocomplete').down('.search-txt');
 		tmp.searchTxt = $F(tmp.searchTxtBox);
-		tmp.me.postAjax(tmp.me.getCallbackId('searchProduct'), {'searchTxt': tmp.searchTxt, 'supplierID': tmp.me._supplier.id}, {
+		tmp.me.postAjax(tmp.me.getCallbackId('searchProduct'), {'searchTxt': tmp.searchTxt, 'supplierID': tmp.me._supplier.id, 'pageNo': tmp.pageNo}, {
 			'onLoading': function() {
 				jQuery('#' + tmp.btn.id).button('loading');
 			}
 			,'onSuccess': function(sender, param) {
-				tmp.resultList = new Element('div', {'style': 'overflow: auto; max-height: 400px;'});
+				if(tmp.showMore === false)
+					tmp.resultList = new Element('div', {'class': 'search-product-list'});
+				else
+					tmp.resultList = $(btn).up('.search-product-list');
 				try {
 					tmp.result = tmp.me.getResp(param, false, true);
 					if(!tmp.result || !tmp.result.items || tmp.result.items.size() === 0)
-						throw 'Nothing Found for: ' + tmp.searchTxt;
+						throw new Element('span')
+							.insert({'bottom': new Element('span').update('Nothing Found for: ' + tmp.searchTxt)})
+							.insert({'bottom': new Element('span', {'class': 'btn btn-success btn-xs pull-right'})
+								.insert({'bottom': new Element('i', {'class': 'fa fa-plus', 'title': 'add new product'})})
+								.observe('click', function(e){
+									tmp.newProductBtn = $(this);
+									tmp.me._signRandID(tmp.newProductBtn);
+									tmp.me._openNewProductPage(tmp.newProductBtn.id);
+								})
+							});
 					tmp.me._signRandID(tmp.searchTxtBox);
+					tmp.me._searchTxtBox = tmp.searchTxtBox;
 					tmp.result.items.each(function(product) {
 						tmp.resultList.insert({'bottom': tmp.me._getSearchPrductResultRow(product, tmp.searchTxtBox) });
 					});
+					if(typeof(afterFunc) === 'function')
+						afterFunc();
+					if(tmp.result.pagination.pageNumber < tmp.result.pagination.totalPages) {
+						tmp.resultList.insert({'bottom': new Element('a', {'class': 'item-group-item'})
+							.insert({'bottom': new Element('span', {'class': 'btn btn-primary', 'data-loading-text': 'Getting more ...'}).update('Show Me More') })
+							.observe('click', function(){
+								tmp.newBtn = $(this);
+								$(tmp.newBtn).store('searchBoxId', tmp.searchTxtBox.id);
+								$(tmp.newBtn).store('showMore', true);
+								tmp.me._searchProduct(this, tmp.pageNo * 1 + 1, function() {
+									$(tmp.newBtn).remove();
+								});
+							})
+						});
+					}
 					tmp.resultList.addClassName('list-group'); 
 				} catch(e) {
 					tmp.resultList.update(tmp.me.getAlertBox('Error: ', e).addClassName('alert-danger'));
 				}
-				tmp.me.showModalBox('Products that has: ' + tmp.searchTxt, tmp.resultList, false);
+				if(tmp.showMore === false)
+					tmp.me.showModalBox('Products that has: ' + tmp.searchTxt, tmp.resultList, false);
 			}
 			,'onComplete': function(sender, param) {
 				jQuery('#' + tmp.btn.id).button('reset');
 			}
 		});
+		return tmp.me;
+	}
+	/**
+	 * Open product Details Page in new Window
+	 */
+	,_openProductDetailPage: function(id) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.newWindow = window.open('/products/' + id + '.html', 'Product Details', 'width=1920, location=no, scrollbars=yes, menubar=no, status=no, titlebar=no, fullscreen=no, toolbar=no');
+		tmp.newWindow.focus();
 		return tmp.me;
 	}
 	/**
@@ -795,18 +906,13 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				.insert({'bottom': new Element('strong').update('Creating a new order for: ') })
 				.insert({'bottom': new Element('span', {'class': 'input-group col-sm-6'})
 					.insert({'bottom': new Element('input', {'class': 'form-control search-txt init-focus', 'placeholder': 'Supplier name'}) 
-						.observe('keyup', function(event){
-							if(!document.getElementsByClassName('loading-img').length) {
-								tmp.txtBox = this;
-								$(tmp.me._htmlIds.searchPanel).down('.search-btn').click();
-							}
-						})
 						.observe('keydown', function(event){
 							tmp.txtBox = this;
 							tmp.me.keydown(event, function() {
 								if(tmp.txtBox.up('#'+pageJs._htmlIds.searchPanel).down('.item_row')!=undefined && tmp.txtBox.up('#'+pageJs._htmlIds.searchPanel).down('tbody').getElementsBySelector('.item_row').length===1) {
 									tmp.txtBox.up('#'+pageJs._htmlIds.searchPanel).down('tbody .item_row .btn').click();
-								};
+								}
+								else $(tmp.me._htmlIds.searchPanel).down('.search-btn').click();
 							});
 							return false;
 						})

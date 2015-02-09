@@ -1,6 +1,7 @@
 html, body {
 	height: 100%;
 	min-height: 100%;
+	font-size: 12px;
 }
 .panel{
 	margin-bottom: 20px;
@@ -61,28 +62,43 @@ html, body {
 	width: 20%;
 }
 .order_item:hover [order_status="INSUFFICIENT STOCK"],
-.order_item [order_status="INSUFFICIENT STOCK"] {
+.order_item [order_status="INSUFFICIENT STOCK"],
+.po_item [order_status="RECEIVING"],
+.po_item [order_status="RECEIVING"] {
 	background-color: yellow;
 	color: black;
 }
 .order_item [order_status="ETA"],
 .order_item:hover [order_status="ETA"],
 .order_item [order_status="STOCK CHECKED"],
-.order_item:hover [order_status="STOCK CHECKED"]{
+.order_item:hover [order_status="STOCK CHECKED"],
+.po_item [order_status="ORDERED"],
+.po_item [order_status="ORDERED"]
+{
 	background-color: orange;
 	color: white;
 }
 .order_item [order_status="PICKED"],
 .order_item:hover [order_status="PICKED"],
 .order_item [order_status="SHIPPED"],
-.order_item:hover [order_status="SHIPPED"] {
+.order_item:hover [order_status="SHIPPED"],
+.po_item [order_status="CLOSED"],
+.po_item [order_status="CLOSED"]
+{
 	background-color: green;
+	color: white;
+}
+.po_item [order_status="RECEIVED"],
+.po_item [order_status="RECEIVED"] {
+	background-color: blue;
 	color: white;
 }
 .order_item [order_status="CANCELLED"],
 .order_item:hover [order_status="CANCELLED"],
 .order_item [order_status="ON HOLD"],
-.order_item:hover [order_status="ON HOLD"] {
+.order_item:hover [order_status="ON HOLD"],
+.po_item [order_status="CANCELED"],
+.po_item [order_status="CANCELED"] {
 	background-color: red;
 	color: white;
 }

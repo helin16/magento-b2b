@@ -963,7 +963,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 	,_openOrderPrintPage: function() {
 		var tmp = {};
 		tmp.me = this;
-		tmp.newWindow = window.open('/print/order/' + tmp.me._order.id + '.html', tmp.me._order.status.name + ' Order ' + tmp.me._order.orderNo, 'location=no, menubar=no, scrollbars=yes, status=no, titlebar=no, fullscreen=no, toolbar=no, width=800');
+		tmp.newWindow = window.open('/print/order/' + tmp.me._order.id + '.html', tmp.me._order.status.name + ' Order ' + tmp.me._order.orderNo, 'width=1300, location=no, scrollbars=yes, menubar=no, status=no, titlebar=no, fullscreen=no, toolbar=no');
 		tmp.newWindow.onload = function(){
 			tmp.newWindow.document.title = tmp.me._order.status.name + ' Order ' + tmp.me._order.orderNo;
 			tmp.newWindow.focus();
@@ -978,7 +978,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 	,_openDocketPrintPage: function() {
 		var tmp = {};
 		tmp.me = this;
-		tmp.newWindow = window.open('/printdocket/order/' + tmp.me._order.id + '.html', tmp.me._order.status.name + ' Order ' + tmp.me._order.orderNo, 'location=no, menubar=no, status=no, scrollbars=yes, titlebar=no, fullscreen=no, toolbar=no, width=800');
+		tmp.newWindow = window.open('/printdocket/order/' + tmp.me._order.id + '.html', tmp.me._order.status.name + ' Order ' + tmp.me._order.orderNo, 'width=1300, location=no, scrollbars=yes, menubar=no, status=no, titlebar=no, fullscreen=no, toolbar=no');
 		tmp.newWindow.onload = function(){
 			tmp.newWindow.document.title = tmp.me._order.status.name + ' Order ' + tmp.me._order.orderNo;
 			tmp.newWindow.focus();

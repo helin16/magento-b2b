@@ -338,7 +338,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 	 */
 	,_openProductDetails: function(product) {
 		var tmp = {};
-		tmp.newWindow = window.open('/product/' + (product == 'new' ? product : product.id) + '.html', 'Product Details for: ' + product.sku, 'scrollbars=yes, location=no, menubar=no, status=no, titlebar=no, fullscreen=no, toolbar=no, width=1024');
+		tmp.newWindow = window.open('/product/' + (product == 'new' ? product : product.id) + '.html', 'Product Details for: ' + product.sku, 'width=1300, location=no, scrollbars=yes, menubar=no, status=no, titlebar=no, fullscreen=no, toolbar=no');
 		tmp.newWindow.focus();
 	}
 	,toggleActive: function(active, product) {
@@ -361,12 +361,21 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		return tmp.me;
 	}
 	/**
+	 * Open product qty log Page in new Window
+	 */
+	,_openProductQtyLogPage: function(id) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.newWindow = window.open('/productqtylog.html?productid=' + id, 'Product Details', 'width=1920, location=no, scrollbars=yes, menubar=no, status=no, titlebar=no, fullscreen=no, toolbar=no');
+		tmp.newWindow.focus();
+		return tmp.me;
+	}
+	/**
 	 * Getting each row for displaying the result list
 	 */
 	,_getResultRow: function(row, isTitle) {
 		var tmp = {};
 		tmp.me = this;
-		console.debug(row);
 		tmp.tag = (tmp.isTitle === true ? 'th' : 'td');
 		tmp.isTitle = (isTitle || false);
 		tmp.price = '';
@@ -377,7 +386,8 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 				}
 			});
 		}
-		tmp.row = new Element('tr', {'class': 'visible-xs visible-md visible-lg visible-sm ' + (tmp.isTitle === true ? '' : 'product_item'), 'product_id' : row.id}).store('data', row)
+		tmp.row = new Element('tr', {'class': 'visible-xs visible-md visible-lg visible-sm ' + (tmp.isTitle === true ? '' : 'product_item'), 'product_id' : row.id})
+			.store('data', row)
 			.insert({'bottom': new Element(tmp.tag, {'class': 'sku', 'title': row.name})
 				.insert({'bottom': new Element('span', {'style': 'margin: 0 5px 0 0;'})
 					.insert({'bottom': new Element('input', {'type': 'checkbox', 'class': 'product-selected'})
@@ -392,12 +402,15 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 					})
 				})
 				.insert({'bottom':tmp.isTitle === true ? row.sku : new Element('a', {'href': 'javascript: void(0);', 'class': 'sku-link'})
+					.observe('click', function(){
+						tmp.me._displaySelectedProduct(row);
+					})
 					.update(row.sku)
 				}) 
 			})
 			.insert({'bottom': new Element(tmp.tag, {'class': 'product_name hidden-xs hide-when-info hidden-sm', 'style': (tmp.me._showRightPanel ? 'display: none' : '')}).update(row.name) })
 			.insert({'bottom': new Element(tmp.tag, {'class': 'product_price hidden-xs hide-when-info hidden-sm', 'style': (tmp.me._showRightPanel ? 'display: none' : '')}).update(tmp.isTitle === true ? 'Price' : (tmp.price.blank() ? '' : tmp.me.getCurrency(tmp.price))) })
-			.insert({'bottom': new Element(tmp.tag, {'class': 'locations col-xs-1 hidden-sm'}).update(
+			.insert({'bottom': new Element(tmp.tag, {'class': 'locations col-xs-1  hide-when-info hidden-sm'}).update(
 					row.locations ? tmp.me._getLocations(row.locations, isTitle) : ''
 			) })
 			.insert({'bottom': new Element(tmp.tag, {'class': 'inventeryCode col-xs-1 hide-when-info'}).update(row.invenAccNo ? row.invenAccNo : '') })
@@ -405,26 +418,24 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 			.insert({'bottom': new Element(tmp.tag, {'class': 'supplier col-xs-1 hide-when-info hidden-sm'}).update(
 					row.supplierCodes ? tmp.me._getSupplierCodes(row.supplierCodes, isTitle) : ''
 			) })
-			.insert({'bottom': new Element(tmp.tag, {'class': 'qty col-xs-1 hidden-sm'}).update(
+			.insert({'bottom': new Element(tmp.tag, {'class': 'qty col-xs-2 hidden-sm'}).update(
 					tmp.isTitle === true ? 
 							new Element('div', {'class': 'row'})
-								.insert({'bottom': new Element(tmp.tag, {'class': 'stockOnPO col-xs-2', 'title': 'Stock on PurchaseOrder'}).update('PO') })
-								.insert({'bottom': new Element(tmp.tag, {'class': 'stockOnPO col-xs-2', 'title': 'Stock on hand'}).update('H') })
-								.insert({'bottom': new Element(tmp.tag, {'class': 'stockOnOrder col-xs-2', 'title': 'Stock on Order'}).update('O') })
-								.insert({'bottom': new Element(tmp.tag, {'class': 'stockOnOrder col-xs-2', 'title': 'Stock on RMA'}).update('R') })
-								.insert({'bottom': new Element(tmp.tag, {'class': 'stockOnOrder col-xs-2', 'title': 'Stock on Parts'}).update('PT') })
-								.insert({'bottom': new Element(tmp.tag, {'class': 'stockOnOrder col-xs-1', 'title': 'Total In Parts Value'}).update('PV') })
-								.insert({'bottom': new Element(tmp.tag, {'class': 'stockOnOrder col-xs-1', 'title': 'Total On Hand Value'}).update('HV') })
+								.insert({'bottom': new Element('div', {'class': 'col-xs-4 hide-when-info', 'title': 'Stock on Hand'}).update('SH') })
+								.insert({'bottom': new Element('div', {'class': 'col-xs-4', 'title': 'Average Cost'}).update('Cost') })
+								.insert({'bottom': new Element('div', {'class': 'col-xs-4 hide-when-info', 'title': 'Stock On PO'}).update('SP') })
 							: 
 							new Element('div', {'class': 'row'})
-								.insert({'bottom': new Element(tmp.tag, {'class': 'stockOnPO col-xs-2', 'title': 'Stock on PurchaseOrder'}).update(row.stockOnPO) })
-								.insert({'bottom': new Element(tmp.tag, {'class': 'stockOnHand col-xs-2', 'title': 'Stock on hand'}).update(row.stockOnHand) })
-								.insert({'bottom': new Element(tmp.tag, {'class': 'stockOnOrder col-xs-2', 'title': 'Stock on Order'}).update(row.stockOnOrder) })
-								.insert({'bottom': new Element(tmp.tag, {'class': 'stockInRMA col-xs-2', 'title': 'Stock on Order'}).update(row.stockInRMA) })
-								.insert({'bottom': new Element(tmp.tag, {'class': 'stockInRMA col-xs-2', 'title': 'Stock on Parts'}).update(row.stockInParts) })
-								.insert({'bottom': new Element(tmp.tag, {'class': 'stockInRMA col-xs-1', 'title': 'Total In Parts Value'}).update(tmp.me.getCurrency(row.totalInPartsValue)) })
-								.insert({'bottom': new Element(tmp.tag, {'class': 'stockInRMA col-xs-1', 'title': 'Total On Hand Value'}).update(tmp.me.getCurrency(row.totalOnHandValue)) })
-			) })
+								.setStyle("cursor: pointer")
+								.insert({'bottom': new Element('div', {'class': 'col-xs-4 hide-when-info', 'title': 'Stock on Hand'}).update(row.stockOnHand) })
+								.insert({'bottom': new Element('div', {'class': 'col-xs-4', 'title': 'Average Cost'}).update((row.totalOnHandValue != 0 && row.stockOnHand != 0) ? tmp.me.getCurrency(row.totalOnHandValue/row.stockOnHand) : 'N/A') })
+								.insert({'bottom': new Element('div', {'class': 'col-xs-4 hide-when-info', 'title': 'Stock On PO'}).update(row.stockOnPO) })
+								.observe('dbclick', function(e){
+									Event.stop(e);
+									tmp.me._openProductQtyLogPage(row.id);
+								})
+					)
+			})
 			.insert({'bottom': new Element(tmp.tag, {'class': 'product_active col-xs-1 hide-when-info hidden-sm'})
 				.insert({'bottom': (tmp.isTitle === true ? row.active : 
 					new Element('div', {'class': 'row'}) 
@@ -435,10 +446,10 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 							.insert({'bottom': new Element('div', {'class': 'btn-group'})
 								.insert({'bottom': new Element('span', {'class': 'btn btn-primary btn-xs'})
 									.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-pencil'}) })
-								})
-								.observe('click', function(event){
-									Event.stop(event);
-									tmp.me._openProductDetails(row);
+									.observe('click', function(event){
+										Event.stop(event);
+										tmp.me._openProductDetails(row);
+									})
 								})
 								.insert({'bottom': (row.active === true ? 
 									new Element('span', {'class': 'btn btn-danger btn-xs'})
@@ -465,7 +476,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 			});
 		if(tmp.isTitle === false) {
 			tmp.me.observeClickNDbClick(tmp.row, function() {
-				tmp.me._displaySelectedProduct(row);
+				//tmp.me._displaySelectedProduct(row);
 			}, function(){
 				if(tmp.me._singleProduct !== true)
 					tmp.me._openProductDetails(row);

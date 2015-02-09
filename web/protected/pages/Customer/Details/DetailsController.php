@@ -111,8 +111,14 @@ class DetailsController extends DetailsPageAbstract
 				->save();
 				$customer->save();
 			} else {
-				$billingAdressFull = Address::create($billingStreet, $billingCity, $billingState, $billingCountry, $billingPostcode, $billingName, $billingContactNo);
-				$shippingAdressFull = Address::create($shippingStreet, $shippingCity, $shippingState, $shippingCountry, $shippingPosecode, $shippingName, $shippingContactNo);
+				if(trim($billingStreet) === '' && trim($billingCity) === '' && trim($billingState) === '' && trim($billingCountry) === '' && trim($billingPostcode) === '' && trim($billingName) === '' && trim($billingContactNo) === '')
+					$billingAdressFull = null;
+				else
+					$billingAdressFull = Address::create($billingStreet, $billingCity, $billingState, $billingCountry, $billingPostcode, $billingName, $billingContactNo);
+				if(trim($shippingStreet) === '' && trim($shippingCity) === '' && trim($shippingState) === '' && trim($shippingCountry) === '' && trim($shippingPosecode) === '' && trim($shippingName) === '' && trim($shippingContactNo) === '')
+					$shippingAdressFull = null;
+				else
+					$shippingAdressFull = Address::create($shippingStreet, $shippingCity, $shippingState, $shippingCountry, $shippingPosecode, $shippingName, $shippingContactNo);
 				$customer = Customer::create($name, $contactNo, $email, $billingAdressFull, false, '', $shippingAdressFull);
 				if(!$customer instanceof Customer)
 					throw new Exception('Error creating customer!');

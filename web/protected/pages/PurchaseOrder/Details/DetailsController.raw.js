@@ -71,7 +71,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 	,_openOrderPrintPage: function() {
 		var tmp = {};
 		tmp.me = this;
-		tmp.newWindow = window.open('/print/purchase/' + tmp.me._purchaseorder.id + '.html', tmp.me._purchaseorder.status + ' PO ' + tmp.me._purchaseorder.purchaseOrderNo, 'location=no, menubar=no, scrollbars=yes, status=no, titlebar=no, fullscreen=no, toolbar=no, width=800');
+		tmp.newWindow = window.open('/print/purchase/' + tmp.me._purchaseorder.id + '.html', tmp.me._purchaseorder.status + ' PO ' + tmp.me._purchaseorder.purchaseOrderNo, 'width=1300, location=no, scrollbars=yes, menubar=no, status=no, titlebar=no, fullscreen=no, toolbar=no');
 		tmp.newWindow.onload = function(){
 			tmp.newWindow.document.title = tmp.me._purchaseorder.status + ' Order ' + tmp.me._purchaseorder.purchaseOrderNo;
 			tmp.newWindow.focus();
@@ -877,7 +877,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 	,_openPOPage: function(id) {
 		var tmp = {};
 		tmp.me = this;
-		tmp.newWindow = window.open('/purchase/' + id + '.html', 'Product Details', 'location=no, menubar=no, status=no, titlebar=no, fullscreen=yes, toolbar=no');
+		tmp.newWindow = window.open('/purchase/' + id + '.html', 'width=1300, location=no, scrollbars=yes, menubar=no, status=no, titlebar=no, fullscreen=no, toolbar=no');
 		tmp.newWindow.focus();
 		return tmp.me;
 	}
@@ -889,7 +889,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		tmp.parentWindow = window.opener;
 		tmp.row = $(tmp.parentWindow.document.body).down('#' + tmp.parentWindow.pageJs.resultDivId + ' .item_row[item_id=' + tmp.me._item.id + ']');
 		if(tmp.row) {
-			tmp.row.replace(tmp.parentWindow.pageJs._getResultRow(tmp.me._item).addClassName('success'));
+			tmp.row.replace(tmp.parentWindow.pageJs._getResultRow(tmp.me._item));
 		}
 	}
 	/**
