@@ -584,7 +584,7 @@ class Order extends InfoEntityAbstract
 	{
 		if(trim($this->getOrderNo()) === '')
 		{
-			$this->setOrderNo('BPCO' .str_pad($this->getId(), 8, '0', STR_PAD_LEFT))
+			$this->setOrderNo('BPCM' .str_pad($this->getId(), 8, '0', STR_PAD_LEFT))
 				->setMargin($this->getCalculatedTotalMargin())
 				->save();
 		}
