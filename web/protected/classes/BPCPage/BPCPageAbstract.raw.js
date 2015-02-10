@@ -4,26 +4,26 @@
 var BPCPageJs = new Class.create();
 BPCPageJs.prototype = {
 	modalId: 'page_modal_box_id'
-		
+
 	,_ajaxRequest: null
-		
+
 	//the callback ids
 	,callbackIds: {}
 
 	//constructor
 	,initialize: function () {}
-	
+
 	,setCallbackId: function(key, callbackid) {
 		this.callbackIds[key] = callbackid;
 		return this;
 	}
-	
+
 	,getCallbackId: function(key) {
 		if(this.callbackIds[key] === undefined || this.callbackIds[key] === null)
 			throw 'Callback ID is not set for:' + key;
 		return this.callbackIds[key];
 	}
-	
+
 	//posting an ajax request
 	,postAjax: function(callbackId, data, requestProperty, timeout) {
 		var tmp = {};
@@ -38,12 +38,12 @@ BPCPageJs.prototype = {
 		tmp.me._ajaxRequest.dispatch();
 		return tmp.me._ajaxRequest;
 	}
-	
+
 	,abortAjax: function() {
 		if(tmp.me._ajaxRequest !== null)
 			tmp.me._ajaxRequest.abort();
 	}
-	
+
 	//parsing an ajax response
 	,getResp: function (response, expectNonJSONResult, noAlert) {
 		var tmp = {};
@@ -56,7 +56,7 @@ BPCPageJs.prototype = {
 //			tmp.error = 'Invalid JSON string: ' + tmp.result;
 //			if (noAlert === true)
 //				throw tmp.error;
-//			else 
+//			else
 //				return alert(tmp.error);
 		}
 		tmp.result = tmp.result.evalJSON();
@@ -64,7 +64,7 @@ BPCPageJs.prototype = {
 			tmp.error = 'Error: \n\n' + tmp.result.errors.join('\n');
 			if (noAlert === true)
 				throw tmp.error;
-			else 
+			else
 				return alert(tmp.error);
 		}
 		return tmp.result.resultData;
@@ -100,7 +100,7 @@ BPCPageJs.prototype = {
 			}
 			return true;
 		}
-		
+
 		if(typeof(enterFunc) === 'function') {
 			enterFunc();
 		}
@@ -170,16 +170,16 @@ BPCPageJs.prototype = {
 				tmp.me._markFormGroupError(item, 'This is requried');
 				tmp.hasError = true;
 			}
-			
+
 			tmp.itemValue = item.readAttribute('type') !== 'checkbox' ? $F(item) : $(item).checked;
 			if(item.hasAttribute('validate_currency') || item.hasAttribute('validate_number')) {
-				if (tmp.me.getValueFromCurrency(tmp.itemValue).match(/^\d+(\.\d{1,2})?$/) === null) {
+				if (tmp.me.getValueFromCurrency(tmp.itemValue).match(/^(-)?\d+(\.\d{1,2})?$/) === null) {
 					tmp.me._markFormGroupError(item, (item.hasAttribute('validate_currency') ? item.readAttribute('validate_currency') : item.hasAttribute('validate_number')));
 					tmp.hasError = true;
 				}
 				tmp.value = tmp.me.getValueFromCurrency(tmp.itemValue);
 			}
-			
+
 			//getting the data
 			if(tmp.groupIndexName !== null && tmp.groupIndexName !== undefined) {
 				if(!tmp.data[tmp.groupIndexName])
@@ -191,7 +191,7 @@ BPCPageJs.prototype = {
 		});
 		return (tmp.hasError === true ? null : tmp.data);
 	}
-	
+
 	,showModalBox: function(title, content, isSM, footer) {
 		var tmp = {};
 		tmp.me = this;
@@ -210,11 +210,11 @@ BPCPageJs.prototype = {
 					.insert({'bottom': tmp.footer === null ? '' : new Element('div', {'class': 'modal-footer' }).update(tmp.footer) })
 				})
 			});
-		
+
 		if($(tmp.me.modalId)) {
 			$(tmp.me.modalId).remove();
 		}
-		
+
 		$$('body')[0].insert({'bottom': tmp.newBox.writeAttribute('id',  tmp.me.modalId)});
 		jQuery('#' + tmp.me.modalId).modal({'show': true, 'target': '#' + tmp.me.modalId});
 		return tmp.me;

@@ -137,7 +137,7 @@ class Payment extends BaseEntityAbstract
 
 		DaoMap::setManyToOne('order', 'Order', 'ord');
 		DaoMap::setManyToOne('method', 'PaymentMethod', 'py_method');
-		DaoMap::setIntType('value', 'Double', '10,4');
+		DaoMap::setIntType('value', 'Double', '10,4', false);
 		parent::__loadDaoMap();
 
 		DaoMap::commit();

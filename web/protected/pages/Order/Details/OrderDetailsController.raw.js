@@ -124,7 +124,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 
 			tmp.itemValue = item.readAttribute('type') !== 'checkbox' ? $F(item) : $(item).checked;
 			if(item.hasAttribute('validate_currency') || item.hasAttribute('validate_number')) {
-				if (tmp.me.getValueFromCurrency(tmp.itemValue).match(/^\d+(\.\d{1,2})?$/) === null) {
+				if (tmp.me.getValueFromCurrency(tmp.itemValue).match(/^(-)?\d+(\.\d{1,2})?$/) === null) {
 					tmp.me._markFormGroupError(item, (item.hasAttribute('validate_currency') ? item.readAttribute('validate_currency') : item.hasAttribute('validate_number')));
 					tmp.hasErr = true;
 				}
@@ -1104,7 +1104,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			return false;
 		}
 		tmp.inputValue = tmp.me.getValueFromCurrency($F(inputBox));
-		if(tmp.inputValue.match(/^\d+(\.\d{1,2})?$/) === null) {
+		if(tmp.inputValue.match(/^(-)?\d+(\.\d{1,4})?$/) === null) {
 			tmp.me._markFormGroupError(inputBox, 'Invalid currency format provided!');
 			return false;
 		}
