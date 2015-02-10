@@ -64,10 +64,10 @@ class OrderDetailsController extends BPCPageAbstract
 			$js .= '.setCallbackId("changeOrderStatus", "' . $this->changeOrderStatusBtn->getUniqueID() . '")';
 			$js .= '.setCallbackId("updateOIForWH", "' . $this->updateOIForWHBtn->getUniqueID() . '")';
 			$js .= '.setCallbackId("updateShippingInfo", "' . $this->updateShippingInfoBtn->getUniqueID() . '")';
-			$js .= '.setCallbackId("getPaymentDetails", "' . $this->getPaymentDetailsBtn->getUniqueID() . '")';
 			$js .= '.setCallbackId("clearETA", "' . $this->clearETABtn->getUniqueID() . '")';
 			$js .= '.setCallbackId("setOrderType", "' . $this->setOrderTypeBtn->getUniqueID() . '")';
 			$js .= '.setCallbackId("changeIsOrdered", "' . $this->changeIsOrderedBtn->getUniqueID() . '")';
+			$js .= '.setCallbackId("deletePayment", "' . $this->deletePaymentBtn->getUniqueID() . '")';
 			$js .= '.setEditMode(' . $purchaseEdit . ', ' . $warehouseEdit . ', ' . $accounEdit . ', ' . $statusEdit . ')';
 			$js .= '.setOrder('. json_encode($order->getJson()) . ', ' . json_encode($orderItems) . ', ' . json_encode($orderStatuses) . ', ' . OrderStatus::ID_SHIPPED . ')';
 			$js .= '.setCourier('. json_encode($courierArray) . ', ' . Courier::ID_LOCAL_PICKUP . ')';
@@ -317,18 +317,10 @@ class OrderDetailsController extends BPCPageAbstract
 				throw new Exception('Additional Comment is Mandatory as the Paid Amount is not mathcing with the Total Amount!');
 			$notifyCust = (isset($params->CallbackParameter->payment->notifyCust) && intval($params->CallbackParameter->payment->notifyCust) === 1) ? true : false;
 			//save the payment
-			$order->addPayment($paymentMethod, $paidAmount);
-			//update the order
-			$totalPaidAmount = 0;
-			foreach($order->getPayments() as $payment)
-				$totalPaidAmount = $totalPaidAmount * 1 + $payment->getValue() * 1;
- 			$order->setTotalPaid($totalPaidAmount)
- 				->setPassPaymentCheck(true)
- 				->save();
-			//add the comments
-			$commentString = ($amtDiff === '0' ? 'FULLY PAID' : '') . '[Total Amount Due was ' . StringUtilsAbstract::getCurrency($order->getTotalAmount()) . ". And total amount paid is " . StringUtilsAbstract::getCurrency($paidAmount) . ". Payment Method is " . $paymentMethod->getName() . ']: ' . ($extraComment !== '' ? ' : ' . $extraComment : '');
-			Comments::addComments($order, $commentString, Comments::TYPE_ACCOUNTING);
-			Comments::addComments($payment, $commentString, Comments::TYPE_ACCOUNTING);
+			$order->addPayment($paymentMethod, $paidAmount)
+				->setPassPaymentCheck(true)
+				->save()
+				->addComment(($amtDiff === '0' ? 'FULLY PAID' : '') . '[Total Amount Due was ' . StringUtilsAbstract::getCurrency($order->getTotalAmount()) . ". And total amount paid is " . StringUtilsAbstract::getCurrency($paidAmount) . ". Payment Method is " . $paymentMethod->getName() . ']: ' . ($extraComment !== '' ? ' : ' . $extraComment : ''), Comments::TYPE_ACCOUNTING);
 
 			//notify the customer
 			if($notifyCust === true && $order->getIsFromB2B() === true)
@@ -347,7 +339,7 @@ class OrderDetailsController extends BPCPageAbstract
 				}
 			}
 
-			$results['item'] = $payment->getJson();
+			$results['items'] = array_map(create_function('$a', '$a->getJson();'), $order->getPayments());
 			Dao::commitTransaction();
 		}
 		catch(Exception $ex)
@@ -445,26 +437,6 @@ class OrderDetailsController extends BPCPageAbstract
 		$params->ResponseData = StringUtilsAbstract::getJson($result, $error);
 	}
 
-	public function getPaymentDetailsForOrder($sender, $param)
-	{
-		$result = $error = array();
-		try
-		{
-			$result['items'] = array();
-
-			if(!isset($param->CallbackParameter->order) || !($order = Order::getByOrderNo($param->CallbackParameter->order->orderNo)) instanceof Order)
-				throw new Exception('System Error: invalid order passed in!');
-
-			$paymentArray = Payment::getAllByCriteria('orderId = ?', array($order->getId()), true, null, DaoQuery::DEFAUTL_PAGE_SIZE, array("py.updated" => "desc"));
-			foreach($paymentArray as $payment)
-				$result['items'][] = $payment->getJson();
-		}
-		catch(Exception $ex)
-		{
-			$error[] = $ex->getMessage();
-		}
-		$param->ResponseData = StringUtilsAbstract::getJson($result, $error);
-	}
 	public function setOrderType($sender, $param)
 	{
 		$results = $errors = array();
@@ -562,6 +534,35 @@ class OrderDetailsController extends BPCPageAbstract
 
 			$results = $item->getJson();
 
+			Dao::commitTransaction();
+		}
+		catch(Exception $ex)
+		{
+			Dao::rollbackTransaction();
+			$errors[] = $ex->getMessage();
+		}
+		$param->ResponseData = StringUtilsAbstract::getJson($results, $errors);
+	}
+
+	public function deletePayment($sender, $param)
+	{
+		$results = $errors = array();
+		try
+		{
+			Dao::beginTransaction();
+			if(!isset($param->CallbackParameter->paymentId) || !($payment = Payment::get($param->CallbackParameter->paymentId)) instanceof Payment)
+				throw new Exception('System Error: invalid payment provided!');
+
+			if(!isset($param->CallbackParameter->reason) || ($reason = trim($param->CallbackParameter->reason)) === '')
+				throw new Exception('The reason for the deletion is needed!');
+
+			$comments = '!!!!! A payment [Value: ' .  StringUtilsAbstract::getCurrency($payment->getValue()) . ', Method: ' . $payment->getMethod()->getName() . '] is DELETED: ' . $reason;
+			$payment->setActive(false)
+				->save()
+				->addComment($comments, Comments::TYPE_ACCOUNTING);
+			$payment->getOrder()
+				->addComment($comments, Comments::TYPE_ACCOUNTING);
+			$results['item'] = $payment->getJson();
 			Dao::commitTransaction();
 		}
 		catch(Exception $ex)

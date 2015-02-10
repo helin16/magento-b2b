@@ -10,19 +10,19 @@ class Payment extends BaseEntityAbstract
 {
 	/**
 	 * The payment method
-	 * 
+	 *
 	 * @var PaymentMethod
 	 */
 	protected $method;
 	/**
 	 * The order of this payment
-	 * 
+	 *
 	 * @var Order
 	 */
 	protected $order;
 	/**
 	 * The value of this payment
-	 * 
+	 *
 	 * @var double
 	 */
 	private $value;
@@ -31,7 +31,7 @@ class Payment extends BaseEntityAbstract
 	 *
 	 * @return PaymentMethod
 	 */
-	public function getMethod() 
+	public function getMethod()
 	{
 	    $this->loadManyToOne('method');
 		return $this->method;
@@ -43,7 +43,7 @@ class Payment extends BaseEntityAbstract
 	 *
 	 * @return Payment
 	 */
-	public function setMethod(PaymentMethod $value) 
+	public function setMethod(PaymentMethod $value)
 	{
 	    $this->method = $value;
 	    return $this;
@@ -53,7 +53,7 @@ class Payment extends BaseEntityAbstract
 	 *
 	 * @return Order
 	 */
-	public function getOrder() 
+	public function getOrder()
 	{
 		$this->loadManyToOne('order');
 		return $this->order;
@@ -65,7 +65,7 @@ class Payment extends BaseEntityAbstract
 	 *
 	 * @return Payment
 	 */
-	public function setOrder($value) 
+	public function setOrder($value)
 	{
 	    $this->order = $value;
 	    return $this;
@@ -75,7 +75,7 @@ class Payment extends BaseEntityAbstract
 	 *
 	 * @return number
 	 */
-	public function getValue() 
+	public function getValue()
 	{
 	    return $this->value;
 	}
@@ -86,7 +86,7 @@ class Payment extends BaseEntityAbstract
 	 *
 	 * @return Payment
 	 */
-	public function setValue($value) 
+	public function setValue($value)
 	{
 	    $this->value = $value;
 	    return $this;
@@ -99,7 +99,19 @@ class Payment extends BaseEntityAbstract
 	{
 		return trim($this->getMethod() . ': ' . $this->getValue() . " for Order:" . $this->getOrder()->getOrderNo());
 	}
-	
+	/**
+	 * (non-PHPdoc)
+	 * @see BaseEntityAbstract::postSave()
+	 */
+	public function postSave()
+	{
+		//update the order
+		$totalPaidAmount = 0;
+		foreach($this->getOrder()->getPayments() as $payment)
+			$totalPaidAmount = $totalPaidAmount * 1 + $payment->getValue() * 1;
+		$this->getOrder()->setTotalPaid($totalPaidAmount)
+			->save();
+	}
 	/**
 	 * (non-PHPdoc)
 	 * @see BaseEntityAbstract::getJson()
@@ -114,7 +126,7 @@ class Payment extends BaseEntityAbstract
 		}
 		return parent::getJson($array, $reset);
 	}
-	
+
 	/**
 	 * (non-PHPdoc)
 	 * @see HydraEntity::__loadDaoMap()
@@ -122,24 +134,25 @@ class Payment extends BaseEntityAbstract
 	public function __loadDaoMap()
 	{
 		DaoMap::begin($this, 'py');
-	
+
 		DaoMap::setManyToOne('order', 'Order', 'ord');
 		DaoMap::setManyToOne('method', 'PaymentMethod', 'py_method');
 		DaoMap::setIntType('value', 'Double', '10,4');
 		parent::__loadDaoMap();
-	
+
 		DaoMap::commit();
 	}
 	/**
 	 * Creating a payment for order
-	 * 
+	 *
 	 * @param Order         $order
 	 * @param PaymentMethod $method
 	 * @param string        $value
-	 * 
+	 * @param string        $comments
+	 *
 	 * @return Ambigous <BaseEntityAbstract, GenericDAO>
 	 */
-	public static function create(Order $order, PaymentMethod $method, $value)
+	public static function create(Order $order, PaymentMethod $method, $value, $comments = '')
 	{
 		$payment = new Payment();
 		$message = 'A payment via ' . $method->getName() . ' is made with value: ' . StringUtilsAbstract::getCurrency($value);
@@ -151,6 +164,10 @@ class Payment extends BaseEntityAbstract
 			->addLog($message, Log::TYPE_SYSTEM, get_class($payment) . '_CREATION', __CLASS__ . '::' . __FUNCTION__);
 		$order->addComment($message, Comments::TYPE_SYSTEM)
 			->addLog($message, Log::TYPE_SYSTEM, 'Auto Log', __CLASS__ . '::' . __FUNCTION__);
+		if(trim($comments) !== '') {
+			$payment->addComment($comments, Comments::TYPE_ACCOUNTING);
+			$order->addComment($comments, Comments::TYPE_ACCOUNTING);
+		}
 		return $payment;
 	}
 }
