@@ -8,6 +8,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 				, 'totalInPartsValue': 'Total In PartsValue', 'totalInPartsValueVar': 'totalInPartsValueVar', 'stockOnOrder': 'Stock On Order', 'stockOnOrderVar': 'stockOnOrderVar'
 				, 'stockOnPO': 'Stock On PO', 'stockOnPOVar': 'stockOnPOVar', 'stockInParts': 'Stock In Parts', 'stockInPartsVar': 'stockInPartsVar'
 				, 'stockInRMA': 'Stock In RMA', 'stockInRMAVar': 'stockInRMAVar', 'comments': 'Comments', 'type': 'Type', 'created': 'Date'
+				, 'totalRMAValue': 'Total RMA Value'
 				, 'product': {'name': 'Product', 'sku': 'sku'}
 				};
 	}
@@ -25,16 +26,6 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 			$('searchDiv').down('[search_field="pql.product"]').value = tmp.productId.replace(/["']/g, "");
 		if(tmp.from || tmp.to || tmp.productId)
 			$('searchPanel').down('#searchBtn').click();
-		return tmp.me;
-	}
-	/**
-	 * Open product Details Page in new Window
-	 */
-	,_openProductDetailPage: function(id) {
-		var tmp = {};
-		tmp.me = this;
-		tmp.newWindow = window.open('/products/' + id + '.html', 'Product Details', 'width=1920, location=no, scrollbars=yes, menubar=no, status=no, titlebar=no, fullscreen=no, toolbar=no');
-		tmp.newWindow.focus();
 		return tmp.me;
 	}
 	/**
@@ -96,7 +87,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 	,getTypeName: function(short) {
 		switch(short) {
 		case 'P':
-			return 'PO';
+			return 'Purchase';
 		case 'S':
 			return 'Sales Order';
 		case 'AD':
@@ -124,74 +115,29 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 	,_getResultRow: function(row, isTitle) {
 		var tmp = {};
 		tmp.me = this;
-		tmp.tag = (tmp.isTitle === true ? 'th' : 'td');
+		tmp.tag = (!row.id ? 'th' : 'td');
 		tmp.isTitle = (isTitle || false);
-		tmp.row = new Element('tr', {'class': (tmp.isTitle === true ? '' : 'btn-hide-row')}).store('data', row)
-			.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-1'}).update(row.created) })
-			.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-1'}).update(row.product.sku) 
-				.observe('dblclick', function(){
-					tmp.me._openProductDetailPage(row.product.id);
-				})	
-			})
-			.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-1'}).update(row.product.name) 
-				.observe('dblclick', function(){
-					tmp.me._openProductDetailPage(row.product.id);
-				})
-			})
-			.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-1'}).update(tmp.me.getTypeName(row.type)) })
+		tmp.row = new Element('tr', {'class': (tmp.isTitle === true ? '' : 'btn-hide-row')})
+			.store('data', row)
+			.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-1'}).update(tmp.isTitle === true ? row.created :
+				new Element('div')
+					.insert({'bottom': new Element('div')
+						.insert({'bottom': new Element('abbr', {'title': tmp.me.getTypeName(row.type) }).update(row.type) })
+					})
+					.insert({'bottom': new Element('div')
+						.insert({'bottom': new Element('small').update(tmp.me.loadUTCTime(row.created).toLocaleString()) })
+					})
+			) })
+			.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-1'}).update(tmp.isTitle === true ? 'Product' : new Element('a', {'href': '/product/' + row.product.id + '.html'}).update(row.product.name)) })
+			.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-1'}).update(tmp.isTitle ? row.stockOnPO : row.stockOnPO + '(' + tmp.me.getNumber(row.stockOnPOVar) + ')') })
 			.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-1'}).update(tmp.isTitle ? row.stockOnHand : row.stockOnHand + '(' + tmp.me.getNumber(row.stockOnHandVar) + ')') })
+			.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-1'}).update(tmp.isTitle ? row.totalOnHandValue : tmp.me.getCurrency(row.totalOnHandValue) + '(' + tmp.me.getNumber(tmp.me.getCurrency(row.totalOnHandValueVar)) + ')') })
 			.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-1'}).update(tmp.isTitle ? row.stockOnOrder : row.stockOnOrder + '(' + tmp.me.getNumber(row.stockOnOrderVar) + ')') })
 			.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-1'}).update(tmp.isTitle ? row.stockInParts : row.stockInParts + '(' + tmp.me.getNumber(row.stockInPartsVar) + ')') })
-			.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-1'}).update(tmp.isTitle ? row.stockOnPO : row.stockOnPO + '(' + tmp.me.getNumber(row.stockOnPOVar) + ')') })
-			.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-1'}).update(tmp.isTitle ? row.stockInRMA : row.stockInRMA + '(' + tmp.me.getNumber(row.stockInRMAVar) + ')') })
-			.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-1'}).update(tmp.isTitle ? row.totalOnHandValue : tmp.me.getCurrency(row.totalOnHandValue) + '(' + tmp.me.getNumber(tmp.me.getCurrency(row.totalOnHandValueVar)) + ')') })
 			.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-1'}).update(tmp.isTitle ? row.totalInPartsValue : tmp.me.getCurrency(row.totalInPartsValue) + '(' + tmp.me.getNumber(tmp.me.getCurrency(row.totalInPartsValueVar)) + ')') })
-			.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-1'}).update(row.comments) })
-			.insert({'bottom': new Element(tmp.tag, {'class': 'text-right btns col-xs-1 hidden'}).update(
-				tmp.isTitle === true ?  
-				(new Element('span', {'class': 'btn btn-primary btn-xs', 'title': 'New'})
-					.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-plus'}) })
-					.insert({'bottom': ' NEW' })
-					.observe('click', function(){
-						$(this).up('thead').insert({'bottom': tmp.newEditEl = tmp.me._getEditPanel({}) });
-						tmp.newEditEl.down('.form-control[save-item-panel]').focus();
-						tmp.newEditEl.down('.form-control[save-item-panel]').select();
-						tmp.newEditEl.getElementsBySelector('.form-control[save-item-panel]').each(function(item) {
-							item.observe('keydown', function(event){
-								tmp.me.keydown(event, function() {
-									tmp.newEditEl.down('.btn-success span').click();
-								});
-								return false;
-							})
-						});
-					})
-				)
-				: (new Element('span', {'class': 'btn-group btn-group-xs'})
-					.insert({'bottom': new Element('span', {'class': 'btn btn-default', 'title': 'Edit'})
-						.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-pencil'}) })
-						.observe('click', function(){
-							$(this).up('.item_row').replace(tmp.editEl = tmp.me._getEditPanel(row));
-							tmp.editEl.down('.form-control[save-item-panel]').focus();
-							tmp.editEl.down('.form-control[save-item-panel]').select();
-							tmp.editEl.getElementsBySelector('.form-control[save-item-panel]').each(function(item) {
-								item.observe('keydown', function(event){
-									tmp.me.keydown(event, function() {
-										tmp.editEl.down('.btn-success span').click();
-									});
-									return false;
-								})
-							});
-						})
-					})
-					.insert({'bottom': new Element('span', {'class': 'btn btn-danger', 'title': 'Delete'})
-						.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-trash'}) })
-						.observe('click', function(){
-							if(!confirm('Are you sure you want to delete this item?'))
-								return false;
-							tmp.me._deleteItem(row);
-						})
-					}) ) 
-			) })
+			.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-1'}).update(tmp.isTitle ? row.stockInRMA : row.stockInRMA + '(' + tmp.me.getNumber(row.stockInRMAVar) + ')') })
+			.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-1'}).update(tmp.isTitle ? row.totalRMAValue : tmp.me.getCurrency(row.totalRMAValue) + '(' + tmp.me.getNumber(tmp.me.getCurrency(row.totalRMAValueVar)) + ')') })
+			.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-2'}).update(row.comments) })
 		;
 		return tmp.row;
 	}

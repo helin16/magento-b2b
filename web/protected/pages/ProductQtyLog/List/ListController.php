@@ -1,7 +1,7 @@
 <?php
 /**
  * This is the listing page for manufacturer
- * 
+ *
  * @package    Web
  * @subpackage Controller
  * @author     lhe<helin16@gmail.com>
@@ -29,7 +29,7 @@ class ListController extends CRUDPageAbstract
 	 */
 	protected function _getEndJs()
 	{
-		$from = isset($this->Request['from']) ? $this->Request['from'] : ''; 
+		$from = isset($this->Request['from']) ? $this->Request['from'] : '';
 		$to = isset($this->Request['to']) ? $this->Request['to'] : '';
 		$productId = isset($this->Request['productid']) ? $this->Request['productid'] : '';
 		$js = parent::_getEndJs();
@@ -37,7 +37,7 @@ class ListController extends CRUDPageAbstract
 		$js .= "._bindSearchKey()";
 		$js .= "._loadDataPicker()";
 		$js .= ".setPreData(" . json_encode($from) . ", " . json_encode($to) . ", " . json_encode($productId) . ")";
-		$js .= ".getResults(true, " . $this->pageSize . ");";
+		$js .= ";";
 		return $js;
 	}
 	/**
@@ -61,7 +61,7 @@ class ListController extends CRUDPageAbstract
 				$pageNo = $param->CallbackParameter->pagination->pageNo;
 				$pageSize = $param->CallbackParameter->pagination->pageSize;
 			}
-			
+
 			$serachCriteria = isset($param->CallbackParameter->searchCriteria) ? json_decode(json_encode($param->CallbackParameter->searchCriteria), true) : array();
 			var_dump($serachCriteria);
 			$where = array(1);

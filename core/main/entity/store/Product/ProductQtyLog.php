@@ -69,28 +69,40 @@ class ProductQtyLog extends InfoEntityAbstract
 	private $stockInRMAVar = 0;
 	/**
 	 * The total value for all stock on hand units
-	 * 
+	 *
 	 * @var double
 	 */
 	private $totalOnHandValue = 0;
 	/**
 	 * The total value for all stock on hand units Variation
-	 * 
+	 *
 	 * @var double
 	 */
 	private $totalOnHandValueVar = 0;
 	/**
 	 * The total value for all stock on parts units
-	 * 
+	 *
 	 * @var double
 	 */
 	private $totalInPartsValue = 0;
 	/**
 	 * The total value for all stock on parts units Variation
-	 * 
+	 *
 	 * @var double
 	 */
 	private $totalInPartsValueVar = 0;
+	/**
+	 * The total value for all stock on RMA units
+	 *
+	 * @var double
+	 */
+	private $totalRMAValue = 0;
+	/**
+	 * The total value for all stock on parts RMA Variation
+	 *
+	 * @var double
+	 */
+	private $totalRMAValueVar = 0;
 	/**
 	 * comments
 	 * @var string
@@ -112,8 +124,50 @@ class ProductQtyLog extends InfoEntityAbstract
 	 */
 	private $type;
 	/**
+	 * Getter for totalRMAValue
+	 *
+	 * @return double
+	 */
+	public function getTotalRMAValue()
+	{
+	    return $this->totalRMAValue;
+	}
+	/**
+	 * Setter for totalRMAValue
+	 *
+	 * @param double $value The totalRMAValue
+	 *
+	 * @return ProductQtyLog
+	 */
+	public function setTotalRMAValue($value)
+	{
+	    $this->totalRMAValue = $value;
+	    return $this;
+	}
+	/**
+	 * Getter for totalRMAValueVar
+	 *
+	 * @return double
+	 */
+	public function getTotalRMAValueVar()
+	{
+	    return $this->totalRMAValueVar;
+	}
+	/**
+	 * Setter for totalRMAValueVar
+	 *
+	 * @param unkown $value The totalRMAValueVar
+	 *
+	 * @return ProductQtyLog
+	 */
+	public function settotalRMAValueVar($value)
+	{
+	    $this->totalRMAValueVar = $value;
+	    return $this;
+	}
+	/**
 	 * Getter for product
-	 * 
+	 *
 	 * @return product
 	 */
 	public function getproduct()
@@ -123,9 +177,9 @@ class ProductQtyLog extends InfoEntityAbstract
 	}
 	/**
 	 * Setter for the product
-	 * 
+	 *
 	 * @param Product $value
-	 * 
+	 *
 	 * @return ProductQtyLog
 	 */
 	public function setProduct($value)
@@ -135,7 +189,7 @@ class ProductQtyLog extends InfoEntityAbstract
 	}
 	/**
 	 * Getter for stockOnPO
-	 * 
+	 *
 	 * @return int
 	 */
 	public function getStockOnPO()
@@ -144,9 +198,9 @@ class ProductQtyLog extends InfoEntityAbstract
 	}
 	/**
 	 * Setter for the stockOnPO
-	 * 
+	 *
 	 * @param int $value
-	 * 
+	 *
 	 * @return ProductQtyLog
 	 */
 	public function setStockOnPO($value)
@@ -175,7 +229,7 @@ class ProductQtyLog extends InfoEntityAbstract
 	}
 	/**
 	 * Getter for stockOnHand
-	 * 
+	 *
 	 * @return int
 	 */
 	public function getStockOnHand()
@@ -184,9 +238,9 @@ class ProductQtyLog extends InfoEntityAbstract
 	}
 	/**
 	 * Setter for the stockOnHand
-	 * 
+	 *
 	 * @param mixed $value
-	 * 
+	 *
 	 * @return ProductQtyLog
 	 */
 	public function setStockOnHand($value)
@@ -215,7 +269,7 @@ class ProductQtyLog extends InfoEntityAbstract
 	}
 	/**
 	 * Getter for stockOnOrder
-	 * 
+	 *
 	 * @return int
 	 */
 	public function getStockOnOrder()
@@ -224,9 +278,9 @@ class ProductQtyLog extends InfoEntityAbstract
 	}
 	/**
 	 * Setter for the stockOnOrder
-	 * 
+	 *
 	 * @param mixed $value
-	 * 
+	 *
 	 * @return ProductQtyLog
 	 */
 	public function setStockOnOrder($value)
@@ -255,7 +309,7 @@ class ProductQtyLog extends InfoEntityAbstract
 	}
 	/**
 	 * Getter for stockInParts
-	 * 
+	 *
 	 * @return int
 	 */
 	public function getStockInParts()
@@ -264,9 +318,9 @@ class ProductQtyLog extends InfoEntityAbstract
 	}
 	/**
 	 * Setter for the stockInParts
-	 * 
+	 *
 	 * @param mixed $value
-	 * 
+	 *
 	 * @return ProductQtyLog
 	 */
 	public function setStockInParts($value)
@@ -295,7 +349,7 @@ class ProductQtyLog extends InfoEntityAbstract
 	}
 	/**
 	 * Getter for stockInRMA
-	 * 
+	 *
 	 * @return int
 	 */
 	public function getStockInRMA()
@@ -304,9 +358,9 @@ class ProductQtyLog extends InfoEntityAbstract
 	}
 	/**
 	 * Setter for the stockInRMA
-	 * 
+	 *
 	 * @param mixed $value
-	 * 
+	 *
 	 * @return ProductQtyLog
 	 */
 	public function setStockInRMA($value)
@@ -335,7 +389,7 @@ class ProductQtyLog extends InfoEntityAbstract
 	}
 	/**
 	 * Getter for comments
-	 * 
+	 *
 	 * @return string
 	 */
 	public function getComments()
@@ -344,9 +398,9 @@ class ProductQtyLog extends InfoEntityAbstract
 	}
 	/**
 	 * Setter for the comments
-	 * 
+	 *
 	 * @param mixed $value
-	 * 
+	 *
 	 * @return ProductQtyLog
 	 */
 	public function setComments($value)
@@ -356,7 +410,7 @@ class ProductQtyLog extends InfoEntityAbstract
 	}
 	/**
 	 * Getter for entityName
-	 * 
+	 *
 	 * @return string
 	 */
 	public function getEntityName()
@@ -365,9 +419,9 @@ class ProductQtyLog extends InfoEntityAbstract
 	}
 	/**
 	 * Setter for the entityName
-	 * 
+	 *
 	 * @param mixed $value
-	 * 
+	 *
 	 * @return ProductQtyLog
 	 */
 	public function setEntityName($value)
@@ -377,7 +431,7 @@ class ProductQtyLog extends InfoEntityAbstract
 	}
 	/**
 	 * Getter for entityId
-	 * 
+	 *
 	 * @return int
 	 */
 	public function getEntityId()
@@ -386,9 +440,9 @@ class ProductQtyLog extends InfoEntityAbstract
 	}
 	/**
 	 * Setter for the entityId
-	 * 
+	 *
 	 * @param int $value
-	 * 
+	 *
 	 * @return ProductQtyLog
 	 */
 	public function setEntityId($value)
@@ -508,7 +562,8 @@ class ProductQtyLog extends InfoEntityAbstract
 				->setStockInPartsVar($this->getStockInParts() - $lastRecord->getStockInParts())
 				->setStockInRMAVar($this->getStockInRMA() - $lastRecord->getStockInRMA())
 				->setTotalInPartsValueVar($this->getTotalInPartsValue() - $lastRecord->getTotalInPartsValue())
-				->setTotalOnHandValueVar($this->getTotalOnHandValue() - $lastRecord->getTotalOnHandValue());
+				->setTotalOnHandValueVar($this->getTotalOnHandValue() - $lastRecord->getTotalOnHandValue())
+				->settotalRMAValueVar($this->getTotalRMAValue() - $lastRecord->getTotalRMAValue());
 		} else {
 			$this->setStockOnPOVar($this->getStockOnPO())
 				->setStockOnHandVar($this->getStockOnHand())
@@ -516,7 +571,8 @@ class ProductQtyLog extends InfoEntityAbstract
 				->setStockInPartsVar($this->getStockInParts())
 				->setStockInRMAVar($this->getStockInRMA())
 				->setTotalInPartsValueVar($this->getTotalInPartsValue())
-				->setTotalOnHandValueVar($this->getTotalOnHandValue());
+				->setTotalOnHandValueVar($this->getTotalOnHandValue())
+				->settotalRMAValueVar($this->getTotalRMAValue());
 		}
 	}
 
@@ -542,18 +598,20 @@ class ProductQtyLog extends InfoEntityAbstract
 		DaoMap::setIntType('stockInPartsVar', 'int', 10, false);
 		DaoMap::setIntType('stockInRMA', 'int', 10, false);
 		DaoMap::setIntType('stockInRMAVar', 'int', 10, false);
+		DaoMap::setIntType('totalRMAValue', 'double', '10,4', false);
+		DaoMap::setIntType('totalRMAValueVar', 'double', '10,4', false);
 		DaoMap::setStringType('comments', 'varchar', 255);
 		DaoMap::setStringType('entityName', 'varchar', 100);
 		DaoMap::setIntType('entityId', 'int', 10, true, 0);
 		DaoMap::setStringType('type', 'varchar', 2);
 		parent::__loadDaoMap();
-		
+
 		DaoMap::createIndex('entityName');
 		DaoMap::createIndex('type');
 		DaoMap::commit();
 	}
 	/**
-	 * 
+	 *
 	 * @param Product $product
 	 * @param BaseEntityAbstract $entity
 	 * @param string $comments
@@ -569,6 +627,7 @@ class ProductQtyLog extends InfoEntityAbstract
 			->setStockOnPO($product->getstockOnPO())
 			->setStockInParts($product->getStockInParts())
 			->setStockInRMA($product->getStockInRMA())
+			->setTotalRMAValue($product->getTotalRMAValue())
 			->setComments($comments);
 		if($entity instanceof BaseEntityAbstract) {
 			$log->setEntityName(get_class($entity))

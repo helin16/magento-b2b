@@ -10,128 +10,134 @@ class Product extends InfoEntityAbstract
 {
 	/**
 	 * The sku of the product
-	 * 
+	 *
 	 * @var string
 	 */
 	private $sku;
 	/**
 	 * The name of the product
-	 * 
+	 *
 	 * @var string
 	 */
 	private $name;
 	/**
 	 * The id of magento for this product
-	 * 
+	 *
 	 * @var string
 	 */
 	private $mageId = '';
 	/**
 	 * The quantity that we are ordering from supplier
-	 * 
+	 *
 	 * @var int
 	 */
 	private $stockOnOrder = 0;
 	/**
 	 * The quantity we have
-	 * 
+	 *
 	 * @var int
 	 */
 	private $stockOnHand = 0;
 	/**
 	 * The quantity we have
-	 * 
+	 *
 	 * @var int
 	 */
 	private $stockOnPO = 0;
 	/**
 	 * The quantity in parts for build
-	 * 
+	 *
 	 * @var int
 	 */
 	private $stockInParts = 0;
 	/**
 	 * The quantity in RMA for build
-	 * 
+	 *
 	 * @var int
 	 */
 	private $stockInRMA = 0;
 	/**
+	 * The total value for RMA stock
+	 *
+	 * @var double
+	 */
+	private $totalRMAValue = 0;
+	/**
 	 * The total value for all stock on hand units
-	 * 
+	 *
 	 * @var double
 	 */
 	private $totalOnHandValue = 0;
 	/**
 	 * The total value for all stock on parts for build
-	 * 
+	 *
 	 * @var double
 	 */
 	private $totalInPartsValue = 0;
 	/**
 	 * Whether this order is imported from B2B
-	 * 
+	 *
 	 * @var bool
 	 */
 	private $isFromB2B = false;
 	/**
 	 * The short description
-	 * 
+	 *
 	 * @var string
 	 */
 	private $shortDescription = '';
 	/**
 	 * The asset id of the full description
-	 * 
+	 *
 	 * @var string
 	 */
 	private $fullDescAssetId = '';
 	/**
 	 * Marking the product as new from which date
-	 * 
+	 *
 	 * @var UDate|NULL
 	 */
 	private $asNewFromDate = null;
 	/**
 	 * Marking the product as new to which date
-	 * 
+	 *
 	 * @var UDate|NULL
 	 */
 	private $asNewToDate = null;
 	/**
 	 * Whether we will sell this product on Web
-	 * 
+	 *
 	 * @var bool
 	 */
 	private $sellOnWeb = false;
 	/**
 	 * Product status
-	 * 
+	 *
 	 * @var ProductStatus
 	 */
 	protected $status = null;
 	/**
 	 * The manufacture /brand of this product
-	 * 
+	 *
 	 * @var Manufacturer
 	 */
 	protected $manufacturer = null;
 	/**
 	 * the supplier codes
-	 * 
+	 *
 	 * @var array
 	 */
 	protected $supplierCodes = array();
 	/**
 	 * The product_categories
-	 * 
+	 *
 	 * @var array
 	 */
 	protected $categories = array();
 	/**
 	/**
 	 * The productCodes
-	 * 
+	 *
 	 * @var array
 	 */
 	protected $codes = array();
@@ -155,7 +161,7 @@ class Product extends InfoEntityAbstract
 	 *
 	 * @return array()
 	 */
-	public function getCategories() 
+	public function getCategories()
 	{
 		$this->loadOneToMany('categories');
 	    return $this->categories;
@@ -167,7 +173,7 @@ class Product extends InfoEntityAbstract
 	 *
 	 * @return Product
 	 */
-	public function setCategories($value) 
+	public function setCategories($value)
 	{
 	    $this->categories = $value;
 	    return $this;
@@ -177,7 +183,7 @@ class Product extends InfoEntityAbstract
 	 *
 	 * @return array()
 	 */
-	public function getCodes() 
+	public function getCodes()
 	{
 		$this->loadOneToMany('codes');
 	    return $this->codes;
@@ -189,7 +195,7 @@ class Product extends InfoEntityAbstract
 	 *
 	 * @return Product
 	 */
-	public function setCodes($value) 
+	public function setCodes($value)
 	{
 	    $this->codes = $value;
 	    return $this;
@@ -199,7 +205,7 @@ class Product extends InfoEntityAbstract
 	 *
 	 * @return array
 	 */
-	public function getSupplierCodes() 
+	public function getSupplierCodes()
 	{
 		$this->loadOneToMany('supplierCodes');
 	    return $this->supplierCodes;
@@ -211,25 +217,25 @@ class Product extends InfoEntityAbstract
 	 *
 	 * @return Product
 	 */
-	public function setSupplierCodes($value) 
+	public function setSupplierCodes($value)
 	{
 	    $this->supplierCodes = $value;
 	    return $this;
 	}
-	/** 
+	/**
 	 * Getter for asNewFromDate
-	 * 
+	 *
 	 * @return Ambigous <UDate, NULL>
 	 */
 	public function getAsNewFromDate ()
 	{
 		return $this->asNewFromDate;
 	}
-	/** 
+	/**
 	 * Setter for asNewFromDate
-	 * 
+	 *
 	 * @param string $value
-	 * 
+	 *
 	 * @return Product
 	 */
 	public function setAsNewFromDate($value)
@@ -237,20 +243,20 @@ class Product extends InfoEntityAbstract
 		$this->asNewFromDate = $value;
 		return $this;
 	}
-	/** 
+	/**
 	 * Getter for asNewToDate
-	 * 
+	 *
 	 * @return Ambigous <UDate, NULL>
 	 */
 	public function getAsNewToDate ()
 	{
 		return $this->asNewToDate;
 	}
-	/** 
+	/**
 	 * Setter for asNewToDate
-	 * 
+	 *
 	 * @param string $value
-	 * 
+	 *
 	 * @return Product
 	 */
 	public function setAsNewToDate($value)
@@ -258,20 +264,20 @@ class Product extends InfoEntityAbstract
 		$this->asNewToDate = $value;
 		return $this;
 	}
-	/** 
+	/**
 	 * Getter for sellOnWeb
-	 * 
+	 *
 	 * @return boolean
 	 */
 	public function getSellOnWeb ()
 	{
 		return $this->sellOnWeb;
 	}
-	/** 
+	/**
 	 * Setter for sellOnWeb
-	 * 
+	 *
 	 * @param bool $value
-	 * 
+	 *
 	 * @return Product
 	 */
 	public function setSellOnWeb($value)
@@ -284,7 +290,7 @@ class Product extends InfoEntityAbstract
 	 *
 	 * @return string
 	 */
-	public function getSku() 
+	public function getSku()
 	{
 	    return $this->sku;
 	}
@@ -295,7 +301,7 @@ class Product extends InfoEntityAbstract
 	 *
 	 * @return Product
 	 */
-	public function setSku($value) 
+	public function setSku($value)
 	{
 	    $this->sku = $value;
 	    return $this;
@@ -305,7 +311,7 @@ class Product extends InfoEntityAbstract
 	 *
 	 * @return string
 	 */
-	public function getName() 
+	public function getName()
 	{
 	    return $this->name;
 	}
@@ -316,7 +322,7 @@ class Product extends InfoEntityAbstract
 	 *
 	 * @return Product
 	 */
-	public function setName($value) 
+	public function setName($value)
 	{
 	    $this->name = $value;
 	    return $this;
@@ -324,9 +330,9 @@ class Product extends InfoEntityAbstract
 	/**
 	 * Getter for mageId
 	 *
-	 * @return 
+	 * @return
 	 */
-	public function getMageId() 
+	public function getMageId()
 	{
 	    return $this->mageId;
 	}
@@ -337,7 +343,7 @@ class Product extends InfoEntityAbstract
 	 *
 	 * @return Product
 	 */
-	public function setMageId($value) 
+	public function setMageId($value)
 	{
 	    $this->mageId = $value;
 	    return $this;
@@ -345,9 +351,9 @@ class Product extends InfoEntityAbstract
 	/**
 	 * Getter for stockOnOrder
 	 *
-	 * @return 
+	 * @return
 	 */
-	public function getStockOnOrder() 
+	public function getStockOnOrder()
 	{
 	    return $this->stockOnOrder;
 	}
@@ -358,7 +364,7 @@ class Product extends InfoEntityAbstract
 	 *
 	 * @return Product
 	 */
-	public function setStockOnOrder($value) 
+	public function setStockOnOrder($value)
 	{
 	    $this->stockOnOrder = $value;
 	    return $this;
@@ -366,9 +372,9 @@ class Product extends InfoEntityAbstract
 	/**
 	 * Getter for stockOnHand
 	 *
-	 * @return 
+	 * @return
 	 */
-	public function getStockOnHand() 
+	public function getStockOnHand()
 	{
 	    return $this->stockOnHand;
 	}
@@ -379,7 +385,7 @@ class Product extends InfoEntityAbstract
 	 *
 	 * @return Product
 	 */
-	public function setStockOnHand($value) 
+	public function setStockOnHand($value)
 	{
 	    $this->stockOnHand = $value;
 	    return $this;
@@ -387,9 +393,9 @@ class Product extends InfoEntityAbstract
 	/**
 	 * Getter for stockOnPO
 	 *
-	 * @return 
+	 * @return
 	 */
-	public function getstockOnPO() 
+	public function getstockOnPO()
 	{
 	    return $this->stockOnPO;
 	}
@@ -400,7 +406,7 @@ class Product extends InfoEntityAbstract
 	 *
 	 * @return Product
 	 */
-	public function setStockOnPO($value) 
+	public function setStockOnPO($value)
 	{
 	    $this->stockOnPO = $value;
 	    return $this;
@@ -408,9 +414,9 @@ class Product extends InfoEntityAbstract
 	/**
 	 * Getter for stockInParts
 	 *
-	 * @return 
+	 * @return
 	 */
-	public function getStockInParts() 
+	public function getStockInParts()
 	{
 	    return $this->stockInParts;
 	}
@@ -421,7 +427,7 @@ class Product extends InfoEntityAbstract
 	 *
 	 * @return Product
 	 */
-	public function setStockInParts($value) 
+	public function setStockInParts($value)
 	{
 	    $this->stockInParts = $value;
 	    return $this;
@@ -429,9 +435,9 @@ class Product extends InfoEntityAbstract
 	/**
 	 * Getter for stockInRMA
 	 *
-	 * @return 
+	 * @return
 	 */
-	public function getStockInRMA() 
+	public function getStockInRMA()
 	{
 	    return $this->stockInRMA;
 	}
@@ -442,7 +448,7 @@ class Product extends InfoEntityAbstract
 	 *
 	 * @return Product
 	 */
-	public function setStockInRMA($value) 
+	public function setStockInRMA($value)
 	{
 	    $this->stockInRMA = $value;
 	    return $this;
@@ -471,9 +477,9 @@ class Product extends InfoEntityAbstract
 	/**
 	 * Getter for shortDescription
 	 *
-	 * @return 
+	 * @return
 	 */
-	public function getShortDescription() 
+	public function getShortDescription()
 	{
 	    return $this->shortDescription;
 	}
@@ -484,7 +490,7 @@ class Product extends InfoEntityAbstract
 	 *
 	 * @return Product
 	 */
-	public function setShortDescription($value) 
+	public function setShortDescription($value)
 	{
 	    $this->shortDescription = $value;
 	    return $this;
@@ -492,9 +498,9 @@ class Product extends InfoEntityAbstract
 	/**
 	 * Getter for fullDescAssetId
 	 *
-	 * @return 
+	 * @return
 	 */
-	public function getFullDescAssetId() 
+	public function getFullDescAssetId()
 	{
 	    return $this->fullDescAssetId;
 	}
@@ -505,14 +511,14 @@ class Product extends InfoEntityAbstract
 	 *
 	 * @return Product
 	 */
-	public function setFullDescAssetId($value) 
+	public function setFullDescAssetId($value)
 	{
 	    $this->fullDescAssetId = $value;
 	    return $this;
 	}
-	/** 
+	/**
 	 * Getter for status
-	 * 
+	 *
 	 * @return ProductStatus
 	 */
 	public function getStatus ()
@@ -520,11 +526,11 @@ class Product extends InfoEntityAbstract
 		$this->loadManyToOne('status');
 		return $this->status;
 	}
-	/** 
+	/**
 	 * Setter for status
-	 * 
+	 *
 	 * @param ProductStatus $value
-	 * 
+	 *
 	 * @return Product
 	 */
 	public function setStatus($value)
@@ -532,9 +538,9 @@ class Product extends InfoEntityAbstract
 		$this->status = $value;
 		return $this;
 	}
-	/** 
+	/**
 	 * Getter for manufacturer
-	 * 
+	 *
 	 * @return Manufacturer
 	 */
 	public function getManufacturer ()
@@ -542,11 +548,11 @@ class Product extends InfoEntityAbstract
 		$this->loadManyToOne('manufacturer');
 		return $this->manufacturer;
 	}
-	/** 
+	/**
 	 * Setter for manufacturer
-	 * 
+	 *
 	 * @param Manufacturer $value
-	 * 
+	 *
 	 * @return Product
 	 */
 	public function setManufacturer(Manufacturer $value = null)
@@ -554,20 +560,20 @@ class Product extends InfoEntityAbstract
 		$this->manufacturer = $value;
 		return $this;
 	}
-	/** 
-	 * Getter for totalOnHandValue 
-	 * 
+	/**
+	 * Getter for totalOnHandValue
+	 *
 	 * @return double
 	 */
 	public function getTotalOnHandValue  ()
 	{
 		return $this->totalOnHandValue ;
 	}
-	/** 
-	 * Setter for totalOnHandValue 
-	 * 
+	/**
+	 * Setter for totalOnHandValue
+	 *
 	 * @param double $value
-	 * 
+	 *
 	 * @return Product
 	 */
 	public function setTotalOnHandValue ($value )
@@ -575,20 +581,20 @@ class Product extends InfoEntityAbstract
 		$this->totalOnHandValue = $value;
 		return $this;
 	}
-	/** 
-	 * Getter for totalInPartsValue 
-	 * 
+	/**
+	 * Getter for totalInPartsValue
+	 *
 	 * @return double
 	 */
 	public function getTotalInPartsValue  ()
 	{
 		return $this->totalInPartsValue ;
 	}
-	/** 
-	 * Setter for totalInPartsValue 
-	 * 
+	/**
+	 * Setter for totalInPartsValue
+	 *
 	 * @param double $value
-	 * 
+	 *
 	 * @return Product
 	 */
 	public function setTotalInPartsValue ($value )
@@ -596,20 +602,20 @@ class Product extends InfoEntityAbstract
 		$this->totalInPartsValue = $value;
 		return $this;
 	}
-	/** 
-	 * Getter for assetAccNo 
-	 * 
+	/**
+	 * Getter for assetAccNo
+	 *
 	 * @return string
 	 */
 	public function getAssetAccNo  ()
 	{
 		return $this->assetAccNo ;
 	}
-	/** 
-	 * Setter for assetAccNo 
-	 * 
+	/**
+	 * Setter for assetAccNo
+	 *
 	 * @param string $value
-	 * 
+	 *
 	 * @return Product
 	 */
 	public function setAssetAccNo ($value )
@@ -617,20 +623,20 @@ class Product extends InfoEntityAbstract
 		$this->assetAccNo = $value;
 		return $this;
 	}
-	/** 
-	 * Getter for revenueAccNo 
-	 * 
+	/**
+	 * Getter for revenueAccNo
+	 *
 	 * @return string
 	 */
 	public function getRevenueAccNo  ()
 	{
 		return $this->revenueAccNo ;
 	}
-	/** 
-	 * Setter for revenueAccNo 
-	 * 
+	/**
+	 * Setter for revenueAccNo
+	 *
 	 * @param string $value
-	 * 
+	 *
 	 * @return Product
 	 */
 	public function setRevenueAccNo ($value )
@@ -638,20 +644,20 @@ class Product extends InfoEntityAbstract
 		$this->revenueAccNo = $value;
 		return $this;
 	}
-	/** 
-	 * Getter for costAccNo 
-	 * 
+	/**
+	 * Getter for costAccNo
+	 *
 	 * @return string
 	 */
 	public function getCostAccNo  ()
 	{
 		return $this->costAccNo ;
 	}
-	/** 
-	 * Setter for costAccNo 
-	 * 
+	/**
+	 * Setter for costAccNo
+	 *
 	 * @param string $value
-	 * 
+	 *
 	 * @return Product
 	 */
 	public function setCostAccNo ($value )
@@ -659,12 +665,32 @@ class Product extends InfoEntityAbstract
 		$this->costAccNo = $value;
 		return $this;
 	}
-	
+	/**
+	 * Getter for totalRMAValue
+	 *
+	 * @return double
+	 */
+	public function getTotalRMAValue()
+	{
+	    return $this->totalRMAValue;
+	}
+	/**
+	 * Setter for totalRMAValue
+	 *
+	 * @param double $value The totalRMAValue
+	 *
+	 * @return Product
+	 */
+	public function setTotalRMAValue($value)
+	{
+	    $this->totalRMAValue = $value;
+	    return $this;
+	}
 	/**
 	 * Adding a product image to the product
-	 * 
+	 *
 	 * @param Asset $asset The asset object that reprents the image
-	 * 
+	 *
 	 * @return Product
 	 */
 	public function addImage(Asset $asset)
@@ -674,7 +700,7 @@ class Product extends InfoEntityAbstract
 	}
 	/**
 	 * Getting the prices
-	 * 
+	 *
 	 * @return Ambigous <Ambigous, multitype:, multitype:BaseEntityAbstract >
 	 */
 	public function getPrices()
@@ -687,7 +713,7 @@ class Product extends InfoEntityAbstract
 	}
 	/**
 	 * Getting all the images
-	 * 
+	 *
 	 * @return multitype:
 	 */
 	public function getImages()
@@ -700,9 +726,9 @@ class Product extends InfoEntityAbstract
 	}
 	/**
 	 * adding the category to this product
-	 * 
+	 *
 	 * @param ProductCategory $category
-	 * 
+	 *
 	 * @return Product
 	 */
 	public function addCategory(ProductCategory $category)
@@ -736,12 +762,12 @@ class Product extends InfoEntityAbstract
 	}
 	/**
 	 * Adding a price to a product
-	 * 
+	 *
 	 * @param ProductPriceType $type
 	 * @param number           $value
 	 * @param string           $fromDate
 	 * @param string           $toDate
-	 * 
+	 *
 	 * @return Product
 	 */
 	public function addPrice(ProductPriceType $type, $value, $fromDate = null, $toDate = null)
@@ -751,9 +777,9 @@ class Product extends InfoEntityAbstract
 	}
 	/**
 	 * removing the price
-	 * 
+	 *
 	 * @param ProductPriceType $type
-	 * 
+	 *
 	 * @return Product
 	 */
 	public function removePrice(ProductPriceType $type)
@@ -775,10 +801,10 @@ class Product extends InfoEntityAbstract
 	}
 	/**
 	 * Adding a supplier
-	 * 
+	 *
 	 * @param Supplier $supplier
 	 * @param string   $supplierCode
-	 * 
+	 *
 	 * @return Product
 	 */
 	public function addSupplier(Supplier $supplier, $supplierCode = 'NA')
@@ -807,7 +833,7 @@ class Product extends InfoEntityAbstract
 	}
 	/**
 	 * removing all the suppliers
-	 * 
+	 *
 	 * @return Product
 	 */
 	public function clearSuppliers()
@@ -817,14 +843,14 @@ class Product extends InfoEntityAbstract
 	}
 	/**
 	 * Getting the locations
-	 * 
+	 *
 	 * @param PreferredLocationType $type
 	 * @param string $activeOnly
 	 * @param string $pageNo
 	 * @param unknown $pageSize
 	 * @param unknown $orderBy
 	 * @param unknown $stats
-	 * 
+	 *
 	 * @return Ambigous <Ambigous, multitype:, multitype:BaseEntityAbstract >
 	 */
 	public function getLocations(PreferredLocationType $type = null, $activeOnly = true, $pageNo = null, $pageSize = DaoQuery::DEFAUTL_PAGE_SIZE, $orderBy = array(), &$stats = array())
@@ -833,7 +859,7 @@ class Product extends InfoEntityAbstract
 	}
 	/**
 	 * adding the location
-	 * 
+	 *
 	 * @param PreferredLocationType $type
 	 * @param Location $location
 	 * @return Product
@@ -845,11 +871,11 @@ class Product extends InfoEntityAbstract
 	}
 	/**
 	 * snapshot of the product qty
-	 * 
+	 *
 	 * @param BaseEntityAbstract $entity
 	 * @param string             $type
 	 * @param string             $comments
-	 * 
+	 *
 	 * @return Product
 	 */
 	public function snapshotQty(BaseEntityAbstract $entity = null, $type = '', $comments = '')
@@ -898,7 +924,7 @@ class Product extends InfoEntityAbstract
 	}
 	/**
 	 * Getting the unit cost based on the total value and stock on Hand
-	 * 
+	 *
 	 * @return number
 	 */
 	public function getUnitCost()
@@ -915,11 +941,11 @@ class Product extends InfoEntityAbstract
 	}
 	/**
 	 * A product is picked
-	 * 
+	 *
 	 * @param int                $qty
 	 * @param string             $comments
 	 * @param BaseEntityAbstract $entity
-	 * 
+	 *
 	 * @return Product
 	 */
 	public function picked($qty, $comments = '', BaseEntityAbstract $entity = null)
@@ -936,12 +962,12 @@ class Product extends InfoEntityAbstract
 	}
 	/**
 	 * A product is received
-	 * 
+	 *
 	 * @param int                $qty
 	 * @param double             $unitCost
 	 * @param string             $comments
 	 * @param BaseEntityAbstract $entity
-	 * 
+	 *
 	 * @throws EntityException
 	 * @return Product
 	 */
@@ -949,7 +975,7 @@ class Product extends InfoEntityAbstract
 	{
 		if(!is_numeric($unitCost))
 			throw new EntityException('Unitcost of receiving product(SKU=' . $this->getSku() . ') is not a number!');
-		
+
 		$origStockOnHand = $this->getStockOnHand();
 		$newStockOnHand = ($origStockOnHand + $qty);
 		$origTotalOnHandValue = $this->getTotalOnHandValue();
@@ -958,7 +984,7 @@ class Product extends InfoEntityAbstract
 		} else {
 			$newStockOnHandValue = ($origTotalOnHandValue + $qty * $unitCost);
 		}
-		
+
 		return $this->setStockOnPO(($origStockOnPO = $this->getStockOnPO()) - $qty)
 			->setStockOnHand($newStockOnHand)
 			->setTotalOnHandValue($newStockOnHandValue)
@@ -970,11 +996,11 @@ class Product extends InfoEntityAbstract
 	}
 	/**
 	 * A product is ordered from supplier
-	 * 
+	 *
 	 * @param int                $qty
 	 * @param string             $comments
 	 * @param BaseEntityAbstract $entity
-	 * 
+	 *
 	 * @throws EntityException
 	 * @return Product
 	 */
@@ -987,11 +1013,11 @@ class Product extends InfoEntityAbstract
 	}
 	/**
 	 * A product is shipped
-	 * 
+	 *
 	 * @param unknown            $qty
 	 * @param string             $comments
 	 * @param BaseEntityAbstract $entity
-	 * 
+	 *
 	 * @return Product
 	 */
 	public function shipped($qty, $comments = '', BaseEntityAbstract $entity = null)
@@ -1003,7 +1029,7 @@ class Product extends InfoEntityAbstract
 	}
 	/**
 	 * A product is stocktake
-	 * 
+	 *
 	 * @param int $stockOnHand
 	 * @param int $stockOnOrder
 	 * @param int $stockInParts
@@ -1052,13 +1078,14 @@ class Product extends InfoEntityAbstract
 		DaoMap::setStringType('sku', 'varchar', 50);
 		DaoMap::setStringType('name', 'varchar', 100);
 		DaoMap::setStringType('mageId', 'varchar', 10);
-		DaoMap::setIntType('totalOnHandValue', 'double', '10,4');
-		DaoMap::setIntType('totalInPartsValue', 'double', '10,4');
+		DaoMap::setIntType('totalOnHandValue', 'double', '10,4', false);
+		DaoMap::setIntType('totalInPartsValue', 'double', '10,4', false);
 		DaoMap::setIntType('stockOnHand', 'int', 10, false);
 		DaoMap::setIntType('stockOnOrder', 'int', 10, false);
 		DaoMap::setIntType('stockOnPO', 'int', 10, false);
 		DaoMap::setIntType('stockInParts', 'int', 10, false);
 		DaoMap::setIntType('stockInRMA', 'int', 10, false);
+		DaoMap::setIntType('totalRMAValue', 'double', '10,4', false);
 		DaoMap::setStringType('assetAccNo', 'varchar', 10);
 		DaoMap::setStringType('revenueAccNo', 'varchar', 10);
 		DaoMap::setStringType('costAccNo', 'varchar', 10);
@@ -1074,12 +1101,10 @@ class Product extends InfoEntityAbstract
 		DaoMap::setOneToMany('categories', 'Product_Category', 'pro_cate');
 		DaoMap::setOneToMany('codes', 'ProductCode', 'pro_pro_code');
 		parent::__loadDaoMap();
-		
+
 		DaoMap::createUniqueIndex('sku');
 		DaoMap::createIndex('name');
 		DaoMap::createIndex('mageId');
-		DaoMap::createIndex('totalOnHandValue');
-		DaoMap::createIndex('totalInPartsValue');
 		DaoMap::createIndex('stockOnHand');
 		DaoMap::createIndex('stockOnOrder');
 		DaoMap::createIndex('stockOnPO');
@@ -1130,7 +1155,7 @@ class Product extends InfoEntityAbstract
 		->setName($name);
 		if(($mageProductId = trim($mageProductId)) !== "")
 			$product->setMageId($mageProductId);
-	
+
 		if(trim($product->getId()) === '')
 		{
 			$product->setIsFromB2B($isFromB2B)
@@ -1157,7 +1182,7 @@ class Product extends InfoEntityAbstract
 	}
 	/**
 	 * Finding the products with different params
-	 * 
+	 *
 	 * @param unknown $sku
 	 * @param unknown $name
 	 * @param array $supplierIds
@@ -1169,7 +1194,7 @@ class Product extends InfoEntityAbstract
 	 * @param unknown $pageSize
 	 * @param unknown $orderBy
 	 * @param unknown $stats
-	 * 
+	 *
 	 * @return Ambigous <Ambigous, multitype:, multitype:BaseEntityAbstract >
 	 */
 	public static function getProducts($sku, $name, array $supplierIds = array(), array $manufacturerIds = array(), array $categoryIds = array(), array $statusIds = array(), $active = null, $pageNo = null, $pageSize = DaoQuery::DEFAUTL_PAGE_SIZE, $orderBy = array(), &$stats = array())
