@@ -8,6 +8,14 @@
  */
 class Payment extends BaseEntityAbstract
 {
+	const TYPE_PAYMENT = 'PAYMENT';
+	const TYPE_CREDIT = 'CREDIT';
+	/**
+	 * The type of the payment
+	 *
+	 * @var string
+	 */
+	private $type = '';
 	/**
 	 * The payment method
 	 *
@@ -92,12 +100,42 @@ class Payment extends BaseEntityAbstract
 	    return $this;
 	}
 	/**
+	 * Getter for type
+	 *
+	 * @return string
+	 */
+	public function getType()
+	{
+	    return $this->type;
+	}
+	/**
+	 * Setter for type
+	 *
+	 * @param string $value The type
+	 *
+	 * @return Payment
+	 */
+	public function setType($value)
+	{
+	    $this->type = $value;
+	    return $this;
+	}
+	/**
 	 * (non-PHPdoc)
 	 * @see BaseEntityAbstract::__toString()
 	 */
 	public function __toString()
 	{
 		return trim($this->getMethod() . ': ' . $this->getValue() . " for Order:" . $this->getOrder()->getOrderNo());
+	}
+	/**
+	 * (non-PHPdoc)
+	 * @see BaseEntityAbstract::preSave()
+	 */
+	public function preSave()
+	{
+		if(trim($this->getType()) === '')
+			$this->setType($this->getValue() > 0 ? self::TYPE_PAYMENT : self::TYPE_CREDIT);
 	}
 	/**
 	 * (non-PHPdoc)
@@ -138,8 +176,10 @@ class Payment extends BaseEntityAbstract
 		DaoMap::setManyToOne('order', 'Order', 'ord');
 		DaoMap::setManyToOne('method', 'PaymentMethod', 'py_method');
 		DaoMap::setIntType('value', 'Double', '10,4', false);
+		DaoMap::setStringType('type', 'varchar', '10');
 		parent::__loadDaoMap();
 
+		DaoMap::createIndex('type');
 		DaoMap::commit();
 	}
 	/**

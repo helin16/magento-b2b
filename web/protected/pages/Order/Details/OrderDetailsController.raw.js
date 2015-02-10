@@ -1151,6 +1151,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.paymentDiv = new Element('table', {"class": 'table table-hover table-condensed'})
 			.insert({'bottom': new Element('thead')
 				.insert({'bottom': new Element('th').update('Method') })
+				.insert({'bottom': new Element('th').update('Type') })
 				.insert({'bottom': new Element('th').update('value') })
 				.insert({'bottom': new Element('th').update('Confirmed By') })
 				.insert({'bottom': new Element('th').update('Comments') })
@@ -1160,6 +1161,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		payments.each(function(payment) {
 			tmp.tbody.insert({'bottom':  new Element('tr')
 				.insert({'bottom': new Element('td').update(payment.method.name) })
+				.insert({'bottom': new Element('td').update(payment.type) })
 				.insert({'bottom': new Element('td').update(tmp.me.getCurrency(payment.value)) })
 				.insert({'bottom': new Element('td').update(payment.createdBy.person.fullname + ' @ ' + tmp.me.loadUTCTime(payment.created).toLocaleString()) })
 				.insert({'bottom': new Element('td')
