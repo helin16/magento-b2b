@@ -1,0 +1,6 @@
+<com:TContent ID="MainContent">
+	<com:TCallback ID="searchOrdersBtn" onCallback="searchOrders" />
+	<div class="container">
+		<div class="pagewrapper" id='item-div'></div>
+	</div>
+</com:TContent>
