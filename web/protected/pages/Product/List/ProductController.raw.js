@@ -405,6 +405,10 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 					.observe('click', function(){
 						tmp.me._displaySelectedProduct(row);
 					})
+					.observe('dblclick', function(){
+						Event.stop(e);
+						tmp.me._openProductDetails(row);
+					})
 					.update(row.sku)
 				})
 			})
