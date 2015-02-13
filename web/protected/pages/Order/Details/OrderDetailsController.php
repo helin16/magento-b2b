@@ -335,7 +335,6 @@ class OrderDetailsController extends BPCPageAbstract
 						)->changeOrderStatus($order, OrderStatus::get(OrderStatus::ID_PICKED)->getMageStatus(), $notificationMsg, true);
 					$comments = 'An email notification contains payment checked info has been sent to customer for: ' . $order->getStatus()->getName();
 					Comments::addComments($order, $comments, Comments::TYPE_SYSTEM);
-					Comments::addComments($payment, $comments, Comments::TYPE_SYSTEM);
 				}
 			}
 
