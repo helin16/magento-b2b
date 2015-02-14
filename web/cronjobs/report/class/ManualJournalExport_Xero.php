@@ -37,7 +37,7 @@ class ManualJournalExport_Xero extends ExportAbstract
 				,'Description'=> $product->getSku()
 				,'AccountCode'=> $product->getAssetAccNo()
 				,'TaxRate'=> 'BAS Excluded'
-				,'Amount'=> 0 - $item->getTotalOnHandValueVar() 
+				,'Amount'=> $item->getTotalOnHandValueVar() 
 				,'TrackingName1'=> $item->getType()
 				,'TrackingOption1'=> ''
 				,'TrackingName2'=> ''
@@ -49,7 +49,7 @@ class ManualJournalExport_Xero extends ExportAbstract
 				,'Description'=> $product->getSku()
 				,'AccountCode'=> $product->getCostAccNo()
 				,'TaxRate'=> 'BAS Excluded'
-				,'Amount'=> $item->getTotalOnHandValueVar()
+				,'Amount'=> 0 - $item->getTotalOnHandValueVar()
 				,'TrackingName1'=> $item->getType()
 				,'TrackingOption1'=> ''
 				,'TrackingName2'=> ''
