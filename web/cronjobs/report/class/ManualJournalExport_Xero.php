@@ -22,7 +22,7 @@ class ManualJournalExport_Xero extends ExportAbstract
 			$product = $item->getProduct();
 			$return[] = array(
 				'Narration' => $item->getId()
-				,'Date'=> $item->getCreated()->setTimeZone('Australia/Melbourne')
+				,'Date'=> trim($item->getCreated()->setTimeZone('Australia/Melbourne'))
 				,'Description'=> $product->getSku()
 				,'AccountCode'=> $product->getAssetAccNo()
 				,'TaxRate'=> 'BAS Excluded'
@@ -34,7 +34,7 @@ class ManualJournalExport_Xero extends ExportAbstract
 			);
 			$return[] = array(
 				'Narration' => $item->getId()
-				,'Date'=> $item->getCreated()->setTimeZone('Australia/Melbourne')
+				,'Date'=> trim($item->getCreated()->setTimeZone('Australia/Melbourne'))
 				,'Description'=> $product->getSku()
 				,'AccountCode'=> $product->getCostAccNo()
 				,'TaxRate'=> 'BAS Excluded'
