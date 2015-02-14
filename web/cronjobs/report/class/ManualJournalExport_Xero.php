@@ -27,9 +27,9 @@ class ManualJournalExport_Xero extends ExportAbstract
 				else if ($item->getEntity() instanceof PurchaseOrder)
 					$narration = $item->getEntity()->getPurchaseOrderNo();
 				else if ($item->getEntity() instanceof OrderItem)
-					$narration = $item->getEntity()->getOrder() instanceof Order ? (($invoiceNo = trim($item->getEntity()->getOrder()->getInvoiceNo())) === '' ? $item->getEntity()->getOrder()->getOrderNo() : $invoiceNo) : '';
+					$narration = $item->getEntity()->getOrder() instanceof Order ? (($invoiceNo = trim($item->getEntity()->getOrder()->getInvNo())) === '' ? $item->getEntity()->getOrder()->getOrderNo() : $invoiceNo) : '';
 				else if ($item->getEntity() instanceof Order)
-					$narration = (($invoiceNo = trim($item->getEntity()->getInvoiceNo())) === '' ? $item->getEntity()->getOrderNo() : $invoiceNo);
+					$narration = (($invoiceNo = trim($item->getEntity()->getInvNo())) === '' ? $item->getEntity()->getOrderNo() : $invoiceNo);
 			}
 			$return[] = array(
 				'Narration' => $narration
