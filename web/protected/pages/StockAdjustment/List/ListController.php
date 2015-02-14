@@ -117,7 +117,7 @@ class ListController extends BPCPageAbstract
 				if(($totalOnHandValue = trim($item->totalOnHandValue)) !== $product->getTotalOnHandValue())
 					$product->setTotalOnHandValue($totalOnHandValue);
 			}
-			$product->save();
+			$product->snapshotQty(null, ProductQtyLog::TYPE_STOCK_ADJ, 'Manual Adjusted by' . Core::getUser()->getPerson()->getFullName())->save();
 			
 			$results['item'] = $product->getJson();
 			Dao::commitTransaction();
