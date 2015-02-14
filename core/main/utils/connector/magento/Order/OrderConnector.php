@@ -174,7 +174,7 @@ class OrderConnector extends B2BConnector
 				$product,
 				trim($itemObj->price) * 1.1,
 				trim($itemObj->qty_ordered),
-				trim($itemObj->row_total),
+				trim($itemObj->row_total) * 1.1,
 				trim($itemObj->item_id)
 		);
 	}

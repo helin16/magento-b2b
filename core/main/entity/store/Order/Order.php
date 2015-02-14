@@ -564,6 +564,7 @@ class Order extends InfoEntityAbstract
 			$this->setInvDate(Udate::zeroDate());
 		if(trim($this->getId()) !== '')
 		{
+			$this->setMargin($this->getCalculatedTotalMargin());
 			//status changed
 			$originalOrder = self::get($this->getId());
 			if($originalOrder instanceof Order && $originalOrder->getStatus()->getId() !== $this->getStatus()->getId())
@@ -588,7 +589,6 @@ class Order extends InfoEntityAbstract
 				->setMargin($this->getCalculatedTotalMargin())
 				->save();
 		}
-
 		if(trim($this->getType()) === trim(self::TYPE_INVOICE))
 			$this->_changeToInvoice();
 
