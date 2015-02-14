@@ -20,8 +20,19 @@ class ManualJournalExport_Xero extends ExportAbstract
 		foreach($items as $item)
 		{
 			$product = $item->getProduct();
+			$narration = '';
+			if($item->getEntity() instanceof BaseEntityAbstract) {
+				if($item->getEntity() instanceof PurchaseOrderItem)
+					$narration = $item->getEntity()->getPurchaseOrder() instanceof PurchaseOrder ?  $item->getEntity()->getPurchaseOrder()->getPurchaseOrderNo() : '';
+				else if ($item->getEntity() instanceof PurchaseOrder)
+					$narration = $item->getEntity()->getPurchaseOrderNo();
+				else if ($item->getEntity() instanceof OrderItem)
+					$narration = $item->getEntity()->getOrder() instanceof Order ? (($invoiceNo = trim($item->getEntity()->getOrder()->getInvoiceNo())) === '' ? $item->getEntity()->getOrder()->getOrderNo() : $invoiceNo) : '';
+				else if ($item->getEntity() instanceof Order)
+					$narration = (($invoiceNo = trim($item->getEntity()->getInvoiceNo())) === '' ? $item->getEntity()->getOrderNo() : $invoiceNo);
+			}
 			$return[] = array(
-				'Narration' => $item->getId()
+				'Narration' => $narration
 				,'Date'=> trim($item->getCreated()->setTimeZone('Australia/Melbourne'))
 				,'Description'=> $product->getSku()
 				,'AccountCode'=> $product->getAssetAccNo()
@@ -33,7 +44,7 @@ class ManualJournalExport_Xero extends ExportAbstract
 				,'TrackingOption2'=> ''
 			);
 			$return[] = array(
-				'Narration' => $item->getId()
+				'Narration' => $narration
 				,'Date'=> trim($item->getCreated()->setTimeZone('Australia/Melbourne'))
 				,'Description'=> $product->getSku()
 				,'AccountCode'=> $product->getCostAccNo()

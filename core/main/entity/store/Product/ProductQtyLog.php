@@ -547,6 +547,17 @@ class ProductQtyLog extends InfoEntityAbstract
 		$this->type = $type;
 		return $this;
 	}
+	/**
+	 * getting the entity
+	 * 
+	 * @return BaseEntityAbstract|NULL
+	 */
+	public function getEntity()
+	{
+		if(($class = trim($this->getEntityName())) === '')
+			return '';
+		return $class::get(trim($this->getEntityId()));
+	}
 	/* (non-PHPdoc)
 	 * @see BaseEntityAbstract::preSave()
 	 */
