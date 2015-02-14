@@ -634,9 +634,11 @@ class ProductQtyLog extends InfoEntityAbstract
 		$log->setProduct($product)
 			->setType($type)
 			->setStockOnHand($product->getStockOnHand())
+			->setTotalOnHandValue($product->getTotalOnHandValue())
 			->setStockOnOrder($product->getStockOnOrder())
 			->setStockOnPO($product->getstockOnPO())
 			->setStockInParts($product->getStockInParts())
+			->setTotalInPartsValue($product->getTotalInPartsValue())
 			->setStockInRMA($product->getStockInRMA())
 			->setTotalRMAValue($product->getTotalRMAValue())
 			->setComments($comments);

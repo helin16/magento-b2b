@@ -114,10 +114,11 @@ class ListController extends BPCPageAbstract
 					$product->setStockInParts($stockInParts);
 				if(($totalInPartsValue = trim($item->totalInPartsValue)) !== $product->getTotalInPartsValue())
 					$product->setTotalInPartsValue($totalInPartsValue);
-				if(($totalOnHandValue = trim($item->totalOnHandValue)) !== $product->getTotalOnHandValue())
+				if(($totalOnHandValue = trim($item->totalOnHandValue)) !== $product->getTotalOnHandValue()) {
 					$product->setTotalOnHandValue($totalOnHandValue);
+				}
 			}
-			$product->snapshotQty(null, ProductQtyLog::TYPE_STOCK_ADJ, 'Manual Adjusted by' . Core::getUser()->getPerson()->getFullName())->save();
+			$product->snapshotQty(null, ProductQtyLog::TYPE_STOCK_ADJ, 'Manual Adjusted by ' . Core::getUser()->getPerson()->getFullName())->save();
 			
 			$results['item'] = $product->getJson();
 			Dao::commitTransaction();
