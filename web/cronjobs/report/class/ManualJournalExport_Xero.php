@@ -43,8 +43,7 @@ class ManualJournalExport_Xero extends ExportAbstract
 				,'TrackingOption1'=> ''
 				,'TrackingName2'=> ''
 				,'TrackingOption2'=> ''
-			);;
-			$data1 = array_co
+			);
 		}
 		return $return;
 	}
