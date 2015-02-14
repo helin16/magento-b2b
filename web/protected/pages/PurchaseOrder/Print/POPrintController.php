@@ -98,7 +98,9 @@ class POPrintController extends BPCPageAbstract
 		$totalDue = $total - $this->order->getTotalPaid();
 		$html = $this->_getPaymentSummaryRow('Total:', '$' . number_format($totalNoGST, 2, '.', ','), 'grandTotalNoGST');
 		$html .= $this->_getPaymentSummaryRow('GST:', '$' . number_format($gst, 2, '.', ','), 'gst');
-		$html .= $this->_getPaymentSummaryRow('Total(inc-GST):', '$' . number_format($total, 2, '.', ','), 'grandTotal');
+		$html .= $this->_getPaymentSummaryRow('SubTotal Incl. GST:', '$' . number_format($total, 2, '.', ','), 'grandTotal');
+		$html .= $this->_getPaymentSummaryRow('Shipping Fee Incl. GST:', '$' . number_format($this->order->getShippingCost(), 2, '.', ','), 'grandTotal');
+		$html .= $this->_getPaymentSummaryRow('Handling Fee Incl. GST:', '$' . number_format($this->order->getHandlingCost(), 2, '.', ','), 'grandTotal');
 		$html .= $this->_getPaymentSummaryRow('Paid to Date:', '$' . number_format($this->order->getTotalPaid(), 2, '.', ','), 'paidTotal');
 		$overDueClass = $totalDue > 0 ? 'overdue' : '';
 		$html .= $this->_getPaymentSummaryRow('Balance Due:', '$' . number_format($totalDue, 2, '.', ','), 'dueTotal ' . $overDueClass);

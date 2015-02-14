@@ -974,7 +974,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 	,_openOrderPrintPage: function() {
 		var tmp = {};
 		tmp.me = this;
-		tmp.newWindow = window.open('/print/order/' + tmp.me._order.id + '.html', tmp.me._order.status.name + ' Order ' + tmp.me._order.orderNo, 'width=1300, location=no, scrollbars=yes, menubar=no, status=no, titlebar=no, fullscreen=no, toolbar=no');
+		tmp.newWindow = window.open('/print/order/' + tmp.me._order.id + '.html?pdf=1', tmp.me._order.status.name + ' Order ' + tmp.me._order.orderNo, 'width=1300, location=no, scrollbars=yes, menubar=no, status=no, titlebar=no, fullscreen=no, toolbar=no');
 		tmp.newWindow.onload = function(){
 			tmp.newWindow.document.title = tmp.me._order.status.name + ' Order ' + tmp.me._order.orderNo;
 			tmp.newWindow.focus();

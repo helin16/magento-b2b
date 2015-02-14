@@ -771,7 +771,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				.insert({'bottom': new Element('td', {'save-order-summary': 'totalInGST', 'class': 'active'}).update( tmp.me.getCurrency(0) ) })
 			})
 			.insert({'bottom': new Element('tr') 
-				.insert({'bottom': new Element('td', {'colspan': 2, 'class': 'text-right active'}).update( new Element('span').update('Shipping Cost: ') ) }) 
+				.insert({'bottom': new Element('td', {'colspan': 2, 'class': 'text-right active'}).update( new Element('span').update('Shipping Cost Incl. GST: ') ) }) 
 				.insert({'bottom': new Element('td', {'class': 'active'}).update(
 						new Element('input', {'save-order': 'shippingCost', 'save-order-summary': 'shippingCost', 'placeholder':  tmp.me.getCurrency(0)})
 						.observe('change', function(){
@@ -780,7 +780,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				) })
 			})
 			.insert({'bottom': new Element('tr') 
-				.insert({'bottom': new Element('td', {'colspan': 2, 'class': 'text-right active', 'style': 'border-bottom: 1px solid brown'}).update( new Element('span').update('Handling Cost: ') ) }) 
+				.insert({'bottom': new Element('td', {'colspan': 2, 'class': 'text-right active', 'style': 'border-bottom: 1px solid brown'}).update( new Element('span').update('Handling Cost  Incl. GST: ') ) }) 
 				.insert({'bottom': new Element('td', {'class': 'active', 'style': 'border-bottom: 1px solid brown'}).update(
 						new Element('input', {'save-order': 'handlingCost', 'save-order-summary': 'handlingCost', 'placeholder':  tmp.me.getCurrency(0)})
 						.observe('change', function(){
