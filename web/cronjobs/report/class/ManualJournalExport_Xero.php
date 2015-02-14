@@ -4,7 +4,7 @@ class ManualJournalExport_Xero extends ExportAbstract
 	protected static function _getData()
 	{
 		$now = new UDate();
-// 		$now->modify('-1 day');
+		$now->modify('-1 day');
 		$dataType = 'created';
 		$items = ProductQtyLog::getAllByCriteria($dataType . ' > :fromDate and ' . $dataType . ' < :toDate and type in (:type1, :type2)', 
 				array('fromDate' => $now->format('Y-m-d') . ' 00:00:00', 
