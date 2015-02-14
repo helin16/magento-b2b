@@ -172,7 +172,7 @@ class OrderConnector extends B2BConnector
 		$product = Product::create(trim($itemObj->sku), trim($itemObj->name), trim($itemObj->product_id));
 		return OrderItem::create($order,
 				$product,
-				trim($itemObj->price),
+				trim($itemObj->price) * 1.1,
 				trim($itemObj->qty_ordered),
 				trim($itemObj->row_total),
 				trim($itemObj->item_id)
