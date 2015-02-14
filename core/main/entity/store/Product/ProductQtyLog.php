@@ -112,12 +112,12 @@ class ProductQtyLog extends InfoEntityAbstract
 	 * entity name
 	 * @var string
 	 */
-	private $entityName;
+	private $entityName = '';
 	/**
 	 * entity id
 	 * @var int
 	 */
-	private $entityId;
+	private $entityId = '';
 	/**
 	 * type
 	 * @var string
