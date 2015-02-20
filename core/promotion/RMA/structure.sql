@@ -1,8 +1,8 @@
 DROP TABLE IF EXISTS `rma`;
 CREATE TABLE `rma` (
 	`id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-	`raNo` varchar(10) NOT NULL DEFAULT '',
-	`orderId` int(10) unsigned NOT NULL DEFAULT 0,
+	`raNo` varchar(12) NOT NULL DEFAULT '',
+	`orderId` int(10) unsigned NULL DEFAULT NULL,
 	`customerId` int(10) unsigned NOT NULL DEFAULT 0,
 	`totalValue` double(10,4) unsigned NOT NULL DEFAULT 0,
 	`description` varchar(255) NOT NULL DEFAULT '',
@@ -26,7 +26,7 @@ CREATE TABLE `rmaitem` (
 	`orderItemId` int(10) unsigned NULL DEFAULT NULL,
 	`productId` int(10) unsigned NOT NULL DEFAULT 0,
 	`qty` int(10) unsigned NOT NULL DEFAULT 0,
-	`unitValue` double(10,4) unsigned NOT NULL DEFAULT 0,
+	`unitCost` double(10,4) unsigned NOT NULL DEFAULT 0,
 	`itemDescription` varchar(255) NOT NULL DEFAULT '',
 	`active` bool NOT NULL DEFAULT 1,
 	`created` datetime NOT NULL DEFAULT '0001-01-01 00:00:00',
@@ -40,7 +40,7 @@ CREATE TABLE `rmaitem` (
 	,INDEX (`createdById`)
 	,INDEX (`updatedById`)
 	,INDEX (`qty`)
-	,INDEX (`unitValue`)
+	,INDEX (`unitCost`)
 ) ENGINE=innodb DEFAULT CHARSET=utf8;
 
 DROP TABLE IF EXISTS `creditnote`;

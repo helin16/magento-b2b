@@ -185,13 +185,13 @@ class RMAItem extends BaseEntityAbstract
 		DaoMap::setManyToOne('orderItem', 'OrderItem', 'ra_item_ord_item', true);
 		DaoMap::setManyToOne('product', 'Product', 'ra_pro');
 		DaoMap::setIntType('qty');
-		DaoMap::setIntType('unitValue', 'double', '10,4');
+		DaoMap::setIntType('unitCost', 'double', '10,4');
 		DaoMap::setStringType('itemDescription', 'varchar', '255');
 
 		parent::__loadDaoMap();
 
 		DaoMap::createIndex('qty');
-		DaoMap::createIndex('unitValue');
+		DaoMap::createIndex('unitCost');
 
 		DaoMap::commit();
 	}
@@ -209,15 +209,15 @@ class RMAItem extends BaseEntityAbstract
 	public static function create(RMA $rma, Product $product, $qty, $itemDescription = '', $unitCost = null)
 	{
 		$item = new RMAItem();
-		$item->setRM($creditNote)
+		$item->setRMA($rma)
 			->setProduct($product)
 			->setQty($qty)
 			->setItemDescription(trim($itemDescription))
 			->setUnitCost($unitCost !== null ? $unitCost : $product->getUnitCost())
 			->save();
 		$msg = 'A RMAItem has been created with ' . $qty . 'Product(s) (SKU=' . $product->getSku() . ', ID=' . $product->getId() . '), unitCost=' . StringUtilsAbstract::getCurrency($item->getUnitCost()) ;
-		$creditNote->addComment($msg, Comments::TYPE_SYSTEM)
-		->addLog($msg, Comments::TYPE_SYSTEM);
+		$rma->addComment($msg, Comments::TYPE_SYSTEM)
+			->addLog($msg, Comments::TYPE_SYSTEM);
 		return $item;
 	}
 	/**
@@ -234,7 +234,7 @@ class RMAItem extends BaseEntityAbstract
 	public static function createFromOrderItem(RMA $rma, OrderItem $orderItem, $qty, $itemDescription = '', $unitCost = null)
 	{
 		$item = new RMAItem();
-		$item->setCreditNote($creditNote)
+		$item->setRMA($rma)
 			->setOrderItem($orderItem)
 			->setProduct($orderItem->getProduct())
 			->setQty($qty)
@@ -242,7 +242,7 @@ class RMAItem extends BaseEntityAbstract
 			->setUnitCost($unitCost !== null ? $unitCost : $orderItem->getUnitCost())
 			->save();
 		$msg = 'A RMAItem has been created based on OrderItem(ID=' . $orderItem->getId() . ', OrderNo=' . $orderItem->getOrder()->getOrderNo() . ') with ' . $qty . 'Product(s) (SKU=' . $product->getSku() . ', ID=' . $product->getId() . '), unitCost=' . StringUtilsAbstract::getCurrency($item->getUnitCost()) ;
-		$creditNote->addComment($msg, Comments::TYPE_SYSTEM)
+		$rma->addComment($msg, Comments::TYPE_SYSTEM)
 			->addLog($msg, Comments::TYPE_SYSTEM);
 		return $item;
 	}

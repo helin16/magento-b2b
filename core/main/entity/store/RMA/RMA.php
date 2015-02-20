@@ -6,13 +6,13 @@ class RMA extends BaseEntityAbstract
 	 *
 	 * @var string
 	 */
-	private $raNo;
+	private $raNo = '';
 	/**
 	 * The order for this RA
 	 *
 	 * @var Order
 	 */
-	protected $order;
+	protected $order = null;
 	/**
 	 * The customer for this RA
 	 *
@@ -24,7 +24,7 @@ class RMA extends BaseEntityAbstract
 	 *
 	 * @var double
 	 */
-	private $totalValue;
+	private $totalValue = 0;
 	/**
 	 * The description of this RA
 	 *
@@ -102,7 +102,7 @@ class RMA extends BaseEntityAbstract
 	 */
 	public function getCustomer()
 	{
-		$this->loadOneToMany('customer');
+		$this->loadManyToOne('customer');
 	    return $this->customer;
 	}
 	/**
@@ -151,7 +151,7 @@ class RMA extends BaseEntityAbstract
 	 */
 	public function addItem(Product $product, $qty, $itemDescription = '', $unitCost = null, &$rmaItem = null)
 	{
-		$rmaItem = CreditNoteItem::create($this, $product, $qty, $itemDescription, $unitCost);
+		$rmaItem = RMAItem::create($this, $product, $qty, $itemDescription, $unitCost);
 		return $this;
 	}
 	/**
@@ -167,7 +167,7 @@ class RMA extends BaseEntityAbstract
 	 */
 	public function addItemFromOrderItem(OrderItem $orderItem, $qty, $itemDescription = '', $unitCost = null, &$rmaItem = null)
 	{
-		$rmaItem = CreditNoteItem::createFromOrderItem($this, $orderItem, $qty, $itemDescription, $unitCost);
+		$rmaItem = RMAItem::createFromOrderItem($this, $orderItem, $qty, $itemDescription, $unitCost);
 		return $this;
 	}
 	/**
@@ -192,7 +192,7 @@ class RMA extends BaseEntityAbstract
 	{
 		if(trim($this->getRaNo()) === '') {
 			$this->setRaNo('BPCR' . str_pad($this->getId(), 8, '0', STR_PAD_LEFT))
-			->save();
+				->save();
 		}
 	}
 	/**
@@ -203,8 +203,8 @@ class RMA extends BaseEntityAbstract
 	{
 		DaoMap::begin($this, 'ra');
 
-		DaoMap::setStringType('raNo', 'varchar', '10');
-		DaoMap::setManyToOne('order', 'Order', 'ra_order');
+		DaoMap::setStringType('raNo', 'varchar', 12);
+		DaoMap::setManyToOne('order', 'Order', 'ra_order', true);
 		DaoMap::setManyToOne('customer', 'Customer', 'ra_customer');
 		DaoMap::setIntType('totalValue', 'double', '10,4');
 		DaoMap::setStringType('description', 'varchar', '255');
@@ -248,6 +248,6 @@ class RMA extends BaseEntityAbstract
 		$msg = 'A RMA(' . $ra->getRaNo() . ') has been created for Order(ID= ' . $order->getId() . ', OrderNo.=' . $order->getOrderNo() . '): ' . $description;
 		$order->addComment($msg, Comments::TYPE_SYSTEM)
 			->addLog($msg, Log::TYPE_SYSTEM);
-		return $creditNote;
+		return $ra;
 	}
 }
