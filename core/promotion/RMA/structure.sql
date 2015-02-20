@@ -52,6 +52,7 @@ CREATE TABLE `creditnote` (
 	`applyTo` varchar(10) NOT NULL DEFAULT '',
 	`applyDate` datetime NOT NULL DEFAULT '0001-01-01 00:00:00',
 	`totalValue` double(10,4) unsigned NOT NULL DEFAULT 0,
+	`description` varchar(255) NOT NULL DEFAULT '',
 	`active` bool NOT NULL DEFAULT 1,
 	`created` datetime NOT NULL DEFAULT '0001-01-01 00:00:00',
 	`createdById` int(10) unsigned NOT NULL DEFAULT 0,
@@ -70,7 +71,7 @@ DROP TABLE IF EXISTS `creditnoteitem`;
 CREATE TABLE `creditnoteitem` (
 	`id` int(10) unsigned NOT NULL AUTO_INCREMENT,
 	`creditNoteId` int(10) unsigned NOT NULL DEFAULT 0,
-	`orderItemId` int(10) unsigned NOT NULL DEFAULT 0,
+	`orderItemId` int(10) unsigned NULL DEFAULT 0,
 	`productId` int(10) unsigned NOT NULL DEFAULT 0,
 	`qty` int(10) unsigned NOT NULL DEFAULT 0,
 	`unitPrice` double(10,4) unsigned NOT NULL DEFAULT 0,

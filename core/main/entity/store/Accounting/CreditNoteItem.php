@@ -12,7 +12,7 @@ class CreditNoteItem extends BaseEntityAbstract
 	 *
 	 * @var OrderItem
 	 */
-	protected $orderItem;
+	protected $orderItem = null;
 	/**
 	 * The product of this credit item
 	 *
@@ -211,7 +211,7 @@ class CreditNoteItem extends BaseEntityAbstract
 		DaoMap::begin($this, 'cn_item');
 
 		DaoMap::setManyToOne('creditNote', 'CreditNote', 'cn_item_cn');
-		DaoMap::setManyToOne('orderItem', 'OrderItem', 'cn_it');
+		DaoMap::setManyToOne('orderItem', 'OrderItem', 'cn_it', true);
 		DaoMap::setManyToOne('product', 'Product', 'cn_pro');
 		DaoMap::setIntType('qty');
 		DaoMap::setIntType('unitPrice', 'double', '10,4');
@@ -276,7 +276,7 @@ class CreditNoteItem extends BaseEntityAbstract
 			->setItemDescription(trim($itemDescription))
 			->setUnitCost($unitCost !== null ? $unitCost : $orderItem->getUnitCost())
 			->save();
-		$msg = 'A credit item has been created based on OrderItem(ID=' . $orderItem->getId() . ', OrderNo=' . $orderItem->getOrder()->getOrderNo() . ') with ' . $qty . 'Product(s) (SKU=' . $product->getSku() . ', ID=' . $product->getId() . '), unitPrice=' . StringUtilsAbstract::getCurrency($unitPrice) . ', unitCost=' . StringUtilsAbstract::getCurrency($item->getUnitCost()) ;
+		$msg = 'A credit item has been created based on OrderItem(ID=' . $orderItem->getId() . ', OrderNo=' . $orderItem->getOrder()->getOrderNo() . ') with ' . $qty . 'Product(s) (SKU=' . $item->getProduct()->getSku() . ', ID=' . $item->getProduct()->getId() . '), unitPrice=' . StringUtilsAbstract::getCurrency($unitPrice) . ', unitCost=' . StringUtilsAbstract::getCurrency($item->getUnitCost()) ;
 		$creditNote->addComment($msg, Comments::TYPE_SYSTEM)
 			->addLog($msg, Comments::TYPE_SYSTEM);
 		return $item;

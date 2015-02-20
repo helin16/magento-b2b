@@ -24,7 +24,7 @@ class CreditNote extends BaseEntityAbstract
 	 *
 	 * @var string
 	 */
-	private $applyTo;
+	private $applyTo = '';
 	/**
 	 * Applying Date
 	 *
@@ -36,7 +36,13 @@ class CreditNote extends BaseEntityAbstract
 	 *
 	 * @var double
 	 */
-	private $totalValue;
+	private $totalValue = '';
+	/**
+	 * The description
+	 * 
+	 * @var string
+	 */
+	private $description = '';
 	/**
 	 * Getter for order
 	 *
@@ -166,6 +172,27 @@ class CreditNote extends BaseEntityAbstract
 	    return $this;
 	}
 	/**
+	 * The getter for description
+	 *
+	 * @return string
+	 */
+	public function getDescription ()
+	{
+	    return $this->description;
+	}
+	/**
+	 * Setter for description
+	 * 
+	 * @param mixed $value The new value of description
+	 *
+	 * @return CreditNote
+	 */
+	public function setDescription ($value)
+	{
+	    $this->description = $value;
+	    return $this;
+	}
+	/**
 	 * (non-PHPdoc)
 	 * @see BaseEntityAbstract::preSave()
 	 */
@@ -236,6 +263,7 @@ class CreditNote extends BaseEntityAbstract
 		DaoMap::setStringType('applyTo', 'varchar', 10);
 		DaoMap::setDateType('applyDate');
 		DaoMap::setIntType('totalValue', 'double', '10,4');
+		DaoMap::setStringType('description', 'varchar', 255);
 		parent::__loadDaoMap();
 
 		DaoMap::createUniqueIndex('creditNoteNo');
