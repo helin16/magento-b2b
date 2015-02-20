@@ -308,5 +308,13 @@ class CreditNote extends BaseEntityAbstract
 			->addLog($msg, Log::TYPE_SYSTEM);
 		return $creditNote;
 	}
-	public static function 
+	/**
+	 * getting the types for the applyTo
+	 * 
+	 * @return multitype:string
+	 */
+	public static function getApplyToTypes()
+	{
+		return array(self::APPLY_TO_CREDIT, self::APPLY_TO_REFUND);
+	}
 }
