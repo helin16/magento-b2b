@@ -22,16 +22,18 @@ class AjaxController extends TService
   		if(!isset($this->Request['method']) || ($method = trim($this->Request['method'])) === '' || !method_exists($this, ($method = '_' .$method)))
   			die (BPCPageAbstract::show404Page('Invalid request',"No method passed in."));
   		
-  		$content = '';
+  		$results = $errors = array();
 		try
 		{
-			$content .= $this->$method($_REQUEST);
+			$results = $this->$method($_REQUEST);
 		} 
 		catch (Exception $ex)
 		{
-			$content .= $ex->getMessage();
+			$errors[] = $ex->getMessage();
 		}
-		$this->getResponse()->write($content);
+		$this->getResponse()->flush();
+        $this->getResponse()->appendHeader('Content-Type: application/json');
+        $this->getResponse()->write(StringUtilsAbstract::getJson($results, $errors));
   	}
 	/**
 	 * Getting the comments for an entity
@@ -62,7 +64,33 @@ class AjaxController extends TService
   		$results = array();
   		$results['items'] = array_map(create_function('$a', 'return $a->getJson();'), $commentsArray);
   		$results['pageStats'] = $stats;
-  		return json_encode($results);
+  		return $results;
+  	}
+  	
+  	/**
+  	 * Getting the comments for an entity
+  	 *
+  	 * @param array $params
+  	 *
+  	 * @return string The json string
+  	 */
+  	private function _getCustomers(Array $params)
+  	{
+  		$searchTxt = trim(isset($params['searchTxt']) ? $params['searchTxt'] : '');
+  		if($searchTxt === '')
+  			throw new Exception('SearchTxt is needed');
+  		$pageSize = (isset($params['pageSize']) && ($pageSize = trim($params['pageSize'])) !== '' ? $pageSize : DaoQuery::DEFAUTL_PAGE_SIZE);
+  		$pageNo = (isset($params['pageNo']) && ($pageNo = trim($params['pageNo'])) !== '' ? $pageNo : null);
+  		$orderBy = (isset($params['orderBy']) ? $params['orderBy'] : array());
+  	
+  		$where = array('name like :searchTxt or email like :searchTxt or contactNo like :searchTxt');
+  		$sqlParams = array('searchTxt' => '%' . $searchTxt . '%');
+  		$stats = array();
+  		$items = Customer::getAllByCriteria(implode(' AND ', $where), $sqlParams, true, $pageNo, $pageSize, $orderBy, $stats);
+  		$results = array();
+  		$results['items'] = array_map(create_function('$a', 'return $a->getJson();'), $items);
+  		$results['pageStats'] = $stats;
+  		return $results;
   	}
 
 }
