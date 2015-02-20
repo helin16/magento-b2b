@@ -29,6 +29,7 @@ abstract class SystemCoreAbstract
 			$base . '/entity/store/Order/',
 			$base . '/entity/store/Product/',
 			$base . '/entity/store/Purchase/',
+			$base . '/entity/store/RMA/',
 			$base . '/entity/store/Shipment/',
 			$base . '/entity/store/Tools/',
 			$base . '/entity/system/',

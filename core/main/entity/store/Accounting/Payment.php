@@ -27,7 +27,13 @@ class Payment extends BaseEntityAbstract
 	 *
 	 * @var Order
 	 */
-	protected $order;
+	protected $order = null;
+	/**
+	 * The credit not of this payment
+	 *
+	 * @var CreditNote
+	 */
+	protected $creditNote = null;
 	/**
 	 * The value of this payment
 	 *
@@ -73,7 +79,7 @@ class Payment extends BaseEntityAbstract
 	 *
 	 * @return Payment
 	 */
-	public function setOrder($value)
+	public function setOrder(Order $value = null)
 	{
 	    $this->order = $value;
 	    return $this;
@@ -121,6 +127,28 @@ class Payment extends BaseEntityAbstract
 	    return $this;
 	}
 	/**
+	 * Getter for creditNote
+	 *
+	 * @return CreditNote
+	 */
+	public function getCreditNote()
+	{
+		$this->loadManyToOne('creditNote');
+	    return $this->creditNote;
+	}
+	/**
+	 * Setter for creditNote
+	 *
+	 * @param CreditNote $value The creditNote
+	 *
+	 * @return Payment
+	 */
+	public function setCreditNote(CreditNote $value = null)
+	{
+	    $this->creditNote = $value;
+	    return $this;
+	}
+	/**
 	 * (non-PHPdoc)
 	 * @see BaseEntityAbstract::__toString()
 	 */
@@ -134,6 +162,8 @@ class Payment extends BaseEntityAbstract
 	 */
 	public function preSave()
 	{
+		if(!$this->getCreditNote() instanceof CreditNote && !$this->getOrder() instanceof Order)
+			throw new EntityException('You need to create a payment against at least one of these: Order / CreditNote');
 		if(trim($this->getType()) === '')
 			$this->setType($this->getValue() > 0 ? self::TYPE_PAYMENT : self::TYPE_CREDIT);
 	}
@@ -173,7 +203,8 @@ class Payment extends BaseEntityAbstract
 	{
 		DaoMap::begin($this, 'py');
 
-		DaoMap::setManyToOne('order', 'Order', 'ord');
+		DaoMap::setManyToOne('order', 'Order', 'ord', true);
+		DaoMap::setManyToOne('creditNote', 'CreditNote', 'py_cn', true);
 		DaoMap::setManyToOne('method', 'PaymentMethod', 'py_method');
 		DaoMap::setIntType('value', 'Double', '10,4', false);
 		DaoMap::setStringType('type', 'varchar', '10');
@@ -195,7 +226,7 @@ class Payment extends BaseEntityAbstract
 	public static function create(Order $order, PaymentMethod $method, $value, $comments = '')
 	{
 		$payment = new Payment();
-		$message = 'A payment via ' . $method->getName() . ' is made with value: ' . StringUtilsAbstract::getCurrency($value);
+		$message = 'A payment via ' . $method->getName() . ' is made with value: ' . StringUtilsAbstract::getCurrency($value) . ' for Order(ID=' . $order->getId() . ', OrderNo.=' . $order->getOrderNo() . ').';
 		$payment = $payment->setOrder($order)
 			->setMethod($method)
 			->setValue($value)
@@ -207,6 +238,34 @@ class Payment extends BaseEntityAbstract
 		if(trim($comments) !== '') {
 			$payment->addComment($comments, Comments::TYPE_ACCOUNTING);
 			$order->addComment($comments, Comments::TYPE_ACCOUNTING);
+		}
+		return $payment;
+	}
+	/**
+	 * Creating a payment for creditNote
+	 *
+	 * @param CreditNote    $creditNote
+	 * @param PaymentMethod $method
+	 * @param string        $value
+	 * @param string        $comments
+	 *
+	 * @return Ambigous <BaseEntityAbstract, GenericDAO>
+	 */
+	public static function createFromCreditNote(CreditNote $creditNote, PaymentMethod $method, $value, $comments = '')
+	{
+		$payment = new Payment();
+		$message = 'A Credit payment via ' . $method->getName() . ' is created with value: ' . StringUtilsAbstract::getCurrency($value) . ' for CreditNote(ID=' . $creditNote->getId() . ', CreditNoteNo.=' . $creditNote->getCreditNoteNo() . ').';
+		$payment = $payment->setCreditNote($creditNote)
+			->setMethod($method)
+			->setValue($value)
+			->save()
+			->addComment($message, Comments::TYPE_SYSTEM)
+			->addLog($message, Log::TYPE_SYSTEM, get_class($payment) . '_CREATION', __CLASS__ . '::' . __FUNCTION__);
+		$creditNote->addComment($message, Comments::TYPE_SYSTEM)
+			->addLog($message, Log::TYPE_SYSTEM, 'Auto Log', __CLASS__ . '::' . __FUNCTION__);
+		if(trim($comments) !== '') {
+			$payment->addComment($comments, Comments::TYPE_ACCOUNTING);
+			$creditNote->addComment($comments, Comments::TYPE_ACCOUNTING);
 		}
 		return $payment;
 	}
