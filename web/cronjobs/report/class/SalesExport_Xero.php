@@ -51,7 +51,7 @@ class SalesExport_Xero extends ExportAbstract
 	{
 		$yesterday = new UDate();
 		$yesterday->modify('-1 day');
-		$orders = Order::getAllByCriteria('invDate > :fromDate and invDate < :toDate', array('fromDate' => $yesterday->format('Y-m-d') . ' 00:00:00', 'toDate' => $yesterday->format('Y-m-d') . '23:59:59'));
+		$orders = Order::getAllByCriteria('invDate >= :fromDate and invDate < :toDate', array('fromDate' => $yesterday->format('Y-m-d') . ' 00:00:00', 'toDate' => $yesterday->format('Y-m-d') . '23:59:59'));
 		
 		$return = array();
 		foreach($orders as $order)

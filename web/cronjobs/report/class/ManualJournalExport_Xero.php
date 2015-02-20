@@ -6,7 +6,7 @@ class ManualJournalExport_Xero extends ExportAbstract
 		$now = new UDate();
 		$now->modify('-1 day');
 		$dataType = 'created';
-		$items = ProductQtyLog::getAllByCriteria($dataType . ' > :fromDate and ' . $dataType . ' < :toDate and type in (:type1, :type2)', 
+		$items = ProductQtyLog::getAllByCriteria($dataType . ' >= :fromDate and ' . $dataType . ' < :toDate and type in (:type1, :type2)', 
 				array('fromDate' => $now->format('Y-m-d') . ' 00:00:00', 
 					'toDate' => $now->format('Y-m-d') . '23:59:59',
 					'type1' => ProductQtyLog::TYPE_SALES_ORDER,

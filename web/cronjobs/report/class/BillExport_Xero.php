@@ -7,7 +7,7 @@ class BillExport_Xero extends ExportAbstract
 		$now = new UDate();
 		$now->modify('-1 day');
 		$dataType = 'created';
-		$receivingItems = ReceivingItem::getAllByCriteria($dataType . ' > :fromDate and ' . $dataType . ' < :toDate', array('fromDate' => $now->format('Y-m-d') . ' 00:00:00', 'toDate' => $now->format('Y-m-d') . '23:59:59'));
+		$receivingItems = ReceivingItem::getAllByCriteria($dataType . ' >= :fromDate and ' . $dataType . ' < :toDate', array('fromDate' => $now->format('Y-m-d') . ' 00:00:00', 'toDate' => $now->format('Y-m-d') . '23:59:59'));
 		$now = new UDate();
 		$now->setTimeZone('Australia/Melbourne');
 		$return = array();

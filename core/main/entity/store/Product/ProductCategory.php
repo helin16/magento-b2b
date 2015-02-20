@@ -276,7 +276,7 @@ class ProductCategory extends BaseEntityAbstract
 	/**
 	 * Getter for mageId
 	 *
-	 * @return
+	 * @return string
 	 */
 	public function getMageId()
 	{
