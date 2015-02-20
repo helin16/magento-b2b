@@ -1,0 +1,13 @@
+<com:TContent ID="MainContent">
+    <div class="container">
+    	<h4 class="text-danger">test</h4>
+    	<div><i class="fa fa-bell-slash fa-spin fa-5x"></i></div>
+    	<div class="row">
+    		<div class="col-lg-3 col-md-5 col-sm-6  col-xs-12" style="border: 1px black solid;">test</div>
+    		<div class="col-lg-3 col-md-5 col-sm-6  col-xs-12" style="border: 1px black solid;">test</div>
+    		<div class="col-lg-3 col-md-5 col-sm-6  col-xs-12 hidden-sm" style="border: 1px black solid;">test hidden</div>
+    		<div class="col-lg-3 col-md-5 col-sm-6  col-xs-12" style="border: 1px black solid;">test</div>
+    	</div>
+    	<span class="btn btn-danger btn-lg">my button</span>
+    </div>
+</com:TContent>

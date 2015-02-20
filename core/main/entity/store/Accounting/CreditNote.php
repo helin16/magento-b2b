@@ -1,6 +1,8 @@
 <?php
 class CreditNote extends BaseEntityAbstract
 {
+	const APPLY_TO_REFUND = 'REFUND';
+	const APPLY_TO_CREDIT = 'CREDIT';
 	/**
 	 * The creditNote No
 	 *
@@ -306,4 +308,5 @@ class CreditNote extends BaseEntityAbstract
 			->addLog($msg, Log::TYPE_SYSTEM);
 		return $creditNote;
 	}
+	public static function 
 }
