@@ -1,6 +1,10 @@
 <?php
 class RMA extends BaseEntityAbstract
 {
+	const STATUS_NEW = 'NEW';
+	const STATUS_RECEIVING = 'RECEIVING';
+	const STATUS_RECEIVED = 'RECEIVING';
+	const STATUS_CLOSED = 'CLOSED';
 	/**
 	 * The RA no
 	 *
@@ -31,6 +35,12 @@ class RMA extends BaseEntityAbstract
 	 * @var string
 	 */
 	private $description;
+	/**
+	 * The status
+	 * 
+	 * @var string
+	 */
+	private $status = self::STATUS_NEW;
 	/**
 	 * Getter for raNo
 	 *
@@ -139,6 +149,27 @@ class RMA extends BaseEntityAbstract
 	    return $this;
 	}
 	/**
+	 * The getter for status
+	 *
+	 * @return string
+	 */
+	public function getStatus ()
+	{
+	    return $this->status;
+	}
+	/**
+	 * Setter for status
+	 * 
+	 * @param mixed $value The new value of status
+	 *
+	 * @return RMA
+	 */
+	public function setStatus ($value)
+	{
+	    $this->status = $value;
+	    return $this;
+	}
+	/**
 	 * Adding a RMAItem to this RMA
 	 *
 	 * @param Product $product         The product we are raising RMA for
@@ -204,6 +235,7 @@ class RMA extends BaseEntityAbstract
 		DaoMap::begin($this, 'ra');
 
 		DaoMap::setStringType('raNo', 'varchar', 12);
+		DaoMap::setStringType('status', 'varchar', 12);
 		DaoMap::setManyToOne('order', 'Order', 'ra_order', true);
 		DaoMap::setManyToOne('customer', 'Customer', 'ra_customer');
 		DaoMap::setIntType('totalValue', 'double', '10,4');
@@ -212,6 +244,7 @@ class RMA extends BaseEntityAbstract
 		parent::__loadDaoMap();
 
 		DaoMap::createUniqueIndex('raNo');
+		DaoMap::createIndex('status');
 		DaoMap::createIndex('totalValue');
 
 		DaoMap::commit();
@@ -249,5 +282,14 @@ class RMA extends BaseEntityAbstract
 		$order->addComment($msg, Comments::TYPE_SYSTEM)
 			->addLog($msg, Log::TYPE_SYSTEM);
 		return $ra;
+	}
+	/**
+	 * Getting all the statuses for the RMA
+	 * 
+	 * @return multitype:string
+	 */
+	public static function getAllStatuses()
+	{
+		return array(self::STATUS_NEW, self::STATUS_RECEIVING, self::STATUS_RECEIVED, self::STATUS_CLOSED);
 	}
 }

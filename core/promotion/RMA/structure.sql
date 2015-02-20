@@ -2,6 +2,7 @@ DROP TABLE IF EXISTS `rma`;
 CREATE TABLE `rma` (
 	`id` int(10) unsigned NOT NULL AUTO_INCREMENT,
 	`raNo` varchar(12) NOT NULL DEFAULT '',
+	`status` varchar(12) NOT NULL DEFAULT '',
 	`orderId` int(10) unsigned NULL DEFAULT NULL,
 	`customerId` int(10) unsigned NOT NULL DEFAULT 0,
 	`totalValue` double(10,4) unsigned NOT NULL DEFAULT 0,
@@ -13,6 +14,7 @@ CREATE TABLE `rma` (
 	`updatedById` int(10) unsigned NOT NULL DEFAULT 0,
 	PRIMARY KEY (`id`)
 	,INDEX (`orderId`)
+	,INDEX (`status`)
 	,INDEX (`customerId`)
 	,INDEX (`createdById`)
 	,INDEX (`updatedById`)
@@ -28,6 +30,7 @@ CREATE TABLE `rmaitem` (
 	`qty` int(10) unsigned NOT NULL DEFAULT 0,
 	`unitCost` double(10,4) unsigned NOT NULL DEFAULT 0,
 	`itemDescription` varchar(255) NOT NULL DEFAULT '',
+	`receivedDate` datetime NOT NULL DEFAULT '0001-01-01 00:00:00',
 	`active` bool NOT NULL DEFAULT 1,
 	`created` datetime NOT NULL DEFAULT '0001-01-01 00:00:00',
 	`createdById` int(10) unsigned NOT NULL DEFAULT 0,
@@ -35,6 +38,7 @@ CREATE TABLE `rmaitem` (
 	`updatedById` int(10) unsigned NOT NULL DEFAULT 0,
 	PRIMARY KEY (`id`)
 	,INDEX (`RMAId`)
+	,INDEX (`receivedDate`)
 	,INDEX (`orderItemId`)
 	,INDEX (`productId`)
 	,INDEX (`createdById`)

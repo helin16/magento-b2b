@@ -37,6 +37,12 @@ class RMAItem extends BaseEntityAbstract
 	 */
 	private $itemDescription;
 	/**
+	 * The receivedDate
+	 * 
+	 * @var UDate
+	 */
+	private $receivedDate;
+	/**
 	 * Getter for RMA
 	 *
 	 * @return RMA
@@ -165,6 +171,27 @@ class RMAItem extends BaseEntityAbstract
 		return $this;
 	}
 	/**
+	 * The getter for receivedDate
+	 *
+	 * @return UDate
+	 */
+	public function getReceivedDate ()
+	{
+	    return new UDate(trim($this->receivedDate));
+	}
+	/**
+	 * Setter for receivedDate
+	 * 
+	 * @param mixed $value The new value of receivedDate
+	 *
+	 * @return RMAItem
+	 */
+	public function setReceivedDate ($value)
+	{
+	    $this->receivedDate = $value;
+	    return $this;
+	}
+	/**
 	 * (non-PHPdoc)
 	 * @see BaseEntityAbstract::preSave()
 	 */
@@ -172,6 +199,25 @@ class RMAItem extends BaseEntityAbstract
 	{
 		if(!is_numeric($this->getQty()))
 			throw new EntityException('Qty of the RMAItem needs to be a integer.');
+	}
+	/**
+	 * (non-PHPdoc)
+	 * @see BaseEntityAbstract::postSave()
+	 */
+	public function postSave()
+	{
+		if(trim($this->getReceivedDate()) !== trim(UDate::zeroDate())) {
+			if(self::countByCriteria('RMAId = ? and receivedDate = ?', array($this->getRMA()->getId(), trim(UDate::zeroDate()))) > 0)
+				$this->getRMA()
+					->setStatus(RMA::STATUS_RECEIVING)
+					->save()
+					->addComment('Setting Status to "' . RMA::STATUS_RECEIVING . '", as received one of items');
+			else
+				$this->getRMA()
+					->setStatus(RMA::STATUS_RECEIVED)
+					->save()
+					->addComment('Setting Status to "' . RMA::STATUS_RECEIVED . '", as no more item to receive');
+		}
 	}
 	/**
 	 * (non-PHPdoc)
@@ -187,11 +233,13 @@ class RMAItem extends BaseEntityAbstract
 		DaoMap::setIntType('qty');
 		DaoMap::setIntType('unitCost', 'double', '10,4');
 		DaoMap::setStringType('itemDescription', 'varchar', '255');
+		DaoMap::setDateType('receivedDate');
 
 		parent::__loadDaoMap();
 
 		DaoMap::createIndex('qty');
 		DaoMap::createIndex('unitCost');
+		DaoMap::createIndex('receivedDate');
 
 		DaoMap::commit();
 	}
