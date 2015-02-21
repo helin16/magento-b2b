@@ -199,7 +199,7 @@ class OrderController extends BPCPageAbstract
 			}
 			$totalPaymentDue += $totalShippingCost; 
 			$comments = trim($param->CallbackParameter->comments);
-			$order = $order->addComment($comments)
+			$order = $order->addComment($comments, Comments::TYPE_SALES)
 				->setTotalPaid($totalPaidAmount);
 			
 			foreach ($param->CallbackParameter->items as $item)
