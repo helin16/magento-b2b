@@ -230,7 +230,7 @@ class OrderController extends BPCPageAbstract
 			
 			$results['item'] = $order->getJson();
 			if($printItAfterSave === true)
-				$results['printURL'] = '/print/order/' . $order->getId() . '.html';
+				$results['printURL'] = '/print/order/' . $order->getId() . '.html?pdf=1';
 			Dao::commitTransaction();
 		}
 		catch(Exception $ex)
