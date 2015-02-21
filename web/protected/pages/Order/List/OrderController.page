@@ -9,6 +9,7 @@
 	               <label for="showSearch">Show Search Criteria?</label>
 	               <input type="checkbox" id="showSearch" checked onclick="$(this).up('.searchPanel').down('.panel-body').toggle();"/>
 	               <span class="pull-right">
+	               		<a href="/order/new.html" class="btn btn-success btn-sm" target="_BLANK">New</a> &nbsp;
 	               		<span id="searchBtn" class="btn btn-primary btn-sm" data-loading-text="Searching..." onclick="pageJs.getSearchCriteria().getResults(true, <%= $this->orderPageSize %>);" >Search</span>
 	               </span>
 	           </div>
