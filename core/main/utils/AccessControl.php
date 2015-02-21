@@ -157,4 +157,30 @@ Abstract class AccessControl
 		}
 		return false;
 	}
+	public static function canAccessLogisticsPage(Role $role)
+	{
+		switch($role->getId())
+		{
+			case Role::ID_STORE_MANAGER:
+			case Role::ID_SYSTEM_ADMIN:
+			case Role::ID_WAREHOUSE:
+				{
+					return true;
+				}
+		}
+		return false;
+	}
+	public static function canAccessAccountsPage(Role $role)
+	{
+		switch($role->getId())
+		{
+			case Role::ID_STORE_MANAGER:
+			case Role::ID_SYSTEM_ADMIN:
+			case Role::ID_ACCOUNTING:
+				{
+					return true;
+				}
+		}
+		return false;
+	}
 }
