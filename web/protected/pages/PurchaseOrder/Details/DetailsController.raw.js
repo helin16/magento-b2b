@@ -842,7 +842,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		});
 		tmp.data.id = tmp.me._purchaseorder.id;
 		tmp.data.supplier = tmp.me._supplier;
-		tmp.data.totalAmount = tmp.data.totalAmount ? tmp.me.getValueFromCurrency(tmp.data.totalAmount) : '';
+		tmp.data.totalAmount = tmp.data.totalAmount ? tmp.me.getValueFromCurrency($(tmp.me._htmlIds.totalPriceIncludeGST).innerHTML) : '';
 		tmp.data.totalPaid = tmp.data.totalPaid ? tmp.me.getValueFromCurrency(tmp.data.totalPaid) : '';
 		tmp.data.handlingCost = tmp.data.handlingCost ? tmp.me.getValueFromCurrency(tmp.data.handlingCost) : '';
 		tmp.data.shippingCost = tmp.data.shippingCost ? tmp.me.getValueFromCurrency(tmp.data.shippingCost) : '';

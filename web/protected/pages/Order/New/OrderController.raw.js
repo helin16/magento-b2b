@@ -135,7 +135,6 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 						tmp.printWindow = window.open(tmp.result.printURL, 'Printing Order', 'width=1300, location=no, scrollbars=yes, menubar=no, status=no, titlebar=no, fullscreen=no, toolbar=no');
 						if(!tmp.printWindow)
 							throw '<h4>Your browser has block the popup window, please enable it for further operations.</h4><a href="' + tmp.result.printURL + '" target="_BLANK"> click here for now</a>';
-						tmp.printWindow.print();
 					}
 				} catch(e) {
 					tmp.modalBoxTitlePanel.update('<h4 class="text-danger">Error:</h4>');
