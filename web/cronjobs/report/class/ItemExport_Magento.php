@@ -87,7 +87,7 @@ class ItemExport_Magento extends ExportAbstract
 				,'is_recurring' => 'No'
 				,'visibility' => 'Catalog, Search'
 				,'tax_class_id' => 'Taxable Goods'
-				,'all_ln_stock' =>  $product->getStatus()
+				,'all_ln_stock' =>  ($product->getStatus() instanceof ProductStatus ? $product->getStatus()->getName() : '')
 				,'pc_sln_ssd' =>  ''
 				,'hd_sln_interface' =>  ''
 				,'description' =>  ''                                           //TODO!!
