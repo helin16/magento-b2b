@@ -5,7 +5,7 @@ class ItemExport_Magento extends ExportAbstract
 	protected static function _getData()
 	{
 		$now = new UDate();
-		$now->modify('-1 day');
+// 		$now->modify('-1 day');
 		$productPrices = ProductPrice::getAllByCriteria('updated >= :fromDate and updated < :toDate', array('fromDate' => $now->format('Y-m-d') . ' 00:00:00', 'toDate' => $now->format('Y-m-d') . '23:59:59'));
 		
 		$return = array();
