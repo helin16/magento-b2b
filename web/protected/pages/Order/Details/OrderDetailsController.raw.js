@@ -1222,12 +1222,10 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				tmp.wrapperDiv.insert({'bottom': new Element('div', {"class": 'after_select_method col-sm-4', 'title': 'Notify Customer?'})
 					.insert({'bottom': tmp.me._getFormGroup('Notify Cust.?', new Element('input', {'type': 'checkbox', 'class': 'input-sm', 'payment_field': 'notifyCust', 'checked': true}) ) })
 				});
-				if(Math.abs(Math.abs(parseFloat(tmp.me.getValueFromCurrency($F(paidMountBox))).toFixed(2)) - Math.abs(parseFloat(tmp.me.getValueFromCurrency(tmp.me._order.totalAmount)).toFixed(2))) !== 0) {
-					tmp.wrapperDiv.insert({'bottom': new Element('div', {"class": 'after_select_method col-sm-8'})
-						.insert({'bottom': tmp.me._getFormGroup('Comments:', tmp.commentsBox = new Element('input', {'type': 'text', 'class': 'after_select_method input-sm', 'payment_field': 'extraComments', 'required': true, 'placeholder': 'The reason why the paidAmount is different to Total Amount Due: ' + tmp.me.getCurrency(tmp.me._order.totalAmount) }) ) })
-					});
-					tmp.commentsBox.select();
-				}
+				tmp.wrapperDiv.insert({'bottom': new Element('div', {"class": 'after_select_method col-sm-8'})
+					.insert({'bottom': tmp.me._getFormGroup('Comments:', tmp.commentsBox = new Element('input', {'type': 'text', 'class': 'after_select_method input-sm', 'payment_field': 'extraComments', 'required': true, 'placeholder': 'The reason why the paidAmount is different to Total Amount Due: ' + tmp.me.getCurrency(tmp.me._order.totalAmount) }) ) })
+				});
+				tmp.commentsBox.select();
 				tmp.wrapperDiv.insert({'bottom': new Element('div', {"class": 'after_select_method col-sm-4'})
 					.insert({'bottom': tmp.me._getFormGroup('&nbsp;', new Element('span', {'class': 'btn btn-primary after_select_method', 'data-loading-text': 'Saving...'}).update('Confirm')
 							.observe('click', function(){
