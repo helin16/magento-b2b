@@ -186,7 +186,8 @@ class OrderController extends BPCPageAbstract
 				if(!$courier instanceof Courier)
 					throw new Exception('Invalid Courier passed in!');
 				$order->addInfo(OrderInfoType::ID_MAGE_ORDER_SHIPPING_METHOD, $courier->getName());
-				$totalShippingCost = trim($param->CallbackParameter->totalShippingCost);
+				$totalShippingCost = StringUtilsAbstract::getValueFromCurrency(trim($param->CallbackParameter->totalShippingCost));
+				$order->addInfo(OrderInfoType::ID_SHIPPING_EST_COST, StringUtilsAbstract::getCurrency($totalShippingCost));
 				if($shipped === true) {
 					Shippment::create($shippAddress, $courier, '', new UDate(), $order, '');
 				}

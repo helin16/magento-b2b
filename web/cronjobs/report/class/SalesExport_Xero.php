@@ -93,6 +93,24 @@ class SalesExport_Xero extends ExportAbstract
 					,'BrandingTheme'=> ''
 				));
 			}
+			
+			if(($shippingMethod = trim($order->getInfo(OrderInfoType::ID_MAGE_ORDER_SHIPPING_METHOD))) !== '') {
+				$return[] = array_merge($row, array(
+					'InventoryItemCode' => trim($order->getInfo(OrderInfoType::ID_MAGE_ORDER_SHIPPING_METHOD))
+					,'Description'=> trim($order->getInfo(OrderInfoType::ID_MAGE_ORDER_SHIPPING_METHOD))
+					,'Quantity'=> 1
+					,'UnitAmount'=> StringUtilsAbstract::getCurrency( trim($order->getInfo(OrderInfoType::ID_SHIPPING_EST_COST)) )
+					,'Discount'=> ''
+					,'AccountCode'=> '43300'
+					,'TaxType'=> "GST on Income"
+					,'TrackingName1'=> ''
+					,'TrackingOption1'=> ''
+					,'TrackingName2'=> ''
+					,'TrackingOption2'=> ''
+					,'Currency'=> ''
+					,'BrandingTheme'=> ''
+				));
+			}
 		}
 		return $return;
 	}
