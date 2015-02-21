@@ -204,3 +204,13 @@ table.table thead td {
   text-overflow: ellipsis;
   max-width: 250px;
 }
+.click-to-edit {
+	border: none;
+	background: transparent;
+}
+.click-to-edit.clicked,
+.click-to-edit:focus,
+.click-to-edit:hover {
+	border: 1px #ccc solid;
+	background: white;
+}

@@ -52,6 +52,7 @@ class ProductController extends CRUDPageAbstract
 		$js .= "._bindSearchKey()";
 		$js .= ".setCallbackId('priceMatching', '" . $this->priceMatchingBtn->getUniqueID() . "')";
 		$js .= ".setCallbackId('toggleActive', '" . $this->toggleActiveBtn->getUniqueID() . "')";
+		$js .= ".setCallbackId('updatePrice', '" . $this->updatePriceBtn->getUniqueID() . "')";
 		$js .= ".getResults(true, " . $this->pageSize . ");";
 		return $js;
 	}
@@ -165,16 +166,64 @@ class ProductController extends CRUDPageAbstract
     	$results = $errors = array();
     	try
     	{
+    		Dao::beginTransaction();
     		$id = isset($param->CallbackParameter->productId) ? $param->CallbackParameter->productId : '';
     		if(!($product = Product::get($id)) instanceof Product)
     			throw new Exception('Invalid product!');
     		$product->setActive(intval($param->CallbackParameter->active))
     			->save();
     		$results['item'] = $product->getJson();
+    		Dao::commitTransaction();
     	}
     	catch(Exception $ex)
     	{
+    		Dao::rollbackTransaction();
     		$errors[] = $ex->getMessage();
+    	}
+    	$param->ResponseData = StringUtilsAbstract::getJson($results, $errors);
+    }
+    /**
+     * updateproduct price
+     * 
+     * @param unknown $sender
+     * @param unknown $param
+     */
+    public function updatePrice($sender, $param)
+    {
+    	$results = $errors = array();
+    	try
+    	{
+    		Dao::beginTransaction();
+    		$id = isset($param->CallbackParameter->productId) ? $param->CallbackParameter->productId : '';
+    		if(!($product = Product::get($id)) instanceof Product)
+    			throw new Exception('Invalid product!');
+    		if(!isset($param->CallbackParameter->newPrice))
+    			throw new Exception('No New Price Provided!');
+    		$newPrice = StringUtilsAbstract::getValueFromCurrency(trim($param->CallbackParameter->newPrice));
+    		$prices = ProductPrice::getAllByCriteria('productId = ? and typeId = ?', array($product->getId(), ProductPriceType::ID_RRP), true, 1, 1);
+    		if(count($prices) > 0) {
+    			$msg = 'Update price for product(SKU=' . $product->getSku() . ') to '. StringUtilsAbstract::getCurrency($newPrice);
+    			$price = $prices[0];
+    		} else {
+    			$msg = 'New Price Created for product(SKU=' . $product->getSku() . '): '. StringUtilsAbstract::getCurrency($newPrice);
+    			$price = new ProductPrice();
+    			$price->setProduct($product)
+    				->setType(ProductPriceType::get(ProductPriceType::ID_RRP));
+    		}
+    		
+    		$price->setPrice($newPrice)
+	    		->save()
+	    		->addComment($msg, Comments::TYPE_NORMAL)
+	    		->addLog($msg, Log::TYPE_SYSTEM);
+    		$product->addComment($msg, Log::TYPE_SYSTEM)
+	    		->addLog($msg, Log::TYPE_SYSTEM);
+    		$results['item'] = $product->getJson();
+    		Dao::commitTransaction();
+    	}
+    	catch(Exception $ex)
+    	{
+    		Dao::rollbackTransaction();
+    		$errors[] = $ex->getMessage() . $ex->getTraceAsString();
     	}
     	$param->ResponseData = StringUtilsAbstract::getJson($results, $errors);
     }
