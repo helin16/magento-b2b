@@ -55,7 +55,7 @@ class ItemExport_Magento extends ExportAbstract
 				,'websites' => 'base'
 				,'attribute_set' => ''
 				,'type' => 'simple'
-				,'category_ids' => implode(',', array_map(create_function('$a', '$a->getProductCategory()->getMageId();'), $xmap))
+				,'category_ids' => implode(',', array_map(create_function('$a', '$a->getCategory()->getMageId();'), $xmap))
 				,'sku' => $product->getSku()
 				,'has_options' => '0'
 				,'name' => $product->getName()
