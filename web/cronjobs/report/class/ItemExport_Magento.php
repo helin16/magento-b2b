@@ -49,12 +49,13 @@ class ItemExport_Magento extends ExportAbstract
 	 */
 	private static function _getDefaultData(Product $product)
 	{
+		$xmap = Product_Category::getCategories($product);
 		return array(
 				'store' => 'admin'
 				,'websites' => 'base'
 				,'attribute_set' => ''
 				,'type' => 'simple'
-				,'category_ids' => implode(',', array_map(create_function('$a', '$a->getMageId();'), $product->getCategories()))
+				,'category_ids' => implode(',', array_map(create_function('$a', '$a->getProductCategory()->getMageId();'), $xmap))
 				,'sku' => $product->getSku()
 				,'has_options' => '0'
 				,'name' => $product->getName()
