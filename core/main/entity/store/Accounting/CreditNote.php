@@ -317,4 +317,8 @@ class CreditNote extends BaseEntityAbstract
 	{
 		return array(self::APPLY_TO_CREDIT, self::APPLY_TO_REFUND);
 	}
+	public function getCreditNoteItems()
+	{
+		return CreditNoteItem::getByCreditNote($this);
+	}
 }

@@ -281,4 +281,16 @@ class CreditNoteItem extends BaseEntityAbstract
 			->addLog($msg, Comments::TYPE_SYSTEM);
 		return $item;
 	}
+	/**
+	 * get Credit Note Items by credit note
+	 * 
+	 * @param CreditNote|string $creditNote
+	 * @return Ambigous <NULL, unknown>
+	 */
+	public static function getByCreditNote($creditNote)
+	{
+		$creditNote = $creditNote instanceof CreditNote ? $creditNote : CreditNote::get(trim($creditNote));
+		$creditNote = $creditNote instanceof CreditNote ? $creditNote : (count($creditNotes = CreditNote::getAllByCriteria('creditNoteNo = ?', array(trim($creditNote)), true, 1, 1)) > 0 ? $creditNotes[0] : null);
+		return $creditNote instanceof CreditNote ? (count($items = self::getAllByCriteria('creditNoteId = ?', array($creditNote->getId()), true)) > 0 ? $items : null) : null;
+	}
 }
