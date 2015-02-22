@@ -13,9 +13,11 @@ class BillExport_Xero extends ExportAbstract
 		$return = array();
 		foreach($receivingItems as $receivingItem)
 		{
+			$product = $receivingItem->getProduct();
+			if(!$product instanceof Product)
+				continue;
 			$purchaseOrder = $receivingItem->getPurchaseOrder();
 			$supplier = $purchaseOrder->getSupplier();
-			$product = $receivingItem->getProduct();
 			$return[] = array(
 				'ContactName' => $supplier->getName()
 				,'EmailAddress'=> $supplier->getEmail()

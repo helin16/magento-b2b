@@ -44,7 +44,7 @@ class SalesExport_Xero extends ExportAbstract
 			$letter = 'A';
 			if(parent::$_debug)
 				echo "\n";
-		}			
+		}
 		return $phpexcel;
 	}
 	protected static function _getData()
@@ -52,7 +52,7 @@ class SalesExport_Xero extends ExportAbstract
 		$yesterday = new UDate();
 		$yesterday->modify('-1 day');
 		$orders = Order::getAllByCriteria('invDate >= :fromDate and invDate < :toDate', array('fromDate' => $yesterday->format('Y-m-d') . ' 00:00:00', 'toDate' => $yesterday->format('Y-m-d') . '23:59:59'));
-		
+
 		$return = array();
 		foreach($orders as $order)
 		{
@@ -76,6 +76,8 @@ class SalesExport_Xero extends ExportAbstract
 			);
 			foreach($order->getOrderItems() as $orderItem)
 			{
+				if(!$product instanceof Product)
+					continue;
 				$product = $orderItem->getProduct();
 				$return[] = array_merge($row, array(
 					'InventoryItemCode' => $product->getSku()
@@ -93,7 +95,7 @@ class SalesExport_Xero extends ExportAbstract
 					,'BrandingTheme'=> ''
 				));
 			}
-			
+
 			if(($shippingMethod = trim($order->getInfo(OrderInfoType::ID_MAGE_ORDER_SHIPPING_METHOD))) !== '') {
 				$return[] = array_merge($row, array(
 					'InventoryItemCode' => trim($order->getInfo(OrderInfoType::ID_MAGE_ORDER_SHIPPING_METHOD))
