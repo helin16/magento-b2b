@@ -76,9 +76,9 @@ class SalesExport_Xero extends ExportAbstract
 			);
 			foreach($order->getOrderItems() as $orderItem)
 			{
+				$product = $orderItem->getProduct();
 				if(!$product instanceof Product)
 					continue;
-				$product = $orderItem->getProduct();
 				$return[] = array_merge($row, array(
 					'InventoryItemCode' => $product->getSku()
 					,'Description'=> $product->getShortDescription()
