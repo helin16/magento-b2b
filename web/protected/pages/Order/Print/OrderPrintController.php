@@ -120,18 +120,5 @@ class OrderPrintController extends BPCPageAbstract
 		$html .= '</div>';
 		return $html;
 	}
-	public function getPaymentMethod()
-	{
-		return $this->order->getInfo(OrderInfoType::ID_MAGE_ORDER_PAYMENT_METHOD);
-	}
-	public function getShippingMethod()
-	{
-		return $this->order->getInfo(OrderInfoType::ID_MAGE_ORDER_SHIPPING_METHOD);
-	}
-	public function getComments()
-	{
-		$comments = Comments::getAllByCriteria('entityId=? and entity=?', array($this->order->getId(), get_class($this->order)), true, 1, 1);
-		return count($comments) === 0 ? '' : $comments[0]->getComments();
-	}
 }
 ?>
