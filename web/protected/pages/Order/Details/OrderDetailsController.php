@@ -68,6 +68,7 @@ class OrderDetailsController extends BPCPageAbstract
 			$js .= '.setCallbackId("setOrderType", "' . $this->setOrderTypeBtn->getUniqueID() . '")';
 			$js .= '.setCallbackId("changeIsOrdered", "' . $this->changeIsOrderedBtn->getUniqueID() . '")';
 			$js .= '.setCallbackId("deletePayment", "' . $this->deletePaymentBtn->getUniqueID() . '")';
+			$js .= '.setCallbackId("updateAddress", "' . $this->updateAddressBtn->getUniqueID() . '")';
 			$js .= '.setEditMode(' . $purchaseEdit . ', ' . $warehouseEdit . ', ' . $accounEdit . ', ' . $statusEdit . ')';
 			$js .= '.setOrder('. json_encode($order->getJson()) . ', ' . json_encode($orderItems) . ', ' . json_encode($orderStatuses) . ', ' . OrderStatus::ID_SHIPPED . ')';
 			$js .= '.setCourier('. json_encode($courierArray) . ', ' . Courier::ID_LOCAL_PICKUP . ')';
@@ -562,6 +563,40 @@ class OrderDetailsController extends BPCPageAbstract
 			$payment->getOrder()
 				->addComment($comments, Comments::TYPE_ACCOUNTING);
 			$results['item'] = $payment->getJson();
+			Dao::commitTransaction();
+		}
+		catch(Exception $ex)
+		{
+			Dao::rollbackTransaction();
+			$errors[] = $ex->getMessage();
+		}
+		$param->ResponseData = StringUtilsAbstract::getJson($results, $errors);
+	}
+	
+	public function updateAddress($sender, $param)
+	{
+		$results = $errors = array();
+		try
+		{
+			Dao::beginTransaction();
+			if(!isset($param->CallbackParameter->orderId) || !($order = Order::get($param->CallbackParameter->orderId)) instanceof Order)
+				throw new Exception('System Error: invalid order provided!');
+			if(!isset($param->CallbackParameter->id) || !($address = Address::get($param->CallbackParameter->id)) instanceof Address)
+				throw new Exception('System Error: invalid address provided!');
+			$originalAddressFull = $address->getFull();
+			$address->setContactName(trim($param->CallbackParameter->contactName))
+				->setContactNo(trim($param->CallbackParameter->contactNo))
+				->setStreet(trim($param->CallbackParameter->street))
+				->setCity(trim($param->CallbackParameter->city))
+				->setRegion(trim($param->CallbackParameter->region))
+				->setCountry(trim($param->CallbackParameter->country))
+				->setPostCode(trim($param->CallbackParameter->postCode))
+				->save();
+			$msg = 'Changed ' . trim($param->CallbackParameter->title) . ' from "' . $originalAddressFull . '" to "' . $address->getFull() . '"';
+			$order->addComment($msg, Comments::TYPE_NORMAL)
+				->addLog($msg, Log::TYPE_SYSTEM);
+			$address->addLog($msg, Log::TYPE_SYSTEM);
+			$results['item'] = $address->getJson();
 			Dao::commitTransaction();
 		}
 		catch(Exception $ex)

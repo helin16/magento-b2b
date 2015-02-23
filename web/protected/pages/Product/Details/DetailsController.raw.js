@@ -86,7 +86,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		if(titleData.start) {
 			tmp.newRow.insert({'bottom': new Element(tmp.tag).update( 
 					tmp.isTitle === true ? titleData.start : 
-						new Element('input', {'class': 'form-control input-sm datepicker', 'list-panel-row': 'start', 'value': (data.start ? data.start : ''), 'required': true, 'disabled': !data.type.needTime})
+						new Element('input', {'class': 'form-control input-sm datepicker', 'list-panel-row': 'start', 'value': (data.start ? data.start : ''), 'required': true, 'disabled': data.type && !data.type.needTime})
 							.writeAttribute('list-item', (data.id ? data.id : tmp.randId))
 							.wrap(new Element('div', {'class': 'form-group'}))
 				)
@@ -94,7 +94,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		}
 		if(titleData.end){
 			tmp.newRow.insert({'bottom': new Element(tmp.tag).update( tmp.isTitle === true ? titleData.end : 
-				new Element('input', {'class': 'form-control input-sm datepicker', 'list-panel-row': 'end', 'value': (data.end ? data.end : ''), 'required': true, 'disabled': !data.type.needTime}) 
+				new Element('input', {'class': 'form-control input-sm datepicker', 'list-panel-row': 'end', 'value': (data.end ? data.end : ''), 'required': true, 'disabled': data.type && !data.type.needTime}) 
 					.writeAttribute('list-item', (data.id ? data.id : tmp.randId))
 					.wrap(new Element('div', {'class': 'form-group'}))
 				) 
@@ -140,7 +140,12 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 					.insert({'bottom': ' NEW' })
 					.observe('click', function(){
 						tmp.parentPanel = $(this).up('.panel');
-						tmp.parentPanel.down('.table tbody').insert({'bottom': tmp.me._getListPanelRow({}, selBoxData, titleData, false, selBoxChangeFunc).addClassName('list-panel-row').writeAttribute('item_id', '') });
+						tmp.newData = {};
+						if(titleData.start)
+							tmp.newData.start = '0001-01-01 00:00:00';
+						if(titleData.end)
+							tmp.newData.end = '9999-12-31 23:59:59';
+						tmp.parentPanel.down('.table tbody').insert({'bottom': tmp.me._getListPanelRow(tmp.newData, selBoxData, titleData, false, selBoxChangeFunc).addClassName('list-panel-row').writeAttribute('item_id', '') });
 						tmp.parentPanel.down('.list-div').show();
 						tmp.me._bindDatePicker();
 					})

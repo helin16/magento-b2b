@@ -343,7 +343,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			.insert({'bottom': new Element('td', {'class': 'order-date col-xs-1'}).update(
 					tmp.isTitle === true ? 'Order Date' : tmp.me.loadUTCTime(row.orderDate).toLocaleDateString()
 			) })
-			.insert({'bottom': new Element('td', {'class': 'order-type col-xs-1'}).update(
+			.insert({'bottom': new Element('td', {'class': 'order-type col-xs-1 ' + (row.type === 'ORDER' ? 'success' : (row.type === 'QUOTE' ? 'warning' : ''))}).update(
 					tmp.isTitle === true ? 'Type' : row.type
 			) })
 			.insert({'bottom': new Element('td', {'class': 'status col-middle col-xs-2', 'order_status': row.status.name}).update(

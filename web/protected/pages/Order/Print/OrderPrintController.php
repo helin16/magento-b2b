@@ -100,9 +100,10 @@ class OrderPrintController extends BPCPageAbstract
 		$total = $this->order->getTotalAmount();
 		$totalNoGST = $total / 1.1;
 		$gst = $total - $totalNoGST;
-		$html = $this->_getPaymentSummaryRow('Total:', '$' . number_format($totalNoGST, 2, '.', ','), 'grandTotalNoGST');
-		$html .= $this->_getPaymentSummaryRow('GST:', '$' . number_format($gst, 2, '.', ','), 'gst');
-		$html .= $this->_getPaymentSummaryRow('Total(inc-GST):', '$' . number_format($total, 2, '.', ','), 'grandTotal');
+		$html = $this->_getPaymentSummaryRow('Total Excl. GST:', '$' . number_format($totalNoGST, 2, '.', ','), 'grandTotalNoGST');
+		$html .= $this->_getPaymentSummaryRow('Total GST:', '$' . number_format($gst, 2, '.', ','), 'gst');
+		$html .= $this->_getPaymentSummaryRow('Sub Total Incl. GST:', '$' . number_format($total, 2, '.', ','), 'grandTotal');
+		$html .= $this->_getPaymentSummaryRow('Shipping Incl. GST:', '$' . number_format(StringUtilsAbstract::getValueFromCurrency(implode('', $this->order->getInfo(OrderInfoType::ID_SHIPPING_EST_COST))), 2, '.', ','), 'grandTotal');
 		$html .= $this->_getPaymentSummaryRow('Paid to Date:', '$' . number_format($this->order->getTotalPaid(), 2, '.', ','), 'paidTotal');
 		$overDueClass = $this->order->getTotalDue() > 0 ? 'overdue' : '';
 		$html .= $this->_getPaymentSummaryRow('Balance Due:', '$' . number_format($this->order->getTotalDue(), 2, '.', ','), 'dueTotal ' . $overDueClass);
@@ -119,6 +120,11 @@ class OrderPrintController extends BPCPageAbstract
 			$html .= '</span>';
 		$html .= '</div>';
 		return $html;
+	}
+	public function getComments()
+	{
+		$comments = Comments::getAllByCriteria('entityId = ? and entityName = ? and type = ?', array($this->order->getId(), get_class($this->order), Comments::TYPE_SALES), true, 1, 1);
+		return count($comments) === 0 ? '' : $comments[0]->getComments();
 	}
 }
 ?>

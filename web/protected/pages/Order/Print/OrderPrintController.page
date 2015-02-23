@@ -59,11 +59,11 @@
                                     <div class="shipping_details box">
                                         <div class="print-row">
                                             <span class="inlineblock half"><span class="inlineblock title">Salesperson:</span><span class="inlineblock details"><%= $this->order->getUpdatedBy()->getPerson() %></span></span>
-                                            <span class="inlineblock half"><span class="inlineblock title">Payment:</span><span class="inlineblock details"></span></span>
+                                            <span class="inlineblock half"><span class="inlineblock title">Payment:</span><span class="inlineblock details"><%= implode(', ', $this->order->getInfo(OrderInfoType::ID_MAGE_ORDER_PAYMENT_METHOD)) %></span></span>
                                         </div>
                                         <div class="print-row">
-                                            <span class="inlineblock half"><span class="inlineblock title">Delivery Via:</span><span class="inlineblock details"></span></span>
-                                            <span class="inlineblock half"><span class="inlineblock title">comments:</span><span class="inlineblock details"></span></span>
+                                            <span class="inlineblock half"><span class="inlineblock title">Delivery Via:</span><span class="inlineblock details"><%= implode(', ', $this->order->getInfo(OrderInfoType::ID_MAGE_ORDER_SHIPPING_METHOD)) %></span></span>
+                                            <span class="inlineblock half"><span class="inlineblock title">comments:</span><span class="inlineblock details"><%= $this->getComments() %></span></span>
                                         </div>
                                     </div>
                                 </span>

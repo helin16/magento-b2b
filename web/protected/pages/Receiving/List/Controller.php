@@ -21,8 +21,12 @@ class Controller extends CRUDPageAbstract
 	protected function _getEndJs()
 	{
 		$js = parent::_getEndJs();
-// 		$js .= "pageJs";
-// 		$js .= ".getResults(true, " . $this->pageSize . ");";
+		if(isset($_REQUEST['productid'])) {
+			if(!($product = Product::get(trim($_REQUEST['productid']))) instanceof Product)
+				die('Invalid Product Provided');
+			$js .= "$('searchBtn').up('.panel').down('.panel-body').insert({'bottom': new Element('input', {'type': 'hidden', 'search_field': 'productid', 'value': '" . $product->getId() . "'}) });";
+			$js .= "$('searchBtn').click();";
+		}
 		return $js;
 	}
 	/**
@@ -39,18 +43,25 @@ class Controller extends CRUDPageAbstract
 		try
 		{
 			$serachCriteria = isset($param->CallbackParameter->searchCriteria) ? json_decode(json_encode($param->CallbackParameter->searchCriteria), true) : array();
-			$objects = array();
-			$stats = array();
-			if(isset($serachCriteria['serialno']) && ($serialno = trim($serachCriteria['serialno'])) !== '') {
-				$class = trim($this->_focusEntity);
-				$pageNo = 1;
-				$pageSize = DaoQuery::DEFAUTL_PAGE_SIZE;
-				if(isset($param->CallbackParameter->pagination)) {
-					$pageNo = $param->CallbackParameter->pagination->pageNo;
-					$pageSize = $param->CallbackParameter->pagination->pageSize;
-				}
-				$objects = $class::getAllByCriteria('serialNo like ?', array(trim($serialno)), true, $pageNo, $pageSize, array('rec_item.id' => 'desc'), $stats);
+			$pageNo = 1;
+			$pageSize = DaoQuery::DEFAUTL_PAGE_SIZE;
+			if(isset($param->CallbackParameter->pagination)) {
+				$pageNo = $param->CallbackParameter->pagination->pageNo;
+				$pageSize = $param->CallbackParameter->pagination->pageSize;
 			}
+			
+			$where = $params = $stats = array();
+			if(isset($serachCriteria['serialno']) && ($serialno = trim($serachCriteria['serialno'])) !== '') {
+				$where[] = 'serialNo like ?';
+				$params[] = trim($serialno);
+			}
+			if(isset($serachCriteria['productid']) && ($productid = trim($serachCriteria['productid'])) !== '') {
+				$where[] = 'productId = ?';
+				$params[] = trim($productid);
+			}
+			
+			if(count($where) > 0)
+				$objects = ReceivingItem::getAllByCriteria(implode(' AND ', $where), $params, true, $pageNo, $pageSize, array('rec_item.id' => 'desc'), $stats);
 			$results['pageStats'] = $stats;
 			$results['items'] = array();
 			foreach($objects as $obj)

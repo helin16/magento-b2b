@@ -224,6 +224,15 @@ class Address extends BaseEntityAbstract
 	    return $this;
 	}
 	/**
+	 * getting the Full string
+	 * 
+	 * @return string
+	 */
+	public function getFull()
+	{
+		return $this->getContactName() . ', ' . $this->getContactNo() . ', ' . $this->getStreet() . ', ' . $this->getCity() . ' ' . $this->getRegion() . ' ' . $this->getCountry() . ' ' . $this->getPostCode();
+	}
+	/**
 	 * (non-PHPdoc)
 	 * @see BaseEntityAbstract::__toString()
 	 */
