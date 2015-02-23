@@ -32,6 +32,8 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		$('searchDiv').down('[search_field="cust.id"]').replace(tmp.selectEl);
 		jQuery(".select2").select2({
 			allowClear: true,
+			hidden: true,
+			multiple: false,
 			 ajax: { url: "/ajax/getCustomers",
 					 dataType: 'json',
 					 delay: 10,
@@ -40,18 +42,21 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 							 searchTxt: params, // search term
 						 };
 					 },
-					 results: function (data, page) {
-						 console.debug(data);
+					 results: function (data) {
 		                return {
-		                    results: data
+		                    results: data.resultData.items
 		                };
 		             },
 					 cache: true
 				 },
+				 formatResult : function(result) {
+					 console.debug(result);
+					 if(!result)
+						 return '';
+					 return '<option value=' + result.id + '>' + result.name + '</option >';
+				 },
 				 escapeMarkup: function (markup) { return markup; }, // let our custom formatter work
 				 minimumInputLength: 1,
-//				 templateResult: formatRepo, // omitted for brevity, see the source of this page
-//				 templateSelection: formatRepoSelection // omitted for brevity, see the source of this page
 		});
 		return this;
 	}

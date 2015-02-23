@@ -82,7 +82,7 @@ class AjaxController extends TService
   		$pageSize = (isset($params['pageSize']) && ($pageSize = trim($params['pageSize'])) !== '' ? $pageSize : DaoQuery::DEFAUTL_PAGE_SIZE);
   		$pageNo = (isset($params['pageNo']) && ($pageNo = trim($params['pageNo'])) !== '' ? $pageNo : null);
   		$orderBy = (isset($params['orderBy']) ? $params['orderBy'] : array());
-  	
+  		
   		$where = array('name like :searchTxt or email like :searchTxt or contactNo like :searchTxt');
   		$sqlParams = array('searchTxt' => '%' . $searchTxt . '%');
   		$stats = array();
@@ -92,10 +92,23 @@ class AjaxController extends TService
   		$results['pageStats'] = $stats;
   		return $results;
   	}
-
+  	private function _getProducts(Array $params)
+  	{
+  		$searchTxt = trim(isset($params['searchTxt']) ? $params['searchTxt'] : '');
+  		if($searchTxt === '')
+  			throw new Exception('SearchTxt is needed');
+  		$pageSize = (isset($params['pageSize']) && ($pageSize = trim($params['pageSize'])) !== '' ? $pageSize : DaoQuery::DEFAUTL_PAGE_SIZE);
+  		$pageNo = (isset($params['pageNo']) && ($pageNo = trim($params['pageNo'])) !== '' ? $pageNo : null);
+  		$orderBy = (isset($params['orderBy']) ? $params['orderBy'] : array());
+  		
+  		$where = array('name like :searchTxt or mageId = :searchTxtExact or sku = :searchTxtExact');
+  		$sqlParams = array('searchTxt' => '%' . $searchTxt . '%', 'searchTxtExact' => $searchTxt);
+  		$stats = array();
+  		$items = Product::getAllByCriteria(implode(' AND ', $where), $sqlParams, true, $pageNo, $pageSize, $orderBy, $stats);
+  		$results = array();
+  		$results['items'] = array_map(create_function('$a', 'return $a->getJson();'), $items);
+  		$results['pageStats'] = $stats;
+  		return $results;
+  	}
 }
-
-
-
-
 ?>

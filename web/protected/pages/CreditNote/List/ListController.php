@@ -59,7 +59,7 @@ class ListController extends CRUDPageAbstract
             }
             
             $serachCriteria = isset($param->CallbackParameter->searchCriteria) ? json_decode(json_encode($param->CallbackParameter->searchCriteria), true) : array();
-
+			var_dump($serachCriteria);
             $where = array(1);
             $params = array();
             foreach($serachCriteria as $field => $value)
@@ -90,14 +90,15 @@ class ListController extends CRUDPageAbstract
 					}
 					case 'ord.orderNo':
 					{
-						$query->eagerLoad("cn.order", 'inner join', 'ord', 'ord.id = cn.orderId');
-						$where[] = 'ord.id = ?';
-						$params[] = $value;
+						$query->eagerLoad("CreditNote.order", 'inner join', 'ord', '');
+						$where[] = 'ord.orderNo = ? or ord.id = ?';
+						$params[] = trim($value);
+						$params[] = trim($value);
 						break;
 					}
 					case 'cust.id':
 					{
-						$query->eagerLoad("cn.customer", 'inner join', 'cust', 'cust.id = cn.customerId');
+						$query->eagerLoad("CreditNote.customer", 'inner join', 'cust', 'cust.id = cn.customerId');
 						$where[] = 'cust.id = ?';
 						$params[] = $value;
 						break;
@@ -111,7 +112,9 @@ class ListController extends CRUDPageAbstract
 
             $stats = array();
 
+			Dao::$debug = true;
             $objects = $class::getAllByCriteria(implode(' AND ', $where), $params, false, $pageNo, $pageSize, array('cn.creditNoteNo' => 'desc'), $stats);
+			Dao::$debug = false;
 
             $results['pageStats'] = $stats;
             $results['items'] = array();
