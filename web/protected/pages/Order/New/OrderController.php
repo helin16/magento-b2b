@@ -20,6 +20,8 @@ class OrderController extends BPCPageAbstract
 	public function onLoad($param)
 	{
 		parent::onLoad($param);
+		if(!AccessControl::canAccessCreateOrderPage(Core::getRole()))
+			die('You do NOT have access to this page');
 	}
 	/**
 	 * Getting The end javascript
