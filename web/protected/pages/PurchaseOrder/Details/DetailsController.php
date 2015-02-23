@@ -24,8 +24,8 @@ class DetailsController extends DetailsPageAbstract
 	public function __construct()
 	{
 		parent::__construct();
-		if(!AccessControl::canAccessPurcahseOrdersPage(Core::getRole()))
-			die('You do NOT have access to this page');
+// 		if(!AccessControl::canAccessPurcahseOrdersPage(Core::getRole()))
+// 			die('You do NOT have access to this page');
 	}
 	/**
 	 * Getting The end javascript
