@@ -77,7 +77,7 @@ class OrderPrintController extends BPCPageAbstract
 			$html .= $this->getRow($orderItem->getQtyOrdered(), $orderItem->getProduct()->getSku(), $orderItem->getItemDescription() ?: $orderItem->getProduct()->getname(), $uPrice, $tPrice, 'itemRow');
 			$html .= $this->getRow('', '<span class="pull-right">Serial No: </span>', '<div style="max-width: 367px; word-wrap: break-word;">' . implode(', ', $sellingItems) . '</div>', '', '', 'itemRow itemRow-serials');
 		}
-		for ( $i = 8; $i > $index; $i--)
+		for ( $i = 5; $i > $index; $i--)
 		{
 			$html .= $this->getRow('&nbsp;', '&nbsp;', '&nbsp;', '&nbsp;', '&nbsp;', 'itemRow');
 		}
