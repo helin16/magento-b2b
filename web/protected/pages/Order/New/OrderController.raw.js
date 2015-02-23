@@ -679,7 +679,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		};
 
 		tmp.data.scanTable = tmp.me._getScanTable(tmp.data);
-		tmp.currentRow.insert({'after': tmp.itemRow = tmp.me._getProductRow(tmp.data) });
+		tmp.currentRow.up('.list-group').insert({'bottom': tmp.itemRow = tmp.me._getProductRow(tmp.data) });
 
 
 		tmp.newRow = tmp.me._getNewProductRow();
