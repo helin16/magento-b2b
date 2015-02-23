@@ -86,7 +86,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		if(titleData.start) {
 			tmp.newRow.insert({'bottom': new Element(tmp.tag).update( 
 					tmp.isTitle === true ? titleData.start : 
-						new Element('input', {'class': 'form-control input-sm datepicker', 'list-panel-row': 'start', 'value': (data.start ? data.start : ''), 'required': true, 'disabled': true, 'value': '0001-01-01 00:00:00'})
+						new Element('input', {'class': 'form-control input-sm datepicker', 'list-panel-row': 'start', 'value': (data.start ? data.start : ''), 'required': true, 'disabled': !data.type.needTime})
 							.writeAttribute('list-item', (data.id ? data.id : tmp.randId))
 							.wrap(new Element('div', {'class': 'form-group'}))
 				)
@@ -94,7 +94,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		}
 		if(titleData.end){
 			tmp.newRow.insert({'bottom': new Element(tmp.tag).update( tmp.isTitle === true ? titleData.end : 
-				new Element('input', {'class': 'form-control input-sm datepicker', 'list-panel-row': 'end', 'value': (data.end ? data.end : ''), 'required': true, 'disabled': true, 'value': '9999-12-31 23:59:59'}) 
+				new Element('input', {'class': 'form-control input-sm datepicker', 'list-panel-row': 'end', 'value': (data.end ? data.end : ''), 'required': true, 'disabled': !data.type.needTime}) 
 					.writeAttribute('list-item', (data.id ? data.id : tmp.randId))
 					.wrap(new Element('div', {'class': 'form-group'}))
 				) 
