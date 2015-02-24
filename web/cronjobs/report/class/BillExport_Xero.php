@@ -4,12 +4,16 @@ class BillExport_Xero extends ExportAbstract
 	const DEFAULT_DUE_DELAY = "+7 day";
 	protected static function _getData()
 	{
-		$yesterday = new UDate();
-		$yesterday->modify('-1 day');
-		$now = new UDate();
+		$yesterdayLocal = new UDate('now', 'Australia/Melbourne');
+		$yesterdayLocal->modify('-1 day');
+		$fromDate = new UDate($yesterdayLocal->format('Y-m-d') . ' 00:00:00', 'Australia/Melbourne');
+		$fromDate->setTimeZone('UTC');
+		$toDate = new UDate($yesterdayLocal->format('Y-m-d') . ' 23:59:59', 'Australia/Melbourne');
+		$toDate->setTimeZone('UTC');
 		$dataType = 'created';
-		$receivingItems = ReceivingItem::getAllByCriteria($dataType . ' >= :fromDate and ' . $dataType . ' < :toDate', array('fromDate' => trim($yesterday), 'toDate' => trim($now)));
+		$receivingItems = ReceivingItem::getAllByCriteria($dataType . ' >= :fromDate and ' . $dataType . ' < :toDate', array('fromDate' => trim($fromDate), 'toDate' => trim($toDate)));
 
+		$now = new UDate();
 		$now->setTimeZone('Australia/Melbourne');
 		$return = array();
 		foreach($receivingItems as $receivingItem)
