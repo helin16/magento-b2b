@@ -4,10 +4,11 @@ class ItemExport_Magento extends ExportAbstract
 {
 	protected static function _getData()
 	{
+		$yesterday = new UDate();
+		$yesterday->modify('-1 day');
 		$now = new UDate();
-		$now->modify('-1 day');
-		$productPrices = ProductPrice::getAllByCriteria('updated >= :fromDate and updated < :toDate', array('fromDate' => $now->format('Y-m-d') . ' 00:00:00', 'toDate' => $now->format('Y-m-d') . '23:59:59'));
-		
+		$productPrices = ProductPrice::getAllByCriteria('updated >= :fromDate and updated < :toDate', array('fromDate' => trim($yesterday), 'toDate' => trim($now)));
+
 		$return = array();
 		foreach($productPrices as $productPrice)
 		{
@@ -15,7 +16,7 @@ class ItemExport_Magento extends ExportAbstract
 				continue;
 			if(!isset($return[trim($product->getSku())]))
 				$return[trim($product->getSku())] = self::_getDefaultData($product);
-			
+
 			if(trim($productPrice->getType()->getId()) === trim(ProductPriceType::ID_RRP)) {
 				$return[trim($product->getSku())]['price'] = $productPrice->getPrice();
 			} else if(trim($productPrice->getType()->getId()) === trim(ProductPriceType::ID_CASUAL_SPECIAL)) {
@@ -42,9 +43,9 @@ class ItemExport_Magento extends ExportAbstract
 	}
 	/**
 	 * Getting the default value for the row
-	 * 
+	 *
 	 * @param Product $product
-	 * 
+	 *
 	 * @return multitype:string number ProductStatus
 	 */
 	private static function _getDefaultData(Product $product)
