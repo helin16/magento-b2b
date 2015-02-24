@@ -3,7 +3,7 @@
 Abstract class AccessControl
 {
 	private static $_cache;
-	
+
 	public static function canAccessOrderStatusIds(Role $role)
 	{
 		if(isset(self::$_cache['accessOrderStatusIds']))
@@ -178,6 +178,19 @@ Abstract class AccessControl
 			case Role::ID_STORE_MANAGER:
 			case Role::ID_SYSTEM_ADMIN:
 			case Role::ID_ACCOUNTING:
+				{
+					return true;
+				}
+		}
+		return false;
+	}
+	public static function canAccessNewSupplierPage(Role $role)
+	{
+		switch($role->getId())
+		{
+			case Role::ID_STORE_MANAGER:
+			case Role::ID_SYSTEM_ADMIN:
+			case Role::ID_PURCHASING:
 				{
 					return true;
 				}

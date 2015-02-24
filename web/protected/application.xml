@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<application id="BPCinternal-System" mode="Performance">
-	<!-- alias definitions and namespace usings <paths> <alias id="myalias" 
+<application id="BPCinternal-System" mode="Debug">
+	<!-- alias definitions and namespace usings <paths> <alias id="myalias"
 		path="./lib" /> <using namespace="Application.common.*" /> </paths> -->
 
 	<paths>
@@ -11,7 +11,7 @@
 
 	<!-- configurations for modules -->
 	<modules>
-		<module id="cache" class="System.Caching.TAPCCache" />
+		<!-- <module id="cache" class="System.Caching.TAPCCache" /> -->
 		<module id="Session" class="Application.classes.Session.SessionDb" UseCustomStorage="true" />
 		<module id="security" class="TSecurityManager" EncryptionKey="BPCinternal" ValidationKey="bfb9e1b24ba6308e39495a4a78f35d70" />
 		<module id="request" class="THttpRequest" UrlManager="friendly-url" />
@@ -77,12 +77,16 @@
 			<url ServiceParameter="Manufacturer.List.ListController" pattern="manufacturers.html" />
 			<!-- FrontEnd:: supplier list page -->
 			<url ServiceParameter="Supplier.List.ListController" pattern="suppliers.html" />
+			<url ServiceParameter="Supplier.Details.DetailsController" pattern="supplier/{id}.html" parameters.id="new|\d+" />
 
 			<!-- FrontEnd:: cutomer list page -->
 			<url ServiceParameter="Customer.List.ListController" pattern="customer.html" />
 			<!-- FrontEnd:: customer details page -->
 			<url ServiceParameter="Customer.Details.DetailsController" pattern="customer/{id}.html" parameters.id="new"/>
 			<url ServiceParameter="Customer.Details.DetailsController" pattern="customer/{id}.html" parameters.id="\d+"/>
+
+			<!-- FrontEnd:: serial number searching page -->
+			<url ServiceParameter="Receiving.List.Controller" pattern="serialnumbers.html" />
 
 			<!-- FrontEnd:: receiving page -->
 			<url ServiceParameter="Receiving.New.ReceivingController" pattern="receiving.html" />
@@ -104,9 +108,6 @@
 
 			<!-- FrontEnd:: Stock Adjustment page -->
 			<url ServiceParameter="StockAdjustment.List.ListController" pattern="stockadjustment.html" />
-
-			<!-- FrontEnd:: serial number searching page -->
-			<url ServiceParameter="Receiving.List.Controller" pattern="serialnumbers.html" />
 
 			<!-- FrontEnd:: Log list page -->
 			<url ServiceParameter="Log.List.ListController" pattern="logs.html" />

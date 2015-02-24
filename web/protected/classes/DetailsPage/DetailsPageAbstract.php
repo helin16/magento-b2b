@@ -1,16 +1,16 @@
 <?php
 /**
  * The DetailsPage Page Abstract
- * 
+ *
  * @package    Web
  * @subpackage Class
  * @author     lhe<helin16@gmail.com>
  */
-abstract class DetailsPageAbstract extends BPCPageAbstract 
+abstract class DetailsPageAbstract extends BPCPageAbstract
 {
 	/**
 	 * The focusing entity
-	 * 
+	 *
 	 * @var string
 	 */
 	protected $_focusEntity = null;
@@ -34,12 +34,22 @@ abstract class DetailsPageAbstract extends BPCPageAbstract
 	}
 	/**
 	 * (non-PHPdoc)
+	 * @see TPage::onPreInit()
+	 */
+	public function onPreInit($param)
+	{
+		parent::onPreInit($param);
+		if(isset($_REQUEST['blanklayout']) && trim($_REQUEST['blanklayout']) === '1')
+			$this->getPage()->setMasterClass("Application.layout.BlankLayout");
+	}
+	/**
+	 * (non-PHPdoc)
 	 * @see TControl::onInit()
 	 */
 	public function onInit($param)
 	{
 		parent::onInit($param);
-	
+
 		$this->_saveItemBtn = new TCallback();
 		$this->_saveItemBtn->ID = 'saveItemBtn';
 		$this->_saveItemBtn->OnCallback = 'Page.saveItem';
@@ -60,7 +70,7 @@ abstract class DetailsPageAbstract extends BPCPageAbstract
 			$entity = new $class();
 		else if(!($entity = $class::get($this->Request['id'])) instanceof $class)
 			die('invalid item!');
-		
+
 		$js .= "pageJs.setHTMLIDs('item-div')";
 		$js .= ".setItem(" . (trim($entity->getId()) === '' ? '{}' : json_encode($entity->getJson())) . ")";
 		$js .= ".setCallbackId('saveItem', '" . $this->_saveItemBtn->getUniqueID() . "');";
@@ -68,7 +78,7 @@ abstract class DetailsPageAbstract extends BPCPageAbstract
 	}
 	/**
 	 * getting the focus entity
-	 * 
+	 *
 	 * @return string
 	 */
 	public function getFocusEntity()

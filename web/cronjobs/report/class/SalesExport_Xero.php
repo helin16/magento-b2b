@@ -96,12 +96,12 @@ class SalesExport_Xero extends ExportAbstract
 				));
 			}
 
-			if(($shippingMethod = trim($order->getInfo(OrderInfoType::ID_MAGE_ORDER_SHIPPING_METHOD))) !== '') {
+			if(($shippingMethod = trim(implode(',', $order->getInfo(OrderInfoType::ID_MAGE_ORDER_SHIPPING_METHOD)))) !== '') {
 				$return[] = array_merge($row, array(
-					'InventoryItemCode' => trim($order->getInfo(OrderInfoType::ID_MAGE_ORDER_SHIPPING_METHOD))
-					,'Description'=> trim($order->getInfo(OrderInfoType::ID_MAGE_ORDER_SHIPPING_METHOD))
+					'InventoryItemCode' => trim(implode(',', $order->getInfo(OrderInfoType::ID_MAGE_ORDER_SHIPPING_METHOD)))
+					,'Description'=> trim(implode(',', $order->getInfo(OrderInfoType::ID_MAGE_ORDER_SHIPPING_METHOD)))
 					,'Quantity'=> 1
-					,'UnitAmount'=> StringUtilsAbstract::getCurrency( trim($order->getInfo(OrderInfoType::ID_SHIPPING_EST_COST)) )
+					,'UnitAmount'=> StringUtilsAbstract::getCurrency( trim( StringUtilsAbstract::getValueFromCurrency((double)implode(',', $order->getInfo(OrderInfoType::ID_SHIPPING_EST_COST))) ) )
 					,'Discount'=> ''
 					,'AccountCode'=> '43300'
 					,'TaxType'=> "GST on Income"
