@@ -48,7 +48,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.me.postAjax(tmp.me.getCallbackId('saveOrder'), data, {
 			'onLoading': function(sender, param) {
 				tmp.me.hideModalBox();
-				$(tmp.me._htmlIds.itemDiv).insert({'after': tmp.loadingDiv}).hide(); 
+				$(tmp.me._htmlIds.itemDiv).insert({'after': tmp.loadingDiv}).hide();
 			}
 			,'onSuccess': function(sender, param) {
 				try {
@@ -128,12 +128,12 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.submitData.supplierRefNum = tmp.data.supplierRefNum;
 		tmp.submitData.eta = tmp.data.ETA.strip();
 		tmp.submitData.comments = tmp.data.comments.strip();
-		
+
 		//getting all the costs
 		tmp.submitData.shippingCost = tmp.data.shippingCost ? tmp.me.getValueFromCurrency( tmp.data.shippingCost ) : 0;
 		tmp.submitData.handlingCost = tmp.data.handlingCost ? tmp.me.getValueFromCurrency( tmp.data.handlingCost ) : 0;
 		tmp.submitData.totalPaymentDue = tmp.data.totalPaymentDue ? tmp.me.getValueFromCurrency( tmp.data.totalPaymentDue ) : 0;
-		
+
 		if(tmp.submitData.submitToSupplier === true) {
 			tmp.newDiv = new Element('div', {'class': 'confirm-div'})
 				.insert({'bottom': new Element('div')
@@ -174,7 +174,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		} else {
 			tmp.me._submitOrder(tmp.submitData);
 		}
-		
+
 		return tmp.me;
 	}
 	/**
@@ -188,7 +188,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-remove-sign'}) })
 				.insert({'bottom': new Element('span').update(' cancel ') })
 				.observe('click', function(){
-					tmp.me.showModalBox('<strong class="text-danger">Cancelling the current order</strong>', 
+					tmp.me.showModalBox('<strong class="text-danger">Cancelling the current order</strong>',
 							'<div>You are about to cancel this new order, all input data will be lost.</div><br /><div>Continue?</div>'
 							+ '<div>'
 								+ '<span class="btn btn-primary" onclick="window.location = document.URL;"><span class="glyphicon glyphicon-ok"></span> YES</span>'
@@ -208,12 +208,12 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					.insert({'bottom': new Element('span', {'class': 'caret'}) })
 				})
 				.insert({'bottom': new Element('ul', {'class': 'dropdown-menu save-btn-dropdown-menu'})
-					.insert({'bottom': new Element('li') 
+					.insert({'bottom': new Element('li')
 						.insert({'bottom': new Element('a', {'href': 'javascript: void(0);'}).update('Save Only')
 							.observe('click', function() {
 								tmp.me._confirmSubmit();
 							})
-						}) 
+						})
 					})
 				})
 			});
@@ -357,7 +357,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 							Event.stop(event);
 							tmp.me._openPOPage(product.minProductPriceId);
 						})
-						
+
 						.insert({'bottom': new Element('span', {'class': 'col-xs-4 btn btn-link btn-xs', 'style': product.lastSupplierPrice ? 'text-align: left': 'display:none'}).update('Last supplier price: ')
 							.insert({'bottom': new Element('strong').update(tmp.me.getCurrency(product.lastSupplierPrice)) })
 						})
@@ -365,7 +365,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 							Event.stop(event);
 							tmp.me._openPOPage(product.lastSupplierPriceId);
 						})
-						
+
 						.insert({'bottom': new Element('span', {'class': 'col-xs-4 btn btn-link btn-xs', 'style': product.minSupplierPrice ? 'text-align: left': 'display:none'}).update('Minimum supplier price: ')
 							.insert({'bottom': new Element('strong').update(tmp.me.getCurrency(product.minSupplierPrice)) })
 						})
@@ -374,7 +374,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 							tmp.me._openPOPage(product.minSupplierPriceId);
 						})
 					})
-					
+
 				})
 			})
 			.observe('click', function(){
@@ -392,8 +392,8 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 						})
 					})
 					.insert({'after': new Element('td')
-						.update(product.name) 
-						.insert({'bottom': new Element('a', {'href': 'javascript: void(0);', 'class': 'text-danger pull-right', 'title': 'click to change the product'}) 
+						.update(product.name)
+						.insert({'bottom': new Element('a', {'href': 'javascript: void(0);', 'class': 'text-danger pull-right', 'title': 'click to change the product'})
 							.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-remove'})  })
 							.observe('click', function() {
 								tmp.newRow = tmp.me._getNewProductRow();
@@ -427,8 +427,8 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				})
 			})
 			.insert({'after': new Element('td')
-				.update(product.name) 
-				.insert({'bottom': new Element('a', {'href': 'javascript: void(0);', 'class': 'text-danger pull-right', 'title': 'click to change the product'}) 
+				.update(product.name)
+				.insert({'bottom': new Element('a', {'href': 'javascript: void(0);', 'class': 'text-danger pull-right', 'title': 'click to change the product'})
 					.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-remove'})  })
 					.observe('click', function() {
 						tmp.newRow = tmp.me._getNewProductRow();
@@ -519,7 +519,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 							})
 						});
 					}
-					tmp.resultList.addClassName('list-group'); 
+					tmp.resultList.addClassName('list-group');
 				} catch(e) {
 					tmp.resultList.update(tmp.me.getAlertBox('Error: ', e).addClassName('alert-danger'));
 				}
@@ -564,14 +564,14 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					$(this).select();
 				})
 			})
-			.insert({'bottom': new Element('span', {'class': 'input-group-btn'}) 
+			.insert({'bottom': new Element('span', {'class': 'input-group-btn'})
 				.insert({'bottom': new Element('span', {'class': ' btn btn-primary search-btn' , 'data-loading-text': 'searching...'})
 					.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-search'}) })
 					.observe('click', function(){
 						tmp.me._searchProduct(this);
 					})
 				})
-			}) 
+			})
 		);
 		tmp.skuAutoComplete.down('.input-group').removeClassName('form-control');
 		return tmp.skuAutoComplete;
@@ -586,25 +586,25 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			tmp.totalExGSTPrice = tmp.totalExGSTPrice * 1 + tmp.me.getValueFromCurrency( tmp.rowData.totalPrice ) * 1;
 		});
 		jQuery('[save-order-summary="totalExGST"]').val(tmp.me.getCurrency(tmp.totalExGSTPrice)).html(tmp.me.getCurrency(tmp.totalExGSTPrice));
-		
+
 		//getting total GST
 		tmp.totalGST = tmp.totalExGSTPrice * 0.1;
 		jQuery('[save-order-summary="totalGST"]').val(tmp.me.getCurrency(tmp.totalGST)).html(tmp.me.getCurrency(tmp.totalGST));
-		
+
 		//getting total include GST
 		tmp.totalIncGSTPrice = tmp.totalExGSTPrice * 1 + tmp.totalGST * 1;
 		jQuery('[save-order-summary="totalInGST"]').val(tmp.me.getCurrency(tmp.totalIncGSTPrice)).html(tmp.me.getCurrency(tmp.totalIncGSTPrice));
-		
+
 		//getting shippingCost
 		tmp.shippingCost = 0;
 		if(jQuery('[save-order-summary="shippingCost"]').length > 0)
 			tmp.shippingCost = tmp.me.getValueFromCurrency( jQuery('[save-order-summary="shippingCost"]').val() );
-		
+
 		//getting handling cost
 		tmp.handlingCost = 0;
 		if(jQuery('[save-order-summary="handlingCost"]').length > 0)
 			tmp.handlingCost = tmp.me.getValueFromCurrency( jQuery('[save-order-summary="handlingCost"]').val() );
-		
+
 		//totalDue
 		tmp.totalDue = tmp.totalIncGSTPrice * 1 + tmp.shippingCost * 1 + tmp.handlingCost * 1;
 		jQuery('.total-payment-due').val(tmp.me.getCurrency(tmp.totalDue)).html(tmp.me.getCurrency(tmp.totalDue));
@@ -646,9 +646,9 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		});
 		//get all data
 		tmp.data = {
-			'product': tmp.product, 
-			'unitPrice': tmp.me.getCurrency(tmp.unitPrice), 
-			'qtyOrdered': tmp.qtyOrdered, 
+			'product': tmp.product,
+			'unitPrice': tmp.me.getCurrency(tmp.unitPrice),
+			'qtyOrdered': tmp.qtyOrdered,
 			'totalPrice': tmp.me.getCurrency(tmp.totalPrice),
 			'btns': new Element('span', {'class': 'pull-right'})
 				.insert({'bottom': new Element('span', {'class': 'btn btn-danger btn-xs'})
@@ -667,7 +667,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.currentRow.replace(tmp.newRow);
 		tmp.newRow.down('[new-order-item=product]').focus();
 		tmp.newRow.down('[new-order-item=product]').select();
-		
+
 		tmp.me._recalculateSummary( tmp.totalPrice );
 		return tmp.me;
 	}
@@ -755,23 +755,23 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		});
 		// tfooter
 		tmp.productListDiv.insert({'bottom': tmp.tbody = new Element('tfoot')
-			.insert({'bottom': new Element('tr') 
+			.insert({'bottom': new Element('tr')
 				.insert({'bottom': new Element('td', {'colspan': 2, 'rowspan': 6})
 					.insert({'bottom': tmp.me._getFormGroup( 'Comments:', new Element('textarea', {'save-order': 'comments', 'rows': 8}) ) })
-				}) 
-				.insert({'bottom': new Element('td', {'colspan': 2, 'class': 'text-right active'}).update( new Element('span').update('Total Excl. GST: ') ) }) 
-				.insert({'bottom': new Element('td', {'save-order-summary': 'totalExGST', 'class': 'active'}).update( tmp.me.getCurrency(0) ) }) 
+				})
+				.insert({'bottom': new Element('td', {'colspan': 2, 'class': 'text-right active'}).update( new Element('span').update('Total Excl. GST: ') ) })
+				.insert({'bottom': new Element('td', {'save-order-summary': 'totalExGST', 'class': 'active'}).update( tmp.me.getCurrency(0) ) })
 			})
-			.insert({'bottom': new Element('tr') 
-				.insert({'bottom': new Element('td', {'colspan': 2, 'class': 'text-right active', 'style': 'border-bottom: 1px solid brown'}).update( new Element('span').update('Total GST: ') ) }) 
+			.insert({'bottom': new Element('tr')
+				.insert({'bottom': new Element('td', {'colspan': 2, 'class': 'text-right active', 'style': 'border-bottom: 1px solid brown'}).update( new Element('span').update('Total GST: ') ) })
 				.insert({'bottom': new Element('td', {'save-order-summary': 'totalGST', 'class': 'active', 'style': 'border-bottom: 1px solid brown'}).update( tmp.me.getCurrency(0) ) })
 			})
-			.insert({'bottom': new Element('tr') 
-				.insert({'bottom': new Element('td', {'colspan': 2, 'class': 'text-right active'}).update( new Element('strong').update('SubTotal Incl. GST: ') ) }) 
+			.insert({'bottom': new Element('tr')
+				.insert({'bottom': new Element('td', {'colspan': 2, 'class': 'text-right active'}).update( new Element('strong').update('SubTotal Incl. GST: ') ) })
 				.insert({'bottom': new Element('td', {'save-order-summary': 'totalInGST', 'class': 'active'}).update( tmp.me.getCurrency(0) ) })
 			})
-			.insert({'bottom': new Element('tr') 
-				.insert({'bottom': new Element('td', {'colspan': 2, 'class': 'text-right active'}).update( new Element('span').update('Shipping Cost Incl. GST: ') ) }) 
+			.insert({'bottom': new Element('tr')
+				.insert({'bottom': new Element('td', {'colspan': 2, 'class': 'text-right active'}).update( new Element('span').update('Shipping Cost Incl. GST: ') ) })
 				.insert({'bottom': new Element('td', {'class': 'active'}).update(
 						new Element('input', {'save-order': 'shippingCost', 'save-order-summary': 'shippingCost', 'placeholder':  tmp.me.getCurrency(0)})
 						.observe('change', function(){
@@ -779,8 +779,8 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 						})
 				) })
 			})
-			.insert({'bottom': new Element('tr') 
-				.insert({'bottom': new Element('td', {'colspan': 2, 'class': 'text-right active', 'style': 'border-bottom: 1px solid brown'}).update( new Element('span').update('Handling Cost  Incl. GST: ') ) }) 
+			.insert({'bottom': new Element('tr')
+				.insert({'bottom': new Element('td', {'colspan': 2, 'class': 'text-right active', 'style': 'border-bottom: 1px solid brown'}).update( new Element('span').update('Handling Cost  Incl. GST: ') ) })
 				.insert({'bottom': new Element('td', {'class': 'active', 'style': 'border-bottom: 1px solid brown'}).update(
 						new Element('input', {'save-order': 'handlingCost', 'save-order-summary': 'handlingCost', 'placeholder':  tmp.me.getCurrency(0)})
 						.observe('change', function(){
@@ -788,8 +788,8 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 						})
 				) })
 			})
-			.insert({'bottom': new Element('tr') 
-				.insert({'bottom': new Element('td', {'colspan': 2, 'class': 'text-right active'}).update( new Element('h4').update('Total Due: ') ) }) 
+			.insert({'bottom': new Element('tr')
+				.insert({'bottom': new Element('td', {'colspan': 2, 'class': 'text-right active'}).update( new Element('h4').update('Total Due: ') ) })
 				.insert({'bottom': new Element('td', {'class': 'active'}).update(
 					new Element('h4',{'save-order-summary': 'totalPaymentDue', 'class': 'total-payment-due'}).update(tmp.me.getCurrency(0))
 				) })
@@ -840,7 +840,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.newDiv = new Element('tr', {'class': (tmp.isTitle === true ? 'item_top_row' : 'btn-hide-row item_row') + (supplier.active == 0 ? ' danger' : ''), 'item_id': (tmp.isTitle === true ? '' : supplier.id)}).store('data', supplier)
 			.insert({'bottom': new Element(tmp.tag)
 				.insert({'bottom': (tmp.isTitle === true ? '&nbsp;':
-					new Element('span', {'class': 'btn btn-primary btn-xs'}).update('select')	
+					new Element('span', {'class': 'btn btn-primary btn-xs'}).update('select')
 					.observe('click', function(){
 						tmp.me.selectSupplier(supplier);
 					})
@@ -876,10 +876,10 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					tmp.result = tmp.me.getResp(param, false, true);
 					if(!tmp.result || !tmp.result.items)
 						return;
-					
+
 					$(tmp.searchPanel).insert({'bottom': new Element('small', {'class': 'table-responsive list-div'})
 						.insert({'bottom': new Element('table', {'class': 'table table-hover table-condensed'})
-							.insert({'bottom': new Element('thead') 
+							.insert({'bottom': new Element('thead')
 								.insert({'bottom': tmp.me._getSupplierRow({'name': 'Supplier Name', 'contactName': 'Contact Name', 'contactNo': 'Contact Number', 'description': 'Description', 'active': 'Active?'}, true)  })
 							})
 							.insert({'bottom': tmp.listDiv = new Element('tbody') })
@@ -905,7 +905,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			.insert({'bottom': new Element('div', {'class': 'panel-heading form-inline'})
 				.insert({'bottom': new Element('strong').update('Creating a new order for: ') })
 				.insert({'bottom': new Element('span', {'class': 'input-group col-sm-6'})
-					.insert({'bottom': new Element('input', {'class': 'form-control search-txt init-focus', 'placeholder': 'Supplier name'}) 
+					.insert({'bottom': new Element('input', {'class': 'form-control search-txt init-focus', 'placeholder': 'Supplier name'})
 						.observe('keydown', function(event){
 							tmp.txtBox = this;
 							tmp.me.keydown(event, function() {
@@ -933,11 +933,26 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 						})
 					})
 				})
-				.insert({'bottom': new Element('span', {'class': 'btn btn-success pull-right btn-sm btn-danger'})
-					.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-remove'}) })
+				.insert({'bottom': new Element('span', {'class': 'btn btn-success pull-right btn-sm'})
+					.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-plus'}) })
+					.insert({'bottom': ' ADD' })
 					.observe('click', function(){
-						$(tmp.me._htmlIds.searchPanel).down('.search-txt').clear().focus();
-						$(tmp.me._htmlIds.searchPanel).down('.table tbody').innerHTML = null;
+						jQuery.fancybox({
+							'width'			: '95%',
+							'height'		: '95%',
+							'autoScale'     : false,
+							'autoDimensions': false,
+							'fitToView'     : false,
+							'autoSize'      : false,
+							'type'			: 'iframe',
+							'href'			: '/supplier/new.html?blanklayout=1'
+							,'beforeClose'	    : function() {
+								tmp.supplier = $$('iframe.fancybox-iframe').first().contentWindow.pageJs._item;
+								if(tmp.supplier.id) { //successfully created a supplier
+									tmp.me.selectSupplier(tmp.supplier);
+								}
+							}
+				 		});
 					})
 				})
 			})

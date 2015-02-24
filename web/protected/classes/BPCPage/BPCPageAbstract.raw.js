@@ -4,6 +4,7 @@
 var BPCPageJs = new Class.create();
 BPCPageJs.prototype = {
 	modalId: 'page_modal_box_id'
+	,_htmlIDs: {}
 
 	,_ajaxRequest: null
 
@@ -22,6 +23,20 @@ BPCPageJs.prototype = {
 		if(this.callbackIds[key] === undefined || this.callbackIds[key] === null)
 			throw 'Callback ID is not set for:' + key;
 		return this.callbackIds[key];
+	}
+
+
+	,setHTMLID: function($key, $value) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.me._htmlIDs[$key]  = $value;
+		return tmp.me;
+	}
+
+	,getHTMLID: function($key) {
+		var tmp = {};
+		tmp.me = this;
+		return tmp.me._htmlIDs[$key];
 	}
 
 	//posting an ajax request
