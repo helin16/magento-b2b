@@ -181,12 +181,12 @@ class ReceivingItem extends BaseEntityAbstract
 		if(trim($this->getId()) !== '' ) {
 			//if a receiving item gets deactivate, then stockonHand needs to be changed
 			if(intval($this->getActive()) === 0) {
-				$msg = 'ReceivedItem for Product(SKU=' . $this->getProduct() . '), unitPrice=' . $this->getSerialNo() . ', serialNo=' . $this->getSerialNo() . ', invoiceNo=' . $this->getInvoiceNo() . ', qty=' . $this->getQty() . ' has now been deactivated.';
+				$msg = 'ReceivedItem for Product(SKU=' . $this->getProduct() . '), unitPrice=' . $this->getUnitPrice() . ', serialNo=' . $this->getSerialNo() . ', invoiceNo=' . $this->getInvoiceNo() . ', qty=' . $this->getQty() . ' has now been deactivated.';
 				$this->getPurchaseOrder()->addLog($msg, Log::TYPE_SYSTEM, Log::TYPE_SYSTEM, get_class($this) . '_DEACTIVATION', __CLASS__ . '::' . __FUNCTION__)
 					->addComment($msg, Comments::TYPE_WAREHOUSE);
 				$this->getProduct()->received(0 - $this->getQty(), $this->getUnitPrice(), $msg, $this);
 			} else {
-				$msg = 'Received a Product(SKU=' . $this->getProduct() . ') with unitPrice=' . $this->getSerialNo() . ', serialNo=' . $this->getSerialNo() . ', invoiceNo=' . $this->getInvoiceNo() . ', qty=' . $this->getQty() . '';
+				$msg = 'Received a Product(SKU=' . $this->getProduct() . ') with unitPrice=' . $this->getUnitPrice() . ', serialNo=' . $this->getSerialNo() . ', invoiceNo=' . $this->getInvoiceNo() . ', qty=' . $this->getQty() . '';
 				$this->getPurchaseOrder()->addLog($msg, Log::TYPE_SYSTEM, Log::TYPE_SYSTEM, 'Auto Log', __CLASS__ . '::' . __FUNCTION__)
 					->addComment($msg, Comments::TYPE_WAREHOUSE);
 				$this->getProduct()->received($this->getQty(), $this->getUnitPrice(), $msg, $this);
