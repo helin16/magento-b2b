@@ -911,7 +911,7 @@ class Product extends InfoEntityAbstract
 	public function preSave()
 	{
 		$sku = trim($this->getSku());
-		$where = array('sku = ? ');
+		$where = array('sku = ?', 'active = 1');
 		$params = array($sku);
 		if(($id = trim($this->getId())) !== '')
 		{
