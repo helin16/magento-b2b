@@ -634,9 +634,9 @@ class OrderDetailsController extends BPCPageAbstract
 			if(!isset($param->CallbackParameter->emailAddress) || ($emailAddress = trim($param->CallbackParameter->emailAddress)) === '')
 				throw new Exception('System Error: invalid emaill address provided!');
 			$emailBody = '';
-			if(!isset($param->CallbackParameter->emailBody) && ($emailBody = trim($param->CallbackParameter->emailBody)) !== '')
+			if(isset($param->CallbackParameter->emailBody) && ($emailBody = trim($param->CallbackParameter->emailBody)) !== '')
 				$emailBody = $emailBody;
-
+			
 			$pdfFile = EntityToPDF::getPDF($order);
 			$asset = Asset::registerAsset($order->getOrderNo() . '.pdf', file_get_contents($pdfFile));
 			EmailSender::addEmail('sales@budgetpc.com.au', $emailAddress, 'BudgetPC Order:' . $order->getOrderNo() , (trim($emailBody) === '' ? '' : $emailBody . "\n") .'Please Find the attached Order(' . $order->getOrderNo() . ') from BudgetPC.', array($asset));
