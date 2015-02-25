@@ -207,7 +207,7 @@ BPCPageJs.prototype = {
 		return (tmp.hasError === true ? null : tmp.data);
 	}
 
-	,showModalBox: function(title, content, isSM, footer) {
+	,showModalBox: function(title, content, isSM, footer, eventFuncs) {
 		var tmp = {};
 		tmp.me = this;
 		tmp.isSM = (isSM === true ? true : false);
@@ -231,7 +231,13 @@ BPCPageJs.prototype = {
 		}
 
 		$$('body')[0].insert({'bottom': tmp.newBox.writeAttribute('id',  tmp.me.modalId)});
-		jQuery('#' + tmp.me.modalId).modal({'show': true, 'target': '#' + tmp.me.modalId});
+		tmp.modal = jQuery('#' + tmp.me.modalId);
+		if(eventFuncs && typeof(eventFuncs) === 'object') {
+			$H(eventFuncs).each(function(eventFunc){
+				tmp.modal.on(eventFunc.key, eventFunc.value);
+			});
+		}
+		tmp.modal.modal({'show': true, 'target': '#' + tmp.me.modalId});
 		return tmp.me;
 	}
 	,hideModalBox: function() {
