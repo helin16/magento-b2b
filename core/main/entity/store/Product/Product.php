@@ -918,7 +918,9 @@ class Product extends InfoEntityAbstract
 			$where[] = 'id != ?';
 			$params[] = $id;
 		}
+		Dao::$debug = true;
 		$exsitingSKU = Product::countByCriteria(implode(' AND ', $where), $params);
+		Dao::$debug = false;
 		if($exsitingSKU > 0)
 			throw new EntityException('The SKU(=' . $sku . ') is already exists!' );
 	}
