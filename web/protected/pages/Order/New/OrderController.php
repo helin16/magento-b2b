@@ -61,12 +61,15 @@ class OrderController extends BPCPageAbstract
 		try
 		{
 			$items = array();
+			$pageNo = isset($param->CallbackParameter->pageNo) ? trim($param->CallbackParameter->pageNo) : 1;
 			$searchTxt = isset($param->CallbackParameter->searchTxt) ? trim($param->CallbackParameter->searchTxt) : '';
-			foreach(Customer::getAllByCriteria('name like :searchTxt or email like :searchTxt', array('searchTxt' => $searchTxt . '%')) as $customer)
+			$stats = array();
+			foreach(Customer::getAllByCriteria('name like :searchTxt or email like :searchTxt', array('searchTxt' => '%' . $searchTxt . '%'), true, $pageNo, 10, array('cust.name' => 'asc'), $stats) as $customer)
 			{
 				$items[] = $customer->getJson();
 			}
 			$results['items'] = $items;
+			$results['pagination'] = $stats;
 		}
 		catch(Exception $ex)
 		{
