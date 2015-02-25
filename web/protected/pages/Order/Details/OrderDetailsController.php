@@ -157,7 +157,7 @@ class OrderDetailsController extends BPCPageAbstract
 					}
 				}
 				$emailBody['productUpdate'] .= '</table>';
-				$commentString .= ($notifyCustomer === true ? ' !!!NOTIFICATION SENT TO CUSTOMER!!! ' : '');
+				$commentString .= ($notifyCustomer === true ? ' [NOTIFICATION SENT TO CUSTOMER]' : '');
 				$order->addComment($commentString, $commentType);
 				$orderItem->addComment($commentString, $commentType)
 					->save();
@@ -558,7 +558,7 @@ class OrderDetailsController extends BPCPageAbstract
 			if(!isset($param->CallbackParameter->reason) || ($reason = trim($param->CallbackParameter->reason)) === '')
 				throw new Exception('The reason for the deletion is needed!');
 
-			$comments = '!!!!! A payment [Value: ' .  StringUtilsAbstract::getCurrency($payment->getValue()) . ', Method: ' . $payment->getMethod()->getName() . '] is DELETED: ' . $reason;
+			$comments = 'A payment [Value: ' .  StringUtilsAbstract::getCurrency($payment->getValue()) . ', Method: ' . $payment->getMethod()->getName() . '] is DELETED: ' . $reason;
 			$payment->setActive(false)
 				->save()
 				->addComment($comments, Comments::TYPE_ACCOUNTING);
