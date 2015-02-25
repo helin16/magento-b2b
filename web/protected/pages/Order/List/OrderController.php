@@ -142,7 +142,7 @@ class OrderController extends BPCPageAbstract
 					}
 					case 'ord.infos.' . OrderInfoType::ID_CUS_NAME:
 					{
-						$query->eagerLoad("Order.customer", 'inner join', 'x', 'x.orderId = ord.id and x.active = 1');
+						$query->eagerLoad("Order.customer", 'inner join', 'x', 'x.customerId = ord.id and x.active = 1');
 						$where[] = 'x.name like ?';
 						$params[] = '%' . $value.'%';
 						break;
