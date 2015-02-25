@@ -1102,7 +1102,7 @@ class Product extends InfoEntityAbstract
 		DaoMap::setOneToMany('codes', 'ProductCode', 'pro_pro_code');
 		parent::__loadDaoMap();
 
-		DaoMap::createUniqueIndex('sku');
+		DaoMap::createIndex('sku');
 		DaoMap::createIndex('name');
 		DaoMap::createIndex('mageId');
 		DaoMap::createIndex('stockOnHand');
@@ -1130,7 +1130,7 @@ class Product extends InfoEntityAbstract
 	 */
 	public static function getBySku($sku)
 	{
-		$products = self::getAllByCriteria('sku = ? ', array(trim($sku)), false, 1, 1);
+		$products = self::getAllByCriteria('sku = ? ', array(trim($sku)), true, 1, 1);
 		return (count($products) === 0 ? null : $products[0]);
 	}
 	/**
