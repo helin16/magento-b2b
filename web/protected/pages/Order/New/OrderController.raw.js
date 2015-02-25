@@ -908,7 +908,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 							tmp.paymentMethodSel.observe('change', function() {
 									tmp.btn = this;
 									$(tmp.btn).up('.row').down('.input-field').update($F(tmp.btn).blank() ? tmp.me.getCurrency(0) :
-										tmp.paidAmountBox = new Element('input', {'order-price-summary': 'totalPaidAmount', 'class': 'form-control input-sm', 'save-order': 'totalPaidAmount', 'placeholder': tmp.me.getCurrency(0), 'required': true, 'validate_currency': 'Invalid number provided!' })
+										tmp.paidAmountBox = new Element('input', {'value': ($F(tmp.btn).strip() === '5' ? '0' : ''), 'order-price-summary': 'totalPaidAmount', 'class': 'form-control input-sm', 'save-order': 'totalPaidAmount', 'placeholder': tmp.me.getCurrency(0), 'required': true, 'validate_currency': 'Invalid number provided!' })
 										.observe('keyup', function() {
 											tmp.me._recalculateSummary();
 										})
