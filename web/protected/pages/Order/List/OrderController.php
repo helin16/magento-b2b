@@ -104,7 +104,7 @@ class OrderController extends BPCPageAbstract
 					case 'ord.invNo':
 					{
 						$where[] =  $field . " like ? ";
-						$params[] = $value.'%';
+						$params[] = '%' . $value.'%';
 						break;
 					}
 					case 'ord.passPaymentCheck':
@@ -142,9 +142,9 @@ class OrderController extends BPCPageAbstract
 					}
 					case 'ord.infos.' . OrderInfoType::ID_CUS_NAME:
 					{
-						$query->eagerLoad("Order.infos", 'inner join', 'x', 'x.orderId = ord.id and x.active = 1 and x.typeId = ' . OrderInfoType::ID_CUS_NAME);
-						$where[] = 'x.value like ?';
-						$params[] = $value.'%';
+						$query->eagerLoad("Order.customer", 'inner join', 'x', 'x.orderId = ord.id and x.active = 1');
+						$where[] = 'x.name like ?';
+						$params[] = '%' . $value.'%';
 						break;
 					}
 				}
