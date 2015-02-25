@@ -88,27 +88,35 @@ class DetailsController extends DetailsPageAbstract
 				if(!$customer instanceof Customer)
 					throw new Exception('Invalid Customer passed in!');
 				$customer->setName($name)
-				->setEmail($email)
-				->setContactNo($contactNo)
-				->setActive($active);
+					->setEmail($email)
+					->setContactNo($contactNo)
+					->setActive($active);
 				$billingAddress = $customer->getBillingAddress();
-				$billingAddress->setStreet($billingStreet)
-				->setCity($billingCity)
-				->setRegion($billingState)
-				->setCountry($billingCountry)
-				->setPostCode($billingPostcode)
-				->setContactName($billingName)
-				->setContactNo($billingContactNo)
-				->save();
+				if($billingAddress instanceof Address) {
+					$billingAddress->setStreet($billingStreet)
+						->setCity($billingCity)
+						->setRegion($billingState)
+						->setCountry($billingCountry)
+						->setPostCode($billingPostcode)
+						->setContactName($billingName)
+						->setContactNo($billingContactNo)
+						->save();
+				} else if(trim($billingStreet) !== '' || trim($billingCity) !== '' || trim($billingState) !== '' || trim($billingCountry) !== '' || trim($billingPostcode) !== '' || trim($billingName) !== '' || trim($billingContactNo) !== '') {
+					$customer->setBillingAddress(Address::create($billingStreet, $billingCity, $billingState, $billingCountry, $billingPostcode, $billingName, $billingContactNo));
+				}
 				$shippingAddress = $customer->getShippingAddress();
-				$shippingAddress->setStreet($shippingStreet)
-				->setCity($shippingCity)
-				->setRegion($shippingState)
-				->setCountry($shippingCountry)
-				->setPostCode($shippingPosecode)
-				->setContactName($shippingName)
-				->setContactNo($shippingContactNo)
-				->save();
+				if($shippingAddress instanceof Address) {
+					$shippingAddress->setStreet($shippingStreet)
+						->setCity($shippingCity)
+						->setRegion($shippingState)
+						->setCountry($shippingCountry)
+						->setPostCode($shippingPosecode)
+						->setContactName($shippingName)
+						->setContactNo($shippingContactNo)
+						->save();
+				} else if(trim($shippingStreet) !== '' || trim($shippingCity) !== '' || trim($shippingState) !== '' || trim($shippingCountry) !== '' || trim($shippingPosecode) !== '' || trim($shippingName) !== '' || trim($shippingContactNo) !== '') {
+					$customer->setShippingAddress(Address::create($shippingStreet, $shippingCity, $shippingState, $shippingCountry, $shippingPosecode, $shippingName, $shippingContactNo));
+				}
 				$customer->save();
 			} else {
 				if(trim($billingStreet) === '' && trim($billingCity) === '' && trim($billingState) === '' && trim($billingCountry) === '' && trim($billingPostcode) === '' && trim($billingName) === '' && trim($billingContactNo) === '')
