@@ -224,6 +224,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 	,_getAddressDiv: function(title, addr, editable) {
 		var tmp = {};
 		tmp.me = this;
+		tmp.address = (addr || null);
 		tmp.editable = (editable || false);
 		tmp.newDiv = new Element('div', {'class': 'address-div'})
 			.insert({'bottom': new Element('strong').update(title) })
@@ -234,10 +235,10 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				.insert({'bottom': new Element('dd')
 					.insert({'bottom': new Element('div')
 						.insert({'bottom': new Element('div', {'class' : 'col-sm-6'}).update(
-							tmp.editable !== true ? addr.contactName : new Element('input', {'address-editable-field': 'contactName', 'class': 'form-control input-sm', 'placeholder': 'The name of contact person',  'value': addr.contactName})
+							tmp.editable !== true ? addr.contactName : new Element('input', {'address-editable-field': 'contactName', 'class': 'form-control input-sm', 'placeholder': 'The name of contact person',  'value': tmp.address.contactName ? tmp.address.contactName : ''})
 						) })
 						.insert({'bottom': new Element('div', {'class' : 'col-sm-6'}).update(
-								tmp.editable !== true ? addr.contactNo : new Element('input', {'address-editable-field': 'contactNo', 'class': 'form-control input-sm', 'placeholder': 'The contact number of contact person',  'value': addr.contactNo})
+								tmp.editable !== true ? addr.contactNo : new Element('input', {'address-editable-field': 'contactNo', 'class': 'form-control input-sm', 'placeholder': 'The contact number of contact person',  'value': tmp.address.contactNo ? tmp.address.contactNo : ''})
 						) })
 					})
 				})
@@ -247,23 +248,23 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				.insert({'bottom': new Element('dd')
 					.insert({'bottom': new Element('div')
 						.insert({'bottom': tmp.editable !== true ? addr.street : new Element('div', {'class': 'street col-sm-12'}).update(
-								new Element('input', {'address-editable-field': 'street', 'class': 'form-control input-sm', 'placeholder': 'Street Number and Street name',  'value': addr.street})
+								new Element('input', {'address-editable-field': 'street', 'class': 'form-control input-sm', 'placeholder': 'Street Number and Street name',  'value': tmp.address.street ? tmp.address.street : ''})
 						) })
 					})
 					.insert({'bottom': new Element('div')
 						.insert({'bottom': tmp.editable !== true ? addr.city + ' ' : new Element('div', {'class': 'city col-sm-6'}).update(
-								new Element('input', {'address-editable-field': 'city', 'class': 'form-control input-sm', 'placeholder': 'City / Suburb',  'value': addr.city})
+								new Element('input', {'address-editable-field': 'city', 'class': 'form-control input-sm', 'placeholder': 'City / Suburb',  'value': tmp.address.city ? tmp.address.city : ''})
 						) })
 						.insert({'bottom':  tmp.editable !== true ? addr.region + ' ' : new Element('div', {'class': 'region col-sm-3'}).update(
-								new Element('input', {'address-editable-field': 'region', 'class': 'form-control input-sm', 'placeholder': 'State / Province',  'value': addr.region})
+								new Element('input', {'address-editable-field': 'region', 'class': 'form-control input-sm', 'placeholder': 'State / Province',  'value': tmp.address.region ? tmp.address.region : ''})
 						) })
 						.insert({'bottom': tmp.editable !== true ? addr.postCode: new Element('div', {'class': 'postcode col-sm-3'}).update(
-								new Element('input', {'address-editable-field': 'postCode', 'class': 'form-control input-sm', 'placeholder': 'PostCode',  'value': addr.postCode})
+								new Element('input', {'address-editable-field': 'postCode', 'class': 'form-control input-sm', 'placeholder': 'PostCode',  'value': tmp.address.postCode ? tmp.address.postCode : ''})
 						) })
 					})
 					.insert({'bottom': new Element('div')
 						.insert({'bottom': tmp.editable !== true ? addr.country: new Element('div', {'class': 'postcode col-sm-4'}).update(
-								new Element('input', {'address-editable-field': 'country', 'class': 'form-control input-sm', 'placeholder': 'Country',  'value': addr.country})
+								new Element('input', {'address-editable-field': 'country', 'class': 'form-control input-sm', 'placeholder': 'Country',  'value': tmp.address.country ? tmp.address.country : ''})
 						) })
 					})
 				})
@@ -272,6 +273,27 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			tmp.newDiv.writeAttribute('address-editable', true);
 		}
 		return tmp.newDiv;
+	}
+	,_openCustomerDetailsPage: function(row) {
+		var tmp = {};
+		tmp.me = this;
+		jQuery.fancybox({
+			'width'			: '95%',
+			'height'		: '95%',
+			'autoScale'     : false,
+			'autoDimensions': false,
+			'fitToView'     : false,
+			'autoSize'      : false,
+			'type'			: 'iframe',
+			'href'			: '/customer/' + row.id + '.html?blanklayout=1',
+			'beforeClose'	    : function() {
+				tmp.customer = $$('iframe.fancybox-iframe').first().contentWindow.pageJs._item;
+				if(tmp.customer && tmp.customer.id) {
+					tmp.me.selectCustomer(tmp.customer);
+				}
+			}
+ 		});
+		return tmp.me;
 	}
 	/**
 	 * getting the customer information div
@@ -307,12 +329,18 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					.insert({'bottom': new Element('div', {'class': 'col-sm-8'})
 						.insert({'bottom': new Element('strong').update('CREATING A ') })
 						.insert({'bottom': tmp.typeSelBox })
-						.insert({'bottom': new Element('strong').update(' FOR:  ' + tmp.customer.name + ' ') })
+						.insert({'bottom': new Element('strong').update(' FOR:  ') })
+						.insert({'bottom': new Element('a', {'href': 'javascript: void(0);'})
+							.update(tmp.customer.name)
+							.observe('click', function(){
+								tmp.me._openCustomerDetailsPage(tmp.customer);
+							})
+						})
 						.insert({'bottom': ' <' })
 						.insert({'bottom': new Element('a', {'href': 'mailto:' + tmp.customer.email}).update(tmp.customer.email) })
 						.insert({'bottom': '>' })
 						.insert({'bottom': new Element('strong').update(' with PO No.:') })
-						.insert({'bottom': new Element('input', {'type': 'text', 'save-order': 'poNo', 'placeholder': 'Optional - PO No. From Customer'}) })
+						.insert({'bottom': new Element('input', {'type': 'text', 'save-order': 'poNo', 'placeholder': 'Optional - PO No. From Customer'}).setStyle('width: 200px;') })
 					})
 					.insert({'bottom': new Element('div', {'class': 'col-sm-4 text-right'})
 						.insert({'bottom': new Element('strong').update('Total Payment Due: ') })
@@ -325,8 +353,8 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					.insert({'bottom': new Element('small').update(new Element('em').update(tmp.customer.description)) })
 				})
 				.insert({'bottom': new Element('div', {'class': 'row'})
-					.insert({'bottom': tmp.me._getAddressDiv("Billing Address: ", tmp.customer.address.billing).addClassName('col-xs-6') })
-					.insert({'bottom': tmp.me._getAddressDiv("Shipping Address: ", tmp.customer.address.shipping, true).addClassName('col-xs-6').addClassName('shipping-address') })
+					.insert({'bottom': tmp.me._getAddressDiv("Billing Address: ", tmp.customer.address ? tmp.customer.address.billing : null).addClassName('col-xs-6') })
+					.insert({'bottom': tmp.me._getAddressDiv("Shipping Address: ", tmp.customer.address ? tmp.customer.address.shipping : null, true).addClassName('col-xs-6').addClassName('shipping-address') })
 				 })
 			});
 		return tmp.newDiv;
