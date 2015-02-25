@@ -4,12 +4,17 @@ class ItemExport_Magento extends ExportAbstract
 {
 	protected static function _getData()
 	{
-		$yesterdayLocal = new UDate('now', 'Australia/Melbourne');
-		$yesterdayLocal->modify('-1 day');
-		$fromDate = new UDate($yesterdayLocal->format('Y-m-d') . ' 00:00:00', 'Australia/Melbourne');
-		$fromDate->setTimeZone('UTC');
-		$toDate = new UDate($yesterdayLocal->format('Y-m-d') . ' 23:59:59', 'Australia/Melbourne');
-		$toDate->setTimeZone('UTC');
+		if(count(self::$_dateRange) === 0) {
+			$yesterdayLocal = new UDate('now', 'Australia/Melbourne');
+			$yesterdayLocal->modify('-1 day');
+			$fromDate = new UDate($yesterdayLocal->format('Y-m-d') . ' 00:00:00', 'Australia/Melbourne');
+			$fromDate->setTimeZone('UTC');
+			$toDate = new UDate($yesterdayLocal->format('Y-m-d') . ' 23:59:59', 'Australia/Melbourne');
+			$toDate->setTimeZone('UTC');
+		} else {
+			$fromDate = self::$_dateRange['start'];
+			$toDate = self::$_dateRange['end'];
+		}
 		$productPrices = ProductPrice::getAllByCriteria('updated >= :fromDate and updated < :toDate', array('fromDate' => trim($fromDate), 'toDate' => trim($toDate)));
 
 		$return = array();

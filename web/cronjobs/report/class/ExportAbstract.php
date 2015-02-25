@@ -5,8 +5,15 @@ class ExportAbstract
 {
 	protected static $_debug = false;
 	private static $_rootDir = '/tmp/export';
-	
-	public static function run($debug = false)
+	protected static $_dateRange = array();
+
+	public static function setStartNEndDate(UDate $start, UDate $end)
+	{
+		self::$_dateRange['start'] = $start;
+		self::$_dateRange['end'] = $end;
+	}
+
+	public static function run($debug = false, $mailOut = true)
 	{
 		self::$_debug = $debug;
 		if($debug)
@@ -25,14 +32,16 @@ class ExportAbstract
 		$excelOutput = ob_get_clean();
 		$class = get_called_class();
 		$asset = Asset::registerAsset($class::_getAttachedFileName(), $excelOutput);
-		self::_mailOut($asset);
+		if($mailOut === true)
+			self::_mailOut($asset);
+		return $asset;
 	}
 	/**
 	 * Debug output function
-	 * 
+	 *
 	 * @param string $message
 	 * @param string $newLine
-	 * 
+	 *
 	 */
 	protected static function _debug($message, $newLine = "\n")
 	{
@@ -82,12 +91,12 @@ class ExportAbstract
 			$letter = 'A';
 			if(self::$_debug)
 				echo "\n";
-		}		
+		}
 		return $phpexcel;
 	}
 	/**
 	 * Mailing the file out to someone
-	 * 
+	 *
 	 * @param unknown $filePath
 	 */
 	private static function _mailOut(Asset $asset = null)
@@ -102,7 +111,7 @@ class ExportAbstract
 		$accountEmail = 'accounts@budgetpc.com.au';
 		$marketingEmail = 'marketing@budgetpc.com.au';
 		$salesEmail = 'sales@budgetpc.com.au';
-		
+
 		EmailSender::addEmail('', $michaelEmail, $class::_getMailTitle(), $class::_getMailBody(), $assets);
 		EmailSender::addEmail('', $helinEmail, $class::_getMailTitle(), $class::_getMailBody(), $assets);
 		EmailSender::addEmail('', $xixiEmail, $class::_getMailTitle(), $class::_getMailBody(), $assets);
