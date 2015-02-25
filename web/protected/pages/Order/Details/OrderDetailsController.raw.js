@@ -925,19 +925,19 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		})
 		.insert({'bottom': new Element('div', {'class': 'row'})
 			.insert({'bottom': new Element('div', {'class': 'col-sm-4'})
-				.insert({'bottom': tmp.me._getFormGroup('Street:', new Element('input', {'type': 'text', 'required': true, 'save_shipping': 'street', 'class': 'input-sm', 'value': tmp.me._order.address.shipping.street}) ) })
+				.insert({'bottom': tmp.me._getFormGroup('Street:', new Element('input', {'type': 'text', 'save_shipping': 'street', 'class': 'input-sm', 'value': tmp.me._order.address.shipping.street}) ) })
 			})
 			.insert({'bottom': new Element('div', {'class': 'col-sm-2'})
-				.insert({'bottom': tmp.me._getFormGroup('City:', new Element('input', {'type': 'text', 'required': true, 'save_shipping': 'city', 'class': 'input-sm', 'value': tmp.me._order.address.shipping.city}) ) })
+				.insert({'bottom': tmp.me._getFormGroup('City:', new Element('input', {'type': 'text', 'save_shipping': 'city', 'class': 'input-sm', 'value': tmp.me._order.address.shipping.city}) ) })
 			})
 			.insert({'bottom': new Element('div', {'class': 'col-sm-2'})
-				.insert({'bottom': tmp.me._getFormGroup('State:', new Element('input', {'type': 'text', 'required': true, 'save_shipping': 'region', 'class': 'input-sm', 'value': tmp.me._order.address.shipping.region}) ) })
+				.insert({'bottom': tmp.me._getFormGroup('State:', new Element('input', {'type': 'text', 'save_shipping': 'region', 'class': 'input-sm', 'value': tmp.me._order.address.shipping.region}) ) })
 			})
 			.insert({'bottom': new Element('div', {'class': 'col-sm-2'})
-				.insert({'bottom': tmp.me._getFormGroup('Country:', new Element('input', {'type': 'text', 'required': true, 'save_shipping': 'country', 'class': 'input-sm', 'value': tmp.me._order.address.shipping.country}) ) })
+				.insert({'bottom': tmp.me._getFormGroup('Country:', new Element('input', {'type': 'text', 'save_shipping': 'country', 'class': 'input-sm', 'value': tmp.me._order.address.shipping.country}) ) })
 			})
 			.insert({'bottom': new Element('div', {'class': 'col-sm-2'})
-				.insert({'bottom': tmp.me._getFormGroup('Post Code:', new Element('input', {'type': 'text', 'required': true, 'save_shipping': 'postCode', 'class': 'input-sm', 'value': tmp.me._order.address.shipping.postCode}) ) })
+				.insert({'bottom': tmp.me._getFormGroup('Post Code:', new Element('input', {'type': 'text', 'save_shipping': 'postCode', 'class': 'input-sm', 'value': tmp.me._order.address.shipping.postCode}) ) })
 			})
 		})
 		.insert({'bottom': new Element('div', {'class': 'row'})
@@ -1138,8 +1138,8 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					tmp.result = tmp.me.getResp(param, false, true);
 					if(!tmp.result || !tmp.result.item)
 						return;
-					tmp.confirmDiv.update('<h4 class="text-success">Email Successfully added into the Message Queue. Will be sent within a minute');
-					tmp.me.hideModalBox();
+					tmp.confirmDiv.update('<h4 class="text-success">Email Successfully added into the Message Queue. Will be sent within a minute</h4>');
+					setTimeout(function() {tmp.me.hideModalBox();}, 2000);
 				} catch (e) {
 					tmp.confirmDiv.insert({'top': new Element('h4', {'class': 'msg'}).update(new Element('span', {'class': 'label label-danger'}).update(e) ) });
 				}
