@@ -377,6 +377,7 @@ class OrderDetailsController extends BPCPageAbstract
 
 			$contactName = $shippingInfo->contactName;
 			$contactNo = $shippingInfo->contactNo;
+// 			if(($street = trim($shippingInfo->street)) !== '')
 			$shippingAddress = Address::create(
 					trim($shippingInfo->street),
 					trim($shippingInfo->city),
@@ -635,7 +636,7 @@ class OrderDetailsController extends BPCPageAbstract
 				throw new Exception('System Error: invalid emaill address provided!');
 			$emailBody = '';
 			if(isset($param->CallbackParameter->emailBody) && ($emailBody = trim($param->CallbackParameter->emailBody)) !== '')
-				$emailBody = $emailBody;
+				$emailBody = str_replace("\n", "<br />", $emailBody);
 			
 			$pdfFile = EntityToPDF::getPDF($order);
 			$asset = Asset::registerAsset($order->getOrderNo() . '.pdf', file_get_contents($pdfFile));
