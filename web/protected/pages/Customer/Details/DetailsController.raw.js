@@ -46,7 +46,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		tmp.data.id = tmp.me._customer.id ? tmp.me._customer.id : '';
 		if(tmp.data === null)
 			return tmp.me;
-		
+
 		//submit all data
 		tmp.me.saveItem(btn, tmp.data, function(data){
 			tmp.me.showModalBox('<strong class="text-success">Saved Successfully!</strong>', 'Saved Successfully!', true);
@@ -125,11 +125,11 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		var tmp = {};
 		tmp.me = this;
 		tmp.item = item;
-		tmp.address = tmp.item.id && tmp.item.address && tmp.item.address.billing ? tmp.item.address.billing : null;
+		tmp.address = tmp.item.id && tmp.item.address && tmp.item.address.billing ? tmp.item.address.billing : {};
 		tmp.newDiv = new Element('div', {'class': 'panel panel-default', 'id': 'billing-info'})
 			.insert({'bottom': new Element('div', {'class': 'panel-heading'})
 				.insert({'bottom': new Element('strong').update(tmp.item.name ? 'Billing Info: ' + tmp.item.name : 'Billing Info: new customer') })
-				.insert({'bottom': new Element('small', {'class': 'pull-right'}) 
+				.insert({'bottom': new Element('small', {'class': 'pull-right'})
 					.insert({'bottom': new Element('button', {'class': 'btn btn-default btn-xs', 'type': 'button'}).update('Copy from Shipping') })
 				})
 				.observe('click', function() {
@@ -169,11 +169,11 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		var tmp = {};
 		tmp.me = this;
 		tmp.item = item;
-		tmp.address = tmp.item.id && tmp.item.address && tmp.item.address.shipping ? tmp.item.address.shipping : null;
+		tmp.address = tmp.item.id && tmp.item.address && tmp.item.address.shipping ? tmp.item.address.shipping : {};
 		tmp.newDiv = new Element('div', {'class': 'panel panel-default', 'id': 'shipping-info'})
 			.insert({'bottom': new Element('div', {'class': 'panel-heading'})
 				.insert({'bottom': new Element('strong').update(tmp.item.name ? 'Shipping Info: ' + tmp.item.name : 'Shipping Info: new customer') })
-				.insert({'bottom': new Element('small', {'class': 'pull-right'}) 
+				.insert({'bottom': new Element('small', {'class': 'pull-right'})
 					.insert({'bottom': new Element('button', {'class': 'btn btn-default btn-xs', 'type': 'button'}).update('Copy from Billing') })
 				})
 				.observe('click', function() {
