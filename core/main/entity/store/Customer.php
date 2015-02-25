@@ -10,43 +10,43 @@ class Customer extends BaseEntityAbstract
 {
 	/**
 	 * The name of this customer
-	 * 
+	 *
 	 * @var string
 	 */
 	private $name;
 	/**
 	 * The description of this customer
-	 * 
+	 *
 	 * @var string
 	 */
 	private $description = '';
 	/**
 	 * The contact  of this customer
-	 * 
+	 *
 	 * @var string
 	 */
 	private $contactNo;
 	/**
 	 * The email of this customer
-	 * 
+	 *
 	 * @var string
 	 */
 	private $email;
 	/**
 	 * The billing of this customer
-	 * 
+	 *
 	 * @var Address
 	 */
 	protected $billingAddress = null;
 	/**
 	 * The shipping of this customer
-	 * 
+	 *
 	 * @var Address
 	 */
 	protected $shippingAddress = null;
 	/**
 	 * The id of the customer in magento
-	 * 
+	 *
 	 * @var int
 	 */
 	private $mageId = 0;
@@ -61,7 +61,7 @@ class Customer extends BaseEntityAbstract
 	 *
 	 * @return string
 	 */
-	public function getName() 
+	public function getName()
 	{
 	    return $this->name;
 	}
@@ -82,7 +82,7 @@ class Customer extends BaseEntityAbstract
 	 *
 	 * @return string
 	 */
-	public function getDescription() 
+	public function getDescription()
 	{
 	    return $this->description;
 	}
@@ -93,7 +93,7 @@ class Customer extends BaseEntityAbstract
 	 *
 	 * @return Customer
 	 */
-	public function setDescription($value) 
+	public function setDescription($value)
 	{
 	    $this->description = $value;
 	    return $this;
@@ -101,9 +101,9 @@ class Customer extends BaseEntityAbstract
 	/**
 	 * Getter for contactNo
 	 *
-	 * @return 
+	 * @return
 	 */
-	public function getContactNo() 
+	public function getContactNo()
 	{
 	    return $this->contactNo;
 	}
@@ -114,7 +114,7 @@ class Customer extends BaseEntityAbstract
 	 *
 	 * @return Customer
 	 */
-	public function setContactNo($value) 
+	public function setContactNo($value)
 	{
 	    $this->contactNo = $value;
 	    return $this;
@@ -124,7 +124,7 @@ class Customer extends BaseEntityAbstract
 	 *
 	 * @return string
 	 */
-	public function getEmail() 
+	public function getEmail()
 	{
 	    return $this->email;
 	}
@@ -135,7 +135,7 @@ class Customer extends BaseEntityAbstract
 	 *
 	 * @return Customer
 	 */
-	public function setEmail($value) 
+	public function setEmail($value)
 	{
 	    $this->email = $value;
 	    return $this;
@@ -165,9 +165,9 @@ class Customer extends BaseEntityAbstract
 	/**
 	 * Getter for shippingAddress
 	 *
-	 * @return 
+	 * @return
 	 */
-	public function getShippingAddress() 
+	public function getShippingAddress()
 	{
 		$this->loadManyToOne('shippingAddress');
 	    return $this->shippingAddress;
@@ -179,7 +179,7 @@ class Customer extends BaseEntityAbstract
 	 *
 	 * @return Customer
 	 */
-	public function setShippingAddress(Address $value = null) 
+	public function setShippingAddress(Address $value = null)
 	{
 	    $this->shippingAddress = $value;
 	    return $this;
@@ -208,9 +208,9 @@ class Customer extends BaseEntityAbstract
 	/**
 	 * Getter for mageId
 	 *
-	 * @return 
+	 * @return
 	 */
-	public function getMageId() 
+	public function getMageId()
 	{
 	    return $this->mageId;
 	}
@@ -221,23 +221,14 @@ class Customer extends BaseEntityAbstract
 	 *
 	 * @return Customer
 	 */
-	public function setMageId($value) 
+	public function setMageId($value)
 	{
 	    $this->mageId = $value;
 	    return $this;
 	}
 	/**
-	 * (non-PHPdoc)
-	 * @see BaseEntityAbstract::preSave()
-	 */
-	public function preSave()
-	{
-		if(!$this->getShippingAddress() instanceof Address)
-			$this->setShippingAddress($this->getBillingAddress());
-	}
-	/**
 	 * Creating a instance of this
-	 * 
+	 *
 	 * @param string  $name
 	 * @param string  $contactNo
 	 * @param string  $email
@@ -246,7 +237,7 @@ class Customer extends BaseEntityAbstract
 	 * @param string  $description  The description of this customer
 	 * @param Address $shippingAddr The shiping address
 	 * @param int     $mageId       The id of the customer in Magento
-	 * 
+	 *
 	 * @return Ambigous <GenericDAO, BaseEntityAbstract>
 	 */
 	public static function create($name, $contactNo, $email, Address $billingAddr = null, $isFromB2B = false, $description = '', Address $shippingAddr = null, $mageId = 0)
@@ -280,11 +271,11 @@ class Customer extends BaseEntityAbstract
 	}
 	/**
 	 * Getting all the orders for a customer
-	 * 
+	 *
 	 * @param int   $pageNo
 	 * @param int   $pageSize
 	 * @param array $orderBy
-	 * 
+	 *
 	 * @return multitype:|Ambigous <multitype:, multitype:BaseEntityAbstract>
 	 */
 	public function getOrders($pageNo = null, $pageSize = DaoQuery::DEFAUTL_PAGE_SIZE, $orderBy = array(), &$stats = array())
@@ -314,7 +305,7 @@ class Customer extends BaseEntityAbstract
 	public function __loadDaoMap()
 	{
 		DaoMap::begin($this, 'cust');
-	
+
 		DaoMap::setStringType('name', 'varchar', 100);
 		DaoMap::setStringType('description', 'varchar', 255);
 		DaoMap::setStringType('contactNo', 'varchar', 50);
@@ -324,13 +315,13 @@ class Customer extends BaseEntityAbstract
 		DaoMap::setIntType('mageId');
 		DaoMap::setBoolType('isFromB2B');
 		parent::__loadDaoMap();
-		
+
 		DaoMap::createIndex('name');
 		DaoMap::createIndex('contactNo');
 		DaoMap::createIndex('email');
 		DaoMap::createIndex('isFromB2B');
 		DaoMap::createIndex('mageId');
-	
+
 		DaoMap::commit();
 	}
 }

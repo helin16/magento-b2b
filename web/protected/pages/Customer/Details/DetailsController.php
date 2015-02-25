@@ -1,7 +1,7 @@
 <?php
 /**
  * This is the Product details page
- * 
+ *
  * @package    Web
  * @subpackage Controller
  * @author     lhe<helin16@gmail.com>
@@ -43,7 +43,7 @@ class DetailsController extends DetailsPageAbstract
 		}
 		else if(!($customer = Customer::get($this->Request['id'])) instanceof Customer)
 			die('Invalid Customer!');
-		
+
 		$js = parent::_getEndJs();
 		$js .= "pageJs.setPreData(" . json_encode($customer->getJson()) . ")";
 		$js .= ".load()";
@@ -57,12 +57,12 @@ class DetailsController extends DetailsPageAbstract
 	 */
 	public function saveItem($sender, $param)
 	{
-		
+
 		$results = $errors = array();
 		try
 		{
 			Dao::beginTransaction();
-			
+
 			$name = trim($param->CallbackParameter->name);
 			$id = !is_numeric($param->CallbackParameter->id) ? '' : trim($param->CallbackParameter->id);
 			$active = !is_numeric($param->CallbackParameter->id) ? '' : trim($param->CallbackParameter->active);
@@ -118,6 +118,7 @@ class DetailsController extends DetailsPageAbstract
 					$customer->setShippingAddress(Address::create($shippingStreet, $shippingCity, $shippingState, $shippingCountry, $shippingPosecode, $shippingName, $shippingContactNo));
 				}
 				$customer->save();
+
 			} else {
 				if(trim($billingStreet) === '' && trim($billingCity) === '' && trim($billingState) === '' && trim($billingCountry) === '' && trim($billingPostcode) === '' && trim($billingName) === '' && trim($billingContactNo) === '')
 					$billingAdressFull = null;
@@ -131,7 +132,7 @@ class DetailsController extends DetailsPageAbstract
 				if(!$customer instanceof Customer)
 					throw new Exception('Error creating customer!');
 			}
-			
+
 			$results['url'] = '/customer/' . $customer->getId() . '.html';
 			$results['item'] = $customer->getJson();
 			Dao::commitTransaction();
