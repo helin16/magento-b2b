@@ -182,15 +182,29 @@ class ReceivingItem extends BaseEntityAbstract
 			//if a receiving item gets deactivate, then stockonHand needs to be changed
 			if(intval($this->getActive()) === 0) {
 				$msg = 'ReceivedItem for Product(SKU=' . $this->getProduct() . '), unitPrice=' . $this->getUnitPrice() . ', serialNo=' . $this->getSerialNo() . ', invoiceNo=' . $this->getInvoiceNo() . ', qty=' . $this->getQty() . ' has now been deactivated.';
-				$this->getPurchaseOrder()->addLog($msg, Log::TYPE_SYSTEM, Log::TYPE_SYSTEM, get_class($this) . '_DEACTIVATION', __CLASS__ . '::' . __FUNCTION__)
-					->addComment($msg, Comments::TYPE_WAREHOUSE);
-				$this->getProduct()->received(0 - $this->getQty(), $this->getUnitPrice(), $msg, $this);
+				$log_Comments = get_class($this) . '_DEACTIVATION';
+				$qty = 0 - intval($this->getQty());
 			} else {
 				$msg = 'Received a Product(SKU=' . $this->getProduct() . ') with unitPrice=' . $this->getUnitPrice() . ', serialNo=' . $this->getSerialNo() . ', invoiceNo=' . $this->getInvoiceNo() . ', qty=' . $this->getQty() . '';
-				$this->getPurchaseOrder()->addLog($msg, Log::TYPE_SYSTEM, Log::TYPE_SYSTEM, 'Auto Log', __CLASS__ . '::' . __FUNCTION__)
-					->addComment($msg, Comments::TYPE_WAREHOUSE);
-				$this->getProduct()->received($this->getQty(), $this->getUnitPrice(), $msg, $this);
+				$log_Comments = 'Auto Log';
+				$qty = intval($this->getQty());
 			}
+			$this->getPurchaseOrder()->addLog($msg, Log::TYPE_SYSTEM, Log::TYPE_SYSTEM, $log_Comments, __CLASS__ . '::' . __FUNCTION__)
+				->addComment($msg, Comments::TYPE_WAREHOUSE);
+			$this->getProduct()->received($qty, $this->getUnitPrice(), $msg, $this);
+
+			$nofullReceivedItems = PurchaseOrderItem::getAllByCriteria('productId = ? and purchaseOrderId = ?', array($this->getProduct()->getId(), $this->getPurchaseOrder()->getId()), true, 1, 1, array('po_item.receivedQty' => 'asc'));
+			if(count($nofullReceivedItems) > 0) {
+				$nofullReceivedItems[0]
+					->setReceivedQty($nofullReceivedItems[0]->getReceivedQty() + $qty)
+					->save()
+					->addLog(Log::TYPE_SYSTEM, $msg, $log_Comments, __CLASS__ . '::' . __FUNCTION__)
+					->addComment($msg, Comments::TYPE_WAREHOUSE);
+			}
+			$totalCount = PurchaseOrderItem::countByCriteria('active = 1 and purchaseOrderId = ? and receivedQty < qty', array($this->getPurchaseOrder()->getId()));
+			$this->getPurchaseOrder()->setStatus($totalCount > 0 ? PurchaseOrder::STATUS_RECEIVING : PurchaseOrder::STATUS_RECEIVED)
+				->save()
+				->addComment($msg, Comments::TYPE_WAREHOUSE);
 		}
 	}
 	/**

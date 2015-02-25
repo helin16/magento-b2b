@@ -18,38 +18,61 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		});
 		return this;
 	}
-	,_getEditPanel: function(row) {
+	,_submitDeletion: function(btn, row) {
 		var tmp = {};
 		tmp.me = this;
-		tmp.newDiv = new Element('tr', {'class': 'save-item-panel info'}).store('data', row)
-			.insert({'bottom': new Element('input', {'type': 'hidden', 'save-item-panel': 'id', 'value': row.id ? row.id : ''}) })
-			.insert({'bottom': new Element('td', {'class': 'form-group'})
-				.insert({'bottom': new Element('input', {'required': true, 'class': 'form-control', 'placeholder': 'The name of the Prefer Location Type', 'save-item-panel': 'name', 'value': row.name ? row.name : ''}) })
-			})
-			.insert({'bottom': new Element('td', {'class': 'form-group'})
-				.insert({'bottom': new Element('input', {'class': 'form-control', 'placeholder': 'Optional - The description of the Prefer Location Type', 'save-item-panel': 'description', 'value': row.description ? row.description : ''}) })
-			})
-			.insert({'bottom': new Element('td', {'class': 'text-right'})
-				.insert({'bottom':  new Element('span', {'class': 'btn-group btn-group-sm'})
-					.insert({'bottom': new Element('span', {'class': 'btn btn-success', 'title': 'Save'})
-						.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-ok'}) })
-						.observe('click', function(){
-							tmp.btn = this;
-							tmp.me._saveItem(tmp.btn, $(tmp.btn).up('.save-item-panel'), 'save-item-panel');
-						})
-					})
-					.insert({'bottom': new Element('span', {'class': 'btn btn-danger', 'title': 'Delete'})
-						.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-remove'}) })
-						.observe('click', function(){
-							if(row.id)
-								$(this).up('.save-item-panel').replace(tmp.me._getResultRow(row).addClassName('item_row').writeAttribute('item_id', row.id) );
-							else
-								$(this).up('.save-item-panel').remove();
-						})
-					})
+		tmp.confirmDiv = $(btn).up('.confirm-div');
+		tmp.confirmDiv.getElementsBySelector('.msg').each(function(item){ item.remove(); });
+		tmp.me.postAjax(tmp.me.getCallbackId('deleteItem'), {'id': row.id}, {
+			'onLoading': function() {
+				tmp.me._signRandID(btn);
+				jQuery('#' + btn.id).button('loading');
+			}
+			,'onComplete': function() {
+				jQuery('#' + btn.id).button('reset');
+			}
+			,'onSuccess': function(sender, param) {
+				try {
+					tmp.result = tmp.me.getResp(param, false, true);
+					if(!tmp.result || !tmp.result.item || !tmp.result.item.id)
+						return null;
+					$$('.item_row[item_id="' + tmp.result.item.id + '"]').each(function(item) { item.remove(); });
+					tmp.me.hideModalBox();
+				} catch (e) {
+					tmp.confirmDiv.insert({'top': new Element('h4', {'class': 'msg'}).update(new Element('span', {'class': 'label label-danger'}).update(e) ) });
+				}
+			}
+		})
+	}
+	,_showDeleteConfirmPanel: function(row) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.newDiv = new Element('div', {'class': 'confirm-div'})
+			.insert({'bottom': new Element('div')
+				.insert({'bottom': new Element('h4').update('You are about to delete this received item, by doing so, it may:') })
+				.insert({'bottom': new Element('ul')
+					.insert({'bottom': new Element('li').update('This <strong>serial number(' + row.serialNo + ')</strong> will not be searchable or accessible any more in the future.') })
+					.insert({'bottom': new Element('li').update('The Status <strong>Purchase Order(' + row.purchaseOrder.purchaseOrderNo + ')</strong> may change') })
+					.insert({'bottom': new Element('li').update('The total <strong>StockOnHand count</strong> will change') })
+					.insert({'bottom': new Element('li').update('The total <strong>StockOnHand value</strong> will change') })
 				})
 			})
-		return tmp.newDiv;
+			.insert({'bottom': new Element('div', {'class': 'text-right'})
+				.insert({'bottom': new Element('span', {'class': 'btn btn-default pull-left'})
+					.update('CANCEL')
+					.observe('click', function(){
+						tmp.me.hideModalBox();
+					})
+				})
+				.insert({'bottom': new Element('span', {'class': 'btn btn-danger', 'data-loading-text': 'Deleting ...'})
+					.update('Yes, Delete It')
+					.observe('click', function(){
+						tmp.me._submitDeletion(this, row);
+					})
+				})
+			});
+		tmp.me.showModalBox('<strong class="text-danger">Confirm Deletion:</strong>', tmp.newDiv);
+		return tmp.me;
 	}
 
 	,_getResultRow: function(row, isTitle) {
@@ -57,7 +80,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		tmp.me = this;
 		tmp.tag = (tmp.isTitle === true ? 'th' : 'td');
 		tmp.isTitle = (isTitle || false);
-		tmp.row = new Element('tr', {'class': (tmp.isTitle === true ? '' : 'btn-hide-row')})
+		tmp.row = new Element('tr', {'class': (tmp.isTitle === true ? '' : 'item-data-row')})
 			.store('data', row)
 			.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-1'}).update(row.serialNo) })
 			.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-1'}).update(row.qty) })
@@ -65,6 +88,14 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 			.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-1'}).update(tmp.isTitle === true ? row.unitPrice : tmp.me.getCurrency(row.unitPrice)) })
 			.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-3'}).update(tmp.isTitle === true ? row.purchaseOrder : new Element('a', {'href': '/purchase/' + row.purchaseOrder.id + '.html', 'target': '_BLANK'}).update(row.purchaseOrder.purchaseOrderNo + ' [' + row.purchaseOrder.status + ']') ) })
 			.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-2'}).update(tmp.isTitle === true ? row.created : row.createdBy.person.fullname + ' @ ' + tmp.me.loadUTCTime(row.created).toLocaleString()) })
+			.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-1'}).update(tmp.isTitle === true ? '': new Element('div', {'class': 'btn-group'})
+				.insert({'bottom': new Element('span', {'class': 'btn btn-xs btn-danger'})
+					.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-remove'}) })
+					.observe('click', function() {
+						tmp.me._showDeleteConfirmPanel(row);
+					})
+				})
+			) })
 		;
 		return tmp.row;
 	}

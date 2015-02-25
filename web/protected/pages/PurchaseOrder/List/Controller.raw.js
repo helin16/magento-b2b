@@ -6,7 +6,7 @@ var PageJs = new Class.create();
 PageJs.prototype = Object.extend(new CRUDPageJs(), {
 	_getTitleRowData: function() {
 		return {'totalAmount': 'Total Amount', 'totalPaid': 'Total Paid', 'purchaseOrderNo': 'PO Number', 'supplier': {'name': 'Supplier'}, 'status': 'Status', 'supplierRefNo': 'PO Ref.', 'orderDate': 'Order Date', 'active': 'Active'};
-		
+
 	}
 	,_loadChosen: function () {
 		jQuery(".chosen").chosen({
@@ -78,7 +78,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		tmp.me = this;
 		tmp.reset = (reset || false);
 		tmp.resultDiv = $(tmp.me.resultDivId);
-		
+
 		if(tmp.reset === true)
 			tmp.me._pagination.pageNo = 1;
 		tmp.me._pagination.pageSize = (pageSize || tmp.me._pagination.pageSize);
@@ -96,7 +96,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 					if(!tmp.result)
 						return;
 					$(tmp.me.totalNoOfItemsId).update(tmp.result.pageStats.totalRows);
-					
+
 					//reset div
 					if(tmp.reset === true) {
 						tmp.resultDiv.update(tmp.me._getResultRow(tmp.me._getTitleRowData(), true).wrap(new Element('thead')));
@@ -105,7 +105,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 					tmp.resultDiv.getElementsBySelector('.paginWrapper').each(function(item){
 						item.remove();
 					});
-					
+
 					//show all items
 					tmp.tbody = $(tmp.resultDiv).down('tbody');
 					if(!tmp.tbody)
@@ -144,14 +144,20 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 				.observe('click', function(){
 					//tmp.me._highlightSelectedRow(this.down('.btn'));
 				})
-			.insert({'bottom': new Element(tmp.tag, {'class': 'orderDate col-xs-1'}).update(tmp.me.loadUTCTime(row.orderDate).toLocaleString())})
-			.insert({'bottom': new Element(tmp.tag, {'class': 'supplierId col-xs-1'}).update(row.supplier.name ? row.supplier.name : '')})
-			.insert({'bottom': new Element(tmp.tag, {'class': 'supplierRefNo col-xs-1'}).update(row.supplierRefNo ? row.supplierRefNo : '')})
-			.insert({'bottom': new Element(tmp.tag, {'class': 'totalProdcutCount col-xs-1'}).update(!tmp.isTitle ? row.totalProdcutCount ? row.totalProdcutCount : '' : 'Total Prodcut Count')})
-			.insert({'bottom': new Element(tmp.tag, {'class': 'ETA col-xs-1'}).update(!tmp.isTitle ? row.eta ? tmp.me.loadUTCTime(row.eta).toDateString() : '' : 'ETA')})
-			.insert({'bottom': new Element(tmp.tag, {'class': 'totalAmount col-xs-1'}).update(!tmp.isTitle ? tmp.me.getCurrency(row.totalAmount) : 'Total Amount')})
-			.insert({'bottom': new Element(tmp.tag, {'class': 'totalPaid col-xs-1'}).update(!tmp.isTitle ? row.totalPaid ? tmp.me.getCurrency(row.totalPaid) : '' : 'Total Paid')})
-			.insert({'bottom': new Element(tmp.tag, {'class': 'status col-xs-1', 'order_status': row.status}).update(row.status)})
+			.insert({'bottom': new Element(tmp.tag, {'class': ' col-xs-1'}).update(tmp.me.loadUTCTime(row.orderDate).toLocaleString())})
+			.insert({'bottom': new Element(tmp.tag, {'class': ' col-xs-1'}).update(row.supplier.name ? row.supplier.name : '')})
+			.insert({'bottom': new Element(tmp.tag, {'class': ' col-xs-1'}).update(row.supplierRefNo ? row.supplierRefNo : '')})
+			.insert({'bottom': new Element(tmp.tag, {'class': ' col-xs-1'}).update(tmp.isTitle ? 'Products Count' :
+				new Element('a', {'href': '/serialnumbers.html?purchaseorderid=' + row.id, 'target': '_BLANK' })
+					.insert({'bottom': new Element('abbr',{'title': 'Received Product Count on this PO'}).update(row.totalReceivedCount) })
+					.insert({'bottom': new Element('span').update(' / ') })
+					.insert({'bottom': new Element('abbr', {'title': 'Total Product Count on this PO'}).update(row.totalProductCount) })
+
+			) })
+			.insert({'bottom': new Element(tmp.tag, {'class': ' col-xs-1'}).update(!tmp.isTitle ? row.eta ? tmp.me.loadUTCTime(row.eta).toDateString() : '' : 'ETA')})
+			.insert({'bottom': new Element(tmp.tag, {'class': ' col-xs-1'}).update(!tmp.isTitle ? tmp.me.getCurrency(row.totalAmount) : 'Total Amount')})
+			.insert({'bottom': new Element(tmp.tag, {'class': ' col-xs-1'}).update(!tmp.isTitle ? row.totalPaid ? tmp.me.getCurrency(row.totalPaid) : '' : 'Total Paid')})
+			.insert({'bottom': new Element(tmp.tag, {'class': ' col-xs-1', 'order_status': row.status}).update(row.status)})
 			.insert({'bottom': tmp.btns = new Element(tmp.tag, {'class': 'col-xs-1 text-right'}) 	});
 		if(tmp.isTitle !== true)
 			tmp.btns.insert({'bottom': new Element('div', {'class': 'btn-group'})
@@ -229,7 +235,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 			'onLoading': function() {
 				if(tmp.row) {
 					tmp.row.toggleClassName('danger');
-					tmp.row.hide(); 
+					tmp.row.hide();
 				}
 			}
 			,'onSuccess': function(sender, param){
