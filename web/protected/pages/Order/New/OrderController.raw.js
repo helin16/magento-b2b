@@ -41,10 +41,34 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			.insert({'bottom': title ? new Element('label', {'class': 'control-label'}).update(title) : '' })
 			.insert({'bottom': content.addClassName('form-control') });
 	}
-	,_confirmSubmit: function(printit) {
+	,_preConfirmSubmit: function(printit) {
+		var tmp = {};
+		tmp.me = this
+		if(tmp.me.getValueFromCurrency($$('[order-price-summary="total-payment-due"]').first().innerHTML) === '0.00')
+			return tmp.me._confirmSubmit(printit);
+		tmp.newDiv = new Element('div', {'class': 'confirm-div'})
+			.insert({'bottom': new Element('h4').update('You are about to release an order with short payment. Do you wish to continue?')	})
+			.insert({'bottom': new Element('div', {'class': 'text-right'})
+				.insert({'bottom': new Element('span', {'class': 'btn btn-default pull-left'})
+					.update('CANCEL')
+					.observe('click', function(){
+						tmp.me.hideModalBox();
+					})
+				})
+				.insert({'bottom': new Element('span', {'class': 'btn btn-primary', 'data-loading-text': 'Sending ...'})
+					.update('Yes')
+					.observe('click', function(){
+						tmp.me._confirmSubmit(printit, tmp.newDiv);
+					})
+				})
+			});
+		tmp.me.showModalBox('<strong class="text-warning">Warning, short payment:</strong>', tmp.newDiv);
+	}
+	,_confirmSubmit: function(printit, confirmDiv) {
 		var tmp = {};
 		tmp.me = this;
 		tmp.printIt = (printit === true ? true : false);
+		tmp.confirmDiv = (confirmDiv || null);
 		tmp.data = tmp.me._collectFormData($(tmp.me._htmlIds.itemDiv),'save-order');
 		if(tmp.data === null)
 			return tmp.me;
@@ -106,7 +130,12 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					})
 				})
 			});
-		tmp.me.showModalBox('<strong class="text-info">Confirmation Needed</strong>', tmp.newDiv, false);
+		if(tmp.confirmDiv === null)
+			tmp.me.showModalBox('<strong class="text-info">Confirmation Needed</strong>', tmp.newDiv, false);
+		else {
+			tmp.confirmDiv.up('.modal-content').down('.modal-title').update('<strong class="text-info">Confirmation Needed</strong>');
+			tmp.confirmDiv.replace(tmp.newDiv);
+		}
 		return tmp.me;
 	}
 	/**
@@ -157,7 +186,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				.insert({'bottom': new Element('span', {'class': 'btn btn-primary save-btn'})
 					.insert({'bottom': new Element('span').update(' Save & Print ') })
 					.observe('click', function() {
-						tmp.me._confirmSubmit(true);
+						tmp.me._preConfirmSubmit(true);
 					})
 				})
 				.insert({'bottom': new Element('span', {'class': 'btn btn-primary dropdown-toggle', 'data-toggle': 'dropdown'})
@@ -167,7 +196,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					.insert({'bottom': new Element('li')
 						.insert({'bottom': new Element('a', {'href': 'javascript: void(0);'}).update('Save Only')
 							.observe('click', function() {
-								tmp.me._confirmSubmit();
+								tmp.me._preConfirmSubmit();
 							})
 						})
 					})
