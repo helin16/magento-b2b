@@ -179,7 +179,7 @@ class Customer extends BaseEntityAbstract
 	 *
 	 * @return Customer
 	 */
-	public function setShippingAddress($value) 
+	public function setShippingAddress(Address $value = null) 
 	{
 	    $this->shippingAddress = $value;
 	    return $this;
@@ -319,8 +319,8 @@ class Customer extends BaseEntityAbstract
 		DaoMap::setStringType('description', 'varchar', 255);
 		DaoMap::setStringType('contactNo', 'varchar', 50);
 		DaoMap::setStringType('email', 'varchar', 100);
-		DaoMap::setManyToOne('billingAddress', 'Address');
-		DaoMap::setManyToOne('shippingAddress', 'Address');
+		DaoMap::setManyToOne('billingAddress', 'Address', 'cust_bill_addr', true);
+		DaoMap::setManyToOne('shippingAddress', 'Address', 'cust_ship_addr', true);
 		DaoMap::setIntType('mageId');
 		DaoMap::setBoolType('isFromB2B');
 		parent::__loadDaoMap();
