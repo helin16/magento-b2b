@@ -84,7 +84,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					if(!tmp.result || !tmp.result.item || !tmp.result.item.id)
 						return;
 					tmp.inputPane.replace(tmp.me._getAddressDiv(title, tmp.result.item));
-					
+
 				} catch (e) {
 					tmp.me.showModalBox('<strong class="text-danger">Error When Updating Address</strong>', e);
 				}
@@ -1119,6 +1119,74 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		});
 		return tmp.me;
 	}
+	,_sendEmail: function(btn) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.confirmDiv = $(btn).up('.confirm-div');
+		tmp.confirmDiv.getElementsBySelector('.msg').each(function(item){ item.remove(); });
+		tmp.data = tmp.me._collectFormData(tmp.confirmDiv, 'confirm-email');
+		if(tmp.data === null)
+			return;
+		tmp.data.orderId = tmp.me._order.id;
+		tmp.me.postAjax(tmp.me.getCallbackId('sendEmail'), tmp.data, {
+			'onLoading': function() {
+				tmp.me._signRandID(btn);
+				jQuery('#' + btn.id).button('loading');
+			}
+			,'onSuccess': function(sender, param) {
+				try {
+					tmp.result = tmp.me.getResp(param, false, true);
+					if(!tmp.result || !tmp.result.item)
+						return;
+					tmp.confirmDiv.update('<h4 class="text-success">Email Successfully added into the Message Queue. Will be sent within a minute');
+					tmp.me.hideModalBox();
+				} catch (e) {
+					tmp.confirmDiv.insert({'top': new Element('h4', {'class': 'msg'}).update(new Element('span', {'class': 'label label-danger'}).update(e) ) });
+				}
+			}
+			,'onComplete': function() {
+				jQuery('#' + btn.id).button('reset');
+			}
+		})
+		return tmp.me;
+	}
+	,_showEmailPanel: function(btn) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.newDiv = new Element('div', {'class': 'confirm-div'})
+			.insert({'bottom': new Element('div')
+				.insert({'bottom': tmp.me._getFormGroup('Do you want to send an email to this address:',
+						new Element('input', {'value': tmp.me._order.customer.email, 'confirm-email': 'emailAddress', 'required': true, 'placeholder': 'The email to send to. WIll NOT update the customer\'s email with this.'})
+					)
+				})
+			})
+			.insert({'bottom': new Element('div')
+				.insert({'bottom': new Element('em')
+					.insert({'bottom': new Element('small').update('The above email will be used to send the email to. WIll NOT update the customer\'s email with this.') })
+				})
+			})
+			.insert({'bottom': new Element('div')
+				.insert({'bottom': tmp.me._getFormGroup('Something you want to say:',
+						new Element('textarea', {'confirm-email': 'emailBody'})
+				) })
+			})
+			.insert({'bottom': new Element('div', {'class': 'text-right'})
+				.insert({'bottom': new Element('span', {'class': 'btn btn-default pull-left'})
+					.update('CANCEL')
+					.observe('click', function(){
+						tmp.me.hideModalBox();
+					})
+				})
+				.insert({'bottom': new Element('span', {'class': 'btn btn-primary', 'data-loading-text': 'Sending ...'})
+					.update('Yes, send this ' + tmp.me._order.type + ' to this email address')
+					.observe('click', function(){
+						tmp.me._sendEmail(this);
+					})
+				})
+			});
+		tmp.me.showModalBox('<strong>Confirm Email Address:</strong>', tmp.newDiv);
+		return tmp.me;
+	}
 	/**
 	 * Getting the order information panel
 	 */
@@ -1130,26 +1198,32 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			.insert({'bottom': new Element('div', {'class': 'panel-heading'})
 				.insert({'bottom': new Element('span', {'class': 'btn-group btn-group-xs'})
 					.insert({'bottom': new Element('span', {'class': 'btn btn-info btn-xs'})
-						.insert({'bottom': new Element('span', {'class': ''}).update('Print ') })
+						.insert({'bottom': new Element('span', {'class': 'hidden-xs hidden-sm'}).update('Print ') })
 						.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-print'}) })
 						.observe('click', function() {
 							tmp.me._openOrderPrintPage();
 						})
 					})
-
-					.insert({'bottom': new Element('span', {'class': 'btn btn-warning btn-xs', 'style': 'margin: 0 5px'})
-						.insert({'bottom': new Element('span', {'class': ''}).update('Print Delivery Docket ') })
+					.insert({'bottom': new Element('span', {'class': 'btn btn-warning btn-xs'})
+						.insert({'bottom': new Element('span', {'class': 'hidden-xs hidden-sm'}).update('Print Delivery Docket ') })
 						.insert({'bottom': new Element('span', {'class': 'fa fa-ils'}) })
 						.observe('click', function() {
 							tmp.me._openDocketPrintPage();
 						})
 					})
 					.insert({'bottom': new Element('span', {'class': 'btn btn-success btn-xs invoice-btn'})
-						.insert({'bottom': new Element('span').update('Invoice ') })
+						.insert({'bottom': new Element('span', {'class': 'hidden-xs hidden-sm'}).update('Invoice ') })
 						.insert({'bottom': new Element('span', {'class': 'fa fa-credit-card'}) })
 						.observe('click', function() {
 							tmp.me._order.type = 'INVOICE';
 							tmp.me._setOrderType(this);
+						})
+					})
+					.insert({'bottom': new Element('span', {'class': 'btn btn-primary btn-xs invoice-btn'})
+						.insert({'bottom': new Element('span', {'class': 'hidden-xs hidden-sm'}).update('Email ') })
+						.insert({'bottom': new Element('span', {'class': 'fa fa-envelope'}) })
+						.observe('click', function() {
+							tmp.me._showEmailPanel(this);
 						})
 					})
 				})
