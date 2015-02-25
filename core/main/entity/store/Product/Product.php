@@ -910,19 +910,19 @@ class Product extends InfoEntityAbstract
 	 */
 	public function preSave()
 	{
-		$sku = trim($this->getSku());
-		$where = array('sku = ?', 'active = 1');
-		$params = array($sku);
-		if(($id = trim($this->getId())) !== '')
-		{
-			$where[] = 'id != ?';
-			$params[] = $id;
+		if(intVal($this->getActive()) === 1) {
+			$sku = trim($this->getSku());
+			$where = array('sku = ?', 'active = 1');
+			$params = array($sku);
+			if(($id = trim($this->getId())) !== '')
+			{
+				$where[] = 'id != ?';
+				$params[] = $id;
+			}
+			$exsitingSKU = Product::countByCriteria(implode(' AND ', $where), $params);
+			if($exsitingSKU > 0)
+				throw new EntityException('The SKU(=' . $sku . ') is already exists!' );
 		}
-		Dao::$debug = true;
-		$exsitingSKU = Product::countByCriteria(implode(' AND ', $where), $params);
-		Dao::$debug = false;
-		if($exsitingSKU > 0)
-			throw new EntityException('The SKU(=' . $sku . ') is already exists!' );
 	}
 	/**
 	 * Getting the unit cost based on the total value and stock on Hand
