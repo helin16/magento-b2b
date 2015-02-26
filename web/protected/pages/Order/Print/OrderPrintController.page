@@ -1,9 +1,9 @@
 <%@MasterClass="Application.layout.BlankLayout"%>
 <com:TContent ID="MainContent">
 	<div class="pagewrapper orderprint container">
-		<div class="orderViewWrapper inlineblock">
-            <table class='orderview' cellspacing="0" cellpadding="0">
-                <thead>
+		<div class="orderViewWrapper inlineblock print-wrapper">
+            <table class='orderview' cellspacing="0" cellpadding="0" id="main-table">
+                <thead id="thead">
                     <tr class="title_row">
                         <td colspan=6>
                             <div>
@@ -45,10 +45,10 @@
                     </tr>
                     <%= $this->getRow('QTY', 'SKU', 'NAME', 'Unit Price', 'Total Price', 'header'); %>
                 </thead>
-                <tbody>
+                <tbody id="tbody">
                     <%= $this->showProducts(); %>
                 </tbody>
-                <tfoot>
+                <tfoot id="tfoot">
                     <tr>
                         <td colspan=6>
                             <div class="order_payments">

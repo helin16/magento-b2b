@@ -1,7 +1,7 @@
 <?php
 /**
  * This is the OrderDetailsController
- * 
+ *
  * @package    Web
  * @subpackage Controller
  * @author     lhe<helin16@gmail.com>
@@ -15,10 +15,22 @@ class OrderPrintController extends BPCPageAbstract
 	public $menuItem = 'order';
 	/**
 	 * The order that we are viewing
-	 * 
+	 *
 	 * @var Order
 	 */
 	public $order = null;
+	/**
+	 * Getting The end javascript
+	 *
+	 * @return string
+	 */
+	protected function _getEndJs()
+	{
+		$js = parent::_getEndJs();
+		if(isset($_REQUEST['jsmultipages']) && intval($_REQUEST['jsmultipages']) === 1)
+			$js .= "pageJs.formatForPDF();";
+		return $js;
+	}
 	/**
 	 * (non-PHPdoc)
 	 * @see BPCPageAbstract::onLoad()
@@ -59,7 +71,7 @@ class OrderPrintController extends BPCPageAbstract
 		return "<tr class='$rowClass'><td class='qty'>$qty</td><td class='sku'>$sku</td><td class='name'>$name</td><td class='uprice'>$uprice</td><td class='tprice'>$tprice</td></tr>";
 	}
 	/**
-	 * 
+	 *
 	 * @return string
 	 */
 	public function showProducts()
@@ -91,7 +103,7 @@ class OrderPrintController extends BPCPageAbstract
 			return '';
 		$html = $address->getContactName() . '<br />';
 		$html .= $address->getStreet() . '<br />';
-		$html .= $address->getCity() . ' ' . $address->getRegion() . ' ' . $address->getPostCode() . '<br />'; 
+		$html .= $address->getCity() . ' ' . $address->getRegion() . ' ' . $address->getPostCode() . '<br />';
 		$html .= $address->getCountry();
 		return $html;
 	}
