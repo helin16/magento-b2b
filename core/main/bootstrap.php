@@ -58,11 +58,7 @@ spl_autoload_register(array('SystemCoreAbstract','autoload'));
 // Bootstrap the Prado framework
 require_once dirname(__FILE__) . '/../3rdParty/PHPExcel/Classes/PHPExcel.php';
 require_once dirname(__FILE__) . '/../3rdParty/PHPMailer/PHPMailerAutoload.php';
-<<<<<<< HEAD
-// require_once dirname(__FILE__) . '/../3rdParty/HTML2PDF/html2pdf.class.php';
 require_once dirname(__FILE__) . '/../3rdParty/XeroOAuth-PHP/XeroOAuth.php';
-=======
->>>>>>> refs/heads/master
 require_once dirname(__FILE__) . '/../3rdParty/framework/prado.php';
 
 ?>
