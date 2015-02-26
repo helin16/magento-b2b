@@ -209,7 +209,7 @@ class SkuMatchController extends BPCPageAbstract
 			if(!empty($totalOnHandValue))
 				$product->addLog('Product (ID=' . $product->getId() . ') now totalOnHandValue = ' . $totalOnHandValue, Log::TYPE_SYSTEM)
 					->setTotalOnHandValue($totalOnHandValue);
-			$product->save();
+			$product->snapshotQty(null, ProductQtyLog::TYPE_STOCK_ADJ, 'Loaded via importer')->save();
 			
 			Dao::commitTransaction();
 			

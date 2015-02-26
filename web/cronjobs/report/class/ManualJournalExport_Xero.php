@@ -3,18 +3,26 @@ class ManualJournalExport_Xero extends ExportAbstract
 {
 	protected static function _getData()
 	{
-		$now = new UDate();
-		$now->modify('-1 day');
+		if(count(self::$_dateRange) === 0) {
+			$yesterdayLocal = new UDate('now', 'Australia/Melbourne');
+			$yesterdayLocal->modify('-1 day');
+			$fromDate = new UDate($yesterdayLocal->format('Y-m-d') . ' 00:00:00', 'Australia/Melbourne');
+			$fromDate->setTimeZone('UTC');
+			$toDate = new UDate($yesterdayLocal->format('Y-m-d') . ' 23:59:59', 'Australia/Melbourne');
+			$toDate->setTimeZone('UTC');
+	    } else {
+			$fromDate = self::$_dateRange['start'];
+			$toDate = self::$_dateRange['end'];
+		}
 		$dataType = 'created';
-		$items = ProductQtyLog::getAllByCriteria($dataType . ' > :fromDate and ' . $dataType . ' < :toDate and type in (:type1, :type2)', 
-				array('fromDate' => $now->format('Y-m-d') . ' 00:00:00', 
-					'toDate' => $now->format('Y-m-d') . '23:59:59',
+		$items = ProductQtyLog::getAllByCriteria($dataType . ' >= :fromDate and ' . $dataType . ' < :toDate and type in (:type1, :type2)',
+				array('fromDate' => trim($fromDate),
+					'toDate' => trim($toDate),
 					'type1' => ProductQtyLog::TYPE_SALES_ORDER,
 					'type2' => ProductQtyLog::TYPE_STOCK_ADJ
 			)
 		);
-		
-		$now = new UDate();
+
 		$now->setTimeZone('Australia/Melbourne');
 		$return = array();
 		foreach($items as $item)
@@ -37,7 +45,7 @@ class ManualJournalExport_Xero extends ExportAbstract
 				,'Description'=> $product->getSku()
 				,'AccountCode'=> $product->getAssetAccNo()
 				,'TaxRate'=> 'BAS Excluded'
-				,'Amount'=> $item->getTotalOnHandValueVar() 
+				,'Amount'=> $item->getTotalOnHandValueVar()
 				,'TrackingName1'=> $item->getType()
 				,'TrackingOption1'=> ''
 				,'TrackingName2'=> ''

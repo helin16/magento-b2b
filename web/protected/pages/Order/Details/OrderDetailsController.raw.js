@@ -66,11 +66,105 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		this._payments = payments;
 		return this;
 	}
+	,_updateAddress: function(btn, title) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.inputPane = $(btn).up('.address-div');
+		tmp.data = tmp.me._collectFormData(tmp.inputPane, 'address-editable-field');
+		tmp.data.title = title;
+		tmp.data.orderId = tmp.me._order.id;
+		tmp.me.postAjax(tmp.me.getCallbackId('updateAddress'), tmp.data, {
+			'onLoading': function() {
+				tmp.me._signRandID(btn);
+				jQuery('#' + btn.id).button('loading');
+			}
+			,'onSuccess': function(sender, param) {
+				try {
+					tmp.result = tmp.me.getResp(param, false, true);
+					if(!tmp.result || !tmp.result.item || !tmp.result.item.id)
+						return;
+					tmp.inputPane.replace(tmp.me._getAddressDiv(title, tmp.result.item));
+
+				} catch (e) {
+					tmp.me.showModalBox('<strong class="text-danger">Error When Updating Address</strong>', e);
+				}
+			}
+			,'onComplete': function() {
+				jQuery('#' + btn.id).button('reset');
+			}
+		})
+		return tmp.me;
+	}
+	,_getAddresEditDiv: function(title, addr){
+		var tmp = {};
+		tmp.me = this;
+		return new Element('div', {'class': 'address-div', 'title': 'Double click to edit this address', 'address-editable': true})
+			.insert({'bottom': new Element('strong').update(title) })
+			.insert({'bottom': new Element('dl', {'class': 'dl-horizontal dl-condensed'})
+				.insert({'bottom': new Element('dt')
+					.update(new Element('span', {'class': "glyphicon glyphicon-user", 'title': "Customer Name"}) )
+				})
+				.insert({'bottom': new Element('dd')
+					.insert({'bottom': new Element('div')
+						.insert({'bottom': new Element('div', {'class' : 'col-sm-6'}).update(
+							new Element('input', {'address-editable-field': 'contactName', 'class': 'form-control input-sm', 'placeholder': 'The name of contact person',  'value': addr.contactName})
+						) })
+						.insert({'bottom': new Element('div', {'class' : 'col-sm-6'}).update(
+								new Element('input', {'address-editable-field': 'contactNo', 'class': 'form-control input-sm', 'placeholder': 'The contact number of contact person',  'value': addr.contactNo})
+						) })
+					})
+				})
+				.insert({'bottom': new Element('dt').update(
+					new Element('span', {'class': "glyphicon glyphicon-map-marker", 'title': "Address"})
+				) })
+				.insert({'bottom': new Element('dd')
+					.insert({'bottom': new Element('div')
+						.insert({'bottom': new Element('div', {'class': 'street col-sm-12'}).update(
+								new Element('input', {'address-editable-field': 'street', 'class': 'form-control input-sm', 'placeholder': 'Street Number and Street name',  'value': addr.street})
+						) })
+					})
+					.insert({'bottom': new Element('div')
+						.insert({'bottom': new Element('div', {'class': 'city col-sm-6'}).update(
+								new Element('input', {'address-editable-field': 'city', 'class': 'form-control input-sm', 'placeholder': 'City / Suburb',  'value': addr.city})
+						) })
+						.insert({'bottom':  new Element('div', {'class': 'region col-sm-3'}).update(
+								new Element('input', {'address-editable-field': 'region', 'class': 'form-control input-sm', 'placeholder': 'State / Province',  'value': addr.region})
+						) })
+						.insert({'bottom': new Element('div', {'class': 'postcode col-sm-3'}).update(
+								new Element('input', {'address-editable-field': 'postCode', 'class': 'form-control input-sm', 'placeholder': 'PostCode',  'value': addr.postCode})
+						) })
+					})
+					.insert({'bottom': new Element('div')
+						.insert({'bottom': new Element('div', {'class': 'postcode col-sm-4'}).update(
+								new Element('input', {'address-editable-field': 'country', 'class': 'form-control input-sm', 'placeholder': 'Country',  'value': addr.country})
+						) })
+						.insert({'bottom': new Element('div', {'class': 'col-sm-8'})
+							.insert({'bottom': new Element('input', {'type': 'hidden', 'value': addr.id, 'address-editable-field': 'id'}) })
+							.insert({'bottom': new Element('div', {'class': 'btn btn-primary btn-sm col-xs-4 pull-right', 'data-loading-text': 'updating...'})
+								.update('Update')
+								.observe('click', function() {
+									tmp.me._updateAddress(this, title);
+								})
+							})
+							.insert({'bottom': new Element('div', {'class': 'btn btn-default btn-sm col-xs-4 pull-right'})
+								.update('Cancel')
+								.observe('click', function(){
+									$(this).up('.address-div').replace(tmp.me._getAddressDiv(title, addr));
+								})
+							})
+						})
+					})
+				})
+			});
+	}
 	/**
 	 * Getting the address div
 	 */
 	,_getAddressDiv: function(title, addr) {
-		return new Element('div', {'class': 'address-div'})
+		var tmp = {};
+		tmp.me = this;
+		return new Element('div', {'class': 'address-div', 'title': 'Double click to edit this address'})
+			.setStyle('cursor: pointer')
 			.insert({'bottom': new Element('strong').update(title) })
 			.insert({'bottom': new Element('dl', {'class': 'dl-horizontal dl-condensed'})
 				.insert({'bottom': new Element('dt')
@@ -88,6 +182,9 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 						.insert({'bottom': new Element('span', {'class': 'postcode inlineblock'}).update(addr.postCode) })
 					})
 				})
+			})
+			.observe('dblclick', function() {
+				$(this).replace(tmp.me._getAddresEditDiv(title, addr));
 			})
 	}
 	/**
@@ -828,19 +925,19 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		})
 		.insert({'bottom': new Element('div', {'class': 'row'})
 			.insert({'bottom': new Element('div', {'class': 'col-sm-4'})
-				.insert({'bottom': tmp.me._getFormGroup('Street:', new Element('input', {'type': 'text', 'required': true, 'save_shipping': 'street', 'class': 'input-sm', 'value': tmp.me._order.address.shipping.street}) ) })
+				.insert({'bottom': tmp.me._getFormGroup('Street:', new Element('input', {'type': 'text', 'save_shipping': 'street', 'class': 'input-sm', 'value': tmp.me._order.address.shipping.street}) ) })
 			})
 			.insert({'bottom': new Element('div', {'class': 'col-sm-2'})
-				.insert({'bottom': tmp.me._getFormGroup('City:', new Element('input', {'type': 'text', 'required': true, 'save_shipping': 'city', 'class': 'input-sm', 'value': tmp.me._order.address.shipping.city}) ) })
+				.insert({'bottom': tmp.me._getFormGroup('City:', new Element('input', {'type': 'text', 'save_shipping': 'city', 'class': 'input-sm', 'value': tmp.me._order.address.shipping.city}) ) })
 			})
 			.insert({'bottom': new Element('div', {'class': 'col-sm-2'})
-				.insert({'bottom': tmp.me._getFormGroup('State:', new Element('input', {'type': 'text', 'required': true, 'save_shipping': 'region', 'class': 'input-sm', 'value': tmp.me._order.address.shipping.region}) ) })
+				.insert({'bottom': tmp.me._getFormGroup('State:', new Element('input', {'type': 'text', 'save_shipping': 'region', 'class': 'input-sm', 'value': tmp.me._order.address.shipping.region}) ) })
 			})
 			.insert({'bottom': new Element('div', {'class': 'col-sm-2'})
-				.insert({'bottom': tmp.me._getFormGroup('Country:', new Element('input', {'type': 'text', 'required': true, 'save_shipping': 'country', 'class': 'input-sm', 'value': tmp.me._order.address.shipping.country}) ) })
+				.insert({'bottom': tmp.me._getFormGroup('Country:', new Element('input', {'type': 'text', 'save_shipping': 'country', 'class': 'input-sm', 'value': tmp.me._order.address.shipping.country}) ) })
 			})
 			.insert({'bottom': new Element('div', {'class': 'col-sm-2'})
-				.insert({'bottom': tmp.me._getFormGroup('Post Code:', new Element('input', {'type': 'text', 'required': true, 'save_shipping': 'postCode', 'class': 'input-sm', 'value': tmp.me._order.address.shipping.postCode}) ) })
+				.insert({'bottom': tmp.me._getFormGroup('Post Code:', new Element('input', {'type': 'text', 'save_shipping': 'postCode', 'class': 'input-sm', 'value': tmp.me._order.address.shipping.postCode}) ) })
 			})
 		})
 		.insert({'bottom': new Element('div', {'class': 'row'})
@@ -963,8 +1060,8 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					})
 				})
 				.insert({'bottom': new Element('div', {'class': 'row'})
-					.insert({'bottom': tmp.me._getAddressDiv("Shipping Address: ", tmp.me._order.address.shipping).addClassName('col-xs-6') })
-					.insert({'bottom': tmp.me._getAddressDiv("Billing Address: ", tmp.me._order.address.billing).addClassName('col-xs-6') })
+					.insert({'bottom': new Element('div', {'class': 'col-xs-6'}).update(tmp.me._getAddressDiv("Shipping Address: ", tmp.me._order.address.shipping)) })
+					.insert({'bottom': new Element('div', {'class': 'col-xs-6'}).update(tmp.me._getAddressDiv("Billing Address: ", tmp.me._order.address.billing)) })
 				 })
 			});
 	}
@@ -1022,6 +1119,74 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		});
 		return tmp.me;
 	}
+	,_sendEmail: function(btn) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.confirmDiv = $(btn).up('.confirm-div');
+		tmp.confirmDiv.getElementsBySelector('.msg').each(function(item){ item.remove(); });
+		tmp.data = tmp.me._collectFormData(tmp.confirmDiv, 'confirm-email');
+		if(tmp.data === null)
+			return;
+		tmp.data.orderId = tmp.me._order.id;
+		tmp.me.postAjax(tmp.me.getCallbackId('sendEmail'), tmp.data, {
+			'onLoading': function() {
+				tmp.me._signRandID(btn);
+				jQuery('#' + btn.id).button('loading');
+			}
+			,'onSuccess': function(sender, param) {
+				try {
+					tmp.result = tmp.me.getResp(param, false, true);
+					if(!tmp.result || !tmp.result.item)
+						return;
+					tmp.confirmDiv.update('<h4 class="text-success">Email Successfully added into the Message Queue. Will be sent within a minute</h4>');
+					setTimeout(function() {tmp.me.hideModalBox();}, 2000);
+				} catch (e) {
+					tmp.confirmDiv.insert({'top': new Element('h4', {'class': 'msg'}).update(new Element('span', {'class': 'label label-danger'}).update(e) ) });
+				}
+			}
+			,'onComplete': function() {
+				jQuery('#' + btn.id).button('reset');
+			}
+		})
+		return tmp.me;
+	}
+	,_showEmailPanel: function(btn) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.newDiv = new Element('div', {'class': 'confirm-div'})
+			.insert({'bottom': new Element('div')
+				.insert({'bottom': tmp.me._getFormGroup('Do you want to send an email to this address:',
+						new Element('input', {'value': tmp.me._order.customer.email, 'confirm-email': 'emailAddress', 'required': true, 'placeholder': 'The email to send to. WIll NOT update the customer\'s email with this.'})
+					)
+				})
+			})
+			.insert({'bottom': new Element('div')
+				.insert({'bottom': new Element('em')
+					.insert({'bottom': new Element('small').update('The above email will be used to send the email to. WIll NOT update the customer\'s email with this.') })
+				})
+			})
+			.insert({'bottom': new Element('div')
+				.insert({'bottom': tmp.me._getFormGroup('Something you want to say:',
+						new Element('textarea', {'confirm-email': 'emailBody'})
+				) })
+			})
+			.insert({'bottom': new Element('div', {'class': 'text-right'})
+				.insert({'bottom': new Element('span', {'class': 'btn btn-default pull-left'})
+					.update('CANCEL')
+					.observe('click', function(){
+						tmp.me.hideModalBox();
+					})
+				})
+				.insert({'bottom': new Element('span', {'class': 'btn btn-primary', 'data-loading-text': 'Sending ...'})
+					.update('Yes, send this ' + tmp.me._order.type + ' to this email address')
+					.observe('click', function(){
+						tmp.me._sendEmail(this);
+					})
+				})
+			});
+		tmp.me.showModalBox('<strong>Confirm Email Address:</strong>', tmp.newDiv);
+		return tmp.me;
+	}
 	/**
 	 * Getting the order information panel
 	 */
@@ -1033,26 +1198,32 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			.insert({'bottom': new Element('div', {'class': 'panel-heading'})
 				.insert({'bottom': new Element('span', {'class': 'btn-group btn-group-xs'})
 					.insert({'bottom': new Element('span', {'class': 'btn btn-info btn-xs'})
-						.insert({'bottom': new Element('span', {'class': ''}).update('Print ') })
+						.insert({'bottom': new Element('span', {'class': 'hidden-xs hidden-sm'}).update('Print ') })
 						.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-print'}) })
 						.observe('click', function() {
 							tmp.me._openOrderPrintPage();
 						})
 					})
-
-					.insert({'bottom': new Element('span', {'class': 'btn btn-warning btn-xs', 'style': 'margin: 0 5px'})
-						.insert({'bottom': new Element('span', {'class': ''}).update('Print Delivery Docket ') })
+					.insert({'bottom': new Element('span', {'class': 'btn btn-warning btn-xs'})
+						.insert({'bottom': new Element('span', {'class': 'hidden-xs hidden-sm'}).update('Print Delivery Docket ') })
 						.insert({'bottom': new Element('span', {'class': 'fa fa-ils'}) })
 						.observe('click', function() {
 							tmp.me._openDocketPrintPage();
 						})
 					})
 					.insert({'bottom': new Element('span', {'class': 'btn btn-success btn-xs invoice-btn'})
-						.insert({'bottom': new Element('span').update('Invoice ') })
+						.insert({'bottom': new Element('span', {'class': 'hidden-xs hidden-sm'}).update('Invoice ') })
 						.insert({'bottom': new Element('span', {'class': 'fa fa-credit-card'}) })
 						.observe('click', function() {
 							tmp.me._order.type = 'INVOICE';
 							tmp.me._setOrderType(this);
+						})
+					})
+					.insert({'bottom': new Element('span', {'class': 'btn btn-primary btn-xs invoice-btn'})
+						.insert({'bottom': new Element('span', {'class': 'hidden-xs hidden-sm'}).update('Email ') })
+						.insert({'bottom': new Element('span', {'class': 'fa fa-envelope'}) })
+						.observe('click', function() {
+							tmp.me._showEmailPanel(this);
 						})
 					})
 				})
@@ -1222,12 +1393,10 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				tmp.wrapperDiv.insert({'bottom': new Element('div', {"class": 'after_select_method col-sm-4', 'title': 'Notify Customer?'})
 					.insert({'bottom': tmp.me._getFormGroup('Notify Cust.?', new Element('input', {'type': 'checkbox', 'class': 'input-sm', 'payment_field': 'notifyCust', 'checked': true}) ) })
 				});
-				if(Math.abs(Math.abs(parseFloat(tmp.me.getValueFromCurrency($F(paidMountBox))).toFixed(2)) - Math.abs(parseFloat(tmp.me.getValueFromCurrency(tmp.me._order.totalAmount)).toFixed(2))) !== 0) {
-					tmp.wrapperDiv.insert({'bottom': new Element('div', {"class": 'after_select_method col-sm-8'})
-						.insert({'bottom': tmp.me._getFormGroup('Comments:', tmp.commentsBox = new Element('input', {'type': 'text', 'class': 'after_select_method input-sm', 'payment_field': 'extraComments', 'required': true, 'placeholder': 'The reason why the paidAmount is different to Total Amount Due: ' + tmp.me.getCurrency(tmp.me._order.totalAmount) }) ) })
-					});
-					tmp.commentsBox.select();
-				}
+				tmp.wrapperDiv.insert({'bottom': new Element('div', {"class": 'after_select_method col-sm-8'})
+					.insert({'bottom': tmp.me._getFormGroup('Comments:', tmp.commentsBox = new Element('input', {'type': 'text', 'class': 'after_select_method input-sm', 'payment_field': 'extraComments', 'required': true, 'placeholder': 'The reason why the paidAmount is different to Total Amount Due: ' + tmp.me.getCurrency(tmp.me._order.totalAmount) }) ) })
+				});
+				tmp.commentsBox.select();
 				tmp.wrapperDiv.insert({'bottom': new Element('div', {"class": 'after_select_method col-sm-4'})
 					.insert({'bottom': tmp.me._getFormGroup('&nbsp;', new Element('span', {'class': 'btn btn-primary after_select_method', 'data-loading-text': 'Saving...'}).update('Confirm')
 							.observe('click', function(){

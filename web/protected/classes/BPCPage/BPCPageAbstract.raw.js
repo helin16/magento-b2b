@@ -4,6 +4,7 @@
 var BPCPageJs = new Class.create();
 BPCPageJs.prototype = {
 	modalId: 'page_modal_box_id'
+	,_htmlIDs: {}
 
 	,_ajaxRequest: null
 
@@ -22,6 +23,20 @@ BPCPageJs.prototype = {
 		if(this.callbackIds[key] === undefined || this.callbackIds[key] === null)
 			throw 'Callback ID is not set for:' + key;
 		return this.callbackIds[key];
+	}
+
+
+	,setHTMLID: function($key, $value) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.me._htmlIDs[$key]  = $value;
+		return tmp.me;
+	}
+
+	,getHTMLID: function($key) {
+		var tmp = {};
+		tmp.me = this;
+		return tmp.me._htmlIDs[$key];
 	}
 
 	//posting an ajax request
@@ -192,7 +207,7 @@ BPCPageJs.prototype = {
 		return (tmp.hasError === true ? null : tmp.data);
 	}
 
-	,showModalBox: function(title, content, isSM, footer) {
+	,showModalBox: function(title, content, isSM, footer, eventFuncs) {
 		var tmp = {};
 		tmp.me = this;
 		tmp.isSM = (isSM === true ? true : false);
@@ -216,7 +231,13 @@ BPCPageJs.prototype = {
 		}
 
 		$$('body')[0].insert({'bottom': tmp.newBox.writeAttribute('id',  tmp.me.modalId)});
-		jQuery('#' + tmp.me.modalId).modal({'show': true, 'target': '#' + tmp.me.modalId});
+		tmp.modal = jQuery('#' + tmp.me.modalId);
+		if(eventFuncs && typeof(eventFuncs) === 'object') {
+			$H(eventFuncs).each(function(eventFunc){
+				tmp.modal.on(eventFunc.key, eventFunc.value);
+			});
+		}
+		tmp.modal.modal({'show': true, 'target': '#' + tmp.me.modalId});
 		return tmp.me;
 	}
 	,hideModalBox: function() {

@@ -57,7 +57,7 @@ class OrderConnector extends B2BConnector
 				}
 				
 				$customer = Customer::create(
-						isset($order->customer_firstname) ? trim($order->customer_firstname) . ' ' . trim($order->customer_lastname) : '', 
+						(isset($order->billing_address) && isset($order->billing_address->company) && trim($order->billing_address->company) !== '') ? trim($order->billing_address->company) : (isset($order->customer_firstname) ? trim($order->customer_firstname) . ' ' . trim($order->customer_lastname) : ''), 
 						'', 
 						trim($order->customer_email), 
 						$this->_createAddr($order->billing_address, $billingAddr),

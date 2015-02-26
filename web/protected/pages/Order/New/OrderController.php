@@ -20,6 +20,8 @@ class OrderController extends BPCPageAbstract
 	public function onLoad($param)
 	{
 		parent::onLoad($param);
+		if(!AccessControl::canAccessCreateOrderPage(Core::getRole()))
+			die('You do NOT have access to this page');
 	}
 	/**
 	 * Getting The end javascript
@@ -59,12 +61,15 @@ class OrderController extends BPCPageAbstract
 		try
 		{
 			$items = array();
+			$pageNo = isset($param->CallbackParameter->pageNo) ? trim($param->CallbackParameter->pageNo) : 1;
 			$searchTxt = isset($param->CallbackParameter->searchTxt) ? trim($param->CallbackParameter->searchTxt) : '';
-			foreach(Customer::getAllByCriteria('name like :searchTxt or email like :searchTxt', array('searchTxt' => $searchTxt . '%')) as $customer)
+			$stats = array();
+			foreach(Customer::getAllByCriteria('name like :searchTxt or email like :searchTxt', array('searchTxt' => '%' . $searchTxt . '%'), true, $pageNo, DaoQuery::DEFAUTL_PAGE_SIZE, array('cust.name' => 'asc'), $stats) as $customer)
 			{
 				$items[] = $customer->getJson();
 			}
 			$results['items'] = $items;
+			$results['pagination'] = $stats;
 		}
 		catch(Exception $ex)
 		{
@@ -186,7 +191,8 @@ class OrderController extends BPCPageAbstract
 				if(!$courier instanceof Courier)
 					throw new Exception('Invalid Courier passed in!');
 				$order->addInfo(OrderInfoType::ID_MAGE_ORDER_SHIPPING_METHOD, $courier->getName());
-				$totalShippingCost = trim($param->CallbackParameter->totalShippingCost);
+				$totalShippingCost = StringUtilsAbstract::getValueFromCurrency(trim($param->CallbackParameter->totalShippingCost));
+				$order->addInfo(OrderInfoType::ID_SHIPPING_EST_COST, StringUtilsAbstract::getCurrency($totalShippingCost));
 				if($shipped === true) {
 					Shippment::create($shippAddress, $courier, '', new UDate(), $order, '');
 				}
@@ -198,7 +204,7 @@ class OrderController extends BPCPageAbstract
 			}
 			$totalPaymentDue += $totalShippingCost; 
 			$comments = trim($param->CallbackParameter->comments);
-			$order = $order->addComment($comments)
+			$order = $order->addComment($comments, Comments::TYPE_SALES)
 				->setTotalPaid($totalPaidAmount);
 			
 			foreach ($param->CallbackParameter->items as $item)
@@ -230,7 +236,7 @@ class OrderController extends BPCPageAbstract
 			
 			$results['item'] = $order->getJson();
 			if($printItAfterSave === true)
-				$results['printURL'] = '/print/order/' . $order->getId() . '.html';
+				$results['printURL'] = '/print/order/' . $order->getId() . '.html?pdf=1';
 			Dao::commitTransaction();
 		}
 		catch(Exception $ex)

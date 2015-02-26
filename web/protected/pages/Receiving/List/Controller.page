@@ -1,5 +1,6 @@
 <com:TContent ID="MainContent">
 	<com:TCallback ID="searchSerialNoBtn" onCallback="searchSerialNo" />
+	<com:TCallback ID="deleteItemBtn" onCallback="deleteItem" />
 	<div class="panel panel-default" id="searchPanel">
 		<div class="panel-heading">
 			<label for="showSearch">Show Search Criteria?</label>

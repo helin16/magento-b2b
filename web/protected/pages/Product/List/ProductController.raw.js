@@ -137,7 +137,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 	/**
 	 * Displaying the price matching result
 	 */
-	,_displayPriceMatchResult: function(prices) {
+	,_displayPriceMatchResult: function(prices, productId) {
 		var tmp = {};
 		tmp.me = this;
 		tmp.minPrice = 0;
@@ -172,7 +172,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 			.insert({'bottom': new Element('tbody')
 				.insert({'bottom': new Element('tr')
 					.insert({'bottom': new Element('td').update(prices.sku) })
-					.insert({'bottom': new Element('td').update(tmp.me.getCurrency(prices.myPrice)) })
+					.insert({'bottom': new Element('td').update(tmp.priceInput = new Element('input', {'class': "click-to-edit price-input", 'value': tmp.me.getCurrency(prices.myPrice), 'product-id': productId}) ) })
 					.insert({'bottom': new Element('td', {'class': 'price_diff'}).update(new Element('span', {'class': '' + tmp.priceDiffClass}).update(tmp.me.getCurrency(tmp.priceDiff)) ) })
 					.insert({'bottom': new Element('td', {'class': 'price_min'}).update(tmp.me.getCurrency(tmp.minPrice) ) })
 				})
@@ -229,7 +229,8 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 					if(!tmp.result)
 						return;
 					if($('info_panel_' + product.id))
-						$('info_panel_' + product.id).down('.price-match-div .price-match-listing').replace(tmp.me._displayPriceMatchResult(tmp.result));
+						$('info_panel_' + product.id).down('.price-match-div .price-match-listing').replace(tmp.me._displayPriceMatchResult(tmp.result, product.id));
+					tmp.me._bindPriceInput();
 				} catch (e) {
 					tmp.me.showModalBox('Error', e, true);
 				}
@@ -293,6 +294,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 					} else if(tmp.result.items.size() > 0) {
 						tmp.me._displaySelectedProduct(tmp.result.items[0]);
 					}
+					tmp.me._bindPriceInput();
 				} catch (e) {
 					tmp.resultDiv.insert({'bottom': tmp.me.getAlertBox('Error', e).addClassName('alert-danger') });
 				}
@@ -318,7 +320,8 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		tmp.selectedRow = jQuery('[product_id="' + item.id + '"]', jQuery('#' + tmp.me.resultDivId))
 			.addClass('success');
 		if(!tmp.selectedRow.hasClass('popover-loaded')) {
-			tmp.selectedRow.popover({
+			tmp.selectedRow
+			.popover({
 				'title'    : '<div class="row"><div class="col-xs-10">Details for: ' + item.sku + '</div><div class="col-xs-2"><span class="btn btn-danger pull-right btn-sm" onclick="pageJs.deSelectProduct();"><span class="glyphicon glyphicon-remove"></span></span></div></div>',
 				'html'     : true,
 				'placement': 'right',
@@ -370,6 +373,53 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		tmp.newWindow.focus();
 		return tmp.me;
 	}
+	,_updatePrice: function(productId, newPrice, originalPrice) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.me.postAjax(tmp.me.getCallbackId('updatePrice'), {'productId': productId, 'newPrice': tmp.me.getValueFromCurrency(newPrice)}, {
+			'onLoading': function() {}
+			,'onSuccess': function(sender, param) {
+				try {
+					tmp.result = tmp.me.getResp(param, false, true);
+					if(!tmp.result || !tmp.result.item || !tmp.result.item.id)
+						return;
+					jQuery('.price-input[product-id=' + tmp.result.item.id + ']').attr('original-price', tmp.me.getValueFromCurrency(newPrice));
+				} catch (e) {
+					tmp.me.showModalBox('<strong class="text-danger">Error When Update Price:</strong>', '<strong>' + e + '</strong>');
+					jQuery('.price-input[product-id=' + productId + ']').val(tmp.me.getCurrency(originalPrice));
+				}
+			}
+		})
+		return tmp.me;
+	}
+	/**
+	 * binding the price input event
+	 */
+	,_bindPriceInput: function() {
+		var tmp = {};
+		tmp.me = this;
+		jQuery('.price-input[product-id]').not('.price-input-binded')
+			.click(function (){
+				jQuery(this)
+					.attr('original-price', tmp.me.getValueFromCurrency(jQuery(this).val()))
+					.select();
+			})
+			.keydown(function(event) {
+				tmp.inputBox = jQuery(this);
+				tmp.me.keydown(event, function(){
+					tmp.inputBox.blur();
+				});
+			})
+			.focusout(function(){
+				tmp.value = tmp.me.getValueFromCurrency(jQuery(this).val());
+				jQuery(this).val(tmp.me.getCurrency(tmp.value));
+			})
+			.change(function() {
+				tmp.me._updatePrice(jQuery(this).attr('product-id'), jQuery(this).val(), tmp.me.getValueFromCurrency( jQuery(this).attr('original-price') ));
+			})
+			.addClass('price-input-binded');
+		return tmp.me;
+	}
 	/**
 	 * Getting each row for displaying the result list
 	 */
@@ -406,14 +456,13 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 						tmp.me._displaySelectedProduct(row);
 					})
 					.observe('dblclick', function(){
-						Event.stop(e);
 						tmp.me._openProductDetails(row);
 					})
 					.update(row.sku)
 				})
 			})
 			.insert({'bottom': new Element(tmp.tag, {'class': 'product_name hidden-xs hide-when-info hidden-sm', 'style': (tmp.me._showRightPanel ? 'display: none' : '')}).update(row.name) })
-			.insert({'bottom': new Element(tmp.tag, {'class': 'product_price hidden-xs hide-when-info hidden-sm', 'style': (tmp.me._showRightPanel ? 'display: none' : '')}).update(tmp.isTitle === true ? 'Price' : (tmp.price.blank() ? '' : tmp.me.getCurrency(tmp.price))) })
+			.insert({'bottom': new Element(tmp.tag, {'class': 'product_price hidden-xs hide-when-info hidden-sm', 'style': (tmp.me._showRightPanel ? 'display: none' : '')}).update(tmp.isTitle === true ? 'Price' : new Element('input', {'class': "click-to-edit price-input", 'value': tmp.me.getCurrency(tmp.price), 'product-id': row.id}) ) })
 			.insert({'bottom': new Element(tmp.tag, {'class': 'locations col-xs-1  hide-when-info hidden-sm'}).update(
 					row.locations ? tmp.me._getLocations(row.locations, isTitle) : ''
 			) })
@@ -443,10 +492,13 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 			.insert({'bottom': new Element(tmp.tag, {'class': 'product_active col-xs-1 hide-when-info hidden-sm'})
 				.insert({'bottom': (tmp.isTitle === true ? row.active :
 					new Element('div', {'class': 'row'})
-						.insert({'bottom': new Element('div', {'class': 'col-xs-4'})
+						.insert({'bottom': new Element('div', {'class': 'col-xs-3'})
 							.insert({'bottom': new Element('input', {'type': 'checkbox', 'disabled': true, 'checked': row.active}) })
 						})
-						.insert({'bottom': new Element('div', {'class': 'col-xs-8'})
+						.insert({'bottom': new Element('div', {'class': 'col-xs-3'})
+							.insert({'bottom': new Element('a', {'href': '/serialnumbers.html?productid=' + row.id, 'target': '_BLANK', 'title': 'Serial Numbers.'}).update('SN') })
+						})
+						.insert({'bottom': new Element('div', {'class': 'col-xs-6'})
 							.insert({'bottom': new Element('div', {'class': 'btn-group'})
 								.insert({'bottom': new Element('span', {'class': 'btn btn-primary btn-xs'})
 									.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-pencil'}) })

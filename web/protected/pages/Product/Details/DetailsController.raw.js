@@ -86,7 +86,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		if(titleData.start) {
 			tmp.newRow.insert({'bottom': new Element(tmp.tag).update( 
 					tmp.isTitle === true ? titleData.start : 
-						new Element('input', {'class': 'form-control input-sm datepicker', 'list-panel-row': 'start', 'value': (data.start ? data.start : ''), 'required': true, 'disabled': true, 'value': '0001-01-01 00:00:00'})
+						new Element('input', {'class': 'form-control input-sm datepicker', 'list-panel-row': 'start', 'value': (data.start ? data.start : ''), 'required': true, 'disabled': data.type && !data.type.needTime})
 							.writeAttribute('list-item', (data.id ? data.id : tmp.randId))
 							.wrap(new Element('div', {'class': 'form-group'}))
 				)
@@ -94,7 +94,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		}
 		if(titleData.end){
 			tmp.newRow.insert({'bottom': new Element(tmp.tag).update( tmp.isTitle === true ? titleData.end : 
-				new Element('input', {'class': 'form-control input-sm datepicker', 'list-panel-row': 'end', 'value': (data.end ? data.end : ''), 'required': true, 'disabled': true, 'value': '9999-12-31 23:59:59'}) 
+				new Element('input', {'class': 'form-control input-sm datepicker', 'list-panel-row': 'end', 'value': (data.end ? data.end : ''), 'required': true, 'disabled': data.type && !data.type.needTime}) 
 					.writeAttribute('list-item', (data.id ? data.id : tmp.randId))
 					.wrap(new Element('div', {'class': 'form-group'}))
 				) 
@@ -140,7 +140,12 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 					.insert({'bottom': ' NEW' })
 					.observe('click', function(){
 						tmp.parentPanel = $(this).up('.panel');
-						tmp.parentPanel.down('.table tbody').insert({'bottom': tmp.me._getListPanelRow({}, selBoxData, titleData, false, selBoxChangeFunc).addClassName('list-panel-row').writeAttribute('item_id', '') });
+						tmp.newData = {};
+						if(titleData.start)
+							tmp.newData.start = '0001-01-01 00:00:00';
+						if(titleData.end)
+							tmp.newData.end = '9999-12-31 23:59:59';
+						tmp.parentPanel.down('.table tbody').insert({'bottom': tmp.me._getListPanelRow(tmp.newData, selBoxData, titleData, false, selBoxChangeFunc).addClassName('list-panel-row').writeAttribute('item_id', '') });
 						tmp.parentPanel.down('.list-div').show();
 						tmp.me._bindDatePicker();
 					})
@@ -637,7 +642,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 			.insert({'bottom': new Element('div', {'class': 'panel-heading'})
 				.insert({'bottom': new Element('a', {'href': 'javascript: void(0);', 'title': 'click to show/hide content below'})
 					.insert({'bottom': new Element('strong').update('Stock Info') 
-						.insert({'bottom': new Element('span', {'class': 'pull-right'}).update('Average Cost: ' + ((tmp.item.totalOnHandValue != 0 && tmp.item.stockOnHand != 0) ? tmp.me.getCurrency(tmp.item.totalOnHandValue / tmp.item.stockOnHand) : 'N/A'))})
+						.insert({'bottom': new Element('span', {'class': 'pull-right'}).update('Average Cost Ex GST: ' + ((tmp.item.totalOnHandValue != 0 && tmp.item.stockOnHand != 0) ? tmp.me.getCurrency(tmp.item.totalOnHandValue / tmp.item.stockOnHand) : 'N/A'))})
 					})
 					.observe('click', function() {
 						$(this).up('.panel').down('.panel-body').toggle();
@@ -645,7 +650,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 				})
 				.insert({'bottom': tmp.uploadDiv = new Element('span', {'class': 'pull-right new-btn-panel'}) })
 			})
-			.insert({'bottom': new Element('div', {'class': 'panel-body'}).setStyle('display: none;')
+			.insert({'bottom': new Element('div', {'class': 'panel-body'})
 				.insert({'bottom': new Element('div', {'class': ''})
 					.insert({'bottom': new Element('div', {'class': 'col-sm-3'}).update(tmp.me._getFormGroup('Stock On Hand', new Element('input', {'save-item': 'stockOnHand', 'type': 'value', 'disabled': true, 'value': tmp.item.stockOnHand ? tmp.item.stockOnHand : ''}) ) ) })
 					.insert({'bottom': new Element('div', {'class': 'col-sm-3'}).update(tmp.me._getFormGroup('Stock On Hand Value', new Element('input', {'save-item': 'totalOnHandValue', 'type': 'value', 'disabled': true, 'value': tmp.item.totalOnHandValue ? tmp.me.getCurrency(tmp.item.totalOnHandValue) : ''}) ) ) })

@@ -44,15 +44,24 @@ class SalesExport_Xero extends ExportAbstract
 			$letter = 'A';
 			if(parent::$_debug)
 				echo "\n";
-		}			
+		}
 		return $phpexcel;
 	}
 	protected static function _getData()
 	{
-		$yesterday = new UDate();
-		$yesterday->modify('-1 day');
-		$orders = Order::getAllByCriteria('invDate > :fromDate and invDate < :toDate', array('fromDate' => $yesterday->format('Y-m-d') . ' 00:00:00', 'toDate' => $yesterday->format('Y-m-d') . '23:59:59'));
-		
+		if(count(self::$_dateRange) === 0) {
+			$yesterdayLocal = new UDate('now', 'Australia/Melbourne');
+			$yesterdayLocal->modify('-1 day');
+			$fromDate = new UDate($yesterdayLocal->format('Y-m-d') . ' 00:00:00', 'Australia/Melbourne');
+			$fromDate->setTimeZone('UTC');
+			$toDate = new UDate($yesterdayLocal->format('Y-m-d') . ' 23:59:59', 'Australia/Melbourne');
+			$toDate->setTimeZone('UTC');
+		} else {
+			$fromDate = self::$_dateRange['start'];
+			$toDate = self::$_dateRange['end'];
+		}
+		$orders = Order::getAllByCriteria('invDate >= :fromDate and invDate < :toDate', array('fromDate' => trim($fromDate), 'toDate' => trim($toDate)));
+
 		$return = array();
 		foreach($orders as $order)
 		{
@@ -77,6 +86,8 @@ class SalesExport_Xero extends ExportAbstract
 			foreach($order->getOrderItems() as $orderItem)
 			{
 				$product = $orderItem->getProduct();
+				if(!$product instanceof Product)
+					continue;
 				$return[] = array_merge($row, array(
 					'InventoryItemCode' => $product->getSku()
 					,'Description'=> $product->getShortDescription()
@@ -84,6 +95,24 @@ class SalesExport_Xero extends ExportAbstract
 					,'UnitAmount'=> $orderItem->getUnitPrice()
 					,'Discount'=> ''
 					,'AccountCode'=> $product->getRevenueAccNo()
+					,'TaxType'=> "GST on Income"
+					,'TrackingName1'=> ''
+					,'TrackingOption1'=> ''
+					,'TrackingName2'=> ''
+					,'TrackingOption2'=> ''
+					,'Currency'=> ''
+					,'BrandingTheme'=> ''
+				));
+			}
+
+			if(($shippingMethod = trim(implode(',', $order->getInfo(OrderInfoType::ID_MAGE_ORDER_SHIPPING_METHOD)))) !== '') {
+				$return[] = array_merge($row, array(
+					'InventoryItemCode' => trim(implode(',', $order->getInfo(OrderInfoType::ID_MAGE_ORDER_SHIPPING_METHOD)))
+					,'Description'=> trim(implode(',', $order->getInfo(OrderInfoType::ID_MAGE_ORDER_SHIPPING_METHOD)))
+					,'Quantity'=> 1
+					,'UnitAmount'=> StringUtilsAbstract::getCurrency( trim( StringUtilsAbstract::getValueFromCurrency((double)implode(',', $order->getInfo(OrderInfoType::ID_SHIPPING_EST_COST))) ) )
+					,'Discount'=> ''
+					,'AccountCode'=> '43300'
 					,'TaxType'=> "GST on Income"
 					,'TrackingName1'=> ''
 					,'TrackingOption1'=> ''

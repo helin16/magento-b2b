@@ -1,7 +1,7 @@
 <?php
 /**
  * This is the OrderController
- * 
+ *
  * @package    Web
  * @subpackage Controller
  * @author     lhe<helin16@gmail.com>
@@ -79,9 +79,9 @@ class ReceivingController extends BPCPageAbstract
 	}
 	/**
 	 * Getting the JSon for PurchaseOrder
-	 * 
+	 *
 	 * @param PurchaseOrder $po
-	 * 
+	 *
 	 * @return Ambigous <multitype:, multitype:multitype:string  NULL >
 	 */
 	private function _getPOJson(PurchaseOrder $po)
@@ -89,7 +89,7 @@ class ReceivingController extends BPCPageAbstract
 		$array = $po->getJson();
 		$array['totalProdcutCount'] = $po->getTotalProductCount();
 		$array['totalRecievedValue'] = $po->getTotalRecievedValue();
-			
+
 		$array['purchaseOrderItem'] = [];
 		foreach (PurchaseOrderItem::getAllByCriteria('po_item.purchaseOrderId = :purchaseOrderId', array('purchaseOrderId'=> $po->getId() )) as $purchaseOrderItem)
 		{
@@ -103,7 +103,7 @@ class ReceivingController extends BPCPageAbstract
 			$productArray = $product->getJson();
 			$productArray['codes'] = array('EAN'=>$EANcodes, 'UPC'=>$UPCcodes);
 			$productArray['warehouseLocation'] = $warehouseLocation;
-		
+
 			$array['purchaseOrderItem'][] = array('purchaseOrderItem'=> $purchaseOrderItem->getJson(), 'product'=> $productArray);
 		}
 		return $array;
@@ -153,10 +153,10 @@ class ReceivingController extends BPCPageAbstract
 		{
 			$items = array();
 			$searchTxt = isset($param->CallbackParameter->searchTxt) ? trim($param->CallbackParameter->searchTxt) : '';
-			
+
 			$where = 'pro_pro_code.code = :searchExact or pro.name like :searchTxt OR sku like :searchTxt';
 			$params = array('searchExact' => $searchTxt , 'searchTxt' => '%' . $searchTxt . '%');
-				
+
 			$searchTxtArray = StringUtilsAbstract::getAllPossibleCombo(StringUtilsAbstract::tokenize($searchTxt));
 			if(count($searchTxtArray) > 1)
 			{
@@ -169,17 +169,17 @@ class ReceivingController extends BPCPageAbstract
 			}
 			Product::getQuery()->eagerLoad('Product.codes', 'left join');
 			$products = Product::getAllByCriteria($where, $params, true, 1, DaoQuery::DEFAUTL_PAGE_SIZE, array('pro.sku' => 'asc'));
-			
+
 			foreach($products as $product)
 			{
 				if(!$product instanceof Product)
 					throw new Exception('Invalid Product passed in!');
 				$EANcodes = ProductCode::getAllByCriteria('pro_code.productId = :productId and pro_code.typeId = :typeId', array('productId'=> $product->getId(), 'typeId'=> ProductCodeType::ID_EAN), true, 1, 1);
 				$EANcodes = count($EANcodes) > 0 ? $EANcodes[0]->getCode() : '';
-				
+
 				$UPCcodes = ProductCode::getAllByCriteria('pro_code.productId = :productId and pro_code.typeId = :typeId', array('productId'=> $product->getId(), 'typeId'=> ProductCodeType::ID_UPC), true, 1, 1);
 				$UPCcodes = count($UPCcodes) > 0 ? $UPCcodes[0]->getCode() : '';
-				
+
 				$array = $product->getJson();
 				$array['codes'] = array('EAN'=>$EANcodes, 'UPC'=>$UPCcodes);
 				$items[] = $array;
@@ -214,12 +214,12 @@ class ReceivingController extends BPCPageAbstract
 			$comment = trim($param->CallbackParameter->comments);
 			$purchaseOrder->addComment(Comments::TYPE_WAREHOUSE, $comment);
 			$products = $param->CallbackParameter->products;
-			
+
 			foreach ($products->matched as $item) {
 				$product = Product::get(trim($item->product->id));
 				if(!$product instanceof Product)
 					throw new Exception('Invalid Product passed in!');
-				
+
 				if(isset($item->product->EANcode) ) {
 					$EANcode = trim($item->product->EANcode);
 					$productcodes = ProductCode::getAllByCriteria('pro_code.productId = :productId and pro_code.typeId = :typeId', array('productId'=> $product->getId(), 'typeId'=> ProductCodeType::ID_EAN), true, 1, 1);
@@ -239,12 +239,11 @@ class ReceivingController extends BPCPageAbstract
 					}
 				}
 				if(isset($item->product->warehouseLocation) && ($locationName = trim($item->product->warehouseLocation)) !== '') {
-					var_dump($item->product->warehouseLocation);
 					$locs = Location::getAllByCriteria('name = ?', array($locationName), true, 1, 1);
 					$loc = (count($locs) > 0 ? $locs[0] : Location::create($locationName, $locationName));
 					$product->addLocation(PreferredLocationType::get(PreferredLocationType::ID_WAREHOUSE), $loc);
 				}
-				
+
 				$serials = $item->serial;
 				$totalQty = 0;
 				foreach ($serials as $serial) {
@@ -255,25 +254,10 @@ class ReceivingController extends BPCPageAbstract
 					$invoiceNo = trim($serial->invoiceNo);
 					$comments = trim($serial->comments);
 					ReceivingItem::create($purchaseOrder, $product, $unitPrice, $qty, $serialNo, $invoiceNo, $comments);
-					
-					$nofullReceivedItems = PurchaseOrderItem::getAllByCriteria('productId = ? and purchaseOrderId = ?', array($product->getId(), $purchaseOrder->getId()), true, 1, 1, array('po_item.receivedQty' => 'asc'));
-					if(count($nofullReceivedItems) > 0) {
-						$nofullReceivedItems[0]
-							->setReceivedQty($nofullReceivedItems[0]->getReceivedQty() + $qty)
-							->save()
-							->addLog(Log::TYPE_SYSTEM, ($msg = 'received ' . $qty . ' product(SKU=' . $product->getSku() . ') by ' . Core::getUser()->getPerson()->getFullName() . '@' . trim(new UDate()) . '(UTC)'), 'Auto Log', __CLASS__ . '::' . __FUNCTION__)
-							->addComment($msg, Comments::TYPE_WAREHOUSE);
-					}
 				}
-				
-				$purchaseOrder->addComment('received ' . $totalQty . ' product(SKU=' . $product->getSku() . ') by ' . Core::getUser()->getPerson()->getFullName() . '@' . trim(new UDate()) . '(UTC)', Comments::TYPE_WAREHOUSE) ;
 			}
-			
-			$totalCount = PurchaseOrderItem::countByCriteria('active = 1 and purchaseOrderId = ? and receivedQty < qty', array($purchaseOrder->getId()));
-			$purchaseOrder->setStatus(trim($totalCount) === '0' ? PurchaseOrder::STATUS_RECEIVED : PurchaseOrder::STATUS_RECEIVING)
-				->save();
-			
-			$results['item'] = $purchaseOrder->getJson();
+
+			$results['item'] = PurchaseOrder::get($purchaseOrder->getId())->getJson();
 			Dao::commitTransaction();
 		}
 		catch(Exception $ex)

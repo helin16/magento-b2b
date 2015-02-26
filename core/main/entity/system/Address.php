@@ -9,49 +9,49 @@ class Address extends BaseEntityAbstract
 {
 	/**
 	 * The contact name of the address
-	 * 
+	 *
 	 * @var string
 	 */
 	private $contactName = '';
 	/**
 	 * The contact name of the address
-	 * 
+	 *
 	 * @var string
 	 */
 	private $contactNo = '';
 	/**
 	 * The street of the address
-	 * 
+	 *
 	 * @var string
 	 */
 	private $street;
 	/**
 	 * The city name of the address
-	 * 
+	 *
 	 * @var string
 	 */
 	private $city;
 	/**
 	 * The contact name of the address
-	 * 
+	 *
 	 * @var string
 	 */
 	private $region;
 	/**
 	 * The postCode of the address
-	 * 
+	 *
 	 * @var string
 	 */
 	private $postCode;
 	/**
 	 * The country of the address
-	 * 
+	 *
 	 * @var string
 	 */
 	private $country;
 	/**
 	 * screct key
-	 * 
+	 *
 	 * @var string
 	 */
 	private $sKey;
@@ -60,7 +60,7 @@ class Address extends BaseEntityAbstract
 	 *
 	 * @return string
 	 */
-	public function getContactName() 
+	public function getContactName()
 	{
 	    return $this->contactName;
 	}
@@ -71,7 +71,7 @@ class Address extends BaseEntityAbstract
 	 *
 	 * @return Address
 	 */
-	public function setContactName($value) 
+	public function setContactName($value)
 	{
 	    $this->contactName = $value;
 	    return $this;
@@ -81,7 +81,7 @@ class Address extends BaseEntityAbstract
 	 *
 	 * @return string
 	 */
-	public function getSKey() 
+	public function getSKey()
 	{
 	    return $this->sKey;
 	}
@@ -92,7 +92,7 @@ class Address extends BaseEntityAbstract
 	 *
 	 * @return Address
 	 */
-	public function setSKey($value) 
+	public function setSKey($value)
 	{
 	    $this->sKey = $value;
 	    return $this;
@@ -102,7 +102,7 @@ class Address extends BaseEntityAbstract
 	 *
 	 * @return string
 	 */
-	public function getContactNo() 
+	public function getContactNo()
 	{
 	    return $this->contactNo;
 	}
@@ -113,7 +113,7 @@ class Address extends BaseEntityAbstract
 	 *
 	 * @return Address
 	 */
-	public function setContactNo($value) 
+	public function setContactNo($value)
 	{
 	    $this->contactNo = $value;
 	    return $this;
@@ -123,7 +123,7 @@ class Address extends BaseEntityAbstract
 	 *
 	 * @return string
 	 */
-	public function getStreet() 
+	public function getStreet()
 	{
 	    return $this->street;
 	}
@@ -134,7 +134,7 @@ class Address extends BaseEntityAbstract
 	 *
 	 * @return Address
 	 */
-	public function setStreet($value) 
+	public function setStreet($value)
 	{
 	    $this->street = $value;
 	    return $this;
@@ -144,7 +144,7 @@ class Address extends BaseEntityAbstract
 	 *
 	 * @return string
 	 */
-	public function getCity() 
+	public function getCity()
 	{
 	    return $this->city;
 	}
@@ -155,7 +155,7 @@ class Address extends BaseEntityAbstract
 	 *
 	 * @return Address
 	 */
-	public function setCity($value) 
+	public function setCity($value)
 	{
 	    $this->city = $value;
 	    return $this;
@@ -165,7 +165,7 @@ class Address extends BaseEntityAbstract
 	 *
 	 * @return string
 	 */
-	public function getRegion() 
+	public function getRegion()
 	{
 	    return $this->region;
 	}
@@ -176,7 +176,7 @@ class Address extends BaseEntityAbstract
 	 *
 	 * @return Address
 	 */
-	public function setRegion($value) 
+	public function setRegion($value)
 	{
 	    $this->region = $value;
 	    return $this;
@@ -184,9 +184,9 @@ class Address extends BaseEntityAbstract
 	/**
 	 * Getter for country
 	 *
-	 * @return 
+	 * @return
 	 */
-	public function getCountry() 
+	public function getCountry()
 	{
 	    return $this->country;
 	}
@@ -197,7 +197,7 @@ class Address extends BaseEntityAbstract
 	 *
 	 * @return Address
 	 */
-	public function setCountry($value) 
+	public function setCountry($value)
 	{
 	    $this->country = $value;
 	    return $this;
@@ -207,7 +207,7 @@ class Address extends BaseEntityAbstract
 	 *
 	 * @return string
 	 */
-	public function getPostCode() 
+	public function getPostCode()
 	{
 	    return $this->postCode;
 	}
@@ -218,10 +218,19 @@ class Address extends BaseEntityAbstract
 	 *
 	 * @return Address
 	 */
-	public function setPostCode($value) 
+	public function setPostCode($value)
 	{
 	    $this->postCode = $value;
 	    return $this;
+	}
+	/**
+	 * getting the Full string
+	 *
+	 * @return string
+	 */
+	public function getFull()
+	{
+		return $this->getContactName() . ', ' . $this->getContactNo() . ', ' . $this->getStreet() . ', ' . $this->getCity() . ' ' . $this->getRegion() . ' ' . $this->getCountry() . ' ' . $this->getPostCode();
 	}
 	/**
 	 * (non-PHPdoc)
@@ -260,7 +269,7 @@ class Address extends BaseEntityAbstract
 	public function __loadDaoMap()
 	{
 		DaoMap::begin($this, 'addr');
-	
+
 		DaoMap::setStringType('contactName','varchar', 50);
 		DaoMap::setStringType('contactNo','varchar', 50);
 		DaoMap::setStringType('street','varchar', 50);
@@ -269,9 +278,9 @@ class Address extends BaseEntityAbstract
 		DaoMap::setStringType('country','varchar', 20);
 		DaoMap::setStringType('postCode','varchar', 10);
 		DaoMap::setStringType('sKey','varchar', 32);
-	
+
 		parent::__loadDaoMap();
-	
+
 		DaoMap::createIndex('sKey');
 		DaoMap::createIndex('contactName');
 		DaoMap::createIndex('contactNo');
@@ -279,7 +288,7 @@ class Address extends BaseEntityAbstract
 		DaoMap::createIndex('region');
 		DaoMap::createIndex('country');
 		DaoMap::createIndex('postCode');
-	
+
 		DaoMap::commit();
 	}
 	/**
@@ -297,7 +306,7 @@ class Address extends BaseEntityAbstract
 	 */
 	public static function create($street, $city, $region, $country, $postCode, $contactName = '', $contactNo = '', Address &$exsitAddr = null)
 	{
-		if(trim($street) === '' && trim($city) === '' && trim($region) === '' && trim($country) === '' && trim($postCode) === '' && trim($contactName = '') === '' && trim($contactNo) === '')
+		if(trim($street) === '' && trim($city) === '' && trim($region) === '' && trim($country) === '' && trim($postCode) === '' && trim($contactName) === '' && trim($contactNo) === '')
 			return null;
 		$obj = new Address();
 		if($exsitAddr instanceof Address)
@@ -313,7 +322,7 @@ class Address extends BaseEntityAbstract
 	}
 	/**
 	 * Generating the skey for address
-	 * 
+	 *
 	 * @param string $street
 	 * @param string $city
 	 * @param string $region
@@ -321,7 +330,7 @@ class Address extends BaseEntityAbstract
 	 * @param string $postCode
 	 * @param string $contactName
 	 * @param string $contactNo
-	 * 
+	 *
 	 * @return string
 	 */
 	public static function genSKey($street, $city, $region, $country, $postCode, $contactName = '', $contactNo = '')

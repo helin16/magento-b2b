@@ -17,31 +17,31 @@ class PurchaseOrder extends BaseEntityAbstract
 	const STATUS_CLOSED = 'CLOSED';
 	/**
 	 * The purchase order number
-	 * 
+	 *
 	 * @var string
 	 */
 	private $purchaseOrderNo = '';
 	/**
 	 * The supplier
-	 * 
+	 *
 	 * @var Supplier
 	 */
 	protected $supplier;
 	/**
 	 * The supplier Reference No
-	 * 
+	 *
 	 * @var string
 	 */
 	private $supplierRefNo;
 	/**
 	 * status of this purchase order
-	 * 
+	 *
 	 * @var string
 	 */
 	private $status = self::STATUS_NEW;
 	/**
 	 * The contact person's name of the supplier for this order
-	 * 
+	 *
 	 * @var string
 	 */
 	private $supplierContact = '';
@@ -53,13 +53,13 @@ class PurchaseOrder extends BaseEntityAbstract
 	private $supplierContactNumber = '';
 	/**
 	 * The the shipping cost for this order
-	 * 
+	 *
 	 * @var string
 	 */
 	private $shippingCost = 0;
 	/**
 	 * The the handling cost for this order
-	 * 
+	 *
 	 * @var string
 	 */
 	private $handlingCost = 0;
@@ -70,20 +70,19 @@ class PurchaseOrder extends BaseEntityAbstract
 	private $orderDate;
 	/**
 	 * The eta of the po
-	 * 
+	 *
 	 * @var UDate
 	 */
 	private $eta = '';
-	
+
 	private $totalAmount = 0;
 	private $totalPaid = 0;
-	private $totalProdcutCount = 0;
 	/**
 	 * Getter for purchaseOrderNo
 	 *
 	 * @return string
 	 */
-	public function getPurchaseOrderNo() 
+	public function getPurchaseOrderNo()
 	{
 	    return $this->purchaseOrderNo;
 	}
@@ -94,7 +93,7 @@ class PurchaseOrder extends BaseEntityAbstract
 	 *
 	 * @return PurchaseOrder
 	 */
-	public function setPurchaseOrderNo($value) 
+	public function setPurchaseOrderNo($value)
 	{
 	    $this->purchaseOrderNo = $value;
 	    return $this;
@@ -104,7 +103,7 @@ class PurchaseOrder extends BaseEntityAbstract
 	 *
 	 * @return Supplier
 	 */
-	public function getSupplier() 
+	public function getSupplier()
 	{
 		$this->loadManyToOne('supplier');
 	    return $this->supplier;
@@ -116,7 +115,7 @@ class PurchaseOrder extends BaseEntityAbstract
 	 *
 	 * @return PurchaseOrder
 	 */
-	public function setSupplier(Supplier $value) 
+	public function setSupplier(Supplier $value)
 	{
 	    $this->supplier = $value;
 	    return $this;
@@ -126,7 +125,7 @@ class PurchaseOrder extends BaseEntityAbstract
 	 *
 	 * @return string
 	 */
-	public function getSupplierRefNo() 
+	public function getSupplierRefNo()
 	{
 	    return $this->supplierRefNo;
 	}
@@ -137,7 +136,7 @@ class PurchaseOrder extends BaseEntityAbstract
 	 *
 	 * @return PurchaseOrder
 	 */
-	public function setSupplierRefNo($value) 
+	public function setSupplierRefNo($value)
 	{
 	    $this->supplierRefNo = $value;
 	    return $this;
@@ -147,7 +146,7 @@ class PurchaseOrder extends BaseEntityAbstract
 	 *
 	 * @return string
 	 */
-	public function getStatus() 
+	public function getStatus()
 	{
 	    return $this->status;
 	}
@@ -158,7 +157,7 @@ class PurchaseOrder extends BaseEntityAbstract
 	 *
 	 * @return PurchaseOrder
 	 */
-	public function setStatus($value) 
+	public function setStatus($value)
 	{
 		if(trim($this->getId()) !== "") {
 			$oldStatuses = Dao::getResultsNative('select status from purchaseorder where id = ?', array($this->getId()));
@@ -176,7 +175,7 @@ class PurchaseOrder extends BaseEntityAbstract
 	 *
 	 * @return string
 	 */
-	public function getSupplierContact() 
+	public function getSupplierContact()
 	{
 	    return $this->supplierContact;
 	}
@@ -187,7 +186,7 @@ class PurchaseOrder extends BaseEntityAbstract
 	 *
 	 * @return PurchaseOrder
 	 */
-	public function setSupplierContact($value) 
+	public function setSupplierContact($value)
 	{
 	    $this->supplierContact = $value;
 	    return $this;
@@ -258,20 +257,31 @@ class PurchaseOrder extends BaseEntityAbstract
 	/**
 	 * Getter for totalProdcutCount
 	 *
-	 * @return string
+	 * @return int
 	 */
 	public function getTotalProductCount()
 	{
 		$sql = "select sum(qty) `qty` from purchaseorderitem where active = 1 and purchaseOrderId = ? ";
 		$result = Dao::getSingleResultNative($sql, array($this->getId()));
-		return $result['qty'];
+		return intval($result['qty']);
+	}
+	/**
+	 * Getter for totalReceivedCount
+	 *
+	 * @return int
+	 */
+	public function getTotalReceivedCount()
+	{
+		$sql = "select sum(qty) `qty` from receivingitem where active = 1 and purchaseOrderId = ? ";
+		$result = Dao::getSingleResultNative($sql, array($this->getId()));
+		return intval($result['qty']);
 	}
 	/**
 	 * Getter for orderDate
 	 *
 	 * @return UDate
 	 */
-	public function getOrderDate() 
+	public function getOrderDate()
 	{
 		$this->orderDate = new UDate(trim($this->orderDate));
 	    return $this->orderDate;
@@ -283,7 +293,7 @@ class PurchaseOrder extends BaseEntityAbstract
 	 *
 	 * @return PurchaseOrder
 	 */
-	public function setOrderDate($value) 
+	public function setOrderDate($value)
 	{
 	    $this->orderDate = $value;
 	    return $this;
@@ -293,7 +303,7 @@ class PurchaseOrder extends BaseEntityAbstract
 	 *
 	 * @return UDate
 	 */
-	public function getEta() 
+	public function getEta()
 	{
 		$this->eta = new UDate(trim($this->eta));
 	    return $this->eta;
@@ -305,16 +315,16 @@ class PurchaseOrder extends BaseEntityAbstract
 	 *
 	 * @return PurchaseOrder
 	 */
-	public function setEta($value) 
+	public function setEta($value)
 	{
 	    $this->eta = $value;
 	    return $this;
 	}
 	/**
 	 * validating the status
-	 * 
+	 *
 	 * @param string $status The status that we are validating
-	 * 
+	 *
 	 * @return boolean
 	 */
 	private function _validateStatus($status)
@@ -396,14 +406,15 @@ class PurchaseOrder extends BaseEntityAbstract
 				->save();
 		}
 		//if the order status is ordered, then calculated the
-		if(intval($this->getActive()) === 0) {
+		if(intval($this->getActive()) === 0 || trim($this->getStatus()) === PurchaseOrder::STATUS_CANCELED) {
 			$items = PurchaseOrderItem::getAllByCriteria('purchaseOrderId = ? and stockCalculated = 1', array($this->getId()));
 			foreach($items as $item) {
 				$item->getProduct()->ordered(0 - $item->getQty(), 'PO(' . $this->getPurchaseOrderNo() . ') is CANCELLED or Deactivated', $item);
 				$item->setStockCalculated(false)
-				->save()
-				->addLog('UNMarked this item for StockOnPO and stockCalculated', Log::TYPE_SYSTEM, 'STOCK_QTY_CHG', __CLASS__ . '::' . __FUNCTION__);
+					->save()
+					->addLog('UNMarked this item for StockOnPO and stockCalculated', Log::TYPE_SYSTEM, 'STOCK_QTY_CHG', __CLASS__ . '::' . __FUNCTION__);
 			}
+			$this->addComment(count($items) . ' POItem(s) are reverted, as this PO is now deactivated or CANCELLED');
 		}
 		else if(trim($this->getStatus()) === PurchaseOrder::STATUS_ORDERED) {
 			$items = PurchaseOrderItem::getAllByCriteria('purchaseOrderId = ? and stockCalculated = 0', array($this->getId()));
@@ -413,21 +424,13 @@ class PurchaseOrder extends BaseEntityAbstract
 					->save()
 					->addLog('Marked this item for StockOnPO and stockCalculated', Log::TYPE_SYSTEM, 'STOCK_QTY_CHG', __CLASS__ . '::' . __FUNCTION__);
 			}
-		} else if(trim($this->getStatus()) === PurchaseOrder::STATUS_CANCELED) {
-			$items = PurchaseOrderItem::getAllByCriteria('purchaseOrderId = ? and stockCalculated = 1', array($this->getId()));
-			foreach($items as $item) {
-				$item->getProduct()->ordered(0 - $item->getQty(), 'PO(' . $this->getPurchaseOrderNo() . ') is CANCELLED or Deactivated', $item);
-				$item->setStockCalculated(false)
-					->save()
-					->addLog('UNMarked this item for StockOnPO and stockCalculated', Log::TYPE_SYSTEM, 'STOCK_QTY_CHG', __CLASS__ . '::' . __FUNCTION__);
-			}
 		}
 	}
 	/**
 	 * pushing the status of the status
-	 * 
+	 *
 	 * @param string $status The new status of the PO
-	 * 
+	 *
 	 * @throws EntityException
 	 * @return PurchaseOrder
 	 */
@@ -449,14 +452,14 @@ class PurchaseOrder extends BaseEntityAbstract
 	}
 	/**
 	 * adding a item onto the purchase order
-	 * 
+	 *
 	 * @param Product $product
 	 * @param double  $unitPrice
 	 * @param int     $qty
 	 * @param string  $supplierItemCode
 	 * @param string  $description
 	 * @param double  $totalPrice
-	 * 
+	 *
 	 * @return PurchaseOrder
 	 */
 	public function addItem(Product $product, $unitPrice = '0.0000', $qty = 1, $supplierItemCode = '', $description = '', $totalPrice = null)
@@ -471,11 +474,11 @@ class PurchaseOrder extends BaseEntityAbstract
 	public function __loadDaoMap()
 	{
 		DaoMap::begin($this, 'po');
-	
+
 		DaoMap::setStringType('purchaseOrderNo', 'varchar', 100);
 		DaoMap::setManyToOne('supplier', 'Supplier', 'po_sup');
-		DaoMap::setStringType('supplierRefNo', 'varchar', 100); 
-		DaoMap::setStringType('status', 'varchar', 20); 
+		DaoMap::setStringType('supplierRefNo', 'varchar', 100);
+		DaoMap::setStringType('status', 'varchar', 20);
 		DaoMap::setStringType('supplierContact', 'varchar', 100);
 		DaoMap::setStringType('supplierContactNumber', 'varchar', 100);
 		DaoMap::setStringType('shippingCost', 'Double', '10,4');
@@ -485,7 +488,7 @@ class PurchaseOrder extends BaseEntityAbstract
 		DaoMap::setIntType('totalAmount', 'Double', '10,4');
 		DaoMap::setIntType('totalPaid', 'Double', '10,4');
 		parent::__loadDaoMap();
-	
+
 		DaoMap::createUniqueIndex('purchaseOrderNo');
 		DaoMap::createIndex('supplierRefNo');
 		DaoMap::createIndex('status');
@@ -497,7 +500,7 @@ class PurchaseOrder extends BaseEntityAbstract
 		DaoMap::createIndex('supplierContactNumber');
 		DaoMap::createIndex('shippingCost');
 		DaoMap::createIndex('handlingCost');
-		
+
 		DaoMap::commit();
 	}
 	/**
@@ -511,19 +514,21 @@ class PurchaseOrder extends BaseEntityAbstract
 		{
 			$array['supplier'] = $this->getSupplier() instanceof Supplier ? $this->getSupplier()->getJson() : array();
 			$array['totalProductCount'] = $this->getTotalProductCount();
+			$array['totalReceivedCount'] = $this->getTotalReceivedCount();
+			$array['totalReceivedValue'] = $this->getTotalRecievedValue();
 		}
 		return parent::getJson($array, $reset);
 	}
 	/**
 	 * creating a PO
-	 * 
+	 *
 	 * @param Supplier $supplier
 	 * @param string   $supplierRefNo
 	 * @param string   $supplierContact
 	 * @param string   $supplierContactNumber
 	 * @param string   $shippingCost
 	 * @param string   $handlingCost
-	 * 
+	 *
 	 * @return PurchaseOrder
 	 */
 	public static function create(Supplier $supplier, $supplierRefNo = '', $supplierContact = '', $supplierContactNumber = '',$shippingCost = 0, $handlingCost = 0)

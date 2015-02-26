@@ -48,7 +48,7 @@ class Menu extends TTemplateControl
 				'accounting' => array('url' => '/accounting.html', 'name' => 'Accounting Info', 'icon'=> '<span class=""></span>'),
 				'importer' => array('url' => '/importer/new.html', 'name' => 'Importer', 'icon'=> '<span class="fa fa-bars"></span>')
 			);
-		if(AccessControl::canAccessOrderItemsPage(Core::getRole()) )
+		if(AccessControl::canAccessPurcahseOrdersPage(Core::getRole()) )
 			$array['Purchase'] = array(
 				'icon' => '<span class="glyphicon glyphicon-shopping-cart"></span>',
 				'PurchaseOrder' =>array('url' => '/purchase.html', 'name' => 'Purchase Orders', 'icon' => '<span class="glyphicon glyphicon-shopping-cart"></span>'),
@@ -59,16 +59,17 @@ class Menu extends TTemplateControl
 			);
 		if(AccessControl::canAccessOrderItemsPage(Core::getRole()) )
 			$array['Customers'] = array('url' => '/customer.html', 'name' => 'Customers', 'icon' => '<span class="glyphicon glyphicon-user"></span>' );
-		if(AccessControl::canAccessOrderItemsPage(Core::getRole()) )
+		if(AccessControl::canAccessAccountsPage(Core::getRole()) )
 			$array['Accounts'] = array(
 					'icon' => '<span class="glyphicon glyphicon-time"></span>',
 					'PaymentMethod' =>array('url' => '/paymentmethod.html', 'name' => 'Payment Method', 'icon' => '<span class="glyphicon glyphicon-record"></span>'),
 					'accounting' => array('url' => '/accounting.html', 'name' => 'Accounting Info', 'icon'=> '<span class=""></span>'),
 					'report' => array('url' => '/report.html', 'name' => 'Report', 'icon'=> '<span class=""></span>')
 			);
-		if(AccessControl::canAccessOrderItemsPage(Core::getRole()) )
+		if(AccessControl::canAccessLogisticsPage(Core::getRole()) )
 			$array['Logistics'] = array(
 					'icon' => '<span class="fa fa-arrows"></span>',
+					'PurchaseOrder' =>array('url' => '/purchase.html', 'name' => 'Purchase Orders', 'icon' => '<span class="glyphicon glyphicon-shopping-cart"></span>'),
 					'Receiving' =>array('url' => '/receiving.html', 'name' => 'Receiving Products', 'icon' => '<span class="fa fa-home"></span>'),
 					'serialNumbers' => array('url' => '/serialnumbers.html', 'name' => 'Serial Numbers', 'icon' => '<span class="glyphicon glyphicon-search"></span>'),
 					'Locations' =>array('url' => '/locations.html', 'name' => 'Locations', 'icon' => '<span class="fa fa-arrows"></span>'),

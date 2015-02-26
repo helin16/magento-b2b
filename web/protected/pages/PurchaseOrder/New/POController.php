@@ -1,7 +1,7 @@
 <?php
 /**
  * This is the OrderController
- * 
+ *
  * @package    Web
  * @subpackage Controller
  * @author     lhe<helin16@gmail.com>
@@ -29,7 +29,7 @@ class POController extends BPCPageAbstract
 	protected function _getEndJs()
 	{
 		$js = parent::_getEndJs();
-		
+
 		$paymentMethods =  array_map(create_function('$a', 'return $a->getJson();'), PaymentMethod::getAll());
 		$shippingMethods =  array_map(create_function('$a', 'return $a->getJson();'), Courier::getAll());
 		$supplier = (isset($_REQUEST['supplierid']) && ($supplier = Supplier::get(trim($_REQUEST['supplierid']))) instanceof Supplier) ? $supplier->getJson() : null;
@@ -48,7 +48,7 @@ class POController extends BPCPageAbstract
 	 *
 	 * @param unknown $sender
 	 * @param unknown $param
-	 * 
+	 *
 	 * @throws Exception
 	 *
 	 */
@@ -76,7 +76,7 @@ class POController extends BPCPageAbstract
 	 *
 	 * @param unknown $sender
 	 * @param unknown $param
-	 * 
+	 *
 	 * @throws Exception
 	 *
 	 */
@@ -90,7 +90,7 @@ class POController extends BPCPageAbstract
 			$pageNo = isset($param->CallbackParameter->pageNo) ? trim($param->CallbackParameter->pageNo) : '1';
 			$where = 'pro_pro_code.code = :searchExact or pro.name like :searchTxt OR sku like :searchTxt';
 			$params = array('searchExact' => $searchTxt , 'searchTxt' => '%' . $searchTxt . '%');
-			
+
 			$searchTxtArray = StringUtilsAbstract::getAllPossibleCombo(StringUtilsAbstract::tokenize($searchTxt));
 			if(count($searchTxtArray) > 1)
 			{
@@ -108,34 +108,34 @@ class POController extends BPCPageAbstract
 			foreach($products as $product)
 			{
 				$array = $product->getJson();
-				
+
 				$array['minProductPrice'] = 0;
 				$array['lastSupplierPrice'] = 0;
 				$array['minSupplierPrice'] = 0;
-				
+
 				$minProductPriceProduct = PurchaseOrderItem::getAllByCriteria('productId = ?', array($product->getId()), true, 1, 1, array('unitPrice'=> 'asc'));
 				$minProductPrice = sizeof($minProductPriceProduct) ? $minProductPriceProduct[0]->getUnitPrice() : 0;
 				$minProductPriceId = sizeof($minProductPriceProduct) ? $minProductPriceProduct[0]->getPurchaseOrder()->getId() : '';
-				
+
 				PurchaseOrderItem::getQuery()->eagerLoad('PurchaseOrderItem.purchaseOrder');
 				$lastSupplierPriceProduct = PurchaseOrderItem::getAllByCriteria('po_item.productId = ? and po_item_po.supplierId = ?', array($product->getId(), $supplierID), true, 1, 1, array('po_item.id'=> 'desc'));
 				$lastSupplierPrice = sizeof($lastSupplierPriceProduct) ? $lastSupplierPriceProduct[0]->getUnitPrice() : 0;
 				$lastSupplierPriceId = sizeof($lastSupplierPriceProduct) ? $lastSupplierPriceProduct[0]->getPurchaseOrder()->getId() : '';
-				
+
 				PurchaseOrderItem::getQuery()->eagerLoad('PurchaseOrderItem.purchaseOrder');
 				$minSupplierPriceProduct = PurchaseOrderItem::getAllByCriteria('po_item.productId = ? and po_item_po.supplierId = ?', array($product->getId(), $supplierID), true, 1, 1, array('po_item.unitPrice'=> 'asc'));
 				$minSupplierPrice = sizeof($minSupplierPriceProduct) ? $minSupplierPriceProduct[0]->getUnitPrice() : 0;
 				$minSupplierPriceId = sizeof($minSupplierPriceProduct) ? $minSupplierPriceProduct[0]->getPurchaseOrder()->getId() : '';
-				
+
 				$array['minProductPrice'] = $minProductPrice;
 				$array['minProductPriceId'] = $minProductPriceId;
-				
+
 				$array['lastSupplierPrice'] = $lastSupplierPrice;
 				$array['lastSupplierPriceId'] = $lastSupplierPriceId;
-				
+
 				$array['minSupplierPrice'] = $minSupplierPrice;
 				$array['minSupplierPriceId'] = $minSupplierPriceId;
-				
+
 				$items[] = $array;
 			}
 			$results['items'] = $items;
@@ -152,7 +152,7 @@ class POController extends BPCPageAbstract
 	 *
 	 * @param unknown $sender
 	 * @param unknown $param
-	 * 
+	 *
 	 * @throws Exception
 	 *
 	 */
@@ -167,7 +167,7 @@ class POController extends BPCPageAbstract
 			$supplier = Supplier::get(trim($param->CallbackParameter->supplier->id));
 			if(!$supplier instanceof Supplier)
 				throw new Exception('Invalid Supplier passed in!');
-			
+
 			$supplierContactName = trim($param->CallbackParameter->supplier->contactName);
 			$supplierContactNo = trim($param->CallbackParameter->supplier->contactNo);
 			$supplierEmail = trim($param->CallbackParameter->supplier->email);
@@ -178,13 +178,13 @@ class POController extends BPCPageAbstract
 			if(!empty($supplierEmail) && $supplierEmail !== $supplier->getEmail())
 				$supplier->setEmail($supplierEmail);
 			$supplier->save();
-			
+
 			$purchaseOrder = PurchaseOrder::create(
-					$supplier, 
-					trim($param->CallbackParameter->supplierRefNum), 
+					$supplier,
+					trim($param->CallbackParameter->supplierRefNum),
 					$supplierContactName,
 					$supplierContactNo,
-					StringUtilsAbstract::getValueFromCurrency(trim($param->CallbackParameter->shippingCost)), 
+					StringUtilsAbstract::getValueFromCurrency(trim($param->CallbackParameter->shippingCost)),
 					StringUtilsAbstract::getValueFromCurrency(trim($param->CallbackParameter->handlingCost))
 				)
 				->setTotalAmount(StringUtilsAbstract::getValueFromCurrency(trim($param->CallbackParameter->totalPaymentDue)))
@@ -201,13 +201,13 @@ class POController extends BPCPageAbstract
 				$purchaseOrder->setStatus( PurchaseOrder::STATUS_ORDERED )
 					->save();
 			}
-			
+
 			$daoStart = false;
 			Dao::commitTransaction();
 			$results['item'] = $purchaseOrder->getJson();
 			if(isset($param->CallbackParameter->confirmEmail) && (trim($confirmEmail = trim($param->CallbackParameter->confirmEmail)) !== '')) {
 				$pdfFile = EntityToPDF::getPDF($purchaseOrder);
-				$asset = Asset::registerAsset($purchaseOrder->getPurchaseOrderNo() . '.pdf', file_get_contents($pdfFile));
+				$asset = Asset::registerAsset($purchaseOrder->getPurchaseOrderNo() . '.pdf', file_get_contents($pdfFile), Asset::TYPE_TMP);
 				EmailSender::addEmail('purchasing@budgetpc.com.au', $confirmEmail, 'BudgetPC Purchase Order:' . $purchaseOrder->getPurchaseOrderNo() , 'Please Find the attached PurchaseOrder(' . $purchaseOrder->getPurchaseOrderNo() . ') from BudgetPC.', array($asset));
 				$purchaseOrder->addComment('An email sent to "' . $confirmEmail . '" with the attachment: ' . $asset->getAssetId(), Comments::TYPE_SYSTEM);
 			}

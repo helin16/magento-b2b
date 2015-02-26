@@ -1,6 +1,7 @@
 <com:TContent ID="MainContent">
 	<com:Application.controls.fancybox.FancyBox />
 	<com:Application.controls.chosen.Chosen />
+	<com:Application.controls.bootstrapDateTimePicker.bootstrapDateTimePicker />
 	<com:TCallback ID="getOrdersBtn" onCallBack="Page.getOrders" />
 	<div class="row">
 	   <div class="col-md-9">
@@ -9,6 +10,7 @@
 	               <label for="showSearch">Show Search Criteria?</label>
 	               <input type="checkbox" id="showSearch" checked onclick="$(this).up('.searchPanel').down('.panel-body').toggle();"/>
 	               <span class="pull-right">
+	               		<a href="/order/new.html" class="btn btn-success btn-sm" target="_BLANK">New</a> &nbsp;
 	               		<span id="searchBtn" class="btn btn-primary btn-sm" data-loading-text="Searching..." onclick="pageJs.getSearchCriteria().getResults(true, <%= $this->orderPageSize %>);" >Search</span>
 	               </span>
 	           </div>
@@ -28,13 +30,13 @@
 	                   </div>
 	                   <div class="col-md-3 col-sm-6 col-xs-12">
 	                       <div class="form-group form-group-sm input-group">
-	                           <label for="custName" class="input-group-addon">Customer Name: </label> 
+	                           <label for="custName" class="input-group-addon">Customer Name: </label>
 	                           <input id='custName' type="text" class="form-control input-sm" placeholder="Customer Name" search_field="ord.infos.<%= OrderInfoType::ID_CUS_NAME %>" />
 	                       </div>
 	                   </div>
 	                   <div class="col-md-1 col-sm-6 col-xs-12">
 	                       <div class="form-group form-group-sm input-group">
-	                           <label for="status" class="input-group-addon">Paid: </label> 
+	                           <label for="status" class="input-group-addon">Paid: </label>
 	                           <select search_field="ord.passPaymentCheck" class="form-control input-sm">
 	                               <option value=""></option>
 	                               <option value="1">YES</option>
@@ -44,7 +46,7 @@
 	                   </div>
 	                   <div class="col-md-2 col-sm-6 col-xs-12">
 	                       <div class="form-group form-group-sm input-group">
-	                           <label for="type" class="input-group-addon">Type: </label> 
+	                           <label for="type" class="input-group-addon">Type: </label>
 	                           <select search_field="ord.type" class="form-control input-sm">
 	                               <option value=""></option>
 	                               <option value="QUOTE">QUOTE</option>
@@ -53,6 +55,38 @@
 	                           </select>
 	                       </div>
 	                   </div>
+	               </div>
+	               <div class='row'>
+	                   <div class="col-sm-6">
+		                   <div class="form-group form-group-sm input-group">
+								<label class="input-group-addon">Order Date:</label>
+								<div class="form-control input-sm" style="padding:0px;">
+									<div class="col-xs-6"  style="padding:0px;">
+										<input class="form-control input-sm datepicker" search_field="orderDate_from" placeholder="FROM:"/>
+									</div>
+									<span class="input-group-btn" style="width:0px;"></span>
+									<div class="col-xs-6"  style="padding:0px;">
+										<input class="form-control input-sm datepicker" search_field="orderDate_to" placeholder="TO:"/>
+									</div>
+								</div>
+		                   </div>
+					   </div>
+	                   <div class="col-sm-6">
+		                   <div class="form-group form-group-sm input-group">
+								<label class="input-group-addon">Inv. Date:</label>
+								<div class="form-control input-sm" style="padding:0px;">
+									<div class="col-xs-6"  style="padding:0px;">
+										<input class="form-control input-sm datepicker" search_field="invDate_from" placeholder="FROM:"/>
+									</div>
+									<span class="input-group-btn" style="width:0px;"></span>
+									<div class="col-xs-6"  style="padding:0px;">
+										<input class="form-control input-sm datepicker" search_field="invDate_to" placeholder="TO:"/>
+									</div>
+								</div>
+		                   </div>
+					   </div>
+	               </div>
+	               <div class='row'>
 	                   <div class="col-xs-12">
 		                   <div class="form-group form-group-sm input-group">
 		                       <label for="status" class="input-group-addon">Status: </label>

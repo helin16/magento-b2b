@@ -910,17 +910,19 @@ class Product extends InfoEntityAbstract
 	 */
 	public function preSave()
 	{
-		$sku = trim($this->getSku());
-		$where = array('sku = ? ');
-		$params = array($sku);
-		if(($id = trim($this->getId())) !== '')
-		{
-			$where[] = 'id != ?';
-			$params[] = $id;
+		if(intVal($this->getActive()) === 1) {
+			$sku = trim($this->getSku());
+			$where = array('sku = ?', 'active = 1');
+			$params = array($sku);
+			if(($id = trim($this->getId())) !== '')
+			{
+				$where[] = 'id != ?';
+				$params[] = $id;
+			}
+			$exsitingSKU = Product::countByCriteria(implode(' AND ', $where), $params);
+			if($exsitingSKU > 0)
+				throw new EntityException('The SKU(=' . $sku . ') is already exists!' );
 		}
-		$exsitingSKU = Product::countByCriteria(implode(' AND ', $where), $params);
-		if($exsitingSKU > 0)
-			throw new EntityException('The SKU(=' . $sku . ') is already exists!' );
 	}
 	/**
 	 * Getting the unit cost based on the total value and stock on Hand
@@ -1102,7 +1104,7 @@ class Product extends InfoEntityAbstract
 		DaoMap::setOneToMany('codes', 'ProductCode', 'pro_pro_code');
 		parent::__loadDaoMap();
 
-		DaoMap::createUniqueIndex('sku');
+		DaoMap::createIndex('sku');
 		DaoMap::createIndex('name');
 		DaoMap::createIndex('mageId');
 		DaoMap::createIndex('stockOnHand');
@@ -1130,7 +1132,7 @@ class Product extends InfoEntityAbstract
 	 */
 	public static function getBySku($sku)
 	{
-		$products = self::getAllByCriteria('sku = ? ', array(trim($sku)), false, 1, 1);
+		$products = self::getAllByCriteria('sku = ? ', array(trim($sku)), true, 1, 1);
 		return (count($products) === 0 ? null : $products[0]);
 	}
 	/**
@@ -1171,7 +1173,7 @@ class Product extends InfoEntityAbstract
 			if($costAccNo !== null && is_string($costAccNo))
 				$product->setCostAccNo(trim($costAccNo));
 			if (($$fullDescr = trim($fullDescr)) !== '') {
-				$asset = Asset::registerAsset('full_desc_' . $sku, $fullDescr);
+				$asset = Asset::registerAsset('full_desc_' . $sku, $fullDescr, Asset::TYPE_PRODUCT_DEC);
 				$product->setFullDescAssetId(trim($asset->getAssetId()));
 			}
 			if ($manufacturer instanceof Manufacturer) {

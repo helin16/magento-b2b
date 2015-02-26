@@ -1,7 +1,7 @@
 <?php
 /**
  * This is the OrderDetailsController
- * 
+ *
  * @package    Web
  * @subpackage Controller
  * @author     lhe<helin16@gmail.com>
@@ -15,10 +15,22 @@ class OrderPrintController extends BPCPageAbstract
 	public $menuItem = 'order';
 	/**
 	 * The order that we are viewing
-	 * 
+	 *
 	 * @var Order
 	 */
 	public $order = null;
+	/**
+	 * Getting The end javascript
+	 *
+	 * @return string
+	 */
+	protected function _getEndJs()
+	{
+		$js = parent::_getEndJs();
+		if(isset($_REQUEST['jsmultipages']) && intval($_REQUEST['jsmultipages']) === 1)
+			$js .= "pageJs.formatForPDF();";
+		return $js;
+	}
 	/**
 	 * (non-PHPdoc)
 	 * @see BPCPageAbstract::onLoad()
@@ -59,7 +71,7 @@ class OrderPrintController extends BPCPageAbstract
 		return "<tr class='$rowClass'><td class='qty'>$qty</td><td class='sku'>$sku</td><td class='name'>$name</td><td class='uprice'>$uprice</td><td class='tprice'>$tprice</td></tr>";
 	}
 	/**
-	 * 
+	 *
 	 * @return string
 	 */
 	public function showProducts()
@@ -77,7 +89,7 @@ class OrderPrintController extends BPCPageAbstract
 			$html .= $this->getRow($orderItem->getQtyOrdered(), $orderItem->getProduct()->getSku(), $orderItem->getItemDescription() ?: $orderItem->getProduct()->getname(), $uPrice, $tPrice, 'itemRow');
 			$html .= $this->getRow('', '<span class="pull-right">Serial No: </span>', '<div style="max-width: 367px; word-wrap: break-word;">' . implode(', ', $sellingItems) . '</div>', '', '', 'itemRow itemRow-serials');
 		}
-		for ( $i = 12; $i > $index; $i--)
+		for ( $i = 5; $i > $index; $i--)
 		{
 			$html .= $this->getRow('&nbsp;', '&nbsp;', '&nbsp;', '&nbsp;', '&nbsp;', 'itemRow');
 		}
@@ -91,7 +103,7 @@ class OrderPrintController extends BPCPageAbstract
 			return '';
 		$html = $address->getContactName() . '<br />';
 		$html .= $address->getStreet() . '<br />';
-		$html .= $address->getCity() . ' ' . $address->getRegion() . ' ' . $address->getPostCode() . '<br />'; 
+		$html .= $address->getCity() . ' ' . $address->getRegion() . ' ' . $address->getPostCode() . '<br />';
 		$html .= $address->getCountry();
 		return $html;
 	}
@@ -100,9 +112,10 @@ class OrderPrintController extends BPCPageAbstract
 		$total = $this->order->getTotalAmount();
 		$totalNoGST = $total / 1.1;
 		$gst = $total - $totalNoGST;
-		$html = $this->_getPaymentSummaryRow('Total:', '$' . number_format($totalNoGST, 2, '.', ','), 'grandTotalNoGST');
-		$html .= $this->_getPaymentSummaryRow('GST:', '$' . number_format($gst, 2, '.', ','), 'gst');
-		$html .= $this->_getPaymentSummaryRow('Total(inc-GST):', '$' . number_format($total, 2, '.', ','), 'grandTotal');
+		$html = $this->_getPaymentSummaryRow('Total Excl. GST:', '$' . number_format($totalNoGST, 2, '.', ','), 'grandTotalNoGST');
+		$html .= $this->_getPaymentSummaryRow('Total GST:', '$' . number_format($gst, 2, '.', ','), 'gst');
+		$html .= $this->_getPaymentSummaryRow('Sub Total Incl. GST:', '$' . number_format($total, 2, '.', ','), 'grandTotal');
+		$html .= $this->_getPaymentSummaryRow('Shipping Incl. GST:', '$' . number_format((double)StringUtilsAbstract::getValueFromCurrency(implode('', $this->order->getInfo(OrderInfoType::ID_SHIPPING_EST_COST))), 2, '.', ','), 'grandTotal');
 		$html .= $this->_getPaymentSummaryRow('Paid to Date:', '$' . number_format($this->order->getTotalPaid(), 2, '.', ','), 'paidTotal');
 		$overDueClass = $this->order->getTotalDue() > 0 ? 'overdue' : '';
 		$html .= $this->_getPaymentSummaryRow('Balance Due:', '$' . number_format($this->order->getTotalDue(), 2, '.', ','), 'dueTotal ' . $overDueClass);
@@ -119,6 +132,11 @@ class OrderPrintController extends BPCPageAbstract
 			$html .= '</span>';
 		$html .= '</div>';
 		return $html;
+	}
+	public function getComments()
+	{
+		$comments = Comments::getAllByCriteria('entityId = ? and entityName = ? and type = ?', array($this->order->getId(), get_class($this->order), Comments::TYPE_SALES), true, 1, 1);
+		return count($comments) === 0 ? '' : $comments[0]->getComments();
 	}
 }
 ?>

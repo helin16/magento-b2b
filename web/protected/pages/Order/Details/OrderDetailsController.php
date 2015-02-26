@@ -68,6 +68,8 @@ class OrderDetailsController extends BPCPageAbstract
 			$js .= '.setCallbackId("setOrderType", "' . $this->setOrderTypeBtn->getUniqueID() . '")';
 			$js .= '.setCallbackId("changeIsOrdered", "' . $this->changeIsOrderedBtn->getUniqueID() . '")';
 			$js .= '.setCallbackId("deletePayment", "' . $this->deletePaymentBtn->getUniqueID() . '")';
+			$js .= '.setCallbackId("updateAddress", "' . $this->updateAddressBtn->getUniqueID() . '")';
+			$js .= '.setCallbackId("sendEmail", "' . $this->sendEmailBtn->getUniqueID() . '")';
 			$js .= '.setEditMode(' . $purchaseEdit . ', ' . $warehouseEdit . ', ' . $accounEdit . ', ' . $statusEdit . ')';
 			$js .= '.setOrder('. json_encode($order->getJson()) . ', ' . json_encode($orderItems) . ', ' . json_encode($orderStatuses) . ', ' . OrderStatus::ID_SHIPPED . ')';
 			$js .= '.setCourier('. json_encode($courierArray) . ', ' . Courier::ID_LOCAL_PICKUP . ')';
@@ -155,7 +157,7 @@ class OrderDetailsController extends BPCPageAbstract
 					}
 				}
 				$emailBody['productUpdate'] .= '</table>';
-				$commentString .= ($notifyCustomer === true ? ' !!!NOTIFICATION SENT TO CUSTOMER!!! ' : '');
+				$commentString .= ($notifyCustomer === true ? ' [NOTIFICATION SENT TO CUSTOMER]' : '');
 				$order->addComment($commentString, $commentType);
 				$orderItem->addComment($commentString, $commentType)
 					->save();
@@ -375,6 +377,7 @@ class OrderDetailsController extends BPCPageAbstract
 
 			$contactName = $shippingInfo->contactName;
 			$contactNo = $shippingInfo->contactNo;
+// 			if(($street = trim($shippingInfo->street)) !== '')
 			$shippingAddress = Address::create(
 					trim($shippingInfo->street),
 					trim($shippingInfo->city),
@@ -514,6 +517,7 @@ class OrderDetailsController extends BPCPageAbstract
 		$results = $errors = array();
 		try
 		{
+			Dao::beginTransaction();
 			if(!isset($param->CallbackParameter->item_id) || !($item = OrderItem::get($param->CallbackParameter->item_id)) instanceof OrderItem)
 				throw new Exception('System Error: invalid order item provided!');
 
@@ -521,7 +525,6 @@ class OrderDetailsController extends BPCPageAbstract
 				throw new Exception('System Error: invalid order item: isOrdered needed!');
 			$setIsOrdered = intval($param->CallbackParameter->isOrdered);
 
-			Dao::beginTransaction();
 			$item->setIsOrdered($setIsOrdered);
 			$item->addComment('Changing the isOrdered to be : ' . ($setIsOrdered === 1 ? 'ORDERED' : 'NOT ORDERED'));
 
@@ -555,7 +558,7 @@ class OrderDetailsController extends BPCPageAbstract
 			if(!isset($param->CallbackParameter->reason) || ($reason = trim($param->CallbackParameter->reason)) === '')
 				throw new Exception('The reason for the deletion is needed!');
 
-			$comments = '!!!!! A payment [Value: ' .  StringUtilsAbstract::getCurrency($payment->getValue()) . ', Method: ' . $payment->getMethod()->getName() . '] is DELETED: ' . $reason;
+			$comments = 'A payment [Value: ' .  StringUtilsAbstract::getCurrency($payment->getValue()) . ', Method: ' . $payment->getMethod()->getName() . '] is DELETED: ' . $reason;
 			$payment->setActive(false)
 				->save()
 				->addComment($comments, Comments::TYPE_ACCOUNTING);
@@ -571,6 +574,84 @@ class OrderDetailsController extends BPCPageAbstract
 		}
 		$param->ResponseData = StringUtilsAbstract::getJson($results, $errors);
 	}
+	/**
+	 * Update the address
+	 *
+	 * @param unknown $sender
+	 * @param unknown $param
+	 *
+	 * @throws Exception
+	 */
+	public function updateAddress($sender, $param)
+	{
+		$results = $errors = array();
+		try
+		{
+			Dao::beginTransaction();
+			if(!isset($param->CallbackParameter->orderId) || !($order = Order::get($param->CallbackParameter->orderId)) instanceof Order)
+				throw new Exception('System Error: invalid order provided!');
+			if(!isset($param->CallbackParameter->id) || !($address = Address::get($param->CallbackParameter->id)) instanceof Address)
+				throw new Exception('System Error: invalid address provided!');
+			$originalAddressFull = $address->getFull();
+			$address->setContactName(trim($param->CallbackParameter->contactName))
+				->setContactNo(trim($param->CallbackParameter->contactNo))
+				->setStreet(trim($param->CallbackParameter->street))
+				->setCity(trim($param->CallbackParameter->city))
+				->setRegion(trim($param->CallbackParameter->region))
+				->setCountry(trim($param->CallbackParameter->country))
+				->setPostCode(trim($param->CallbackParameter->postCode))
+				->save();
+			$msg = 'Changed ' . trim($param->CallbackParameter->title) . ' from "' . $originalAddressFull . '" to "' . $address->getFull() . '"';
+			$order->addComment($msg, Comments::TYPE_NORMAL)
+				->addLog($msg, Log::TYPE_SYSTEM);
+			$address->addLog($msg, Log::TYPE_SYSTEM);
+			$results['item'] = $address->getJson();
+			Dao::commitTransaction();
+		}
+		catch(Exception $ex)
+		{
+			Dao::rollbackTransaction();
+			$errors[] = $ex->getMessage();
+		}
+		$param->ResponseData = StringUtilsAbstract::getJson($results, $errors);
+	}
+	/**
+	 * Sending the email out
+	 *
+	 * @param unknown $sender
+	 * @param unknown $param
+	 *
+	 * @throws Exception
+	 */
+	public function sendEmail($sender, $param)
+	{
+		$results = $errors = array();
+		try
+		{
+			Dao::beginTransaction();
 
+			if(!isset($param->CallbackParameter->orderId) || !($order = Order::get($param->CallbackParameter->orderId)) instanceof Order)
+				throw new Exception('System Error: invalid order provided!');
+			if(!isset($param->CallbackParameter->emailAddress) || ($emailAddress = trim($param->CallbackParameter->emailAddress)) === '')
+				throw new Exception('System Error: invalid emaill address provided!');
+			$emailBody = '';
+			if(isset($param->CallbackParameter->emailBody) && ($emailBody = trim($param->CallbackParameter->emailBody)) !== '')
+				$emailBody = str_replace("\n", "<br />", $emailBody);
+
+			$pdfFile = EntityToPDF::getPDF($order);
+			$asset = Asset::registerAsset($order->getOrderNo() . '.pdf', file_get_contents($pdfFile), Asset::TYPE_TMP);
+			EmailSender::addEmail('sales@budgetpc.com.au', $emailAddress, 'BudgetPC Order:' . $order->getOrderNo() , (trim($emailBody) === '' ? '' : $emailBody . "<br /><br />") .'Please find attached Order (' . $order->getOrderNo() . ') from Budget PC Pty Ltd.', array($asset));
+			$order->addComment('An email sent to "' . $emailAddress . '" with the attachment: ' . $asset->getAssetId(), Comments::TYPE_SYSTEM);
+			$results['item'] = $order->getJson();
+
+			Dao::commitTransaction();
+		}
+		catch(Exception $ex)
+		{
+			Dao::rollbackTransaction();
+			$errors[] = $ex->getMessage();
+		}
+		$param->ResponseData = StringUtilsAbstract::getJson($results, $errors);
+	}
 }
 ?>

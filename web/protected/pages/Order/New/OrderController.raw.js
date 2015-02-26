@@ -41,10 +41,34 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			.insert({'bottom': title ? new Element('label', {'class': 'control-label'}).update(title) : '' })
 			.insert({'bottom': content.addClassName('form-control') });
 	}
-	,_confirmSubmit: function(printit) {
+	,_preConfirmSubmit: function(printit) {
+		var tmp = {};
+		tmp.me = this
+		if(tmp.me.getValueFromCurrency($$('[order-price-summary="total-payment-due"]').first().innerHTML) === '0.00')
+			return tmp.me._confirmSubmit(printit);
+		tmp.newDiv = new Element('div', {'class': 'confirm-div'})
+			.insert({'bottom': new Element('h4').update('You are about to release an order with short payment. Do you wish to continue?')	})
+			.insert({'bottom': new Element('div', {'class': 'text-right'})
+				.insert({'bottom': new Element('span', {'class': 'btn btn-default pull-left'})
+					.update('CANCEL')
+					.observe('click', function(){
+						tmp.me.hideModalBox();
+					})
+				})
+				.insert({'bottom': new Element('span', {'class': 'btn btn-primary', 'data-loading-text': 'Sending ...'})
+					.update('Yes')
+					.observe('click', function(){
+						tmp.me._confirmSubmit(printit, tmp.newDiv);
+					})
+				})
+			});
+		tmp.me.showModalBox('<strong class="text-warning">Warning, short payment:</strong>', tmp.newDiv);
+	}
+	,_confirmSubmit: function(printit, confirmDiv) {
 		var tmp = {};
 		tmp.me = this;
 		tmp.printIt = (printit === true ? true : false);
+		tmp.confirmDiv = (confirmDiv || null);
 		tmp.data = tmp.me._collectFormData($(tmp.me._htmlIds.itemDiv),'save-order');
 		if(tmp.data === null)
 			return tmp.me;
@@ -106,7 +130,12 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					})
 				})
 			});
-		tmp.me.showModalBox('<strong class="text-info">Confirmation Needed</strong>', tmp.newDiv, false);
+		if(tmp.confirmDiv === null)
+			tmp.me.showModalBox('<strong class="text-info">Confirmation Needed</strong>', tmp.newDiv, false);
+		else {
+			tmp.confirmDiv.up('.modal-content').down('.modal-title').update('<strong class="text-info">Confirmation Needed</strong>');
+			tmp.confirmDiv.replace(tmp.newDiv);
+		}
 		return tmp.me;
 	}
 	/**
@@ -135,7 +164,6 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 						tmp.printWindow = window.open(tmp.result.printURL, 'Printing Order', 'width=1300, location=no, scrollbars=yes, menubar=no, status=no, titlebar=no, fullscreen=no, toolbar=no');
 						if(!tmp.printWindow)
 							throw '<h4>Your browser has block the popup window, please enable it for further operations.</h4><a href="' + tmp.result.printURL + '" target="_BLANK"> click here for now</a>';
-						tmp.printWindow.print();
 					}
 				} catch(e) {
 					tmp.modalBoxTitlePanel.update('<h4 class="text-danger">Error:</h4>');
@@ -158,7 +186,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				.insert({'bottom': new Element('span', {'class': 'btn btn-primary save-btn'})
 					.insert({'bottom': new Element('span').update(' Save & Print ') })
 					.observe('click', function() {
-						tmp.me._confirmSubmit(true);
+						tmp.me._preConfirmSubmit(true);
 					})
 				})
 				.insert({'bottom': new Element('span', {'class': 'btn btn-primary dropdown-toggle', 'data-toggle': 'dropdown'})
@@ -168,7 +196,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					.insert({'bottom': new Element('li')
 						.insert({'bottom': new Element('a', {'href': 'javascript: void(0);'}).update('Save Only')
 							.observe('click', function() {
-								tmp.me._confirmSubmit();
+								tmp.me._preConfirmSubmit();
 							})
 						})
 					})
@@ -196,6 +224,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 	,_getAddressDiv: function(title, addr, editable) {
 		var tmp = {};
 		tmp.me = this;
+		tmp.address = (addr || null);
 		tmp.editable = (editable || false);
 		tmp.newDiv = new Element('div', {'class': 'address-div'})
 			.insert({'bottom': new Element('strong').update(title) })
@@ -206,10 +235,10 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				.insert({'bottom': new Element('dd')
 					.insert({'bottom': new Element('div')
 						.insert({'bottom': new Element('div', {'class' : 'col-sm-6'}).update(
-							tmp.editable !== true ? addr.contactName : new Element('input', {'address-editable-field': 'contactName', 'class': 'form-control input-sm', 'placeholder': 'The name of contact person',  'value': addr.contactName})
+							tmp.editable !== true ? addr.contactName : new Element('input', {'address-editable-field': 'contactName', 'class': 'form-control input-sm', 'placeholder': 'The name of contact person',  'value': tmp.address.contactName ? tmp.address.contactName : ''})
 						) })
 						.insert({'bottom': new Element('div', {'class' : 'col-sm-6'}).update(
-								tmp.editable !== true ? addr.contactNo : new Element('input', {'address-editable-field': 'contactNo', 'class': 'form-control input-sm', 'placeholder': 'The contact number of contact person',  'value': addr.contactNo})
+								tmp.editable !== true ? addr.contactNo : new Element('input', {'address-editable-field': 'contactNo', 'class': 'form-control input-sm', 'placeholder': 'The contact number of contact person',  'value': tmp.address.contactNo ? tmp.address.contactNo : ''})
 						) })
 					})
 				})
@@ -219,23 +248,23 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				.insert({'bottom': new Element('dd')
 					.insert({'bottom': new Element('div')
 						.insert({'bottom': tmp.editable !== true ? addr.street : new Element('div', {'class': 'street col-sm-12'}).update(
-								new Element('input', {'address-editable-field': 'street', 'class': 'form-control input-sm', 'placeholder': 'Street Number and Street name',  'value': addr.street})
+								new Element('input', {'address-editable-field': 'street', 'class': 'form-control input-sm', 'placeholder': 'Street Number and Street name',  'value': tmp.address.street ? tmp.address.street : ''})
 						) })
 					})
 					.insert({'bottom': new Element('div')
 						.insert({'bottom': tmp.editable !== true ? addr.city + ' ' : new Element('div', {'class': 'city col-sm-6'}).update(
-								new Element('input', {'address-editable-field': 'city', 'class': 'form-control input-sm', 'placeholder': 'City / Suburb',  'value': addr.city})
+								new Element('input', {'address-editable-field': 'city', 'class': 'form-control input-sm', 'placeholder': 'City / Suburb',  'value': tmp.address.city ? tmp.address.city : ''})
 						) })
 						.insert({'bottom':  tmp.editable !== true ? addr.region + ' ' : new Element('div', {'class': 'region col-sm-3'}).update(
-								new Element('input', {'address-editable-field': 'region', 'class': 'form-control input-sm', 'placeholder': 'State / Province',  'value': addr.region})
+								new Element('input', {'address-editable-field': 'region', 'class': 'form-control input-sm', 'placeholder': 'State / Province',  'value': tmp.address.region ? tmp.address.region : ''})
 						) })
 						.insert({'bottom': tmp.editable !== true ? addr.postCode: new Element('div', {'class': 'postcode col-sm-3'}).update(
-								new Element('input', {'address-editable-field': 'postCode', 'class': 'form-control input-sm', 'placeholder': 'PostCode',  'value': addr.postCode})
+								new Element('input', {'address-editable-field': 'postCode', 'class': 'form-control input-sm', 'placeholder': 'PostCode',  'value': tmp.address.postCode ? tmp.address.postCode : ''})
 						) })
 					})
 					.insert({'bottom': new Element('div')
 						.insert({'bottom': tmp.editable !== true ? addr.country: new Element('div', {'class': 'postcode col-sm-4'}).update(
-								new Element('input', {'address-editable-field': 'country', 'class': 'form-control input-sm', 'placeholder': 'Country',  'value': addr.country})
+								new Element('input', {'address-editable-field': 'country', 'class': 'form-control input-sm', 'placeholder': 'Country',  'value': tmp.address.country ? tmp.address.country : ''})
 						) })
 					})
 				})
@@ -244,6 +273,27 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			tmp.newDiv.writeAttribute('address-editable', true);
 		}
 		return tmp.newDiv;
+	}
+	,_openCustomerDetailsPage: function(row) {
+		var tmp = {};
+		tmp.me = this;
+		jQuery.fancybox({
+			'width'			: '95%',
+			'height'		: '95%',
+			'autoScale'     : false,
+			'autoDimensions': false,
+			'fitToView'     : false,
+			'autoSize'      : false,
+			'type'			: 'iframe',
+			'href'			: '/customer/' + row.id + '.html?blanklayout=1',
+			'beforeClose'	    : function() {
+				tmp.customer = $$('iframe.fancybox-iframe').first().contentWindow.pageJs._item;
+				if(tmp.customer && tmp.customer.id) {
+					tmp.me.selectCustomer(tmp.customer);
+				}
+			}
+ 		});
+		return tmp.me;
 	}
 	/**
 	 * getting the customer information div
@@ -279,12 +329,18 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					.insert({'bottom': new Element('div', {'class': 'col-sm-8'})
 						.insert({'bottom': new Element('strong').update('CREATING A ') })
 						.insert({'bottom': tmp.typeSelBox })
-						.insert({'bottom': new Element('strong').update(' FOR:  ' + tmp.customer.name + ' ') })
+						.insert({'bottom': new Element('strong').update(' FOR:  ') })
+						.insert({'bottom': new Element('a', {'href': 'javascript: void(0);'})
+							.update(tmp.customer.name)
+							.observe('click', function(){
+								tmp.me._openCustomerDetailsPage(tmp.customer);
+							})
+						})
 						.insert({'bottom': ' <' })
 						.insert({'bottom': new Element('a', {'href': 'mailto:' + tmp.customer.email}).update(tmp.customer.email) })
 						.insert({'bottom': '>' })
 						.insert({'bottom': new Element('strong').update(' with PO No.:') })
-						.insert({'bottom': new Element('input', {'type': 'text', 'save-order': 'poNo', 'placeholder': 'Optional - PO No. From Customer'}) })
+						.insert({'bottom': new Element('input', {'type': 'text', 'save-order': 'poNo', 'placeholder': 'Optional - PO No. From Customer'}).setStyle('width: 200px;') })
 					})
 					.insert({'bottom': new Element('div', {'class': 'col-sm-4 text-right'})
 						.insert({'bottom': new Element('strong').update('Total Payment Due: ') })
@@ -297,8 +353,8 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					.insert({'bottom': new Element('small').update(new Element('em').update(tmp.customer.description)) })
 				})
 				.insert({'bottom': new Element('div', {'class': 'row'})
-					.insert({'bottom': tmp.me._getAddressDiv("Billing Address: ", tmp.customer.address.billing).addClassName('col-xs-6') })
-					.insert({'bottom': tmp.me._getAddressDiv("Shipping Address: ", tmp.customer.address.shipping, true).addClassName('col-xs-6').addClassName('shipping-address') })
+					.insert({'bottom': tmp.me._getAddressDiv("Billing Address: ", tmp.customer.address ? tmp.customer.address.billing : null).addClassName('col-xs-6') })
+					.insert({'bottom': tmp.me._getAddressDiv("Shipping Address: ", tmp.customer.address ? tmp.customer.address.shipping : null, true).addClassName('col-xs-6').addClassName('shipping-address') })
 				 })
 			});
 		return tmp.newDiv;
@@ -680,7 +736,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		};
 
 		tmp.data.scanTable = tmp.me._getScanTable(tmp.data);
-		tmp.currentRow.insert({'after': tmp.itemRow = tmp.me._getProductRow(tmp.data) });
+		tmp.currentRow.up('.list-group').insert({'bottom': tmp.itemRow = tmp.me._getProductRow(tmp.data) });
 
 
 		tmp.newRow = tmp.me._getNewProductRow();
@@ -888,7 +944,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 							tmp.shippingMethodSel.observe('change', function() {
 								tmp.btn = this;
 								$(tmp.btn).up('.row').down('.input-field').update($F(tmp.btn).blank() ? tmp.me.getCurrency(0) :
-									tmp.shippingCostBox = new Element('input', {'order-price-summary': 'totalShippingCost', 'class': 'form-control input-sm', 'save-order': 'totalShippingCost', 'placeholder': tmp.me.getCurrency(0), 'required': true, 'validate_currency': 'Invalid number provided!' })
+									tmp.shippingCostBox = new Element('input', {'order-price-summary': 'totalShippingCost', 'class': 'form-control input-sm', 'save-order': 'totalShippingCost', 'placeholder': tmp.me.getCurrency(0), 'required': true, 'validate_currency': 'Invalid number provided!', 'value': 0 })
 									.observe('keyup', function() {
 										tmp.me._recalculateSummary();
 									})
@@ -909,7 +965,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 							tmp.paymentMethodSel.observe('change', function() {
 									tmp.btn = this;
 									$(tmp.btn).up('.row').down('.input-field').update($F(tmp.btn).blank() ? tmp.me.getCurrency(0) :
-										tmp.paidAmountBox = new Element('input', {'order-price-summary': 'totalPaidAmount', 'class': 'form-control input-sm', 'save-order': 'totalPaidAmount', 'placeholder': tmp.me.getCurrency(0), 'required': true, 'validate_currency': 'Invalid number provided!' })
+										tmp.paidAmountBox = new Element('input', {'value': ($F(tmp.btn).strip() === '5' ? '0' : ''), 'order-price-summary': 'totalPaidAmount', 'class': 'form-control input-sm', 'save-order': 'totalPaidAmount', 'placeholder': tmp.me.getCurrency(0), 'required': true, 'validate_currency': 'Invalid number provided!' })
 										.observe('keyup', function() {
 											tmp.me._recalculateSummary();
 										})
@@ -922,8 +978,8 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 						.insert({'bottom': new Element('div', {'class': 'col-xs-6 input-field'}).update( tmp.me.getCurrency(0) ) })
 					})
 					.insert({'bottom': new Element('div', {'class': 'row'})
-						.insert({'bottom': new Element('h4', {'class': 'col-xs-6 text-right'}).update(new Element('strong').update('DUE:')) })
-						.insert({'bottom': new Element('h4', {'class': 'col-xs-6', 'order-price-summary': 'total-payment-due'}).update(tmp.me.getCurrency(0)) })
+						.insert({'bottom': new Element('h4', {'class': 'col-xs-6 text-right'}).setStyle('color: #d30014 !important').update(new Element('strong').update('DUE:')) })
+						.insert({'bottom': new Element('h4', {'class': 'col-xs-6', 'order-price-summary': 'total-payment-due'}).setStyle('color: #d30014 !important').update(tmp.me.getCurrency(0)) })
 					})
 					.insert({'bottom': new Element('div', {'class': 'row margin'})
 						.insert({'bottom': new Element('strong', {'class': 'col-xs-6 text-right'}).update(new Element('strong').update('Margin Total Incl. GST:')) })
@@ -989,38 +1045,68 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 	/**
 	 * Ajax: searching the customer
 	 */
-	,_searchCustomer: function (txtbox) {
+	,_searchCustomer: function (btn, pageNo) {
 		var tmp = {};
 		tmp.me = this;
-		tmp.searchTxt = $F(txtbox).strip();
-		tmp.searchPanel = $(txtbox).up('#' + tmp.me._htmlIds.searchPanel);
-		tmp.me.postAjax(tmp.me.getCallbackId('searchCustomer'), {'searchTxt': tmp.searchTxt}, {
+		tmp.pageNo = (pageNo || 1);
+		tmp.searchPanel = $(btn).up('#' + tmp.me._htmlIds.searchPanel);
+		tmp.searchTxt = $F(tmp.searchPanel.down('.search-txt')).strip(); 
+		tmp.me.postAjax(tmp.me.getCallbackId('searchCustomer'), {'searchTxt': tmp.searchTxt, 'pageNo': tmp.pageNo}, {
 			'onLoading': function() {
-				if($(tmp.searchPanel).down('.list-div'))
-					$(tmp.searchPanel).down('.list-div').remove();
-				$(tmp.searchPanel).insert({'bottom': new Element('div', {'class': 'panel-body'}).update(tmp.me.getLoadingImg()) });
+				tmp.me._signRandID(btn);
+				jQuery('#' + btn.id).button('loading');
+				if(tmp.pageNo === 1) {
+					if($(tmp.searchPanel).down('.list-div'))
+						$(tmp.searchPanel).down('.list-div').remove();
+					$(tmp.searchPanel).insert({'bottom': new Element('div', {'class': 'panel-body'}).update(tmp.me.getLoadingImg()) });
+				}
 			}
 			,'onSuccess': function (sender, param) {
-				$(tmp.searchPanel).down('.panel-body').remove();
 				try {
 					tmp.result = tmp.me.getResp(param, false, true);
 					if(!tmp.result || !tmp.result.items)
 						return;
-
-					$(tmp.searchPanel).insert({'bottom': new Element('small', {'class': 'table-responsive list-div'})
-						.insert({'bottom': new Element('table', {'class': 'table table-hover table-condensed'})
-							.insert({'bottom': new Element('thead')
-								.insert({'bottom': tmp.me._getCustomerRow({'name': 'Customer Name', 'email': 'Email', 'address': {'billing': {'full': 'Address'}}}, true)  })
+					if(tmp.pageNo === 1) {
+						$(tmp.searchPanel).down('.panel-body').remove();
+						$(tmp.searchPanel).insert({'bottom': new Element('small', {'class': 'table-responsive list-div'})
+							.insert({'bottom': new Element('table', {'class': 'table table-hover table-condensed'})
+								.insert({'bottom': new Element('thead')
+									.insert({'bottom': tmp.me._getCustomerRow({'name': 'Customer Name', 'email': 'Email', 'address': {'billing': {'full': 'Address'}}}, true)  })
+								})
+								.insert({'bottom': tmp.listDiv = new Element('tbody') })
 							})
-							.insert({'bottom': tmp.listDiv = new Element('tbody') })
-						})
-					});
+						});
+					} else {
+						tmp.listDiv = $(tmp.searchPanel).down('tbody');
+					}
+					if( $(tmp.searchPanel).down('.get-more-btn-wrapper') ) {
+						$(tmp.searchPanel).down('.get-more-btn-wrapper').remove();
+					}
 					tmp.result.items.each(function(item) {
-						tmp.listDiv.insert({'bottom': tmp.me._getCustomerRow(item) })
+						tmp.listDiv.insert({'bottom': tmp.me._getCustomerRow(item) });
 					});
+					if(tmp.result.pagination.pageNumber < tmp.result.pagination.totalPages) {
+						tmp.listDiv.insert({'bottom': new Element('tr', {'class': 'get-more-btn-wrapper'})
+							.insert({'bottom': new Element('td')
+								.insert({'bottom': new Element('span', {'class': 'btn btn-primary', 'data-loading-text': 'Getting More ...'})
+										.update('Get more')
+										.observe('click', function() {
+											tmp.me._searchCustomer(this, tmp.pageNo * 1 + 1);
+										})
+								})
+							})
+						})
+					}
 				} catch (e) {
-					$(tmp.searchPanel).insert({'bottom': new Element('div', {'class': 'panel-body'}).update(tmp.me.getAlertBox('ERROR', e).addClassName('alert-danger')) });
+					if(tmp.pageNo === 1) {
+						$(tmp.searchPanel).insert({'bottom': new Element('div', {'class': 'panel-body'}).update(tmp.me.getAlertBox('ERROR', e).addClassName('alert-danger')) });
+					} else {
+						tmp.me.showModalBox('<strong class="text-danger">Error:</strong>', e);
+					}
 				}
+			}
+			,'onComplete': function() {
+				jQuery('#' + btn.id).button('reset');
 			}
 		});
 		return tmp.me;
@@ -1037,18 +1123,16 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				.insert({'bottom': new Element('span', {'class': 'input-group col-sm-6'})
 					.insert({'bottom': new Element('input', {'class': 'form-control search-txt init-focus', 'placeholder': 'customer name or email'})
 						.observe('keyup', function(event){
-							tmp.me.keydown(event, function() {
-								$(tmp.me._htmlIds.searchPanel).down('.search-btn').click();
-							});
+							$(tmp.me._htmlIds.searchPanel).down('.search-btn').click();
 						})
 					})
 					.insert({'bottom': new Element('span', {'class': 'input-group-btn search-btn'})
-						.insert({'bottom': new Element('span', {'class': ' btn btn-primary'})
+						.insert({'bottom': new Element('span', {'class': ' btn btn-primary', 'data-loading-text': 'Searching ...'})
 							.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-search'}) })
 						})
 						.observe('click', function(){
 							tmp.btn = this;
-							tmp.me._searchCustomer($(tmp.me._htmlIds.searchPanel).down('.search-txt'));
+							tmp.me._searchCustomer(tmp.btn, 1);
 						})
 					})
 				})

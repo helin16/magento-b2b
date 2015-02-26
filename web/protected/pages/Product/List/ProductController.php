@@ -1,7 +1,7 @@
 <?php
 /**
  * This is the ProductController
- * 
+ *
  * @package    Web
  * @subpackage Controller
  * @author     lhe<helin16@gmail.com>
@@ -38,12 +38,12 @@ class ProductController extends CRUDPageAbstract
 			$statuses[] = $os->getJson();
 		foreach (ProductCategory::getAll() as $os)
 			$productCategoryArray[] = $os->getJson();
-		
+
 		$js = parent::_getEndJs();
 		if(($product = Product::get($this->Request['id']))  instanceof Product) {
 			$js .= "$('searchPanel').hide();";
 			$js .= "pageJs._singleProduct = true;";
-		} 
+		}
 		$js .= 'pageJs._loadManufactures('.json_encode($manufactureArray).')';
 		$js .= '._loadSuppliers('.json_encode($supplierArray).')';
 		$js .= '._loadCategories('.json_encode($productCategoryArray).')';
@@ -52,6 +52,7 @@ class ProductController extends CRUDPageAbstract
 		$js .= "._bindSearchKey()";
 		$js .= ".setCallbackId('priceMatching', '" . $this->priceMatchingBtn->getUniqueID() . "')";
 		$js .= ".setCallbackId('toggleActive', '" . $this->toggleActiveBtn->getUniqueID() . "')";
+		$js .= ".setCallbackId('updatePrice', '" . $this->updatePriceBtn->getUniqueID() . "')";
 		$js .= ".getResults(true, " . $this->pageSize . ");";
 		return $js;
 	}
@@ -61,10 +62,10 @@ class ProductController extends CRUDPageAbstract
 	}
 	/**
 	 * Updating the full description of the product
-	 * 
+	 *
 	 * @param Product $product
 	 * @param unknown $param
-	 * 
+	 *
 	 * @return ProductController
 	 */
 	private function _updateFullDescription(Product &$product, $param)
@@ -74,7 +75,7 @@ class ProductController extends CRUDPageAbstract
 		{
 			if(($fullAsset = Asset::getAsset($product->getFullDescAssetId())) instanceof Asset)
 				Asset::removeAssets(array($fullAsset->getAssetId()));
-			$fullAsset = Asset::registerAsset('full_description_for_product.txt', $fullDescription);
+			$fullAsset = Asset::registerAsset('full_description_for_product.txt', $fullDescription, Asset::TYPE_PRODUCT_DEC);
 			$product->setFullDescAssetId($fullAsset->getAssetId());
 		}
 		return $this;
@@ -101,13 +102,13 @@ class ProductController extends CRUDPageAbstract
             } else {
 	            $pageNo = 1;
 	            $pageSize = DaoQuery::DEFAUTL_PAGE_SIZE;
-	            
+
 	            if(isset($param->CallbackParameter->pagination))
 	            {
 	                $pageNo = $param->CallbackParameter->pagination->pageNo;
 	                $pageSize = $param->CallbackParameter->pagination->pageSize * 3;
 	            }
-	            
+
 	            $stats = array();
 	            $categoryIds = (!isset($serachCriteria['pro.productCategoryIds']) || is_null($serachCriteria['pro.productCategoryIds'])) ? array() : $serachCriteria['pro.productCategoryIds'];
 	            $supplierIds = (!isset($serachCriteria['pro.supplierIds']) || is_null($serachCriteria['pro.supplierIds'])) ? array() : $serachCriteria['pro.supplierIds'];
@@ -128,7 +129,7 @@ class ProductController extends CRUDPageAbstract
     }
     /**
      * Getting price matching information
-     * 
+     *
      * @param unknown $sender
      * @param unknown $param
      */
@@ -156,7 +157,7 @@ class ProductController extends CRUDPageAbstract
     }
     /**
      * toggleActive
-     * 
+     *
      * @param unknown $sender
      * @param unknown $param
      */
@@ -165,16 +166,64 @@ class ProductController extends CRUDPageAbstract
     	$results = $errors = array();
     	try
     	{
+    		Dao::beginTransaction();
     		$id = isset($param->CallbackParameter->productId) ? $param->CallbackParameter->productId : '';
     		if(!($product = Product::get($id)) instanceof Product)
     			throw new Exception('Invalid product!');
     		$product->setActive(intval($param->CallbackParameter->active))
     			->save();
     		$results['item'] = $product->getJson();
+    		Dao::commitTransaction();
     	}
     	catch(Exception $ex)
     	{
+    		Dao::rollbackTransaction();
     		$errors[] = $ex->getMessage();
+    	}
+    	$param->ResponseData = StringUtilsAbstract::getJson($results, $errors);
+    }
+    /**
+     * updateproduct price
+     *
+     * @param unknown $sender
+     * @param unknown $param
+     */
+    public function updatePrice($sender, $param)
+    {
+    	$results = $errors = array();
+    	try
+    	{
+    		Dao::beginTransaction();
+    		$id = isset($param->CallbackParameter->productId) ? $param->CallbackParameter->productId : '';
+    		if(!($product = Product::get($id)) instanceof Product)
+    			throw new Exception('Invalid product!');
+    		if(!isset($param->CallbackParameter->newPrice))
+    			throw new Exception('No New Price Provided!');
+    		$newPrice = StringUtilsAbstract::getValueFromCurrency(trim($param->CallbackParameter->newPrice));
+    		$prices = ProductPrice::getAllByCriteria('productId = ? and typeId = ?', array($product->getId(), ProductPriceType::ID_RRP), true, 1, 1);
+    		if(count($prices) > 0) {
+    			$msg = 'Update price for product(SKU=' . $product->getSku() . ') to '. StringUtilsAbstract::getCurrency($newPrice);
+    			$price = $prices[0];
+    		} else {
+    			$msg = 'New Price Created for product(SKU=' . $product->getSku() . '): '. StringUtilsAbstract::getCurrency($newPrice);
+    			$price = new ProductPrice();
+    			$price->setProduct($product)
+    				->setType(ProductPriceType::get(ProductPriceType::ID_RRP));
+    		}
+
+    		$price->setPrice($newPrice)
+	    		->save()
+	    		->addComment($msg, Comments::TYPE_NORMAL)
+	    		->addLog($msg, Log::TYPE_SYSTEM);
+    		$product->addComment($msg, Log::TYPE_SYSTEM)
+	    		->addLog($msg, Log::TYPE_SYSTEM);
+    		$results['item'] = $product->getJson();
+    		Dao::commitTransaction();
+    	}
+    	catch(Exception $ex)
+    	{
+    		Dao::rollbackTransaction();
+    		$errors[] = $ex->getMessage() . $ex->getTraceAsString();
     	}
     	$param->ResponseData = StringUtilsAbstract::getJson($results, $errors);
     }
