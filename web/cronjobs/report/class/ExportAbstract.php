@@ -31,7 +31,7 @@ class ExportAbstract
 		$objWriter->save('php://output');
 		$excelOutput = ob_get_clean();
 		$class = get_called_class();
-		$asset = Asset::registerAsset($class::_getAttachedFileName(), $excelOutput);
+		$asset = Asset::registerAsset($class::_getAttachedFileName(), $excelOutput, Asset::TYPE_TMP);
 		if($mailOut === true)
 			self::_mailOut($asset);
 		return $asset;

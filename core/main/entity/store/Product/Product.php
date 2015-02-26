@@ -1173,7 +1173,7 @@ class Product extends InfoEntityAbstract
 			if($costAccNo !== null && is_string($costAccNo))
 				$product->setCostAccNo(trim($costAccNo));
 			if (($$fullDescr = trim($fullDescr)) !== '') {
-				$asset = Asset::registerAsset('full_desc_' . $sku, $fullDescr);
+				$asset = Asset::registerAsset('full_desc_' . $sku, $fullDescr, Asset::TYPE_PRODUCT_DEC);
 				$product->setFullDescAssetId(trim($asset->getAssetId()));
 			}
 			if ($manufacturer instanceof Manufacturer) {

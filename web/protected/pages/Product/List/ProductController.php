@@ -1,7 +1,7 @@
 <?php
 /**
  * This is the ProductController
- * 
+ *
  * @package    Web
  * @subpackage Controller
  * @author     lhe<helin16@gmail.com>
@@ -38,12 +38,12 @@ class ProductController extends CRUDPageAbstract
 			$statuses[] = $os->getJson();
 		foreach (ProductCategory::getAll() as $os)
 			$productCategoryArray[] = $os->getJson();
-		
+
 		$js = parent::_getEndJs();
 		if(($product = Product::get($this->Request['id']))  instanceof Product) {
 			$js .= "$('searchPanel').hide();";
 			$js .= "pageJs._singleProduct = true;";
-		} 
+		}
 		$js .= 'pageJs._loadManufactures('.json_encode($manufactureArray).')';
 		$js .= '._loadSuppliers('.json_encode($supplierArray).')';
 		$js .= '._loadCategories('.json_encode($productCategoryArray).')';
@@ -62,10 +62,10 @@ class ProductController extends CRUDPageAbstract
 	}
 	/**
 	 * Updating the full description of the product
-	 * 
+	 *
 	 * @param Product $product
 	 * @param unknown $param
-	 * 
+	 *
 	 * @return ProductController
 	 */
 	private function _updateFullDescription(Product &$product, $param)
@@ -75,7 +75,7 @@ class ProductController extends CRUDPageAbstract
 		{
 			if(($fullAsset = Asset::getAsset($product->getFullDescAssetId())) instanceof Asset)
 				Asset::removeAssets(array($fullAsset->getAssetId()));
-			$fullAsset = Asset::registerAsset('full_description_for_product.txt', $fullDescription);
+			$fullAsset = Asset::registerAsset('full_description_for_product.txt', $fullDescription, Asset::TYPE_PRODUCT_DEC);
 			$product->setFullDescAssetId($fullAsset->getAssetId());
 		}
 		return $this;
@@ -102,13 +102,13 @@ class ProductController extends CRUDPageAbstract
             } else {
 	            $pageNo = 1;
 	            $pageSize = DaoQuery::DEFAUTL_PAGE_SIZE;
-	            
+
 	            if(isset($param->CallbackParameter->pagination))
 	            {
 	                $pageNo = $param->CallbackParameter->pagination->pageNo;
 	                $pageSize = $param->CallbackParameter->pagination->pageSize * 3;
 	            }
-	            
+
 	            $stats = array();
 	            $categoryIds = (!isset($serachCriteria['pro.productCategoryIds']) || is_null($serachCriteria['pro.productCategoryIds'])) ? array() : $serachCriteria['pro.productCategoryIds'];
 	            $supplierIds = (!isset($serachCriteria['pro.supplierIds']) || is_null($serachCriteria['pro.supplierIds'])) ? array() : $serachCriteria['pro.supplierIds'];
@@ -129,7 +129,7 @@ class ProductController extends CRUDPageAbstract
     }
     /**
      * Getting price matching information
-     * 
+     *
      * @param unknown $sender
      * @param unknown $param
      */
@@ -157,7 +157,7 @@ class ProductController extends CRUDPageAbstract
     }
     /**
      * toggleActive
-     * 
+     *
      * @param unknown $sender
      * @param unknown $param
      */
@@ -184,7 +184,7 @@ class ProductController extends CRUDPageAbstract
     }
     /**
      * updateproduct price
-     * 
+     *
      * @param unknown $sender
      * @param unknown $param
      */
@@ -210,7 +210,7 @@ class ProductController extends CRUDPageAbstract
     			$price->setProduct($product)
     				->setType(ProductPriceType::get(ProductPriceType::ID_RRP));
     		}
-    		
+
     		$price->setPrice($newPrice)
 	    		->save()
 	    		->addComment($msg, Comments::TYPE_NORMAL)
