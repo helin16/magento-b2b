@@ -19,19 +19,22 @@ class AjaxController extends TService
 //   		if(!($this->getUser()->getUserAccount() instanceof UserAccount))
 //   			die (BPCPageAbstract::show404Page('Invalid request',"No defined access."));
   		
-  		if(!isset($this->Request['method']) || ($method = trim($this->Request['method'])) === '' || !method_exists($this, ($method = '_' .$method)))
-  			die (BPCPageAbstract::show404Page('Invalid request',"No method passed in."));
-  		
-  		$content = '';
-		try
-		{
-			$content .= $this->$method($_REQUEST);
-		} 
-		catch (Exception $ex)
-		{
-			$content .= $ex->getMessage();
-		}
-		$this->getResponse()->write($content);
+  		$results = $errors = array();
+        try 
+        {
+            $method = '_' . ((isset($this->Request['method']) && trim($this->Request['method']) !== '') ? trim($this->Request['method']) : '');
+            if(!method_exists($this, $method))
+                throw new Exception('No such a method: ' . $method . '!');
+          	
+            $results = $this->$method($_REQUEST);
+        }
+        catch (Exception $ex)
+        {
+        	$errors = $ex->getMessage();
+        }
+        $this->getResponse()->flush();
+        $this->getResponse()->appendHeader('Content-Type: application/json');
+        $this->getResponse()->write(StringUtilsAbstract::getJson($results, $errors));
   	}
 	/**
 	 * Getting the comments for an entity
@@ -62,7 +65,15 @@ class AjaxController extends TService
   		$results = array();
   		$results['items'] = array_map(create_function('$a', 'return $a->getJson();'), $commentsArray);
   		$results['pageStats'] = $stats;
-  		return json_encode($results);
+  		return $results;
+  	}
+  	private function _getDeliveryMethods($params)
+  	{
+  		$searchTxt = (isset($params['searchTxt']) && ($searchTxt = trim($params['searchTxt'])) !== '' ? $searchTxt : '');
+  		$sql = 'select distinct value from orderinfo where value like ? and active = 1 and typeId = ' . OrderInfoType::ID_MAGE_ORDER_SHIPPING_METHOD;
+  		$results = array();
+  		$results['items'] = array_map(create_function('$a', 'return $a["value"];'), Dao::getResultsNative($sql, array('%' . trim($searchTxt) . '%'), PDO::FETCH_ASSOC));
+  		return $results;
   	}
 
 }

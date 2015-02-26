@@ -344,17 +344,19 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		var tmp = {};
 		tmp.me = this;
 		tmp.isTitle = (isTitle || false);
+		tmp.deliveryMethod = tmp.isTitle ? 'D.Method' : (row.infos['9'] ? row.infos[9][0].value : '');
 		tmp.row = new Element('tr', {'class': (tmp.isTitle === true ? '' : 'order_item'), 'order_id' : row.id}).store('data', row)
-			.insert({'bottom': new Element('td', {'class': 'orderInfo  col-xs-2'}).update(
+			.insert({'bottom': new Element('td', {'class': 'orderInfo  col-xs-1'}).update(
 				tmp.isTitle ? row.orderNo : tmp.me._getOrderInfoCell(row)
 			) })
 			.insert({'bottom': new Element('td', {'class': 'order-date col-xs-1'}).update(
 					tmp.isTitle === true ? 'Order Date' : tmp.me.loadUTCTime(row.orderDate).toLocaleDateString()
 			) })
-			.insert({'bottom': new Element('td', {'class': 'order-type col-xs-1 ' + (row.type === 'ORDER' ? 'success' : (row.type === 'QUOTE' ? 'warning' : ''))}).update(
-					tmp.isTitle === true ? 'Type' : row.type
+			.insert({'bottom': new Element('td', {'class': 'customer col-xs-2 '}).update(
+					tmp.isTitle === true ? 'Customer' : row.customer.name
 			) })
-			.insert({'bottom': new Element('td', {'class': 'status col-middle col-xs-2', 'order_status': row.status.name}).update(
+			.insert({'bottom': new Element('td', {'class': 'col-xs-2 ' + (tmp.deliveryMethod.toLowerCase().indexOf('pickup') > -1 ? 'danger' : ''), 'title': 'Delivery Method'}).update(tmp.deliveryMethod) })
+			.insert({'bottom': new Element('td', {'class': 'status col-xs-2', 'order_status': row.status.name}).update(
 					row.status ? row.status.name : ''
 			) })
 			.insert({'bottom': new Element('td', {'class': 'text-right col-xs-1', 'payment': true}).update(
@@ -372,10 +374,40 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		;
 		return tmp.row;
 	}
+	,_initDeliveryMethods: function() {
+		var tmp = {};
+		tmp.me = this;
+		tmp.selectBox = $(tmp.me.searchDivId).down('[search_field="delivery_method"]');
+		tmp.me._signRandID(tmp.selectBox);
+		jQuery('#' + tmp.selectBox.id).select2({
+			 minimumInputLength: 3,
+			 multiple: true,
+			 ajax: {
+				 delay: 250
+				 ,url: '/ajax/getDeliveryMethods'
+		         ,type: 'POST'
+	        	 ,data: function (params) {
+	        		 return {"searchTxt": params};
+	        	 }
+				 ,results: function(data, page, query) {
+					 tmp.result = [];
+					 if(data.resultData && data.resultData.items) {
+						 data.resultData.items.each(function(item){
+							 tmp.result.push({'id': item + '{|}', 'text': item.stripTags()});
+						 });
+					 }
+		    		 return { 'results' : tmp.result };
+		    	 }
+				 ,cache: true
+			 }
+		});
+		return tmp.me;
+	}
 	,init: function() {
 		var tmp = {};
 		tmp.me = this;
 		jQuery('.datepicker').datetimepicker();
+		tmp.me._initDeliveryMethods();
 		return tmp.me;
 	}
 });

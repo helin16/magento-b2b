@@ -147,6 +147,22 @@ class OrderController extends BPCPageAbstract
 						$params[] = '%' . $value.'%';
 						break;
 					}
+					case 'delivery_method':
+					{
+						$values = explode('{|}', $value);
+						$vs = array();
+						foreach($values as $v) {
+							if(($v = trim($v)) === '')
+								continue;
+							$vs[] = preg_replace('/,/', '', $v, 1);
+						}
+						if(count($vs) > 0) {
+							$query->eagerLoad("Order.infos", 'inner join', 'x', 'x.orderId = ord.id and x.active = 1');
+							$where[] = 'x.value in (' . implode(', ', array_fill(0, count($vs), '?')) . ')';
+							$params = array_merge($params, $vs);
+						}
+						break;
+					}
 				}
 				$noSearch = false;
 			}

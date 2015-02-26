@@ -2,6 +2,7 @@
 	<com:Application.controls.fancybox.FancyBox />
 	<com:Application.controls.chosen.Chosen />
 	<com:Application.controls.bootstrapDateTimePicker.bootstrapDateTimePicker />
+	<com:Application.controls.select2.select2 />
 	<com:TCallback ID="getOrdersBtn" onCallBack="Page.getOrders" />
 	<div class="row">
 	   <div class="col-md-9">
@@ -34,7 +35,7 @@
 	                           <input id='custName' type="text" class="form-control input-sm" placeholder="Customer Name" search_field="ord.infos.<%= OrderInfoType::ID_CUS_NAME %>" />
 	                       </div>
 	                   </div>
-	                   <div class="col-md-1 col-sm-6 col-xs-12">
+	                   <div class="col-md-3 col-sm-6 col-xs-12">
 	                       <div class="form-group form-group-sm input-group">
 	                           <label for="status" class="input-group-addon">Paid: </label>
 	                           <select search_field="ord.passPaymentCheck" class="form-control input-sm">
@@ -44,15 +45,12 @@
 	                           </select>
 	                       </div>
 	                   </div>
-	                   <div class="col-md-2 col-sm-6 col-xs-12">
+	               </div>
+	               <div class='row'>
+	               	 <div class="col-xs-12">
 	                       <div class="form-group form-group-sm input-group">
-	                           <label for="type" class="input-group-addon">Type: </label>
-	                           <select search_field="ord.type" class="form-control input-sm">
-	                               <option value=""></option>
-	                               <option value="QUOTE">QUOTE</option>
-	                               <option value="ORDER">ORDER</option>
-	                               <option value="INVOICE">INVOICE</option>
-	                           </select>
+	                           <label for="type" class="input-group-addon">D.Method: </label>
+	                           <input search_field="delivery_method" class="form-control input-sm" />
 	                       </div>
 	                   </div>
 	               </div>
