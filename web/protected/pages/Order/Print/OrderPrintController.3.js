@@ -22,7 +22,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				tmp.tbody.insert({'bottom': tmp.emptyTr});
 			}
 		}
-		tmp.table.down('tfoot').insert({'bottom': new Element('td', {'colspan': tmp.noColumns})
+		tmp.table.down('#tfoot').insert({'bottom': new Element('td', {'colspan': tmp.noColumns})
 			.setStyle('text-align: right')
 			.update('Page: ' + pageNo + ' / ' + totalPages)
 			.wrap(new Element('tr'))
