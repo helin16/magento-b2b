@@ -94,9 +94,20 @@
 	               </div>
 	           </div>
 			</div>
-			<div class="panel panel-default">
-			     <div class="panel-heading">
-                   <span id='total_no_of_items'>0</span> Orders Found!
+			<div class="panel panel-success">
+			     <div class="panel-heading" style="padding: 8px 4px 0 4px; border-bottom:none;">
+			     	<div class="row">
+				     	<div id="order-type-list" class="col-xs-8">
+				     		<ul class="nav nav-tabs">
+				     			<li class="type-swither-item" data-type="QUOTE"><a href="javascript: void(0);">QUOTE</a></li>
+				     			<li class="type-swither-item active" data-type="ORDER"><a href="javascript: void(0);">ORDER</a></li>
+				     			<li class="type-swither-item" data-type="INVOICE"><a href="javascript: void(0);">INVOICE</a></li>
+				     		</ul>
+				     	</div>
+				     	<div class="col-xs-4 text-right">
+		                   <span id='total_no_of_items'>0</span> Records Found!
+				     	</div>
+			     	</div>
                  </div>
                  <div class="table-responsive">
 	                 <table class="table table-hover" id="resultDiv"></table>

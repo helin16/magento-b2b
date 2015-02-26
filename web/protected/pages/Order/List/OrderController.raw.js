@@ -10,6 +10,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 	,_searchCriteria: {} //the searching criteria
 	,_infoTypes:{} //the infotype ids
 	,orderStatuses: [] //the order statuses object
+	,_type: 'ORDER'
 
 	,_loadChosen: function () {
 		jQuery(".chosen").chosen({
@@ -101,6 +102,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		if(tmp.reset === true)
 			tmp.me._pagination.pageNo = 1;
 		tmp.me._pagination.pageSize = (pageSize || tmp.me._pagination.pageSize);
+		tmp.me._searchCriteria['ord.type'] = tmp.me._type;
 		tmp.me.postAjax(tmp.me.getCallbackId('getOrders'), {'pagination': tmp.me._pagination, 'searchCriteria': tmp.me._searchCriteria}, {
 			'onLoading': function () {
 				jQuery('#searchBtn').button('loading');
@@ -403,11 +405,45 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		});
 		return tmp.me;
 	}
+	,_changeType: function(btn) {
+		var tmp = {};
+		tmp.me = this;
+		jQuery('.type-swither-item.active').removeClass('active');
+		tmp.me._type = $(btn).addClassName('active').readAttribute('data-type');
+		tmp.panelClass = "panel-default";
+		switch(tmp.me._type) {
+			case 'ORDER': {
+				tmp.panelClass = 'panel-success';
+				break;
+			} 
+			case 'INVOICE': {
+				tmp.panelClass = 'panel-default';
+				break;
+			} 
+			case 'QUOTE': {
+				tmp.panelClass = 'panel-warning';
+				break;
+			} 
+		}
+		$(btn).up('.panel').removeClassName('panel-success').removeClassName('panel-default').removeClassName('panel-warning').addClassName(tmp.panelClass);
+		$("searchBtn").click();
+		return tmp.me;
+	}
+	,_initTypeSwither: function() {
+		var tmp = {};
+		tmp.me = this;
+		$$('.type-swither-item').each(function(item){
+			item.observe('click', function() {
+				tmp.me._changeType(this);
+			})
+		});
+		return tmp.me;
+	}
 	,init: function() {
 		var tmp = {};
 		tmp.me = this;
 		jQuery('.datepicker').datetimepicker();
-		tmp.me._initDeliveryMethods();
+		tmp.me._initDeliveryMethods()._initTypeSwither();
 		return tmp.me;
 	}
 });
