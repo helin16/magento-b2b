@@ -3,8 +3,7 @@
 	<div class="pagewrapper orderprint container">
 		<div class="orderViewWrapper inlineblock print-wrapper">
             <table class='orderview' cellspacing="0" cellpadding="0" id="main-table">
-                <thead id="thead">
-                    <tr class="title_row">
+                    <tr id="thead" class="title_row">
                         <td colspan=6>
                             <div>
                                 <span class="inlineblock logo">
@@ -44,12 +43,10 @@
                         </td>
                     </tr>
                     <%= $this->getRow('QTY', 'SKU', 'NAME', 'Unit Price', 'Total Price', 'header'); %>
-                </thead>
                 <tbody id="tbody">
                     <%= $this->showProducts(); %>
                 </tbody>
-                <tfoot id="tfoot">
-                    <tr>
+                    <tr id="tfoot">
                         <td colspan=6>
                             <div class="order_payments">
                                 <span class="payment_details inlineblock">
@@ -106,7 +103,6 @@
                             </div>
                         </td>
                     </tr>
-                </tfoot>
             </table>
         </div>
 	</div>
