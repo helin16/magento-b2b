@@ -105,7 +105,7 @@ class DetailsController extends DetailsPageAbstract
 					$customer->setBillingAddress(Address::create($billingStreet, $billingCity, $billingState, $billingCountry, $billingPostcode, $billingName, $billingContactNo));
 				}
 				$shippingAddress = $customer->getShippingAddress();
-				if($shippingAddress instanceof Address) {
+				if($shippingAddress instanceof Address && $billingAddress instanceof Address && $shippingAddress->getId() !== $billingAddress->getId()) {
 					$shippingAddress->setStreet($shippingStreet)
 						->setCity($shippingCity)
 						->setRegion($shippingState)
