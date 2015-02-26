@@ -3,7 +3,7 @@
  */
 var PageJs = new Class.create();
 PageJs.prototype = Object.extend(new BPCPageJs(), {
-	_maxRowsPerPage: 5
+	_maxRowsPerPage: 10
 	,genPage: function(table, pageNo, totalPages, rows) {
 		var tmp = {};
 		tmp.me = this;
