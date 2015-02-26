@@ -442,7 +442,9 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 	,init: function() {
 		var tmp = {};
 		tmp.me = this;
-		jQuery('.datepicker').datetimepicker();
+		jQuery('.datepicker').datetimepicker({
+			format: 'DD/MM/YYYY HH:mm A'
+		});
 		tmp.me._initDeliveryMethods()._initTypeSwither();
 		return tmp.me;
 	}

@@ -135,7 +135,7 @@ class OrderController extends BPCPageAbstract
 					case 'invDate_from':
 					case 'invDate_to':
 					{
-						$where[] =  "invDate " . ($field === 'orderDate_from' ? '>' : '<') . "= ? ";
+						$where[] =  "invDate " . ($field === 'invDate_from' ? '>' : '<') . "= ? ";
 						$params[] = trim(new UDate($value));
 						break;
 					}
@@ -168,7 +168,9 @@ class OrderController extends BPCPageAbstract
 			if($noSearch === true)
 				throw new Exception("Nothing to search!");
 			$stats = array();
+			Dao::$debug = true;
 			$orders = Order::getAllByCriteria(implode(' AND ', $where), $params, true, $pageNo, $pageSize, array('ord.id' => 'desc'), $stats);
+			Dao::$debug = false;
 			$results['pageStats'] = $stats;
 			$results['items'] = array();
 			foreach($orders as $order)
