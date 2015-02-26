@@ -14,6 +14,7 @@ Abstract class AccessControl
 			{
 				case Role::ID_STORE_MANAGER:
 				case Role::ID_SYSTEM_ADMIN:
+				case Role::ID_SALES:
 					{
 						self::$_cache['accessOrderStatusIds'][$role->getId()] = array_map(create_function('$a', 'return intval($a->getId());'), OrderStatus::getAllByCriteria('id not in(?,?) ', array(OrderStatus::ID_CANCELLED, OrderStatus::ID_SHIPPED)));
 						break;
@@ -24,7 +25,6 @@ Abstract class AccessControl
 						break;
 					}
 				case Role::ID_PURCHASING:
-				case Role::ID_SALES:
 					{
 						self::$_cache['accessOrderStatusIds'][$role->getId()] = array(OrderStatus::ID_NEW, OrderStatus::ID_INSUFFICIENT_STOCK);
 						break;

@@ -40,7 +40,7 @@ class OrderDetailsController extends BPCPageAbstract
 		if($order->canEditBy(Core::getRole()))
 		{
 			$statusEdit = ($order->canEditBy(Role::get(Role::ID_STORE_MANAGER)) || $order->canEditBy(Role::get(Role::ID_SYSTEM_ADMIN))) ? 'true' : 'false';
-			if(in_array(intval(Core::getRole()->getId()), array(Role::ID_SYSTEM_ADMIN, Role::ID_STORE_MANAGER)))
+			if(in_array(intval(Core::getRole()->getId()), array(Role::ID_SYSTEM_ADMIN, Role::ID_STORE_MANAGER, Role::ID_SALES)))
 				$purchaseEdit = $warehouseEdit = $accounEdit = 'true';
 			else
 			{
@@ -446,16 +446,17 @@ class OrderDetailsController extends BPCPageAbstract
 		{
 			$items = array();
 			Dao::beginTransaction();
-			$type = trim($param->CallbackParameter->type);
-			$orderId = trim($param->CallbackParameter->id);
-			$order = Order::get($orderId);
-			if(!$order instanceof Order)
+			if(!isset($param->CallbackParameter->type) || ($type = trim($param->CallbackParameter->type)) === '')
+				throw new Exception('Invalid Type passed in!');
+			if(!($order = Order::get(trim($param->CallbackParameter->id))) instanceof Order)
 				throw new Exception('Invalid Order passed in!');
-			if($order->getType() !== $type && ($type === Order::TYPE_INVOICE || $type === Order::TYPE_ORDER || $type === Order::TYPE_QUOTE) )
-				$order->setType($type)->save();
+			
+			if(trim($order->getType()) !== $type && in_array($type, array(Order::TYPE_INVOICE, Order::TYPE_ORDER, Order::TYPE_QUOTE) ) ) {
+				$order->setType($type)
+					->save();
+			}
 
-			$items[] = $order->getJson();
-			$results['items'] = $items;
+			$results['item'] = $order->getJson();
 			Dao::commitTransaction();
 		}
 		catch(Exception $ex)
@@ -590,22 +591,35 @@ class OrderDetailsController extends BPCPageAbstract
 			Dao::beginTransaction();
 			if(!isset($param->CallbackParameter->orderId) || !($order = Order::get($param->CallbackParameter->orderId)) instanceof Order)
 				throw new Exception('System Error: invalid order provided!');
-			if(!isset($param->CallbackParameter->id) || !($address = Address::get($param->CallbackParameter->id)) instanceof Address)
+			if(!isset($param->CallbackParameter->id))
 				throw new Exception('System Error: invalid address provided!');
-			$originalAddressFull = $address->getFull();
-			$address->setContactName(trim($param->CallbackParameter->contactName))
-				->setContactNo(trim($param->CallbackParameter->contactNo))
-				->setStreet(trim($param->CallbackParameter->street))
-				->setCity(trim($param->CallbackParameter->city))
-				->setRegion(trim($param->CallbackParameter->region))
-				->setCountry(trim($param->CallbackParameter->country))
-				->setPostCode(trim($param->CallbackParameter->postCode))
-				->save();
-			$msg = 'Changed ' . trim($param->CallbackParameter->title) . ' from "' . $originalAddressFull . '" to "' . $address->getFull() . '"';
-			$order->addComment($msg, Comments::TYPE_NORMAL)
-				->addLog($msg, Log::TYPE_SYSTEM);
-			$address->addLog($msg, Log::TYPE_SYSTEM);
-			$results['item'] = $address->getJson();
+			
+			if(!isset($param->CallbackParameter->type) || ($type = trim($param->CallbackParameter->type)) === '')
+				throw new Exception('System Error: invalid address type provided!');
+			$getter = 'get' . ucfirst($type) . 'Addr';
+			$address = $order->$getter();
+			$originalAddressFull = $address instanceof Address ? $address->getFull() : '';
+			$address = Address::create(trim($param->CallbackParameter->street), 
+				trim($param->CallbackParameter->city), 
+				trim($param->CallbackParameter->region), 
+				trim($param->CallbackParameter->country), 
+				trim($param->CallbackParameter->postCode), 
+				trim($param->CallbackParameter->contactName), 
+				trim($param->CallbackParameter->contactNo)
+				,$address
+			);
+			if($address instanceof Address) {
+				$setter = 'set' . ucfirst($type) . 'Addr';
+				$msg = 'Changed ' . trim($param->CallbackParameter->title) . ' from "' . $originalAddressFull . '" to "' . $address->getFull() . '"';
+				$order->$setter($address)
+					->save()
+					->addComment($msg, Comments::TYPE_NORMAL)
+					->addLog($msg, Log::TYPE_SYSTEM);
+				$address->addLog($msg, Log::TYPE_SYSTEM);
+				$results['item'] = $address->getJson();
+			} else {
+				$results['item'] = array();
+			}
 			Dao::commitTransaction();
 		}
 		catch(Exception $ex)
