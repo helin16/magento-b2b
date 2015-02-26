@@ -3,6 +3,9 @@
 	<authorization>
 		<allow pages="*" users="@" />
 		<allow pages="Login.*" users="*" />
+		<allow pages="PurchaseOrder.Print.*" users="*" />
+		<allow pages="Order.PrintDeliveryDocket.*" users="*" />
+		<allow pages="Order.Print.*" users="*" />
 		<deny pages="*" users="?" />
 	</authorization>
 </configuration>

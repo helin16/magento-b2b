@@ -1,16 +1,16 @@
 <%@MasterClass="Application.layout.BlankLayout"%>
 <com:TContent ID="MainContent">
 	<div class="pagewrapper orderprint container">
-		<div class="orderViewWrapper inlineblock">
-            <table class='orderview' cellspacing="0" cellpadding="0">
-                <thead>
+		<div class="orderViewWrapper inlineblock print-wrapper">
+            <table class='orderview' cellspacing="0" cellpadding="0" id="main-table">
+                <thead id="thead">
                     <tr class="title_row">
                         <td colspan=6>
                             <div>
                                 <span class="inlineblock logo">
                                     <img src="/themes/default/images/logo.png" style="padding: 0px; margin: 0px;display: block;"/>
                                     <span class="inlineblock orderno">
-                                        Order No.: <%= $this->order->getOrderNo()%>
+                                        <%= $this->order->getType() %> No.: <%= $this->order->getOrderNo()%>
                                     </span>
                                 </span>
                                 <span class="inlineblock info">
@@ -30,22 +30,25 @@
                     </tr>
                     <tr class="addr_info">
                         <td colspan=6>
-                            <span class="inlineblock half">
-                                <div class="title">Billing To:</div>
-                                <div class="addr"><%= $this->getAddress('Billing') %></div>
-                            </span>
-                            <span class="inlineblock half">
-                                <div class="title">Shipping To:</div>
-                                <div class="addr"><%= $this->getAddress('Shipping') %></div>
-                            </span>
+                        	<h4><%= $this->order->getCustomer()->getName() %></h4>
+                        	<div>
+	                            <span class="inlineblock half">
+	                                <div class="title">Billing To:</div>
+	                                <div class="addr"><%= $this->getAddress('Billing') %></div>
+	                            </span>
+	                            <span class="inlineblock half">
+	                                <div class="title">Shipping To:</div>
+	                                <div class="addr"><%= $this->getAddress('Shipping') %></div>
+	                            </span>
+                            </div>
                         </td>
                     </tr>
                     <%= $this->getRow('QTY', 'SKU', 'NAME', 'Unit Price', 'Total Price', 'header'); %>
                 </thead>
-                <tbody>
+                <tbody id="tbody">
                     <%= $this->showProducts(); %>
                 </tbody>
-                <tfoot>
+                <tfoot id="tfoot">
                     <tr>
                         <td colspan=6>
                             <div class="order_payments">
@@ -53,17 +56,17 @@
                                     <div class="bank_details box">
                                         <span class="bank_title">Budget PC Bank Details: </span>
                                         <span class="bank_details_name"><span class="details_title">Account Name: </span>Budget PC Pty Ltd</span>
-                                        <span class="bank_details_acc_bsb"><span class="details_title">BSB:</span>013 471</span>
+                                        <span class="bank_details_acc_bsb"><span class="details_title">BSB:</span>013 366</span>
                                         <span class="bank_details_acc_no"><span class="details_title">ACC:</span>4796 74364</span>
                                     </div>
                                     <div class="shipping_details box">
                                         <div class="print-row">
                                             <span class="inlineblock half"><span class="inlineblock title">Salesperson:</span><span class="inlineblock details"><%= $this->order->getUpdatedBy()->getPerson() %></span></span>
-                                            <span class="inlineblock half"><span class="inlineblock title">Payment:</span><span class="inlineblock details"></span></span>
+                                            <span class="inlineblock half"><span class="inlineblock title">Payment:</span><span class="inlineblock details"><%= implode(', ', $this->order->getInfo(OrderInfoType::ID_MAGE_ORDER_PAYMENT_METHOD)) %></span></span>
                                         </div>
                                         <div class="print-row">
-                                            <span class="inlineblock half"><span class="inlineblock title">Delivery Via:</span><span class="inlineblock details"></span></span>
-                                            <span class="inlineblock half"><span class="inlineblock title">comments:</span><span class="inlineblock details"></span></span>
+                                            <span class="inlineblock half"><span class="inlineblock title">Delivery Via:</span><span class="inlineblock details"><%= implode(', ', $this->order->getInfo(OrderInfoType::ID_MAGE_ORDER_SHIPPING_METHOD)) %></span></span>
+                                            <span class="inlineblock half"><span class="inlineblock title">comments:</span><span class="inlineblock details"><%= $this->getComments() %></span></span>
                                         </div>
                                     </div>
                                 </span>

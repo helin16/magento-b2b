@@ -10,7 +10,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 	,_searchCriteria: {} //the searching criteria
 	,_infoTypes:{} //the infotype ids
 	,orderStatuses: [] //the order statuses object
-	
+
 	,_loadChosen: function () {
 		jQuery(".chosen").chosen({
 			disable_search_threshold: 10,
@@ -19,7 +19,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		});
 		return this;
 	}
-	
+
 	,_bindSearchKey: function() {
 		var tmp = {}
 		tmp.me = this;
@@ -32,7 +32,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		});
 		return this;
 	}
-	
+
 	,_loadStatuses: function(orderStatuses) {
 		this.orderStatuses = orderStatuses;
 		var tmp = {};
@@ -43,7 +43,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		});
 		return this;
 	}
-	
+
 	,setSearchCriteria: function(criteria) {
 		var tmp = {};
 		tmp.me = this;
@@ -64,7 +64,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.me._loadChosen()._bindSearchKey();
 		return this;
 	}
-	
+
 	,getSearchCriteria: function() {
 		var tmp = {};
 		tmp.me = this;
@@ -72,7 +72,15 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			tmp.me._searchCriteria = {};
 		tmp.nothingTosearch = true;
 		$(tmp.me.searchDivId).getElementsBySelector('[search_field]').each(function(item) {
-			tmp.me._searchCriteria[item.readAttribute('search_field')] = $F(item);
+			tmp.field = item.readAttribute('search_field');
+			if(item.hasClassName('datepicker')) {
+				tmp.me._signRandID(item);
+				tmp.date = jQuery('#' + item.id).data('DateTimePicker').date();
+				tmp.me._searchCriteria[tmp.field] = tmp.date ? tmp.date.utc() : '';
+
+			} else {
+				tmp.me._searchCriteria[tmp.field] = $F(item);
+			}
 			if(($F(item) instanceof Array && $F(item).size() > 0) || (typeof $F(item) === 'string' && !$F(item).blank()))
 				tmp.nothingTosearch = false;
 		});
@@ -80,7 +88,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			tmp.me._searchCriteria = null;
 		return this;
 	}
-		
+
 	,getResults: function(reset, pageSize) {
 		var tmp = {};
 		tmp.me = this;
@@ -108,7 +116,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					if(!tmp.result)
 						return;
 					$(tmp.me.totalNoOfItemsId).update(tmp.result.pageStats.totalRows);
-					
+
 					tmp.resultDiv = $(tmp.me.resultDivId);
 					//reset div
 					if(tmp.reset === true) {
@@ -119,7 +127,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					tmp.resultDiv.getElementsBySelector('.paginWrapper').each(function(item){
 						item.remove();
 					})
-					
+
 					tmp.tbody = $(tmp.resultDiv).down('tbody');
 					if(!tmp.tbody)
 						$(tmp.resultDiv).insert({'bottom': tmp.tbody = new Element('tbody') });
@@ -130,7 +138,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					//show the next page button
 					if(tmp.result.pageStats.pageNumber < tmp.result.pageStats.totalPages)
 						tmp.resultDiv.insert({'bottom': tmp.me._getNextPageBtn().addClassName('paginWrapper') });
-					
+
 					tmp.resultDiv.getElementsBySelector('.popovershipping.newPopover').each(function(item) {
 						item.removeClassName('newPopover');
 						tmp.rowData = item.up('.order_item').retrieve('data');
@@ -143,7 +151,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 							'trigger': 'manual'
 						})
 					})
-					
+
 				} catch (e) {
 					tmp.me.showModalBox('<strong class="text-danger">Error</strong>', e, true);
 				}
@@ -155,7 +163,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			}
 		});
 	}
-	
+
 	,_getNextPageBtn: function() {
 		var tmp = {}
 		tmp.me = this;
@@ -172,7 +180,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				})
 			});
 	}
-	
+
 	,_getOrderDetailsDiv: function(order) {
 		var tmp = {};
 		tmp.me = this;
@@ -188,13 +196,13 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			.insert({'bottom': new Element('div').update('<span class="glyphicon glyphicon-map-marker" title="Address"></span>: ' + order.address.shipping.full)	})
 			;
 	}
-	
+
 	,_getTitledDiv: function(title, content) {
 		return new Element('div', {'class': 'field_div'})
 			.insert({'bottom': new Element('span', {'class': 'inlineblock title'}).update(title) })
 			.insert({'bottom': new Element('span', {'class': 'inlineblock divcontent'}).update(content) });
 	}
-	
+
 	,_openDetailsPage: function(row) {
 		var tmp = {};
 		tmp.me = this;
@@ -214,7 +222,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
  		});
 		return tmp.me;
 	}
-	
+
 	,_getOpenDetailBtn: function(row) {
 		var tmp = {};
 		tmp.me = this;
@@ -224,14 +232,14 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				tmp.me._openDetailsPage(row);
 			});
 	}
-	
+
 	,_getOrderInfoCell: function(row) {
 		var tmp = {};
 		tmp.me = this
 		tmp.quantity = 'n/a';
 		tmp.custName = 'n/a';
 		tmp.custEmail = 'n/a';
-		
+
 		if(row.infos && row.infos !== null)
 		{
 			if(tmp.me._infoTypes['qty'] in row.infos && row.infos[tmp.me._infoTypes['qty']].length > 0)
@@ -246,11 +254,11 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			.insert({'bottom': ' '})
 			.insert({'bottom':  new Element('span')
 				.insert({'bottom': tmp.orderLink = new Element('a', {'id': 'orderno-btn-' + row.id, 'class': 'orderNo visible-xs visible-sm visible-md visible-lg newPopover popovershipping', 'href': 'javascript:void(0);'})
-					.update(row.orderNo) 
+					.update(row.orderNo)
 					.insert({'bottom': new Element('div', {'style': 'display: none;', 'class': 'popover_content'}).update(tmp.me._getOrderDetailsDiv(row)) })
 				})
 			});
-		tmp.me.observeClickNDbClick(tmp.orderLink, 
+		tmp.me.observeClickNDbClick(tmp.orderLink,
 			function(event) {
 				tmp.btn = event.target;
 				jQuery(tmp.btn).popover('show');
@@ -263,19 +271,19 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			})
 		return tmp.newDiv;
 	}
-	
+
 	,_getPaymentCell: function(row) {
 		var tmp = {};
 		tmp.me = this
 		return new Element('a', {'href': 'javascript: void(0);'})
-			.insert({'bottom': ( !row.passPaymentCheck ? '' : 
+			.insert({'bottom': ( !row.passPaymentCheck ? '' :
 					new Element('span', {'title': (row.totalDue === 0 ? 'Full Paid' : 'Short Paid'), 'class': (row.totalDue === 0 ? 'text-success' : 'text-danger') })
 						.update(new Element('span', {'class': 'glyphicon ' + (row.totalDue === 0 ? 'glyphicon-ok-sign' : 'glyphicon-warning-sign') }))
 				) })
 				.insert({'bottom': " " })
 				.insert({'bottom': new Element('span')
 					.update(tmp.me.getCurrency(row.totalDue))
-					.writeAttribute('title', 'Total Due Amount:' + tmp.me.getCurrency(row.totalDue))  
+					.writeAttribute('title', 'Total Due Amount:' + tmp.me.getCurrency(row.totalDue))
 				})
 				.observe('click', function() {
 					tmp.me._openDetailsPage(row);
@@ -287,23 +295,23 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		return new Element('a', {'href': 'javascript: void(0);'})
 		.insert({'bottom': new Element('span')
 		.update(tmp.me.getCurrency(row.margin))
-		.writeAttribute('title', 'Order margin:' + tmp.me.getCurrency(row.margin))  
+		.writeAttribute('title', 'Order margin:' + tmp.me.getCurrency(row.margin))
 		})
 		.observe('click', function() {
 			tmp.me._openDetailsPage(row);
 		});
 	}
-	
+
 	,_getPurchasingCell: function(row) {
 		var tmp = {};
 		tmp.me = this;
 		tmp.statusId_stockchecked =['4', '5', '6', '7', '8'];
 		tmp.statusId_stockchecked_not_passed =['4', '6'];
-		
+
 		tmp.hasCheckedStock = (tmp.statusId_stockchecked.indexOf(row.status.id) >= 0);
 		tmp.stockChkedWIssues = (tmp.statusId_stockchecked_not_passed.indexOf(row.status.id) >= 0);
 		return new Element('div')
-			.insert({'bottom': (!tmp.hasCheckedStock ? '' : 
+			.insert({'bottom': (!tmp.hasCheckedStock ? '' :
 				new Element('a', {'href': 'javascript: void(0);', 'class': (!tmp.stockChkedWIssues ? 'text-success' : 'text-danger'), 'title': (!row.stockChkedWIssues ? 'Stock checked' : 'insufficient stock')})
 					.update(new Element('span', {'class': 'glyphicon ' + (!tmp.stockChkedWIssues ? 'glyphicon-ok-sign' : 'glyphicon-warning-sign') }))
 					.observe('click', function() {
@@ -312,17 +320,17 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			 ) })
 			;
 	}
-	
+
 	,_getWarehouseCell: function(row) {
 		var tmp = {};
 		tmp.me = this;
 		tmp.statusId_whchecked =['6', '7', '8'];
 		tmp.statusId_whchecked_not_passed =['6'];
-		
+
 		tmp.hasChecked = (tmp.statusId_whchecked.indexOf(row.status.id) >= 0);
 		tmp.chkedWIssues = (tmp.statusId_whchecked_not_passed.indexOf(row.status.id) >= 0);
 		return new Element('div')
-			.insert({'bottom': (!tmp.hasChecked ? '' : 
+			.insert({'bottom': (!tmp.hasChecked ? '' :
 				new Element('a', {'href': 'javascript: void(0);', 'class': (!tmp.chkedWIssues ? 'text-success' : 'text-danger'), 'title': (!row.chkedWIssues ? 'Stock Handled successfully' : 'insufficient stock')})
 					.update(new Element('span', {'class': 'glyphicon ' + (!tmp.chkedWIssues ? 'glyphicon-ok-sign' : 'glyphicon-warning-sign') }))
 					.observe('click', function() {
@@ -331,7 +339,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			 ) })
 			;
 	}
-		
+
 	,_getResultRow: function(row, isTitle) {
 		var tmp = {};
 		tmp.me = this;
@@ -343,7 +351,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			.insert({'bottom': new Element('td', {'class': 'order-date col-xs-1'}).update(
 					tmp.isTitle === true ? 'Order Date' : tmp.me.loadUTCTime(row.orderDate).toLocaleDateString()
 			) })
-			.insert({'bottom': new Element('td', {'class': 'order-type col-xs-1'}).update(
+			.insert({'bottom': new Element('td', {'class': 'order-type col-xs-1 ' + (row.type === 'ORDER' ? 'success' : (row.type === 'QUOTE' ? 'warning' : ''))}).update(
 					tmp.isTitle === true ? 'Type' : row.type
 			) })
 			.insert({'bottom': new Element('td', {'class': 'status col-middle col-xs-2', 'order_status': row.status.name}).update(
@@ -351,10 +359,10 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			) })
 			.insert({'bottom': new Element('td', {'class': 'text-right col-xs-1', 'payment': true}).update(
 				tmp.isTitle ? 'Payments' : tmp.me._getPaymentCell(row)
-			) })		
+			) })
 			.insert({'bottom': new Element('td', {'class': 'text-right col-xs-1', 'margin': true}).update(
 					tmp.isTitle ? 'Margin' : tmp.me._getMarginCell(row)
-			) })		
+			) })
 			.insert({'bottom': new Element('td', {'class': 'text-center col-xs-1', 'purchasing': true}).update(
 					tmp.isTitle ? 'Purchasing' : tmp.me._getPurchasingCell(row)
 			) })
@@ -363,5 +371,11 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			) })
 		;
 		return tmp.row;
+	}
+	,init: function() {
+		var tmp = {};
+		tmp.me = this;
+		jQuery('.datepicker').datetimepicker();
+		return tmp.me;
 	}
 });

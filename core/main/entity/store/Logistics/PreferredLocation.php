@@ -131,6 +131,9 @@ class PreferredLocation extends BaseEntityAbstract
 	public static function create(Location $location, Product $product, PreferredLocationType $type)
 	{
 		$obj = new PreferredLocation();
+		$items = self::getAllByCriteria('locationId = ? and productId = ? and typeId = ?', array($location->getId(), $product->getId(), $type->getId()), true, 1, 1);
+		if(count($items) > 0)
+			return $items[0];
 		$obj->setLocation($location)
 			->setProduct($product)
 			->setType($type)

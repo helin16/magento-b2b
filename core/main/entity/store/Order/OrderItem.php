@@ -9,77 +9,89 @@
 class OrderItem extends BaseEntityAbstract
 {
 	/**
-	 * The order 
-	 * 
+	 * The order
+	 *
 	 * @var Order
 	 */
 	protected $order;
 	/**
-	 * The product 
-	 * 
+	 * The product
+	 *
 	 * @var Product
 	 */
 	protected $product;
 	/**
 	 * The quantity that orderred
-	 * 
+	 *
 	 * @var int
 	 */
 	private $qtyOrdered;
 	/**
 	 * The unit price for that product
-	 * 
+	 *
 	 * @var number
 	 */
 	private $unitPrice;
 	/**
 	 * The total price for that product
-	 * 
+	 *
 	 * @var number
 	 */
 	private $totalPrice;
 	/**
 	 * The ETA of the product
-	 * 
+	 *
 	 * @var UDate
 	 */
 	private $eta = null;
 	/**
 	 * Whether the warehouse has picked this item for shipping
-	 * 
+	 *
 	 * @var bool
 	 */
 	private $isPicked = false;
 	/**
 	 * Whether the warehouse has shipped
-	 * 
+	 *
 	 * @var bool
 	 */
 	private $isShipped = false;
 	/**
 	 * Whether this item has been ordered by purchasing
-	 * 
+	 *
 	 * @var bool
 	 */
 	private $isOrdered = false;
 	/**
 	 * The magento order_item_id
-	 * 
+	 *
 	 * @var int
 	 */
 	private $mageOrderId = 0;
 	/**
 	 * The margin of each sale item
-	 * 
+	 *
 	 * @var item
 	 */
 	private $margin = 0;
+	/**
+	 * The item description of the order item
+	 *
+	 * @var string
+	 */
+	private $itemDescription = '';
+	/**
+	 * The product's unitCost
+	 *
+	 * @var double
+	 */
+	private $unitCost;
 	/**
 	 * Getter for order
 	 *
 	 * @return Order
 	 */
-	public function getOrder() 
+	public function getOrder()
 	{
 		$this->loadManyToOne('order');
 	    return $this->order;
@@ -91,7 +103,7 @@ class OrderItem extends BaseEntityAbstract
 	 *
 	 * @return OrderItem
 	 */
-	public function setOrder($value) 
+	public function setOrder($value)
 	{
 	    $this->order = $value;
 	    return $this;
@@ -101,7 +113,7 @@ class OrderItem extends BaseEntityAbstract
 	 *
 	 * @return Product
 	 */
-	public function getProduct() 
+	public function getProduct()
 	{
 		$this->loadManyToOne('product');
 	    return $this->product;
@@ -113,7 +125,7 @@ class OrderItem extends BaseEntityAbstract
 	 *
 	 * @return OrderItem
 	 */
-	public function setProduct($value) 
+	public function setProduct($value)
 	{
 	    $this->product = $value;
 	    return $this;
@@ -123,7 +135,7 @@ class OrderItem extends BaseEntityAbstract
 	 *
 	 * @return int
 	 */
-	public function getQtyOrdered() 
+	public function getQtyOrdered()
 	{
 	    return $this->qtyOrdered;
 	}
@@ -134,7 +146,7 @@ class OrderItem extends BaseEntityAbstract
 	 *
 	 * @return OrderItem
 	 */
-	public function setQtyOrdered($value) 
+	public function setQtyOrdered($value)
 	{
 	    $this->qtyOrdered = $value;
 	    return $this;
@@ -144,7 +156,7 @@ class OrderItem extends BaseEntityAbstract
 	 *
 	 * @return number
 	 */
-	public function getUnitPrice() 
+	public function getUnitPrice()
 	{
 	    return $this->unitPrice;
 	}
@@ -155,7 +167,7 @@ class OrderItem extends BaseEntityAbstract
 	 *
 	 * @return OrderItem
 	 */
-	public function setUnitPrice($value) 
+	public function setUnitPrice($value)
 	{
 	    $this->unitPrice = $value;
 	    return $this;
@@ -165,7 +177,7 @@ class OrderItem extends BaseEntityAbstract
 	 *
 	 * @return number
 	 */
-	public function getTotalPrice() 
+	public function getTotalPrice()
 	{
 	    return $this->totalPrice;
 	}
@@ -176,7 +188,7 @@ class OrderItem extends BaseEntityAbstract
 	 *
 	 * @return OrderItem
 	 */
-	public function setTotalPrice($value) 
+	public function setTotalPrice($value)
 	{
 	    $this->totalPrice = $value;
 	    return $this;
@@ -186,7 +198,7 @@ class OrderItem extends BaseEntityAbstract
 	 *
 	 * @return UDate
 	 */
-	public function getEta() 
+	public function getEta()
 	{
 		if($this->eta === null || $this->eta === '' )
 			return null;
@@ -201,7 +213,7 @@ class OrderItem extends BaseEntityAbstract
 	 *
 	 * @return OrderItem
 	 */
-	public function setEta($value) 
+	public function setEta($value)
 	{
 	    $this->eta = $value;
 	    return $this;
@@ -211,7 +223,7 @@ class OrderItem extends BaseEntityAbstract
 	 *
 	 * @return Bool
 	 */
-	public function getIsPicked() 
+	public function getIsPicked()
 	{
 	    return trim($this->isPicked) === '1';
 	}
@@ -222,7 +234,7 @@ class OrderItem extends BaseEntityAbstract
 	 *
 	 * @return OrderItem
 	 */
-	public function setIsPicked($value) 
+	public function setIsPicked($value)
 	{
 	    $this->isPicked = $value;
 	    return $this;
@@ -232,7 +244,7 @@ class OrderItem extends BaseEntityAbstract
 	 *
 	 * @return Bool
 	 */
-	public function getIsShipped() 
+	public function getIsShipped()
 	{
 	    return trim($this->isPicked) === '1';
 	}
@@ -243,7 +255,7 @@ class OrderItem extends BaseEntityAbstract
 	 *
 	 * @return OrderItem
 	 */
-	public function setIsShipped($value) 
+	public function setIsShipped($value)
 	{
 	    $this->isShipped = $value;
 	    return $this;
@@ -253,7 +265,7 @@ class OrderItem extends BaseEntityAbstract
 	 *
 	 * @return book
 	 */
-	public function getIsOrdered() 
+	public function getIsOrdered()
 	{
 	    return trim($this->isOrdered) === '1';
 	}
@@ -264,7 +276,7 @@ class OrderItem extends BaseEntityAbstract
 	 *
 	 * @return OrderItem
 	 */
-	public function setIsOrdered($value) 
+	public function setIsOrdered($value)
 	{
 	    $this->isOrdered = $value;
 	    return $this;
@@ -272,9 +284,9 @@ class OrderItem extends BaseEntityAbstract
 	/**
 	 * Getter for mageOrderId
 	 *
-	 * @return 
+	 * @return
 	 */
-	public function getMageOrderId() 
+	public function getMageOrderId()
 	{
 	    return $this->mageOrderId;
 	}
@@ -285,7 +297,7 @@ class OrderItem extends BaseEntityAbstract
 	 *
 	 * @return OrderItem
 	 */
-	public function setMageOrderId($value) 
+	public function setMageOrderId($value)
 	{
 	    $this->mageOrderId = $value;
 	    return $this;
@@ -295,7 +307,7 @@ class OrderItem extends BaseEntityAbstract
 	 *
 	 * @return double
 	 */
-	public function getMargin() 
+	public function getMargin()
 	{
 	    return $this->margin;
 	}
@@ -306,11 +318,34 @@ class OrderItem extends BaseEntityAbstract
 	 *
 	 * @return OrderItem
 	 */
-	public function setMargin($value) 
+	public function setMargin($value)
 	{
 	    $this->margin = $value;
 	    return $this;
 	}
+
+	/**
+	 * Getter for itemDescription
+	 *
+	 * @return string
+	 */
+	public function getItemDescription()
+	{
+	    return $this->itemDescription;
+	}
+	/**
+	 * Setter for itemDescription
+	 *
+	 * @param int $value The itemDescription
+	 *
+	 * @return OrderItem
+	 */
+	public function setItemDescription($value)
+	{
+	    $this->itemDescription = $value;
+	    return $this;
+	}
+
 	/**
 	 * (non-PHPdoc)
 	 * @see BaseEntityAbstract::getJson()
@@ -327,10 +362,10 @@ class OrderItem extends BaseEntityAbstract
 	}
 	/**
 	 * Add a selling item
-	 * 
+	 *
 	 * @param string $serialNo
 	 * @param string $description
-	 * 
+	 *
 	 * @return OrderItem
 	 */
 	public function addSellingItem($serialNo, $description = '')
@@ -340,7 +375,7 @@ class OrderItem extends BaseEntityAbstract
 	}
 	/**
 	 * Getting the selling items
-	 * 
+	 *
 	 * @param string $serialNo
 	 * @param string $description
 	 * @param string $activeOnly
@@ -355,6 +390,27 @@ class OrderItem extends BaseEntityAbstract
 		return SellingItem::getSellingItems($this, $serialNo, $description, $this->getOrder(), $this->getProduct(), $activeOnly, $pageNo, $pageSize, $orderBy, $stats);
 	}
 	/**
+	 * Getter for unitCost
+	 *
+	 * @return double
+	 */
+	public function getUnitCost()
+	{
+	    return $this->unitCost;
+	}
+	/**
+	 * Setter for unitCost
+	 *
+	 * @param double $value The unitCost
+	 *
+	 * @return OrderItem
+	 */
+	public function setUnitCost($value)
+	{
+	    $this->unitCost = $value;
+	    return $this;
+	}
+	/**
 	 * (non-PHPdoc)
 	 * @see BaseEntityAbstract::preSave()
 	 */
@@ -362,10 +418,15 @@ class OrderItem extends BaseEntityAbstract
 	{
 		if(trim($this->getMageOrderId()) === '')
 			$this->setMageOrderId('0');
-		
+
+		if(trim($this->getUnitCost()) === '')
+			$this->setUnitCost($this->getProduct()->getUnitCost());
+
 		//when brandnew, calculate margin
 		if(trim($this->getId()) === '') {
-			$this->setMargin(StringUtilsAbstract::getValueFromCurrency($this->getTotalPrice()) - StringUtilsAbstract::getValueFromCurrency($this->getProduct()->getUnitCost()) * intval($this->getQtyOrdered()));
+			$this->setMargin(StringUtilsAbstract::getValueFromCurrency($this->getTotalPrice()) - StringUtilsAbstract::getValueFromCurrency($this->getUnitCost()) * 1.1 * intval($this->getQtyOrdered()));
+			if(trim($this->getItemDescription()) === '')
+				$this->setItemDescription($this->getProduct()->getName());
 		} else { //if the isPicked changed
 			$product = $this->getProduct();
 			//for picked
@@ -399,7 +460,7 @@ class OrderItem extends BaseEntityAbstract
 	public function __loadDaoMap()
 	{
 		DaoMap::begin($this, 'ord_item');
-		
+
 		DaoMap::setManyToOne('order', 'Order', 'ord');
 		DaoMap::setManyToOne('product', 'Product', 'pro');
 		DaoMap::setIntType('qtyOrdered');
@@ -411,9 +472,11 @@ class OrderItem extends BaseEntityAbstract
 		DaoMap::setBoolType('isOrdered');
 		DaoMap::setIntType('mageOrderId');
 		DaoMap::setIntType('margin', 'double', '10,4');
-		
+		DaoMap::setIntType('unitCost', 'double', '10,4');
+		DaoMap::setStringType('itemDescription', 'varchar', '255');
+
 		parent::__loadDaoMap();
-		
+
 		DaoMap::createIndex('isPicked');
 		DaoMap::createIndex('isShipped');
 		DaoMap::createIndex('isOrdered');
@@ -421,6 +484,7 @@ class OrderItem extends BaseEntityAbstract
 		DaoMap::createIndex('unitPrice');
 		DaoMap::createIndex('totalPrice');
 		DaoMap::createIndex('margin');
+		DaoMap::createIndex('unitCost');
 		DaoMap::commit();
 	}
 	/**
@@ -436,13 +500,14 @@ class OrderItem extends BaseEntityAbstract
 	 *
 	 * @return OrderItem
 	 */
-	public static function create(Order $order, Product $product, $unitPrice, $qty, $totalPrice, $mageOrderItemId = 0, $eta = null)
+	public static function create(Order $order, Product $product, $unitPrice, $qty, $totalPrice, $mageOrderItemId = 0, $eta = null, $itemDescription = '')
 	{
 		$item = new OrderItem();
 		$item->setOrder($order)
 			->setProduct($product)
 			->setUnitPrice($unitPrice)
 			->setQtyOrdered($qty)
+			->setItemDescription($itemDescription)
 			->setTotalPrice($totalPrice === null ? $unitPrice * $qty : $totalPrice)
 			->setMageOrderId($mageOrderItemId)
 			->setEta($eta)

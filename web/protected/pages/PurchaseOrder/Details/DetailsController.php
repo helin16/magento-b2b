@@ -1,7 +1,7 @@
 <?php
 /**
  * This is the Product details page
- * 
+ *
  * @package    Web
  * @subpackage Controller
  * @author     lhe<helin16@gmail.com>
@@ -24,8 +24,8 @@ class DetailsController extends DetailsPageAbstract
 	public function __construct()
 	{
 		parent::__construct();
-		if(!AccessControl::canAccessProductsPage(Core::getRole()))
-			die('You do NOT have access to this page');
+// 		if(!AccessControl::canAccessPurcahseOrdersPage(Core::getRole()))
+// 			die('You do NOT have access to this page');
 	}
 	/**
 	 * Getting The end javascript
@@ -53,12 +53,12 @@ class DetailsController extends DetailsPageAbstract
 			$unitPrice = $item->getUnitPrice();
 			$qty = $item->getQty();
 			$totalPrice = $item->getTotalPrice();
-			$receivedQty = $item->getReceivedQty(); 
+			$receivedQty = $item->getReceivedQty();
 // 			$serials = Rec;
 			array_push($purchaseOrderItems,array('product'=> $product->getJson(), 'unitPrice'=> $unitPrice, 'qty'=> $qty, 'totalPrice'=> $totalPrice, 'receievedQty'=> $receivedQty));
 		};
 		$js = parent::_getEndJs();
-		$js .= "pageJs.setPreData(" . json_encode($purchaseOrder->getJson()) . ")"; 
+		$js .= "pageJs.setPreData(" . json_encode($purchaseOrder->getJson()) . ")";
 		$js .= ".setComment(" . json_encode($comments) . ")";
 		$js .= ".setStatusOptions(" . json_encode($statusOptions) . ")";
 		$js .= ".setCallbackId('searchProduct', '" . $this->searchProductBtn->getUniqueID() . "')";
@@ -74,7 +74,7 @@ class DetailsController extends DetailsPageAbstract
 	 *
 	 * @param unknown $sender
 	 * @param unknown $param
-	 * 
+	 *
 	 * @throws Exception
 	 *
 	 */
@@ -87,7 +87,7 @@ class DetailsController extends DetailsPageAbstract
 			$searchTxt = isset($param->CallbackParameter->searchTxt) ? trim($param->CallbackParameter->searchTxt) : '';
 			$where = 'pro_pro_code.code = :searchExact or pro.name like :searchTxt OR sku like :searchTxt';
 			$params = array('searchExact' => $searchTxt, 'searchTxt' => '%' . $searchTxt . '%');
-			
+
 			$searchTxtArray = StringUtilsAbstract::getAllPossibleCombo(StringUtilsAbstract::tokenize($searchTxt));
 			if(count($searchTxtArray) > 1)
 			{
@@ -98,43 +98,41 @@ class DetailsController extends DetailsPageAbstract
 					$params[$key] = '%' . implode('%', $comboArray) . '%';
 				}
 			}
-			
+
 			$supplierID = isset($param->CallbackParameter->supplierID) ? trim($param->CallbackParameter->supplierID) : '';
 			Product::getQuery()->eagerLoad('Product.codes', 'left join');
-			Dao::$debug = true;
 			$products = Product::getAllByCriteria($where, $params, true, 1, DaoQuery::DEFAUTL_PAGE_SIZE, array('pro.sku' => 'asc'));
-			Dao::$debug = false;
 			foreach($products as $product)
 			{
 				$array = $product->getJson();
-				
+
 				$array['minProductPrice'] = 0;
 				$array['lastSupplierPrice'] = 0;
 				$array['minSupplierPrice'] = 0;
-				
+
 				$minProductPriceProduct = PurchaseOrderItem::getAllByCriteria('productId = ?', array($product->getId()), true, 1, 1, array('unitPrice'=> 'asc'));
 				$minProductPrice = sizeof($minProductPriceProduct) ? $minProductPriceProduct[0]->getUnitPrice() : 0;
 				$minProductPriceId = sizeof($minProductPriceProduct) ? $minProductPriceProduct[0]->getPurchaseOrder()->getId() : '';
-				
+
 				PurchaseOrderItem::getQuery()->eagerLoad('PurchaseOrderItem.purchaseOrder');
 				$lastSupplierPriceProduct = PurchaseOrderItem::getAllByCriteria('po_item.productId = ? and po_item_po.supplierId = ?', array($product->getId(), $supplierID), true, 1, 1, array('po_item.id'=> 'desc'));
 				$lastSupplierPrice = sizeof($lastSupplierPriceProduct) ? $lastSupplierPriceProduct[0]->getUnitPrice() : 0;
 				$lastSupplierPriceId = sizeof($lastSupplierPriceProduct) ? $lastSupplierPriceProduct[0]->getPurchaseOrder()->getId() : '';
-				
+
 				PurchaseOrderItem::getQuery()->eagerLoad('PurchaseOrderItem.purchaseOrder');
 				$minSupplierPriceProduct = PurchaseOrderItem::getAllByCriteria('po_item.productId = ? and po_item_po.supplierId = ?', array($product->getId(), $supplierID), true, 1, 1, array('po_item.unitPrice'=> 'asc'));
 				$minSupplierPrice = sizeof($minSupplierPriceProduct) ? $minSupplierPriceProduct[0]->getUnitPrice() : 0;
 				$minSupplierPriceId = sizeof($minSupplierPriceProduct) ? $minSupplierPriceProduct[0]->getPurchaseOrder()->getId() : '';
-				
+
 				$array['minProductPrice'] = $minProductPrice;
 				$array['minProductPriceId'] = $minProductPriceId;
-				
+
 				$array['lastSupplierPrice'] = $lastSupplierPrice;
 				$array['lastSupplierPriceId'] = $lastSupplierPriceId;
-				
+
 				$array['minSupplierPrice'] = $minSupplierPrice;
 				$array['minSupplierPriceId'] = $minSupplierPriceId;
-				
+
 				$items[] = $array;
 			}
 			$results['items'] = $items;
@@ -161,6 +159,7 @@ class DetailsController extends DetailsPageAbstract
 		{
 			Dao::beginTransaction();
 			$supplier = Supplier::get(trim($param->CallbackParameter->supplier->id));
+			$isSubmit = isset($param->CallbackParameter->isSubmit) && intval($param->CallbackParameter->isSubmit) === 1 ? true : false;
 			$purchaseOrderId = trim($param->CallbackParameter->id);
 			if(!$supplier instanceof Supplier)
 				throw new Exception('Invalid Supplier passed in!');
@@ -188,26 +187,21 @@ class DetailsController extends DetailsPageAbstract
 				$productId = trim($item->product->id);
 				$productUnitPrice = trim($item->unitPrice);
 				$qtyOrdered = trim($item->qtyOrdered);
-				$productWtyOrdered = trim($item->qtyOrdered);
 				$productTotalPrice = trim($item->totalPrice);
 				$product = Product::get($productId);
 				if(!$product instanceof Product)
 					throw new Exception('Invalid Product passed in!');
-				$purchaseOrder->addItem($product,$productUnitPrice,$qtyOrdered,'','',$productTotalPrice) -> save();
+				$purchaseOrder->addItem($product, $productUnitPrice, $qtyOrdered, '', '', $productTotalPrice)
+					->save();
 			};
-// 			foreach ($param->CallbackParameter->removedOldItems as $item) {
-// 				$productId = trim($item->product->id);
-// 				$productUnitPrice = trim($item->unitPrice);
-// 				$qtyOrdered = trim($item->qtyOrdered);
-// 				$productWtyOrdered = trim($item->qtyOrdered);
-// 				$productTotalPrice = trim($item->totalPrice);
-// 				$product = Product::get($productId);
-// 				if(!$product instanceof Product)
-// 					throw new Exception('Invalid Product passed in!');
-// 				$removedItemPOitem = PurchaseOrderItem::getAllByCriteria('purchaseOrderId = ? and productId = ?',array($purchaseOrder-> getId(), $product->getId()),true,1,1)[0];
-// 				$removedItemPOitem->setActive(false)->save();
-// 			};
 			$results['item'] = $purchaseOrder->getJson();
+			if($isSubmit === true) {
+				$pdfFile = EntityToPDF::getPDF($purchaseOrder);
+				$confirmEmail = trim($param->CallbackParameter->contactEmail);
+				$asset = Asset::registerAsset($purchaseOrder->getPurchaseOrderNo() . '.pdf', file_get_contents($pdfFile), Asset::TYPE_TMP);
+				EmailSender::addEmail('purchasing@budgetpc.com.au', $confirmEmail, 'BudgetPC Purchase Order:' . $purchaseOrder->getPurchaseOrderNo(), 'Please Find the attached PurchaseOrder(' . $purchaseOrder->getPurchaseOrderNo() . ') from BudgetPC.', array($asset));
+				$purchaseOrder->addComment('An email sent to "' . $confirmEmail . '" with the attachment: ' . $asset->getAssetId(), Comments::TYPE_SYSTEM);
+			}
 			Dao::commitTransaction();
 		}
 		catch(Exception $ex)
@@ -231,35 +225,27 @@ class DetailsController extends DetailsPageAbstract
 			if(!$perchaseorder instanceof PurchaseOrder)
 				throw new Exception('Invalid Purchase Order passed in!');
 			$purchaseOrderNo = trim($param->CallbackParameter->purchaseOrderNo);
-			$id = !isset($param->CallbackParameter->id) ? '' : trim($param->CallbackParameter->id);
-			$active = !is_numeric($param->CallbackParameter->id) ? '' : trim($param->CallbackParameter->active);
-			$supplieName = !is_numeric($param->CallbackParameter->supplierName) ? '' : trim($param->CallbackParameter->supplierName);
 			$supplierId = trim($param->CallbackParameter->supplierId);
 			$supplier = Supplier::get($supplierId);
-			$supplierContactName = trim($param->CallbackParameter->supplierContactName);
 			$orderDate = trim($param->CallbackParameter->orderDate);
 			$totalAmount = trim($param->CallbackParameter->totalAmount);
 			$totalPaid = trim($param->CallbackParameter->totalPaid);
-			
+
 			if(isset($param->CallbackParameter->id)) {
-			$perchaseorder->setPurchaseOrderNo($purchaseOrderNo)
-				->setSupplier($supplier)
-				->setSupplierRefNo($supplierId)
-// 				->setSupplierContact($supplierContactName)
-				->setOrderDate($orderDate)
-				->setTotalAmount($totalAmount)
-				->setTotalPaid($totalPaid)
-			;
-// 			if(trim($perchaseorder->getId()) === '')
-// 				$perchaseorder->setIsFromB2B(false);
-			$perchaseorder->save();
+				$perchaseorder->setPurchaseOrderNo($purchaseOrderNo)
+					->setSupplier($supplier)
+					->setSupplierRefNo($supplierId)
+					->setOrderDate($orderDate)
+					->setTotalAmount($totalAmount)
+					->setTotalPaid($totalPaid)
+					->save();
 			} else {
 // 				PurchaseOrder::
 			}
-			
+
 			$results['url'] = '/purchase/' . $perchaseorder->getId() . '.html';
 			$results['item'] = $perchaseorder->getJson();
-			
+
 			Dao::commitTransaction();
 		}
 		catch(Exception $ex)

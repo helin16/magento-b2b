@@ -1,0 +1,16 @@
+<com:TContent ID="MainContent">
+	<com:TCallback ID="genReportBtn" onCallback="genReport" />
+	<com:Application.controls.bootstrapDateTimePicker.bootstrapDateTimePicker />
+	<div class="pagewrapper item-list-wrapper container">
+		<div class="col-sm-4 col-sm-offset-4">
+			<h4>List of Reports:</h4>
+			<div class="list-group">
+				<a class="list-group-item gen-report-btn" data-type="sales_daily" href="javascript: void(0);">Sales Report</a>
+				<a class="list-group-item gen-report-btn" data-type="supplier_bill_daily" href="javascript: void(0);">Bill Report</a>
+				<a class="list-group-item gen-report-btn" data-type="manual_journal" href="javascript: void(0);">Manual Journal</a>
+				<a class="list-group-item gen-report-btn" data-type="inventory_list" href="javascript: void(0);">Inventory List</a>
+				<a class="list-group-item gen-report-btn" data-type="magento_price" href="javascript: void(0);">Magento Price Import File</a>
+			</div>
+		</div>
+	</div>
+</com:TContent>

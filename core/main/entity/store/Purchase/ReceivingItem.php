@@ -22,22 +22,28 @@ class ReceivingItem extends BaseEntityAbstract
 	protected $purchaseOrder;
 	/**
 	 * The unitprice of each item
-	 * 
+	 *
 	 * @var double
 	 */
 	private $unitPrice;
 	/**
 	 * The serial number
-	 * 
+	 *
 	 * @var string
 	 */
 	private $serialNo;
 	/**
 	 * The invoiceNo
-	 * 
+	 *
 	 * @var string
 	 */
 	private $invoiceNo;
+	/**
+	 * Qty
+	 *
+	 * @var int
+	 */
+	private $qty = 1;
 	/**
 	 * Getter for product
 	 *
@@ -87,7 +93,7 @@ class ReceivingItem extends BaseEntityAbstract
 	 *
 	 * @return double
 	 */
-	public function getUnitPrice() 
+	public function getUnitPrice()
 	{
 	    return $this->unitPrice;
 	}
@@ -98,7 +104,7 @@ class ReceivingItem extends BaseEntityAbstract
 	 *
 	 * @return ReceivingItem
 	 */
-	public function setUnitPrice($value) 
+	public function setUnitPrice($value)
 	{
 	    $this->unitPrice = $value;
 	    return $this;
@@ -108,7 +114,7 @@ class ReceivingItem extends BaseEntityAbstract
 	 *
 	 * @return string
 	 */
-	public function getInvoiceNo() 
+	public function getInvoiceNo()
 	{
 	    return $this->invoiceNo;
 	}
@@ -119,7 +125,7 @@ class ReceivingItem extends BaseEntityAbstract
 	 *
 	 * @return ReceivingItem
 	 */
-	public function setInvoiceNo($value) 
+	public function setInvoiceNo($value)
 	{
 	    $this->invoiceNo = $value;
 	    return $this;
@@ -129,7 +135,7 @@ class ReceivingItem extends BaseEntityAbstract
 	 *
 	 * @return string
 	 */
-	public function getSerialNo() 
+	public function getSerialNo()
 	{
 	    return $this->serialNo;
 	}
@@ -140,20 +146,80 @@ class ReceivingItem extends BaseEntityAbstract
 	 *
 	 * @return ReceivingItem
 	 */
-	public function setSerialNo($value) 
+	public function setSerialNo($value)
 	{
 	    $this->serialNo = $value;
 	    return $this;
 	}
+	/**
+	 * Getter for qty
+	 *
+	 * @return int
+	 */
+	public function getQty()
+	{
+	    return $this->qty;
+	}
+	/**
+	 * Setter for qty
+	 *
+	 * @param int $value The qty
+	 *
+	 * @return ReceivingItem
+	 */
+	public function setQty($qty)
+	{
+	    $this->qty = $qty;
+	    return $this;
+	}
+	/**
+	 * (non-PHPdoc)
+	 * @see BaseEntityAbstract::postSave()
+	 */
 	public function postSave()
 	{
-		//if a receiving item gets deactivate, then stockonHand needs to be changed
-		if(trim($this->getId()) !== '' && intval($this->getActive()) === 0 ) {
-			$msg = 'ReceivedIem for Product(SKU=' . $product . '), unitPrice=' . $unitPrice . ', serialNo=' . $serialNo . ', invoiceNo=' . $invoiceNo . ' has now been deactivated.';
-			$po->addLog($msg, Log::TYPE_SYSTEM, Log::TYPE_SYSTEM, get_class($this) . '_DEACTIVATION', __CLASS__ . '::' . __FUNCTION__)
+		if(trim($this->getId()) !== '' ) {
+			//if a receiving item gets deactivate, then stockonHand needs to be changed
+			if(intval($this->getActive()) === 0) {
+				$msg = 'ReceivedItem for Product(SKU=' . $this->getProduct() . '), unitPrice=' . $this->getUnitPrice() . ', serialNo=' . $this->getSerialNo() . ', invoiceNo=' . $this->getInvoiceNo() . ', qty=' . $this->getQty() . ' has now been deactivated.';
+				$log_Comments = get_class($this) . '_DEACTIVATION';
+				$qty = 0 - intval($this->getQty());
+			} else {
+				$msg = 'Received a Product(SKU=' . $this->getProduct() . ') with unitPrice=' . $this->getUnitPrice() . ', serialNo=' . $this->getSerialNo() . ', invoiceNo=' . $this->getInvoiceNo() . ', qty=' . $this->getQty() . '';
+				$log_Comments = 'Auto Log';
+				$qty = intval($this->getQty());
+			}
+			$this->getPurchaseOrder()->addLog($msg, Log::TYPE_SYSTEM, Log::TYPE_SYSTEM, $log_Comments, __CLASS__ . '::' . __FUNCTION__)
 				->addComment($msg, Comments::TYPE_WAREHOUSE);
-			$product->received(1, $this->getUnitPrice(), '', $this);
+			$this->getProduct()->received($qty, $this->getUnitPrice(), $msg, $this);
+
+			$nofullReceivedItems = PurchaseOrderItem::getAllByCriteria('productId = ? and purchaseOrderId = ?', array($this->getProduct()->getId(), $this->getPurchaseOrder()->getId()), true, 1, 1, array('po_item.receivedQty' => 'asc'));
+			if(count($nofullReceivedItems) > 0) {
+				$nofullReceivedItems[0]
+					->setReceivedQty($nofullReceivedItems[0]->getReceivedQty() + $qty)
+					->save()
+					->addLog(Log::TYPE_SYSTEM, $msg, $log_Comments, __CLASS__ . '::' . __FUNCTION__)
+					->addComment($msg, Comments::TYPE_WAREHOUSE);
+			}
+			$totalCount = PurchaseOrderItem::countByCriteria('active = 1 and purchaseOrderId = ? and receivedQty < qty', array($this->getPurchaseOrder()->getId()));
+			$this->getPurchaseOrder()->setStatus($totalCount > 0 ? PurchaseOrder::STATUS_RECEIVING : PurchaseOrder::STATUS_RECEIVED)
+				->save()
+				->addComment($msg, Comments::TYPE_WAREHOUSE);
 		}
+	}
+	/**
+	 * (non-PHPdoc)
+	 * @see BaseEntityAbstract::getJson()
+	 */
+	public function getJson($extra = '', $reset = false)
+	{
+		$array = array();
+	    if(!$this->isJsonLoaded($reset)) {
+		    $array['createdBy'] = $this->getCreatedBy() instanceof UserAccount ?$this->getCreatedBy()->getJson() : array();
+		    $array['product'] = $this->getProduct() instanceof Product ?$this->getProduct()->getJson() : array();
+		    $array['purchaseOrder'] = $this->getPurchaseOrder() instanceof PurchaseOrder ? $this->getPurchaseOrder()->getJson() : array();
+	    }
+	    return parent::getJson($array, $reset);
 	}
 	/**
 	 * (non-PHPdoc)
@@ -162,48 +228,45 @@ class ReceivingItem extends BaseEntityAbstract
 	public function __loadDaoMap()
 	{
 		DaoMap::begin($this, 'rec_item');
-	
+
 		DaoMap::setManyToOne('purchaseOrder', 'PurchaseOrder', 'rec_item_po');
 		DaoMap::setManyToOne('product', 'Product', 'rec_item_pro');
 		DaoMap::setIntType('unitPrice', 'double', '10,4');
 		DaoMap::setStringType('serialNo', 'varchar', '10');
 		DaoMap::setStringType('invoiceNo', 'varchar', '10');
-		
+		DaoMap::setIntType('qty');
+
 		parent::__loadDaoMap();
 		DaoMap::createIndex('serialNo');
 		DaoMap::createIndex('unitPrice');
 		DaoMap::createIndex('invoiceNo');
+		DaoMap::setIntType('qty');
 		DaoMap::commit();
 	}
 	/**
 	 * creating a receiving Item
-	 * 
+	 *
 	 * @param PurchaseOrder $po
 	 * @param Product       $product
 	 * @param double        $unitPrice
 	 * @param string        $serialNo
 	 * @param string        $invoiceNo
-	 * 
+	 *
 	 * @return PurchaseOrderItem
 	 */
-	public static function create(PurchaseOrder $po, Product $product, $unitPrice = '0.0000', $serialNo = '', $invoiceNo = '', $comments = "")
+	public static function create(PurchaseOrder $po, Product $product, $unitPrice = '0.0000', $qty = 1, $serialNo = '', $invoiceNo = '', $comments = "")
 	{
 		$entity = new ReceivingItem();
 		$msg = 'Received a Product(SKU=' . $product . ') with unitPrice=' . $unitPrice . ', serialNo=' . $serialNo . ', invoiceNo=' . $invoiceNo;
 		$entity->setPurchaseOrder($po)
 			->setProduct($product)
+			->setQty($qty)
 			->setUnitPrice($unitPrice)
 			->setInvoiceNo($invoiceNo)
 			->setSerialNo($serialNo)
 			->save()
 			->addComment($comments, Comments::TYPE_WAREHOUSE)
 			->addLog($msg, Log::TYPE_SYSTEM, Log::TYPE_SYSTEM, get_class($entity) . '_CREATE', __CLASS__ . '::' . __FUNCTION__);
-		$po->addLog($msg, Log::TYPE_SYSTEM, Log::TYPE_SYSTEM, 'Auto Log', __CLASS__ . '::' . __FUNCTION__)
-			->addComment($msg, Comments::TYPE_WAREHOUSE);
-		$product->setStockOnPO(($origStockOnPO = $product->getStockOnPO()) - 1)
-			->setStockOnHand(($origStockOnHand = $product->getStockOnHand()) + 1)
-			->save()
-			->addLog('stockOnPO(' . $product->getStockOnPO() . ' => ' .$product->getStockOnPO() . ', stockOnHand (' . $origStockOnHand . ' => ' . $product->getStockOnHand() . ')', Log::TYPE_SYSTEM, 'STOCK_QTY_CHG', __CLASS__ . '::' . __FUNCTION__);
 		return $entity;
 	}
 }

@@ -8,14 +8,14 @@ CRUDPageJs.prototype = Object.extend(new BPCPageJs(), {
 	,totalNoOfItemsId: '' //the html if of the total no of items
 	,_pagination: {'pageNo': 1, 'pageSize': 30} //the pagination details
 	,_searchCriteria: {} //the searching criteria
-	
+
 	,setHTMLIds: function(resultDivId, searchDivId, totalNoOfItemsId) {
 		this.resultDivId = resultDivId;
 		this.searchDivId = searchDivId;
 		this.totalNoOfItemsId = totalNoOfItemsId;
 		return this;
 	}
-	
+
 	,getSearchCriteria: function() {
 		var tmp = {};
 		tmp.me = this;
@@ -31,13 +31,13 @@ CRUDPageJs.prototype = Object.extend(new BPCPageJs(), {
 			tmp.me._searchCriteria = null;
 		return this;
 	}
-	
+
 	,getResults: function(reset, pageSize) {
 		var tmp = {};
 		tmp.me = this;
 		tmp.reset = (reset || false);
 		tmp.resultDiv = $(tmp.me.resultDivId);
-		
+
 		if(tmp.reset === true)
 			tmp.me._pagination.pageNo = 1;
 		tmp.me._pagination.pageSize = (pageSize || tmp.me._pagination.pageSize);
@@ -55,16 +55,19 @@ CRUDPageJs.prototype = Object.extend(new BPCPageJs(), {
 					if(!tmp.result)
 						return;
 					$(tmp.me.totalNoOfItemsId).update(tmp.result.pageStats.totalRows);
-					
+
 					//reset div
 					if(tmp.reset === true) {
 						tmp.resultDiv.update(tmp.me._getResultRow(tmp.me._getTitleRowData(), true).wrap(new Element('thead')));
+						if(!tmp.result.items || tmp.result.items.size() === 0) {
+							tmp.resultDiv.insert({'bottom': tmp.me.getAlertBox('Nothing found.', '').addClassName('alert-warning') });
+						}
 					}
 					//remove next page button
 					tmp.resultDiv.getElementsBySelector('.paginWrapper').each(function(item){
 						item.remove();
 					});
-					
+
 					//show all items
 					tmp.tbody = $(tmp.resultDiv).down('tbody');
 					if(!tmp.tbody)
@@ -84,7 +87,7 @@ CRUDPageJs.prototype = Object.extend(new BPCPageJs(), {
 			}
 		});
 	}
-	
+
 	,_getNextPageBtn: function() {
 		var tmp = {};
 		tmp.me = this;
@@ -101,18 +104,18 @@ CRUDPageJs.prototype = Object.extend(new BPCPageJs(), {
 				})
 			});
 	}
-	
+
 	,_saveItem: function(btn, savePanel, attrName) {
 		var tmp = {};
 		tmp.me = this;
 		tmp.data = tmp.me._collectFormData(savePanel, attrName);
 		if(tmp.data === null)
 			return;
-		
+
 		tmp.me.postAjax(tmp.me.getCallbackId('saveItem'), {'item': tmp.data}, {
 			'onLoading': function () {
 				if(tmp.data.id) {
-					savePanel.addClassName('item_row').writeAttribute('item_id', tmp.data.id); 
+					savePanel.addClassName('item_row').writeAttribute('item_id', tmp.data.id);
 				}
 				savePanel.hide();
 			}
@@ -133,7 +136,7 @@ CRUDPageJs.prototype = Object.extend(new BPCPageJs(), {
 					{
 						tmp.row.replace(tmp.newRow);
 					}
-				
+
 				} catch (e) {
 					tmp.me.showModalBox('<span class="text-danger">ERROR:</span>', e, true);
 					savePanel.show();
@@ -142,15 +145,15 @@ CRUDPageJs.prototype = Object.extend(new BPCPageJs(), {
 		});
 		return tmp.me;
 	}
-	
+
 	,_deleteItem: function(row) {
 		var tmp = {};
 		tmp.me = this;
 		tmp.row = $(tmp.me.resultDivId).down('tbody').down('.item_row[item_id=' + row.id + ']');
 		tmp.me.postAjax(tmp.me.getCallbackId('deleteItems'), {'ids': [row.id]}, {
-			'onLoading': function () { 
+			'onLoading': function () {
 				if(tmp.row) {
-					tmp.row.hide(); 
+					tmp.row.hide();
 				}
 			}
 			,'onSuccess': function(sender, param) {

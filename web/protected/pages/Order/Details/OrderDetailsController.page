@@ -7,10 +7,12 @@
 	<com:TCallback ID="confirmPaymentBtn" OnCallback="confirmPayment" />
 	<com:TCallback ID="updateOIForWHBtn" OnCallback="updateOrderItemForWarehouse" />
 	<com:TCallback ID="updateShippingInfoBtn" OnCallback="updateShippingDetails" />
-	<com:TCallback ID="getPaymentDetailsBtn" OnCallback="getPaymentDetailsForOrder" />
 	<com:TCallback ID="setOrderTypeBtn" OnCallback="setOrderType" />
 	<com:TCallback ID="clearETABtn" OnCallback="clearETA" />
+	<com:TCallback ID="deletePaymentBtn" OnCallback="deletePayment" />
 	<com:TCallback ID="changeIsOrderedBtn" OnCallback="changeIsOrdered" />
+	<com:TCallback ID="updateAddressBtn" OnCallback="updateAddress" />
+	<com:TCallback ID="sendEmailBtn" OnCallback="sendEmail" />
 	<div class="pagewrapper orderdetails">
 		<div id="detailswrapper" class="contentDiv"></div>
 	</div>

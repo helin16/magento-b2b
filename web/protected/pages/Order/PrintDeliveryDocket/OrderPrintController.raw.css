@@ -306,11 +306,10 @@ table.orderview .order_receiver_signature .third {
 }
 
 /************************* order_company_details *****************************/
-table.orderview .order_company_details .addr,table.orderview .order_company_details .url
-    {
+table.orderview .order_company_details .addr,table.orderview .order_company_details .url  {
     text-align: center;
     font-size: 11px;
-    margin: 5px;
+    width: 100%;
 }
 
 table.orderview .order_company_details .details_title {

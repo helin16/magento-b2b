@@ -1,0 +1,52 @@
+{
+    "name": "formValidation",
+    "description": "The best jQuery plugin to validate form fields. Support Bootstrap, Foundation, Pure, SemanticUI, UIKit frameworks",
+    "version": "0.6.1-dev",
+    "ignore": [
+        "demo",
+        "screenshots",
+        "test",
+        "vendor",
+        "*.md",
+        "Gruntfile.js",
+        "package.json"
+    ],
+    "main": [
+        "dist/css/formValidation.min.css",
+        "dist/js/formValidation.min.js",
+        "dist/js/framework/bootstrap.min.js",
+        "dist/js/framework/foundation.min.js",
+        "dist/js/framework/pure.min.js",
+        "dist/js/framework/semantic.min.js",
+        "dist/js/framework/uikit.min.js"
+    ],
+    "license": "http://formvalidation.io/license/",
+    "keywords": [
+        "jQuery",
+        "plugin",
+        "validate",
+        "validator",
+        "form",
+        "Bootstrap",
+        "Foundation",
+        "Pure",
+        "SemanticUI",
+        "UIKit"
+    ],
+    "authors": [
+        {
+            "name": "Nguyen Huu Phuoc",
+            "email": "phuoc@huuphuoc.me",
+            "homepage": "https://twitter.com/nghuuphuoc"
+        }
+    ],
+    "homepage": "http://formvalidation.io",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/formvalidation/formvalidation.git"
+    },
+    "dependencies": {
+        "jquery": ">= 1.9.1",
+        "bootstrap": ">= 3.0.0"
+    }
+}

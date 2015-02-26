@@ -6,26 +6,26 @@ class CatelogConnector extends B2BConnector
 		return $this->_connect()->catalogProductList ($this->_session);
 	}
 	/**
-	 * Getting the attribute information 
-	 * 
+	 * Getting the attribute information
+	 *
 	 * @param unknown $mageAttrId
-	 * 
+	 *
 	 * @return array
 	 */
 	public function getProductAttributeOptions($mageAttrId)
 	{
-		return $this->_connect()->catalogProductAttributeOptions($this->_session, $mageAttrId); 
+		return $this->_connect()->catalogProductAttributeOptions($this->_session, $mageAttrId);
 	}
 	/**
 	 * Getting the product attributes list
-	 * 
+	 *
 	 * @param int $mageSetId
-	 * 
+	 *
 	 * @return array
 	 */
 	public function getProductAttributeList($mageSetId)
 	{
-		return $this->_connect()->catalogProductAttributeList($this->_session, $mageSetId); 
+		return $this->_connect()->catalogProductAttributeList($this->_session, $mageSetId);
 	}
 	/**
 	 * Getting information for the product
@@ -40,9 +40,9 @@ class CatelogConnector extends B2BConnector
 	}
 	/**
 	 * Getting the product category tree
-	 * 
+	 *
 	 * @param int $mageCategoryId The magento category id
-	 * 
+	 *
 	 * @return array
 	 */
 	public function getCategoryTree($mageCategoryId = '')
@@ -53,9 +53,9 @@ class CatelogConnector extends B2BConnector
 	}
 	/**
 	 * Getting the categories for the same level
-	 * 
+	 *
 	 * @param int $mageCategoryId The magento category id
-	 * 
+	 *
 	 * @return array
 	 */
 	public function getCategoryLevel($mageCategoryId = '')
@@ -66,9 +66,9 @@ class CatelogConnector extends B2BConnector
 	}
 	/**
 	 * Getting the detailed information for a category
-	 * 
+	 *
 	 * @param int $mageCategoryId The magento category id
-	 * 
+	 *
 	 * @return array
 	 */
 	public function catalogCategoryInfo($mageCategoryId)
@@ -77,9 +77,9 @@ class CatelogConnector extends B2BConnector
 	}
 	/**
 	 * Importing the category
-	 * 
+	 *
 	 * @param string $categoryId
-	 * 
+	 *
 	 * @return void|CatelogConnector
 	 */
 	public function importProductCategories($categoryId = '')
@@ -88,16 +88,16 @@ class CatelogConnector extends B2BConnector
 		Log::logging(0, get_class($this), 'getting ProductCategories(mageId=' . $categoryId . ')', self::LOG_TYPE, '', __FUNCTION__);
 		if(count($categories) === 0)
 			return;
-		
+
 		foreach($categories as $category)
 		{
 			try
 			{
 				Dao::beginTransaction();
-				
+
 				$mageId = trim($category->category_id);
 				Log::logging(0, get_class($this), 'getting ProductCategory(mageId=' . $mageId . ')', self::LOG_TYPE, '', __FUNCTION__);
-				
+
 				$productCategory = ProductCategory::getByMageId($mageId);
 				$category = $this->catalogCategoryInfo($mageId);
 				$description = isset($category->description) ? trim($category->description) : trim($category->name);
@@ -118,7 +118,7 @@ class CatelogConnector extends B2BConnector
 					->setIsAnchor(trim($category->is_anchor) === '1')
 					->setUrlKey(trim($category->url_key))
 					->save();
-				
+
 				Dao::commitTransaction();
 				$this->importProductCategories(trim($category->category_id));
 			}
@@ -142,7 +142,7 @@ class CatelogConnector extends B2BConnector
 		$options = $this->getProductAttributeOptions('manufacturer');
 		if(count($options) === 0)
 			return;
-		
+
 		foreach($options as $option)
 		{
 			if(trim($option->value) === trim($mageManuValue))
@@ -159,7 +159,7 @@ class CatelogConnector extends B2BConnector
 	}
 	/**
 	 * import all products
-	 * 
+	 *
 	 * @return CatelogConnector
 	 */
 	public function importProducts()
@@ -174,9 +174,9 @@ class CatelogConnector extends B2BConnector
 				$pro = $this->getProductInfo($sku, $this->getInfoAttributes());
 				if(is_null($pro) || !isset($pro->additional_attributes))
 					continue;
-				
+
 				Dao::beginTransaction();
-				
+
 				$additionAttrs = $this->_getAttributeFromAdditionAttr($pro->additional_attributes);
 				$name = trim($additionAttrs['name']);
 				$short_description = trim($additionAttrs['short_description']);
@@ -187,10 +187,10 @@ class CatelogConnector extends B2BConnector
 				$specialPrice = isset($additionAttrs['special_price']) ? trim($additionAttrs['special_price']) : '';
 				$specialPrice_From = isset($additionAttrs['special_from_date']) ? trim($additionAttrs['special_from_date']) : null;
 				$specialPrice_To = isset($additionAttrs['special_to_date']) ? trim($additionAttrs['special_to_date']) : null;
-			
+
 				if(!($product = Product::getBySku($sku)) instanceof Product)
 					$product = Product::create($sku, $name);
-				$asset = (($assetId = trim($product->getFullDescAssetId())) === '' || !($asset = Asset::getAsset($assetId)) instanceof Asset) ? Asset::registerAsset('full_desc_' . $sku, $description) : $asset;
+				$asset = (($assetId = trim($product->getFullDescAssetId())) === '' || !($asset = Asset::getAsset($assetId)) instanceof Asset) ? Asset::registerAsset('full_desc_' . $sku, $description, Asset::TYPE_PRODUCT_DEC) : $asset;
 				$product->setName($name)
 					->setMageId($mageId)
 					->setShortDescription($short_description)
@@ -203,13 +203,13 @@ class CatelogConnector extends B2BConnector
 					->clearAllPrice()
 					->addPrice(ProductPriceType::get(ProductPriceType::ID_RRP), $price)
 					->addInfo(ProductInfoType::ID_WEIGHT, $weight);
-				
+
 				if($specialPrice !== '')
 					$product->addPrice(ProductPriceType::get(ProductPriceType::ID_CASUAL_SPECIAL), $specialPrice, $specialPrice_From, $specialPrice_To);
-				
+
 				if(isset($additionAttrs['supplier']) && ($supplierName = trim($additionAttrs['supplier'])) !== '')
 					$product->addSupplier(Supplier::create($supplierName, $supplierName, true));
-				
+
 				if(isset($pro->categories) && count($pro->categories) > 0)
 				{
 					$product->clearAllCategory();

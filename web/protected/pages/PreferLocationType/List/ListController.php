@@ -68,7 +68,6 @@ class ListController extends CRUDPageAbstract
 			}
 			$stats = array();
 			$objects = $class::getAllByCriteria(implode(' AND ', $where), $params, false, $pageNo, $pageSize, array('pre_loc_type.name' => 'asc'), $stats);
-			var_dump($objects);
 			$results['pageStats'] = $stats;
 			$results['items'] = array();
 			foreach($objects as $obj)

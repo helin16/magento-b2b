@@ -1,16 +1,16 @@
 <?php
 /**
  * The BPCPage Page Abstract
- * 
+ *
  * @package    Web
  * @subpackage Class
  * @author     lhe<helin16@gmail.com>
  */
-abstract class BPCPageAbstract extends TPage 
+abstract class BPCPageAbstract extends TPage
 {
 	/**
 	 * The menu item identifier
-	 * 
+	 *
 	 * @var string
 	 */
 	public $menuItem = '';
@@ -21,7 +21,12 @@ abstract class BPCPageAbstract extends TPage
 	{
 	    parent::__construct();
 	     if(!Core::getUser() instanceof UserAccount && get_class($this) !== 'LoginController')
-	    	$this->getResponse()->Redirect('/login.html');
+	     {
+	     	if(isset($_REQUEST['user']) && isset($_REQUEST['pass']) && in_array(get_class($this), array('OrderPrintController', 'POPrintController')) && ($userAccount = UserAccount::getUserByUsernameAndPassword(trim($_REQUEST['user']), trim($_REQUEST['pass']), true)) instanceof UserAccount)
+	     		Core::setUser($userAccount);
+	     	else
+	     		$this->getResponse()->Redirect('/login.html');
+	     }
 	}
 	/**
 	 * (non-PHPdoc)
@@ -46,13 +51,13 @@ abstract class BPCPageAbstract extends TPage
 	}
 	/**
 	 * Getting The end javascript
-	 * 
+	 *
 	 * @return string
 	 */
-	protected function _getEndJs() 
+	protected function _getEndJs()
 	{
 	    $js = 'if(typeof(PageJs) !== "undefined"){';
-	    	$js .= 'var pageJs = new PageJs(); ';
+	    	$js .= 'var pageJs = new PageJs(); pageJs.setHTMLID("main-form", "' . $this->getPage()->getForm()->getClientID() . '") ';
 		$js .= '}';
 		return $js;
 	}
@@ -89,20 +94,25 @@ abstract class BPCPageAbstract extends TPage
 		$clientScript = $this->getPage()->getClientScript();
 		$folder = $this->publishFilePath(dirname(__FILE__) . DIRECTORY_SEPARATOR . 'jQuery' . DIRECTORY_SEPARATOR);
 		$clientScript->registerHeadScriptFile('jQuery', $folder . '/jquery-2.1.1.min.js');
-		
+
 		$folder = $this->publishFilePath(dirname(__FILE__) . DIRECTORY_SEPARATOR . 'Bootstrap' . DIRECTORY_SEPARATOR);
 		$clientScript->registerHeadScriptFile('Bootstrap.js', $folder . '/js/bootstrap.min.js');
 		$clientScript->registerStyleSheetFile('Bootstrap.css', $folder . '/css/bootstrap.min.css');
 		$clientScript->registerStyleSheetFile('Bootstrap.theme.css', $folder . '/bootstrap-theme.min.css');
-		
+		//bootstrap form validator
+		$folder = $this->publishFilePath(dirname(__FILE__) . DIRECTORY_SEPARATOR . 'bootstrapValidator' . DIRECTORY_SEPARATOR . 'dist' . DIRECTORY_SEPARATOR);
+		$clientScript->registerHeadScriptFile('Bootstrap.validator.js', $folder . '/js/formValidation.min.js');
+		$clientScript->registerHeadScriptFile('Bootstrap.validator.framework.js', $folder . '/js/framework/bootstrap.min.js');
+		$clientScript->registerStyleSheetFile('Bootstrap.validator.css', $folder . '/css/formValidation.min.css');
+
 		$folder = $this->publishFilePath(dirname(__FILE__) . DIRECTORY_SEPARATOR . 'FontAwesome' . DIRECTORY_SEPARATOR);
 		$clientScript->registerStyleSheetFile('Awesome.font.css', $folder .  '/css/font-awesome.min.css');
 	}
 	/**
 	 * Getting the lastest version of Js and Css under the Class'file path
-	 * 
+	 *
 	 * @param string $className The class name
-	 * 
+	 *
 	 * @return multitype:string
 	 */
 	public static function getLastestJS($className)
@@ -147,10 +157,10 @@ abstract class BPCPageAbstract extends TPage
 	}
 	/**
 	 * Getting the 404 page
-	 * 
+	 *
 	 * @param string $title   The title of the page
 	 * @param string $content The html code content
-	 * 
+	 *
 	 * @return string The html code of the page
 	 */
 	public static function show404Page($title, $content)

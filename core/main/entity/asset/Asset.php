@@ -8,6 +8,15 @@
  */
 class Asset extends BaseEntityAbstract
 {
+	const TYPE_TMP = 'TEMP';
+	const TYPE_PRODUCT_DEC = 'PRODUCT_DEC';
+	const TYPE_PRODUCT_IMG = 'PRODUCT_IMG';
+	/**
+	 * the type of the asset
+	 *
+	 * @var string
+	 */
+	private $type = self::TYPE_TMP;
 	/**
 	 * @var string
 	 */
@@ -22,13 +31,13 @@ class Asset extends BaseEntityAbstract
 	private $mimeType;
 	/**
 	 * The path
-	 * 
+	 *
 	 * @var string
 	 */
 	private $path;
 	/**
 	 * The cach of the assets
-	 * 
+	 *
 	 * @var array
 	 */
 	private static $_cache = array();
@@ -43,9 +52,9 @@ class Asset extends BaseEntityAbstract
 	}
 	/**
 	 * setter assetId
-	 * 
+	 *
 	 * @param string $assetId The asset Id
-	 * 
+	 *
 	 * @return Asset
 	 */
 	public function setAssetId($assetId)
@@ -64,9 +73,9 @@ class Asset extends BaseEntityAbstract
 	}
 	/**
 	 * setter filename
-	 * 
+	 *
 	 * @param string $filename The filename of the asset
-	 * 
+	 *
 	 * @return Asset
 	 */
 	public function setFilename($filename)
@@ -85,9 +94,9 @@ class Asset extends BaseEntityAbstract
 	}
 	/**
 	 * setter mimeType
-	 * 
+	 *
 	 * @param string $mimeType The mimeType
-	 * 
+	 *
 	 * @return Asset
 	 */
 	public function setMimeType($mimeType)
@@ -97,7 +106,7 @@ class Asset extends BaseEntityAbstract
 	}
 	/**
 	 * Getter for the path
-	 * 
+	 *
 	 * @return string
 	 */
 	public function getPath()
@@ -106,9 +115,9 @@ class Asset extends BaseEntityAbstract
 	}
 	/**
 	 * Setter for the path
-	 * 
+	 *
 	 * @param string $path The path
-	 * 
+	 *
 	 * @return Asset
 	 */
 	public function setPath($path)
@@ -117,8 +126,29 @@ class Asset extends BaseEntityAbstract
 	    return $this;
 	}
 	/**
+	 * Getter for type
+	 *
+	 * @return string
+	 */
+	public function getType()
+	{
+	    return $this->type;
+	}
+	/**
+	 * Setter for type
+	 *
+	 * @param string $value The type
+	 *
+	 * @return Asset
+	 */
+	public function setType($value)
+	{
+	    $this->type = $value;
+	    return $this;
+	}
+	/**
 	 * Getting the url of this asset
-	 * 
+	 *
 	 * @return string
 	 */
 	public function getUrl()
@@ -135,7 +165,7 @@ class Asset extends BaseEntityAbstract
 	}
 	/**
 	 * Getting the root path of the asset files
-	 * 
+	 *
 	 * @return Ambigous <string, multitype:>
 	 */
 	public static function getRootPath()
@@ -150,23 +180,23 @@ class Asset extends BaseEntityAbstract
 	 *
 	 * @return string 32 char MD5 hash
 	 */
-	public static function registerAsset($filename, $dataOrFile)
+	public static function registerAsset($filename, $dataOrFile, $type = self::TYPE_TMP)
 	{
 		if(!is_string($dataOrFile) && (!is_file($dataOrFile)))
 			throw new CoreException(__CLASS__ . '::' . __FUNCTION__ . '() will ONLY take string to save!');
-		 
+
 		$assetId = md5($filename . '::' . microtime());
 		$path = self::_getSmartPath($assetId);
 		self::_copyToAssetFolder($path, $dataOrFile);
-		$class = __CLASS__;
-		$asset = new $class();
+		$asset = new Asset();
 		$asset->setFilename($filename)
 			->setAssetId($assetId)
 			->setMimeType(StringUtilsAbstract::getMimeType($filename))
 			->setPath($path)
+			->setType(trim($type))
 			->save();
 		//add asset into cache
-		$assetId = trim(trim($asset->getAssetId()));
+		$assetId = trim($asset->getAssetId());
 		self::$_cache[$assetId] = $asset;
 		return self::$_cache[$assetId];
 	}
@@ -251,10 +281,10 @@ class Asset extends BaseEntityAbstract
 		}
 		return self::$_cache[$assetId];
 	}
-	
+
 	public static function readAssetFile($filePath)
 	{
-		try 
+		try
 		{
 			return file_get_contents($filePath);
 		}
@@ -263,7 +293,7 @@ class Asset extends BaseEntityAbstract
 			return '';
 		}
 	}
-	
+
 	/**
 	 * (non-PHPdoc)
 	 * @see BaseEntityAbstract::getJson()
@@ -286,14 +316,16 @@ class Asset extends BaseEntityAbstract
 	public function __loadDaoMap()
 	{
 		DaoMap::begin($this, 'con');
-		
+
 		DaoMap::setStringType('assetId', 'varchar', 32);
+		DaoMap::setStringType('type', 'varchar', 20);
 		DaoMap::setStringType('filename', 'varchar', 100);
 		DaoMap::setStringType('mimeType', 'varchar', 50);
 		DaoMap::setStringType('path', 'varchar', 200);
 		parent::__loadDaoMap();
-		
+
 		DaoMap::createUniqueIndex('assetId');
+		DaoMap::createIndex('type'');
 		DaoMap::commit();
 	}
 }

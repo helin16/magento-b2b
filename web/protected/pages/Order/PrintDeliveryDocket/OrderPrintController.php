@@ -31,6 +31,14 @@ class OrderPrintController extends BPCPageAbstract
 			$this->order = Order::get($this->Request['orderId']);
 			if(!$this->order instanceof Order)
 				die('Invalid Order!');
+			if(isset($_REQUEST['pdf']) && intval($_REQUEST['pdf']) === 1)
+			{
+				$file = EntityToPDF::getPDF($this->order, 'docket');
+				header('Content-Type: application/pdf');
+				// The PDF source is in original.pdf
+				readfile($file);
+				die;
+			}
 		}
 	}
 	public function getInvDate()
@@ -66,7 +74,7 @@ class OrderPrintController extends BPCPageAbstract
 				if($item->getSerialNo() !== '' )
 					$sellingItems[] = $item->getSerialNo();
 			}
-			$html .= $this->getRow($orderItem->getQtyOrdered(), $orderItem->getProduct()->getSku(), $orderItem->getProduct()->getname(), $uPrice, $tPrice, 'itemRow');
+			$html .= $this->getRow($orderItem->getQtyOrdered(), $orderItem->getProduct()->getSku(), $orderItem->getItemDescription() ?: $orderItem->getProduct()->getname(), $uPrice, $tPrice, 'itemRow');
 			$html .= $this->getRow('', '<span class="pull-right">Serial No: </span>', '<div style="max-width: 517px; word-wrap: break-word;">' . implode(', ', $sellingItems) . '</div>', '', '', 'itemRow itemRow-serials');
 		}
 		for ( $i = 12; $i > $index; $i--)

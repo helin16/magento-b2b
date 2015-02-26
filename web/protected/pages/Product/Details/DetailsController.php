@@ -1,7 +1,7 @@
 <?php
 /**
  * This is the Product details page
- * 
+ *
  * @package    Web
  * @subpackage Controller
  * @author     lhe<helin16@gmail.com>
@@ -34,18 +34,24 @@ class DetailsController extends DetailsPageAbstract
 	 */
 	protected function _getEndJs()
 	{
-		$js = parent::_getEndJs();
+		$btnIdnewPO = (isset($_REQUEST['btnidnewpo']) && (trim($_REQUEST['btnidnewpo']) !== '')) ? trim($_REQUEST['btnidnewpo']) : null;
 		$manufacturers = array_map(create_function('$a', 'return $a->getJson();'), Manufacturer::getAll());
 		$suppliers = array_map(create_function('$a', 'return $a->getJson();'), Supplier::getAll());
 		$statuses = array_map(create_function('$a', 'return $a->getJson();'), ProductStatus::getAll());
 		$priceTypes = array_map(create_function('$a', 'return $a->getJson();'), ProductPriceType::getAll());
 		$codeTypes = array_map(create_function('$a', 'return $a->getJson();'), ProductCodeType::getAll());
 		$locationTypes = array_map(create_function('$a', 'return $a->getJson();'), PreferredLocationType::getAll());
-		
-		$js .= "pageJs.setPreData(" . json_encode($manufacturers) . ", " . json_encode($suppliers) . ", " . json_encode($statuses) . ", " . json_encode($priceTypes) . ", " . json_encode($codeTypes) . ", " . json_encode($locationTypes) . ")";
+		$accountingCodes = array_map(create_function('$a', 'return array("id"=> $a->getId(), "code"=> $a->getCode(), "description"=> $a->getDescription(), "type"=> $a->getTypeId());'), AccountingCode::getAll());
+
+		$js = parent::_getEndJs();
+		$js .= "pageJs.setPreData(" . json_encode($manufacturers) . ", " . json_encode($suppliers) . ", " . json_encode($statuses) . ", " . json_encode($priceTypes)
+									 . ", " . json_encode($codeTypes) . ", " . json_encode($locationTypes) . ", " . json_encode($btnIdnewPO) . ", " . json_encode($accountingCodes) . ")";
 		$js .= ".setCallbackId('getCategories', '" . $this->getCategoriesBtn->getUniqueID() . "')";
 		$js .= ".load()";
-		$js .= ".bindAllEventNObjects();";
+		$js .= ".bindAllEventNObjects()";
+		$js .= "._loadChosen();";
+		if(!AccessControl::canEditProduct(Core::getRole()))
+			$js .= "pageJs.readOnlyMode();";
 		return $js;
 	}
 	/**
@@ -76,9 +82,9 @@ class DetailsController extends DetailsPageAbstract
 	}
 	/**
 	 * Getting the json for a product category
-	 * 
+	 *
 	 * @param ProductCategory $category
-	 * 
+	 *
 	 * @return multitype:multitype:NULL
 	 */
 	private function _getCategoryJson(ProductCategory $category)
@@ -100,7 +106,7 @@ class DetailsController extends DetailsPageAbstract
 		{
 			if(($fullAsset = Asset::getAsset($product->getFullDescAssetId())) instanceof Asset)
 				Asset::removeAssets(array($fullAsset->getAssetId()));
-			$fullAsset = Asset::registerAsset('full_description_for_product.txt', $fullDescription);
+			$fullAsset = Asset::registerAsset('full_description_for_product.txt', $fullDescription, Asset::TYPE_PRODUCT_DEC);
 			$product->setFullDescAssetId($fullAsset->getAssetId());
 		}
 		return $this;
@@ -132,14 +138,14 @@ class DetailsController extends DetailsPageAbstract
 					if($image->active === true)
 					{
 						$data = explode(',', $image->data);
-						$asset = Asset::registerAsset(trim($image->filename), base64_decode($data[1]));
+						$asset = Asset::registerAsset(trim($image->filename), base64_decode($data[1]), Asset::TYPE_PRODUCT_IMG);
 						ProductImage::create($product, $asset);
 					}
 					//if it's deactivated one, ignore
 				}
 				else if (!($asset = Asset::getAsset($assetId)) instanceof Asset)
 					continue;
-					
+
 				if($image->active === false) {
 					ProductImage::remove($product, $asset);
 				}
@@ -172,7 +178,7 @@ class DetailsController extends DetailsPageAbstract
 				$end = trim($price->end);
 				if(!is_numeric(StringUtilsAbstract::getValueFromCurrency($priceValue)))
 					throw new Exception('Invalid price: ' . $priceValue);
-				
+
 				if(!isset($price->id) || ($id = trim($price->id)) === '')
 				{
 					if(trim($price->active) === '1')
@@ -189,7 +195,7 @@ class DetailsController extends DetailsPageAbstract
 						->setEnd($end)
 						->save();
 				}
-					
+
 			}
 		}
 		return $this;
@@ -207,7 +213,7 @@ class DetailsController extends DetailsPageAbstract
 			}
 			if(count($deleteIds) > 0)
 				PreferredLocation::updateByCriteria('active = 0', 'id in (' . str_repeat('?', count($deleteIds)) . ')', $deleteIds);
-			
+
 			//update or create new
 			foreach($locations as $location)
 			{
@@ -215,7 +221,7 @@ class DetailsController extends DetailsPageAbstract
 					continue;
 				if(!($type = PreferredLocationType::get(trim($location->typeId))) instanceof PreferredLocationType)
 					continue;
-				
+
 				$locationName = trim($location->value);
 				$locs = Location::getAllByCriteria('name = ?', array($locationName), true, 1, 1);
 				$loc = (count($locs) > 0 ? $locs[0] : Location::create($locationName, $locationName));
@@ -245,7 +251,7 @@ class DetailsController extends DetailsPageAbstract
 			{
 				if(!($type = ProductCodeType::get(trim($code->typeId))) instanceof ProductCodeType)
 					continue;
-				
+
 				if(!isset($code->id) || ($id = trim($code->id)) === '')
 				{
 					if(trim($code->active) === '1')
@@ -311,7 +317,7 @@ class DetailsController extends DetailsPageAbstract
 			$name = trim($param->CallbackParameter->name);
 			$shortDescription = trim($param->CallbackParameter->shortDescription);
 			$sellOnWeb = (trim($param->CallbackParameter->sellOnWeb) === '1');
-			
+
 			$product->setName($name)
 				->setSku($sku)
 				->setShortDescription($shortDescription)
@@ -327,7 +333,7 @@ class DetailsController extends DetailsPageAbstract
 			if(trim($product->getId()) === '')
 				$product->setIsFromB2B(false);
 			$product->save();
-			
+
 			$this->_updateFullDescription($product, $param)
 				->_updateCategories($product, $param)
 				->_uploadImages($product, $param)
@@ -335,7 +341,7 @@ class DetailsController extends DetailsPageAbstract
 				->_setBarcodes($product, $param)
 				->_setPrices($product, $param)
 				->_setLocation($product, $param);
-			
+
 			$product->save();
 			$results['url'] = '/product/' . $product->getId() . '.html';
 			$results['item'] = $product->getJson();
@@ -344,7 +350,7 @@ class DetailsController extends DetailsPageAbstract
 		catch(Exception $ex)
 		{
 			Dao::rollbackTransaction();
-			$errors[] = $ex->getMessage() . $ex->getTraceAsString();
+			$errors[] = $ex->getMessage();
 		}
 		$param->ResponseData = StringUtilsAbstract::getJson($results, $errors);
 	}

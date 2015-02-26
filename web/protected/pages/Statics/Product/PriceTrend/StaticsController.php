@@ -47,7 +47,8 @@ class StaticsController extends StaticsPageAbstract
 			 	throw new Exception('Invalid product id=' . $param->CallbackParameter->productId . ' provided');
 			
 			$series = array();
-			$series[] = array('name' => 'Sales Unit Price', 'data' => $this->_getSeries($product->getId(), $dateFrom, $dateTo));
+			$series[] = array('name' => 'Sales Unit Price (incl. GST)', 'data' => $this->_getSalesSeries($product->getId(), $dateFrom, $dateTo));
+			$series[] = array('name' => 'Purchase Unit Price (incl. GST)', 'data' => $this->_getPurchaseSeries($product->getId(), $dateFrom, $dateTo));
 			
 			$results = array(
 					'chart' => array(
@@ -91,7 +92,7 @@ class StaticsController extends StaticsPageAbstract
 		$param->ResponseData = StringUtilsAbstract::getJson($results, $errors);
 	}
 	
-	private function _getSeries($productId, $from, $to, $type = null)
+	private function _getSalesSeries($productId, $from, $to, $type = null)
 	{
 		$sql = 'select unitPrice, created from `orderitem` where active = 1 AND productId = :pid AND created >=:from and created <= :to order by created asc';
 		$result = Dao::getResultsNative($sql, array('pid' => trim($productId), 'from' => trim($from), 'to' => trim($to)));
@@ -100,6 +101,18 @@ class StaticsController extends StaticsPageAbstract
 		{
 			$created = new UDate(trim($row['created']));
 			$return[] = array($created->format('U') * 1000 , (double)trim($row['unitPrice']));
+		}
+		return $return;
+	}
+	private function _getPurchaseSeries($productId, $from, $to, $type = null)
+	{
+		$sql = 'select unitPrice, created from `purchaseorderitem` where active = 1 AND productId = :pid AND created >=:from and created <= :to order by created asc';
+		$result = Dao::getResultsNative($sql, array('pid' => trim($productId), 'from' => trim($from), 'to' => trim($to)));
+		$return = array();
+		foreach($result as $row)
+		{
+			$created = new UDate(trim($row['created']));
+			$return[] = array($created->format('U') * 1000 , (double)trim($row['unitPrice']) * 1.1);
 		}
 		return $return;
 	}

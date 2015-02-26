@@ -30,7 +30,15 @@ class POPrintController extends BPCPageAbstract
 		{
 			$this->order = PurchaseOrder::get($this->Request['POId']);
 			if(!$this->order instanceof PurchaseOrder)
-				die('Invalid PurchaseOrder!');
+				die('Invalid Purchase Order!');
+			if(isset($_REQUEST['pdf']) && intval($_REQUEST['pdf']) === 1)
+			{
+				$file = EntityToPDF::getPDF($this->order);
+				header('Content-Type: application/pdf');
+				// The PDF source is in original.pdf
+				readfile($file);
+				die;
+			}
 		}
 	}
 	public function getInvDate()
@@ -70,6 +78,18 @@ class POPrintController extends BPCPageAbstract
 		}
 		return $html;
 	}
+	public function getComments()
+	{
+		$html = '';
+		$comments = Comments::getAllByCriteria('entityName = ? AND type = ? AND entityId = ?', array('PurchaseOrder', Comments::TYPE_PURCHASING, $this->order->getId()), true, 1, 5, array('comm.id'=> 'desc'));
+		if(count($comments) === 0)
+			return '';
+		foreach($comments as $comment)
+		{
+			$html .= '<div class="print-row">' . $comment->getComments() . '</div>';
+		}
+		return $html;
+	}
 	public function getPaymentSummary()
 	{
 		$total = $this->order->getTotalAmount();
@@ -78,7 +98,9 @@ class POPrintController extends BPCPageAbstract
 		$totalDue = $total - $this->order->getTotalPaid();
 		$html = $this->_getPaymentSummaryRow('Total:', '$' . number_format($totalNoGST, 2, '.', ','), 'grandTotalNoGST');
 		$html .= $this->_getPaymentSummaryRow('GST:', '$' . number_format($gst, 2, '.', ','), 'gst');
-		$html .= $this->_getPaymentSummaryRow('Total(inc-GST):', '$' . number_format($total, 2, '.', ','), 'grandTotal');
+		$html .= $this->_getPaymentSummaryRow('SubTotal Incl. GST:', '$' . number_format($total, 2, '.', ','), 'grandTotal');
+		$html .= $this->_getPaymentSummaryRow('Shipping Fee Incl. GST:', '$' . number_format($this->order->getShippingCost(), 2, '.', ','), 'grandTotal');
+		$html .= $this->_getPaymentSummaryRow('Handling Fee Incl. GST:', '$' . number_format($this->order->getHandlingCost(), 2, '.', ','), 'grandTotal');
 		$html .= $this->_getPaymentSummaryRow('Paid to Date:', '$' . number_format($this->order->getTotalPaid(), 2, '.', ','), 'paidTotal');
 		$overDueClass = $totalDue > 0 ? 'overdue' : '';
 		$html .= $this->_getPaymentSummaryRow('Balance Due:', '$' . number_format($totalDue, 2, '.', ','), 'dueTotal ' . $overDueClass);

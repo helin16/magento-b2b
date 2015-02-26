@@ -13,43 +13,43 @@ class Order extends InfoEntityAbstract
 	const TYPE_INVOICE = 'INVOICE';
 	/**
 	 * The order No from magento
-	 * 
+	 *
 	 * @var string
 	 */
 	private $orderNo = '';
 	/**
 	 * The type of the order: quote, order, invoice
-	 * 
+	 *
 	 * @var string
 	 */
 	private $type = self::TYPE_ORDER;
 	/**
 	 * The order date from magento
-	 * 
+	 *
 	 * @var UDate
 	 */
 	private $orderDate;
 	/**
 	 * The invoice Number
-	 * 
+	 *
 	 * @var string
 	 */
 	private $invNo = '';
 	/**
 	 * The status of the order
-	 * 
+	 *
 	 * @var OrderStatus
 	 */
 	protected $status;
 	/**
 	 * The payments that has been done for this order
-	 * 
+	 *
 	 * @var multiple:Payment
 	 */
 	protected $payments;
 	/**
 	 * The total amount due for the order
-	 * 
+	 *
 	 * @var number
 	 */
 	private $totalAmount = 0;
@@ -61,55 +61,55 @@ class Order extends InfoEntityAbstract
 	private $totalPaid = 0;
 	/**
 	 * The shippment of the order
-	 * 
+	 *
 	 * @var multiple:Shippment
 	 */
 	protected $shippments;
 	/**
 	 * The shipping address
-	 * 
+	 *
 	 * @var Address
 	 */
 	protected $shippingAddr;
 	/**
 	 * The billing address
-	 * 
+	 *
 	 * @var Address
 	 */
 	protected $billingAddr;
 	/**
 	 * The array of order items
-	 * 
+	 *
 	 * @var Multiple:OrderItem
 	 */
 	protected $orderItems;
 	/**
 	 * The customer of this order
-	 * 
+	 *
 	 * @var Customer
 	 */
 	protected $customer;
 	/**
 	 * Wether the order passed the payment check
-	 * 
+	 *
 	 * @var bool
 	 */
 	private $passPaymentCheck;
 	/**
 	 * Whether this order is imported from B2B
-	 * 
+	 *
 	 * @var bool
 	 */
 	private $isFromB2B;
 	/**
 	 * The date and time when this order becomes an invoice
-	 * 
+	 *
 	 * @var UDate
 	 */
 	private $invDate;
 	/**
 	 * The Purchase Order No for the customer
-	 * 
+	 *
 	 * @var string
 	 */
 	private $pONo = '';
@@ -124,7 +124,7 @@ class Order extends InfoEntityAbstract
 	 *
 	 * @return string
 	 */
-	public function getOrderNo() 
+	public function getOrderNo()
 	{
 	    return $this->orderNo;
 	}
@@ -135,7 +135,7 @@ class Order extends InfoEntityAbstract
 	 *
 	 * @return Order
 	 */
-	public function setOrderNo($value) 
+	public function setOrderNo($value)
 	{
 	    $this->orderNo = $value;
 	    return $this;
@@ -145,7 +145,7 @@ class Order extends InfoEntityAbstract
 	 *
 	 * @return UDate
 	 */
-	public function getOrderDate() 
+	public function getOrderDate()
 	{
 		if(is_string($this->orderDate))
 			$this->orderDate = new UDate($this->orderDate);
@@ -158,18 +158,18 @@ class Order extends InfoEntityAbstract
 	 *
 	 * @return Order
 	 */
-	public function setOrderDate($value) 
+	public function setOrderDate($value)
 	{
 	    $this->orderDate = $value;
 	    return $this;
 	}
-	
+
 	/**
 	 * Getter for type
 	 *
 	 * @return string
 	 */
-	public function getType() 
+	public function getType()
 	{
 	    return $this->type;
 	}
@@ -190,7 +190,7 @@ class Order extends InfoEntityAbstract
 	 *
 	 * @return string
 	 */
-	public function getInvNo() 
+	public function getInvNo()
 	{
 	    return $this->invNo;
 	}
@@ -211,7 +211,7 @@ class Order extends InfoEntityAbstract
 	 *
 	 * @return OrderStatus
 	 */
-	public function getStatus() 
+	public function getStatus()
 	{
 		$this->loadManyToOne('status');
 	    return $this->status;
@@ -223,7 +223,7 @@ class Order extends InfoEntityAbstract
 	 *
 	 * @return Order
 	 */
-	public function setStatus($value) 
+	public function setStatus($value)
 	{
 	    $this->status = $value;
 	    return $this;
@@ -233,7 +233,7 @@ class Order extends InfoEntityAbstract
 	 *
 	 * @return Multiple:Payment
 	 */
-	public function getPayments() 
+	public function getPayments()
 	{
 		$this->loadOneToMany('payments');
 	    return $this->payments;
@@ -245,7 +245,7 @@ class Order extends InfoEntityAbstract
 	 *
 	 * @return Order
 	 */
-	public function setPayments($value) 
+	public function setPayments($value)
 	{
 	    $this->payments = $value;
 	    return $this;
@@ -255,7 +255,7 @@ class Order extends InfoEntityAbstract
 	 *
 	 * @return number
 	 */
-	public function getTotalAmount() 
+	public function getTotalAmount()
 	{
 	    return $this->totalAmount;
 	}
@@ -266,7 +266,7 @@ class Order extends InfoEntityAbstract
 	 *
 	 * @return Order
 	 */
-	public function setTotalAmount($value) 
+	public function setTotalAmount($value)
 	{
 	    $this->totalAmount = $value;
 	    return $this;
@@ -276,7 +276,7 @@ class Order extends InfoEntityAbstract
 	 *
 	 * @return number
 	 */
-	public function getTotalPaid() 
+	public function getTotalPaid()
 	{
 	    return $this->totalPaid;
 	}
@@ -287,7 +287,7 @@ class Order extends InfoEntityAbstract
 	 *
 	 * @return Order
 	 */
-	public function setTotalPaid($value) 
+	public function setTotalPaid($value)
 	{
 	    $this->totalPaid = $value;
 	    return $this;
@@ -297,7 +297,7 @@ class Order extends InfoEntityAbstract
 	 *
 	 * @return Shippment
 	 */
-	public function getShippments() 
+	public function getShippments()
 	{
 		$this->loadOneToMany('shippments');
 	    return $this->shippments;
@@ -309,14 +309,14 @@ class Order extends InfoEntityAbstract
 	 *
 	 * @return Order
 	 */
-	public function setShippments($value) 
+	public function setShippments($value)
 	{
 	    $this->shippments = $value;
 	    return $this;
 	}
 	/**
 	 * Getter for the totalDue
-	 * 
+	 *
 	 * @return number
 	 */
 	public function getTotalDue()
@@ -328,7 +328,7 @@ class Order extends InfoEntityAbstract
 	 *
 	 * @return Address
 	 */
-	public function getShippingAddr() 
+	public function getShippingAddr()
 	{
 		$this->loadManyToOne('shippingAddr');
 	    return $this->shippingAddr;
@@ -340,7 +340,7 @@ class Order extends InfoEntityAbstract
 	 *
 	 * @return Order
 	 */
-	public function setShippingAddr($value) 
+	public function setShippingAddr($value)
 	{
 	    $this->shippingAddr = $value;
 	    return $this;
@@ -350,7 +350,7 @@ class Order extends InfoEntityAbstract
 	 *
 	 * @return Address
 	 */
-	public function getBillingAddr() 
+	public function getBillingAddr()
 	{
 		$this->loadManyToOne('billingAddr');
 	    return $this->billingAddr;
@@ -362,7 +362,7 @@ class Order extends InfoEntityAbstract
 	 *
 	 * @return Order
 	 */
-	public function setBillingAddr($value) 
+	public function setBillingAddr($value)
 	{
 	    $this->billingAddr = $value;
 	    return $this;
@@ -372,7 +372,7 @@ class Order extends InfoEntityAbstract
 	 *
 	 * @return bool
 	 */
-	public function getPassPaymentCheck() 
+	public function getPassPaymentCheck()
 	{
 	    return trim($this->passPaymentCheck) === '1';
 	}
@@ -383,7 +383,7 @@ class Order extends InfoEntityAbstract
 	 *
 	 * @return Order
 	 */
-	public function setPassPaymentCheck($value) 
+	public function setPassPaymentCheck($value)
 	{
 	    $this->passPaymentCheck = $value;
 	    return $this;
@@ -393,7 +393,7 @@ class Order extends InfoEntityAbstract
 	 *
 	 * @return Multiple:OrderItem
 	 */
-	public function getOrderItems() 
+	public function getOrderItems()
 	{
 		$this->loadOneToMany('orderItems');
 	    return $this->orderItems;
@@ -415,7 +415,7 @@ class Order extends InfoEntityAbstract
 	 *
 	 * @return bool
 	 */
-	public function getIsFromB2B() 
+	public function getIsFromB2B()
 	{
 	    return (trim($this->isFromB2B) === '1');
 	}
@@ -426,7 +426,7 @@ class Order extends InfoEntityAbstract
 	 *
 	 * @return Order
 	 */
-	public function setIsFromB2B($value) 
+	public function setIsFromB2B($value)
 	{
 	    $this->isFromB2B = $value;
 	    return $this;
@@ -436,7 +436,7 @@ class Order extends InfoEntityAbstract
 	 *
 	 * @return Customer
 	 */
-	public function getCustomer() 
+	public function getCustomer()
 	{
 		$this->loadManyToOne('customer');
 	    return $this->customer;
@@ -448,16 +448,16 @@ class Order extends InfoEntityAbstract
 	 *
 	 * @return Order
 	 */
-	public function setCustomer($value) 
+	public function setCustomer($value)
 	{
 	    $this->customer = $value;
 	    return $this;
 	}
 	/**
 	 * checking whether the order can be edit by a role
-	 * 
+	 *
 	 * @param Role $role The role who is trying to edit the roder
-	 * 
+	 *
 	 * @return boolean
 	 */
 	public function canEditBy(Role $role)
@@ -466,7 +466,7 @@ class Order extends InfoEntityAbstract
 	}
 	/**
 	 * Getter for invDate
-	 * 
+	 *
 	 * @return invDate
 	 */
 	public function getInvDate()
@@ -477,9 +477,9 @@ class Order extends InfoEntityAbstract
 	}
 	/**
 	 * Setter for the invDate
-	 * 
+	 *
 	 * @param mixed $value
-	 * 
+	 *
 	 * @return Order
 	 */
 	public function setInvDate($value)
@@ -490,9 +490,9 @@ class Order extends InfoEntityAbstract
 	/**
 	 * Getter for pONo
 	 *
-	 * @return 
+	 * @return
 	 */
-	public function getPONo() 
+	public function getPONo()
 	{
 	    return $this->pONo;
 	}
@@ -503,23 +503,23 @@ class Order extends InfoEntityAbstract
 	 *
 	 * @return Order
 	 */
-	public function setPONo($value) 
+	public function setPONo($value)
 	{
 	    $this->pONo = $value;
 	    return $this;
 	}
 	/**
 	 * Adding a payment to this order
-	 * 
+	 *
 	 * @param PaymentMethod $method
-	 * @param double         $value
-	 * 
+	 * @param double        $value
+	 * @param string        $comments
+	 *
 	 * @return Order
 	 */
-	public function addPayment(PaymentMethod $method, $value)
+	public function addPayment(PaymentMethod $method, $value, $comments = '')
 	{
-		Payment::create($this, $method, $value);
-		return $this;
+		return Payment::create($this, $method, $value, $comments)->getOrder();
 	}
 	/**
 	 * Getter for margin
@@ -544,7 +544,7 @@ class Order extends InfoEntityAbstract
 	}
 	/**
 	 * Getting the order's previous status
-	 * 
+	 *
 	 * @return Ambigous <Ambigous, BaseEntityAbstract, NULL, SimpleXMLElement>
 	 */
 	public function getPreviousStatus()
@@ -564,6 +564,7 @@ class Order extends InfoEntityAbstract
 			$this->setInvDate(Udate::zeroDate());
 		if(trim($this->getId()) !== '')
 		{
+			$this->setMargin($this->getCalculatedTotalMargin());
 			//status changed
 			$originalOrder = self::get($this->getId());
 			if($originalOrder instanceof Order && $originalOrder->getStatus()->getId() !== $this->getStatus()->getId())
@@ -584,14 +585,13 @@ class Order extends InfoEntityAbstract
 	{
 		if(trim($this->getOrderNo()) === '')
 		{
-			$this->setOrderNo('BPCO' .str_pad($this->getId(), 8, '0', STR_PAD_LEFT))
+			$this->setOrderNo('BPCM' .str_pad($this->getId(), 8, '0', STR_PAD_LEFT))
 				->setMargin($this->getCalculatedTotalMargin())
 				->save();
 		}
-		
 		if(trim($this->getType()) === trim(self::TYPE_INVOICE))
-			$this->changeToInvoice();
-		
+			$this->_changeToInvoice();
+
 		//if the order is now SHIPPED
 		if(trim($this->getStatus()->getId()) === trim(OrderStatus::ID_SHIPPED)) {
 			$items = OrderItem::getAllByCriteria('orderId = ? and isPicked = 1', array($this->getId()));
@@ -599,12 +599,12 @@ class Order extends InfoEntityAbstract
 				$item->setIsShipped(true)
 					->save();
 			}
-			$this->changeToInvoice();
+			$this->_changeToInvoice();
 		}
 	}
 	/**
 	 * calculate total margin for an order
-	 * 
+	 *
 	 * @return number
 	 */
 	public function getCalculatedTotalMargin()
@@ -616,10 +616,10 @@ class Order extends InfoEntityAbstract
 	}
 	/**
 	 * changed the order to be a invoice
-	 * 
+	 *
 	 * @return Ambigous <BaseEntityAbstract, GenericDAO>
 	 */
-	private function changeToInvoice()
+	private function _changeToInvoice()
 	{
 		if(trim($this->getInvNo()) !== "")
 			return $this;
@@ -642,9 +642,9 @@ class Order extends InfoEntityAbstract
 	 *
 	 * @return PurchaseOrder
 	 */
-	public function addItem(Product $product, $unitPrice = '0.0000', $qty = 1, $description = '', $totalPrice = null, $mageOrderItemId = null, $eta = null)
+	public function addItem(Product $product, $unitPrice = '0.0000', $qty = 1, $description = '', $totalPrice = null, $mageOrderItemId = null, $eta = null, $itemDescription= '')
 	{
-		OrderItem::create($this, $product, $unitPrice, $qty, $totalPrice, $mageOrderItemId, $eta);
+		OrderItem::create($this, $product, $unitPrice, $qty, $totalPrice, $mageOrderItemId, $eta, $itemDescription);
 		return $this;
 	}
 	/**
@@ -656,6 +656,7 @@ class Order extends InfoEntityAbstract
 		$array = array();
 	    if(!$this->isJsonLoaded($reset))
 	    {
+	    	$array['customer'] = $this->getCustomer()->getJson();
 	    	$array['totalDue'] = $this->getTotalDue();
 	    	$array['infos'] = array();
 	    	$array['address']['shipping'] = $this->getShippingAddr() instanceof Address ? $this->getShippingAddr()->getJson() : array();
@@ -670,7 +671,7 @@ class Order extends InfoEntityAbstract
 	            $array['infos'][$typeId][] = $info->getJson();
 		    }
 		    $array['status'] = $this->getStatus() instanceof OrderStatus ? $this->getStatus()->getJson() : array();
-		    
+
 		    $array['shippments'] = array();
 		    foreach($this->getShippments() as $shippment)
 		    {
@@ -703,12 +704,12 @@ class Order extends InfoEntityAbstract
 		DaoMap::setManyToOne('shippingAddr', 'Address', 'saddr');
 		DaoMap::setStringType('pONo', 'varchar', 50);
 		DaoMap::setIntType('margin', 'Double', '10,4');
-		
+
 		DaoMap::setOneToMany('shippments', 'Shippment', 'o_ship');
 		DaoMap::setOneToMany('payments', 'Payment', 'py');
 		DaoMap::setOneToMany('orderItems', 'OrderItem', 'o_items');
 		parent::__loadDaoMap();
-		
+
 		DaoMap::createUniqueIndex('orderNo');
 		DaoMap::createIndex('invNo');
 		DaoMap::createIndex('invDate');
@@ -735,7 +736,7 @@ class Order extends InfoEntityAbstract
 		return (count($items) === 0 ? null : $items[0]);
 	}
 	/**
-	 * 
+	 *
 	 * @param Customer    $customer
 	 * @param string      $orderNo
 	 * @param OrderStatus $status
@@ -767,7 +768,7 @@ class Order extends InfoEntityAbstract
 	}
 	/**
 	 * Getting all the types of an order
-	 * 
+	 *
 	 * @return multitype:string
 	 */
 	public static function getAllTypes()

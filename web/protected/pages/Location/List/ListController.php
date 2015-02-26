@@ -58,7 +58,6 @@ class ListController extends CRUDPageAbstract
 			}
 			
 			$serachCriteria = isset($param->CallbackParameter->searchCriteria) ? json_decode(json_encode($param->CallbackParameter->searchCriteria), true) : array();
-			var_dump($serachCriteria);
 			$where = array(1);
 			$params = array();
 			if(isset($serachCriteria['location.name']) && ($name = trim($serachCriteria['location.name'])) !== '')
@@ -68,7 +67,6 @@ class ListController extends CRUDPageAbstract
 			}
 			$stats = array();
 			$objects = $class::getAllByCriteria(implode(' AND ', $where), $params, false, $pageNo, $pageSize, array('location.name' => 'asc'), $stats);
-			var_dump($objects);
 			$results['pageStats'] = $stats;
 			$results['items'] = array();
 			foreach($objects as $obj)

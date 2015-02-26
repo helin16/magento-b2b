@@ -16,6 +16,8 @@ class Web
 			dirname(__FILE__) . '/protected/classes/CRUDPage/',
 			dirname(__FILE__) . '/protected/classes/DetailsPage/',
 			dirname(__FILE__) . '/protected/classes/StaticsPage/',
+			dirname(__FILE__) . '/cronjobs/report/class/',
+				
 		);
 		
 		$found = false;

@@ -310,7 +310,7 @@ table.orderview .order_company_details .addr,table.orderview .order_company_deta
     {
     text-align: center;
     font-size: 11px;
-    margin: 5px;
+    width: 100%;
 }
 
 table.orderview .order_company_details .details_title {
@@ -381,4 +381,14 @@ table.orderview .order_company_details .details_title {
     font-size: 11px;
     color: #BBBBBB;
     padding: 10px 10px 5px;
+}
+.comments_details .print-row{
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+table.orderview .order_payments .comments_details {
+    margin-right: 2px;
+    width: 65%;
+    color: red;
 }

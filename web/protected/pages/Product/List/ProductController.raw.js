@@ -116,7 +116,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		tmp.me = this;
 		tmp.supplierCodeString = [];
 		supplierCodes.each(function(suppliercode) {
-			tmp.supplierCodeString.push(isTitle === true ? 'Supplier' : '<abbr title="Code: '  + suppliercode.code + '">' + suppliercode.supplier.name + '</abbr>');
+			tmp.supplierCodeString.push(isTitle === true ? 'Supplier' : '<abbr title="Code: '  + suppliercode.code + '">' + (suppliercode.supplier && suppliercode.supplier.name ? suppliercode.supplier.name : '') + '</abbr>');
 		})
 		return tmp.supplierCodeString.join(', ');
 	}
@@ -137,7 +137,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 	/**
 	 * Displaying the price matching result
 	 */
-	,_displayPriceMatchResult: function(prices) {
+	,_displayPriceMatchResult: function(prices, productId) {
 		var tmp = {};
 		tmp.me = this;
 		tmp.minPrice = 0;
@@ -172,7 +172,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 			.insert({'bottom': new Element('tbody')
 				.insert({'bottom': new Element('tr')
 					.insert({'bottom': new Element('td').update(prices.sku) })
-					.insert({'bottom': new Element('td').update(tmp.me.getCurrency(prices.myPrice)) })
+					.insert({'bottom': new Element('td').update(tmp.priceInput = new Element('input', {'class': "click-to-edit price-input", 'value': tmp.me.getCurrency(prices.myPrice), 'product-id': productId}) ) })
 					.insert({'bottom': new Element('td', {'class': 'price_diff'}).update(new Element('span', {'class': '' + tmp.priceDiffClass}).update(tmp.me.getCurrency(tmp.priceDiff)) ) })
 					.insert({'bottom': new Element('td', {'class': 'price_min'}).update(tmp.me.getCurrency(tmp.minPrice) ) })
 				})
@@ -229,7 +229,8 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 					if(!tmp.result)
 						return;
 					if($('info_panel_' + product.id))
-						$('info_panel_' + product.id).down('.price-match-div .price-match-listing').replace(tmp.me._displayPriceMatchResult(tmp.result));
+						$('info_panel_' + product.id).down('.price-match-div .price-match-listing').replace(tmp.me._displayPriceMatchResult(tmp.result, product.id));
+					tmp.me._bindPriceInput();
 				} catch (e) {
 					tmp.me.showModalBox('Error', e, true);
 				}
@@ -251,7 +252,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		tmp.me = this;
 		tmp.reset = (reset || false);
 		tmp.resultDiv = $(tmp.me.resultDivId);
-		
+
 		if(tmp.reset === true)
 			tmp.me._pagination.pageNo = 1;
 		tmp.me._pagination.pageSize = (pageSize || tmp.me._pagination.pageSize);
@@ -269,7 +270,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 					if(!tmp.result)
 						return;
 					$(tmp.me.totalNoOfItemsId).update(tmp.result.pageStats.totalRows);
-					
+
 					//reset div
 					if(tmp.reset === true) {
 						tmp.resultDiv.update(tmp.me._getResultRow(tmp.me._getTitleRowData(), true).wrap(new Element('thead')));
@@ -278,7 +279,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 					tmp.resultDiv.getElementsBySelector('.paginWrapper').each(function(item){
 						item.remove();
 					});
-					
+
 					//show all items
 					tmp.tbody = $(tmp.resultDiv).down('tbody');
 					if(!tmp.tbody)
@@ -293,6 +294,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 					} else if(tmp.result.items.size() > 0) {
 						tmp.me._displaySelectedProduct(tmp.result.items[0]);
 					}
+					tmp.me._bindPriceInput();
 				} catch (e) {
 					tmp.resultDiv.insert({'bottom': tmp.me.getAlertBox('Error', e).addClassName('alert-danger') });
 				}
@@ -303,7 +305,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		});
 	}
 	/**
-	 * Displaying the selected product 
+	 * Displaying the selected product
 	 */
 	,_displaySelectedProduct: function(item) {
 		var tmp = {};
@@ -311,21 +313,22 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		$(tmp.me.resultDivId).up('.list-panel').removeClassName('col-xs-12').addClassName('col-xs-4');
 		jQuery('.hide-when-info', jQuery('#' + tmp.me.resultDivId)).hide();
 		tmp.me._showRightPanel = true;
-		
+
 		//remove all active class
 		jQuery('.product_item.success', jQuery('#' + tmp.me.resultDivId)).removeClass('success').popover('hide');
 		//mark this one as active
 		tmp.selectedRow = jQuery('[product_id="' + item.id + '"]', jQuery('#' + tmp.me.resultDivId))
 			.addClass('success');
 		if(!tmp.selectedRow.hasClass('popover-loaded')) {
-			tmp.selectedRow.popover({
+			tmp.selectedRow
+			.popover({
 				'title'    : '<div class="row"><div class="col-xs-10">Details for: ' + item.sku + '</div><div class="col-xs-2"><span class="btn btn-danger pull-right btn-sm" onclick="pageJs.deSelectProduct();"><span class="glyphicon glyphicon-remove"></span></span></div></div>',
-				'html'     : true, 
-				'placement': 'right', 
-				'container': 'body', 
-				'trigger'  : 'manual', 
+				'html'     : true,
+				'placement': 'right',
+				'container': 'body',
+				'trigger'  : 'manual',
 				'viewport' : {"selector": ".list-panel", "padding": 0 },
-				'content'  : function() { return tmp.me._showProductInfoOnRightPanel(item).wrap(new Element('div')).innerHTML; }, 
+				'content'  : function() { return tmp.me._showProductInfoOnRightPanel(item).wrap(new Element('div')).innerHTML; },
 				'template' : '<div class="popover" role="tooltip" style="max-width: none; z-index: 0;"><div class="arrow"></div><h3 class="popover-title"></h3><div class="popover-content"></div></div>'
 			})
 			.addClass('popover-loaded');
@@ -338,8 +341,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 	 */
 	,_openProductDetails: function(product) {
 		var tmp = {};
-		console.debug(product);
-		tmp.newWindow = window.open('/product/' + (product == 'new' ? product : product.id) + '.html', 'Product Details for: ' + product.sku, 'scrollbars=yes, location=no, menubar=no, status=no, titlebar=no, fullscreen=no, toolbar=no, width=1024');
+		tmp.newWindow = window.open('/product/' + (product == 'new' ? product : product.id) + '.html', 'Product Details for: ' + product.sku, 'width=1300, location=no, scrollbars=yes, menubar=no, status=no, titlebar=no, fullscreen=no, toolbar=no');
 		tmp.newWindow.focus();
 	}
 	,toggleActive: function(active, product) {
@@ -362,6 +364,63 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		return tmp.me;
 	}
 	/**
+	 * Open product qty log Page in new Window
+	 */
+	,_openProductQtyLogPage: function(id) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.newWindow = window.open('/productqtylog.html?productid=' + id, 'Product Details', 'width=1920, location=no, scrollbars=yes, menubar=no, status=no, titlebar=no, fullscreen=no, toolbar=no');
+		tmp.newWindow.focus();
+		return tmp.me;
+	}
+	,_updatePrice: function(productId, newPrice, originalPrice) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.me.postAjax(tmp.me.getCallbackId('updatePrice'), {'productId': productId, 'newPrice': tmp.me.getValueFromCurrency(newPrice)}, {
+			'onLoading': function() {}
+			,'onSuccess': function(sender, param) {
+				try {
+					tmp.result = tmp.me.getResp(param, false, true);
+					if(!tmp.result || !tmp.result.item || !tmp.result.item.id)
+						return;
+					jQuery('.price-input[product-id=' + tmp.result.item.id + ']').attr('original-price', tmp.me.getValueFromCurrency(newPrice));
+				} catch (e) {
+					tmp.me.showModalBox('<strong class="text-danger">Error When Update Price:</strong>', '<strong>' + e + '</strong>');
+					jQuery('.price-input[product-id=' + productId + ']').val(tmp.me.getCurrency(originalPrice));
+				}
+			}
+		})
+		return tmp.me;
+	}
+	/**
+	 * binding the price input event
+	 */
+	,_bindPriceInput: function() {
+		var tmp = {};
+		tmp.me = this;
+		jQuery('.price-input[product-id]').not('.price-input-binded')
+			.click(function (){
+				jQuery(this)
+					.attr('original-price', tmp.me.getValueFromCurrency(jQuery(this).val()))
+					.select();
+			})
+			.keydown(function(event) {
+				tmp.inputBox = jQuery(this);
+				tmp.me.keydown(event, function(){
+					tmp.inputBox.blur();
+				});
+			})
+			.focusout(function(){
+				tmp.value = tmp.me.getValueFromCurrency(jQuery(this).val());
+				jQuery(this).val(tmp.me.getCurrency(tmp.value));
+			})
+			.change(function() {
+				tmp.me._updatePrice(jQuery(this).attr('product-id'), jQuery(this).val(), tmp.me.getValueFromCurrency( jQuery(this).attr('original-price') ));
+			})
+			.addClass('price-input-binded');
+		return tmp.me;
+	}
+	/**
 	 * Getting each row for displaying the result list
 	 */
 	,_getResultRow: function(row, isTitle) {
@@ -377,7 +436,8 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 				}
 			});
 		}
-		tmp.row = new Element('tr', {'class': 'visible-xs visible-md visible-lg visible-sm ' + (tmp.isTitle === true ? '' : 'product_item'), 'product_id' : row.id}).store('data', row)
+		tmp.row = new Element('tr', {'class': 'visible-xs visible-md visible-lg visible-sm ' + (tmp.isTitle === true ? '' : 'product_item'), 'product_id' : row.id})
+			.store('data', row)
 			.insert({'bottom': new Element(tmp.tag, {'class': 'sku', 'title': row.name})
 				.insert({'bottom': new Element('span', {'style': 'margin: 0 5px 0 0;'})
 					.insert({'bottom': new Element('input', {'type': 'checkbox', 'class': 'product-selected'})
@@ -392,12 +452,18 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 					})
 				})
 				.insert({'bottom':tmp.isTitle === true ? row.sku : new Element('a', {'href': 'javascript: void(0);', 'class': 'sku-link'})
+					.observe('click', function(){
+						tmp.me._displaySelectedProduct(row);
+					})
+					.observe('dblclick', function(){
+						tmp.me._openProductDetails(row);
+					})
 					.update(row.sku)
-				}) 
+				})
 			})
 			.insert({'bottom': new Element(tmp.tag, {'class': 'product_name hidden-xs hide-when-info hidden-sm', 'style': (tmp.me._showRightPanel ? 'display: none' : '')}).update(row.name) })
-			.insert({'bottom': new Element(tmp.tag, {'class': 'product_price hidden-xs hide-when-info hidden-sm', 'style': (tmp.me._showRightPanel ? 'display: none' : '')}).update(tmp.isTitle === true ? 'Price' : (tmp.price.blank() ? '' : tmp.me.getCurrency(tmp.price))) })
-			.insert({'bottom': new Element(tmp.tag, {'class': 'locations col-xs-1 hidden-sm'}).update(
+			.insert({'bottom': new Element(tmp.tag, {'class': 'product_price hidden-xs hide-when-info hidden-sm', 'style': (tmp.me._showRightPanel ? 'display: none' : '')}).update(tmp.isTitle === true ? 'Price' : new Element('input', {'class': "click-to-edit price-input", 'value': tmp.me.getCurrency(tmp.price), 'product-id': row.id}) ) })
+			.insert({'bottom': new Element(tmp.tag, {'class': 'locations col-xs-1  hide-when-info hidden-sm'}).update(
 					row.locations ? tmp.me._getLocations(row.locations, isTitle) : ''
 			) })
 			.insert({'bottom': new Element(tmp.tag, {'class': 'inventeryCode col-xs-1 hide-when-info'}).update(row.invenAccNo ? row.invenAccNo : '') })
@@ -405,36 +471,43 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 			.insert({'bottom': new Element(tmp.tag, {'class': 'supplier col-xs-1 hide-when-info hidden-sm'}).update(
 					row.supplierCodes ? tmp.me._getSupplierCodes(row.supplierCodes, isTitle) : ''
 			) })
-			.insert({'bottom': new Element(tmp.tag, {'class': 'qty col-xs-1 hidden-sm'}).update(
-					tmp.isTitle === true ? 
+			.insert({'bottom': new Element(tmp.tag, {'class': 'qty col-xs-2 hidden-sm'}).update(
+					tmp.isTitle === true ?
 							new Element('div', {'class': 'row'})
-								.insert({'bottom': new Element(tmp.tag, {'class': 'stockOnPO col-xs-3', 'title': 'Stock on PurchaseOrder'}).update('P') })
-								.insert({'bottom': new Element(tmp.tag, {'class': 'stockOnHand col-xs-3', 'title': 'Stock on hand'}).update('H') })
-								.insert({'bottom': new Element(tmp.tag, {'class': 'stockOnOrder col-xs-3', 'title': 'Stock on Order'}).update('O') })
-								.insert({'bottom': new Element(tmp.tag, {'class': 'stockOnOrder col-xs-3', 'title': 'Stock on RMA'}).update('R') })
-							: 
+								.insert({'bottom': new Element('div', {'class': 'col-xs-4 hide-when-info', 'title': 'Stock on Hand'}).update('SH') })
+								.insert({'bottom': new Element('div', {'class': 'col-xs-4', 'title': 'Average Cost'}).update('Cost') })
+								.insert({'bottom': new Element('div', {'class': 'col-xs-4 hide-when-info', 'title': 'Stock On PO'}).update('SP') })
+							:
 							new Element('div', {'class': 'row'})
-								.insert({'bottom': new Element(tmp.tag, {'class': 'stockOnPO col-xs-3', 'title': 'Stock on PurchaseOrder'}).update(row.stockOnPO) })
-								.insert({'bottom': new Element(tmp.tag, {'class': 'stockOnHand col-xs-3', 'title': 'Stock on hand'}).update(row.stockOnHand) })
-								.insert({'bottom': new Element(tmp.tag, {'class': 'stockOnOrder col-xs-3', 'title': 'Stock on Order'}).update(row.stockOnOrder) })
-								.insert({'bottom': new Element(tmp.tag, {'class': 'stockInRMA col-xs-3', 'title': 'Stock on Order'}).update(row.stockInRMA) })
-			) })
+								.update(new Element('a', {'href': 'javascript: void(0);'})
+									.insert({'bottom': new Element('div', {'class': 'col-xs-4 hide-when-info', 'title': 'Stock on Hand'}).update(row.stockOnHand) })
+									.insert({'bottom': new Element('div', {'class': 'col-xs-4', 'title': 'Average Cost'}).update((row.totalOnHandValue != 0 && row.stockOnHand != 0) ? tmp.me.getCurrency(row.totalOnHandValue/row.stockOnHand) : 'N/A') })
+									.insert({'bottom': new Element('div', {'class': 'col-xs-4 hide-when-info', 'title': 'Stock On PO'}).update(row.stockOnPO) })
+									.observe('dblclick', function(e){
+										tmp.me._openProductQtyLogPage(row.id);
+									})
+								)
+					)
+			})
 			.insert({'bottom': new Element(tmp.tag, {'class': 'product_active col-xs-1 hide-when-info hidden-sm'})
-				.insert({'bottom': (tmp.isTitle === true ? row.active : 
-					new Element('div', {'class': 'row'}) 
-						.insert({'bottom': new Element('div', {'class': 'col-xs-4'})
+				.insert({'bottom': (tmp.isTitle === true ? row.active :
+					new Element('div', {'class': 'row'})
+						.insert({'bottom': new Element('div', {'class': 'col-xs-3'})
 							.insert({'bottom': new Element('input', {'type': 'checkbox', 'disabled': true, 'checked': row.active}) })
 						})
-						.insert({'bottom': new Element('div', {'class': 'col-xs-8'})
+						.insert({'bottom': new Element('div', {'class': 'col-xs-3'})
+							.insert({'bottom': new Element('a', {'href': '/serialnumbers.html?productid=' + row.id, 'target': '_BLANK', 'title': 'Serial Numbers.'}).update('SN') })
+						})
+						.insert({'bottom': new Element('div', {'class': 'col-xs-6'})
 							.insert({'bottom': new Element('div', {'class': 'btn-group'})
 								.insert({'bottom': new Element('span', {'class': 'btn btn-primary btn-xs'})
 									.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-pencil'}) })
+									.observe('click', function(event){
+										Event.stop(event);
+										tmp.me._openProductDetails(row);
+									})
 								})
-								.observe('click', function(event){
-									Event.stop(event);
-									tmp.me._openProductDetails(row);
-								})
-								.insert({'bottom': (row.active === true ? 
+								.insert({'bottom': (row.active === true ?
 									new Element('span', {'class': 'btn btn-danger btn-xs'})
 										.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-trash'}) })
 										.observe('click', function(event) {
@@ -457,14 +530,6 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 						})
 				) })
 			});
-		if(tmp.isTitle === false) {
-			tmp.me.observeClickNDbClick(tmp.row, function() {
-				tmp.me._displaySelectedProduct(row);
-			}, function(){
-				if(tmp.me._singleProduct !== true)
-					tmp.me._openProductDetails(row);
-			});
-		}
 		return tmp.row;
 	}
 });

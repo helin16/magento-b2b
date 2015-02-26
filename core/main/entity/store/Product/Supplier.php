@@ -22,25 +22,25 @@ class Supplier extends BaseEntityAbstract
 	private $description = '';
 	/**
 	 * The contact person's name
-	 * 
+	 *
 	 * @var string
 	 */
-	private $contactName = ''; 
+	private $contactName = '';
 	/**
 	 * The contact number
-	 * 
+	 *
 	 * @var string
 	 */
 	private $contactNo = '';
 	/**
 	 * The email address of the supplier
-	 * 
+	 *
 	 * @var string
 	 */
 	private $email = '';
 	/**
 	 * The address
-	 * 
+	 *
 	 * @var Address
 	 */
 	protected $address = null;
@@ -140,20 +140,20 @@ class Supplier extends BaseEntityAbstract
 		$this->mageId = $value;
 		return $this;
 	}
-	/** 
+	/**
 	 * Getter for contactName
-	 * 
+	 *
 	 * @return string
 	 */
 	public function getContactName ()
 	{
 		return $this->contactName;
 	}
-	/** 
+	/**
 	 * Setter for contactName
-	 * 
+	 *
 	 * @param string $value
-	 * 
+	 *
 	 * @return Supplier
 	 */
 	public function setContactName($value)
@@ -161,20 +161,20 @@ class Supplier extends BaseEntityAbstract
 		$this->contactName = $value;
 		return $this;
 	}
-	/** 
+	/**
 	 * Getter for contactNo
-	 * 
+	 *
 	 * @return string
 	 */
 	public function getContactNo ()
 	{
 		return $this->contactNo;
 	}
-	/** 
+	/**
 	 * Setter for contactNo
-	 * 
+	 *
 	 * @param string $value
-	 * 
+	 *
 	 * @return Supplier
 	 */
 	public function setContactNo($value)
@@ -182,20 +182,20 @@ class Supplier extends BaseEntityAbstract
 		$this->contactNo = $value;
 		return $this;
 	}
-	/** 
+	/**
 	 * Getter for contactNo
-	 * 
+	 *
 	 * @return string
 	 */
 	public function getEmail ()
 	{
 		return $this->email;
 	}
-	/** 
+	/**
 	 * Setter for email
-	 * 
+	 *
 	 * @param string $value
-	 * 
+	 *
 	 * @return Supplier
 	 */
 	public function setEmail($value)
@@ -203,9 +203,9 @@ class Supplier extends BaseEntityAbstract
 		$this->email = $value;
 		return $this;
 	}
-	/** 
+	/**
 	 * Getter for address
-	 * 
+	 *
 	 * @return Address
 	 */
 	public function getAddress ()
@@ -213,17 +213,57 @@ class Supplier extends BaseEntityAbstract
 		$this->loadManyToOne('address');
 		return $this->address;
 	}
-	/** 
+	/**
 	 * Setter for address
-	 * 
+	 *
 	 * @param Address $value
-	 * 
+	 *
 	 * @return Supplier
 	 */
 	public function setAddress(Address $value = null)
 	{
 		$this->address = $value;
 		return $this;
+	}
+	/**
+	 * (non-PHPdoc)
+	 * @see BaseEntityAbstract::getJson()
+	 */
+	public function getJson($extra = '', $reset = false)
+	{
+		$array = array();
+		if(!$this->isJsonLoaded($reset))
+		{
+			$array['address'] = $this->getAddress() instanceof Address ? $this->getAddress()->getJson() : null;
+		}
+		return parent::getJson($array, $reset);
+	}
+	/**
+	 * (non-PHPdoc)
+	 * @see HydraEntity::__loadDaoMap()
+	 */
+	public function __loadDaoMap()
+	{
+		DaoMap::begin($this, 'sup');
+
+		DaoMap::setStringType('name', 'varchar', 100);
+		DaoMap::setStringType('description', 'varchar', 255);
+		DaoMap::setStringType('contactName', 'varchar', 100);
+		DaoMap::setStringType('contactNo', 'varchar', 100);
+		DaoMap::setStringType('email', 'varchar', 100);
+		DaoMap::setManyToOne('address', 'Address', 'sup_addr', true);
+		DaoMap::setIntType('mageId');
+		DaoMap::setBoolType('isFromB2B');
+		parent::__loadDaoMap();
+
+		DaoMap::createIndex('name');
+		DaoMap::createIndex('isFromB2B');
+		DaoMap::createIndex('mageId');
+		DaoMap::createIndex('contactNo');
+		DaoMap::createIndex('contactName');
+		DaoMap::createIndex('email');
+
+		DaoMap::commit();
 	}
 	/**
 	 * Creating a instance of this
@@ -248,45 +288,18 @@ class Supplier extends BaseEntityAbstract
 		{
 			$obj = new $class();
 			$obj->setIsFromB2B($isFromB2B)
-				->setContactName(trim($contactName))
-				->setContactNo(trim($contactNo))
-				->setAddress($addr);
+			->setContactName(trim($contactName))
+			->setContactNo(trim($contactNo))
+			->setAddress($addr);
 		}
 		$obj->setName($name)
-			->setDescription(trim($description))
-			->setMageId($mageId)
-			->save();
+		->setDescription(trim($description))
+		->setMageId($mageId)
+		->save();
 		$comments = $class  . '(ID=' . $obj->getId() . ')' . (count($objects) > 0 ? 'updated' : 'created') . ($isFromB2B === true ? ' via B2B' : '') . ' with (name=' . $name . ', mageId=' . $mageId . ')';
 		if($isFromB2B === true)
 			Comments::addComments($obj, $comments, Comments::TYPE_SYSTEM);
 		Log::LogEntity($obj, $comments, Log::TYPE_SYSTEM, '', $class . '::' . __FUNCTION__);
 		return $obj;
-	}
-	/**
-	 * (non-PHPdoc)
-	 * @see HydraEntity::__loadDaoMap()
-	 */
-	public function __loadDaoMap()
-	{
-		DaoMap::begin($this, 'sup');
-	
-		DaoMap::setStringType('name', 'varchar', 100);
-		DaoMap::setStringType('description', 'varchar', 255);
-		DaoMap::setStringType('contactName', 'varchar', 100);
-		DaoMap::setStringType('contactNo', 'varchar', 100);
-		DaoMap::setStringType('email', 'varchar', 100);
-		DaoMap::setManyToOne('address', 'Address', 'sup_addr', true);
-		DaoMap::setIntType('mageId');
-		DaoMap::setBoolType('isFromB2B');
-		parent::__loadDaoMap();
-	
-		DaoMap::createIndex('name');
-		DaoMap::createIndex('isFromB2B');
-		DaoMap::createIndex('mageId');
-		DaoMap::createIndex('contactNo');
-		DaoMap::createIndex('contactName');
-		DaoMap::createIndex('email');
-	
-		DaoMap::commit();
 	}
 }

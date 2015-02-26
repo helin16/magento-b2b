@@ -24,8 +24,8 @@ class Controller extends CRUDPageAbstract
 	public function __construct()
 	{
 		parent::__construct();
-		if(!AccessControl::canAccessPurcahseOrdersPage(Core::getRole()))
-			die('You do NOT have access to this page');
+// 		if(!AccessControl::canAccessPurcahseOrdersPage(Core::getRole()))
+// 			die('You do NOT have access to this page');
 	}
 	/**
 	 * (non-PHPdoc)
@@ -104,7 +104,7 @@ class Controller extends CRUDPageAbstract
             		case 'po.orderDate_to':
             			{
             				$where[] =  'po.orderDate <= ?';
-            				$params[] = $value;
+            				$params[] = str_replace(' 00:00:00', ' 23:59:59', $value);
             				break;
             			}
             		case 'po.supplierIds':

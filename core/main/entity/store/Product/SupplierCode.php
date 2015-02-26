@@ -10,28 +10,28 @@ class SupplierCode extends BaseEntityAbstract
 {
 	/**
 	 * The supplier
-	 * 
+	 *
 	 * @var Supplier
 	 */
 	protected $supplier;
 	/**
 	 * The product
-	 * 
+	 *
 	 * @var Product
 	 */
 	protected $product;
 	/**
 	 * The code
-	 * 
+	 *
 	 * @var string
 	 */
 	private $code;
 	/**
 	 * Getter for supplier
 	 *
-	 * @return 
+	 * @return
 	 */
-	public function getSupplier() 
+	public function getSupplier()
 	{
 		$this->loadManyToOne('supplier');
 	    return $this->supplier;
@@ -43,7 +43,7 @@ class SupplierCode extends BaseEntityAbstract
 	 *
 	 * @return SupplierCode
 	 */
-	public function setSupplier(Supplier $value) 
+	public function setSupplier(Supplier $value)
 	{
 	    $this->supplier = $value;
 	    return $this;
@@ -51,9 +51,9 @@ class SupplierCode extends BaseEntityAbstract
 	/**
 	 * Getter for product
 	 *
-	 * @return 
+	 * @return
 	 */
-	public function getProduct() 
+	public function getProduct()
 	{
 		$this->loadManyToOne('product');
 	    return $this->product;
@@ -65,7 +65,7 @@ class SupplierCode extends BaseEntityAbstract
 	 *
 	 * @return SupplierCode
 	 */
-	public function setProduct(Product $value) 
+	public function setProduct(Product $value)
 	{
 	    $this->product = $value;
 	    return $this;
@@ -73,9 +73,9 @@ class SupplierCode extends BaseEntityAbstract
 	/**
 	 * Getter for code
 	 *
-	 * @return 
+	 * @return
 	 */
-	public function getCode() 
+	public function getCode()
 	{
 	    return $this->code;
 	}
@@ -86,29 +86,10 @@ class SupplierCode extends BaseEntityAbstract
 	 *
 	 * @return SupplierCode
 	 */
-	public function setCode($value) 
+	public function setCode($value)
 	{
 	    $this->code = $value;
 	    return $this;
-	}
-	/**
-	 * Creating a supplier code
-	 * 
-	 * @param Product  $product
-	 * @param Supplier $supplier
-	 * @param string   $code
-	 * 
-	 * @return SupplierCode
-	 */
-	public static function create(Product $product, Supplier $supplier, $code)
-	{
-		$class = __CLASS__;
-		$objects = self::getAllByCriteria('productId = ? and supplierId = ? and code like ?', array($product->getId(), $supplier->getId(), trim($code)), true, 1, 1);
-		$obj = (count($objects) > 0 ? $objects[0] : new $class());
-		return $obj->setProduct($product)
-			->setSupplier($supplier)
-			->setCode(trim($code))
-			->save();
 	}
 	/**
 	 * (non-PHPdoc)
@@ -131,12 +112,31 @@ class SupplierCode extends BaseEntityAbstract
 	public function __loadDaoMap()
 	{
 		DaoMap::begin($this, 'sup_code');
-	
+
 		DaoMap::setManyToOne('supplier', 'Supplier', 'scode_sup');
 		DaoMap::setManyToOne('product', 'Product', 'scode_pro');
 		DaoMap::setStringType('code', 'varchar', 100);
 		parent::__loadDaoMap();
 		DaoMap::createIndex('code');
 		DaoMap::commit();
+	}
+	/**
+	 * Creating a supplier code
+	 *
+	 * @param Product  $product
+	 * @param Supplier $supplier
+	 * @param string   $code
+	 *
+	 * @return SupplierCode
+	 */
+	public static function create(Product $product, Supplier $supplier, $code)
+	{
+		$class = __CLASS__;
+		$objects = self::getAllByCriteria('productId = ? and supplierId = ? and code like ?', array($product->getId(), $supplier->getId(), trim($code)), true, 1, 1);
+		$obj = (count($objects) > 0 ? $objects[0] : new $class());
+		return $obj->setProduct($product)
+		->setSupplier($supplier)
+		->setCode(trim($code))
+		->save();
 	}
 }

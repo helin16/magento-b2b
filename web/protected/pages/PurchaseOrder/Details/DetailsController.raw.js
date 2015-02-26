@@ -71,7 +71,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 	,_openOrderPrintPage: function() {
 		var tmp = {};
 		tmp.me = this;
-		tmp.newWindow = window.open('/print/purchase/' + tmp.me._purchaseorder.id + '.html', tmp.me._purchaseorder.status + ' PO ' + tmp.me._purchaseorder.purchaseOrderNo, 'location=no, menubar=no, scrollbars=yes, status=no, titlebar=no, fullscreen=no, toolbar=no, width=800');
+		tmp.newWindow = window.open('/print/purchase/' + tmp.me._purchaseorder.id + '.html?pdf=1', tmp.me._purchaseorder.status + ' PO ' + tmp.me._purchaseorder.purchaseOrderNo, 'width=1300, location=no, scrollbars=yes, menubar=no, status=no, titlebar=no, fullscreen=no, toolbar=no');
 		tmp.newWindow.onload = function(){
 			tmp.newWindow.document.title = tmp.me._purchaseorder.status + ' Order ' + tmp.me._purchaseorder.purchaseOrderNo;
 			tmp.newWindow.focus();
@@ -117,7 +117,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		tmp.purchaseOrder = tmp.me._purchaseorder;
 		tmp.newDiv = new Element('div', {'class': 'panel panel-info'})
 			.insert({'bottom': new Element('div', {'class': 'panel-heading'})
-				.insert({'bottom': new Element('strong').update('Editing purchase order for: ' + tmp.supplier.name + ' ') })
+				.insert({'bottom': new Element('strong').update('Editing PO ' + tmp.purchaseOrder.purchaseOrderNo + ' for ' + tmp.supplier.name + ' ') })
 				.insert({'bottom': new Element('div', {'class': 'pull-right'})
 					.insert({'bottom': new Element('strong', {'style': 'padding-left: 10px'}).update('ETA: ') })
 					.insert({'bottom': new Element('input', {'style': 'max-height:19px', 'class': 'datepicker', 'save-order': 'ETA', 'type': 'date', 'value': tmp.purchaseOrder.eta ? tmp.purchaseOrder.eta : ''}) })
@@ -132,7 +132,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 					.insert({'bottom': new Element('div', {'class': 'col-sm-3'}).update(tmp.me._getFormGroup('Contact Name', new Element('input', {'save-order': 'contactName', 'type': 'text', 'value': tmp.supplier.contactName ? tmp.supplier.contactName : ''}) ) ) })
 					.insert({'bottom': new Element('div', {'class': 'col-sm-3'}).update(tmp.me._getFormGroup('Contact Number', new Element('input', {'save-order': 'contactNo', 'type': 'value', 'value': tmp.supplier.contactNo ? tmp.supplier.contactNo : ''}) ) ) })
 					.insert({'bottom': new Element('div', {'class': 'col-sm-3'}).update(tmp.me._getFormGroup('Contact Email', new Element('input', { 'save-order': 'contactEmail', 'type': 'email', 'value': tmp.supplier.email ? tmp.supplier.email : ''}) ) ) })
-					.insert({'bottom': new Element('div', {'class': 'col-sm-3'}).update(tmp.me._getFormGroup('Supplier Ref Num', new Element('input', {'required': 'required', 'save-order': 'supplierRefNum', 'type': 'text', 'value': tmp.purchaseOrder.supplierRefNo ? tmp.purchaseOrder.supplierRefNo : ''}) ) ) })
+					.insert({'bottom': new Element('div', {'class': 'col-sm-3'}).update(tmp.me._getFormGroup('PO Ref Num', new Element('input', {'required': 'required', 'save-order': 'supplierRefNum', 'type': 'text', 'value': tmp.purchaseOrder.supplierRefNo ? tmp.purchaseOrder.supplierRefNo : ''}) ) ) })
 				 })
 			});
 		return tmp.newDiv;
@@ -719,28 +719,28 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 					.insert({'bottom': new Element('div', {'class': 'row small'})
 						.insert({'bottom': new Element('span', {'class': 'btn btn-link btn-xs', 'style': product.minProductPrice ? '': 'display:none'}).update('Minimum product price: ')
 							.insert({'bottom': new Element('strong').update(tmp.me.getCurrency(product.minProductPrice)) })
-						})
-						.observe('click', function(event) {
-							Event.stop(event);
-							tmp.me._openPOPage(product.minProductPriceId);
+							.observe('click', function(event) {
+								Event.stop(event);
+								tmp.me._openPOPage(product.minProductPriceId);
+							})
 						})
 					})
 					.insert({'bottom': new Element('div', {'class': 'row small'})
 						.insert({'bottom': new Element('span', {'class': 'btn btn-link btn-xs', 'style': product.lastSupplierPrice ? '': 'display:none'}).update('Last supplier price: ')
 							.insert({'bottom': new Element('strong').update(tmp.me.getCurrency(product.lastSupplierPrice)) })
-						})
-						.observe('click', function(event) {
-							Event.stop(event);
-							tmp.me._openPOPage(product.lastSupplierPriceId);
+							.observe('click', function(event) {
+								Event.stop(event);
+								tmp.me._openPOPage(product.lastSupplierPriceId);
+							})
 						})
 					})
 					.insert({'bottom': new Element('div', {'class': 'row small'})
 						.insert({'bottom': new Element('span', {'class': 'btn btn-link btn-xs', 'style': product.minSupplierPrice ? '': 'display:none'}).update('Minimum supplier price: ')
 							.insert({'bottom': new Element('strong').update(tmp.me.getCurrency(product.minSupplierPrice)) })
-						})
-						.observe('click', function(event) {
-							Event.stop(event);
-							tmp.me._openPOPage(product.minSupplierPriceId);
+							.observe('click', function(event) {
+								Event.stop(event);
+								tmp.me._openPOPage(product.minSupplierPriceId);
+							})
 						})
 					})
 					
@@ -763,9 +763,9 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 						})
 					});
 				jQuery('#' + tmp.me.modalId).modal('hide');
-				tmp.retailPrice = product.prices.size() === 0 ? 0 : product.prices[0].price;
-				tmp.inputRow.down('[new-order-item=totalPrice]').writeAttribute('value', tmp.me.getCurrency(tmp.retailPrice));
-				tmp.inputRow.down('[new-order-item=unitPrice]').writeAttribute('value', tmp.me.getCurrency(tmp.retailPrice)).select();
+				tmp.inputRow.down('[new-order-item=totalPrice]').writeAttribute('value', tmp.me.getCurrency(product.minProductPrice));
+				tmp.inputRow.down('[new-order-item=qtyOrdered]').writeAttribute('value', 1);
+				tmp.inputRow.down('[new-order-item=unitPrice]').writeAttribute('value', tmp.me.getCurrency(product.minProductPrice)).select();
 			})
 			;
 		return tmp.newRow;
@@ -795,7 +795,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 							tmp.selBox.insert({'bottom': new Element('option').update(status) });
 					});
 					$$('select[save-order="status"]').first().replace(tmp.selBox);
-					tmp.me._submitOrder($(this));
+					tmp.me._submitOrder($(this), true);
 				})
 			})
 			.insert({'bottom': new Element('span', {'class': 'btn btn-success'})
@@ -821,10 +821,11 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		;
 		return tmp.newDiv;
 	}
-	,_submitOrder: function(btn) {
+	,_submitOrder: function(btn, isSubmit) {
 		var tmp = {};
 		tmp.me = this;
 		tmp.btn = btn;
+		tmp.isSubmit = (isSubmit === true ? true : false);
 		tmp.data = tmp.me._collectFormData($(tmp.me._htmlIds.itemDiv),'save-order');
 		if(tmp.data === null)
 			return tmp.me;
@@ -841,11 +842,12 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		});
 		tmp.data.id = tmp.me._purchaseorder.id;
 		tmp.data.supplier = tmp.me._supplier;
-		tmp.data.totalAmount = tmp.data.totalAmount ? tmp.me.getValueFromCurrency(tmp.data.totalAmount) : '';
+		tmp.data.totalAmount = tmp.data.totalAmount ? tmp.me.getValueFromCurrency($(tmp.me._htmlIds.totalPriceIncludeGST).innerHTML) : '';
 		tmp.data.totalPaid = tmp.data.totalPaid ? tmp.me.getValueFromCurrency(tmp.data.totalPaid) : '';
 		tmp.data.handlingCost = tmp.data.handlingCost ? tmp.me.getValueFromCurrency(tmp.data.handlingCost) : '';
 		tmp.data.shippingCost = tmp.data.shippingCost ? tmp.me.getValueFromCurrency(tmp.data.shippingCost) : '';
 		tmp.me._signRandID(tmp.btn);
+		tmp.data.isSubmit = tmp.isSubmit;
 		tmp.me.postAjax(tmp.me.getCallbackId('saveOrder'), tmp.data, {
 			'onLoading': function(sender, param) {
 				jQuery('#' + tmp.btn.id).button('loading');
@@ -875,7 +877,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 	,_openPOPage: function(id) {
 		var tmp = {};
 		tmp.me = this;
-		tmp.newWindow = window.open('/purchase/' + id + '.html', 'Product Details', 'location=no, menubar=no, status=no, titlebar=no, fullscreen=yes, toolbar=no');
+		tmp.newWindow = window.open('/purchase/' + id + '.html', 'width=1300, location=no, scrollbars=yes, menubar=no, status=no, titlebar=no, fullscreen=no, toolbar=no');
 		tmp.newWindow.focus();
 		return tmp.me;
 	}
@@ -887,7 +889,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		tmp.parentWindow = window.opener;
 		tmp.row = $(tmp.parentWindow.document.body).down('#' + tmp.parentWindow.pageJs.resultDivId + ' .item_row[item_id=' + tmp.me._item.id + ']');
 		if(tmp.row) {
-			tmp.row.replace(tmp.parentWindow.pageJs._getResultRow(tmp.me._item).addClassName('success'));
+			tmp.row.replace(tmp.parentWindow.pageJs._getResultRow(tmp.me._item));
 		}
 	}
 	/**

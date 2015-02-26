@@ -133,7 +133,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 					$$('.popover-loaded').each(function(item){
 						jQuery(item).popover('hide');
 					});
-					tmp.newWindow = window.open('mailto:' + row.email, 'location=no, menubar=no, status=no, titlebar=no, fullscreen=yes, toolbar=no');
+					tmp.newWindow = window.open('mailto:' + row.email, 'width=1300, location=no, scrollbars=yes, menubar=no, status=no, titlebar=no, fullscreen=no, toolbar=no');
 					tmp.newWindow.close();
 				})	
 			})
