@@ -1,7 +1,7 @@
 <?php
 /**
  * This is the OrderController
- * 
+ *
  * @package    Web
  * @subpackage Controller
  * @author     lhe<helin16@gmail.com>
@@ -31,7 +31,10 @@ class OrderController extends BPCPageAbstract
 	protected function _getEndJs()
 	{
 		$js = parent::_getEndJs();
-		
+		$cloneOrder = null;
+		if(isset($_REQUEST['cloneorderid']) && !($cloneOrder = Order::get(trim($_REQUEST['cloneorderid']))) instanceof Order)
+			die('Invalid Order to clone from');
+
 		$paymentMethods =  array_map(create_function('$a', 'return $a->getJson();'), PaymentMethod::getAll());
 		$shippingMethods =  array_map(create_function('$a', 'return $a->getJson();'), Courier::getAll());
 		$customer = (isset($_REQUEST['customerid']) && ($customer = Customer::get(trim($_REQUEST['customerid']))) instanceof Customer) ? $customer->getJson() : null;
@@ -43,6 +46,11 @@ class OrderController extends BPCPageAbstract
 			$js .= ".setPaymentMethods(" . json_encode($paymentMethods) . ")";
 			$js .= ".setShippingMethods(" . json_encode($shippingMethods) . ")";
 			$js .= ".setOrderTypes(" . json_encode(array_filter(Order::getAllTypes(), create_function('$a', 'return $a !== "INVOICE";'))) . ")";
+		if($cloneOrder instanceof Order) {
+			$orderArray = $cloneOrder->getJson();
+			$orderArray['items'] = array_map(create_function('$a', 'return $a->getJson();'), OrderItem::getAllByCriteria('orderId = ?', array($cloneOrder->getId())));
+			$js .= ".setOriginalOrder(" . json_encode($orderArray) . ")";
+		}
 			$js .= ".init(" . json_encode($customer) . ");";
 		return $js;
 	}
@@ -51,7 +59,7 @@ class OrderController extends BPCPageAbstract
 	 *
 	 * @param unknown $sender
 	 * @param unknown $param
-	 * 
+	 *
 	 * @throws Exception
 	 *
 	 */
@@ -82,7 +90,7 @@ class OrderController extends BPCPageAbstract
 	 *
 	 * @param unknown $sender
 	 * @param unknown $param
-	 * 
+	 *
 	 * @throws Exception
 	 *
 	 */
@@ -106,7 +114,7 @@ class OrderController extends BPCPageAbstract
 					$params[$key] = '%' . implode('%', $comboArray) . '%';
 				}
 			}
-				
+
 			$supplierID = isset($param->CallbackParameter->supplierID) ? trim($param->CallbackParameter->supplierID) : '';
 			Product::getQuery()->eagerLoad('Product.codes', 'left join');
 			$stats = array();
@@ -129,7 +137,7 @@ class OrderController extends BPCPageAbstract
 	 *
 	 * @param unknown $sender
 	 * @param unknown $param
-	 * 
+	 *
 	 * @throws Exception
 	 *
 	 */
@@ -152,9 +160,9 @@ class OrderController extends BPCPageAbstract
 				$shipped = true;
 			if(isset($param->CallbackParameter->shippingAddr))
 				$shippAddress = Address::create(
-					$param->CallbackParameter->shippingAddr->street, 
-					$param->CallbackParameter->shippingAddr->city, 
-					$param->CallbackParameter->shippingAddr->region, 
+					$param->CallbackParameter->shippingAddr->street,
+					$param->CallbackParameter->shippingAddr->city,
+					$param->CallbackParameter->shippingAddr->region,
 					$param->CallbackParameter->shippingAddr->country,
 					$param->CallbackParameter->shippingAddr->postCode,
 					$param->CallbackParameter->shippingAddr->contactName,
@@ -165,7 +173,7 @@ class OrderController extends BPCPageAbstract
 			$printItAfterSave = false;
 			if(isset($param->CallbackParameter->printIt))
 				$printItAfterSave = (intval($param->CallbackParameter->printIt) === 1 ? true : false);
-			
+
 			$order = Order::create($customer, $type, null, '', OrderStatus::get(OrderStatus::ID_NEW), new UDate(), false, $shippAddress, $customer->getBillingAddress(), false, $poNo);
 			$totalPaymentDue = 0;
 			if (trim($param->CallbackParameter->paymentMethodId))
@@ -179,8 +187,8 @@ class OrderController extends BPCPageAbstract
 					$order->setPassPaymentCheck(true)
 						->addPayment($paymentMethod, $totalPaidAmount);
 				}
-			} 
-			else 
+			}
+			else
 			{
 				$paymentMethod = '';
 				$totalPaidAmount = 0;
@@ -196,17 +204,17 @@ class OrderController extends BPCPageAbstract
 				if($shipped === true) {
 					Shippment::create($shippAddress, $courier, '', new UDate(), $order, '');
 				}
-			} 
-			else 
+			}
+			else
 			{
 				$courier = '';
 				$totalShippingCost = 0;
 			}
-			$totalPaymentDue += $totalShippingCost; 
+			$totalPaymentDue += $totalShippingCost;
 			$comments = trim($param->CallbackParameter->comments);
 			$order = $order->addComment($comments, Comments::TYPE_SALES)
 				->setTotalPaid($totalPaidAmount);
-			
+
 			foreach ($param->CallbackParameter->items as $item)
 			{
 				$product = Product::get(trim($item->product->id));
@@ -216,7 +224,7 @@ class OrderController extends BPCPageAbstract
 				$qtyOrdered = trim($item->qtyOrdered);
 				$totalPrice = trim($item->totalPrice);
 				$itemDescription = trim($item->itemDescription);
-				
+
 				$totalPaymentDue += $totalPrice;
 				$orderItem = OrderItem::create($order, $product, $unitPrice, $qtyOrdered, $totalPrice, 0, null, $itemDescription);
 				if(isset($item->serials)){
@@ -233,7 +241,7 @@ class OrderController extends BPCPageAbstract
 			}
 			$order->setTotalAmount($totalPaymentDue)
 				->save();
-			
+
 			$results['item'] = $order->getJson();
 			if($printItAfterSave === true)
 				$results['printURL'] = '/print/order/' . $order->getId() . '.html?pdf=1';

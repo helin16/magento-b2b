@@ -1068,10 +1068,11 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 	/**
 	 * Open order print in new Window
 	 */
-	,_openOrderPrintPage: function() {
+	,_openOrderPrintPage: function(pdf) {
 		var tmp = {};
 		tmp.me = this;
-		tmp.newWindow = window.open('/print/order/' + tmp.me._order.id + '.html?pdf=1', tmp.me._order.status.name + ' Order ' + tmp.me._order.orderNo, 'width=1300, location=no, scrollbars=yes, menubar=no, status=no, titlebar=no, fullscreen=no, toolbar=no');
+		tmp.pdf = (pdf || 0);
+		tmp.newWindow = window.open('/print/order/' + tmp.me._order.id + '.html?pdf=' + parseInt(tmp.pdf), tmp.me._order.status.name + ' Order ' + tmp.me._order.orderNo, 'width=1300, location=no, scrollbars=yes, menubar=no, status=no, titlebar=no, fullscreen=no, toolbar=no');
 		tmp.newWindow.onload = function(){
 			tmp.newWindow.document.title = tmp.me._order.status.name + ' Order ' + tmp.me._order.orderNo;
 			tmp.newWindow.focus();
@@ -1187,31 +1188,56 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.me.showModalBox('<strong>Confirm Email Address:</strong>', tmp.newDiv);
 		return tmp.me;
 	}
-	/**
-	 * Getting the order information panel
-	 */
-	,_getInfoPanel: function() {
+	,_getOperationalBtns: function() {
 		var tmp = {};
 		tmp.me = this;
 		tmp.orderDate = tmp.me.loadUTCTime(tmp.me._order.orderDate);
-		tmp.newDiv =  new Element('div', {'class': 'panel panel-default order-info-div'})
-			.insert({'bottom': new Element('div', {'class': 'panel-heading'})
-				.insert({'bottom': new Element('span', {'class': 'btn-group btn-group-xs'})
-					.insert({'bottom': new Element('span', {'class': 'btn btn-info btn-xs'})
+		tmp.newDiv = new Element('div', {'class': 'row'})
+			.insert({'bottom': new Element('div', {'class': 'col-sm-8'})
+				.insert({'bottom': new Element('div', {'class': 'btn-group btn-group-xs visible-xs visible-md visible-sm visible-lg'})
+					.insert({'bottom': new Element('button', {'class': 'btn btn-info'})
 						.insert({'bottom': new Element('span', {'class': 'hidden-xs hidden-sm'}).update('Print ') })
 						.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-print'}) })
 						.observe('click', function() {
-							tmp.me._openOrderPrintPage();
+							tmp.me._openOrderPrintPage(1);
 						})
 					})
-					.insert({'bottom': new Element('span', {'class': 'btn btn-warning btn-xs'})
-						.insert({'bottom': new Element('span', {'class': 'hidden-xs hidden-sm'}).update('Print Delivery Docket ') })
-						.insert({'bottom': new Element('span', {'class': 'fa fa-ils'}) })
-						.observe('click', function() {
-							tmp.me._openDocketPrintPage();
+					.insert({'bottom': new Element('button', {'class': 'btn btn-info dropdown-toggle', 'data-toggle': 'dropdown', 'aria-expanded': "false"})
+						.insert({'bottom': new Element('span', {'class': 'caret'}) })
+					})
+					.insert({'bottom': new Element('ul', {'class': 'dropdown-menu', 'role': 'menu'})
+						.insert({'bottom': new Element('li')
+							.insert({'bottom': new Element('a', {'href': 'javascript: void(0);'})
+								.insert({'bottom': new Element('span').update('Print PDF ') })
+								.insert({'bottom': new Element('span', {'class': 'fa fa-ils'}) })
+								.observe('click', function() {
+									tmp.me._openOrderPrintPage(1);
+								})
+							})
+						})
+						.insert({'bottom': new Element('li')
+							.insert({'bottom': new Element('a', {'href': 'javascript: void(0);'})
+								.insert({'bottom': new Element('span').update('Print Delivery Docket ') })
+								.insert({'bottom': new Element('span', {'class': 'fa fa-ils'}) })
+								.observe('click', function() {
+									tmp.me._openDocketPrintPage();
+								})
+							})
+						})
+						.insert({'bottom': new Element('li')
+							.insert({'bottom': new Element('a', {'href': 'javascript: void(0);'})
+								.insert({'bottom': new Element('span').update('Print HTML') })
+								.insert({'bottom': new Element('span', {'class': 'fa fa-ils'}) })
+								.observe('click', function() {
+									tmp.me._openOrderPrintPage(0);
+								})
+							})
 						})
 					})
-					.insert({'bottom': new Element('span', {'class': 'btn btn-success btn-xs invoice-btn'})
+				})
+				.insert({'bottom': new Element('div', {'class': 'btn-group btn-group-xs visible-xs visible-md visible-sm visible-lg'})
+					.setStyle('margin-left: 3px;')
+					.insert({'bottom': new Element('span', {'class': 'btn btn-success invoice-btn'})
 						.insert({'bottom': new Element('span', {'class': 'hidden-xs hidden-sm'}).update('Invoice ') })
 						.insert({'bottom': new Element('span', {'class': 'fa fa-credit-card'}) })
 						.observe('click', function() {
@@ -1219,7 +1245,10 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 							tmp.me._setOrderType(this);
 						})
 					})
-					.insert({'bottom': new Element('span', {'class': 'btn btn-primary btn-xs invoice-btn'})
+				})
+				.insert({'bottom': new Element('div', {'class': 'btn-group btn-group-xs visible-xs visible-md visible-sm visible-lg'})
+					.setStyle('margin-left: 3px;')
+					.insert({'bottom': new Element('span', {'class': 'btn btn-primary invoice-btn'})
 						.insert({'bottom': new Element('span', {'class': 'hidden-xs hidden-sm'}).update('Email ') })
 						.insert({'bottom': new Element('span', {'class': 'fa fa-envelope'}) })
 						.observe('click', function() {
@@ -1227,36 +1256,64 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 						})
 					})
 				})
-
-				.insert({'bottom': new Element('span', {'class': 'pull-right text-right'})
-					.insert({'bottom': new Element('small').update('Order Date: ') })
-					.insert({'bottom': new Element('strong').update( tmp.orderDate.toLocaleDateString() ) })
+				.insert({'bottom': new Element('div', {'class': 'btn-group btn-group-xs visible-xs visible-md visible-sm visible-lg'})
+					.setStyle('margin-left: 3px;')
+					.insert({'bottom': new Element('a', {'class': 'btn btn-warning invoice-btn','href': '/order/new.html?cloneorderid=' + tmp.me._order.id}).update('Clone') })
 				})
+		})
+		.insert({'bottom': new Element('div', {'class': 'col-sm-4 text-right'})
+			.insert({'bottom': new Element('small').update('Order Date: ') })
+			.insert({'bottom': new Element('strong').update( tmp.orderDate.toLocaleDateString() ) })
+		});
+		return tmp.newDiv;
+	}
+	/**
+	 * Getting the order information panel
+	 */
+	,_getInfoPanel: function() {
+		var tmp = {};
+		tmp.me = this;
+		tmp.newDiv =  new Element('div', {'class': 'panel panel-default order-info-div'})
+			.insert({'bottom': new Element('div', {'class': 'panel-heading'})
+				.setStyle('padding: 4px 5px;display: block !important;')
+				.insert({'bottom': tmp.me._getOperationalBtns() })
 			})
-			.insert({'bottom': new Element('div', {'class': 'panel-body'})
-				.insert({'bottom': new Element('div', {'class': 'row'})
-					.insert({'bottom': new Element('div', {'class': 'col-xs-4 text-right'}).update('<strong><small>Shipping:</small></strong>') })
-					.insert({'bottom': new Element('div', {'class': 'col-xs-8'}).update('<em><small>' + (tmp.me._order.infos['9']? tmp.me._order.infos[9][0].value : '') + '</small></em>') })
+			.insert({'bottom': new Element('div', {'class': 'list-group'})
+				.insert({'bottom': new Element('a', {'class': 'list-group-item'}).setStyle('padding: 3px 0px;')
+					.insert({'bottom': new Element('div', {'class': 'row'})
+						.insert({'bottom': new Element('div', {'class': 'col-xs-4 text-right'}).update('<strong><small>Shipping:</small></strong>') })
+						.insert({'bottom': new Element('div', {'class': 'col-xs-8'}).update('<em><small>' + (tmp.me._order.infos['9']? tmp.me._order.infos[9][0].value : '') + '</small></em>') })
+					})
 				})
-				.insert({'bottom': new Element('div', {'class': 'row'})
-					.insert({'bottom': new Element('div', {'class': 'col-xs-4 text-right'}).update('<strong><small>Mage Payment:</small></strong>') })
-					.insert({'bottom': new Element('div', {'class': 'col-xs-8'}).update(tmp.me._order.infos['6'] ? tmp.me._order.infos[6][0].value : '') })
+				.insert({'bottom': new Element('a', {'class': 'list-group-item'}).setStyle('padding: 3px 0px;')
+					.insert({'bottom': new Element('div', {'class': 'row'})
+						.insert({'bottom': new Element('div', {'class': 'col-xs-4 text-right'}).update('<strong><small>Mage Payment:</small></strong>') })
+						.insert({'bottom': new Element('div', {'class': 'col-xs-8'}).update(tmp.me._order.infos['6'] ? tmp.me._order.infos[6][0].value : '') })
+					})
 				})
-				.insert({'bottom': new Element('div', {'class': 'row'})
-					.insert({'bottom': new Element('div', {'class': 'col-xs-4 text-right'}).update('<strong><small>Total Amount Incl. GST:</small></strong>') })
-					.insert({'bottom': new Element('div', {'class': 'col-xs-8'}).update( tmp.me.getCurrency(tmp.me._order.totalAmount) ) })
+				.insert({'bottom': new Element('a', {'class': 'list-group-item'}).setStyle('padding: 3px 0px;')
+					.insert({'bottom': new Element('div', {'class': 'row'})
+						.insert({'bottom': new Element('div', {'class': 'col-xs-4 text-right'}).update('<strong><small>Total Amount Incl. GST:</small></strong>') })
+						.insert({'bottom': new Element('div', {'class': 'col-xs-8'}).update( tmp.me.getCurrency(tmp.me._order.totalAmount) ) })
+					})
 				})
-				.insert({'bottom': new Element('div', {'class': 'row'})
-					.insert({'bottom': new Element('div', {'class': 'col-xs-4 text-right'}).update('<strong><small>Total Paid Incl. GST:</small></strong>') })
-					.insert({'bottom': new Element('div', {'class': 'col-xs-8'}).update( tmp.me.getCurrency(tmp.me._order.totalPaid) ) })
+				.insert({'bottom': new Element('a', {'class': 'list-group-item'}).setStyle('padding: 3px 0px;')
+					.insert({'bottom': new Element('div', {'class': 'row'})
+						.insert({'bottom': new Element('div', {'class': 'col-xs-4 text-right'}).update('<strong><small>Total Paid Incl. GST:</small></strong>') })
+						.insert({'bottom': new Element('div', {'class': 'col-xs-8'}).update( tmp.me.getCurrency(tmp.me._order.totalPaid) ) })
+					})
 				})
-				.insert({'bottom': new Element('div', {'class': 'row'})
-					.insert({'bottom': new Element('div', {'class': 'col-xs-4 text-right'}).update('<strong><small>Total Due Incl. GST:</small></strong>') })
-					.insert({'bottom': new Element('div', {'class': 'col-xs-8'}).update( tmp.me.getCurrency(tmp.me._order.totalDue) ) })
+				.insert({'bottom': new Element('a', {'class': 'list-group-item'}).setStyle('padding: 3px 0px;')
+					.insert({'bottom': new Element('div', {'class': 'row'})
+						.insert({'bottom': new Element('div', {'class': 'col-xs-4 text-right'}).update('<strong><small>Total Due Incl. GST:</small></strong>') })
+						.insert({'bottom': new Element('div', {'class': 'col-xs-8'}).update( tmp.me.getCurrency(tmp.me._order.totalDue) ) })
+					})
 				})
-				.insert({'bottom': new Element('div', {'class': 'row'})
-					.insert({'bottom': new Element('div', {'class': 'col-xs-4 text-right'}).update('<strong><small>Order Margin:</small></strong>') })
-					.insert({'bottom': new Element('div', {'class': 'col-xs-8'}).update( tmp.me.getCurrency(tmp.me._order.margin) ) })
+				.insert({'bottom': new Element('a', {'class': 'list-group-item'}).setStyle('padding: 3px 0px;')
+					.insert({'bottom': new Element('div', {'class': 'row'})
+						.insert({'bottom': new Element('div', {'class': 'col-xs-4 text-right'}).update('<strong><small>Order Margin:</small></strong>') })
+						.insert({'bottom': new Element('div', {'class': 'col-xs-8'}).update( tmp.me.getCurrency(tmp.me._order.margin) ) })
+					})
 				})
 			});
 		if(tmp.me._order.type === 'INVOICE') {

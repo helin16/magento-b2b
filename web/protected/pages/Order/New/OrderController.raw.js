@@ -159,7 +159,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 						return;
 					tmp.me._item = tmp.result.item;
 					tmp.modalBoxTitlePanel.update('<strong class="text-success">Success!</strong>');
-					window.location = document.URL;
+					window.location = '/orderdetails/' + tmp.result.item.id + '.html';
 					if(tmp.result.printURL) {
 						tmp.printWindow = window.open(tmp.result.printURL, 'Printing Order', 'width=1300, location=no, scrollbars=yes, menubar=no, status=no, titlebar=no, fullscreen=no, toolbar=no');
 						if(!tmp.printWindow)
@@ -341,6 +341,10 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 						.insert({'bottom': '>' })
 						.insert({'bottom': new Element('strong').update(' with PO No.:') })
 						.insert({'bottom': new Element('input', {'type': 'text', 'save-order': 'poNo', 'placeholder': 'Optional - PO No. From Customer'}).setStyle('width: 200px;') })
+						.insert({'bottom': !tmp.me._originalOrder ? '' : new Element('span').setStyle('margin-left: 8px;')
+							.insert({'bottom': new Element('strong', {'class': "text-danger"}).update('CLONING FROM: ') })
+							.insert({'bottom': new Element('a', {'href': "/orderdetails/" + tmp.me._originalOrder.id + '.html', 'target': '_BLANK'}).update(tmp.me._originalOrder.orderNo) })
+						})
 					})
 					.insert({'bottom': new Element('div', {'class': 'col-sm-4 text-right'})
 						.insert({'bottom': new Element('strong').update('Total Payment Due: ') })
@@ -367,6 +371,18 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.me = this;
 		tmp.isTitle = (isTitleRow || false);
 		tmp.tag = (tmp.isTitle === true ? 'strong' : 'div');
+		tmp.btns = orderItem.btns ? orderItem.btns : new Element('span', {'class': 'pull-right'})
+			.insert({'bottom': new Element('span', {'class': 'btn btn-danger btn-xs'})
+				.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-trash'}) })
+				.observe('click', function() {
+					if(!confirm('You remove this entry.\n\nContinue?'))
+						return;
+					tmp.row = $(this).up('.item_row');
+					if(tmp.row)
+						tmp.row.remove();
+					tmp.me._recalculateSummary();
+				})
+			});
 		tmp.row = new Element('div', {'class': ' list-group-item ' + (tmp.isTitle === true ? '' : 'item_row order-item-row')})
 			.store('data',orderItem)
 			.insert({'bottom': new Element('div', {'class': 'row'})
@@ -387,7 +403,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					.insert({'bottom': (orderItem.totalPrice) })
 				})
 				.insert({'bottom': new Element(tmp.tag, {'class': 'margin col-xs-1 text-right'}).update(orderItem.margin)})
-				.insert({'bottom': new Element(tmp.tag, {'class': 'btns col-xs-1 text-right'}).update(orderItem.btns) })
+				.insert({'bottom': new Element(tmp.tag, {'class': 'btns col-xs-1 text-right'}).update(tmp.btns) })
 			});
 		if(orderItem.product.sku) {
 			tmp.row.down('.productName')
@@ -721,18 +737,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			'qtyOrdered': tmp.qtyOrdered,
 			'discount' : tmp.discount,
 			'margin': tmp.me.getCurrency(parseFloat(tmp.totalPrice) - parseFloat(tmp.product.unitCost * 1.1 * tmp.qtyOrdered)),
-			'totalPrice': tmp.me.getCurrency(tmp.totalPrice),
-			'btns': new Element('span', {'class': 'pull-right'})
-				.insert({'bottom': new Element('span', {'class': 'btn btn-danger btn-xs'})
-				.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-trash'}) })
-				.observe('click', function() {
-					if(!confirm('You remove this entry.\n\nContinue?'))
-						return;
-					tmp.row = $(this).up('.item_row');
-					tmp.row.remove();
-					tmp.me._recalculateSummary();
-				})
-			})
+			'totalPrice': tmp.me.getCurrency(tmp.totalPrice)
 		};
 
 		tmp.data.scanTable = tmp.me._getScanTable(tmp.data);
@@ -1050,7 +1055,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.me = this;
 		tmp.pageNo = (pageNo || 1);
 		tmp.searchPanel = $(btn).up('#' + tmp.me._htmlIds.searchPanel);
-		tmp.searchTxt = $F(tmp.searchPanel.down('.search-txt')).strip(); 
+		tmp.searchTxt = $F(tmp.searchPanel.down('.search-txt')).strip();
 		tmp.me.postAjax(tmp.me.getCallbackId('searchCustomer'), {'searchTxt': tmp.searchTxt, 'pageNo': tmp.pageNo}, {
 			'onLoading': function() {
 				tmp.me._signRandID(btn);
@@ -1178,12 +1183,37 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.newWindow.focus();
 		return tmp.me;
 	}
+	,setOriginalOrder: function (_originalOrder) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.me._originalOrder = _originalOrder;
+		return tmp.me;
+	}
 	,init: function(customer) {
 		var tmp = {};
 		tmp.me = this;
 		if(customer) {
 			tmp.me.selectCustomer(customer);
-		} else {
+		} else if(tmp.me._originalOrder) {
+			tmp.me.selectCustomer(tmp.me._originalOrder.customer);
+			if(tmp.me._originalOrder.items && tmp.me._originalOrder.items.size() > 0) {
+				tmp.productListDiv = $(tmp.me._htmlIds.itemDiv).down('.order_change_details_table');
+				tmp.me._originalOrder.items.each(function(item) {
+					tmp.data = {
+						'product': item.product,
+						'itemDescription': item.itemDescription,
+						'unitPrice': tmp.me.getCurrency(item.unitPrice),
+						'qtyOrdered': item.qtyOrdered,
+						'discount' : (item.unitPrice * item.qtyOrdered - item.totalPrice) / item.totalPrice,
+						'margin': tmp.me.getCurrency(item.margin),
+						'totalPrice': tmp.me.getCurrency(item.totalPrice),
+						'scanTable': tmp.me._getScanTable(item)
+					}
+					tmp.productListDiv.insert({'bottom': tmp.me._getProductRow(tmp.data) });
+				});
+				tmp.me._recalculateSummary();
+			}
+		}else {
 			$(tmp.me._htmlIds.itemDiv).update(tmp.me._getCustomerListPanel());
 		}
 		if($$('.init-focus').size() > 0)
