@@ -40,7 +40,7 @@ class EntityToPDF
 				throw new CoreException('NO such a function to covert entity:' . $class);
 			}
 		}
-		$url .= "?jsmultipages=1&user=" . Core::getUser()->getUserName() . '&pass=' . Core::getUser()->getPassword();
+		$url .= "?user=" . Core::getUser()->getUserName() . '&pass=' . Core::getUser()->getPassword();
 		$url = 'http://' . $_SERVER["HTTP_HOST"] . '/' . $url ;
 		$command = '/usr/local/bin/wkhtmltopdf -B 0 -T 0 --disable-javascript"' . $url . '" ' . ($file = '/tmp/' . md5(new UDate()) . '.pdf');
 		$output = '';
