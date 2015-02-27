@@ -42,12 +42,12 @@ class EntityToPDF
 		}
 		$url .= "?user=" . Core::getUser()->getUserName() . '&pass=' . Core::getUser()->getPassword();
 		$url = 'http://' . $_SERVER["HTTP_HOST"] . '/' . $url ;
-		$command = '/usr/local/bin/wkhtmltopdf -B 0 -T 0 --disable-javascript "' . $url . '" ' . ($file = '/tmp/' . md5(new UDate()) . '.pdf');
+		$command = '/usr/local/bin/wkhtmltopdf -B 5mm -T 5mm --javascript-delay 1000 --page-size A4 --encoding utf-8 "' . $url . '" ' . ($file = '/tmp/' . md5(new UDate()) . '.pdf');
 		$output = '';
 		exec($command, $output);
-		sleep(1);
+		sleep(2);
 		if(!is_file($file))
-			throw new Exception('Could NOT generate pdf @' . $file . ' with command:' . $command . ' Output: ' . print_r($output, true));
+			throw new Exception('Could NOT generate pdf @' . $file . ' with command:' . $command);
 		return $file;
 	}
 }
