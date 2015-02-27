@@ -1087,10 +1087,11 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 	/**
 	 * Open order delivery docket print page in new Window
 	 */
-	,_openDocketPrintPage: function() {
+	,_openDocketPrintPage: function(pdf) {
 		var tmp = {};
 		tmp.me = this;
-		tmp.newWindow = window.open('/printdocket/order/' + tmp.me._order.id + '.html', tmp.me._order.status.name + ' Order ' + tmp.me._order.orderNo, 'width=1300, location=no, scrollbars=yes, menubar=no, status=no, titlebar=no, fullscreen=no, toolbar=no');
+		tmp.pdf = (pdf || 0);
+		tmp.newWindow = window.open('/printdocket/order/' + tmp.me._order.id + '.html?pdf=' + parseInt(tmp.pdf), tmp.me._order.status.name + ' Order ' + tmp.me._order.orderNo, 'width=1300, location=no, scrollbars=yes, menubar=no, status=no, titlebar=no, fullscreen=no, toolbar=no');
 		tmp.newWindow.onload = function(){
 			tmp.newWindow.document.title = tmp.me._order.status.name + ' Order ' + tmp.me._order.orderNo;
 			tmp.newWindow.focus();
@@ -1213,9 +1214,28 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 						.insert({'bottom': new Element('li')
 							.insert({'bottom': new Element('a', {'href': 'javascript: void(0);'})
 								.insert({'bottom': new Element('span').update('Print PDF ') })
-								.insert({'bottom': new Element('span', {'class': 'fa fa-ils'}) })
+								.insert({'bottom': new Element('span', {'class': 'fa fa-file-pdf-o'}) })
 								.observe('click', function() {
 									tmp.me._openOrderPrintPage(1);
+								})
+							})
+						})
+						.insert({'bottom': new Element('li')
+							.insert({'bottom': new Element('a', {'href': 'javascript: void(0);'})
+								.insert({'bottom': new Element('span').update('Print HTML') })
+								.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-print'}) })
+								.observe('click', function() {
+									tmp.me._openOrderPrintPage(0);
+								})
+							})
+						})
+						.insert({'bottom': new Element('li', {'class': 'divider'}) })
+						.insert({'bottom': new Element('li')
+							.insert({'bottom': new Element('a', {'href': 'javascript: void(0);'})
+								.insert({'bottom': new Element('span').update('Print Delivery Docket ') })
+								.insert({'bottom': new Element('span', {'class': 'fa fa-file-pdf-o'}) })
+								.observe('click', function() {
+									tmp.me._openDocketPrintPage(1);
 								})
 							})
 						})
@@ -1224,15 +1244,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 								.insert({'bottom': new Element('span').update('Print Delivery Docket ') })
 								.insert({'bottom': new Element('span', {'class': 'fa fa-ils'}) })
 								.observe('click', function() {
-									tmp.me._openDocketPrintPage();
-								})
-							})
-						})
-						.insert({'bottom': new Element('li')
-							.insert({'bottom': new Element('a', {'href': 'javascript: void(0);'})
-								.insert({'bottom': new Element('span').update('Print HTML') })
-								.insert({'bottom': new Element('span', {'class': 'fa fa-ils'}) })
-								.observe('click', function() {
+									tmp.me._openDocketPrintPage(0);
 								})
 							})
 						})
@@ -1289,13 +1301,13 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			.insert({'bottom': new Element('div', {'class': 'list-group'})
 				.insert({'bottom': new Element('a', {'class': 'list-group-item'}).setStyle('padding: 3px 0px;')
 					.insert({'bottom': new Element('div', {'class': 'row'})
-						.insert({'bottom': new Element('div', {'class': 'col-xs-4 text-right'}).update('<strong><small>Shipping:</small></strong>') })
+						.insert({'bottom': new Element('div', {'class': 'col-xs-4 text-right'}).update('<strong><small>Delivery Method:</small></strong>') })
 						.insert({'bottom': new Element('div', {'class': 'col-xs-8'}).update('<em><small>' + (tmp.me._order.infos['9']? tmp.me._order.infos[9][0].value : '') + '</small></em>') })
 					})
 				})
 				.insert({'bottom': new Element('a', {'class': 'list-group-item'}).setStyle('padding: 3px 0px;')
 					.insert({'bottom': new Element('div', {'class': 'row'})
-						.insert({'bottom': new Element('div', {'class': 'col-xs-4 text-right'}).update('<strong><small>Mage Payment:</small></strong>') })
+						.insert({'bottom': new Element('div', {'class': 'col-xs-4 text-right'}).update('<strong><small>Payment Method:</small></strong>') })
 						.insert({'bottom': new Element('div', {'class': 'col-xs-8'}).update(tmp.me._order.infos['6'] ? tmp.me._order.infos[6][0].value : '') })
 					})
 				})

@@ -20,6 +20,7 @@ class OrderInfoType extends InfoTypeAbstract
 	const ID_MAGE_ORDER_STATUS_BEFORE_CHANGE = 10;
 	const ID_SHIPPING_EST_COST = 11;
 	const ID_HANDLING_EST_COST = 12;
+	const ID_CLONED_FROM_ORDER_NO = 13;
 	/**
 	 * (non-PHPdoc)
 	 * @see BaseEntity::__loadDaoMap()

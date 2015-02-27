@@ -152,6 +152,11 @@ class OrderController extends BPCPageAbstract
 				throw new Exception('Invalid Customer passed in!');
 			if(!isset($param->CallbackParameter->type) || ($type = trim($param->CallbackParameter->type)) === '' || !in_array($type, Order::getAllTypes()))
 				throw new Exception('Invalid type passed in!');
+			$orderCloneFrom = null;
+			if(isset($param->CallbackParameter->orderCloneFromId) && ($orderCloneFromId = trim($param->CallbackParameter->orderCloneFromId)) !== '') {
+				if(!($orderCloneFrom = Order::get($orderCloneFromId)) instanceof Order)
+					throw new Exception('Invalid Order to clone from!');
+			}
 			$poNo = '';
 			if(isset($param->CallbackParameter->poNo) && (trim($param->CallbackParameter->poNo) !== '') )
 				$poNo = trim($param->CallbackParameter->poNo);
@@ -173,8 +178,7 @@ class OrderController extends BPCPageAbstract
 			$printItAfterSave = false;
 			if(isset($param->CallbackParameter->printIt))
 				$printItAfterSave = (intval($param->CallbackParameter->printIt) === 1 ? true : false);
-
-			$order = Order::create($customer, $type, null, '', OrderStatus::get(OrderStatus::ID_NEW), new UDate(), false, $shippAddress, $customer->getBillingAddress(), false, $poNo);
+			$order = Order::create($customer, $type, null, '', OrderStatus::get(OrderStatus::ID_NEW), new UDate(), false, $shippAddress, $customer->getBillingAddress(), false, $poNo, $orderCloneFrom);
 			$totalPaymentDue = 0;
 			if (trim($param->CallbackParameter->paymentMethodId))
 			{

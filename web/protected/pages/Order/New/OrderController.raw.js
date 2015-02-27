@@ -147,6 +147,9 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.modalBoxPanel = $(btn).up('.modal-content');
 		tmp.modalBoxTitlePanel = tmp.modalBoxPanel.down('.modal-title');
 		tmp.modalBoxBodyPanel = tmp.modalBoxPanel.down('.modal-body');
+		if(tmp.me._originalOrder && tmp.me._originalOrder.id) {
+			data.orderCloneFromId = tmp.me._originalOrder.id;
+		}
 		tmp.me.postAjax(tmp.me.getCallbackId('saveOrder'), data, {
 			'onLoading': function(sender, param) {
 				tmp.modalBoxTitlePanel.update('Please wait...');
