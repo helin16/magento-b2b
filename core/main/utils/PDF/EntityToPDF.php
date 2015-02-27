@@ -40,10 +40,10 @@ class EntityToPDF
 				throw new CoreException('NO such a function to covert entity:' . $class);
 			}
 		}
-		$url .= "?user=" . Core::getUser()->getUserName() . '&pass=' . Core::getUser()->getPassword();
+		$url .= "?jsmultipages=1&user=" . Core::getUser()->getUserName() . '&pass=' . Core::getUser()->getPassword();
 		$url = 'http://' . $_SERVER["HTTP_HOST"] . '/' . $url ;
 		if($class == 'Order' && $method == '')		
-			$command = '/usr/local/bin/wkhtmltopdf -B 0 -T 0 --disable-javascript "' . $url . '" ' . ($file = '/tmp/' . md5(new UDate()) . '.pdf');
+			$command = '/usr/local/bin/wkhtmltopdf -B 5mm -T 5mm --javascript-delay 1000 --page-size A4 --encoding utf-8 "' . $url . '" ' . ($file = '/tmp/' . md5(new UDate()) . '.pdf');
 		else
 			$command = '/usr/local/bin/wkhtmltopdf --disable-javascript "' . $url . '" ' . ($file = '/tmp/' . md5(new UDate()) . '.pdf');
 		var_dump($command);
