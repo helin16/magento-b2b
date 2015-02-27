@@ -3,7 +3,7 @@
  */
 var PageJs = new Class.create();
 PageJs.prototype = Object.extend(new BPCPageJs(), {
-	_maxRowsPerPage: 12
+	_maxRowsPerPage: 8
 	,genPage: function(table, pageNo, totalPages, rows) {
 		var tmp = {};
 		tmp.me = this;
@@ -12,7 +12,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.table.down('thead').remove();
 		tmp.tfoot = tmp.table.down('tfoot').clone(true);
 		tmp.table.down('tfoot').remove();
-		tmp.newPageDiv = new Element('div', {'class': 'print-page-wrap', 'style': 'margin: 10px 0;'})
+		tmp.newPageDiv = new Element('div', {'class': 'print-page-wrap', 'style': 'margin: 20px 0;'})
 			.update(tmp.table)
 			.insert({'bottom': new Element('div', {'class': 'print-page-footer'}).update(tmp.tfoot.down('tr').wrap( new Element('table', {'class': 'orderview'}) ) )});
 		tmp.tbody = tmp.table.down('tbody').update(tmp.thead.down('tr.header').clone(true));
