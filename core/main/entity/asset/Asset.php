@@ -325,7 +325,7 @@ class Asset extends BaseEntityAbstract
 		parent::__loadDaoMap();
 
 		DaoMap::createUniqueIndex('assetId');
-		DaoMap::createIndex('type'');
+		DaoMap::createIndex('type');
 		DaoMap::commit();
 	}
 }
