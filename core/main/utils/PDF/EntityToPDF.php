@@ -47,7 +47,7 @@ class EntityToPDF
 		exec($command, $output);
 		sleep(1);
 		if(!is_file($file))
-			throw new Exception('Could NOT generate pdf @' . $file . ' with command:' . $command);
+			throw new Exception('Could NOT generate pdf @' . $file . ' with command:' . $command . ' Output: ' . $output);
 		return $file;
 	}
 }
