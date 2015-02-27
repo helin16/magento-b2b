@@ -14,16 +14,6 @@ class OrderDetailsController extends BPCPageAbstract
 	 */
 	public $menuItem = 'order';
 	/**
-	 * (non-PHPdoc)
-	 * @see TPage::onPreInit()
-	 */
-	public function onPreInit($param)
-	{
-		parent::onPreInit($param);
-		if(isset($_REQUEST['blanklayout']) && intval($_REQUEST['blanklayout']) === 1)
-			$this->getPage()->setMasterClass("Application.layout.BlankLayout");
-	}
-	/**
 	 * Getting The end javascript
 	 *
 	 * @return string
@@ -32,6 +22,11 @@ class OrderDetailsController extends BPCPageAbstract
 	{
 		if(!($order = Order::get($this->Request['orderId'])) instanceof Order)
 			die('Invalid Order!');
+		if(trim($order->getType()) !== Order::TYPE_INVOICE) {
+			header('Location: /order/'. $order->getId() . '.html?' . $_SERVER['QUERY_STRING']);
+			die();
+		}
+		
 		$js = parent::_getEndJs();
 		$orderItems = $courierArray = $paymentMethodArray = array();
 		foreach($order->getOrderItems() as $orderItem)

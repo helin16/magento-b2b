@@ -31,6 +31,18 @@ class OrderController extends BPCPageAbstract
 	protected function _getEndJs()
 	{
 		$js = parent::_getEndJs();
+		if(!isset($this->Request['id']))
+			die('System ERR: no param passed in!');
+		if(trim($this->Request['id']) === 'new')
+			$order = new Order();
+		else if(!($order = Order::get($this->Request['id'])) instanceof Order)
+			die('Invalid Order!');
+		
+		if($order instanceof Order && trim($order->getType()) === Order::TYPE_INVOICE) {
+			header('Location: /orderdetails/'. $order->getId() . '.html?' . $_SERVER['QUERY_STRING']);
+			die();
+		}
+		
 		$cloneOrder = null;
 		if(isset($_REQUEST['cloneorderid']) && !($cloneOrder = Order::get(trim($_REQUEST['cloneorderid']))) instanceof Order)
 			die('Invalid Order to clone from');
@@ -45,11 +57,16 @@ class OrderController extends BPCPageAbstract
 			$js .= ".setCallbackId('saveOrder', '" . $this->saveOrderBtn->getUniqueID() . "')";
 			$js .= ".setPaymentMethods(" . json_encode($paymentMethods) . ")";
 			$js .= ".setShippingMethods(" . json_encode($shippingMethods) . ")";
-			$js .= ".setOrderTypes(" . json_encode(array_filter(Order::getAllTypes(), create_function('$a', 'return $a !== "INVOICE";'))) . ")";
+			$js .= ".setOrderTypes(" . json_encode(Order::getAllTypes()) . ")";
+		if($order instanceof Order && trim($order->getId()) !== '') {
+			$orderArray = $order->getJson();
+			$orderArray['items'] = array_map(create_function('$a', 'return $a->getJson();'), OrderItem::getAllByCriteria('orderId = ?', array($order->getId())));
+			$js .= ".setOrder(" . json_encode($orderArray) . ")";
+		}
 		if($cloneOrder instanceof Order) {
-			$orderArray = $cloneOrder->getJson();
-			$orderArray['items'] = array_map(create_function('$a', 'return $a->getJson();'), OrderItem::getAllByCriteria('orderId = ?', array($cloneOrder->getId())));
-			$js .= ".setOriginalOrder(" . json_encode($orderArray) . ")";
+			$clonOrderArray = $cloneOrder->getJson();
+			$clonOrderArray['items'] = array_map(create_function('$a', 'return $a->getJson();'), OrderItem::getAllByCriteria('orderId = ?', array($cloneOrder->getId())));
+			$js .= ".setOriginalOrder(" . json_encode($clonOrderArray) . ")";
 		}
 			$js .= ".init(" . json_encode($customer) . ");";
 		return $js;
