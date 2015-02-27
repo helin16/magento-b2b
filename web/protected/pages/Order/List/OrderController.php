@@ -168,9 +168,7 @@ class OrderController extends BPCPageAbstract
 			if($noSearch === true)
 				throw new Exception("Nothing to search!");
 			$stats = array();
-			Dao::$debug = true;
 			$orders = Order::getAllByCriteria(implode(' AND ', $where), $params, true, $pageNo, $pageSize, array('ord.id' => 'desc'), $stats);
-			Dao::$debug = false;
 			$results['pageStats'] = $stats;
 			$results['items'] = array();
 			foreach($orders as $order)
