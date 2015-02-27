@@ -42,7 +42,7 @@ class EntityToPDF
 		}
 		$url .= "?jsmultipages=1&user=" . Core::getUser()->getUserName() . '&pass=' . Core::getUser()->getPassword();
 		$url = 'http://' . $_SERVER["HTTP_HOST"] . '/' . $url ;
-		$command = '/usr/local/bin/wkhtmltopdf -B 0 -T 0 --page-size A4 --encoding utf-8 --disable-javascript"' . $url . '" ' . ($file = '/tmp/' . md5(new UDate()) . '.pdf');
+		$command = '/usr/local/bin/wkhtmltopdf -B 0 -T 0 --disable-javascript"' . $url . '" ' . ($file = '/tmp/' . md5(new UDate()) . '.pdf');
 		$output = '';
 		exec($command, $output);
 		sleep(1);
