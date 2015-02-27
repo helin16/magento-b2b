@@ -10,6 +10,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 	,_searchCriteria: {} //the searching criteria
 	,_infoTypes:{} //the infotype ids
 	,orderStatuses: [] //the order statuses object
+	,_type: 'ORDER'
 
 	,_loadChosen: function () {
 		jQuery(".chosen").chosen({
@@ -101,6 +102,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		if(tmp.reset === true)
 			tmp.me._pagination.pageNo = 1;
 		tmp.me._pagination.pageSize = (pageSize || tmp.me._pagination.pageSize);
+		tmp.me._searchCriteria['ord.type'] = tmp.me._type;
 		tmp.me.postAjax(tmp.me.getCallbackId('getOrders'), {'pagination': tmp.me._pagination, 'searchCriteria': tmp.me._searchCriteria}, {
 			'onLoading': function () {
 				jQuery('#searchBtn').button('loading');
@@ -344,17 +346,19 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		var tmp = {};
 		tmp.me = this;
 		tmp.isTitle = (isTitle || false);
+		tmp.deliveryMethod = tmp.isTitle ? 'D.Method' : (row.infos['9'] ? row.infos[9][0].value : '');
 		tmp.row = new Element('tr', {'class': (tmp.isTitle === true ? '' : 'order_item'), 'order_id' : row.id}).store('data', row)
-			.insert({'bottom': new Element('td', {'class': 'orderInfo  col-xs-2'}).update(
+			.insert({'bottom': new Element('td', {'class': 'orderInfo  col-xs-1'}).update(
 				tmp.isTitle ? row.orderNo : tmp.me._getOrderInfoCell(row)
 			) })
 			.insert({'bottom': new Element('td', {'class': 'order-date col-xs-1'}).update(
 					tmp.isTitle === true ? 'Order Date' : tmp.me.loadUTCTime(row.orderDate).toLocaleDateString()
 			) })
-			.insert({'bottom': new Element('td', {'class': 'order-type col-xs-1 ' + (row.type === 'ORDER' ? 'success' : (row.type === 'QUOTE' ? 'warning' : ''))}).update(
-					tmp.isTitle === true ? 'Type' : row.type
+			.insert({'bottom': new Element('td', {'class': 'customer col-xs-2 '}).update(
+					tmp.isTitle === true ? 'Customer' : row.customer.name
 			) })
-			.insert({'bottom': new Element('td', {'class': 'status col-middle col-xs-2', 'order_status': row.status.name}).update(
+			.insert({'bottom': new Element('td', {'class': 'col-xs-2 ' + (tmp.deliveryMethod.toLowerCase().indexOf('pickup') > -1 ? 'danger' : ''), 'title': 'Delivery Method'}).update(tmp.deliveryMethod) })
+			.insert({'bottom': new Element('td', {'class': 'status col-xs-2', 'order_status': row.status.name}).update(
 					row.status ? row.status.name : ''
 			) })
 			.insert({'bottom': new Element('td', {'class': 'text-right col-xs-1', 'payment': true}).update(
@@ -372,10 +376,76 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		;
 		return tmp.row;
 	}
+	,_initDeliveryMethods: function() {
+		var tmp = {};
+		tmp.me = this;
+		tmp.selectBox = $(tmp.me.searchDivId).down('[search_field="delivery_method"]');
+		tmp.me._signRandID(tmp.selectBox);
+		jQuery('#' + tmp.selectBox.id).select2({
+			 minimumInputLength: 3,
+			 multiple: true,
+			 ajax: {
+				 delay: 250
+				 ,url: '/ajax/getDeliveryMethods'
+		         ,type: 'POST'
+	        	 ,data: function (params) {
+	        		 return {"searchTxt": params};
+	        	 }
+				 ,results: function(data, page, query) {
+					 tmp.result = [];
+					 if(data.resultData && data.resultData.items) {
+						 data.resultData.items.each(function(item){
+							 tmp.result.push({'id': item + '{|}', 'text': item.stripTags()});
+						 });
+					 }
+		    		 return { 'results' : tmp.result };
+		    	 }
+				 ,cache: true
+			 }
+		});
+		return tmp.me;
+	}
+	,_changeType: function(btn) {
+		var tmp = {};
+		tmp.me = this;
+		jQuery('.type-swither-item.active').removeClass('active');
+		tmp.me._type = $(btn).addClassName('active').readAttribute('data-type');
+		tmp.panelClass = "panel-default";
+		switch(tmp.me._type) {
+			case 'ORDER': {
+				tmp.panelClass = 'panel-success';
+				break;
+			} 
+			case 'INVOICE': {
+				tmp.panelClass = 'panel-default';
+				break;
+			} 
+			case 'QUOTE': {
+				tmp.panelClass = 'panel-warning';
+				break;
+			} 
+		}
+		$(btn).up('.panel').removeClassName('panel-success').removeClassName('panel-default').removeClassName('panel-warning').addClassName(tmp.panelClass);
+		$("searchBtn").click();
+		return tmp.me;
+	}
+	,_initTypeSwither: function() {
+		var tmp = {};
+		tmp.me = this;
+		$$('.type-swither-item').each(function(item){
+			item.observe('click', function() {
+				tmp.me._changeType(this);
+			})
+		});
+		return tmp.me;
+	}
 	,init: function() {
 		var tmp = {};
 		tmp.me = this;
-		jQuery('.datepicker').datetimepicker();
+		jQuery('.datepicker').datetimepicker({
+			format: 'DD/MM/YYYY HH:mm A'
+		});
+		tmp.me._initDeliveryMethods()._initTypeSwither();
 		return tmp.me;
 	}
 });

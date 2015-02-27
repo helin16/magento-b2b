@@ -70,13 +70,13 @@ class Order extends InfoEntityAbstract
 	 *
 	 * @var Address
 	 */
-	protected $shippingAddr;
+	protected $shippingAddr = null;
 	/**
 	 * The billing address
 	 *
 	 * @var Address
 	 */
-	protected $billingAddr;
+	protected $billingAddr = null;
 	/**
 	 * The array of order items
 	 *
@@ -340,7 +340,7 @@ class Order extends InfoEntityAbstract
 	 *
 	 * @return Order
 	 */
-	public function setShippingAddr($value)
+	public function setShippingAddr(Address $value = null)
 	{
 	    $this->shippingAddr = $value;
 	    return $this;
@@ -362,7 +362,7 @@ class Order extends InfoEntityAbstract
 	 *
 	 * @return Order
 	 */
-	public function setBillingAddr($value)
+	public function setBillingAddr(Address $value = null)
 	{
 	    $this->billingAddr = $value;
 	    return $this;
@@ -700,8 +700,8 @@ class Order extends InfoEntityAbstract
 		DaoMap::setBoolType('passPaymentCheck');
 		DaoMap::setBoolType('isFromB2B');
 		DaoMap::setManyToOne('status', 'OrderStatus', 'o_status');
-		DaoMap::setManyToOne('billingAddr', 'Address', 'baddr');
-		DaoMap::setManyToOne('shippingAddr', 'Address', 'saddr');
+		DaoMap::setManyToOne('billingAddr', 'Address', 'baddr', true);
+		DaoMap::setManyToOne('shippingAddr', 'Address', 'saddr', true);
 		DaoMap::setStringType('pONo', 'varchar', 50);
 		DaoMap::setIntType('margin', 'Double', '10,4');
 
