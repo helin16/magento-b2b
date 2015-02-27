@@ -45,7 +45,7 @@ class EntityToPDF
 		$command = '/usr/local/bin/wkhtmltopdf -B 5mm -T 5mm --javascript-delay 1000 --page-size A4 --encoding utf-8 "' . $url . '" ' . ($file = '/tmp/' . md5(new UDate()) . '.pdf');
 		$output = '';
 		exec($command, $output);
-		sleep(3);
+		sleep(5);
 		if(!is_file($file))
 			throw new Exception('Could NOT generate pdf @' . $file . ' with command:' . $command);
 		return $file;
