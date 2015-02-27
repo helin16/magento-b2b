@@ -277,9 +277,11 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 	 * Getting the comments row
 	 */
 	,_getCommentsRow: function(comments) {
+		var tmp = {};
+		tmp.me = this;
 		return new Element('tr', {'class': 'comments_row'})
 			.store('data', comments)
-			.insert({'bottom': new Element('td', {'class': 'created', 'width': '15%'}).update(new Element('small').update(comments.created) ) })
+			.insert({'bottom': new Element('td', {'class': 'created', 'width': '15%'}).update(new Element('small').update(!comments.id ? comments.created : tmp.me.loadUTCTime(comments.created).toLocaleString() ) ) })
 			.insert({'bottom': new Element('td', {'class': 'creator', 'width': '15%'}).update(new Element('small').update(comments.createdBy.person.fullname) ) })
 			.insert({'bottom': new Element('td', {'class': 'type', 'width': '10%'}).update(new Element('small').update(comments.type) ) })
 			.insert({'bottom': new Element('td', {'class': 'comments', 'width': 'auto'}).update(comments.comments) })
