@@ -1,7 +1,4 @@
 <?php
-require_once dirname(__FILE__) . '/src/Command.php';
-require_once dirname(__FILE__) . '/src/Pdf.php';
-
 use mikehaertl\wkhtmlto\Pdf;
 
 // You can pass a filename, a HTML string or an URL to the constructor
