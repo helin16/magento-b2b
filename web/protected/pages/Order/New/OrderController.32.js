@@ -164,7 +164,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					if(!tmp.result || !tmp.result.item)
 						return;
 					tmp.me._order = tmp.me._item = tmp.result.item;
-					tmp.redirectURL = '/orderdetails/' + tmp.result.item.id + '.html';
+					tmp.redirectURL = tmp.result.redirectURL;
 					tmp.modalBoxPanel.insert({'bottom': new Element('input', {'window': 'redirec-url', 'type': 'hidden', 'value': tmp.redirectURL}) });
 					$extraMsg = '';
 					if(tmp.result.printURL) {
@@ -316,7 +316,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					}
 				});
 		});
-		tmp.newDiv = new Element('div', {'class': 'panel panel-success customer-info-div'})
+		tmp.newDiv = new Element('div', {'class': 'panel customer-info-div ' + (tmp.me._order && tmp.me._order.type === 'QUOTE' ? 'panel-warning' : 'panel-success')})
 			.insert({'bottom': new Element('div', {'class': 'panel-heading'})
 				.insert({'bottom': new Element('div', {'class': 'row'})
 					.insert({'bottom': new Element('div', {'class': 'col-sm-8'})
@@ -1029,7 +1029,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			})
 			.insert({'bottom': new Element('div', {'class': 'row'})
 				.insert({'bottom': new Element('div', {'class': 'col-sm-12'})
-					.insert({'bottom': new Element('div', {'class': 'panel panel-success'}).update(tmp.me._getPartsTable())
+					.insert({'bottom': new Element('div', {'class': 'panel  ' + (tmp.me._order && tmp.me._order.type === 'QUOTE' ? 'panel-warning' : 'panel-success')}).update(tmp.me._getPartsTable())
 						.insert({'bottom': tmp.me._getSummaryFooter() })
 					})
 				})

@@ -271,7 +271,7 @@ class OrderController extends BPCPageAbstract
 				if(!($orderItem = OrderItem::get($item->id)) instanceof OrderItem)
 					$orderItem = OrderItem::create($order, $product, $unitPrice, $qtyOrdered, $totalPrice, 0, null, $itemDescription);
 				else {
-					if(isset($item->active) && intval($item->active) === 0)
+					if(isset($item->active) && trim($item->active) !== '' && intval($item->active) === 0)
 						$orderItem->setActive(false);
 					$orderItem->setProduct($product)
 						->setUnitPrice($unitPrice)
@@ -299,6 +299,7 @@ class OrderController extends BPCPageAbstract
 			$results['item'] = $order->getJson();
 			if($printItAfterSave === true)
 				$results['printURL'] = '/print/order/' . $order->getId() . '.html?pdf=1';
+			$results['redirectURL'] = '/order/'. $order->getId() . '.html?' . $_SERVER['QUERY_STRING'];
 			Dao::commitTransaction();
 		}
 		catch(Exception $ex)
