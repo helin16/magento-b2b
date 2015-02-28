@@ -644,6 +644,8 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.totalMargin = 0;
 		$$('.item_row.order-item-row').each(function(row) {
 			tmp.rowData = row.retrieve('data');
+			if(tmp.rowData.active === false)
+				return;
 			tmp.totalPriceIncGSTWithDiscount = tmp.totalPriceIncGSTWithDiscount * 1 + (tmp.me.getValueFromCurrency(tmp.rowData.totalPrice) * 1);
 			tmp.totalPriceIncGSTNoDicount = tmp.totalPriceIncGSTNoDicount * 1 + (tmp.me.getValueFromCurrency(tmp.rowData.unitPrice) * tmp.rowData.qtyOrdered);
 			if(tmp.rowData.margin)
