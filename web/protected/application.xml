@@ -22,6 +22,15 @@
 
 			<!-- FrontEnd:: CreditNote list page -->
 			<url ServiceParameter="CreditNote.List.ListController" pattern="creditnote.html" />
+			<!-- FrontEnd:: CreditNote detail page -->
+			<url ServiceParameter="CreditNote.Details.DetailsController" pattern="creditnote/{id}.html" parameters.id="new"/>
+			<url ServiceParameter="CreditNote.Details.DetailsController" pattern="creditnote/{id}.html" parameters.id="\d+"/>
+			
+			<!-- FrontEnd:: RMA list page -->
+			<url ServiceParameter="CreditNote.List.ListController" pattern="rma.html" />
+			<!-- FrontEnd:: RMA detail page -->
+			<url ServiceParameter="RMA.Details.DetailsController" pattern="rma/{id}.html" parameters.id="new"/>
+			<url ServiceParameter="RMA.Details.DetailsController" pattern="rma/{id}.html" parameters.id="\d+"/>
 			
 			<!-- FrontEnd:: order list page -->
 			<url ServiceParameter="Order.List.OrderController" pattern="order.html" />

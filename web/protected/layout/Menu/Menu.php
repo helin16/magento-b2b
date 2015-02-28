@@ -64,7 +64,9 @@ class Menu extends TTemplateControl
 					'icon' => '<span class="glyphicon glyphicon-time"></span>',
 					'PaymentMethod' =>array('url' => '/paymentmethod.html', 'name' => 'Payment Method', 'icon' => '<span class="glyphicon glyphicon-record"></span>'),
 					'accounting' => array('url' => '/accounting.html', 'name' => 'Accounting Info', 'icon'=> '<span class=""></span>'),
-					'report' => array('url' => '/report.html', 'name' => 'Report', 'icon'=> '<span class=""></span>')
+					'report' => array('url' => '/report.html', 'name' => 'Report', 'icon'=> '<span class=""></span>'),
+					'CreditNote' => array('url' => '/creditnote.html', 'name' => 'Credit Note', 'icon'=> '<span class=""></span>'),
+					'RMA' => array('url' => '/rma.html', 'name' => 'RMA', 'icon'=> '<span class=""></span>')
 			);
 		if(AccessControl::canAccessLogisticsPage(Core::getRole()) )
 			$array['Logistics'] = array(
