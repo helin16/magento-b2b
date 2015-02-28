@@ -47,8 +47,8 @@ class OrderController extends BPCPageAbstract
 		if(isset($_REQUEST['cloneorderid']) && !($cloneOrder = Order::get(trim($_REQUEST['cloneorderid']))) instanceof Order)
 			die('Invalid Order to clone from');
 
-		$paymentMethods =  array_map(create_function('$a', 'return $a->getJson();'), PaymentMethod::getAll());
-		$shippingMethods =  array_map(create_function('$a', 'return $a->getJson();'), Courier::getAll());
+		$paymentMethods =  array_map(create_function('$a', 'return $a->getJson();'), PaymentMethod::getAll(true, null, DaoQuery::DEFAUTL_PAGE_SIZE, array('name' => 'asc')));
+		$shippingMethods =  array_map(create_function('$a', 'return $a->getJson();'), Courier::getAll(true, null, DaoQuery::DEFAUTL_PAGE_SIZE, array('name' => 'asc')));
 		$customer = (isset($_REQUEST['customerid']) && ($customer = Customer::get(trim($_REQUEST['customerid']))) instanceof Customer) ? $customer->getJson() : null;
 		$js .= "pageJs";
 			$js .= ".setHTMLIDs('detailswrapper')";
@@ -183,7 +183,9 @@ class OrderController extends BPCPageAbstract
 			
 			
 			$poNo = (isset($param->CallbackParameter->poNo) && (trim($param->CallbackParameter->poNo) !== '') ? trim($param->CallbackParameter->poNo) : '');
-			if(isset($param->CallbackParameter->shippingAddr))
+			if(isset($param->CallbackParameter->shippingAddr)) {
+				
+				$shippAddress = ($order instanceof Order ? $order->getShippingAddr : null);
 				$shippAddress = Address::create(
 					$param->CallbackParameter->shippingAddr->street,
 					$param->CallbackParameter->shippingAddr->city,
@@ -191,8 +193,10 @@ class OrderController extends BPCPageAbstract
 					$param->CallbackParameter->shippingAddr->country,
 					$param->CallbackParameter->shippingAddr->postCode,
 					$param->CallbackParameter->shippingAddr->contactName,
-					$param->CallbackParameter->shippingAddr->contactNo
+					$param->CallbackParameter->shippingAddr->contactNo,
+					$shippAddress
 				);
+			}
 			else
 				$shippAddress = $customer->getShippingAddress();
 			$printItAfterSave = false;
