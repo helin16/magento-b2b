@@ -22,12 +22,13 @@ class ManualJournalExport_Xero extends ExportAbstract
 					'type2' => ProductQtyLog::TYPE_STOCK_ADJ
 			)
 		);
-
+		$now = new UDate()
 		$now->setTimeZone('Australia/Melbourne');
 		$return = array();
 		foreach($items as $item)
 		{
-			$product = $item->getProduct();
+			if(!($product = $item->getProduct()) instanceof Product)
+				continue;
 			$narration = '';
 			if($item->getEntity() instanceof BaseEntityAbstract) {
 				if($item->getEntity() instanceof PurchaseOrderItem)
