@@ -170,7 +170,7 @@ class OrderController extends BPCPageAbstract
 			if(!isset($param->CallbackParameter->type) || ($type = trim($param->CallbackParameter->type)) === '' || !in_array($type, Order::getAllTypes()))
 				throw new Exception('Invalid type passed in!');
 			$order = null;
-			if(isset($param->CallbackParameter->orderid) && ($orderId = trim($param->CallbackParameter->orderId)) !== '') {
+			if(isset($param->CallbackParameter->orderId) && ($orderId = trim($param->CallbackParameter->orderId)) !== '') {
 				if(!($order = Order::get($orderId)) instanceof Order)
 					throw new Exception('Invalid Order to edit!');
 			}
