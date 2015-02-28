@@ -100,7 +100,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.data.items = [];
 		$$('.order-item-row').each(function(item){
 			tmp.itemData = item.retrieve('data');
-			tmp.data.items.push({'id': (item.id ? item.id : ''), 'active': (item.active ? item.active : ''), 'product': {'id': tmp.itemData.product.id}, 'itemDescription': tmp.itemData.itemDescription,'unitPrice': tmp.itemData.unitPrice, 'qtyOrdered': tmp.itemData.qtyOrdered, 'totalPrice': tmp.itemData.totalPrice, 'serials': item.retrieve('serials') });
+			tmp.data.items.push({'id': (tmp.itemData.id ? tmp.itemData.id : ''), 'active': (tmp.itemData.active ? tmp.itemData.active : ''), 'product': {'id': tmp.itemData.product.id}, 'itemDescription': tmp.itemData.itemDescription,'unitPrice': tmp.itemData.unitPrice, 'qtyOrdered': tmp.itemData.qtyOrdered, 'totalPrice': tmp.itemData.totalPrice, 'serials': item.retrieve('serials') });
 		});
 		if(tmp.data.items.size() <= 0) {
 			tmp.me.showModalBox('<strong class="text-danger">Error</strong>', 'At least one order item is needed!', true);

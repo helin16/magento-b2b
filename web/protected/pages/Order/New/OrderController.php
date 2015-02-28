@@ -181,10 +181,8 @@ class OrderController extends BPCPageAbstract
 			}
 			$shipped = ((isset($param->CallbackParameter->shipped) && (intval($param->CallbackParameter->shipped)) === 1));
 			
-			
 			$poNo = (isset($param->CallbackParameter->poNo) && (trim($param->CallbackParameter->poNo) !== '') ? trim($param->CallbackParameter->poNo) : '');
 			if(isset($param->CallbackParameter->shippingAddr)) {
-				
 				$shippAddress = ($order instanceof Order ? $order->getShippingAddr : null);
 				$shippAddress = Address::create(
 					$param->CallbackParameter->shippingAddr->street,
@@ -202,7 +200,13 @@ class OrderController extends BPCPageAbstract
 			$printItAfterSave = false;
 			if(isset($param->CallbackParameter->printIt))
 				$printItAfterSave = (intval($param->CallbackParameter->printIt) === 1 ? true : false);
-			$order = Order::create($customer, $type, null, '', OrderStatus::get(OrderStatus::ID_NEW), new UDate(), false, $shippAddress, $customer->getBillingAddress(), false, $poNo, $orderCloneFrom);
+			if(!$order instanceof Order)
+				$order = Order::create($customer, $type, null, '', OrderStatus::get(OrderStatus::ID_NEW), new UDate(), false, $shippAddress, $customer->getBillingAddress(), false, $poNo, $orderCloneFrom);
+			else {
+				$order->setType($type)
+					->setPONo($poNo)
+					->save();
+			}
 			$totalPaymentDue = 0;
 			if (trim($param->CallbackParameter->paymentMethodId))
 			{
@@ -211,25 +215,35 @@ class OrderController extends BPCPageAbstract
 					throw new Exception('Invalid PaymentMethod passed in!');
 				$order->addInfo(OrderInfoType::ID_MAGE_ORDER_PAYMENT_METHOD, $paymentMethod->getName());
 				$totalPaidAmount = trim($param->CallbackParameter->totalPaidAmount);
-				if($shipped === true) {
-					$order->setPassPaymentCheck(true)
-						->addPayment($paymentMethod, $totalPaidAmount);
-				}
+						$order->addPayment($paymentMethod, $totalPaidAmount);
+				if($shipped === true)
+					$order->setType(Order::TYPE_INVOICE);
 			}
 			else
 			{
 				$paymentMethod = '';
 				$totalPaidAmount = 0;
 			}
-			if(trim($param->CallbackParameter->courierId))
+			
+			if(isset($param->CallbackParameter->courierId))
 			{
-				$courier = Courier::get(trim($param->CallbackParameter->courierId));
-				if(!$courier instanceof Courier)
-					throw new Exception('Invalid Courier passed in!');
-				$order->addInfo(OrderInfoType::ID_MAGE_ORDER_SHIPPING_METHOD, $courier->getName());
-				$totalShippingCost = StringUtilsAbstract::getValueFromCurrency(trim($param->CallbackParameter->totalShippingCost));
-				$order->addInfo(OrderInfoType::ID_MAGE_ORDER_SHIPPING_COST, StringUtilsAbstract::getCurrency($totalShippingCost));
+				$totalShippingCost = 0;
+				$courier = null;
+				if(is_numeric($courierId = trim($param->CallbackParameter->courierId))) {
+					$courier = Courier::get($courierId);
+					if(!$courier instanceof Courier)
+						throw new Exception('Invalid Courier passed in!');
+					$order->addInfo(OrderInfoType::ID_MAGE_ORDER_SHIPPING_METHOD, $courier->getName());
+				} else {
+					$order->addInfo(OrderInfoType::ID_MAGE_ORDER_SHIPPING_METHOD, $courierId);
+				}
+				if(isset($param->CallbackParameter->totalShippingCost)) {
+					$totalShippingCost = StringUtilsAbstract::getValueFromCurrency(trim($param->CallbackParameter->totalShippingCost));
+					$order->addInfo(OrderInfoType::ID_MAGE_ORDER_SHIPPING_COST, StringUtilsAbstract::getCurrency($totalShippingCost));
+				}
 				if($shipped === true) {
+					if(!$courier instanceof Courier)
+						$courier = Courier::get(Courier::ID_LOCAL_PICKUP);
 					Shippment::create($shippAddress, $courier, '', new UDate(), $order, '');
 				}
 			}
@@ -254,7 +268,19 @@ class OrderController extends BPCPageAbstract
 				$itemDescription = trim($item->itemDescription);
 
 				$totalPaymentDue += $totalPrice;
-				$orderItem = OrderItem::create($order, $product, $unitPrice, $qtyOrdered, $totalPrice, 0, null, $itemDescription);
+				if(!($orderItem = OrderItem::get($item->id)) instanceof OrderItem)
+					$orderItem = OrderItem::create($order, $product, $unitPrice, $qtyOrdered, $totalPrice, 0, null, $itemDescription);
+				else {
+					if(isset($item->active) && intval($item->active) === 0)
+						$orderItem->setActive(false);
+					$orderItem->setProduct($product)
+						->setUnitPrice($unitPrice)
+						->setQtyOrdered($qtyOrdered)
+						->setTotalPrice($totalPrice)
+						->setItemDescription($itemDescription)
+						->save();
+					SellingItem::deleteByCriteria('orderItemId = ?', array($orderItem->getId())); //DELETING ALL SERIAL NUMBER BEFORE ADDING
+				}
 				if(isset($item->serials)){
 					foreach($item->serials as $serialNo)
 						$orderItem->addSellingItem($serialNo);
