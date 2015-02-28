@@ -271,9 +271,9 @@ class OrderController extends BPCPageAbstract
 				if(!($orderItem = OrderItem::get($item->id)) instanceof OrderItem)
 					$orderItem = OrderItem::create($order, $product, $unitPrice, $qtyOrdered, $totalPrice, 0, null, $itemDescription);
 				else {
-					if(isset($item->active) && trim($item->active) !== '' && intval($item->active) === 0)
-						$orderItem->setActive(false);
-					$orderItem->setProduct($product)
+					var_dump($item->active);
+					$orderItem->setActive(intval($item->active))
+						->setProduct($product)
 						->setUnitPrice($unitPrice)
 						->setQtyOrdered($qtyOrdered)
 						->setTotalPrice($totalPrice)

@@ -98,11 +98,14 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		}
 
 		tmp.data.items = [];
+		tmp.hasItems = false;
 		$$('.order-item-row').each(function(item){
 			tmp.itemData = item.retrieve('data');
-			tmp.data.items.push({'id': (tmp.itemData.id ? tmp.itemData.id : ''), 'active': (tmp.itemData.active ? tmp.itemData.active : ''), 'product': {'id': tmp.itemData.product.id}, 'itemDescription': tmp.itemData.itemDescription,'unitPrice': tmp.itemData.unitPrice, 'qtyOrdered': tmp.itemData.qtyOrdered, 'totalPrice': tmp.itemData.totalPrice, 'serials': item.retrieve('serials') });
+			if(!item.hasClassName('deactivated'))
+				tmp.hasItems = true;
+			tmp.data.items.push({'id': (tmp.itemData.id ? tmp.itemData.id : ''), 'active': !item.hasClassName('deactivated'), 'product': {'id': tmp.itemData.product.id}, 'itemDescription': tmp.itemData.itemDescription,'unitPrice': tmp.itemData.unitPrice, 'qtyOrdered': tmp.itemData.qtyOrdered, 'totalPrice': tmp.itemData.totalPrice, 'serials': item.retrieve('serials') });
 		});
-		if(tmp.data.items.size() <= 0) {
+		if(tmp.hasItems === false) {
 			tmp.me.showModalBox('<strong class="text-danger">Error</strong>', 'At least one order item is needed!', true);
 			return tmp.me;
 		}
@@ -373,7 +376,9 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 						tmp.orderItem = tmp.row.retrieve('data');
 						if(tmp.orderItem.id){
 							tmp.orderItem.active = false;
+							tmp.row.store('data', tmp.orderItem);
 							tmp.row.hide();
+							tmp.row.addClassName('deactivated');
 						} else {
 							tmp.row.remove();
 						}
