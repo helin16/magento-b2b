@@ -183,7 +183,7 @@ class OrderController extends BPCPageAbstract
 			
 			$poNo = (isset($param->CallbackParameter->poNo) && (trim($param->CallbackParameter->poNo) !== '') ? trim($param->CallbackParameter->poNo) : '');
 			if(isset($param->CallbackParameter->shippingAddr)) {
-				$shippAddress = ($order instanceof Order ? $order->getShippingAddr : null);
+				$shippAddress = ($order instanceof Order ? $order->getShippingAddr() : null);
 				$shippAddress = Address::create(
 					$param->CallbackParameter->shippingAddr->street,
 					$param->CallbackParameter->shippingAddr->city,
