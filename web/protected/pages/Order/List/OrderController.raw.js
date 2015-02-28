@@ -357,22 +357,22 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			.insert({'bottom': new Element('td', {'class': 'customer col-xs-2 '}).update(
 					tmp.isTitle === true ? 'Customer' : row.customer.name
 			) })
-			.insert({'bottom': new Element('td', {'class': 'col-xs-2 ' + (tmp.deliveryMethod.toLowerCase().indexOf('pickup') > -1 ? 'danger' : ''), 'title': 'Delivery Method'}).update(tmp.deliveryMethod) })
+			.insert({'bottom': new Element('td', {'class': 'text-right col-xs-1 '}).update(
+				tmp.isTitle ? 'Payments' : tmp.me._getPaymentCell(row)
+			) })
+			.insert({'bottom': new Element('td', {'class': 'text-right'}).update(
+					tmp.isTitle ? 'Margin' : tmp.me._getMarginCell(row)
+			) })
+			.insert({'bottom': new Element('td', {'class': 'text-center'}).update(
+					tmp.isTitle ? 'Purchasing' : tmp.me._getPurchasingCell(row)
+			) })
+			.insert({'bottom': new Element('td', {'class': 'text-center'}).update(
+					tmp.isTitle ? 'Warehouse' : tmp.me._getWarehouseCell(row)
+			) })
 			.insert({'bottom': new Element('td', {'class': 'status col-xs-2', 'order_status': row.status.name}).update(
 					row.status ? row.status.name : ''
 			) })
-			.insert({'bottom': new Element('td', {'class': 'text-right col-xs-1', 'payment': true}).update(
-				tmp.isTitle ? 'Payments' : tmp.me._getPaymentCell(row)
-			) })
-			.insert({'bottom': new Element('td', {'class': 'text-right col-xs-1', 'margin': true}).update(
-					tmp.isTitle ? 'Margin' : tmp.me._getMarginCell(row)
-			) })
-			.insert({'bottom': new Element('td', {'class': 'text-center col-xs-1', 'purchasing': true}).update(
-					tmp.isTitle ? 'Purchasing' : tmp.me._getPurchasingCell(row)
-			) })
-			.insert({'bottom': new Element('td', {'class': 'text-center col-xs-1', 'warehouse': true}).update(
-					tmp.isTitle ? 'Warehouse' : tmp.me._getWarehouseCell(row)
-			) })
+			.insert({'bottom': new Element('td', {'class': 'col-xs-5 ' + (tmp.deliveryMethod.toLowerCase().indexOf('pickup') > -1 ? 'danger' : ''), 'title': 'Delivery Method'}).update(tmp.deliveryMethod) })
 		;
 		return tmp.row;
 	}
@@ -443,7 +443,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		var tmp = {};
 		tmp.me = this;
 		jQuery('.datepicker').datetimepicker({
-			format: 'DD/MM/YYYY HH:mm A'
+			format: 'DD/MM/YYYY'
 		});
 		tmp.me._initDeliveryMethods()._initTypeSwither();
 		return tmp.me;
