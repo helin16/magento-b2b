@@ -169,17 +169,20 @@ class OrderController extends BPCPageAbstract
 				throw new Exception('Invalid Customer passed in!');
 			if(!isset($param->CallbackParameter->type) || ($type = trim($param->CallbackParameter->type)) === '' || !in_array($type, Order::getAllTypes()))
 				throw new Exception('Invalid type passed in!');
+			$order = null;
+			if(isset($param->CallbackParameter->orderid) && ($orderId = trim($param->CallbackParameter->orderId)) !== '') {
+				if(!($order = Order::get($orderId)) instanceof Order)
+					throw new Exception('Invalid Order to edit!');
+			}
 			$orderCloneFrom = null;
 			if(isset($param->CallbackParameter->orderCloneFromId) && ($orderCloneFromId = trim($param->CallbackParameter->orderCloneFromId)) !== '') {
 				if(!($orderCloneFrom = Order::get($orderCloneFromId)) instanceof Order)
 					throw new Exception('Invalid Order to clone from!');
 			}
-			$poNo = '';
-			if(isset($param->CallbackParameter->poNo) && (trim($param->CallbackParameter->poNo) !== '') )
-				$poNo = trim($param->CallbackParameter->poNo);
-			$shipped = false;
-			if(isset($param->CallbackParameter->shipped) && (intval($param->CallbackParameter->shipped)) === 1)
-				$shipped = true;
+			$shipped = ((isset($param->CallbackParameter->shipped) && (intval($param->CallbackParameter->shipped)) === 1));
+			
+			
+			$poNo = (isset($param->CallbackParameter->poNo) && (trim($param->CallbackParameter->poNo) !== '') ? trim($param->CallbackParameter->poNo) : '');
 			if(isset($param->CallbackParameter->shippingAddr))
 				$shippAddress = Address::create(
 					$param->CallbackParameter->shippingAddr->street,
@@ -221,7 +224,7 @@ class OrderController extends BPCPageAbstract
 					throw new Exception('Invalid Courier passed in!');
 				$order->addInfo(OrderInfoType::ID_MAGE_ORDER_SHIPPING_METHOD, $courier->getName());
 				$totalShippingCost = StringUtilsAbstract::getValueFromCurrency(trim($param->CallbackParameter->totalShippingCost));
-				$order->addInfo(OrderInfoType::ID_SHIPPING_EST_COST, StringUtilsAbstract::getCurrency($totalShippingCost));
+				$order->addInfo(OrderInfoType::ID_MAGE_ORDER_SHIPPING_COST, StringUtilsAbstract::getCurrency($totalShippingCost));
 				if($shipped === true) {
 					Shippment::create($shippAddress, $courier, '', new UDate(), $order, '');
 				}
