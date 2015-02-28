@@ -213,7 +213,7 @@ class OrderController extends BPCPageAbstract
 				$paymentMethod = PaymentMethod::get(trim($param->CallbackParameter->paymentMethodId));
 				if(!$paymentMethod instanceof PaymentMethod)
 					throw new Exception('Invalid PaymentMethod passed in!');
-				$order->addInfo(OrderInfoType::ID_MAGE_ORDER_PAYMENT_METHOD, $paymentMethod->getName());
+				$order->addInfo(OrderInfoType::ID_MAGE_ORDER_PAYMENT_METHOD, $paymentMethod->getName(), true);
 				$totalPaidAmount = trim($param->CallbackParameter->totalPaidAmount);
 						$order->addPayment($paymentMethod, $totalPaidAmount);
 				if($shipped === true)
@@ -233,13 +233,13 @@ class OrderController extends BPCPageAbstract
 					$courier = Courier::get($courierId);
 					if(!$courier instanceof Courier)
 						throw new Exception('Invalid Courier passed in!');
-					$order->addInfo(OrderInfoType::ID_MAGE_ORDER_SHIPPING_METHOD, $courier->getName());
+					$order->addInfo(OrderInfoType::ID_MAGE_ORDER_SHIPPING_METHOD, $courier->getName(), true);
 				} else {
-					$order->addInfo(OrderInfoType::ID_MAGE_ORDER_SHIPPING_METHOD, $courierId);
+					$order->addInfo(OrderInfoType::ID_MAGE_ORDER_SHIPPING_METHOD, $courierId, true);
 				}
 				if(isset($param->CallbackParameter->totalShippingCost)) {
 					$totalShippingCost = StringUtilsAbstract::getValueFromCurrency(trim($param->CallbackParameter->totalShippingCost));
-					$order->addInfo(OrderInfoType::ID_MAGE_ORDER_SHIPPING_COST, StringUtilsAbstract::getCurrency($totalShippingCost));
+					$order->addInfo(OrderInfoType::ID_MAGE_ORDER_SHIPPING_COST, StringUtilsAbstract::getCurrency($totalShippingCost), true);
 				}
 				if($shipped === true) {
 					if(!$courier instanceof Courier)
@@ -271,7 +271,6 @@ class OrderController extends BPCPageAbstract
 				if(!($orderItem = OrderItem::get($item->id)) instanceof OrderItem)
 					$orderItem = OrderItem::create($order, $product, $unitPrice, $qtyOrdered, $totalPrice, 0, null, $itemDescription);
 				else {
-					var_dump($item->active);
 					$orderItem->setActive(intval($item->active))
 						->setProduct($product)
 						->setUnitPrice($unitPrice)
