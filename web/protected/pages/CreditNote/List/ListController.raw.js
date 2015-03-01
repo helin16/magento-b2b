@@ -61,9 +61,9 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 				 escapeMarkup: function (markup) { return markup; }, // let our custom formatter work
 				 minimumInputLength: 1,
 		});
-		tmp.selectEl = new Element('input', {'class': 'select2 form-control', 'data-placeholder': 'search for a Products', 'search_field': 'pro.nameOrSku'}).insert({'bottom': new Element('option').update('')});
-		$('searchDiv').down('[search_field="pro.nameOrSku"]').replace(tmp.selectEl);
-		jQuery('.select2[search_field="pro.nameOrSku"]').select2({
+		tmp.selectEl = new Element('input', {'class': 'select2 form-control', 'data-placeholder': 'search for a Products', 'search_field': 'pro.ids'}).insert({'bottom': new Element('option').update('')});
+		$('searchDiv').down('[search_field="pro.ids"]').replace(tmp.selectEl);
+		jQuery('.select2[search_field="pro.ids"]').select2({
 			allowClear: true,
 			hidden: true,
 			multiple: true,

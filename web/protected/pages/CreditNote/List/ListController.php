@@ -65,6 +65,7 @@ class ListController extends CRUDPageAbstract
 			var_dump($serachCriteria);
             $where = array(1);
             $params = array();
+            var_dump($serachCriteria);
             foreach($serachCriteria as $field => $value)
             {
             	if((is_array($value) && count($value) === 0) || (is_string($value) && ($value = trim($value)) === ''))
@@ -105,12 +106,13 @@ class ListController extends CRUDPageAbstract
 						$params = array_merge($params, $value);
 						break;
 					}
-					case 'pro.nameOrSku':
+					case 'pro.ids':
 					{
-// 						$query->eagerLoad("CreditNote.status", 'inner join', 'st', 'st.id = ord.statusId');
-// 						$where[] = 'st.id IN ('.implode(", ", array_fill(0, count($value), "?")).')';
-// 						$params = array_merge($params, $value);
-// 						break;
+						$value = explode(',', $value);
+						$query->eagerLoad("CreditNote.items", 'inner join', 'cn_item', 'cn_item.creditNoteId = cn.id and cn_item.active = 1');
+						$where[] = 'cn_item.productId in ('.implode(", ", array_fill(0, count($value), "?")).')';
+						$params = array_merge($params, $value);
+						break;
 					}
             	}
             }

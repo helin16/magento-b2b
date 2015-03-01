@@ -49,7 +49,7 @@
 					<div class="col-sm-4">
 						<div class="form-group form-group-sm input-group">
                            <label class="input-group-addon">Product:</label>
-                           <input type="text" search_field="pro.nameOrSku" placeholder="The Product for credit note" class="form-control input-sm">
+                           <input type="text" search_field="pro.ids" placeholder="The Product for credit note" class="form-control input-sm">
                        </div>
 					</div>
 				</div>
