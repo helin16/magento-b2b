@@ -4,6 +4,12 @@ class CreditNote extends BaseEntityAbstract
 	const APPLY_TO_REFUND = 'REFUND';
 	const APPLY_TO_CREDIT = 'CREDIT';
 	/**
+	 * The creditNote items
+	 *
+	 * @var array
+	 */
+	protected $items;
+	/**
 	 * The creditNote No
 	 *
 	 * @var string
@@ -45,6 +51,25 @@ class CreditNote extends BaseEntityAbstract
 	 * @var string
 	 */
 	private $description = '';
+	/**
+	 * getter for items
+	 *
+	 * @return array
+	 */
+	public function getItems()
+	{
+		return $this->items;
+	}
+	/**
+	 * Setter for items
+	 *
+	 * @return CreditNote
+	 */
+	public function setItems($items)
+	{
+		$this->items = $items;
+		return $this;
+	}
 	/**
 	 * Getter for order
 	 *
@@ -266,6 +291,7 @@ class CreditNote extends BaseEntityAbstract
 		DaoMap::setDateType('applyDate');
 		DaoMap::setIntType('totalValue', 'double', '10,4');
 		DaoMap::setStringType('description', 'varchar', 255);
+		DaoMap::setOneToMany('items', 'CreditNoteItem', 'cn_item');
 		parent::__loadDaoMap();
 
 		DaoMap::createUniqueIndex('creditNoteNo');

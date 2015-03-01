@@ -12,6 +12,12 @@ class RMA extends BaseEntityAbstract
 	 */
 	private $raNo = '';
 	/**
+	 * The creditNote items
+	 *
+	 * @var array
+	 */
+	protected $items;
+	/**
 	 * The order for this RA
 	 *
 	 * @var Order
@@ -61,6 +67,25 @@ class RMA extends BaseEntityAbstract
 	{
 	    $this->raNo = $value;
 	    return $this;
+	}
+	/**
+	 * getter for items
+	 *
+	 * @return array
+	 */
+	public function getItems()
+	{
+		return $this->items;
+	}
+	/**
+	 * Setter for items
+	 *
+	 * @return CreditNote
+	 */
+	public function setItems($items)
+	{
+		$this->items = $items;
+		return $this;
 	}
 	/**
 	 * Getter for order
@@ -240,7 +265,8 @@ class RMA extends BaseEntityAbstract
 		DaoMap::setManyToOne('customer', 'Customer', 'ra_customer');
 		DaoMap::setIntType('totalValue', 'double', '10,4');
 		DaoMap::setStringType('description', 'varchar', '255');
-
+		DaoMap::setOneToMany('items', 'RMAItem', 'ra_item');
+		
 		parent::__loadDaoMap();
 
 		DaoMap::createUniqueIndex('raNo');
