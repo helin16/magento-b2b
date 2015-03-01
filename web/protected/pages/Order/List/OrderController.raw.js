@@ -263,13 +263,10 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.me.observeClickNDbClick(tmp.orderLink,
 			function(event) {
 				tmp.btn = event.target;
-				jQuery(tmp.btn).popover('show');
-				jQuery('.popovershipping').not(tmp.btn).popover('hide');
-			}
-			, function(event) {
-				tmp.btn = event.target;
 				jQuery(tmp.btn).popover('hide');
 				tmp.me._openDetailsPage(row);
+			}
+			, function(event) {
 			})
 		return tmp.newDiv;
 	}

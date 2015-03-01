@@ -53,14 +53,6 @@ class OrderController extends BPCPageAbstract
 			array_splice($preferences['ord.status'], $index, 1);
 		if(($index = array_search(OrderStatus::ID_SHIPPED, $preferences['ord.status'])) !== false)
 			array_splice($preferences['ord.status'], $index, 1);
-		switch(Core::getRole()->getId())
-		{
-			case Role::ID_ACCOUNTING:
-			{
-				$preferences['ord.passPaymentCheck'] =  array(0);
-				break;
-			}
-		}
 		return $preferences;
 	}
 
