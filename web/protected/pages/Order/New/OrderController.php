@@ -71,7 +71,7 @@ class OrderController extends BPCPageAbstract
 		if(!AccessControl::canAccessCreateOrderPage(Core::getRole())) {
 			$js .= ".disableEverything()";
 			$js .= ".showModalBox('<h4>Error</h4>', '<h4>You DO NOT Have Access To This " . ($order instanceof Order ? $order->getType() : 'Page')  . "</h4>')";
-		} else if($order instanceof Order  && intval($order->getStatus()->getId()) === OrderStatus::ID_CANCELLED ) {
+		} else if($order instanceof Order && trim($order->getId()) !== '' && intval($order->getStatus()->getId()) === OrderStatus::ID_CANCELLED ) {
 			$js .= ".disableEverything()";
 			$js .= ".showModalBox('<h4>Error</h4>', '<h4>This " . $order->getType()  . " has been " . $order->getStatus()->getName() . "!</h4><h4>No one can edit it anymore</h4>')";
 		}
@@ -335,6 +335,10 @@ class OrderController extends BPCPageAbstract
 				throw new Exception('Invalid Order to CANCEL!');
 			if(!isset($param->CallbackParameter->reason) || !($reason = trim($param->CallbackParameter->reason)) === '')
 				throw new Exception('An reason for CANCELLING this ' . $order->getType() . ' is needed!');
+			if(Payment::countByCriteria('orderId = ?', array($order->getId())) > 0)
+				throw new Exception('There are payments against this ' . $order->getType() . '!');
+			if(Shippment::countByCriteria('orderId = ?', array($order->getId())) > 0)
+				throw new Exception('There are shippments against this ' . $order->getType() . '!');
 			$order->setStatus(OrderStatus::get(OrderStatus::ID_CANCELLED))
 				->save()
 				->addComment(($msg = $order->getType() . ' is cancelled: ' . $reason), Comments::TYPE_SALES)
