@@ -23,7 +23,8 @@ class PaymentExport_Xero extends ExportAbstract
 		{
 			$return[] = array(
 					'InvNo / Order No.' => (trim($item->getOrder()->getInvNo()) === '' ? $item->getOrder()->getOrderNo() : $item->getOrder()->getInvNo())
-					,'Date'=> trim($item->getCreated()->setTimeZone('Australia/Melbourne'))
+					,'Processed Date'=> trim($item->getCreated()->setTimeZone('Australia/Melbourne'))
+					,'Processed By' => $item->getCreatedBy() instanceof UserAccount ? $item->getCreatedBy()->getPerson()->getFullName() : ''
 					,'Method'=> ($item->getMethod() instanceof PaymentMethod ? trim($item->getMethod()->getName()) : '')
 					,'Amount'=> StringUtilsAbstract::getCurrency($item->getValue())
 					, 'Comments' => trim(implode(',', array_map(create_function('$a', 'return $a->getComments();'), Comments::getAllByCriteria('entityName = ? and entityId = ?', array(get_class($item), $item->getId())))) )
