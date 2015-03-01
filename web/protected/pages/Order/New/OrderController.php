@@ -67,9 +67,10 @@ class OrderController extends BPCPageAbstract
 			$js .= ".setOriginalOrder(" . json_encode($clonOrderArray) . ")";
 		}
 		$js .= ".init(" . json_encode($customer) . ")";
-// 		if(!AccessControl::canAccessCreateOrderPage(Core::getRole()))
+		if(!AccessControl::canAccessCreateOrderPage(Core::getRole())) {
 			$js .= ".disableEverything()";
 			$js .= ".showModalBox('<h4>Error</h4>', '<h4>You DO NOT Have Access To This " . ($order instanceof Order ? $order->getType() : 'Page')  . "</h4>')";
+		}
 		$js .= ";";
 		return $js;
 	}
