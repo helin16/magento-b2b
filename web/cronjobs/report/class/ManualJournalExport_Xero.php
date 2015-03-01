@@ -22,7 +22,7 @@ class ManualJournalExport_Xero extends ExportAbstract
 					'type2' => ProductQtyLog::TYPE_STOCK_ADJ
 			)
 		);
-		$now = new UDate()
+		$now = new UDate();
 		$now->setTimeZone('Australia/Melbourne');
 		$return = array();
 		foreach($items as $item)
