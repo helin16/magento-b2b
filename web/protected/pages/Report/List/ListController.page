@@ -8,6 +8,7 @@
 				<a class="list-group-item gen-report-btn" data-type="sales_daily" href="javascript: void(0);">Sales Report</a>
 				<a class="list-group-item gen-report-btn" data-type="supplier_bill_daily" href="javascript: void(0);">Bill Report</a>
 				<a class="list-group-item gen-report-btn" data-type="manual_journal" href="javascript: void(0);">Manual Journal</a>
+				<a class="list-group-item gen-report-btn" data-type="payments_daily" href="javascript: void(0);">Payments Report</a>
 				<a class="list-group-item gen-report-btn" data-type="inventory_list" href="javascript: void(0);">Inventory List</a>
 				<a class="list-group-item gen-report-btn" data-type="magento_price" href="javascript: void(0);">Magento Price Import File</a>
 			</div>

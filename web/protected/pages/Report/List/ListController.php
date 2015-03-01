@@ -59,6 +59,11 @@ class ListController extends BPCPageAbstract
 					$asset = ManualJournalExport_Xero::run(false, false);
 					break;
 				}
+				case 'payments_daily': {
+					ItemExport_Magento::setStartNEndDate(new UDate(trim($param->CallbackParameter->date_from)), new UDate(trim($param->CallbackParameter->date_to)));
+					$asset = PaymentExport_Xero::run(false, false);
+					break;
+				}
 				case 'inventory_list': {
 					$asset = ItemExport_Xero::run(false, false);
 					break;
