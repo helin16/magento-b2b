@@ -1,0 +1,67 @@
+<com:TContent ID="MainContent">
+<com:Application.controls.fancybox.FancyBox />
+<com:Application.controls.chosen.Chosen />
+<com:Application.controls.select2.select2 />
+<com:TCallback ID="deactivateItemBtn" OnCallback = 'Page.deactivateItems' />
+	<div class="pagewrapper item-list-wrapper">
+		<div class="panel panel-default" id="searchPanel">
+			<div class="panel-heading">
+				<label for="showSearch">Show Search Criteria?</label>
+				<input checked id="showSearch" type="checkbox" onclick="$(this).up('#searchPanel').down('.panel-body').toggle();">
+				<span class="pull-right">
+			   		<span id="searchBtn" class="btn btn-primary form-control input-sm" data-loading-text="searching ..." >Search</span>
+				</span>
+			</div>
+			<div class="panel-body search-panel" id="searchDiv" style="display: unset;">
+				<div class="row">
+					<div class="col-sm-4">
+						<div class="form-group form-group-sm input-group">
+                           <label class="input-group-addon">RMA No:</label>
+                           <input type="text" search_field="ra.raNo" placeholder="RMA Number" class="form-control input-sm">
+                       </div>
+					</div>
+					<div class="col-sm-4">
+						<div class="form-group form-group-sm input-group">
+                           <label class="input-group-addon">Status:</label>
+                           <input type="text" search_field="ra.status" placeholder="Status" class="form-control input-sm">
+                       </div>
+					</div>
+					<div class="col-sm-4">
+						<div class="form-group form-group-sm input-group">
+                           <label class="input-group-addon">Description:</label>
+                           <input type="text" search_field="ra.description" placeholder="The Description of credit note" class="form-control input-sm">
+                       </div>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-sm-4">
+						<div class="form-group form-group-sm input-group">
+                           <label class="input-group-addon">Order No:</label>
+                           <input type="text" search_field="ord.orderNo" placeholder="The Order Number for credit note" class="form-control input-sm">
+                       </div>
+					</div>
+					<div class="col-sm-4">
+						<div class="form-group form-group-sm input-group">
+                           <label class="input-group-addon">Customer:</label>
+                           <input type="text" search_field="cust.id" placeholder="The Customer for credit note" class="form-control input-sm">
+                       </div>
+					</div>
+					<div class="col-sm-4">
+						<div class="form-group form-group-sm input-group">
+                           <label class="input-group-addon">Product:</label>
+                           <input type="text" search_field="pro.ids" placeholder="The Product for credit note" class="form-control input-sm">
+                       </div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="panel panel-default list-panel">
+			<div class="panel-heading">
+				Found <label id="total-found-count">0</label> <%= $this->getFocusEntity() %>:
+			</div>
+			<small class="table-responsive">
+                <table class="table table-hover table-striped" id="item-list"></table>
+            </small>
+		</div> 
+	</div>
+</com:TContent>
