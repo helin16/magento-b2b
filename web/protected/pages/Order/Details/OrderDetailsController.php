@@ -313,7 +313,6 @@ class OrderDetailsController extends BPCPageAbstract
 			$notifyCust = (isset($params->CallbackParameter->payment->notifyCust) && intval($params->CallbackParameter->payment->notifyCust) === 1) ? true : false;
 			//save the payment
 			$order->addPayment($paymentMethod, $paidAmount)
-				->save()
 				->addComment(($amtDiff === '0' ? 'FULLY PAID' : '') . '[Total Amount Due was ' . StringUtilsAbstract::getCurrency($order->getTotalAmount()) . ". And total amount paid is " . StringUtilsAbstract::getCurrency($paidAmount) . ". Payment Method is " . $paymentMethod->getName() . ']: ' . ($extraComment !== '' ? ' : ' . $extraComment : ''), Comments::TYPE_ACCOUNTING);
 
 			//notify the customer
