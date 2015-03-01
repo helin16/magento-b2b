@@ -49,6 +49,8 @@ class OrderController extends BPCPageAbstract
 	{
 		$preferences = array();
 		$preferences['ord.status'] = AccessControl::canAccessOrderStatusIds(Core::getRole());
+		if(intval(Core::getRole()->getId()) === Role::ID_WAREHOUSE)
+			$preferences['ord.status'][] = OrderStatus::ID_INSUFFICIENT_STOCK;
 		if(($index = array_search(OrderStatus::ID_CANCELLED, $preferences['ord.status'])) !== false)
 			array_splice($preferences['ord.status'], $index, 1);
 		if(($index = array_search(OrderStatus::ID_SHIPPED, $preferences['ord.status'])) !== false)
