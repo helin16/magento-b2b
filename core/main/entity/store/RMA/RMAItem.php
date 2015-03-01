@@ -294,4 +294,16 @@ class RMAItem extends BaseEntityAbstract
 			->addLog($msg, Comments::TYPE_SYSTEM);
 		return $item;
 	}
+	/**
+	 * get RMA Items by RMA
+	 *
+	 * @param RMA|string $rma
+	 * @return Ambigous <NULL, unknown>
+	 */
+	public static function getByRMA($rma)
+	{
+		$rma = $rma instanceof RMA ? $rma : RMA::get(trim($rma));
+		$rma = $rma instanceof RMA ? $rma : (count($rmas = RMA::getAllByCriteria('RMAId = ?', array(trim($rma)), true, 1, 1)) > 0 ? $rmas[0] : null);
+		return $rma instanceof RMA ? (count($items = self::getAllByCriteria('RMAId = ?', array($rma->getId()), true)) > 0 ? $items : null) : null;
+	}
 }
