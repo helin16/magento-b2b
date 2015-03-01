@@ -15,13 +15,7 @@ class PaymentExport_Xero extends ExportAbstract
 			$toDate = self::$_dateRange['end'];
 		}
 		$dataType = 'created';
-		$items = Payment::getAllByCriteria($dataType . ' >= :fromDate and ' . $dataType . ' < :toDate and type in (:type1, :type2)',
-				array('fromDate' => trim($fromDate),
-					'toDate' => trim($toDate),
-					'type1' => ProductQtyLog::TYPE_SALES_ORDER,
-					'type2' => ProductQtyLog::TYPE_STOCK_ADJ
-			)
-		);
+		$items = Payment::getAllByCriteria($dataType . ' >= :fromDate and ' . $dataType . ' < :toDate', array('fromDate' => trim($fromDate), 'toDate' => trim($toDate))	);
 		$now = new UDate();
 		$now->setTimeZone('Australia/Melbourne');
 		$return = array();
@@ -49,6 +43,6 @@ class PaymentExport_Xero extends ExportAbstract
 	{
 		$now = new UDate();
 		$now->setTimeZone('Australia/Melbourne');
-		return 'Paments_' . $now->format('Y_m_d_H_i_s') . '.csv';
+		return 'Payments_' . $now->format('Y_m_d_H_i_s') . '.csv';
 	}
 }
