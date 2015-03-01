@@ -562,7 +562,6 @@ class Order extends InfoEntityAbstract
 	{
 		if(trim($this->getInvDate()) === '')
 			$this->setInvDate(Udate::zeroDate());
-		$this->setPassPaymentCheck(trim($this->getType()) === Order::TYPE_INVOICE);
 		if(trim($this->getId()) !== '')
 		{
 			$this->setMargin($this->getCalculatedTotalMargin());

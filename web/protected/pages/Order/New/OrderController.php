@@ -20,8 +20,6 @@ class OrderController extends BPCPageAbstract
 	public function onLoad($param)
 	{
 		parent::onLoad($param);
-		if(!AccessControl::canAccessCreateOrderPage(Core::getRole()))
-			die('You do NOT have access to this page');
 	}
 	/**
 	 * Getting The end javascript
@@ -68,7 +66,11 @@ class OrderController extends BPCPageAbstract
 			$clonOrderArray['items'] = array_map(create_function('$a', 'return $a->getJson();'), OrderItem::getAllByCriteria('orderId = ?', array($cloneOrder->getId())));
 			$js .= ".setOriginalOrder(" . json_encode($clonOrderArray) . ")";
 		}
-			$js .= ".init(" . json_encode($customer) . ");";
+		$js .= ".init(" . json_encode($customer) . ")";
+// 		if(!AccessControl::canAccessCreateOrderPage(Core::getRole()))
+			$js .= ".disableEverything()";
+			$js .= ".showModalBox('<h4>Error</h4>', '<h4>You DO NOT Have Access To This " . ($order instanceof Order ? $order->getType() : 'Page')  . "</h4>')";
+		$js .= ";";
 		return $js;
 	}
 	/**

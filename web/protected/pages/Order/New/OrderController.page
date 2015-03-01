@@ -1,5 +1,6 @@
 <com:TContent ID="MainContent">
 	<com:Application.controls.fancybox.FancyBox />
+	<com:Application.controls.OrderBtns.OrderBtns />
 	<com:TCallback ID="searchCustomerBtn" onCallback="searchCustomer" />
 	<com:TCallback ID="searchProductBtn" onCallback="searchProduct" />
 	<com:TCallback ID="saveOrderBtn" onCallback="saveOrder" />

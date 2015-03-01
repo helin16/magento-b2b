@@ -144,11 +144,25 @@ class Payment extends BaseEntityAbstract
 	public function postSave()
 	{
 		//update the order
-		$totalPaidAmount = 0;
-		foreach($this->getOrder()->getPayments() as $payment)
-			$totalPaidAmount = $totalPaidAmount * 1 + $payment->getValue() * 1;
-		$this->getOrder()->setTotalPaid($totalPaidAmount)
-			->save();
+		if($this->getOrder() instanceof Order) {
+			$totalPaidAmount = 0;
+			foreach($this->getOrder()->getPayments() as $payment)
+				$totalPaidAmount = $totalPaidAmount * 1 + $payment->getValue() * 1;
+			$msg = '';
+			if(intval($this->getActive()) === 1 && intval($this->getOrder()->getPassPaymentCheck()) !== 1) {
+				$this->getOrder()->setPassPaymentCheck(true);
+				$msg = "Marked Payment Checked as first payment go through.";
+			}
+			else if(intval($this->getActive()) === 0 && self::countByCriteria('orderId = ? and active = 1', array($this->getOrder()->getId())) <= 0){
+				$this->getOrder()->setPassPaymentCheck(false);
+				$msg = "Marked Payment UNCHECKED as last payment deactivated.";
+			}
+			$this->getOrder()->setTotalPaid($totalPaidAmount)
+				->save();
+			if($msg !== '')
+				$this->getOrder()->addComment($msg, Comments::TYPE_SYSTEM)
+					->addLog($msg, Log::TYPE_SYSTEM, 'AUTO_GEN', __CLASS__ . '::' . __FUNCTION__);
+		}
 	}
 	/**
 	 * (non-PHPdoc)
