@@ -135,7 +135,7 @@ class OrderPrintController extends BPCPageAbstract
 	}
 	public function getComments()
 	{
-		$comments = Comments::getAllByCriteria('entityId = ? and entityName = ? and type = ?', array($this->order->getId(), get_class($this->order), Comments::TYPE_SALES), true, 1, 1);
+		$comments = Comments::getAllByCriteria('entityId = ? and entityName = ? and type = ?', array($this->order->getId(), get_class($this->order), Comments::TYPE_SALES), true, 1, 1, array('id' => 'desc'));
 		return count($comments) === 0 ? '' : $comments[0]->getComments();
 	}
 }
