@@ -53,6 +53,7 @@ class OrderController extends BPCPageAbstract
 			$js .= ".setCallbackId('searchCustomer', '" . $this->searchCustomerBtn->getUniqueID() . "')";
 			$js .= ".setCallbackId('searchProduct', '" . $this->searchProductBtn->getUniqueID() . "')";
 			$js .= ".setCallbackId('saveOrder', '" . $this->saveOrderBtn->getUniqueID() . "')";
+			$js .= ".setCallbackId('cancelOrder', '" . $this->cancelOrderBtn->getUniqueID() . "')";
 			$js .= ".setPaymentMethods(" . json_encode($paymentMethods) . ")";
 			$js .= ".setShippingMethods(" . json_encode($shippingMethods) . ")";
 			$js .= ".setOrderTypes(" . json_encode(Order::getAllTypes()) . ")";
@@ -70,6 +71,9 @@ class OrderController extends BPCPageAbstract
 		if(!AccessControl::canAccessCreateOrderPage(Core::getRole())) {
 			$js .= ".disableEverything()";
 			$js .= ".showModalBox('<h4>Error</h4>', '<h4>You DO NOT Have Access To This " . ($order instanceof Order ? $order->getType() : 'Page')  . "</h4>')";
+		} else if($order instanceof Order  && intval($order->getStatus()->getId()) === OrderStatus::ID_CANCELLED ) {
+			$js .= ".disableEverything()";
+			$js .= ".showModalBox('<h4>Error</h4>', '<h4>This " . $order->getType()  . " has been " . $order->getStatus()->getName() . "!</h4><h4>No one can edit it anymore</h4>')";
 		}
 		$js .= ";";
 		return $js;
@@ -303,6 +307,39 @@ class OrderController extends BPCPageAbstract
 			if($printItAfterSave === true)
 				$results['printURL'] = '/print/order/' . $order->getId() . '.html?pdf=1';
 			$results['redirectURL'] = '/order/'. $order->getId() . '.html?' . $_SERVER['QUERY_STRING'];
+			Dao::commitTransaction();
+		}
+		catch(Exception $ex)
+		{
+			Dao::rollbackTransaction();
+			$errors[] = $ex->getMessage();
+		}
+		$param->ResponseData = StringUtilsAbstract::getJson($results, $errors);
+	}
+	/**
+	 * cancelOrder
+	 *
+	 * @param unknown $sender
+	 * @param unknown $param
+	 *
+	 * @throws Exception
+	 *
+	 */
+	public function cancelOrder($sender, $param)
+	{
+		$results = $errors = array();
+		try
+		{
+			Dao::beginTransaction();
+			if(!isset($param->CallbackParameter->orderId) || !($order = Order::get($param->CallbackParameter->orderId)) instanceof Order)
+				throw new Exception('Invalid Order to CANCEL!');
+			if(!isset($param->CallbackParameter->reason) || !($reason = trim($param->CallbackParameter->reason)) === '')
+				throw new Exception('An reason for CANCELLING this ' . $order->getType() . ' is needed!');
+			$order->setStatus(OrderStatus::get(OrderStatus::ID_CANCELLED))
+				->save()
+				->addComment(($msg = $order->getType() . ' is cancelled: ' . $reason), Comments::TYPE_SALES)
+				->addLog($msg, Log::TYPE_SYSTEM, 'AUTO_GEN', __CLASS__ . '::' . __FUNCTION__);
+			$results['item'] = $order->getJson();
 			Dao::commitTransaction();
 		}
 		catch(Exception $ex)

@@ -54,12 +54,6 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.newDiv = new Element('div', {'class': 'confirm-div'})
 			.insert({'bottom': new Element('h4').update('You are about to release an order with short payment. Do you wish to continue?')	})
 			.insert({'bottom': new Element('div', {'class': 'text-right'})
-				.insert({'bottom': new Element('span', {'class': 'btn btn-default pull-left'})
-					.update('CANCEL')
-					.observe('click', function(){
-						tmp.me.hideModalBox();
-					})
-				})
 				.insert({'bottom': new Element('span', {'class': 'btn btn-primary', 'data-loading-text': 'Sending ...'})
 					.update('Yes')
 					.observe('click', function(){
@@ -295,6 +289,63 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
  		});
 		return tmp.me;
 	}
+	,_deactiveOrder(btn) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.confirmDiv = $(btn).up('.confirm-div');
+		tmp.confirmDiv.getElementsBySelector('.msg').each(function(item){ item.remove(); });
+		tmp.data = tmp.me._collectFormData(tmp.confirmDiv, 'confirm-panel');
+		if(tmp.data === null)
+			return;
+		tmp.data.orderId = tmp.me._order.id;
+		tmp.me.postAjax(tmp.me.getCallbackId('cancelOrder'), tmp.data, {
+			'onLoading': function() {
+				tmp.me._signRandID(btn);
+				jQuery('#' + btn.id).button('loading');
+			}
+			,'onSuccess': function(sender, param) {
+				try {
+					tmp.result = tmp.me.getResp(param, false, true);
+					if(!tmp.result || !tmp.result.item || !tmp.result.item.id)
+						return;
+					window.location = document.url;
+				} catch (e) {
+					tmp.confirmDiv.insert({'top': new Element('h4', {'class': 'msg'}).update(new Element('span', {'class': 'label label-danger'}).update(e) ) });
+				}
+			}
+			,'onComplete': function() {
+				jQuery('#' + btn.id).button('reset');
+			}
+		});
+		return tmp.me;
+	}
+	,_showConfirmCancelOrderPanel: function(btn) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.newDiv = new Element('div', {'class': 'confirm-div'})
+			.insert({'bottom': new Element('div')
+				.insert({'bottom': tmp.me._getFormGroup('You are about CANCEL this ' + tmp.me._order.type + ', please provide some reason:',
+						new Element('input', {'value': '', 'confirm-panel': 'reason', 'required': true, 'placeholder': 'The Reason For CANCELLATION'})
+					)
+				})
+			})
+			.insert({'bottom': new Element('div', {'class': 'text-right'})
+				.insert({'bottom': new Element('span', {'class': 'btn btn-default pull-left'})
+					.update('CANCEL')
+					.observe('click', function(){
+						tmp.me.hideModalBox();
+					})
+				})
+				.insert({'bottom': new Element('span', {'class': 'btn btn-danger', 'data-loading-text': 'Sending ...'})
+					.update('Yes, Cancel this ' + tmp.me._order.type)
+					.observe('click', function(){
+						tmp.me._deactiveOrder(this);
+					})
+				})
+			});
+		tmp.me.showModalBox('<strong>Confirm Cancellation:</strong>', tmp.newDiv);
+		return tmp.me;
+	}
 	/**
 	 * getting the customer information div
 	 */
@@ -319,6 +370,17 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					}
 				});
 		});
+		tmp.operationBtnsDiv = new Element('div');
+		if(tmp.me._order && tmp.me._order.id) {
+			tmp.operationBtnsDiv
+				.update(new OrderBtnsJs(tmp.me, tmp.me._order).getBtnsDiv())
+				.insert({'bottom': new Element('btn', {'class': 'btn btn-danger btn-xs pull-right'})
+					.update('CANCEL THIS ' + tmp.me._order.type)
+					.observe('click', function() {
+						tmp.me._showConfirmCancelOrderPanel(this);
+					})
+				});
+		}
 		tmp.newDiv = new Element('div', {'class': 'panel customer-info-div'})
 			.insert({'bottom': new Element('div', {'class': 'panel-heading'})
 				.insert({'bottom': new Element('div', {'class': 'row'})
@@ -342,8 +404,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 							.insert({'bottom': new Element('a', {'href': "/orderdetails/" + tmp.me._originalOrder.id + '.html', 'target': '_BLANK'}).update(tmp.me._originalOrder.orderNo) })
 						})
 					})
-					.insert({'bottom': new Element('div', {'class': 'col-sm-4'}).update(tmp.me._order && tmp.me._order.id ? new OrderBtnsJs(tmp.me, tmp.me._order).getBtnsDiv() : '' )
-					})
+					.insert({'bottom': new Element('div', {'class': 'col-sm-4'}).update( tmp.operationBtnsDiv )	})
 				})
 			})
 			.insert({'bottom': new Element('div', {'class': 'panel-body'})
@@ -654,7 +715,6 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			tmp.rowData = row.retrieve('data');
 			if(tmp.rowData.active === false)
 				return;
-			console.debug(tmp.rowData.totalPrice);
 			tmp.totalPriceIncGSTWithDiscount = tmp.totalPriceIncGSTWithDiscount * 1 + (tmp.me.getValueFromCurrency(tmp.rowData.totalPrice) * 1);
 			tmp.totalPriceIncGSTNoDicount = tmp.totalPriceIncGSTNoDicount * 1 + (tmp.me.getValueFromCurrency(tmp.rowData.unitPrice) * tmp.rowData.qtyOrdered);
 			if(tmp.rowData.margin)
@@ -955,7 +1015,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 	,_getSummaryFooter: function() {
 		var tmp = {};
 		tmp.me = this;
-		tmp.shippingMethodSel = new Element('select', {'class': 'form-control input-sm', 'save-order': 'courierId'})
+		tmp.shippingMethodSel = new Element('select', {'class': 'form-control input-sm', 'save-order': 'courierId', 'required': true})
 			.insert({'bottom': new Element('option', {'value': ''}).update('Shipping Via:') });
 		tmp.shippingMethod = (tmp.me._order && tmp.me._order.infos['9'] ? tmp.me._order.infos[9][0].value : '');
 		tmp.shippingCost = (tmp.me._order && tmp.me._order.infos['14'] ? tmp.me.getValueFromCurrency(tmp.me._order.infos[14][0].value) : '');
@@ -997,16 +1057,16 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 						.insert({'bottom': new Element('div', {'order-price-summary': 'totalPriceIncludeGST', 'class': 'col-xs-6'}).update( tmp.me.getCurrency(0) ) })
 					})
 					.insert({'bottom': new Element('div', {'class': 'row', 'style': 'border-bottom: 1px solid brown'})
-						.insert({'bottom': new Element('div', {'class': 'col-xs-6 text-right'}).update( new Element('strong').update(
-							tmp.shippingMethodSel.observe('change', function() {
-								tmp.btn = this;
-								$(tmp.btn).up('.row').down('.input-field').update($F(tmp.btn).blank() ? tmp.me.getCurrency(0) :
-									tmp.shippingCostBox = tmp.me._getShippingCostBox()
-								);
-								tmp.me._recalculateSummary();
-								if(tmp.shippingCostBox)
-									tmp.shippingCostBox.select();
-							})
+						.insert({'bottom': new Element('div', {'class': 'col-xs-6 text-right'}).update( tmp.me._getFormGroup('', 
+								tmp.shippingMethodSel.observe('change', function() {
+									tmp.btn = this;
+									$(tmp.btn).up('.row').down('.input-field').update($F(tmp.btn).blank() ? tmp.me.getCurrency(0) :
+										tmp.shippingCostBox = tmp.me._getShippingCostBox()
+									);
+									tmp.me._recalculateSummary();
+									if(tmp.shippingCostBox)
+										tmp.shippingCostBox.select();
+								})
 						) ) })
 						.insert({'bottom': new Element('div', {'class': 'col-xs-6 input-field'}).update( tmp.shippingCost === '' ? tmp.me.getCurrency(0) : tmp.me._getShippingCostBox(tmp.shippingCost) ) })
 					})
@@ -1273,12 +1333,11 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 	,init: function(customer) {
 		var tmp = {};
 		tmp.me = this;
+		tmp.className = 'warning';
 		if(tmp.me._order && tmp.me._order.id) { //edit order/quote
 			tmp.me.selectCustomer(tmp.me._order.customer)
 				._populateOrderItems(tmp.me._order.items);
 			tmp.className = tmp.me._order.type === 'QUOTE' ? 'warning' : (tmp.me._order.type === 'ORDER' ? 'success' : 'default');
-			tmp.panels = jQuery('.panel').removeClass('panel-success').removeClass('panel-warning').removeClass('panel-default').addClass('panel-' + tmp.className);
-			tmp.inputs = jQuery('.list-group-item').removeClass('list-group-item-success').removeClass('list-group-item-warning').addClass('list-group-item-' + tmp.className);
 		} else { // new order
 			if(customer) {
 				tmp.me.selectCustomer(customer);
@@ -1286,12 +1345,13 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				tmp.me.selectCustomer(tmp.me._originalOrder.customer)
 					._populateOrderItems(tmp.me._originalOrder.items);
 				tmp.className = tmp.me._originalOrder.type === 'QUOTE' ? 'warning' : (tmp.me._order.type === 'ORDER' ? 'success' : 'default');
-				tmp.panels = jQuery('.panel').removeClass('panel-success').removeClass('panel-warning').removeClass('panel-default').addClass('panel-' + tmp.className);
-				tmp.inputs = jQuery('.list-group-item').removeClass('list-group-item-success').removeClass('list-group-item-warning').addClass('list-group-item-' + tmp.className);
+				
 			}else {
 				$(tmp.me._htmlIds.itemDiv).update(tmp.me._getCustomerListPanel());
 			}
 		}
+		tmp.panels = jQuery('.panel').removeClass('panel-success').removeClass('panel-warning').removeClass('panel-default').addClass('panel-' + tmp.className);
+		tmp.inputs = jQuery('.list-group-item').removeClass('list-group-item-success').removeClass('list-group-item-warning').addClass('list-group-item-' + tmp.className);
 		
 		if($$('.init-focus').size() > 0)
 			$$('.init-focus').first().focus();
