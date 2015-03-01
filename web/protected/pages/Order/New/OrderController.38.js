@@ -1154,6 +1154,8 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					new Element('span', {'class': 'btn btn-primary btn-xs'}).update('select')
 					.observe('click', function(){
 						tmp.me.selectCustomer(customer);
+						tmp.panels = jQuery('.panel').removeClass('panel-success').removeClass('panel-warning').removeClass('panel-default').addClass('panel-warning');
+						tmp.inputs = jQuery('.list-group-item').removeClass('list-group-item-success').removeClass('list-group-item-warning').addClass('list-group-item-warning');
 					})
 				) })
 			})
