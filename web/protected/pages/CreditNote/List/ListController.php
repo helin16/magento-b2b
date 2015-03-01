@@ -29,7 +29,10 @@ class ListController extends CRUDPageAbstract
 	 */
 	protected function _getEndJs()
 	{
+		$applyToOptions = CreditNote::getApplyToTypes();
+		
 		$js = parent::_getEndJs();
+		$js .= "pageJs._applyToOptions=" . json_encode($applyToOptions) . ";";
 		$js .= "pageJs._bindSearchKey()";
 		$js .= ".setCallbackId('deactivateItems', '" . $this->deactivateItemBtn->getUniqueID() . "')";
 		$js .= ".getResults(true, " . $this->pageSize . ");";
@@ -78,44 +81,44 @@ class ListController extends CRUDPageAbstract
 					}
 					case 'cn.applyTo': 
 					{
-						$where[] = 'cn.applyTo = ?';
-						$params[] = $value;
+						$where[] = 'cn.applyTo IN ('.implode(", ", array_fill(0, count($value), "?")).')';
+						$params = array_merge($params, $value);
 						break;
 					}
 					case 'cn.description':
 					{
-						$where[] =  'cn.description = ?';
-						$params[] = $value;
+						$where[] =  'cn.description like ?';
+						$params[] = "%" . $value . "%";
 						break;
 					}
 					case 'ord.orderNo':
 					{
 						$query->eagerLoad("CreditNote.order", 'inner join', 'ord', '');
-						$where[] = 'ord.orderNo = ? or ord.id = ?';
-						$params[] = trim($value);
+						$where[] = 'ord.orderNo = ?';
 						$params[] = trim($value);
 						break;
 					}
 					case 'cust.id':
 					{
-						$query->eagerLoad("CreditNote.customer", 'inner join', 'cust', 'cust.id = cn.customerId');
-						$where[] = 'cust.id = ?';
-						$params[] = $value;
+						$value = explode(',', $value);
+						$where[] = 'cn.customerId IN ('.implode(", ", array_fill(0, count($value), "?")).')';
+						$params = array_merge($params, $value);
 						break;
 					}
 					case 'pro.nameOrSku':
 					{
-						// TODO: ask lin
+// 						$query->eagerLoad("CreditNote.status", 'inner join', 'st', 'st.id = ord.statusId');
+// 						$where[] = 'st.id IN ('.implode(", ", array_fill(0, count($value), "?")).')';
+// 						$params = array_merge($params, $value);
+// 						break;
 					}
             	}
             }
 
             $stats = array();
 
-			Dao::$debug = true;
             $objects = $class::getAllByCriteria(implode(' AND ', $where), $params, false, $pageNo, $pageSize, array('cn.creditNoteNo' => 'desc'), $stats);
-			Dao::$debug = false;
-
+			
             $results['pageStats'] = $stats;
             $results['items'] = array();
             foreach($objects as $obj)
