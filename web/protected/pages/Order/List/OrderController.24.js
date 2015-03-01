@@ -10,7 +10,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 	,_searchCriteria: {} //the searching criteria
 	,_infoTypes:{} //the infotype ids
 	,orderStatuses: [] //the order statuses object
-	,_type: 'ORDER'
+	,_type: 'INVOICE'
 
 	,_loadChosen: function () {
 		jQuery(".chosen").chosen({

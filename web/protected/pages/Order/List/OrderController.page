@@ -100,8 +100,8 @@
 				     	<div id="order-type-list" class="col-xs-8">
 				     		<ul class="nav nav-tabs">
 				     			<li class="type-swither-item" data-type="QUOTE"><a href="javascript: void(0);">QUOTE</a></li>
-				     			<li class="type-swither-item active" data-type="ORDER"><a href="javascript: void(0);">ORDER</a></li>
-				     			<li class="type-swither-item" data-type="INVOICE"><a href="javascript: void(0);">INVOICE</a></li>
+				     			<li class="type-swither-item" data-type="ORDER"><a href="javascript: void(0);">ORDER</a></li>
+				     			<li class="type-swither-item active" data-type="INVOICE"><a href="javascript: void(0);">INVOICE</a></li>
 				     		</ul>
 				     	</div>
 				     	<div class="col-xs-4 text-right">
