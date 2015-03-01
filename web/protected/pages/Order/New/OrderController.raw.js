@@ -308,7 +308,9 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					tmp.result = tmp.me.getResp(param, false, true);
 					if(!tmp.result || !tmp.result.item || !tmp.result.item.id)
 						return;
-					window.location = document.url;
+					tmp.me._order = tmp.result.item;
+					tmp.confirmDiv.update('<h4 class="text-success">This ' + tmp.me._order.type + ' has been CANCELLED successfully.</h4>');
+					tmp.me.disableEverything();
 				} catch (e) {
 					tmp.confirmDiv.insert({'top': new Element('h4', {'class': 'msg'}).update(new Element('span', {'class': 'label label-danger'}).update(e) ) });
 				}
