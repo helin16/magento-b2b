@@ -158,11 +158,11 @@ class DetailsController extends DetailsPageAbstract
 		try
 		{
 			Dao::beginTransaction();
-			$supplier = Supplier::get(trim($param->CallbackParameter->supplier->id));
-			$isSubmit = isset($param->CallbackParameter->isSubmit) && intval($param->CallbackParameter->isSubmit) === 1 ? true : false;
-			$purchaseOrderId = trim($param->CallbackParameter->id);
-			if(!$supplier instanceof Supplier)
+			if(!($supplier = Supplier::get(trim($param->CallbackParameter->supplier->id))) instanceof Supplier)
 				throw new Exception('Invalid Supplier passed in!');
+			if(!($purchaseOrder = PurchaseOrder::get(trim($param->CallbackParameter->id))) instanceof PurchaseOrder)
+				throw new Exception('Invalid Purchase Order passed in!');
+			$isSubmit = isset($param->CallbackParameter->isSubmit) && intval($param->CallbackParameter->isSubmit) === 1 ? true : false;
 			$supplierRefNum = trim($param->CallbackParameter->supplierRefNum);
 			$supplierContactName = trim($param->CallbackParameter->contactName);
 			$supplierContactNo = trim($param->CallbackParameter->contactNo);
@@ -170,7 +170,7 @@ class DetailsController extends DetailsPageAbstract
 			$handlingCost = trim($param->CallbackParameter->handlingCost);
 			$comment = trim($param->CallbackParameter->comments);
 			$status = trim($param->CallbackParameter->status);
-			$purchaseOrder = PurchaseOrder::get($purchaseOrderId);
+
 			$purchaseOrderTotalAmount = trim($param->CallbackParameter->totalAmount);
 			$purchaseOrderTotalPaid = trim($param->CallbackParameter->totalPaid);
 			$purchaseOrder->setTotalAmount($purchaseOrderTotalAmount)
