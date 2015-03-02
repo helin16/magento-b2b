@@ -20,3 +20,6 @@ ManualJournalExport_Xero::run(true);
 //run item list export for xero
 require_once dirname(__FILE__) . '/class/ItemExport_Magento.php';
 ItemExport_Magento::run(true);
+
+require_once dirname(__FILE__) . '/class/PaymentExport_Xero.php';
+PaymentExport_Xero::run(true);

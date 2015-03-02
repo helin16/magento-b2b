@@ -49,18 +49,12 @@ class OrderController extends BPCPageAbstract
 	{
 		$preferences = array();
 		$preferences['ord.status'] = AccessControl::canAccessOrderStatusIds(Core::getRole());
+		if(intval(Core::getRole()->getId()) === Role::ID_WAREHOUSE)
+			$preferences['ord.status'][] = OrderStatus::ID_INSUFFICIENT_STOCK;
 		if(($index = array_search(OrderStatus::ID_CANCELLED, $preferences['ord.status'])) !== false)
 			array_splice($preferences['ord.status'], $index, 1);
 		if(($index = array_search(OrderStatus::ID_SHIPPED, $preferences['ord.status'])) !== false)
 			array_splice($preferences['ord.status'], $index, 1);
-		switch(Core::getRole()->getId())
-		{
-			case Role::ID_ACCOUNTING:
-			{
-				$preferences['ord.passPaymentCheck'] =  array(0);
-				break;
-			}
-		}
 		return $preferences;
 	}
 
@@ -162,15 +156,18 @@ class OrderController extends BPCPageAbstract
 						}
 						break;
 					}
+					case 'extraSearchCriteria':
+					{
+						$where[] = $value;
+						break;
+					}
 				}
 				$noSearch = false;
 			}
 			if($noSearch === true)
 				throw new Exception("Nothing to search!");
 			$stats = array();
-			Dao::$debug = true;
 			$orders = Order::getAllByCriteria(implode(' AND ', $where), $params, true, $pageNo, $pageSize, array('ord.id' => 'desc'), $stats);
-			Dao::$debug = false;
 			$results['pageStats'] = $stats;
 			$results['items'] = array();
 			foreach($orders as $order)

@@ -3,12 +3,23 @@
  */
 var PageJs = new Class.create();
 PageJs.prototype = Object.extend(new BPCPageJs(), {
-	_maxRowsPerPage: 5
+	_maxRowsPerPage: 12
 	,genPage: function(table, pageNo, totalPages, rows) {
 		var tmp = {};
 		tmp.me = this;
 		tmp.table = table.clone(true);
-		tmp.tbody = tmp.table.down('tbody').update('');
+		tmp.thead = tmp.table.down('thead').clone(true);
+		tmp.table.down('thead').remove();
+		tmp.tfoot = tmp.table.down('tfoot').clone(true);
+		tmp.table.down('tfoot').remove();
+		tmp.newPageDiv = new Element('div', {'class': 'print-page-wrap', 'style': 'margin: 10px 0;'})
+			.update(tmp.table)
+			.insert({'bottom': new Element('div', {'class': 'print-page-footer'}).update(tmp.tfoot.down('tr').wrap( new Element('table', {'class': 'orderview'}) ) )});
+		tmp.tbody = tmp.table.down('tbody').update(tmp.thead.down('tr.header').clone(true));
+		tmp.thead.down('tr.header').remove();
+		tmp.newPageDiv.insert({'top': new Element('div', {'class': 'print-page-header'}).update(
+				new Element('table', {'class': 'orderview'}).update(tmp.thead.innerHTML)
+		) });
 		rows.each(function(tr) {
 			tmp.tbody.insert({'bottom': tr});
 		});
@@ -22,12 +33,12 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				tmp.tbody.insert({'bottom': tmp.emptyTr});
 			}
 		}
-		tmp.table.down('tfoot').insert({'bottom': new Element('td', {'colspan': tmp.noColumns})
-			.setStyle('text-align: right')
-			.update('Page: ' + pageNo + ' / ' + totalPages)
-			.wrap(new Element('tr'))
-		});
-		return tmp.table;
+//		tmp.table.down('#tfoot').insert({'bottom': new Element('td', {'colspan': tmp.noColumns})
+//			.setStyle('text-align: right')
+//			.update('Page: ' + pageNo + ' / ' + totalPages)
+//			.wrap(new Element('tr'))
+//		});
+		return tmp.newPageDiv;
 	}
 	,formatForPDF: function() {
 		var tmp = {};
@@ -56,9 +67,6 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.pageNo = 1;
 		tmp.totalPages = tmp.pageTrs.size();
 		tmp.pageTrs.each(function(pageRows) {
-			if( tmp.pageNo > 1) {
-				tmp.wrapper.insert({'bottom': new Element('div', {'class': 'page-break-before:always;'}).update('-------------------------') });
-			}
 			tmp.wrapper.insert({'bottom': tmp.me.genPage(tmp.mainTable, tmp.pageNo++, tmp.totalPages, pageRows)});
 		});
 

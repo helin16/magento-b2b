@@ -19,12 +19,12 @@ class AjaxController extends TService
 //   		if(!($this->getUser()->getUserAccount() instanceof UserAccount))
 //   			die (BPCPageAbstract::show404Page('Invalid request',"No defined access."));
   		
-  		if(!isset($this->Request['method']) || ($method = trim($this->Request['method'])) === '' || !method_exists($this, ($method = '_' .$method)))
-  			die (BPCPageAbstract::show404Page('Invalid request',"No method passed in."));
-  		
   		$results = $errors = array();
 		try
 		{
+  			$method = '_' . ((isset($this->Request['method']) && trim($this->Request['method']) !== '') ? trim($this->Request['method']) : '');
+            if(!method_exists($this, $method))
+                throw new Exception('No such a method: ' . $method . '!');
 			$results = $this->$method($_REQUEST);
 		} 
 		catch (Exception $ex)

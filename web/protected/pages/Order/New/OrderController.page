@@ -1,8 +1,11 @@
 <com:TContent ID="MainContent">
 	<com:Application.controls.fancybox.FancyBox />
+	<com:Application.controls.OrderBtns.OrderBtns />
+	<com:Application.controls.CommentsDiv.CommentsDiv />
 	<com:TCallback ID="searchCustomerBtn" onCallback="searchCustomer" />
 	<com:TCallback ID="searchProductBtn" onCallback="searchProduct" />
 	<com:TCallback ID="saveOrderBtn" onCallback="saveOrder" />
+	<com:TCallback ID="cancelOrderBtn" onCallback="cancelOrder" />
 	<div class="pagewrapper orderdetails">
 		<div id="detailswrapper" class="contentDiv"></div>
 	</div>

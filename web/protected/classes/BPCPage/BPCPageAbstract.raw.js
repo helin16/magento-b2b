@@ -102,7 +102,7 @@ BPCPageJs.prototype = {
 	,getValueFromCurrency: function(currency) {
 		if(!currency)
 			return '';
-		return currency.replace(/\s*/g, '').replace(/\$/g, '').replace(/,/g, '');
+		return (currency + '').replace(/\s*/g, '').replace(/\$/g, '').replace(/,/g, '');
 	}
 	//do key enter
 	,keydown: function (event, enterFunc, nFunc, keyValue) {

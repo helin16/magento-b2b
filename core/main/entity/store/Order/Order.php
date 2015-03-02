@@ -653,7 +653,7 @@ class Order extends InfoEntityAbstract
 	 */
 	public function getJson($extra = array(), $reset = false)
 	{
-		$array = array_merge($extra, array());
+		$array = $extra;
 	    if(!$this->isJsonLoaded($reset))
 	    {
 	    	$array['customer'] = $this->getCustomer()->getJson();
@@ -746,7 +746,7 @@ class Order extends InfoEntityAbstract
 	 * @param Address     $shipAddr
 	 * @param Address     $billAddr
 	 */
-	public static function create(Customer $customer, $type = self::TYPE_ORDER, $orderNo = null, $comments = '', OrderStatus $status = null, $orderDate = null, $isFromB2B = false, Address $shipAddr = null, Address $billAddr = null, $passPaymentCheck = false, $poNo = '')
+	public static function create(Customer $customer, $type = self::TYPE_ORDER, $orderNo = null, $comments = '', OrderStatus $status = null, $orderDate = null, $isFromB2B = false, Address $shipAddr = null, Address $billAddr = null, $passPaymentCheck = false, $poNo = '', Order $cloneFrom = null)
 	{
 		$order = new Order();
 		$order->setOrderNo(trim($orderNo))
@@ -758,9 +758,21 @@ class Order extends InfoEntityAbstract
 			->setShippingAddr($shipAddr instanceof Address ? $shipAddr : $customer->getShippingAddress())
 			->setBillingAddr($billAddr instanceof Address ? $billAddr : $customer->getBillingAddress())
 			->setPassPaymentCheck($passPaymentCheck)
-			->setPONo(trim($poNo))
-			->save()
-			->addComment($comments, Comments::TYPE_NORMAL)
+			->setPONo(trim($poNo));
+		if($cloneFrom instanceof Order) {
+			$counts = intval(OrderInfo::countByCriteria('orderId = ? and typeId = ?', array($cloneFrom->getId(), OrderInfoType::ID_CLONED_FROM_ORDER_NO)));
+			$newOrderNo = $cloneFrom->getOrderNo() . '-' . ($counts + 1);
+			$order->setOrderNo($newOrderNo);
+			$cloneFrom->addComment(($msg = 'A new order has been clone from this order:' . $newOrderNo), Comments::TYPE_SYSTEM)
+				->addLog($msg, Log::TYPE_SYSTEM);
+		}
+		$order->save();
+		if($cloneFrom instanceof Order) {
+			$order->addInfo(OrderInfoType::ID_CLONED_FROM_ORDER_NO, $cloneFrom->getOrderNo(), true)
+				->addComment(($msg = 'Cloned from Order:' . $cloneFrom->getOrderNo()), Comments::TYPE_SYSTEM)
+				->addLog($msg, Comments::TYPE_SYSTEM);
+		}
+		$order->addComment($comments, Comments::TYPE_NORMAL)
 			->addInfo(OrderInfoType::ID_CUS_EMAIL, $customer->getEmail())
 			->addInfo(OrderInfoType::ID_CUS_NAME, $customer->getName())
 			->addLog('Order (OrderNo.=' . $order->getOrderNo() . ') created with status: ' . $order->getStatus()->getName(), Log::TYPE_SYSTEM, 'Auto Log', __CLASS__ . '::' . __FUNCTION__);

@@ -73,9 +73,11 @@ class LatestETAPanel extends TTemplateControl
 			$result['items'] = array();
 			foreach($oiArray as $oi)
 			{
+				if(!$oi->getProduct() instanceof product)
+					continue;
 				$tmp['eta'] = trim($oi->getEta());
 				$tmp['orderNo']	= $oi->getOrder()->getOrderNo();
-				$tmp['sku']	= $oi->getProduct()->getSku();
+				$tmp['sku']	= $oi->getProduct() instanceof Product ? $oi->getProduct()->getSku() : '';
 				$tmp['productName']	= $oi->getProduct()->getName();
 				$tmp['id'] = $oi->getId();
 				$tmp['orderId'] = $oi->getOrder()->getId();

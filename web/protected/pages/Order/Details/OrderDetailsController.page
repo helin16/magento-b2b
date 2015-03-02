@@ -1,18 +1,17 @@
 <com:TContent ID="MainContent">
 	<com:Application.controls.chosen.Chosen />
+	<com:Application.controls.OrderBtns.OrderBtns />
+	<com:Application.controls.CommentsDiv.CommentsDiv />
 	<com:TDatePicker Style="display:none;"/>
 	<com:TCallback ID="updateOrderBtn" OnCallback="updateOrder" />
-	<com:TCallback ID="addCommentsBtn" OnCallback="addComments" />
 	<com:TCallback ID="changeOrderStatusBtn" OnCallback="changeOrderStatus" />
 	<com:TCallback ID="confirmPaymentBtn" OnCallback="confirmPayment" />
 	<com:TCallback ID="updateOIForWHBtn" OnCallback="updateOrderItemForWarehouse" />
 	<com:TCallback ID="updateShippingInfoBtn" OnCallback="updateShippingDetails" />
-	<com:TCallback ID="setOrderTypeBtn" OnCallback="setOrderType" />
 	<com:TCallback ID="clearETABtn" OnCallback="clearETA" />
 	<com:TCallback ID="deletePaymentBtn" OnCallback="deletePayment" />
 	<com:TCallback ID="changeIsOrderedBtn" OnCallback="changeIsOrdered" />
 	<com:TCallback ID="updateAddressBtn" OnCallback="updateAddress" />
-	<com:TCallback ID="sendEmailBtn" OnCallback="sendEmail" />
 	<div class="pagewrapper orderdetails">
 		<div id="detailswrapper" class="contentDiv"></div>
 	</div>

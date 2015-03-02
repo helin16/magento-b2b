@@ -159,15 +159,7 @@ class PurchaseOrder extends BaseEntityAbstract
 	 */
 	public function setStatus($value)
 	{
-		if(trim($this->getId()) !== "") {
-			$oldStatuses = Dao::getResultsNative('select status from purchaseorder where id = ?', array($this->getId()));
-			if(count($oldStatuses) > 0 && (trim($oldStatuses[0]['status'])) === trim($value))//no change of the status
-				$this->status = trim($value);
-			else
-				$this->pushStatus(trim($value));
-		}
-		else
-	    	$this->status = trim($value);
+    	$this->status = trim($value);
 	    return $this;
 	}
 	/**
@@ -427,30 +419,6 @@ class PurchaseOrder extends BaseEntityAbstract
 		}
 	}
 	/**
-	 * pushing the status of the status
-	 *
-	 * @param string $status The new status of the PO
-	 *
-	 * @throws EntityException
-	 * @return PurchaseOrder
-	 */
-	public function pushStatus($status)
-	{
-		if(!$this->_validateStatus($status))
-			throw new EntityException('Invalid status(=' . $status . ').');
-		$oldStatuses = Dao::getResultsNative('select status from purchaseorder where id = ?', array($this->getId()));
-		if(count($oldStatuses) > 0 && ($oldStatus = trim($oldStatuses[0]['status'])) === trim($status))//no change of the status
-			return $this;
-		$this->status = trim($status);
-		if(trim($this->getId()) !== '')
-		{
-			$msg = 'Changed status from "' . $oldStatus . '" to "' . $status . '"';
-			$this->addComment($msg, Comments::TYPE_SYSTEM)
-				->addLog($msg, Log::TYPE_SYSTEM, 'PO_STATUS_CHANGE', __CLASS__ . '::' . __FUNCTION__);
-		}
-		return $this;
-	}
-	/**
 	 * adding a item onto the purchase order
 	 *
 	 * @param Product $product
@@ -466,6 +434,21 @@ class PurchaseOrder extends BaseEntityAbstract
 	{
 		PurchaseOrderItem::create($this, $product, $unitPrice, $qty, $supplierItemCode, $description, $totalPrice);
 		return $this;
+	}
+	/**
+	 * (non-PHPdoc)
+	 * @see BaseEntityAbstract::preSave()
+	 */
+	public function preSave()
+	{
+		if(trim($this->getId()) !== '') {
+			$oldStatuses = Dao::getResultsNative('select status from purchaseorder where id = ?', array($this->getId()));
+			if(count($oldStatuses) > 0 && ($oldStatus = trim($oldStatuses[0]['status'])) !== ($status = trim($this->getStatus()))) {
+				$msg = 'Changed status from "' . $oldStatus . '" to "' . $status . '"';
+				$this->addComment($msg, Comments::TYPE_SYSTEM)
+					->addLog($msg, Log::TYPE_SYSTEM, 'PO_STATUS_CHANGE', __CLASS__ . '::' . __FUNCTION__);
+			}
+		}
 	}
 	/**
 	 * (non-PHPdoc)
@@ -507,9 +490,9 @@ class PurchaseOrder extends BaseEntityAbstract
 	 * (non-PHPdoc)
 	 * @see BaseEntityAbstract::getJson()
 	 */
-	public function getJson($extra = '', $reset = false)
+	public function getJson($extra = array(), $reset = false)
 	{
-		$array = array();
+		$array = $extra;
 		if(!$this->isJsonLoaded($reset))
 		{
 			$array['supplier'] = $this->getSupplier() instanceof Supplier ? $this->getSupplier()->getJson() : array();
