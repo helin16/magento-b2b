@@ -48,9 +48,12 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 	}
 	,_preConfirmSubmit: function(printit) {
 		var tmp = {};
-		tmp.me = this
+		tmp.me = this;
 		if(tmp.me.getValueFromCurrency($$('[order-price-summary="total-payment-due"]').first().innerHTML) === '0.00')
 			return tmp.me._confirmSubmit(printit);
+		tmp.data = tmp.me._collectFormData($(tmp.me._htmlIds.itemDiv),'save-order');
+		if(tmp.data === null)
+			return tmp.me;
 		tmp.newDiv = new Element('div', {'class': 'confirm-div'})
 			.insert({'bottom': new Element('h4').update('You are about to release an order with short payment. Do you wish to continue?')	})
 			.insert({'bottom': new Element('div', {'class': 'text-right'})
@@ -1039,7 +1042,11 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.newDiv = new Element('div', {'class': 'panel-footer'})
 			.insert({'bottom': new Element('div', {'class': 'row'})
 				.insert({'bottom': new Element('div', {'class': 'col-sm-8'})
-						.insert({'bottom': tmp.me._getFormGroup( 'Comments:', new Element('textarea', {'save-order': 'comments', 'rows': '8'}) ) })
+						.insert({'bottom': tmp.me._order && tmp.me._order.id ?
+								new Element('div', {'class': 'comments-div-wrapper'})
+									.store('CommentsDivJs', new CommentsDivJs(tmp.me, 'Order', tmp.me._order.id))
+								:
+								tmp.me._getFormGroup( 'Comments:', new Element('textarea', {'save-order': 'comments', 'rows': '8'}) ) })
 					})
 				.insert({'bottom': new Element('div', {'class': 'col-sm-4'})
 					.insert({'bottom': new Element('div', {'class': 'row'})
@@ -1137,7 +1144,9 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			tmp.resultDiv.down('.customer-info-div').replace(tmp.me._getCustomerInfoPanel(customer))
 		} else { //new
 			tmp.resultListDiv = tmp.me._getViewOfOrder();
-			tmp.resultDiv.update(tmp.resultListDiv);
+			tmp.commentsDiv = tmp.resultDiv.update(tmp.resultListDiv).down('.comments-div-wrapper');
+			if(tmp.commentsDiv)
+				tmp.commentsDiv.retrieve('CommentsDivJs')._setDisplayDivId(tmp.commentsDiv).render();
 		}
 		tmp.resultListDiv.down('.new-order-item-input [new-order-item="product"]').focus();
 		return tmp.me;

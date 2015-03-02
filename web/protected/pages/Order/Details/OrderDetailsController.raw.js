@@ -274,158 +274,6 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		return this;
 	}
 	/**
-	 * Getting the comments row
-	 */
-	,_getCommentsRow: function(comments) {
-		var tmp = {};
-		tmp.me = this;
-		return new Element('tr', {'class': 'comments_row'})
-			.store('data', comments)
-			.insert({'bottom': new Element('td', {'class': 'created', 'width': '15%'}).update(new Element('small').update(!comments.id ? comments.created : tmp.me.loadUTCTime(comments.created).toLocaleString() ) ) })
-			.insert({'bottom': new Element('td', {'class': 'creator', 'width': '15%'}).update(new Element('small').update(comments.createdBy.person.fullname) ) })
-			.insert({'bottom': new Element('td', {'class': 'type', 'width': '10%'}).update(new Element('small').update(comments.type) ) })
-			.insert({'bottom': new Element('td', {'class': 'comments', 'width': 'auto'}).update(comments.comments) })
-			;
-	}
-	/**
-	 * Ajax: getting the comments into the comments div
-	 */
-	,_getComments: function (reset, btn) {
-		var tmp = {};
-		tmp.me = this;
-		tmp.reset = (reset || false);
-		if(tmp.reset === true) {
-			$(tmp.me._commentsDiv.resultDivId).update('');
-		}
-		tmp.ajax = new Ajax.Request('/ajax/getComments', {
-			method:'get'
-			,parameters: {'entity': 'Order', 'entityId': tmp.me._order.id, 'orderBy': {'created':'desc'}, 'pageNo': tmp.me._commentsDiv.pagination.pageNo, 'pageSize': tmp.me._commentsDiv.pagination.pageSize}
-			,onLoading: function() {
-				if(btn) {
-					jQuery('#' + btn.id).button('loading');
-				}
-			}
-			,onSuccess: function(transport) {
-				try {
-					if(tmp.reset === true) {
-						$(tmp.me._commentsDiv.resultDivId).update(tmp.me._getCommentsRow({'type': 'Type', 'createdBy': {'person': {'fullname': 'WHO'}}, 'created': 'WHEN', 'comments': 'COMMENTS'}).addClassName('header').wrap( new Element('thead') ) );
-					}
-					tmp.result = tmp.me.getResp(transport.responseText, false, true);
-					if(!tmp.result || !tmp.result.items)
-						return;
-					//remove the pagination btn
-					if($$('.new-page-btn-div').size() > 0) {
-						$$('.new-page-btn-div').each(function(item){
-							item.remove();
-						})
-					}
-					//add each item
-					tmp.tbody = $(tmp.me._commentsDiv.resultDivId).down('tbody');
-					if(!tmp.tbody) {
-						$(tmp.me._commentsDiv.resultDivId).insert({'bottom': tmp.tbody = new Element('tbody') })
-					}
-					//add new data
-					tmp.result.items.each(function(item) {
-						tmp.tbody.insert({'bottom': tmp.me._getCommentsRow(item) });
-					})
-					//who new pagination btn
-					if(tmp.result.pageStats.pageNumber < tmp.result.pageStats.totalPages) {
-						tmp.tbody.insert({'bottom': new Element('tr', {'class': 'new-page-btn-div'})
-							.insert({'bottom': new Element('td', {'colspan': 4})
-								.insert({'bottom': new Element('span', {'id': 'comments_get_more_btn', 'class': 'btn btn-primary', 'data-loading-text': 'Getting More ...'})
-									.update('Get More Comments')
-									.observe('click', function(){
-										tmp.me._commentsDiv.pagination.pageNo = tmp.me._commentsDiv.pagination.pageNo * 1 + 1;
-										tmp.me._getComments(false, this);
-									})
-								})
-							})
-						})
-					}
-				} catch (e) {
-					$(tmp.me._commentsDiv.resultDivId).insert({'bottom': tmp.me.getAlertBox('ERROR: ', e).addClassName('alert-danger') });
-				}
-			}
-			,onComplete: function() {
-				if(btn) {
-					jQuery('#' + btn.id).button('reset');
-				}
-			}
-		});
-		return this;
-	}
-	/**
-	 * Ajax: adding a comments to this order
-	 */
-	,_addComments: function(btn) {
-		var tmp = {};
-		tmp.me = this;
-		tmp.commentsBox = $(btn).up('.new_comments_wrapper').down('[new_comments=comments]');
-		tmp.comments = $F(tmp.commentsBox);
-		if(tmp.comments.blank())
-			return this;
-		tmp.me.postAjax(tmp.me.getCallbackId('addComments'), {'comments': tmp.comments, 'order': tmp.me._order}, {
-			'onLoading': function(sender, param) {
-				jQuery('#' + btn.id).button('loading');
-			}
-			,'onSuccess': function (sender, param) {
-				try {
-					tmp.result = tmp.me.getResp(param, false, true);
-					if(!tmp.result) {
-						return;
-					}
-					tmp.tbody = $(tmp.me._commentsDiv.resultDivId).down('tbody');
-					if(!tmp.tbody)
-						$(tmp.me._commentsDiv.resultDivId).insert({'bottom': tmp.tbody = new Element('tbody') });
-					tmp.tbody.insert({'top': tmp.me._getCommentsRow(tmp.result)})
-					tmp.commentsBox.setValue('');
-				} catch (e) {
-					alert(e);
-				}
-			}
-			,'onComplete': function () {
-				jQuery('#' + btn.id).button('reset');
-			}
-		})
-		return this;
-	}
-	/**
-	 * Getting a empty comments div
-	 */
-	,_getEmptyCommentsDiv: function() {
-		var tmp = {};
-		tmp.me = this;
-		return new Element('div', {'class': 'panel panel-default'})
-			.insert({'bottom': new Element('div', {'class': 'panel-heading'} ).update('Comments') })
-			.insert({'bottom': new Element('div', {'class': 'table-responsive'})
-				.insert({'bottom': new Element('table', {'id': tmp.me._commentsDiv.resultDivId, 'class': 'table table-hover table-condensed'}) })
-			})
-			.insert({'bottom': new Element('div', {'class': 'panel-body new_comments_wrapper'})
-				.insert({'bottom': new Element('div', {'class': 'row'})
-					.insert({'bottom': new Element('div', {'class': 'col-xs-2'}).update('<strong>New Comments:</strong>') })
-					.insert({'bottom': new Element('div', {'class': 'col-xs-10'})
-						.insert({'bottom': new Element('div', {'class': 'input-group'})
-							.insert({'bottom': new Element('input', {'class': 'form-control', 'type': 'text', 'new_comments': 'comments', 'placeholder': 'add more comments to this order'})
-								.observe('keydown', function(event) {
-									tmp.me.keydown(event, function() {
-										$(event.currentTarget).up('.new_comments_wrapper').down('[new_comments=btn]').click();
-									});
-								})
-							})
-							.insert({'bottom': new Element('span', {'class': 'input-group-btn'})
-								.insert({'bottom': new Element('span', {'id': 'add_new_comments_btn', 'new_comments': 'btn', 'class': 'btn btn-primary', 'data-loading-text': 'saving...'})
-									.update('add')
-									.observe('click', function() {
-										tmp.me._addComments(this);
-									})
-								})
-							})
-						})
-					})
-				})
-			});
-	}
-	/**
 	 * Ajax: clearing the ETA
 	 */
 	,_clearETA: function(btn, item) {
@@ -1312,21 +1160,22 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.me._resultDivId = resultdiv;
 		$(tmp.me._resultDivId).update(
 			new Element('div')
-			.insert({'bottom': new Element('div', {'class': 'row'})
-				.insert({'bottom': new Element('div', {'class': 'col-sm-8'})
-					.insert({'bottom': tmp.me._getAddressPanel() }) 	//getting the address row
+				.insert({'bottom': new Element('div', {'class': 'row'})
+					.insert({'bottom': new Element('div', {'class': 'col-sm-8'})
+						.insert({'bottom': tmp.me._getAddressPanel() }) 	//getting the address row
+					})
+					.insert({'bottom': new Element('div', {'class': 'col-sm-4'})
+						.insert({'bottom': tmp.me._getInfoPanel() })    	//getting the order info row
+					})
 				})
-				.insert({'bottom': new Element('div', {'class': 'col-sm-4'})
-					.insert({'bottom': tmp.me._getInfoPanel() })    	//getting the order info row
+				.insert({'bottom': tmp.me._getPartsTable() })   	//getting the parts row
+				.insert({'bottom': new Element('div', {'class': 'row'})
+					.insert({'bottom': new Element('div', {'class': 'col-md-8'}).update( tmp.me._getShippmentRow() ) })   //getting the EDITABLE shippment row
+					.insert({'bottom': new Element('div', {'class': 'col-md-4'}).update( tmp.me._getPaymentRow() ) })   //getting the payment row
 				})
-			})
-			.insert({'bottom': tmp.me._getPartsTable() })   	//getting the parts row
-			.insert({'bottom': new Element('div', {'class': 'row'})
-				.insert({'bottom': new Element('div', {'class': 'col-md-8'}).update( tmp.me._getShippmentRow() ) })   //getting the EDITABLE shippment row
-				.insert({'bottom': new Element('div', {'class': 'col-md-4'}).update( tmp.me._getPaymentRow() ) })   //getting the payment row
-			})
-			.insert({'bottom': tmp.me._getEmptyCommentsDiv() }) //getting the comments row
+				.insert({'bottom': new Element('div', {'class': 'comments-list-div'}) }) //getting the comments row
 		);
+		$(tmp.me._resultDivId).store('CommentsDivJs', new CommentsDivJs(tmp.me, 'Order', tmp.me._order.id)._setDisplayDivId($(tmp.me._resultDivId).down('.comments-list-div')).render() );
 		return this;
 	}
 	/**
@@ -1335,8 +1184,6 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 	,load: function() {
 		var tmp = {};
 		tmp.me = this;
-		//load the comments after
-		tmp.me._getComments(true);
 		$$('.datepicker').each(function(item) {
 			new Prado.WebUI.TDatePicker({'ID': item.id, 'InputMode':"TextBox",'Format':"yyyy-MM-dd 17:00:00",'FirstDayOfWeek':1,'CalendarStyle':"default",'FromYear':2009,'UpToYear':2024,'PositionMode':"Bottom", "ClassName": 'datepicker-layer-fixer'});
 		});

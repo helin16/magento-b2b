@@ -35,12 +35,12 @@ class OrderController extends BPCPageAbstract
 			$order = new Order();
 		else if(!($order = Order::get($this->Request['id'])) instanceof Order)
 			die('Invalid Order!');
-		
+
 		if($order instanceof Order && trim($order->getType()) === Order::TYPE_INVOICE) {
 			header('Location: /orderdetails/'. $order->getId() . '.html?' . $_SERVER['QUERY_STRING']);
 			die();
 		}
-		
+
 		$cloneOrder = null;
 		if(isset($_REQUEST['cloneorderid']) && !($cloneOrder = Order::get(trim($_REQUEST['cloneorderid']))) instanceof Order)
 			die('Invalid Order to clone from');
@@ -187,7 +187,7 @@ class OrderController extends BPCPageAbstract
 					throw new Exception('Invalid Order to clone from!');
 			}
 			$shipped = ((isset($param->CallbackParameter->shipped) && (intval($param->CallbackParameter->shipped)) === 1));
-			
+
 			$poNo = (isset($param->CallbackParameter->poNo) && (trim($param->CallbackParameter->poNo) !== '') ? trim($param->CallbackParameter->poNo) : '');
 			if(isset($param->CallbackParameter->shippingAddr)) {
 				$shippAddress = ($order instanceof Order ? $order->getShippingAddr() : null);
@@ -231,7 +231,7 @@ class OrderController extends BPCPageAbstract
 				$paymentMethod = '';
 				$totalPaidAmount = 0;
 			}
-			
+
 			if(isset($param->CallbackParameter->courierId))
 			{
 				$totalShippingCost = 0;
@@ -260,7 +260,7 @@ class OrderController extends BPCPageAbstract
 				$totalShippingCost = 0;
 			}
 			$totalPaymentDue += $totalShippingCost;
-			$comments = trim($param->CallbackParameter->comments);
+			$comments = (isset($param->CallbackParameter->comments) ? trim($param->CallbackParameter->comments) : '');
 			$order = $order->addComment($comments, Comments::TYPE_SALES)
 				->setTotalPaid($totalPaidAmount);
 

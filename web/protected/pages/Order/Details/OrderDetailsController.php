@@ -26,7 +26,7 @@ class OrderDetailsController extends BPCPageAbstract
 			header('Location: /order/'. $order->getId() . '.html?' . $_SERVER['QUERY_STRING']);
 			die();
 		}
-		
+
 		$js = parent::_getEndJs();
 		$orderItems = $courierArray = $paymentMethodArray = array();
 		foreach($order->getOrderItems() as $orderItem)
@@ -54,7 +54,6 @@ class OrderDetailsController extends BPCPageAbstract
 		$payments = array_map(create_function('$a', 'return $a->getJson();'), $order->getPayments());
 		$js .= 'pageJs';
 			$js .= '.setCallbackId("updateOrder", "' . $this->updateOrderBtn->getUniqueID() . '")';
-			$js .= '.setCallbackId("addComments", "' . $this->addCommentsBtn->getUniqueID() . '")';
 			$js .= '.setCallbackId("confirmPayment", "' . $this->confirmPaymentBtn->getUniqueID() . '")';
 			$js .= '.setCallbackId("changeOrderStatus", "' . $this->changeOrderStatusBtn->getUniqueID() . '")';
 			$js .= '.setCallbackId("updateOIForWH", "' . $this->updateOIForWHBtn->getUniqueID() . '")';
@@ -227,32 +226,6 @@ class OrderDetailsController extends BPCPageAbstract
 		$html .= '<tr><td style="background:#EAEAEA; text-align:center;" align="center" bgcolor="#EAEAEA"><center><p style="font-size:12px; margin:0;">Thank you again, <strong></strong></p></center></td></tr>';
 		$html .= '</tbody></table></td></tr></table>';
 		return $html;
-	}
-	/**
-	 *
-	 * @param unknown $sender
-	 * @param unknown $params
-	 */
-	public function addComments($sender, $params)
-	{
-		$results = $errors = array();
-		try
-		{
-			Dao::beginTransaction();
-			if(!isset($params->CallbackParameter->order) || !($order = Order::getByOrderNo($params->CallbackParameter->order->orderNo)) instanceof Order)
-				throw new Exception('System Error: invalid order passed in!');
-			if(!isset($params->CallbackParameter->comments) || ($comments = trim($params->CallbackParameter->comments)) === '')
-				throw new Exception('System Error: invalid comments passed in!');
-			$comment = Comments::addComments($order, $comments, Comments::TYPE_NORMAL);
-			$results = $comment->getJson();
-			Dao::commitTransaction();
-		}
-		catch(Exception $ex)
-		{
-			Dao::rollbackTransaction();
-			$errors[] = $ex->getMessage();
-		}
-		$params->ResponseData = StringUtilsAbstract::getJson($results, $errors);
 	}
 	/**
 	 *
@@ -558,18 +531,18 @@ class OrderDetailsController extends BPCPageAbstract
 				throw new Exception('System Error: invalid order provided!');
 			if(!isset($param->CallbackParameter->id))
 				throw new Exception('System Error: invalid address provided!');
-			
+
 			if(!isset($param->CallbackParameter->type) || ($type = trim($param->CallbackParameter->type)) === '')
 				throw new Exception('System Error: invalid address type provided!');
 			$getter = 'get' . ucfirst($type) . 'Addr';
 			$address = $order->$getter();
 			$originalAddressFull = $address instanceof Address ? $address->getFull() : '';
-			$address = Address::create(trim($param->CallbackParameter->street), 
-				trim($param->CallbackParameter->city), 
-				trim($param->CallbackParameter->region), 
-				trim($param->CallbackParameter->country), 
-				trim($param->CallbackParameter->postCode), 
-				trim($param->CallbackParameter->contactName), 
+			$address = Address::create(trim($param->CallbackParameter->street),
+				trim($param->CallbackParameter->city),
+				trim($param->CallbackParameter->region),
+				trim($param->CallbackParameter->country),
+				trim($param->CallbackParameter->postCode),
+				trim($param->CallbackParameter->contactName),
 				trim($param->CallbackParameter->contactNo)
 				,$address
 			);
