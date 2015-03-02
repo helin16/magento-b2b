@@ -5,7 +5,7 @@ var PageJs = new Class.create();
 
 PageJs.prototype = Object.extend(new CRUDPageJs(), {
 	_getTitleRowData: function() {
-		return {'totalAmount': 'Total Amount', 'totalPaid': 'Total Paid', 'purchaseOrderNo': 'PO Number', 'supplier': {'name': 'Supplier'}, 'status': 'Status', 'supplierRefNo': 'PO Ref.', 'orderDate': 'Order Date', 'active': 'Active'};
+		return {'totalAmount': 'PO Amount Inc. GST', 'totalReceivedValue': 'Bill Amount Inc. GST', 'totalPaid': 'Total Paid', 'purchaseOrderNo': 'PO Number', 'supplier': {'name': 'Supplier'}, 'status': 'Status', 'supplierRefNo': 'PO Ref.', 'orderDate': 'Order Date', 'active': 'Active'};
 
 	}
 	,_loadChosen: function () {
@@ -136,14 +136,17 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		tmp.tag = (tmp.isTitle === true ? 'th' : 'td');
 		tmp.isTitle = (isTitle || false);
 		tmp.row = new Element('tr', {'class': (tmp.isTitle === true ? 'item_top_row' : 'btn-hide-row item_row po_item') + (row.active == 0 ? ' danger' : ''), 'item_id': (tmp.isTitle === true ? '' : row.id)}).store('data', row)
-			.insert({'bottom': new Element(tmp.tag, {'class': 'purchaseOrderNo col-xs-1'}).update(row.purchaseOrderNo)})
-				.observe('dblclick', function(){
-					if(!isTitle)
+			.observe('dblclick', function(){
+				if(!tmp.isTitle)
+					tmp.me._openEditPage(row);
+			})
+			.insert({'bottom': new Element(tmp.tag, {'class': 'purchaseOrderNo col-xs-1'}).update( tmp.isTitle ? row.purchaseOrderNo :
+				new Element('a', {'href': 'javascript: void(0)'})
+					.update(row.purchaseOrderNo)
+					.observe('click', function() {
 						tmp.me._openEditPage(row);
-				})
-				.observe('click', function(){
-					//tmp.me._highlightSelectedRow(this.down('.btn'));
-				})
+					})
+			) })
 			.insert({'bottom': new Element(tmp.tag, {'class': ' col-xs-1'}).update(tmp.me.loadUTCTime(row.orderDate).toLocaleString())})
 			.insert({'bottom': new Element(tmp.tag, {'class': ' col-xs-1'}).update(row.supplier.name ? row.supplier.name : '')})
 			.insert({'bottom': new Element(tmp.tag, {'class': ' col-xs-1'}).update(row.supplierRefNo ? row.supplierRefNo : '')})
@@ -155,7 +158,8 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 
 			) })
 			.insert({'bottom': new Element(tmp.tag, {'class': ' col-xs-1'}).update(!tmp.isTitle ? row.eta ? tmp.me.loadUTCTime(row.eta).toDateString() : '' : 'ETA')})
-			.insert({'bottom': new Element(tmp.tag, {'class': ' col-xs-1'}).update(!tmp.isTitle ? tmp.me.getCurrency(row.totalAmount) : 'Total Amount')})
+			.insert({'bottom': new Element(tmp.tag, {'class': ' col-xs-1'}).update(!tmp.isTitle ? tmp.me.getCurrency(row.totalAmount) : row.totalAmount)})
+			.insert({'bottom': new Element(tmp.tag, {'class': ' col-xs-1'}).update(!tmp.isTitle ? tmp.me.getCurrency(row.totalReceivedValue * 1.1) : row.totalReceivedValue)})
 			.insert({'bottom': new Element(tmp.tag, {'class': ' col-xs-1'}).update(!tmp.isTitle ? row.totalPaid ? tmp.me.getCurrency(row.totalPaid) : '' : 'Total Paid')})
 			.insert({'bottom': new Element(tmp.tag, {'class': ' col-xs-1', 'order_status': row.status}).update(row.status)})
 			.insert({'bottom': tmp.btns = new Element(tmp.tag, {'class': 'col-xs-1 text-right'}) 	});

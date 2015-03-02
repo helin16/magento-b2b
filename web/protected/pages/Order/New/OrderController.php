@@ -20,8 +20,6 @@ class OrderController extends BPCPageAbstract
 	public function onLoad($param)
 	{
 		parent::onLoad($param);
-		if(!AccessControl::canAccessCreateOrderPage(Core::getRole()))
-			die('You do NOT have access to this page');
 	}
 	/**
 	 * Getting The end javascript
@@ -31,27 +29,53 @@ class OrderController extends BPCPageAbstract
 	protected function _getEndJs()
 	{
 		$js = parent::_getEndJs();
+		if(!isset($this->Request['id']))
+			die('System ERR: no param passed in!');
+		if(trim($this->Request['id']) === 'new')
+			$order = new Order();
+		else if(!($order = Order::get($this->Request['id'])) instanceof Order)
+			die('Invalid Order!');
+
+		if($order instanceof Order && trim($order->getType()) === Order::TYPE_INVOICE) {
+			header('Location: /orderdetails/'. $order->getId() . '.html?' . $_SERVER['QUERY_STRING']);
+			die();
+		}
+
 		$cloneOrder = null;
 		if(isset($_REQUEST['cloneorderid']) && !($cloneOrder = Order::get(trim($_REQUEST['cloneorderid']))) instanceof Order)
 			die('Invalid Order to clone from');
 
-		$paymentMethods =  array_map(create_function('$a', 'return $a->getJson();'), PaymentMethod::getAll());
-		$shippingMethods =  array_map(create_function('$a', 'return $a->getJson();'), Courier::getAll());
+		$paymentMethods =  array_map(create_function('$a', 'return $a->getJson();'), PaymentMethod::getAll(true, null, DaoQuery::DEFAUTL_PAGE_SIZE, array('name' => 'asc')));
+		$shippingMethods =  array_map(create_function('$a', 'return $a->getJson();'), Courier::getAll(true, null, DaoQuery::DEFAUTL_PAGE_SIZE, array('name' => 'asc')));
 		$customer = (isset($_REQUEST['customerid']) && ($customer = Customer::get(trim($_REQUEST['customerid']))) instanceof Customer) ? $customer->getJson() : null;
 		$js .= "pageJs";
 			$js .= ".setHTMLIDs('detailswrapper')";
 			$js .= ".setCallbackId('searchCustomer', '" . $this->searchCustomerBtn->getUniqueID() . "')";
 			$js .= ".setCallbackId('searchProduct', '" . $this->searchProductBtn->getUniqueID() . "')";
 			$js .= ".setCallbackId('saveOrder', '" . $this->saveOrderBtn->getUniqueID() . "')";
+			$js .= ".setCallbackId('cancelOrder', '" . $this->cancelOrderBtn->getUniqueID() . "')";
 			$js .= ".setPaymentMethods(" . json_encode($paymentMethods) . ")";
 			$js .= ".setShippingMethods(" . json_encode($shippingMethods) . ")";
-			$js .= ".setOrderTypes(" . json_encode(array_filter(Order::getAllTypes(), create_function('$a', 'return $a !== "INVOICE";'))) . ")";
-		if($cloneOrder instanceof Order) {
-			$orderArray = $cloneOrder->getJson();
-			$orderArray['items'] = array_map(create_function('$a', 'return $a->getJson();'), OrderItem::getAllByCriteria('orderId = ?', array($cloneOrder->getId())));
-			$js .= ".setOriginalOrder(" . json_encode($orderArray) . ")";
+			$js .= ".setOrderTypes(" . json_encode(Order::getAllTypes()) . ")";
+		if($order instanceof Order && trim($order->getId()) !== '') {
+			$orderArray = $order->getJson();
+			$orderArray['items'] = array_map(create_function('$a', 'return $a->getJson();'), OrderItem::getAllByCriteria('orderId = ?', array($order->getId())));
+			$js .= ".setOrder(" . json_encode($orderArray) . ")";
 		}
-			$js .= ".init(" . json_encode($customer) . ");";
+		if($cloneOrder instanceof Order) {
+			$clonOrderArray = $cloneOrder->getJson();
+			$clonOrderArray['items'] = array_map(create_function('$a', 'return $a->getJson();'), OrderItem::getAllByCriteria('orderId = ?', array($cloneOrder->getId())));
+			$js .= ".setOriginalOrder(" . json_encode($clonOrderArray) . ")";
+		}
+		$js .= ".init(" . json_encode($customer) . ")";
+		if(!AccessControl::canAccessCreateOrderPage(Core::getRole())) {
+			$js .= ".disableEverything()";
+			$js .= ".showModalBox('<h4>Error</h4>', '<h4>You DO NOT Have Access To This " . ($order instanceof Order ? $order->getType() : 'Page')  . "</h4>')";
+		} else if($order instanceof Order && trim($order->getId()) !== '' && intval($order->getStatus()->getId()) === OrderStatus::ID_CANCELLED ) {
+			$js .= ".disableEverything()";
+			$js .= ".showModalBox('<h4>Error</h4>', '<h4>This " . $order->getType()  . " has been " . $order->getStatus()->getName() . "!</h4><h4>No one can edit it anymore</h4>')";
+		}
+		$js .= ";";
 		return $js;
 	}
 	/**
@@ -72,7 +96,7 @@ class OrderController extends BPCPageAbstract
 			$pageNo = isset($param->CallbackParameter->pageNo) ? trim($param->CallbackParameter->pageNo) : 1;
 			$searchTxt = isset($param->CallbackParameter->searchTxt) ? trim($param->CallbackParameter->searchTxt) : '';
 			$stats = array();
-			foreach(Customer::getAllByCriteria('name like :searchTxt or email like :searchTxt', array('searchTxt' => '%' . $searchTxt . '%'), true, $pageNo, DaoQuery::DEFAUTL_PAGE_SIZE, array('cust.name' => 'asc'), $stats) as $customer)
+			foreach(Customer::getAllByCriteria('name like :searchTxt', array('searchTxt' => $searchTxt . '%'), true, $pageNo, DaoQuery::DEFAUTL_PAGE_SIZE, array('cust.name' => 'asc'), $stats) as $customer)
 			{
 				$items[] = $customer->getJson();
 			}
@@ -152,13 +176,21 @@ class OrderController extends BPCPageAbstract
 				throw new Exception('Invalid Customer passed in!');
 			if(!isset($param->CallbackParameter->type) || ($type = trim($param->CallbackParameter->type)) === '' || !in_array($type, Order::getAllTypes()))
 				throw new Exception('Invalid type passed in!');
-			$poNo = '';
-			if(isset($param->CallbackParameter->poNo) && (trim($param->CallbackParameter->poNo) !== '') )
-				$poNo = trim($param->CallbackParameter->poNo);
-			$shipped = false;
-			if(isset($param->CallbackParameter->shipped) && (intval($param->CallbackParameter->shipped)) === 1)
-				$shipped = true;
-			if(isset($param->CallbackParameter->shippingAddr))
+			$order = null;
+			if(isset($param->CallbackParameter->orderId) && ($orderId = trim($param->CallbackParameter->orderId)) !== '') {
+				if(!($order = Order::get($orderId)) instanceof Order)
+					throw new Exception('Invalid Order to edit!');
+			}
+			$orderCloneFrom = null;
+			if(isset($param->CallbackParameter->orderCloneFromId) && ($orderCloneFromId = trim($param->CallbackParameter->orderCloneFromId)) !== '') {
+				if(!($orderCloneFrom = Order::get($orderCloneFromId)) instanceof Order)
+					throw new Exception('Invalid Order to clone from!');
+			}
+			$shipped = ((isset($param->CallbackParameter->shipped) && (intval($param->CallbackParameter->shipped)) === 1));
+
+			$poNo = (isset($param->CallbackParameter->poNo) && (trim($param->CallbackParameter->poNo) !== '') ? trim($param->CallbackParameter->poNo) : '');
+			if(isset($param->CallbackParameter->shippingAddr)) {
+				$shippAddress = ($order instanceof Order ? $order->getShippingAddr() : null);
 				$shippAddress = Address::create(
 					$param->CallbackParameter->shippingAddr->street,
 					$param->CallbackParameter->shippingAddr->city,
@@ -166,42 +198,59 @@ class OrderController extends BPCPageAbstract
 					$param->CallbackParameter->shippingAddr->country,
 					$param->CallbackParameter->shippingAddr->postCode,
 					$param->CallbackParameter->shippingAddr->contactName,
-					$param->CallbackParameter->shippingAddr->contactNo
+					$param->CallbackParameter->shippingAddr->contactNo,
+					$shippAddress
 				);
+			}
 			else
 				$shippAddress = $customer->getShippingAddress();
 			$printItAfterSave = false;
 			if(isset($param->CallbackParameter->printIt))
 				$printItAfterSave = (intval($param->CallbackParameter->printIt) === 1 ? true : false);
-
-			$order = Order::create($customer, $type, null, '', OrderStatus::get(OrderStatus::ID_NEW), new UDate(), false, $shippAddress, $customer->getBillingAddress(), false, $poNo);
+			if(!$order instanceof Order)
+				$order = Order::create($customer, $type, null, '', OrderStatus::get(OrderStatus::ID_NEW), new UDate(), false, $shippAddress, $customer->getBillingAddress(), false, $poNo, $orderCloneFrom);
+			else {
+				$order->setType($type)
+					->setPONo($poNo)
+					->save();
+			}
 			$totalPaymentDue = 0;
 			if (trim($param->CallbackParameter->paymentMethodId))
 			{
 				$paymentMethod = PaymentMethod::get(trim($param->CallbackParameter->paymentMethodId));
 				if(!$paymentMethod instanceof PaymentMethod)
 					throw new Exception('Invalid PaymentMethod passed in!');
-				$order->addInfo(OrderInfoType::ID_MAGE_ORDER_PAYMENT_METHOD, $paymentMethod->getName());
+				$order->addInfo(OrderInfoType::ID_MAGE_ORDER_PAYMENT_METHOD, $paymentMethod->getName(), true);
 				$totalPaidAmount = trim($param->CallbackParameter->totalPaidAmount);
-				if($shipped === true) {
-					$order->setPassPaymentCheck(true)
-						->addPayment($paymentMethod, $totalPaidAmount);
-				}
+						$order->addPayment($paymentMethod, $totalPaidAmount);
+				if($shipped === true)
+					$order->setType(Order::TYPE_INVOICE);
 			}
 			else
 			{
 				$paymentMethod = '';
 				$totalPaidAmount = 0;
 			}
-			if(trim($param->CallbackParameter->courierId))
+
+			if(isset($param->CallbackParameter->courierId))
 			{
-				$courier = Courier::get(trim($param->CallbackParameter->courierId));
-				if(!$courier instanceof Courier)
-					throw new Exception('Invalid Courier passed in!');
-				$order->addInfo(OrderInfoType::ID_MAGE_ORDER_SHIPPING_METHOD, $courier->getName());
-				$totalShippingCost = StringUtilsAbstract::getValueFromCurrency(trim($param->CallbackParameter->totalShippingCost));
-				$order->addInfo(OrderInfoType::ID_SHIPPING_EST_COST, StringUtilsAbstract::getCurrency($totalShippingCost));
+				$totalShippingCost = 0;
+				$courier = null;
+				if(is_numeric($courierId = trim($param->CallbackParameter->courierId))) {
+					$courier = Courier::get($courierId);
+					if(!$courier instanceof Courier)
+						throw new Exception('Invalid Courier passed in!');
+					$order->addInfo(OrderInfoType::ID_MAGE_ORDER_SHIPPING_METHOD, $courier->getName(), true);
+				} else {
+					$order->addInfo(OrderInfoType::ID_MAGE_ORDER_SHIPPING_METHOD, $courierId, true);
+				}
+				if(isset($param->CallbackParameter->totalShippingCost)) {
+					$totalShippingCost = StringUtilsAbstract::getValueFromCurrency(trim($param->CallbackParameter->totalShippingCost));
+					$order->addInfo(OrderInfoType::ID_MAGE_ORDER_SHIPPING_COST, StringUtilsAbstract::getCurrency($totalShippingCost), true);
+				}
 				if($shipped === true) {
+					if(!$courier instanceof Courier)
+						$courier = Courier::get(Courier::ID_LOCAL_PICKUP);
 					Shippment::create($shippAddress, $courier, '', new UDate(), $order, '');
 				}
 			}
@@ -211,7 +260,7 @@ class OrderController extends BPCPageAbstract
 				$totalShippingCost = 0;
 			}
 			$totalPaymentDue += $totalShippingCost;
-			$comments = trim($param->CallbackParameter->comments);
+			$comments = (isset($param->CallbackParameter->comments) ? trim($param->CallbackParameter->comments) : '');
 			$order = $order->addComment($comments, Comments::TYPE_SALES)
 				->setTotalPaid($totalPaidAmount);
 
@@ -225,8 +274,20 @@ class OrderController extends BPCPageAbstract
 				$totalPrice = trim($item->totalPrice);
 				$itemDescription = trim($item->itemDescription);
 
-				$totalPaymentDue += $totalPrice;
-				$orderItem = OrderItem::create($order, $product, $unitPrice, $qtyOrdered, $totalPrice, 0, null, $itemDescription);
+				if(intval($item->active) === 1)
+					$totalPaymentDue += $totalPrice;
+				if(!($orderItem = OrderItem::get($item->id)) instanceof OrderItem)
+					$orderItem = OrderItem::create($order, $product, $unitPrice, $qtyOrdered, $totalPrice, 0, null, $itemDescription);
+				else {
+					$orderItem->setActive(intval($item->active))
+						->setProduct($product)
+						->setUnitPrice($unitPrice)
+						->setQtyOrdered($qtyOrdered)
+						->setTotalPrice($totalPrice)
+						->setItemDescription($itemDescription)
+						->save();
+					SellingItem::deleteByCriteria('orderItemId = ?', array($orderItem->getId())); //DELETING ALL SERIAL NUMBER BEFORE ADDING
+				}
 				if(isset($item->serials)){
 					foreach($item->serials as $serialNo)
 						$orderItem->addSellingItem($serialNo);
@@ -245,6 +306,45 @@ class OrderController extends BPCPageAbstract
 			$results['item'] = $order->getJson();
 			if($printItAfterSave === true)
 				$results['printURL'] = '/print/order/' . $order->getId() . '.html?pdf=1';
+			$results['redirectURL'] = '/order/'. $order->getId() . '.html?' . $_SERVER['QUERY_STRING'];
+			Dao::commitTransaction();
+		}
+		catch(Exception $ex)
+		{
+			Dao::rollbackTransaction();
+			$errors[] = $ex->getMessage();
+		}
+		$param->ResponseData = StringUtilsAbstract::getJson($results, $errors);
+	}
+	/**
+	 * cancelOrder
+	 *
+	 * @param unknown $sender
+	 * @param unknown $param
+	 *
+	 * @throws Exception
+	 *
+	 */
+	public function cancelOrder($sender, $param)
+	{
+		$results = $errors = array();
+		try
+		{
+			Dao::beginTransaction();
+			if(!isset($param->CallbackParameter->orderId) || !($order = Order::get($param->CallbackParameter->orderId)) instanceof Order)
+				throw new Exception('Invalid Order to CANCEL!');
+			if(!isset($param->CallbackParameter->reason) || !($reason = trim($param->CallbackParameter->reason)) === '')
+				throw new Exception('An reason for CANCELLING this ' . $order->getType() . ' is needed!');
+// 			if(Payment::countByCriteria('orderId = ?', array($order->getId())) > 0)
+			if($order->getTotalPaid() > 0)
+				throw new Exception('There are payments against this ' . $order->getType() . '!');
+			if(Shippment::countByCriteria('orderId = ?', array($order->getId())) > 0)
+				throw new Exception('There are shippments against this ' . $order->getType() . '!');
+			$order->setStatus(OrderStatus::get(OrderStatus::ID_CANCELLED))
+				->save()
+				->addComment(($msg = $order->getType() . ' is cancelled: ' . $reason), Comments::TYPE_SALES)
+				->addLog($msg, Log::TYPE_SYSTEM, 'AUTO_GEN', __CLASS__ . '::' . __FUNCTION__);
+			$results['item'] = $order->getJson();
 			Dao::commitTransaction();
 		}
 		catch(Exception $ex)

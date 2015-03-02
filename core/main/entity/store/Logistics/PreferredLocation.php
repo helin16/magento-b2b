@@ -95,9 +95,9 @@ class PreferredLocation extends BaseEntityAbstract
 	 * (non-PHPdoc)
 	 * @see BaseEntityAbstract::getJson()
 	 */
-	public function getJson($extra = '', $reset = false)
+	public function getJson($extra = array(), $reset = false)
 	{
-		$array = array();
+		$array = $extra;
 		if(!$this->isJsonLoaded($reset))
 		{
 			$array['value'] = $this->getLocation()->getName();

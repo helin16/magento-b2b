@@ -94,14 +94,16 @@
 	               </div>
 	           </div>
 			</div>
-			<div class="panel panel-success">
+			<div class="panel panel-default">
 			     <div class="panel-heading" style="padding: 8px 4px 0 4px; border-bottom:none;">
 			     	<div class="row">
 				     	<div id="order-type-list" class="col-xs-8">
 				     		<ul class="nav nav-tabs">
 				     			<li class="type-swither-item" data-type="QUOTE"><a href="javascript: void(0);">QUOTE</a></li>
-				     			<li class="type-swither-item active" data-type="ORDER"><a href="javascript: void(0);">ORDER</a></li>
-				     			<li class="type-swither-item" data-type="INVOICE"><a href="javascript: void(0);">INVOICE</a></li>
+				     			<li class="type-swither-item" data-type="ORDER"><a href="javascript: void(0);">ORDER</a></li>
+				     			<li class="type-swither-item active" data-type="INVOICE"><a href="javascript: void(0);">All INVOICES</a></li>
+				     			<li class="type-swither-item" data-type="INVOICE" extraSearchCriteria="ord.totalAmount != ord.totalPaid"><a href="javascript: void(0);">Open INVOICES</a></li>
+				     			<li class="type-swither-item" data-type="INVOICE" extraSearchCriteria="ord.totalAmount = ord.totalPaid"><a href="javascript: void(0);">Closed INVOICES</a></li>
 				     		</ul>
 				     	</div>
 				     	<div class="col-xs-4 text-right">

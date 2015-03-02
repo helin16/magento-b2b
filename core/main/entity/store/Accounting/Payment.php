@@ -144,19 +144,35 @@ class Payment extends BaseEntityAbstract
 	public function postSave()
 	{
 		//update the order
-		$totalPaidAmount = 0;
-		foreach($this->getOrder()->getPayments() as $payment)
-			$totalPaidAmount = $totalPaidAmount * 1 + $payment->getValue() * 1;
-		$this->getOrder()->setTotalPaid($totalPaidAmount)
-			->save();
+		if($this->getOrder() instanceof Order) {
+			$totalPaidAmount = 0;
+			foreach($this->getOrder()->getPayments() as $payment)
+				$totalPaidAmount = $totalPaidAmount * 1 + $payment->getValue() * 1;
+			if($this->getOrder()->getType() === Order::TYPE_INVOICE) {
+				$msg = '';
+				if(intval($this->getActive()) === 1 && intval($this->getOrder()->getPassPaymentCheck()) !== 1) {
+					$this->getOrder()->setPassPaymentCheck(true)->save();
+					$msg = "Marked Payment Checked as first payment go through.";
+				}
+				else if(intval($this->getActive()) === 0 && self::countByCriteria('orderId = ? and active = 1', array($this->getOrder()->getId())) <= 0){
+					$this->getOrder()->setPassPaymentCheck(false)->save();
+					$msg = "Marked Payment UNCHECKED as last payment deactivated.";
+				}
+				$this->getOrder()->setTotalPaid($totalPaidAmount)
+					->save();
+				if($msg !== '')
+					$this->getOrder()->addComment($msg, Comments::TYPE_SYSTEM)
+						->addLog($msg, Log::TYPE_SYSTEM, 'AUTO_GEN', __CLASS__ . '::' . __FUNCTION__);
+			}
+		}
 	}
 	/**
 	 * (non-PHPdoc)
 	 * @see BaseEntityAbstract::getJson()
 	 */
-	public function getJson($extra = '', $reset = false)
+	public function getJson($extra = array(), $reset = false)
 	{
-		$array = array();
+		$array = $extra;
 		if(!$this->isJsonLoaded($reset))
 		{
 			$array['method'] = $this->getMethod()->getJson();

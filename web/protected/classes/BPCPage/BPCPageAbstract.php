@@ -68,6 +68,8 @@ abstract class BPCPageAbstract extends TPage
 	public function onPreInit($param)
 	{
 	    parent::onPreInit($param);
+	    if(isset($_REQUEST['blanklayout']) && intval($_REQUEST['blanklayout']) === 1)
+	    	$this->getPage()->setMasterClass("Application.layout.BlankLayout");
 	    $this->_Load3rdPartyJs();
 	    $this->getClientScript()->registerPradoScript('ajax');
 	    $this->_loadPageJsClass();
