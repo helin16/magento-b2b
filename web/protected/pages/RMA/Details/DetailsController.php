@@ -38,7 +38,7 @@ class DetailsController extends BPCPageAbstract
 		$customer = (isset($_REQUEST['customerid']) && ($customer = Customer::get(trim($_REQUEST['customerid']))) instanceof Customer) ? $customer->getJson() : null;
 		if(isset($_REQUEST['orderid']) && !($order = Order::get(trim($_REQUEST['orderid']))) instanceof Order)
 			die('Invalid Order passed in!');
-		if(isset($_REQUEST['orderid']) && ($order = Order::get(trim($_REQUEST['orderid']))) instanceof Order && $creditNote instanceof CreditNote)
+		if(isset($_REQUEST['orderid']) && ($order = Order::get(trim($_REQUEST['orderid']))) instanceof Order && $rma instanceof RMA)
 			die('You can ONLY create NEW Credit Note from an existing ORDER');
 		$statusOptions = RMA::getAllStatuses();
 		
@@ -172,7 +172,6 @@ class DetailsController extends BPCPageAbstract
 	 */
 public function saveOrder($sender, $param)
 	{
-// 		var_dump($param->CallbackParameter);
 		$results = $errors = array();
 		try
 		{	
@@ -184,7 +183,7 @@ public function saveOrder($sender, $param)
 				throw new Exception('Invalid Status passed in!');
 			if(isset($param->CallbackParameter->RMA) && !($RMA = RMA::get(trim($param->CallbackParameter->RMA->id))) instanceof RMA)
 				throw new Exception('Invalid RMA To passed in!');
-			$RMA = (isset($param->CallbackParameter->RMA) && ($RMA = RMA::get(trim($param->CallbackParameter->RMA->id))) instanceof RMA) ? $RMA : RMA::create($customer, trim($param->CallbackParameter->description));
+			$RMA = (isset($param->CallbackParameter->RMA) && ($RMA = RMA::get(trim($param->CallbackParameter->RMA->id))->setDescription(trim($param->CallbackParameter->description))) instanceof RMA) ? $RMA : RMA::create($customer, trim($param->CallbackParameter->description));
 			if(isset($param->CallbackParameter->order) && ($order = Order::get(trim($param->CallbackParameter->order->id))) instanceof Order)
 				$RMA->setOrder($order);
 			
@@ -230,13 +229,11 @@ public function saveOrder($sender, $param)
 				$RMAItem = is_numeric($item->RMAItemId) ? 
 					RMAItem::get(trim($item->RMAItemId))->setActive($active)->setProduct($product)->setQty($qtyOrdered)->setItemDescription($itemDescription)
 					: 
-					RMAItem::create($RMA, $product, $qtyOrdered, $unitPrice, $itemDescription);
-				var_dump($RMAItem);
-				var_dump($RMA);
+					RMAItem::create($RMA, $product, $qtyOrdered, $itemDescription);
 				$RMAItem->save();
 				if(isset($item->RMAItemId) && ($RMAItem = RMAItem::get(trim($item->RMAItemId))) instanceof RMAItem && !empty($product->getUnitCost()))
 					$RMAItem->setUnitCost($RMAItem->getUnitCost())->save();
-// 				else $RMAItem->setUnitCost($product->getUnitCost())->save();
+				else $RMAItem->setUnitCost($product->getUnitCost())->save();
 			}
 			$RMA->setTotalValue($totalPaymentDue)->setStatus($status)->save();
 			$results['item'] = $RMA->getJson();
@@ -263,11 +260,11 @@ public function saveOrder($sender, $param)
 		try
 		{
 			Dao::beginTransaction();
-			if(!isset($params->CallbackParameter->creditNote) || !($creditNote = CreditNote::get($params->CallbackParameter->creditNote->id)) instanceof CreditNote)
+			if(!isset($params->CallbackParameter->RMA) || !($RMA = RMA::get($params->CallbackParameter->RMA->id)) instanceof RMA)
 				throw new Exception('System Error: invalid CreditNote passed in!');
 			if(!isset($params->CallbackParameter->comments) || ($comments = trim($params->CallbackParameter->comments)) === '')
 				throw new Exception('System Error: invalid comments passed in!');
-			$comment = Comments::addComments($creditNote, $comments, Comments::TYPE_NORMAL);
+			$comment = Comments::addComments($RMA, $comments, Comments::TYPE_NORMAL);
 			$results = $comment->getJson();
 			Dao::commitTransaction();
 		}
