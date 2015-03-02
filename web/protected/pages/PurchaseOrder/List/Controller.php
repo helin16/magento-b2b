@@ -1,7 +1,7 @@
 <?php
 /**
  * This is the PurchaseOrder List
- * 
+ *
  * @package    Web
  * @subpackage Controller
  * @author     lhe<helin16@gmail.com>
@@ -66,20 +66,20 @@ class Controller extends CRUDPageAbstract
             if(isset($param->CallbackParameter->pagination))
             {
                 $pageNo = $param->CallbackParameter->pagination->pageNo;
-                $pageSize = $param->CallbackParameter->pagination->pageSize * 3;
+                $pageSize = $param->CallbackParameter->pagination->pageSize;
             }
-            
+
             $serachCriteria = isset($param->CallbackParameter->searchCriteria) ? json_decode(json_encode($param->CallbackParameter->searchCriteria), true) : array();
             $stats = array();
             $where = array(1);
             $params = array();
             $noSearch = true;
-        	
+
             foreach($serachCriteria as $field => $value)
             {
             	if((is_array($value) && count($value) === 0) || (is_string($value) && ($value = trim($value)) === ''))
             		continue;
-            
+
             	$query = PurchaseOrder::getQuery();
             	switch ($field)
             	{
@@ -136,13 +136,13 @@ class Controller extends CRUDPageAbstract
             	}
             	$noSearch = false;
             }
-            
+
             $objects = PurchaseOrder::getAllByCriteria(implode(' AND ', $where), $params, false, $pageNo, $pageSize, array('po.id' => 'desc'), $stats);
             $results['pageStats'] = $stats;
             $results['items'] = array();
             foreach($objects as $obj){
             	$PoId = $obj->getId();
-            	array_push($results['items'], array('totalProdcutCount' => $obj->getTotalProductCount(), 'item' => $obj->getJson()));
+            	$results['items'][] = array('totalProdcutCount' => $obj->getTotalProductCount(), 'item' => $obj->getJson());
             }
         }
         catch(Exception $ex)
@@ -166,9 +166,9 @@ class Controller extends CRUDPageAbstract
     	{
     		$class = trim($this->_focusEntity);
     		$id = isset($param->CallbackParameter->item_id) ? $param->CallbackParameter->item_id : array();
-    			
+
     		$item = PurchaseOrder::get($id);
-    			
+
     		if(!$item instanceof PurchaseOrder)
     			throw new Exception();
     		$item->setActive(false)

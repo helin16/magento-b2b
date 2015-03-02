@@ -136,14 +136,17 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		tmp.tag = (tmp.isTitle === true ? 'th' : 'td');
 		tmp.isTitle = (isTitle || false);
 		tmp.row = new Element('tr', {'class': (tmp.isTitle === true ? 'item_top_row' : 'btn-hide-row item_row po_item') + (row.active == 0 ? ' danger' : ''), 'item_id': (tmp.isTitle === true ? '' : row.id)}).store('data', row)
-			.insert({'bottom': new Element(tmp.tag, {'class': 'purchaseOrderNo col-xs-1'}).update(row.purchaseOrderNo)})
-				.observe('dblclick', function(){
-					if(!isTitle)
+			.observe('dblclick', function(){
+				if(!tmp.isTitle)
+					tmp.me._openEditPage(row);
+			})
+			.insert({'bottom': new Element(tmp.tag, {'class': 'purchaseOrderNo col-xs-1'}).update( tmp.isTitle ? row.purchaseOrderNo :
+				new Element('a', {'href': 'javascript: void(0)'})
+					.update(row.purchaseOrderNo)
+					.observe('click', function() {
 						tmp.me._openEditPage(row);
-				})
-				.observe('click', function(){
-					//tmp.me._highlightSelectedRow(this.down('.btn'));
-				})
+					})
+			) })
 			.insert({'bottom': new Element(tmp.tag, {'class': ' col-xs-1'}).update(tmp.me.loadUTCTime(row.orderDate).toLocaleString())})
 			.insert({'bottom': new Element(tmp.tag, {'class': ' col-xs-1'}).update(row.supplier.name ? row.supplier.name : '')})
 			.insert({'bottom': new Element(tmp.tag, {'class': ' col-xs-1'}).update(row.supplierRefNo ? row.supplierRefNo : '')})
