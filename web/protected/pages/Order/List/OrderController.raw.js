@@ -10,7 +10,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 	,_searchCriteria: {} //the searching criteria
 	,_infoTypes:{} //the infotype ids
 	,orderStatuses: [] //the order statuses object
-	,_type: 'ORDER'
+	,_type: 'INVOICE'
 
 	,_loadChosen: function () {
 		jQuery(".chosen").chosen({
@@ -77,8 +77,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			if(item.hasClassName('datepicker')) {
 				tmp.me._signRandID(item);
 				tmp.date = jQuery('#' + item.id).data('DateTimePicker').date();
-				tmp.me._searchCriteria[tmp.field] = tmp.date ? tmp.date.utc() : '';
-
+				tmp.me._searchCriteria[tmp.field] = tmp.date ? new Date(tmp.date.local().format('YYYY-MM-DDT' + (tmp.field === 'orderDate_from' || tmp.field === 'invDate_from' ? '00:00:00' : '23:59:59'))) : '';
 			} else {
 				tmp.me._searchCriteria[tmp.field] = $F(item);
 			}
@@ -103,6 +102,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			tmp.me._pagination.pageNo = 1;
 		tmp.me._pagination.pageSize = (pageSize || tmp.me._pagination.pageSize);
 		tmp.me._searchCriteria['ord.type'] = tmp.me._type;
+		tmp.me._searchCriteria['extraSearchCriteria'] = tmp.me._extraSearchCriteria ? tmp.me._extraSearchCriteria : '';
 		tmp.me.postAjax(tmp.me.getCallbackId('getOrders'), {'pagination': tmp.me._pagination, 'searchCriteria': tmp.me._searchCriteria}, {
 			'onLoading': function () {
 				jQuery('#searchBtn').button('loading');
@@ -225,16 +225,6 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		return tmp.me;
 	}
 
-	,_getOpenDetailBtn: function(row) {
-		var tmp = {};
-		tmp.me = this;
-		return new Element('a', {'href': 'javascript: void(0)', 'title': 'Click to view the order'})
-			.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-new-window'}) })
-			.observe('click', function() {
-				tmp.me._openDetailsPage(row);
-			});
-	}
-
 	,_getOrderInfoCell: function(row) {
 		var tmp = {};
 		tmp.me = this
@@ -252,8 +242,6 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				tmp.custEmail = row.infos[tmp.me._infoTypes['custEmail']][0].value;
 		}
 		tmp.newDiv = new Element('div')
-			.insert({'bottom': tmp.me._getOpenDetailBtn(row) })
-			.insert({'bottom': ' '})
 			.insert({'bottom':  new Element('span')
 				.insert({'bottom': tmp.orderLink = new Element('a', {'id': 'orderno-btn-' + row.id, 'class': 'orderNo visible-xs visible-sm visible-md visible-lg newPopover popovershipping', 'href': 'javascript:void(0);'})
 					.update(row.orderNo)
@@ -402,25 +390,55 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		});
 		return tmp.me;
 	}
+	,_initCustomerSelect2: function() {
+		var tmp = {};
+		tmp.me = this;
+		tmp.selectBox = $(tmp.me.searchDivId).down('#custName');
+		tmp.me._signRandID(tmp.selectBox);
+		jQuery('#' + tmp.selectBox.id).select2({
+			 minimumInputLength: 3,
+			 multiple: false,
+			 ajax: {
+				 delay: 250
+				 ,url: '/ajax/getCustomer'
+		         ,type: 'POST'
+	        	 ,data: function (params) {
+	        		 return {"searchTxt": params};
+	        	 }
+				 ,results: function(data, page, query) {
+					 tmp.result = [];
+					 if(data.resultData && data.resultData.items) {
+						 data.resultData.items.each(function(item){
+							 tmp.result.push({'id': item.name, 'text': item.name, 'data': item});
+						 });
+					 }
+		    		 return { 'results' : tmp.result };
+		    	 }
+				 ,cache: true
+			 }
+		});
+		return tmp.me;
+	}
 	,_changeType: function(btn) {
 		var tmp = {};
 		tmp.me = this;
 		jQuery('.type-swither-item.active').removeClass('active');
 		tmp.me._type = $(btn).addClassName('active').readAttribute('data-type');
+		tmp.me._extraSearchCriteria = $(btn).readAttribute('extraSearchCriteria');
 		tmp.panelClass = "panel-default";
 		switch(tmp.me._type) {
 			case 'ORDER': {
 				tmp.panelClass = 'panel-success';
 				break;
-			} 
+			}
 			case 'INVOICE': {
 				tmp.panelClass = 'panel-default';
 				break;
-			} 
+			}
 			case 'QUOTE': {
 				tmp.panelClass = 'panel-warning';
 				break;
-			} 
+			}
 		}
 		$(btn).up('.panel').removeClassName('panel-success').removeClassName('panel-default').removeClassName('panel-warning').addClassName(tmp.panelClass);
 		$("searchBtn").click();
@@ -442,7 +460,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		jQuery('.datepicker').datetimepicker({
 			format: 'DD/MM/YYYY'
 		});
-		tmp.me._initDeliveryMethods()._initTypeSwither();
+		tmp.me._initDeliveryMethods()._initCustomerSelect2()._initTypeSwither();
 		return tmp.me;
 	}
 });

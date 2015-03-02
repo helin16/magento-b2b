@@ -156,6 +156,11 @@ class OrderController extends BPCPageAbstract
 						}
 						break;
 					}
+					case 'extraSearchCriteria':
+					{
+						$where[] = $value;
+						break;
+					}
 				}
 				$noSearch = false;
 			}
