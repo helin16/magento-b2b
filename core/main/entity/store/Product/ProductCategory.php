@@ -345,10 +345,10 @@ class ProductCategory extends BaseEntityAbstract
 	 * (non-PHPdoc)
 	 * @see BaseEntityAbstract::getJson()
 	 */
-	public function getJson($extra = '', $reset = false)
+	public function getJson($extra = array(), $reset = false)
 	{
 		$class = __CLASS__;
-		$array = array();
+		$array = $extra;
 		if(!$this->isJsonLoaded($reset))
 		{
 			$array['parent'] = $this->getParent() instanceof $class ? array('id'=> $this->getParent()->getId()) : null;

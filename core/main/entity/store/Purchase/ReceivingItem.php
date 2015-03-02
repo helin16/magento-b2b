@@ -211,9 +211,9 @@ class ReceivingItem extends BaseEntityAbstract
 	 * (non-PHPdoc)
 	 * @see BaseEntityAbstract::getJson()
 	 */
-	public function getJson($extra = '', $reset = false)
+	public function getJson($extra = array(), $reset = false)
 	{
-		$array = array();
+		$array = $extra;
 	    if(!$this->isJsonLoaded($reset)) {
 		    $array['createdBy'] = $this->getCreatedBy() instanceof UserAccount ?$this->getCreatedBy()->getJson() : array();
 		    $array['product'] = $this->getProduct() instanceof Product ?$this->getProduct()->getJson() : array();
