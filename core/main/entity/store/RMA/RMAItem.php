@@ -49,6 +49,7 @@ class RMAItem extends BaseEntityAbstract
 	 */
 	public function getRMA()
 	{
+		$this->loadManyToOne('RMA');
 	    return $this->RMA;
 	}
 	/**
@@ -263,7 +264,7 @@ class RMAItem extends BaseEntityAbstract
 			->setItemDescription(trim($itemDescription))
 			->setUnitCost($unitCost !== null ? $unitCost : $product->getUnitCost())
 			->save();
-		$msg = 'A RMAItem has been created with ' . $qty . 'Product(s) (SKU=' . $product->getSku() . ', ID=' . $product->getId() . '), unitCost=' . StringUtilsAbstract::getCurrency($item->getUnitCost()) ;
+		$msg = 'A RMAItem has been created with ' . $qty . 'Product(s) (SKU=' . $product->getSku() . ', ID=' . $product->getId() . '), unitCost=' . ($item->getUnitCost() !== null ? StringUtilsAbstract::getCurrency($item->getUnitCost()) : NULL);
 		$rma->addComment($msg, Comments::TYPE_SYSTEM)
 			->addLog($msg, Comments::TYPE_SYSTEM);
 		return $item;
