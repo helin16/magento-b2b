@@ -39,18 +39,18 @@
 	                   </div>
 	                   <div class="col-sm-3">
 	                       <div class="form-group form-group-sm input-group">
-	                           <label for="orderNo" class="input-group-addon">Order No: </label>
-	                           <input id='orderNo' type="text" class="form-control input-sm" placeholder="Order No" search_field="ord.orderNo" />
-	                       </div>
-	                   </div>
-	                   <div class="col-sm-3">
-	                       <div class="form-group form-group-sm input-group">
 	                           <label for="status" class="input-group-addon">Paid: </label>
 	                           <select search_field="ord.passPaymentCheck" class="form-control input-sm">
 	                               <option value=""></option>
 	                               <option value="1">YES</option>
 	                               <option value="0">NO</option>
 	                           </select>
+	                       </div>
+	                   </div>
+	                   <div class="col-sm-3">
+	                       <div class="form-group form-group-sm input-group">
+	                           <label for="orderNo" class="input-group-addon">Order No: </label>
+	                           <input id='orderNo' type="text" class="form-control input-sm" placeholder="Order No" search_field="ord.orderNo" />
 	                       </div>
 	                   </div>
 	               </div>
