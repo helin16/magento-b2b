@@ -105,11 +105,12 @@ class SalesExport_Xero extends ExportAbstract
 			}
 
 			if(($shippingMethod = trim(implode(',', $order->getInfo(OrderInfoType::ID_MAGE_ORDER_SHIPPING_METHOD)))) !== '') {
+				$shippingCost = $order->getInfo(OrderInfoType::ID_MAGE_ORDER_SHIPPING_COST);
 				$return[] = array_merge($row, array(
 					'InventoryItemCode' => $shippingMethod
 					,'Description'=> $shippingMethod
 					,'Quantity'=> 1
-					,'UnitAmount'=> StringUtilsAbstract::getCurrency( trim( StringUtilsAbstract::getValueFromCurrency((double)implode(',', $order->getInfo(OrderInfoType::ID_MAGE_ORDER_SHIPPING_COST))) ) )
+					,'UnitAmount'=> StringUtilsAbstract::getCurrency( count($shippingCost) > 0 ? StringUtilsAbstract::getValueFromCurrency((double)$shippingCost[0]) : 0)
 					,'Discount'=> ''
 					,'AccountCode'=> '43300'
 					,'TaxType'=> "GST on Income"
