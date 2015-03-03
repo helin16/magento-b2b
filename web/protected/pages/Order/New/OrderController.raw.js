@@ -392,6 +392,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					.insert({'bottom': new Element('div', {'class': 'col-sm-8'})
 						.insert({'bottom': new Element('strong').update((tmp.me._order && tmp.me._order.id ? 'Editing' : 'CREATING') +' A ') })
 						.insert({'bottom': tmp.typeSelBox })
+						.insert({'bottom': (tmp.me._order && tmp.me._order.id ? new Element('strong').update(' ' + tmp.me._order.orderNo).setStyle("margin-left: 5px; margin-right: 25px;") : '') })
 						.insert({'bottom': new Element('strong').update(' FOR:  ') })
 						.insert({'bottom': new Element('a', {'href': 'javascript: void(0);'})
 							.update(tmp.customer.name)
