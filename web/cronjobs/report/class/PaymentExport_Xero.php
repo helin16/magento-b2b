@@ -22,7 +22,8 @@ class PaymentExport_Xero extends ExportAbstract
 		foreach($items as $item)
 		{
 			$return[] = array(
-					'InvNo / Order No.' => (trim($item->getOrder()->getInvNo()) === '' ? $item->getOrder()->getOrderNo() : $item->getOrder()->getInvNo())
+					'InvNo' => (trim($item->getOrder()->getInvNo()) === '' ? '' : $item->getOrder()->getInvNo())
+					,'Order No.' => $item->getOrder()->getOrderNo()
 					,'Processed Date'=> trim($item->getCreated()->setTimeZone('Australia/Melbourne'))
 					,'Processed By' => $item->getCreatedBy() instanceof UserAccount ? $item->getCreatedBy()->getPerson()->getFullName() : ''
 					,'Method'=> ($item->getMethod() instanceof PaymentMethod ? trim($item->getMethod()->getName()) : '')
