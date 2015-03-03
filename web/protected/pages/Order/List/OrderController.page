@@ -17,25 +17,33 @@
 	           </div>
 	           <div class="panel-body" role="form" id='searchDiv'>
 	               <div class='row'>
-	                   <div class="col-md-3 col-sm-6 col-xs-12">
-	                       <div class="form-group form-group-sm input-group">
-	                           <label for="orderNo" class="input-group-addon">Order No: </label>
-	                           <input id='orderNo' type="text" class="form-control input-sm" placeholder="Order No" search_field="ord.orderNo" />
-	                       </div>
-	                   </div>
-	                   <div class="col-md-3 col-sm-6 col-xs-12">
-	                       <div class="form-group form-group-sm input-group">
-	                           <label for="invNo" class="input-group-addon">Inv No: </label>
-	                           <input id='invNo' type="text" class="form-control input-sm" placeholder="Invoice Number" search_field="ord.invNo" />
-	                       </div>
-	                   </div>
-	                   <div class="col-md-3 col-sm-6 col-xs-12">
+	                   <div class="col-sm-8">
 	                       <div class="form-group form-group-sm input-group">
 	                           <label for="custName" class="input-group-addon">Customer Name: </label>
 	                           <input id='custName' type="text" class="form-control input-sm" placeholder="Customer Name" search_field="ord.infos.<%= OrderInfoType::ID_CUS_NAME %>" />
 	                       </div>
 	                   </div>
-	                   <div class="col-md-3 col-sm-6 col-xs-12">
+	                   <div class="col-md-4">
+	                       <div class="form-group form-group-sm input-group">
+	                           <label for="invNo" class="input-group-addon">Inv No: </label>
+	                           <input id='invNo' type="text" class="form-control input-sm" placeholder="Invoice Number" search_field="ord.invNo" />
+	                       </div>
+	                   </div>
+	               </div>
+	               <div class='row'>
+	               	  <div class="col-xs-6">
+	                       <div class="form-group form-group-sm input-group">
+	                           <label for="type" class="input-group-addon">D.Method: </label>
+	                           <input search_field="delivery_method" class="form-control input-sm" />
+	                       </div>
+	                   </div>
+	                   <div class="col-sm-3">
+	                       <div class="form-group form-group-sm input-group">
+	                           <label for="orderNo" class="input-group-addon">Order No: </label>
+	                           <input id='orderNo' type="text" class="form-control input-sm" placeholder="Order No" search_field="ord.orderNo" />
+	                       </div>
+	                   </div>
+	                   <div class="col-sm-3">
 	                       <div class="form-group form-group-sm input-group">
 	                           <label for="status" class="input-group-addon">Paid: </label>
 	                           <select search_field="ord.passPaymentCheck" class="form-control input-sm">
@@ -43,14 +51,6 @@
 	                               <option value="1">YES</option>
 	                               <option value="0">NO</option>
 	                           </select>
-	                       </div>
-	                   </div>
-	               </div>
-	               <div class='row'>
-	               	 <div class="col-xs-12">
-	                       <div class="form-group form-group-sm input-group">
-	                           <label for="type" class="input-group-addon">D.Method: </label>
-	                           <input search_field="delivery_method" class="form-control input-sm" />
 	                       </div>
 	                   </div>
 	               </div>
