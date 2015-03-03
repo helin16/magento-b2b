@@ -110,7 +110,7 @@ class SalesExport_Xero extends ExportAbstract
 					'InventoryItemCode' => $shippingMethod
 					,'Description'=> $shippingMethod
 					,'Quantity'=> 1
-					,'UnitAmount'=> StringUtilsAbstract::getCurrency( count($shippingCost) > 0 ? StringUtilsAbstract::getValueFromCurrency((double)$shippingCost[0]) : 0)
+					,'UnitAmount'=> StringUtilsAbstract::getCurrency( count($shippingCost) > 0 ? StringUtilsAbstract::getValueFromCurrency($shippingCost[0]) : 0)
 					,'Discount'=> ''
 					,'AccountCode'=> '43300'
 					,'TaxType'=> "GST on Income"
