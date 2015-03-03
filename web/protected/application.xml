@@ -27,7 +27,7 @@
 			<url ServiceParameter="CreditNote.Details.DetailsController" pattern="creditnote/{id}.html" parameters.id="\d+"/>
 			
 			<!-- FrontEnd:: RMA list page -->
-			<url ServiceParameter="CreditNote.List.ListController" pattern="rma.html" />
+			<url ServiceParameter="RMA.List.ListController" pattern="rma.html" />
 			<!-- FrontEnd:: RMA detail page -->
 			<url ServiceParameter="RMA.Details.DetailsController" pattern="rma/{id}.html" parameters.id="new"/>
 			<url ServiceParameter="RMA.Details.DetailsController" pattern="rma/{id}.html" parameters.id="\d+"/>
