@@ -96,7 +96,7 @@ class SalesExport_Xero extends ExportAbstract
 					,'Discount'=> ''
 					,'AccountCode'=> $product->getRevenueAccNo()
 					,'TaxType'=> "GST on Income"
-					,'TrackingName1'=> ''
+					,'TrackingName1'=> $order->getOrderNo()
 					,'TrackingOption1'=> ''
 					,'TrackingName2'=> ''
 					,'TrackingOption2'=> ''
@@ -114,7 +114,7 @@ class SalesExport_Xero extends ExportAbstract
 					,'Discount'=> ''
 					,'AccountCode'=> '43300'
 					,'TaxType'=> "GST on Income"
-					,'TrackingName1'=> ''
+					,'TrackingName1'=> $order->getOrderNo()
 					,'TrackingOption1'=> ''
 					,'TrackingName2'=> ''
 					,'TrackingOption2'=> ''
