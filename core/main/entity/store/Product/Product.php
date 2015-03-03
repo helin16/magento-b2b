@@ -912,7 +912,7 @@ class Product extends InfoEntityAbstract
 	{
 		if(intVal($this->getActive()) === 1) {
 			$sku = trim($this->getSku());
-			$where = array('sku = ?', 'active = 1');
+			$where = array('sku = ?');
 			$params = array($sku);
 			if(($id = trim($this->getId())) !== '')
 			{
