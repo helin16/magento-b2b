@@ -113,16 +113,16 @@ class OrderPrintController extends BPCPageAbstract
 		$shippingCostIncGST = StringUtilsAbstract::getValueFromCurrency(implode('', $this->order->getInfo(OrderInfoType::ID_MAGE_ORDER_SHIPPING_COST)));
 		$totalWithOutShipping = $total - $shippingCostIncGST;
 		$totalWithOutShippingNoGST = $totalWithOutShipping / 1.1;
-		$gst = $totalWithOutShippingNoGST - $totalWithOutShippingNoGST;
+		$gst = $totalWithOutShipping - $totalWithOutShippingNoGST;
 		
 		$html = $this->_getPaymentSummaryRow('Total Excl. GST:', '$' . number_format($totalWithOutShippingNoGST, 2, '.', ','), 'grandTotalNoGST');
 		$html .= $this->_getPaymentSummaryRow('Total GST:', '$' . number_format($gst, 2, '.', ','), 'gst');
 		$html .= $this->_getPaymentSummaryRow('Sub Total Incl. GST:', '$' . number_format($totalWithOutShipping, 2, '.', ','), 'grandTotal');
 		$html .= $this->_getPaymentSummaryRow('Shipping Incl. GST:', '$' . number_format((double)$shippingCostIncGST, 2, '.', ','), 'grandTotal');
-		$html .= $this->_getPaymentSummaryRow('Grand Total Incl. GST:', '$' . number_format((double)$total, 2, '.', ','), 'grandTotal');
+		$html .= $this->_getPaymentSummaryRow('<strong>Grand Total Incl. GST:</strong>', '<strong>$' . number_format((double)$total, 2, '.', ',') . '</strong>', 'grandTotal');
 		$html .= $this->_getPaymentSummaryRow('Paid to Date:', '$' . number_format($this->order->getTotalPaid(), 2, '.', ','), 'paidTotal');
 		$overDueClass = $this->order->getTotalDue() > 0 ? 'overdue' : '';
-		$html .= $this->_getPaymentSummaryRow('Balance Due:', '$' . number_format($this->order->getTotalDue(), 2, '.', ','), 'dueTotal ' . $overDueClass);
+		$html .= $this->_getPaymentSummaryRow('<strong class="text-danger">Balance Due:</strong>', '<strong class="text-danger">$' . number_format($this->order->getTotalDue(), 2, '.', ',') . '</strong>', 'dueTotal ' . $overDueClass);
 		return $html;
 	}
 	private function _getPaymentSummaryRow($title, $content, $class='')
