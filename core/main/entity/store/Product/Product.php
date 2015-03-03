@@ -395,7 +395,7 @@ class Product extends InfoEntityAbstract
 	 *
 	 * @return
 	 */
-	public function getstockOnPO()
+	public function getStockOnPO()
 	{
 	    return $this->stockOnPO;
 	}
