@@ -79,7 +79,7 @@ class SalesExport_Xero extends ExportAbstract
 				,'POPostalCode'=> ''
 				,'POCountry'=> ''
 				,'InvoiceNumber' => $order->getInvNo()
-				,'Reference'=> ''
+				,'Reference'=> $order->getOrderNo()
 				,'InvoiceDate' => $order->getInvDate()->setTimeZone('Australia/Melbourne')->__toString()
 				,'DueDate' => $order->getInvDate()->setTimeZone('Australia/Melbourne')->modify(self::DEFAULT_DUE_DATE)->__toString()
 			);
@@ -96,7 +96,7 @@ class SalesExport_Xero extends ExportAbstract
 					,'Discount'=> ''
 					,'AccountCode'=> $product->getRevenueAccNo()
 					,'TaxType'=> "GST on Income"
-					,'TrackingName1'=> $order->getOrderNo()
+					,'TrackingName1'=> ''
 					,'TrackingOption1'=> ''
 					,'TrackingName2'=> ''
 					,'TrackingOption2'=> ''
@@ -114,7 +114,7 @@ class SalesExport_Xero extends ExportAbstract
 					,'Discount'=> ''
 					,'AccountCode'=> '43300'
 					,'TaxType'=> "GST on Income"
-					,'TrackingName1'=> $order->getOrderNo()
+					,'TrackingName1'=> ''
 					,'TrackingOption1'=> ''
 					,'TrackingName2'=> ''
 					,'TrackingOption2'=> ''
