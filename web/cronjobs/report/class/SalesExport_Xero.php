@@ -1,7 +1,6 @@
 <?php
 class SalesExport_Xero extends ExportAbstract
 {
-	const DEFAULT_DUE_DATE = "+7 day";
 	/**
 	 * @return PHPExcel
 	 */
@@ -81,7 +80,7 @@ class SalesExport_Xero extends ExportAbstract
 				,'InvoiceNumber' => $order->getInvNo()
 				,'Reference'=> $order->getOrderNo()
 				,'InvoiceDate' => $order->getInvDate()->setTimeZone('Australia/Melbourne')->__toString()
-				,'DueDate' => $order->getInvDate()->setTimeZone('Australia/Melbourne')->modify(self::DEFAULT_DUE_DATE)->__toString()
+				,'DueDate' => ''
 			);
 			foreach($order->getOrderItems() as $orderItem)
 			{
