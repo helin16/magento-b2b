@@ -49,29 +49,36 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 	,_preConfirmSubmit: function(printit) {
 		var tmp = {};
 		tmp.me = this;
-		if(tmp.me.getValueFromCurrency($$('[order-price-summary="total-payment-due"]').first().innerHTML) === '0.00')
+		tmp.paidAmountBox = $$('[save-order="totalPaidAmount"]').first();
+		tmp.selectedType = jQuery('[save-order-type="type"]').val();
+		if(!tmp.paidAmountBox || tmp.selectedType === 'INVOICE')
 			return tmp.me._confirmSubmit(printit);
 		tmp.data = tmp.me._collectFormData($(tmp.me._htmlIds.itemDiv),'save-order');
 		if(tmp.data === null)
 			return tmp.me;
-		tmp.newDiv = new Element('div', {'class': 'confirm-div'})
-			.insert({'bottom': new Element('h4').update('You are about to release an order with short payment. Do you wish to continue?')	})
-			.insert({'bottom': new Element('div', {'class': 'text-right'})
-				.insert({'bottom': new Element('span', {'class': 'btn btn-primary', 'data-loading-text': 'Sending ...'})
-					.update('Yes')
-					.observe('click', function(){
-						tmp.me._confirmSubmit(printit, tmp.newDiv);
+		if(tmp.data.totalPaidAmount && tmp.data.totalPaidAmount > 0) {
+			tmp.newDiv = new Element('div', {'class': 'confirm-div'})
+				.insert({'bottom': new Element('h4', {"class": 'text-danger'}).update('You are recording a payment with ' + tmp.me.getCurrency(tmp.data.totalPaidAmount)  + ' against this ' + tmp.selectedType + ', it will be push to an INVOICE.')	})
+				.insert({'bottom': new Element('div', {'class': 'text-right'})
+					.insert({'bottom': new Element('span', {'class': 'btn btn-danger', 'data-loading-text': 'Pushing...'})
+						.update('OK')
+						.observe('click', function(){
+							tmp.me._confirmSubmit(printit, tmp.newDiv);
+						})
 					})
-				})
-			});
-		tmp.me.showModalBox('<strong class="text-warning">Warning, short payment:</strong>', tmp.newDiv, false, null, {
-			'hide.bs.modal': function(event) {
-				tmp.redirectURL = jQuery(event.target).find('[window="redirec-url"]').val()
-				if(tmp.redirectURL && !tmp.redirectURL.blank()) {
-					window.location  = tmp.redirectURL;
+				});
+			tmp.me.showModalBox('<strong class="text-danger">Warning! Payments Provided:</strong>', tmp.newDiv, false, null, {
+				'hide.bs.modal': function(event) {
+					tmp.redirectURL = jQuery(event.target).find('[window="redirec-url"]').val()
+					if(tmp.redirectURL && !tmp.redirectURL.blank()) {
+						window.location  = tmp.redirectURL;
+					}
 				}
-			}
-		});
+			});
+		} else {
+			return tmp.me._confirmSubmit(printit);
+		}
+		return tmp.me;
 	}
 	,_confirmSubmit: function(printit, confirmDiv) {
 		var tmp = {};
@@ -82,7 +89,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		if(tmp.data === null)
 			return tmp.me;
 		tmp.data.printIt = tmp.printIt;
-		tmp.data.type = jQuery('[save-order-type="type"]').val();
+		tmp.data.type = (tmp.data.totalPaidAmount && tmp.data.totalPaidAmount > 0) ? 'INVOICE' : jQuery('[save-order-type="type"]').val();
 		tmp.data.customer = {};
 		tmp.data.customer.id = tmp.me._customer.id;
 
@@ -1013,7 +1020,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			.observe('keyup', function() {
 				tmp.me._recalculateSummary();
 			});
-		return tmp.shippingCostBox;
+		return tmp.shippingCostBox.wrap(new Element('div', {'class': 'form-group'}));
 	}
 	/**
 	 * Getting summary footer for the parts list
@@ -1088,12 +1095,12 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 						.insert({'bottom': new Element('div', {'class': 'col-xs-6 text-right'}).update( new Element('strong').update(
 							tmp.paymentMethodSel.observe('change', function() {
 									tmp.btn = this;
-									$(tmp.btn).up('.row').down('.input-field').update($F(tmp.btn).blank() ? tmp.me.getCurrency(0) :
+									$(tmp.btn).up('.row').down('.input-field').update($F(tmp.btn).blank() ? tmp.me.getCurrency(0) : new Element('span', {'class': 'form-group'}).update(
 										tmp.paidAmountBox = new Element('input', {'value': ($F(tmp.btn).strip() === '5' ? '0' : ''), 'order-price-summary': 'totalPaidAmount', 'class': 'form-control input-sm', 'save-order': 'totalPaidAmount', 'placeholder': tmp.me.getCurrency(0), 'required': true, 'validate_currency': 'Invalid number provided!' })
 										.observe('keyup', function() {
 											tmp.me._recalculateSummary();
 										})
-									);
+									) );
 									tmp.me._recalculateSummary();
 									if(tmp.paidAmountBox)
 										tmp.paidAmountBox.select();
