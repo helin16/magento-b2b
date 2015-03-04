@@ -519,7 +519,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		if(orderItem.scanTable) {
 			tmp.row.insert({'bottom': new Element('div', {'class': 'row product-content-row'})
 				.insert({'bottom': new Element('span', {'class': 'col-sm-2 show-tools'})
-					.insert({'bottom': new Element('input', {'type': 'checkbox', 'checked': true, 'class': 'show-panel-check'})
+					.insert({'bottom': new Element('input', {'type': 'checkbox', 'checked': false, 'class': 'show-panel-check'})
 						.observe('click', function(){
 							tmp.btn = this;
 							tmp.panel = $(tmp.btn).up('.product-content-row').down('.serial-no-scan-pane');
@@ -536,7 +536,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 						})
 					})
 				})
-				.insert({'bottom': new Element('span', {'class': 'col-sm-10 serial-no-scan-pane', 'style': 'padding-top: 5px'}).update(orderItem.scanTable) })
+				.insert({'bottom': new Element('span', {'class': 'col-sm-10 serial-no-scan-pane', 'style': 'padding-top: 5px; display: none;'}).update(orderItem.scanTable) })
 			});
 		}
 		return tmp.row;
