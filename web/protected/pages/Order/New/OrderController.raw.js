@@ -46,6 +46,15 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			.insert({'bottom': title ? new Element('label', {'class': 'control-label'}).update(title) : '' })
 			.insert({'bottom': content.addClassName('form-control') });
 	}
+	,_redirectOrder: function(event) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.redirectURL = jQuery(event.target).find('[window="redirec-url"]').val()
+		if(tmp.redirectURL && !tmp.redirectURL.blank()) {
+			window.location  = tmp.redirectURL;
+		}
+		return tmp.me;
+	}
 	,_preConfirmSubmit: function(printit) {
 		var tmp = {};
 		tmp.me = this;
@@ -69,10 +78,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				});
 			tmp.me.showModalBox('<strong class="text-danger">Warning! Payments Provided:</strong>', tmp.newDiv, false, null, {
 				'hide.bs.modal': function(event) {
-					tmp.redirectURL = jQuery(event.target).find('[window="redirec-url"]').val()
-					if(tmp.redirectURL && !tmp.redirectURL.blank()) {
-						window.location  = tmp.redirectURL;
-					}
+					tmp.me._redirectOrder(event);
 				}
 			});
 		} else {
@@ -137,9 +143,13 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					})
 				})
 			});
-		if(tmp.confirmDiv === null)
-			tmp.me.showModalBox('<strong class="text-info">Confirmation Needed</strong>', tmp.newDiv, false);
-		else {
+		if(tmp.confirmDiv === null) {
+			tmp.me.showModalBox('<strong class="text-info">Confirmation Needed</strong>', tmp.newDiv, false, null, {
+				'hide.bs.modal': function(event) {
+					tmp.me._redirectOrder(event);
+				}
+			});
+		} else {
 			tmp.confirmDiv.up('.modal-content').down('.modal-title').update('<strong class="text-info">Confirmation Needed</strong>');
 			tmp.confirmDiv.replace(tmp.newDiv);
 		}
@@ -884,14 +894,10 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 
 		tmp.rowData = tmp.row.retrieve('data');
 		if(tmp.rowData && tmp.rowData.id) {
-			console.debug('original: ');
-			console.debug(tmp.rowData);
 			tmp.rowData.unitPrice = tmp.unitPrice;
 			tmp.rowData.discount = tmp.discount;
 			tmp.rowData.qty = tmp.qty;
 			tmp.rowData.totalPrice = tmp.totalPrice;
-			console.debug('changed: ');
-			console.debug(tmp.rowData);
 			tmp.row.store('data', tmp.rowData);
 		}
 		return tmp.me;
@@ -931,7 +937,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 						tmp.me._calculateNewProductPrice($(this).up('.item_row'), attrName);
 						tmp.me._recalculateSummary();
 					} catch (e) {
-						console.error(e);
+						//console.error(e);
 					}
 				}
 
