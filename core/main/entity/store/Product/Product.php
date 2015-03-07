@@ -1132,7 +1132,7 @@ class Product extends InfoEntityAbstract
 	 */
 	public static function getBySku($sku)
 	{
-		$products = self::getAllByCriteria('sku = ? ', array(trim($sku)), true, 1, 1);
+		$products = self::getAllByCriteria('sku = ? ', array(trim($sku)), false, 1, 1);
 		return (count($products) === 0 ? null : $products[0]);
 	}
 	/**
