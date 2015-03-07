@@ -1104,7 +1104,7 @@ class Product extends InfoEntityAbstract
 		DaoMap::setOneToMany('codes', 'ProductCode', 'pro_pro_code');
 		parent::__loadDaoMap();
 
-		DaoMap::createIndex('sku');
+		DaoMap::createUniqueIndex('sku');
 		DaoMap::createIndex('name');
 		DaoMap::createIndex('mageId');
 		DaoMap::createIndex('stockOnHand');
