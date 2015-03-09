@@ -65,7 +65,7 @@ class ListController extends BPCPageAbstract
 					break;
 				}
 				case 'inventory_list': {
-					$asset = ItemExport_Xero::run(false, false);
+					$asset = ItemExport_Xero::run(false, true);
 					break;
 				}
 				case 'magento_price': {
