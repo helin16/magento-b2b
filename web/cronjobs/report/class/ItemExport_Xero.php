@@ -8,7 +8,7 @@ class ItemExport_Xero extends ExportAbstract
 		$myobCodeType = ProductCodeType::get(ProductCodeType::ID_MYOB);
 		foreach(Product::getAll(false) as $product)
 		{
-			$product = new Product();
+//			$product = new Product();
 			$myobCodes = ProductCode::getCodes($product, $myobCodeType, true, 1, 1);
 			$return[] = array(
 				'sku' => $product->getSku()
