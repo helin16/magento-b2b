@@ -118,7 +118,7 @@ class ListController extends CRUDPageAbstract
 
             $stats = array();
 
-            $objects = $class::getAllByCriteria(implode(' AND ', $where), $params, false, $pageNo, $pageSize, array('ra.raNo' => 'desc'), $stats);
+            $objects = $class::getAllByCriteria(implode(' AND ', $where), $params, true, $pageNo, $pageSize, array('ra.raNo' => 'desc'), $stats);
 			
             $results['pageStats'] = $stats;
             $results['items'] = array();
@@ -152,13 +152,16 @@ class ListController extends CRUDPageAbstract
 			$class = trim($this->_focusEntity);
 			$id = isset($param->CallbackParameter->item_id) ? $param->CallbackParameter->item_id : array();
 			
-			$customer = Customer::get($id);
+			$obj = $class::get($id);
 			
-			if(!$customer instanceof Customer)
-				throw new Exception();
-			$customer->setActive(false)
-				->save();
-			$results['item'] = $customer->getJson();
+			if(!$obj instanceof $class)
+				throw new Exception('Invalid ' . $class . ' passed in');
+			$obj->setActive(false)->save();
+			
+			$order = $obj->getOrder();
+			$customer = $obj->getCustomer();
+			$raItems = $obj->getRMAItems();
+			$results['item'] = $obj->getJson(array('order'=> empty($order) ? '' : $order->getJson(), 'customer'=> $customer->getJson(), 'raItems'=> $raItems ? array_map(create_function('$a', 'return $a->getJson();'), $raItems) : ''));
 		}
         catch(Exception $ex)
         {

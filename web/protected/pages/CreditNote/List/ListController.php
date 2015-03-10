@@ -119,7 +119,7 @@ class ListController extends CRUDPageAbstract
 
             $stats = array();
 
-            $objects = $class::getAllByCriteria(implode(' AND ', $where), $params, false, $pageNo, $pageSize, array('cn.creditNoteNo' => 'desc'), $stats);
+            $objects = $class::getAllByCriteria(implode(' AND ', $where), $params, true, $pageNo, $pageSize, array('cn.creditNoteNo' => 'desc'), $stats);
 			
             $results['pageStats'] = $stats;
             $results['items'] = array();
@@ -153,13 +153,12 @@ class ListController extends CRUDPageAbstract
 			$class = trim($this->_focusEntity);
 			$id = isset($param->CallbackParameter->item_id) ? $param->CallbackParameter->item_id : array();
 			
-			$customer = Customer::get($id);
+			$creditNote = CreditNote::get($id);
 			
-			if(!$customer instanceof Customer)
-				throw new Exception();
-			$customer->setActive(false)
-				->save();
-			$results['item'] = $customer->getJson();
+			if(!$creditNote instanceof CreditNote)
+				throw new Exception('Invalid Credit Note passed in');
+			$creditNote->setActive(false)->save();
+			$results['item'] = $creditNote->getJson(array('order'=> empty($creditNote->getOrder()) ? '' : $creditNote->getOrder()->getJson(), 'customer'=> $creditNote->getCustomer()->getJson()));
 		}
         catch(Exception $ex)
         {
