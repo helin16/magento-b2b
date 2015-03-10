@@ -214,7 +214,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 			.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-1'}).update(row.customer.name)})
 			.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-1'}).update(row.order.orderNo ? row.order.orderNo : '')})
 			.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-1'}).update(tmp.isTitle ? 'No of RMA NoteItems' : row.raItems ? row.raItems.length : '')})
-			.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-1'})
+			.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-1'}).setStyle('display: none;')
 				.insert({'bottom': (tmp.isTitle === true ? row.active : new Element('input', {'type': 'checkbox', 'disabled': true, 'checked': row.active}) ) })
 			})
 			

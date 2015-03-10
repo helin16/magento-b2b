@@ -172,7 +172,7 @@ class DetailsController extends BPCPageAbstract
 	 */
 public function saveOrder($sender, $param)
 	{
-// 		var_dump($param->CallbackParameter);
+		var_dump($param->CallbackParameter);
 		$results = $errors = array();
 		try
 		{	
@@ -215,7 +215,6 @@ public function saveOrder($sender, $param)
 			$totalPaymentDue = 0;
 			foreach ($param->CallbackParameter->items as $item)
 			{
-				var_dump($item);
 				$product = Product::get(trim($item->product->id));
 				if(!$product instanceof Product)
 					throw new Exception('Invalid Product passed in!');
@@ -238,8 +237,10 @@ public function saveOrder($sender, $param)
 			}
 			$creditNote->setTotalValue($totalPaymentDue)->setApplyTo($applyTo)->save();
 			$results['item'] = $creditNote->getJson();
-// 			if($printItAfterSave === true)
-// 				$results['printURL'] = '/print/creditnote/' . $creditNote->getId() . '.html?pdf=1';
+			if(isset($param->CallbackParameter->confirmEmail) && filter_var(($email = $param->CallbackParameter->confirmEmail), FILTER_VALIDATE_EMAIL))
+				var_dump('YES, SEND EMAIL!');
+			if($printItAfterSave === true)
+				$results['printURL'] = '/print/creditnote/' . $creditNote->getId() . '.html?pdf=1';
 			Dao::commitTransaction();
 		}
 		catch(Exception $ex)
