@@ -79,7 +79,7 @@ class SkuMatchController extends BPCPageAbstract
 					$result['path'] = 'product';
 					$item = $this->updateStocktack($product
 							, trim($param->CallbackParameter->stockOnPO), trim($param->CallbackParameter->stockOnHand), trim($param->CallbackParameter->stockInRMA), trim($param->CallbackParameter->stockInParts)
-							, trim($param->CallbackParameter->totalInPartsValue), trim($param->CallbackParameter->totalOnHandValue));
+							, trim($param->CallbackParameter->totalInPartsValue), trim($param->CallbackParameter->totalOnHandValue), $param->CallbackParameter->active);
 					
 					$result['item'] = $item->getJson();
 					break;
@@ -186,7 +186,7 @@ class SkuMatchController extends BPCPageAbstract
 	 * 
 	 * @return Product
 	 */
-	private function updateStocktack(Product $product, $stockOnPO = 0, $stockOnHand = 0, $stockInRMA = 0, $stockInParts = 0, $totalInPartsValue = 0, $totalOnHandValue = 0)
+	private function updateStocktack(Product $product, $stockOnPO = 0, $stockOnHand = 0, $stockInRMA = 0, $stockInParts = 0, $totalInPartsValue = 0, $totalOnHandValue = 0, $active = true)
 	{
 		try
 		{
@@ -209,6 +209,11 @@ class SkuMatchController extends BPCPageAbstract
 			if(!empty($totalOnHandValue))
 				$product->addLog('Product (ID=' . $product->getId() . ') now totalOnHandValue = ' . $totalOnHandValue, Log::TYPE_SYSTEM)
 					->setTotalOnHandValue($totalOnHandValue);
+			
+			$active = ($active === 0 || $active === '0' || $active === false || $active === 'false' || $active === 'no') ? false : true;
+			$product->addLog('Product (ID=' . $product->getId() . ') now active = ' . $active, Log::TYPE_SYSTEM)
+				->setActive($active);
+			
 			$product->snapshotQty(null, ProductQtyLog::TYPE_STOCK_ADJ, 'Loaded via importer')->save();
 			
 			Dao::commitTransaction();

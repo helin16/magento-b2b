@@ -188,7 +188,7 @@ BPCPageJs.prototype = {
 
 			tmp.itemValue = item.readAttribute('type') !== 'checkbox' ? $F(item) : $(item).checked;
 			if(item.hasAttribute('validate_currency') || item.hasAttribute('validate_number')) {
-				if (tmp.me.getValueFromCurrency(tmp.itemValue).match(/^(-)?\d+(\.\d{1,2})?$/) === null) {
+				if (tmp.me.getValueFromCurrency(tmp.itemValue).match(/^(-)?\d+(\.\d{1,4})?$/) === null) {
 					tmp.me._markFormGroupError(item, (item.hasAttribute('validate_currency') ? item.readAttribute('validate_currency') : item.hasAttribute('validate_number')));
 					tmp.hasError = true;
 				}

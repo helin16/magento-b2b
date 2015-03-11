@@ -335,11 +335,6 @@ class OrderController extends BPCPageAbstract
 				throw new Exception('Invalid Order to CANCEL!');
 			if(!isset($param->CallbackParameter->reason) || !($reason = trim($param->CallbackParameter->reason)) === '')
 				throw new Exception('An reason for CANCELLING this ' . $order->getType() . ' is needed!');
-// 			if(Payment::countByCriteria('orderId = ?', array($order->getId())) > 0)
-			if($order->getTotalPaid() > 0)
-				throw new Exception('There are payments against this ' . $order->getType() . '!');
-			if(Shippment::countByCriteria('orderId = ?', array($order->getId())) > 0)
-				throw new Exception('There are shippments against this ' . $order->getType() . '!');
 			$order->setStatus(OrderStatus::get(OrderStatus::ID_CANCELLED))
 				->save()
 				->addComment(($msg = $order->getType() . ' is cancelled: ' . $reason), Comments::TYPE_SALES)

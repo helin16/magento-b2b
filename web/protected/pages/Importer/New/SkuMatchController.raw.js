@@ -143,7 +143,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				tmp.me.csvFileLineFormat = ['sku', 'itemNo'];
 				break;
 			case 'stockAdjustment':
-				tmp.me.csvFileLineFormat = ['sku', 'stockOnPO', 'stockOnHand', 'stockOnOrder', 'stockInRMA', 'stockInParts' , 'totalInPartsValue', 'totalOnHandValue'];
+				tmp.me.csvFileLineFormat = ['sku', 'stockOnPO', 'stockOnHand', 'stockOnOrder', 'stockInRMA', 'stockInParts' , 'totalInPartsValue', 'totalOnHandValue', 'active'];
 				break;
 			case 'accounting':
 				tmp.me.csvFileLineFormat = ['sku', 'assetAccNo', 'costAccNo', 'revenueAccNo'];

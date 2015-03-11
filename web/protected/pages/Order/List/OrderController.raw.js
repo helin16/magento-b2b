@@ -398,6 +398,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		jQuery('#' + tmp.selectBox.id).select2({
 			 minimumInputLength: 3,
 			 multiple: false,
+			 allowClear: true,
 			 ajax: {
 				 delay: 250
 				 ,url: '/ajax/getCustomer'
