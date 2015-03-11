@@ -78,7 +78,7 @@ class OrderConnector extends B2BConnector
 					->setCustomer($customer)
 					->save();
 				Log::logging(0, get_class($this), 'Saved the order, ID = ' . $o->getId(), self::LOG_TYPE, '$index = ' . $index, __FUNCTION__);
-	
+				$totalShippingCost = StringUtilsAbstract::getValueFromCurrency(trim($order->shipping_amount)) * 1.1;
 				//create order info
 				$this->_createOrderInfo($o, OrderInfoType::get(OrderInfoType::ID_CUS_NAME), trim($customer->getName()))
 					->_createOrderInfo($o, OrderInfoType::get(OrderInfoType::ID_CUS_EMAIL), trim($customer->getEmail()))
@@ -88,20 +88,24 @@ class OrderConnector extends B2BConnector
 					->_createOrderInfo($o, OrderInfoType::get(OrderInfoType::ID_MAGE_ORDER_TOTAL_AMOUNT), trim($order->grand_total))
 					->_createOrderInfo($o, OrderInfoType::get(OrderInfoType::ID_MAGE_ORDER_PAID_AMOUNT), $totalPaid)
 					->_createOrderInfo($o, OrderInfoType::get(OrderInfoType::ID_MAGE_ORDER_SHIPPING_METHOD), trim($order->shipping_description))
-					->_createOrderInfo($o, OrderInfoType::get(OrderInfoType::ID_MAGE_ORDER_SHIPPING_COST), trim($order->shipping_amount))
+					->_createOrderInfo($o, OrderInfoType::get(OrderInfoType::ID_MAGE_ORDER_SHIPPING_COST), $totalShippingCost)
 					->_createOrderInfo($o, OrderInfoType::get(OrderInfoType::ID_MAGE_ORDER_PAYMENT_METHOD), (!isset($order->payment) ? '' : (!isset($order->payment->method) ? '' : trim($order->payment->method))));
 				Log::logging(0, get_class($this), 'Updated order info', self::LOG_TYPE, '$index = ' . $index, __FUNCTION__);
 	
 				//saving the order item
-				foreach($order->items as $item)
+				$totalItemCost = 0;
+				foreach($order->items as $item)	{
 					$this->_createItem($o, $item);
-				
-				$totalItems++;
-				
+					$totalItemCost = $totalItemCost * 1 + StringUtilsAbstract::getValueFromCurrency($item->row_total) * 1.1;
+				}
+				if(($possibleSurchargeAmount = ($o->getTotalAmount() - $totalShippingCost - $totalItemCost)) > 0 && ($product = Product::getBySku('surcharge')) instanceof Product) {
+					OrderItem::create($o, $product,	$possibleSurchargeAmount, 1, $possibleSurchargeAmount);
+				}
 				//record the last imported time for this import process
 				SystemSettings::addSettings(SystemSettings::TYPE_B2B_SOAP_LAST_IMPORT_TIME, trim($order->created_at));
 				Log::logging(0, get_class($this), 'Updating the last updated time', self::LOG_TYPE, '', __FUNCTION__);
 				
+				$totalItems++;
 				if($transStarted === false)
 					Dao::commitTransaction();
 			}

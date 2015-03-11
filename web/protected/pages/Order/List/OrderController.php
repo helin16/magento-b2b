@@ -97,7 +97,7 @@ class OrderController extends BPCPageAbstract
 					case 'ord.invNo':
 					{
 						$where[] =  $field . " like ? ";
-						$params[] = '%' . $value.'%';
+						$params[] = '%' . $value . '%';
 						break;
 					}
 					case 'ord.passPaymentCheck':

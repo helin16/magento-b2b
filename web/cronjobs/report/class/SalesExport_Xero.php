@@ -1,7 +1,6 @@
 <?php
 class SalesExport_Xero extends ExportAbstract
 {
-	const DEFAULT_DUE_DATE = "+7 day";
 	/**
 	 * @return PHPExcel
 	 */
@@ -79,9 +78,9 @@ class SalesExport_Xero extends ExportAbstract
 				,'POPostalCode'=> ''
 				,'POCountry'=> ''
 				,'InvoiceNumber' => $order->getInvNo()
-				,'Reference'=> ''
+				,'Reference'=> $order->getOrderNo()
 				,'InvoiceDate' => $order->getInvDate()->setTimeZone('Australia/Melbourne')->__toString()
-				,'DueDate' => $order->getInvDate()->setTimeZone('Australia/Melbourne')->modify(self::DEFAULT_DUE_DATE)->__toString()
+				,'DueDate' => ''
 			);
 			foreach($order->getOrderItems() as $orderItem)
 			{
@@ -106,11 +105,12 @@ class SalesExport_Xero extends ExportAbstract
 			}
 
 			if(($shippingMethod = trim(implode(',', $order->getInfo(OrderInfoType::ID_MAGE_ORDER_SHIPPING_METHOD)))) !== '') {
+				$shippingCost = $order->getInfo(OrderInfoType::ID_MAGE_ORDER_SHIPPING_COST);
 				$return[] = array_merge($row, array(
-					'InventoryItemCode' => trim(implode(',', $order->getInfo(OrderInfoType::ID_MAGE_ORDER_SHIPPING_METHOD)))
-					,'Description'=> trim(implode(',', $order->getInfo(OrderInfoType::ID_MAGE_ORDER_SHIPPING_METHOD)))
+					'InventoryItemCode' => $shippingMethod
+					,'Description'=> $shippingMethod
 					,'Quantity'=> 1
-					,'UnitAmount'=> StringUtilsAbstract::getCurrency( trim( StringUtilsAbstract::getValueFromCurrency((double)implode(',', $order->getInfo(OrderInfoType::ID_SHIPPING_EST_COST))) ) )
+					,'UnitAmount'=> StringUtilsAbstract::getCurrency( count($shippingCost) > 0 ? StringUtilsAbstract::getValueFromCurrency($shippingCost[0]) : 0)
 					,'Discount'=> ''
 					,'AccountCode'=> '43300'
 					,'TaxType'=> "GST on Income"

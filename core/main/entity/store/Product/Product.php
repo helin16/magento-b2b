@@ -395,7 +395,7 @@ class Product extends InfoEntityAbstract
 	 *
 	 * @return
 	 */
-	public function getstockOnPO()
+	public function getStockOnPO()
 	{
 	    return $this->stockOnPO;
 	}
@@ -912,7 +912,7 @@ class Product extends InfoEntityAbstract
 	{
 		if(intVal($this->getActive()) === 1) {
 			$sku = trim($this->getSku());
-			$where = array('sku = ?', 'active = 1');
+			$where = array('sku = ?');
 			$params = array($sku);
 			if(($id = trim($this->getId())) !== '')
 			{
@@ -1104,7 +1104,7 @@ class Product extends InfoEntityAbstract
 		DaoMap::setOneToMany('codes', 'ProductCode', 'pro_pro_code');
 		parent::__loadDaoMap();
 
-		DaoMap::createIndex('sku');
+		DaoMap::createUniqueIndex('sku');
 		DaoMap::createIndex('name');
 		DaoMap::createIndex('mageId');
 		DaoMap::createIndex('stockOnHand');
@@ -1132,7 +1132,7 @@ class Product extends InfoEntityAbstract
 	 */
 	public static function getBySku($sku)
 	{
-		$products = self::getAllByCriteria('sku = ? ', array(trim($sku)), true, 1, 1);
+		$products = self::getAllByCriteria('sku = ? ', array(trim($sku)), false, 1, 1);
 		return (count($products) === 0 ? null : $products[0]);
 	}
 	/**
