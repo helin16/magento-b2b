@@ -214,6 +214,8 @@ public function saveOrder($sender, $param)
 			$totalPaymentDue = 0;
 			foreach ($param->CallbackParameter->items as $item)
 			{
+				var_dump($item);
+				
 				$product = Product::get(trim($item->product->id));
 				if(!$product instanceof Product)
 					throw new Exception('Invalid Product passed in!');
@@ -230,10 +232,12 @@ public function saveOrder($sender, $param)
 					RMAItem::get(trim($item->RMAItemId))->setActive($active)->setProduct($product)->setQty($qtyOrdered)->setItemDescription($itemDescription)
 					: 
 					RMAItem::create($RMA, $product, $qtyOrdered, $itemDescription);
-				$RMAItem->save();
+				if(isset($item->orderItemId) && ($orderItem = OrderItem::get(trim($item->orderItemId))) instanceof OrderItem)
+					$RMAItem->setOrderItem($orderItem)->setUnitCost($orderItem->getUnitCost());
 				if(isset($item->RMAItemId) && ($RMAItem = RMAItem::get(trim($item->RMAItemId))) instanceof RMAItem && !empty($product->getUnitCost()))
 					$RMAItem->setUnitCost($RMAItem->getUnitCost())->save();
 				else $RMAItem->setUnitCost($product->getUnitCost())->save();
+				$RMAItem->save();
 			}
 			$RMA->setTotalValue($totalPaymentDue)->setStatus($status)->save();
 			$results['item'] = $RMA->getJson();
