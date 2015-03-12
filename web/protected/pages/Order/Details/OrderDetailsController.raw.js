@@ -701,7 +701,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.shipmentDiv = new Element('div', {'class': 'panel panel-default'})
 			.insert({'bottom': new Element('div', {'class': 'panel-heading'})
 				.update('Shipment')
-				.insert({'bottom': !tmp.me._order.status || tmp.me._order.status.id != tmp.me._orderStatusID_Shipped ? '' : new Element('a', {'class': 'btn btn-danger btn-xs pull-right','href': '/rma/new.html?orderid=' + tmp.me._order.id, 'target': '_BLANK'}).update('Create RMA')	})
+				.insert({'bottom': !tmp.me._order.status || tmp.me._order.status.id != tmp.me._orderStatusID_Shipped ? '' : new Element('a', {'class': 'btn btn-danger btn-xs pull-right','href': '/rma/new.html?orderid=' + tmp.me._order.id}).update('Create RMA')	})
 			});
 		if(tmp.me._order.shippments.size() > 0) {
 			tmp.shippingInfos = tmp.me._order.shippments;
@@ -1111,7 +1111,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.paymentDiv = new Element('div', {"class": 'panel panel-default payment_row_panel'})
 			.insert({'bottom': new Element('div', {"class": 'panel-heading'})
 				.update('Payments')
-				.insert({'bottom': !tmp.me._payments || tmp.me._payments.size() === 0 ? '' : new Element('a', {'class': 'btn btn-danger btn-xs pull-right','href': '/creditnote/new.html?orderid=' + tmp.me._order.id, 'target': '_BLANK'}).update('Create Credit Note')	})
+				.insert({'bottom': !tmp.me._payments || tmp.me._payments.size() === 0 ? '' : new Element('a', {'class': 'btn btn-danger btn-xs pull-right','href': '/creditnote/new.html?orderid=' + tmp.me._order.id}).update('Create Credit Note')	})
 			});
 		if(tmp.me._editMode.accounting === true) {
 			//get payment div
