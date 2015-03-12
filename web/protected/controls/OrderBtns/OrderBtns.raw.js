@@ -4,7 +4,7 @@
 var OrderBtnsJs = new Class.create();
 OrderBtnsJs.prototype = {
 	SEND_EMAIL_CALLBACK_ID: ''
-	,_pageJs: null
+	,_pageJs: null	
 
 	//constructor
 	,initialize : function(_pageJs, _order) {
@@ -178,6 +178,7 @@ OrderBtnsJs.prototype = {
 				})
 			})
 			.insert({'bottom': new Element('div', {'class': 'btn-group btn-group-xs visible-xs visible-md visible-sm visible-lg'})
+				.setStyle('margin-left: 3px;')
 				.insert({'bottom': new Element('span', {'class': 'btn btn-primary'})
 					.insert({'bottom': new Element('span', {'class': 'hidden-xs hidden-sm'}).update('Email ') })
 					.insert({'bottom': new Element('span', {'class': 'fa fa-envelope'}) })
@@ -187,13 +188,8 @@ OrderBtnsJs.prototype = {
 				})
 			})
 			.insert({'bottom': new Element('div', {'class': 'btn-group btn-group-xs visible-xs visible-md visible-sm visible-lg'})
+				.setStyle('margin-left: 3px;')
 				.insert({'bottom': new Element('a', {'class': 'btn btn-warning','href': '/order/new.html?cloneorderid=' + tmp.me._order.id, 'target': '_BLANK'}).update('Clone') })
-			})
-			.insert({'bottom': new Element('div', {'class': 'btn-group btn-group-xs visible-xs visible-md visible-sm visible-lg'})
-				.insert({'bottom': new Element('a', {'class': 'btn btn-danger','href': '/creditnote/new.html?orderid=' + tmp.me._order.id, 'target': '_BLANK'})
-					.setStyle('margin-left: 10px;')
-					.update('Credit Note')
-				})
 			});
 		return tmp.newDiv;
 	}
