@@ -919,7 +919,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			.insert({'bottom': new Element('div', {'class': 'panel-heading'})
 				.insert({'bottom': new Element('div', {'class': 'row'})
 					.insert({'bottom': new Element('div', {'class': 'col-sm-8'})
-						.insert({'bottom': new Element('strong').update((tmp.me._RMA && tmp.me._RMA.id ? 'EDITING' : 'CREATING') + ' CREDIT RMA FOR:  ') })
+						.insert({'bottom': new Element('strong').update((tmp.me._RMA && tmp.me._RMA.id ? 'EDITING' : 'CREATING') + '  RMA FOR:  ') })
 						.insert({'bottom': new Element('a', {'href': 'javascript: void(0);'})
 							.update(tmp.customer.name)
 							.observe('click', function(){
