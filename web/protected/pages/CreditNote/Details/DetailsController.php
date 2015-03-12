@@ -173,7 +173,7 @@ class DetailsController extends BPCPageAbstract
 	 */
 public function saveOrder($sender, $param)
 	{
-		var_dump($param->CallbackParameter);
+// 		var_dump($param->CallbackParameter);
 		$results = $errors = array();
 		try
 		{
@@ -216,6 +216,7 @@ public function saveOrder($sender, $param)
 			$totalPaymentDue = 0;
 			foreach ($param->CallbackParameter->items as $item)
 			{
+				var_dump($item);
 				$product = Product::get(trim($item->product->id));
 				if(!$product instanceof Product)
 					throw new Exception('Invalid Product passed in!');
@@ -232,6 +233,8 @@ public function saveOrder($sender, $param)
 					CreditNoteItem::get(trim($item->creditNoteItemId))->setActive($active)->setProduct($product)->setQty($qtyOrdered)->setUnitPrice($unitPrice)->setItemDescription($itemDescription)
 					:
 					CreditNoteItem::create($creditNote, $product, $qtyOrdered, $unitPrice, $itemDescription);
+				if(isset($item->orderItemId) && ($orderItem = OrderItem::get(trim($item->orderItemId))) instanceof OrderItem)
+					$creditNoteItem->setOrderItem($orderItem)->setUnitCost($orderItem->getUnitCost());
 				if(isset($item->orderItemId) && ($orderItem = OrderItem::get(trim($item->orderItemId))) instanceof OrderItem && !empty($product->getUnitCost()))
 					$creditNoteItem->setUnitCost($orderItem->getUnitCost())->save();
 				else $creditNoteItem->setUnitCost($product->getUnitCost())->save();
