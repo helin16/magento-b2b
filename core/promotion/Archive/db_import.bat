@@ -8,7 +8,7 @@ c:\wamp\bin\mysql\mysql5.6.17\bin\mysql.exe -u root -proot -e "CREATE DATABASE `
 Pause
 
 :: Import sql file
-c:\wamp\bin\mysql\mysql5.6.17\bin\mysql.exe -u root -proot bpcinternal < .\bpcinternal.sql
+"S:\Program Files\7-Zip\7z.exe" x -so 09_03_2015.7z | c:\wamp\bin\mysql\mysql5.6.17\bin\mysql.exe -u root -proot bpcinternal
 c:\wamp\bin\mysql\mysql5.6.17\bin\mysql.exe -u root -proot bpcinternal < ..\RMA\structure.sql
 c:\wamp\bin\mysql\mysql5.6.17\bin\mysql.exe -u root -proot bpcinternal < ..\wamp.sql
 c:\wamp\bin\mysql\mysql5.6.17\bin\mysql.exe -u root -proot bpcinternal < ..\debugMode.sql
