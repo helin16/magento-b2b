@@ -315,10 +315,10 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 						tmp.me._preConfirmSubmit();
 					})
 				})
-				.insert({'bottom': new Element('span', {'class': 'btn btn-primary dropdown-toggle', 'data-toggle': 'dropdown'})
+				.insert({'bottom': new Element('span', {'class': 'btn btn-primary dropdown-toggle', 'data-toggle': 'dropdown'}).setStyle('display: none;')
 					.insert({'bottom': new Element('span', {'class': 'caret'}) })
 				})
-				.insert({'bottom': new Element('ul', {'class': 'dropdown-menu save-btn-dropdown-menu'})
+				.insert({'bottom': new Element('ul', {'class': 'dropdown-menu save-btn-dropdown-menu'}).setStyle('display: none;')
 					.insert({'bottom': new Element('li')
 						.insert({'bottom': new Element('a', {'href': 'javascript: void(0);'}).update('Save Only')
 							.observe('click', function() {
@@ -328,7 +328,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					})
 				})
 			})
-			.insert({'bottom': new Element('div', {'class': 'btn btn-default'})
+			.insert({'bottom': new Element('div', {'class': 'btn btn-default'}).setStyle('display: none;')
 				.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-remove-sign'}) })
 				.insert({'bottom': new Element('span').update(' cancel ') })
 				.observe('click', function(){
@@ -340,8 +340,8 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 							+ '</div>',
 					true);
 				})
-			})
-		;
+			});
+		tmp.newDiv.down('.btn-group').removeClassName('btn-group');
 		return tmp.newDiv;
 	}
 	/**
