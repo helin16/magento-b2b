@@ -9,7 +9,8 @@
 				<label for="showSearch">Show Search Criteria?</label>
 				<input checked id="showSearch" type="checkbox" onclick="$(this).up('#searchPanel').down('.panel-body').toggle();">
 				<span class="pull-right">
-			   		<span id="searchBtn" class="btn btn-primary form-control input-sm" data-loading-text="searching ..." >Search</span>
+					<span class="btn btn-success btn-xs" title="New" onclick="pageJs._openEditPage();"><span class="glyphicon glyphicon-plus"></span> NEW</span>
+			   		<span id="searchBtn" class="btn btn-primary btn-xs" data-loading-text="searching ..." >Search</span>
 				</span>
 			</div>
 			<div class="panel-body search-panel" id="searchDiv" style="display: unset;">
