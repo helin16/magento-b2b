@@ -1,7 +1,7 @@
 <?php
 /**
  * This is the OrderController
- * 
+ *
  * @package    Web
  * @subpackage Controller
  * @author     lhe<helin16@gmail.com>
@@ -32,17 +32,18 @@ class DetailsController extends BPCPageAbstract
 			die('System ERR: no param passed in!');
 		if(!($creditNote = CreditNote::get($this->Request['id'])) instanceof CreditNote && trim($this->Request['id']) !== 'new')
 			die('Invalid CreditNote passed in!');
-		
+
 		$js = parent::_getEndJs();
-		
+
 		$customer = (isset($_REQUEST['customerid']) && ($customer = Customer::get(trim($_REQUEST['customerid']))) instanceof Customer) ? $customer->getJson() : null;
+		$order = null;
 		if(isset($_REQUEST['orderid']) && !($order = Order::get(trim($_REQUEST['orderid']))) instanceof Order)
 			die('Invalid Order passed in!');
-		if(isset($_REQUEST['orderid']) && ($order = Order::get(trim($_REQUEST['orderid']))) instanceof Order && $creditNote instanceof CreditNote)
+		if($order instanceof Order && $creditNote instanceof CreditNote)
 			die('You can ONLY create NEW Credit Note from an existing ORDER');
 		$applyToOptions = CreditNote::getApplyToTypes();
-		
-		if(isset($_REQUEST['orderid']) && ($order = Order::get(trim($_REQUEST['orderid']))) instanceof Order)
+
+		if($order instanceof Order)
 			$js .= "pageJs._order=" . json_encode($order->getJson(array('customer'=> $order->getCustomer()->getJson(), 'items'=> array_map(create_function('$a', 'return $a->getJson(array("product"=>$a->getProduct()->getJson()));'), $order->getOrderItems())))) . ";";
 		else $js .= "pageJs._customer=" . json_encode($customer) . ";";
 		if($creditNote instanceof CreditNote)
@@ -62,7 +63,7 @@ class DetailsController extends BPCPageAbstract
 	 *
 	 * @param unknown $sender
 	 * @param unknown $param
-	 * 
+	 *
 	 * @throws Exception
 	 *
 	 */
@@ -90,7 +91,7 @@ class DetailsController extends BPCPageAbstract
 	 *
 	 * @param unknown $sender
 	 * @param unknown $param
-	 * 
+	 *
 	 * @throws Exception
 	 *
 	 */
@@ -104,7 +105,7 @@ class DetailsController extends BPCPageAbstract
 			$pageNo = isset($param->CallbackParameter->pageNo) ? trim($param->CallbackParameter->pageNo) : '1';
 			$where = 'pro_pro_code.code = :searchExact or pro.name like :searchTxt OR sku like :searchTxt';
 			$params = array('searchExact' => $searchTxt , 'searchTxt' => '%' . $searchTxt . '%');
-			
+
 			$searchTxtArray = StringUtilsAbstract::getAllPossibleCombo(StringUtilsAbstract::tokenize($searchTxt));
 			if(count($searchTxtArray) > 1)
 			{
@@ -122,34 +123,34 @@ class DetailsController extends BPCPageAbstract
 			foreach($products as $product)
 			{
 				$array = $product->getJson();
-				
+
 				$array['minProductPrice'] = 0;
 				$array['lastSupplierPrice'] = 0;
 				$array['minSupplierPrice'] = 0;
-				
+
 				$minProductPriceProduct = PurchaseOrderItem::getAllByCriteria('productId = ?', array($product->getId()), true, 1, 1, array('unitPrice'=> 'asc'));
 				$minProductPrice = sizeof($minProductPriceProduct) ? $minProductPriceProduct[0]->getUnitPrice() : 0;
 				$minProductPriceId = sizeof($minProductPriceProduct) ? $minProductPriceProduct[0]->getPurchaseOrder()->getId() : '';
-				
+
 				PurchaseOrderItem::getQuery()->eagerLoad('PurchaseOrderItem.purchaseOrder');
 				$lastSupplierPriceProduct = PurchaseOrderItem::getAllByCriteria('po_item.productId = ? and po_item_po.supplierId = ?', array($product->getId(), $supplierID), true, 1, 1, array('po_item.id'=> 'desc'));
 				$lastSupplierPrice = sizeof($lastSupplierPriceProduct) ? $lastSupplierPriceProduct[0]->getUnitPrice() : 0;
 				$lastSupplierPriceId = sizeof($lastSupplierPriceProduct) ? $lastSupplierPriceProduct[0]->getPurchaseOrder()->getId() : '';
-				
+
 				PurchaseOrderItem::getQuery()->eagerLoad('PurchaseOrderItem.purchaseOrder');
 				$minSupplierPriceProduct = PurchaseOrderItem::getAllByCriteria('po_item.productId = ? and po_item_po.supplierId = ?', array($product->getId(), $supplierID), true, 1, 1, array('po_item.unitPrice'=> 'asc'));
 				$minSupplierPrice = sizeof($minSupplierPriceProduct) ? $minSupplierPriceProduct[0]->getUnitPrice() : 0;
 				$minSupplierPriceId = sizeof($minSupplierPriceProduct) ? $minSupplierPriceProduct[0]->getPurchaseOrder()->getId() : '';
-				
+
 				$array['minProductPrice'] = $minProductPrice;
 				$array['minProductPriceId'] = $minProductPriceId;
-				
+
 				$array['lastSupplierPrice'] = $lastSupplierPrice;
 				$array['lastSupplierPriceId'] = $lastSupplierPriceId;
-				
+
 				$array['minSupplierPrice'] = $minSupplierPrice;
 				$array['minSupplierPriceId'] = $minSupplierPriceId;
-				
+
 				$items[] = $array;
 			}
 			$results['items'] = $items;
@@ -166,7 +167,7 @@ class DetailsController extends BPCPageAbstract
 	 *
 	 * @param unknown $sender
 	 * @param unknown $param
-	 * 
+	 *
 	 * @throws Exception
 	 *
 	 */
@@ -175,7 +176,7 @@ public function saveOrder($sender, $param)
 		var_dump($param->CallbackParameter);
 		$results = $errors = array();
 		try
-		{	
+		{
 			Dao::beginTransaction();
 			$customer = Customer::get(trim($param->CallbackParameter->customer->id));
 			if(!$customer instanceof Customer)
@@ -187,7 +188,7 @@ public function saveOrder($sender, $param)
 			$creditNote = (isset($param->CallbackParameter->creditNote) && ($creditNote = CreditNote::get(trim($param->CallbackParameter->creditNote->id))) instanceof CreditNote) ? $creditNote : CreditNote::create($customer, trim($param->CallbackParameter->description));
 			if(isset($param->CallbackParameter->order) && ($order = Order::get(trim($param->CallbackParameter->order->id))) instanceof Order)
 				$creditNote->setOrder($order);
-			
+
 			if(isset($param->CallbackParameter->shippingAddr))
 			{
 				$shippAddress = Address::create(
@@ -201,17 +202,17 @@ public function saveOrder($sender, $param)
 				);
 				$customer->setShippingAddress($shippAddress);
 			}
-			
+
 			$printItAfterSave = false;
 			if(isset($param->CallbackParameter->printIt))
 				$printItAfterSave = (intval($param->CallbackParameter->printIt) === 1 ? true : false);
-			
+
 			if(isset($param->CallbackParameter->comments))
 			{
 				$comments = trim($param->CallbackParameter->comments);
 				$creditNote->addComment($comments, Comments::TYPE_SALES);
 			}
-			
+
 			$totalPaymentDue = 0;
 			foreach ($param->CallbackParameter->items as $item)
 			{
@@ -223,13 +224,13 @@ public function saveOrder($sender, $param)
 				$totalPrice = trim($item->totalPrice);
 				$itemDescription = trim($item->itemDescription);
 				$active = trim($item->valid);
-				
+
 				$totalPaymentDue += $totalPrice;
 				if(is_numeric($item->creditNoteItemId) && !CreditNoteItem::get(trim($item->creditNoteItemId)) instanceof CreditNoteItem)
 					throw new Exception('Invalid Credit Note Item passed in');
-				$creditNoteItem = is_numeric($item->creditNoteItemId) ? 
+				$creditNoteItem = is_numeric($item->creditNoteItemId) ?
 					CreditNoteItem::get(trim($item->creditNoteItemId))->setActive($active)->setProduct($product)->setQty($qtyOrdered)->setUnitPrice($unitPrice)->setItemDescription($itemDescription)
-					: 
+					:
 					CreditNoteItem::create($creditNote, $product, $qtyOrdered, $unitPrice, $itemDescription);
 				if(isset($item->orderItemId) && ($orderItem = OrderItem::get(trim($item->orderItemId))) instanceof OrderItem && !empty($product->getUnitCost()))
 					$creditNoteItem->setUnitCost($orderItem->getUnitCost())->save();

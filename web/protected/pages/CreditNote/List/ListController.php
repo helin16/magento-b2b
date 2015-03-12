@@ -1,7 +1,7 @@
 <?php
 /**
  * This is the listing page for customer
- * 
+ *
  * @package    Web
  * @subpackage Controller
  * @author     lhe<helin16@gmail.com>
@@ -30,7 +30,7 @@ class ListController extends CRUDPageAbstract
 	protected function _getEndJs()
 	{
 		$applyToOptions = CreditNote::getApplyToTypes();
-		
+
 		$js = parent::_getEndJs();
 		$js .= "pageJs._applyToOptions=" . json_encode($applyToOptions) . ";";
 		$js .= "pageJs._bindSearchKey()";
@@ -54,33 +54,31 @@ class ListController extends CRUDPageAbstract
             $class = trim($this->_focusEntity);
             $pageNo = 1;
             $pageSize = DaoQuery::DEFAUTL_PAGE_SIZE;
-            
+
             if(isset($param->CallbackParameter->pagination))
             {
                 $pageNo = $param->CallbackParameter->pagination->pageNo;
                 $pageSize = $param->CallbackParameter->pagination->pageSize * 3;
             }
-            
+
             $serachCriteria = isset($param->CallbackParameter->searchCriteria) ? json_decode(json_encode($param->CallbackParameter->searchCriteria), true) : array();
-			var_dump($serachCriteria);
             $where = array(1);
             $params = array();
-            var_dump($serachCriteria);
             foreach($serachCriteria as $field => $value)
             {
             	if((is_array($value) && count($value) === 0) || (is_string($value) && ($value = trim($value)) === ''))
             		continue;
-            	
+
             	$query = $class::getQuery();
             	switch ($field)
             	{
-            		case 'cn.creditNoteNo': 
+            		case 'cn.creditNoteNo':
 					{
 						$where[] = 'cn.creditNoteNo = ?';
             			$params[] = $value;
 						break;
 					}
-					case 'cn.applyTo': 
+					case 'cn.applyTo':
 					{
 						$where[] = 'cn.applyTo IN ('.implode(", ", array_fill(0, count($value), "?")).')';
 						$params = array_merge($params, $value);
@@ -120,7 +118,7 @@ class ListController extends CRUDPageAbstract
             $stats = array();
 
             $objects = $class::getAllByCriteria(implode(' AND ', $where), $params, true, $pageNo, $pageSize, array('cn.creditNoteNo' => 'desc'), $stats);
-			
+
             $results['pageStats'] = $stats;
             $results['items'] = array();
             foreach($objects as $obj)
@@ -152,9 +150,9 @@ class ListController extends CRUDPageAbstract
 		{
 			$class = trim($this->_focusEntity);
 			$id = isset($param->CallbackParameter->item_id) ? $param->CallbackParameter->item_id : array();
-			
+
 			$creditNote = CreditNote::get($id);
-			
+
 			if(!$creditNote instanceof CreditNote)
 				throw new Exception('Invalid Credit Note passed in');
 			$creditNote->setActive(false)->save();
