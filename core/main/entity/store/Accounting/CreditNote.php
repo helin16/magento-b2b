@@ -243,7 +243,7 @@ class CreditNote extends BaseEntityAbstract
 			$this->setCreditNoteNo('BPCC' . str_pad($this->getId(), 8, '0', STR_PAD_LEFT))
 				->save();
 			if($this->getOrder() instanceof Order) {
-				$msg = "An Credit Note(" . $this->getCreditNoteNo() . ") has created for this order with a totalValue: " . StringUtilsAbstract::getCurrency($this->getTotalValue());
+				$msg = "An Credit Note(" . $this->getCreditNoteNo() . ") has created for this order with a unitPrice: " . StringUtilsAbstract::getCurrency($this->getUnitPrice()) . ', qty: ' . $this->getQty() . ', totalValue: ' . StringUtilsAbstract::getCurrency($this->getTotalValue());
 				$this->getOrder()
 					->addComment($msg, Comments::TYPE_SYSTEM)
 					->addLog($msg, Log::TYPE_SYSTEM, 'AUTO', __CLASS__ . '::' . __FUNCTION__);

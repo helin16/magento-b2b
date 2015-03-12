@@ -249,7 +249,26 @@ class RMA extends BaseEntityAbstract
 		if(trim($this->getRaNo()) === '') {
 			$this->setRaNo('BPCR' . str_pad($this->getId(), 8, '0', STR_PAD_LEFT))
 				->save();
+			if($this->getOrder() instanceof Order) {
+				$msg = "An RMA(" . $this->getRaNo() . ") has created for this order with a unitPrice: " . StringUtilsAbstract::getCurrency($this->getUnitPrice()) . ', qty: ' . $this->getQty() . ', totalValue: ' . StringUtilsAbstract::getCurrency($this->getTotalValue());
+				$this->getOrder()
+					->addComment($msg, Comments::TYPE_SYSTEM)
+					->addLog($msg, Log::TYPE_SYSTEM, 'AUTO', __CLASS__ . '::' . __FUNCTION__);
+			}
 		}
+	}
+	/**
+	 * (non-PHPdoc)
+	 * @see BaseEntityAbstract::getJson()
+	 */
+	public function getJson($extra = array(), $reset = false)
+	{
+		$array = $extra;
+		if(!$this->isJsonLoaded($reset))
+		{
+			$array['order'] = $this->getOrder() instanceof Order ? $this->order->getJson() : array();
+		}
+		return parent::getJson($array, $reset);
 	}
 	/**
 	 * (non-PHPdoc)
