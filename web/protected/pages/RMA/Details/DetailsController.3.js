@@ -573,7 +573,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			'qtyOrdered': RMAItem.qty ? RMAItem.qty : RMAItem.qtyOrdered,
 			'discount' : 100,
 			'margin': 0,
-			'totalPrice': tmp.me.getCurrency(RMAItem.unitPrice * RMAItem.qty)
+			'totalPrice': tmp.me.getCurrency(RMAItem.unitPrice * (RMAItem.qty ? RMAItem.qty : RMAItem.qtyOrdered))
 		};
 		$$('.order_change_details_table').first().insert({'bottom': tmp.newDiv = tmp.me._getProductRow(tmp.data) });
 		
