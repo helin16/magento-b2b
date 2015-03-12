@@ -189,6 +189,8 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 						return;
 					tmp.me._item = tmp.result.item;
 					tmp.modalBoxTitlePanel.update('<strong class="text-success">Success!</strong>');
+//					tmp.me.hideModalBox();
+//					tmp.me.disableAll();
 //					window.location = '/creditnote/' + tmp.result.item.id + '.html';
 //					if(tmp.result.printURL) {
 //						tmp.printWindow = window.open(tmp.result.printURL, 'Printing Order', 'width=1300, location=no, scrollbars=yes, menubar=no, status=no, titlebar=no, fullscreen=no, toolbar=no');
@@ -204,6 +206,12 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			}
 		});
 		return tmp.me;
+	}
+	,disableAll: function() {
+		jQuery('input').attr("disabled", true);
+		jQuery('textarea').attr("disabled", true);
+		jQuery('.btn').attr("disabled", true);
+		jQuery('.form-control').attr("disabled", true);
 	}
 	,_preConfirmSubmit: function(printit) {
 		var tmp = {};
