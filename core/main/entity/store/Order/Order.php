@@ -760,7 +760,7 @@ class Order extends InfoEntityAbstract
 			->setPassPaymentCheck($passPaymentCheck)
 			->setPONo(trim($poNo));
 		if($cloneFrom instanceof Order) {
-			$counts = intval(OrderInfo::countByCriteria('orderId = ? and typeId = ?', array($cloneFrom->getId(), OrderInfoType::ID_CLONED_FROM_ORDER_NO)));
+			$counts = intval(OrderInfo::countByCriteria('value = ? and typeId = ?', array($cloneFrom->getOrderNo(), OrderInfoType::ID_CLONED_FROM_ORDER_NO)));
 			$newOrderNo = $cloneFrom->getOrderNo() . '-' . ($counts + 1);
 			$order->setOrderNo($newOrderNo);
 			$cloneFrom->addComment(($msg = 'A new order has been clone from this order:' . $newOrderNo), Comments::TYPE_SYSTEM)

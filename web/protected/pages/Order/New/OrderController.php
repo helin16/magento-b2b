@@ -276,7 +276,7 @@ class OrderController extends BPCPageAbstract
 
 				if(intval($item->active) === 1)
 					$totalPaymentDue += $totalPrice;
-				if(!($orderItem = OrderItem::get($item->id)) instanceof OrderItem)
+				if($orderCloneFrom instanceof Order || !($orderItem = OrderItem::get($item->id)) instanceof OrderItem)
 					$orderItem = OrderItem::create($order, $product, $unitPrice, $qtyOrdered, $totalPrice, 0, null, $itemDescription);
 				else {
 					$orderItem->setActive(intval($item->active))

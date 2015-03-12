@@ -896,7 +896,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		if(tmp.rowData && tmp.rowData.id) {
 			tmp.rowData.unitPrice = tmp.unitPrice;
 			tmp.rowData.discount = tmp.discount;
-			tmp.rowData.qty = tmp.qty;
+			tmp.rowData.qtyOrdered = tmp.qty;
 			tmp.rowData.totalPrice = tmp.totalPrice;
 			tmp.row.store('data', tmp.rowData);
 		}
