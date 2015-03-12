@@ -242,6 +242,12 @@ class CreditNote extends BaseEntityAbstract
 		if(trim($this->getCreditNoteNo()) === '') {
 			$this->setCreditNoteNo('BPCC' . str_pad($this->getId(), 8, '0', STR_PAD_LEFT))
 				->save();
+			if($this->getOrder() instanceof Order) {
+				$msg = "An Credit Note(" . $this->getCreditNoteNo() . ") has created for this order with a totalValue: " . StringUtilsAbstract::getCurrency($this->getTotalValue());
+				$this->getOrder()
+					->addComment($msg, Comments::TYPE_SYSTEM)
+					->addLog($msg, Log::TYPE_SYSTEM, 'AUTO', __CLASS__ . '::' . __FUNCTION__);
+			}
 		}
 	}
 	/**
@@ -275,6 +281,28 @@ class CreditNote extends BaseEntityAbstract
 	{
 		$creditNoteItem = CreditNoteItem::createFromOrderItem($this, $orderItem, $qty, $unitPrice, $itemDescription, $unitCost);
 		return $this;
+	}
+	/**
+	 * Getting all the credit note items
+	 * 
+	 * @return Ambigous <Ambigous, NULL, multitype:, multitype:BaseEntityAbstract >
+	 */
+	public function getCreditNoteItems()
+	{
+		return CreditNoteItem::getByCreditNote($this);
+	}
+	/**
+	 * (non-PHPdoc)
+	 * @see BaseEntityAbstract::getJson()
+	 */
+	public function getJson($extra = array(), $reset = false)
+	{
+		$array = $extra;
+		if(!$this->isJsonLoaded($reset))
+		{
+			$array['order'] = $this->getOrder() instanceof Order ? $this->order->getJson() : array();
+		}
+		return parent::getJson($array, $reset);
 	}
 	/**
 	 * (non-PHPdoc)
@@ -342,9 +370,5 @@ class CreditNote extends BaseEntityAbstract
 	public static function getApplyToTypes()
 	{
 		return array(self::APPLY_TO_CREDIT, self::APPLY_TO_REFUND);
-	}
-	public function getCreditNoteItems()
-	{
-		return CreditNoteItem::getByCreditNote($this);
 	}
 }
