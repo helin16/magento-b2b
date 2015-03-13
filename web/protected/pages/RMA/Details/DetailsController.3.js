@@ -937,7 +937,8 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 						.insert({'bottom': ' <' })
 						.insert({'bottom': new Element('a', {'href': 'mailto:' + tmp.customer.email}).update(tmp.customer.email) })
 						.insert({'bottom': '>' })
-						.insert({'bottom': tmp.me._order ? new Element('strong').update(' with Order No. ' + tmp.me._order.orderNo) : '' })
+						.insert({'bottom': tmp.me._order ? new Element('strong').update(' with Order No. ') : '' })
+						.insert({'bottom': tmp.me._order ? new Element('a', {'target': '_blank', 'href': '/orderdetails/' + tmp.me._order.id}).update(tmp.me._order.orderNo) : '' })
 					})
 					.insert({'bottom': new Element('div', {'class': 'col-sm-4 text-right'}).setStyle('display: none;')
 						.insert({'bottom': new Element('strong').update('Total Payment Due: ') })
@@ -1159,9 +1160,11 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 	,init: function() {
 		var tmp = {};
 		tmp.me = this;
-		if(tmp.me._RMA)
+		if(tmp.me._RMA) {
+			if(tmp.me._RMA.order && tmp.me._RMA.order.id && jQuery.isNumeric(tmp.me._RMA.order.id))
+				tmp.me._order = tmp.me._RMA.order;
 			tmp.me._selectCustomer(tmp.me._RMA.customer);
-		else if(tmp.me._customer)
+		} else if(tmp.me._customer)
 			tmp.me._selectCustomer(tmp.me._customer);
 		else if(tmp.me._order)
 			tmp.me._selectCustomer(tmp.me._order.customer);
