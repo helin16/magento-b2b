@@ -123,7 +123,19 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 			'frameborder'	: '0',
 			'border'		: '0',
 			'seamless'		: 'seamless',
-			'href'			: '/rma/' + (row && row.id ? row.id : 'new') + '.html'
+			'href'			: '/rma/' + (row && row.id ? row.id : 'new') + '.html',
+			'beforeClose'	: function() {
+				tmp.iframeJs = $$('iframe.fancybox-iframe').first().contentWindow.pageJs;
+				tmp.newRow = tmp.iframeJs && tmp.iframeJs._RMA && tmp.iframeJs._RMA.id ? tmp.me._getResultRow(tmp.iframeJs._RMA) : null;
+				if(tmp.newRow !== null) {
+					if(row && row.id) {
+						if($(tmp.me.resultDivId).down('.item_row[item_id=' + row.id + ']'))
+							$(tmp.me.resultDivId).down('.item_row[item_id=' + row.id + ']').replace(tmp.newRow);
+					} else {
+						$(tmp.me.resultDivId).insert({'top': tmp.newRow });
+					}
+				}
+			}
  		});
 		return tmp.me;
 		
@@ -174,38 +186,18 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		jQuery('#' + btn.id).popover('toggle');
 		return tmp.me;
 	}
-	,_openDetailsPage: function(row) {
-		var tmp = {};
-		tmp.me = this;
-		jQuery.fancybox({
-			'width'			: '95%',
-			'height'		: '95%',
-			'autoScale'     : false,
-			'autoDimensions': false,
-			'fitToView'     : false,
-			'autoSize'      : false,
-			'type'			: 'iframe',
-			'href'			: '/rma/' + row.id + '.html?blanklayout=1',
-			'beforeClose'	    : function() {
-				if($(tmp.me.resultDivId).down('.order_item[order_id=' + row.id + ']'))
-					$(tmp.me.resultDivId).down('.order_item[order_id=' + row.id + ']').replace(tmp.me._getResultRow($$('iframe.fancybox-iframe').first().contentWindow.pageJs._order));
-			}
- 		});
-		return tmp.me;
-	}
 	/**
 	 * get result row for data given
 	 */
 	,_getResultRow: function(row, isTitle) {
 		var tmp = {};
 		tmp.me = this;
-		console.debug(row);
 		tmp.tag = (tmp.isTitle === true ? 'th' : 'td');
 		tmp.isTitle = (isTitle || false);
 		tmp.row = new Element('tr', {'class': (tmp.isTitle === true ? 'item_top_row' : 'btn-hide-row item_row') + (row.active == 0 ? ' danger' : ''), 'item_id': (tmp.isTitle === true ? '' : row.id)}).store('data', row)
 			.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-1'}).update(row.raNo).setStyle('cursor: pointer;')
 				.observe('click',function(){
-					tmp.me._openDetailsPage(row);
+					tmp.me._openEditPage(row);
 				})
 			})
 			.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-1'}).update(row.description)})
@@ -220,13 +212,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 			
 			.insert({'bottom': new Element(tmp.tag, {'class': 'text-right col-xs-1'}).update(
 				tmp.isTitle === true ?  
-				(new Element('span', {'class': 'btn btn-primary btn-xs', 'title': 'New'})
-					.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-plus'}) })
-					.insert({'bottom': ' NEW' })
-					.observe('click', function(){
-						$(this).up('thead').insert({'bottom': tmp.me._openEditPage() });
-					})
-				)
+				''
 				: (new Element('span', {'class': 'btn-group btn-group-xs'})
 					.insert({'bottom': new Element('span', {'class': 'btn btn-default', 'title': 'Edit'})
 						.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-pencil'}) })
