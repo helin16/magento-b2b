@@ -92,6 +92,9 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 				.insert({'bottom': new Element('div', {'class': 'col-sm-6'}).update(tmp.me._getPaymentPanel()) })
 			})
 			.insert({'bottom': new Element('div', {'class': 'row'})
+				.insert({'bottom': new Element('div', {'class': 'col-sm-12'}).update(tmp.me._getInvoiceNoPanel()) })
+			})
+			.insert({'bottom': new Element('div', {'class': 'row'})
 				.insert({'bottom': new Element('div', {'class': 'col-sm-12'}).update(tmp.me._getPartsTable()) })
 			})
 			.insert({'bottom': new Element('div', {'class': 'row'})
@@ -106,7 +109,21 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		});
 		return tmp.me._newDiv;
 	}
-	
+	,_getInvoiceNoPanel: function() {
+		var tmp = {};
+		tmp.me = this;
+		tmp.newDiv = new Element('div', {'class': 'panel panel-info'})
+			.insert({'bottom': new Element('div', {'class': 'panel-heading'})
+				.insert({'bottom': new Element('strong').update('Invoice Number(s)') })
+			})
+			.insert({'bottom': new Element('table', {'class': 'table'})
+				.insert({'bottom': tmp.tr =  new Element('tr')})
+			 });
+		tmp.me._purchaseorder.supplierInvoices.each(function(item){
+			tmp.tr.insert({'bottom': new Element('td').update(item)});
+		})
+		return tmp.newDiv;
+	}
 	/**
 	 * getting the customer information div
 	 */
@@ -349,7 +366,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 			.insert({'bottom': new Element('tr') 
 				.insert({'bottom': new Element('td', {'colspan': 2, 'rowspan': 4})
 					.insert({'bottom': tmp.me._getFormGroup( 'Comments:', new Element('textarea', {'save-order': 'comments', 'style': 'height:33px'}).update(tmp.me._comment ? tmp.me._comment : '') ) })
-					.insert({'bottom': new Element('td', {'colspan': 2, 'class': 'text-right active pull-right'}).update(tmp.me._saveBtns()) })
+					.insert({'bottom': new Element('div', {'colspan': 2, 'class': 'active'}).update(tmp.me._saveBtns()) })
 				}) 
 				.insert({'bottom': new Element('td', {'colspan': 2, 'class': 'text-right active'}).update( new Element('strong').update('Total Excl. GST: ') ) }) 
 				.insert({'bottom': new Element('td', {'id': tmp.me._htmlIds.totalPriceExcludeGST, 'class': 'active'}).update( tmp.me.getCurrency(0) ) }) 
@@ -648,13 +665,24 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 				})
 			})
 		};
-		tmp.currentRow.insert({'after': tmp.me._getProductRow(tmp.data).addClassName('btn-hide-row') });
+		tmp.currentRow.insert({'after': tmp.productRow = tmp.me._getProductRow(tmp.data).addClassName('btn-hide-row') });
+		tmp.me.setProductLink(tmp.productRow.down('.productSku'), tmp.product.id);
 		tmp.newRow = tmp.me._getNewProductRow();
 		tmp.currentRow.replace(tmp.newRow);
 		tmp.newRow.down('[new-order-item=product]').focus();
 		
 		tmp.me._recalculateSummary( tmp.totalPrice );
 		return tmp.me;
+	}
+	,setProductLink: function(dom, id) {
+		var tmp = {};
+		tmp.me = this;
+		$(dom).setStyle('text-decoration: underline; cursor: pointer;')
+		.observe('click', function(e){
+			Event.stop(e);
+			tmp.window = window.open('/product/' + id + '.html', '_blank');
+			tmp.window.focus()
+		});
 	}
 	/**
 	 * Ajax: searching the product based on a string
@@ -709,6 +737,14 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 				.insert({'bottom': new Element('div', {'class': 'col-xs-10'})
 					.insert({'bottom': new Element('div', {'class': 'row'})
 						.insert({'bottom': new Element('strong').update(product.name)
+							.insert({'bottom': new Element('small', {'class': 'btn btn-xs btn-info'})
+								.insert({'bottom': new Element('small', {'class': 'glyphicon glyphicon-new-window'} )})
+							})
+							.observe('click', function(e){
+								Event.stop(e);
+								tmp.window = window.open('/product/' + product.id + '.html', '_blank');
+								tmp.window.focus()
+							})
 							.insert({'bottom': new Element('small', {'class': 'pull-right'}).update('SKU: ' + product.sku) })
 						})
 						.insert({'bottom': new Element('div')
@@ -750,7 +786,12 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 				tmp.inputRow = $(searchTxtBox).up('.new-order-item-input').store('product', product);
 				searchTxtBox.up('.productName')
 					.writeAttribute('colspan', false)
-					.update(product.sku)
+					.update(product.sku).setStyle('text-decoration: underline; cursor: pointer;')
+					.observe('click', function(e){
+						Event.stop(e);
+						tmp.window = window.open('/product/' + product.id + '.html', '_blank');
+						tmp.window.focus()
+					})
 					.insert({'after': new Element('td')
 						.update(product.name) 
 						.insert({'bottom': new Element('a', {'href': 'javascript: void(0);', 'class': 'text-danger pull-right', 'title': 'click to change the product'}) 
@@ -776,7 +817,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 	,_saveBtns: function() {
 		var tmp = {};
 		tmp.me = this;
-		tmp.newDiv = new Element('span', {'class': 'btn-group'})
+		tmp.newDiv = new Element('span', {'class': 'btn-group pull-right'})
 			.insert({'bottom': new Element('span', {'class': 'btn btn-primary', 'data-loading-text' : 'saving...'})
 				.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-ok-circle'}) })
 				.insert({'bottom': new Element('span').update(' save ') })
@@ -817,8 +858,15 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 							+ '</div>',
 					true);
 				})
-			})
-		;
+			});
+		tmp.newDiv = tmp.newDiv.wrap(new Element('div'));
+		tmp.newDiv.insert({'top': (!(tmp.me._purchaseorder.id && (tmp.me._purchaseorder.status === 'ORDERED' || tmp.me._purchaseorder.status === 'RECEIVING')) || tmp.me._purchaseorder.active !== true)  ? '' : new Element('span', {'class': 'btn btn-success', 'title': 'Receiving Items'}).update('Receiving')
+				.addClassName('pull-left')
+				.observe('click', function(){
+					tmp.newWindow = window.open('/receiving/' + tmp.me._purchaseorder.id + '.html', 'PO Details','width=1300, location=no, scrollbars=yes, menubar=no, status=no, titlebar=no, fullscreen=no, toolbar=no');
+					tmp.newWindow.focus();
+				})
+			});
 		return tmp.newDiv;
 	}
 	,_submitOrder: function(btn, isSubmit) {

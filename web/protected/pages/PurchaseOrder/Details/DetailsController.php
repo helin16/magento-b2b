@@ -57,6 +57,7 @@ class DetailsController extends DetailsPageAbstract
 // 			$serials = Rec;
 			array_push($purchaseOrderItems,array('product'=> $product->getJson(), 'unitPrice'=> $unitPrice, 'qty'=> $qty, 'totalPrice'=> $totalPrice, 'receievedQty'=> $receivedQty));
 		};
+		$poitems = $receivingItems = array();
 		$js = parent::_getEndJs();
 		$js .= "pageJs.setPreData(" . json_encode($purchaseOrder->getJson()) . ")";
 		$js .= ".setComment(" . json_encode($comments) . ")";

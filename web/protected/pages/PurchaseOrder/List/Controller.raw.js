@@ -135,6 +135,11 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		tmp.me = this;
 		tmp.tag = (tmp.isTitle === true ? 'th' : 'td');
 		tmp.isTitle = (isTitle || false);
+		tmp.invoiceNoDiv = new Element('div');
+		if(!isTitle)
+			row.supplierInvoices.each(function(item){
+				tmp.invoiceNoDiv.insert({'bottom': new Element('div').update(item)})
+			});
 		tmp.row = new Element('tr', {'class': (tmp.isTitle === true ? 'item_top_row' : 'btn-hide-row item_row po_item') + (row.active == 0 ? ' danger' : ''), 'item_id': (tmp.isTitle === true ? '' : row.id)}).store('data', row)
 			.observe('dblclick', function(){
 				if(!tmp.isTitle)
@@ -149,6 +154,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 			) })
 			.insert({'bottom': new Element(tmp.tag, {'class': ' col-xs-1'}).update(tmp.me.loadUTCTime(row.orderDate).toLocaleString())})
 			.insert({'bottom': new Element(tmp.tag, {'class': ' col-xs-1'}).update(row.supplier.name ? row.supplier.name : '')})
+			.insert({'bottom': new Element(tmp.tag, {'class': ' col-xs-1'}).update(!tmp.isTitle ? row.totalPaid ? tmp.invoiceNoDiv : '' : 'Invoice No(s)')})
 			.insert({'bottom': new Element(tmp.tag, {'class': ' col-xs-1'}).update(row.supplierRefNo ? row.supplierRefNo : '')})
 			.insert({'bottom': new Element(tmp.tag, {'class': ' col-xs-1'}).update(tmp.isTitle ? 'Products Count' :
 				new Element('a', {'href': '/serialnumbers.html?purchaseorderid=' + row.id, 'target': '_BLANK' })
@@ -165,19 +171,19 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 			.insert({'bottom': tmp.btns = new Element(tmp.tag, {'class': 'col-xs-1 text-right'}) 	});
 		if(tmp.isTitle !== true)
 			tmp.btns.insert({'bottom': new Element('div', {'class': 'btn-group'})
-				.insert({'bottom': (!(row.id && (row.status === 'ORDERED' || row.status === 'RECEIVING')) || row.active !== true)  ? '' : new Element('span', {'class': 'btn btn-success btn-sm', 'title': 'Receiving Items'}).update('Receiving')
+				.insert({'bottom': (!(row.id && (row.status === 'ORDERED' || row.status === 'RECEIVING')) || row.active !== true)  ? '' : new Element('span', {'class': 'btn btn-success btn-xs', 'title': 'Receiving Items'}).update('Receiving')
 					.observe('click', function(){
 						tmp.newWindow = window.open('/receiving/' + row.id + '.html', 'PO Details','width=1300, location=no, scrollbars=yes, menubar=no, status=no, titlebar=no, fullscreen=no, toolbar=no');
 						tmp.newWindow.focus();
 					})
 				})
-				.insert({'bottom': new Element('span', {'class': 'btn btn-default btn-sm', 'title': 'Edit'})
+				.insert({'bottom': new Element('span', {'class': 'btn btn-default btn-xs', 'title': 'Edit'})
 					.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-pencil'}) })
 					.observe('click', function(){
 							tmp.me._openEditPage(row);
 					})
 				})
-				.insert({'bottom': new Element('span', {'class': 'btn btn-danger btn-sm', 'title': 'Delete'})
+				.insert({'bottom': new Element('span', {'class': 'btn btn-danger btn-xs', 'title': 'Delete'})
 					.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-trash'}) })
 					.observe('click', function(){
 						if(!confirm('Are you sure you want to delete this item?'))
