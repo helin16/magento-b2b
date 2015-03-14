@@ -136,7 +136,7 @@ class Controller extends CRUDPageAbstract
             			{
             				if(trim($value) !== '')
             				{
-            					$where[] = 'id in (select purchaseOrderId from receivingItem rec_item where po.id = rec_item.purchaseOrderId and rec_item.active =1 and rec_item.invoiceNo like ?)';
+            					$where[] = 'id in (select purchaseOrderId from receivingitem rec_item where po.id = rec_item.purchaseOrderId and rec_item.active =1 and rec_item.invoiceNo like ?)';
             					$params[] = '%' . trim($value) . '%';
             				}
             				break;
