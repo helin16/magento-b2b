@@ -67,6 +67,10 @@ abstract class OrderNotificationTemplateControl
 		return $msg;
 	}
 	
+	private static function _picked(Order $order)
+	{
+		$msg = '';
+	}
 	private static function _orderItems(Order $order)
 	{
 		$msg = "<div>";
