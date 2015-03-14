@@ -93,7 +93,7 @@ class SalesExport_Xero extends ExportAbstract
 					,'Description'=> $product->getShortDescription()
 					,'Quantity'=> $orderItem->getQtyOrdered()
 					,'UnitAmount'=> $orderItem->getUnitPrice()
-					,'Discount'=> ((($shouldTotal - $orderItem->getTotalPrice()) / $shouldTotal) * 100 ) . '%'
+					,'Discount'=> (round((($shouldTotal - $orderItem->getTotalPrice()) * 100 / $shouldTotal), 2) ) . '%'
 					,'AccountCode'=> $product->getRevenueAccNo()
 					,'TaxType'=> "GST on Income"
 					,'TrackingName1'=> ''
