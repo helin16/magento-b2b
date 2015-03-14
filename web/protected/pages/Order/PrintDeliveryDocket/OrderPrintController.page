@@ -34,6 +34,7 @@
                     </tr>
                     <tr class="addr_info">
                         <td colspan=6>
+                        	<h4><%= $this->order->getCustomer()->getName() %><%= $this->getContact() %></h4>
                             <span class="inlineblock half">
                                 <div class="title">Billing To:</div>
                                 <div class="addr"><%= $this->getAddress('Billing') %></div>
