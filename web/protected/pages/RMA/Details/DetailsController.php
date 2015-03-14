@@ -232,7 +232,7 @@ public function saveOrder($sender, $param)
 					RMAItem::create($RMA, $product, $qtyOrdered, $itemDescription);
 				if(isset($item->orderItemId) && ($orderItem = OrderItem::get(trim($item->orderItemId))) instanceof OrderItem)
 					$RMAItem->setOrderItem($orderItem)->setUnitCost($orderItem->getUnitCost());
-				if(isset($item->RMAItemId) && ($RMAItem = RMAItem::get(trim($item->RMAItemId))) instanceof RMAItem && isset($product->getUnitCost()) && $product->getUnitCost() != 0)
+				if(isset($item->RMAItemId) && ($RMAItem = RMAItem::get(trim($item->RMAItemId))) instanceof RMAItem && $product->getUnitCost() != 0)
 					$RMAItem->setUnitCost($RMAItem->getUnitCost())->save();
 				else $RMAItem->setUnitCost($product->getUnitCost())->save();
 				$RMAItem->save();

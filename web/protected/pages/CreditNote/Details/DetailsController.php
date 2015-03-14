@@ -234,7 +234,7 @@ public function saveOrder($sender, $param)
 					CreditNoteItem::create($creditNote, $product, $qtyOrdered, $unitPrice, $itemDescription);
 				if(isset($item->orderItemId) && ($orderItem = OrderItem::get(trim($item->orderItemId))) instanceof OrderItem)
 					$creditNoteItem->setOrderItem($orderItem)->setUnitCost($orderItem->getUnitCost());
-				if(isset($item->orderItemId) && ($orderItem = OrderItem::get(trim($item->orderItemId))) instanceof OrderItem && isset($product->getUnitCost()) && $product->getUnitCost() != 0)
+				if(isset($item->orderItemId) && ($orderItem = OrderItem::get(trim($item->orderItemId))) instanceof OrderItem && $product->getUnitCost() != 0)
 					$creditNoteItem->setUnitCost($orderItem->getUnitCost())->save();
 				else $creditNoteItem->setUnitCost($product->getUnitCost())->save();
 			}
