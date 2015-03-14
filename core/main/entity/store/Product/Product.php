@@ -953,10 +953,11 @@ class Product extends InfoEntityAbstract
 	public function picked($qty, $comments = '', BaseEntityAbstract $entity = null)
 	{
 		$unitCost = $this->getUnitCost();
+		$order = ($entity instanceof Order ? $entity : ($entity instanceof OrderItem ? $entity->getOrder() : null));
 		return $this->setStockOnHand(($originStockOnHand = $this->getStockOnHand()) - $qty)
 			->setStockOnOrder(($originStockOnOrder = $this->getStockOnOrder()) + $qty)
 			->setTotalOnHandValue(($origTotalOnHandValue = $this->getTotalOnHandValue()) - ($qty * $unitCost))
-			->snapshotQty($entity instanceof BaseEntityAbstract ? $entity : $this, ProductQtyLog::TYPE_SALES_ORDER, (intval($qty) > 0 ? 'Stock picked' : 'stock UNPICKED') . ': ' . $comments)
+			->snapshotQty($entity instanceof BaseEntityAbstract ? $entity : $this, ProductQtyLog::TYPE_SALES_ORDER, (intval($qty) > 0 ? 'Stock picked' : 'stock UNPICKED') . ': ' . ($order instanceof Order ? '[' . $order->getOrderNo() . ']' : '') . $comments)
 			->save()
 			->addLog('StockOnHand(' . $originStockOnHand . ' => ' . $this->getStockOnHand() . ')', Log::TYPE_SYSTEM, 'STOCK_QTY_CHG', __CLASS__ . '::' . __FUNCTION__)
 			->addLog('StockOnOrder(' . $originStockOnOrder . ' => ' . $this->getStockOnOrder() . ')', Log::TYPE_SYSTEM, 'STOCK_QTY_CHG', __CLASS__ . '::' . __FUNCTION__)
@@ -1024,8 +1025,9 @@ class Product extends InfoEntityAbstract
 	 */
 	public function shipped($qty, $comments = '', BaseEntityAbstract $entity = null)
 	{
+		$order = ($entity instanceof Order ? $entity : ($entity instanceof OrderItem ? $entity->getOrder() : null));
 		return $this->setStockOnOrder(($originStockOnOrder = $this->getStockOnOrder()) - $qty)
-			->snapshotQty($entity instanceof BaseEntityAbstract ? $entity : $this, ProductQtyLog::TYPE_STOCK_MOVE_INTERNAL, 'Stock shipped')
+			->snapshotQty($entity instanceof BaseEntityAbstract ? $entity : $this, ProductQtyLog::TYPE_STOCK_MOVE_INTERNAL, 'Stock shipped. ' . ($order instanceof Order ? '[' . $order->getOrderNo() . ']' : ''))
 			->save()
 			->addLog('StockOnOrder(' . $originStockOnOrder . ' => ' . $this->getStockOnOrder() . ')', Log::TYPE_SYSTEM, 'STOCK_QTY_CHG', __CLASS__ . '::' . __FUNCTION__);
 	}
