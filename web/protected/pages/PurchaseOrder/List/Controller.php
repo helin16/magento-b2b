@@ -79,8 +79,7 @@ class Controller extends CRUDPageAbstract
             {
             	if((is_array($value) && count($value) === 0) || (is_string($value) && ($value = trim($value)) === ''))
             		continue;
-
-            	$query = PurchaseOrder::getQuery();
+				
             	switch ($field)
             	{
             		case 'po.purchaseOrderNo':
@@ -130,6 +129,15 @@ class Controller extends CRUDPageAbstract
             				{
             					$where[] = 'po.active = ?';
 	            				$params[] = trim($value);
+            				}
+            				break;
+            			}
+					case 'rec_item.invoiceNo':
+            			{
+            				if(trim($value) !== '')
+            				{
+            					$where[] = 'id in (select purchaseOrderId from receivingItem rec_item where po.id = rec_item.purchaseOrderId and rec_item.active =1 and rec_item.invoiceNo like ?)';
+            					$params[] = '%' . trim($value) . '%';
             				}
             				break;
             			}
