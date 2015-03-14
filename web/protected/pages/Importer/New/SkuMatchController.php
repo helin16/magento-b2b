@@ -79,7 +79,7 @@ class SkuMatchController extends BPCPageAbstract
 					$result['path'] = 'product';
 					$item = $this->updateStocktack($product
 							, trim($param->CallbackParameter->stockOnPO), trim($param->CallbackParameter->stockOnHand), trim($param->CallbackParameter->stockInRMA), trim($param->CallbackParameter->stockInParts)
-							, trim($param->CallbackParameter->totalInPartsValue), trim($param->CallbackParameter->totalOnHandValue), $param->CallbackParameter->active);
+							, trim($param->CallbackParameter->totalInPartsValue), trim($param->CallbackParameter->totalOnHandValue), $param->CallbackParameter->active, trim($param->CallbackParameter->comment));
 					
 					$result['item'] = $item->getJson();
 					break;
@@ -186,7 +186,7 @@ class SkuMatchController extends BPCPageAbstract
 	 * 
 	 * @return Product
 	 */
-	private function updateStocktack(Product $product, $stockOnPO = 0, $stockOnHand = 0, $stockInRMA = 0, $stockInParts = 0, $totalInPartsValue = 0, $totalOnHandValue = 0, $active = true)
+	private function updateStocktack(Product $product, $stockOnPO = 0, $stockOnHand = 0, $stockInRMA = 0, $stockInParts = 0, $totalInPartsValue = 0, $totalOnHandValue = 0, $active = true, $comment = '')
 	{
 		try
 		{
@@ -214,7 +214,7 @@ class SkuMatchController extends BPCPageAbstract
 			$product->addLog('Product (ID=' . $product->getId() . ') now active = ' . $active, Log::TYPE_SYSTEM)
 				->setActive($active);
 			
-			$product->snapshotQty(null, ProductQtyLog::TYPE_STOCK_ADJ, 'Loaded via importer')->save();
+			$product->snapshotQty(null, ProductQtyLog::TYPE_STOCK_ADJ, empty($comment) ? 'Loaded via importer' : $comment)->save();
 			
 			Dao::commitTransaction();
 			

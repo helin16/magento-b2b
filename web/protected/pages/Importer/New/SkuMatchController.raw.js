@@ -24,7 +24,6 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		
 		return this;
 	}
-	
 	,load: function(importDataTypes) {
 		var tmp = {}
 		tmp.me = this;
@@ -143,7 +142,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				tmp.me.csvFileLineFormat = ['sku', 'itemNo'];
 				break;
 			case 'stockAdjustment':
-				tmp.me.csvFileLineFormat = ['sku', 'stockOnPO', 'stockOnHand', 'stockOnOrder', 'stockInRMA', 'stockInParts' , 'totalInPartsValue', 'totalOnHandValue', 'active'];
+				tmp.me.csvFileLineFormat = ['sku', 'stockOnPO', 'stockOnHand', 'stockOnOrder', 'stockInRMA', 'stockInParts' , 'totalInPartsValue', 'totalOnHandValue', 'active', 'comment'];
 				break;
 			case 'accounting':
 				tmp.me.csvFileLineFormat = ['sku', 'assetAccNo', 'costAccNo', 'revenueAccNo'];

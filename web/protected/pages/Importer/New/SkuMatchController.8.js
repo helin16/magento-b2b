@@ -7,7 +7,7 @@ return e.me=this,e.newDiv=new Element("div",{"class":"panel panel-default drop_f
 if(e.me=this,e.me.dropdown=$(e.me._htmlIds.importDataTypesDropdown),e.me._importDataTypes=$F(e.me.dropdown),e.me._importDataTypes===e.me._selectTypeTxt)return e.me.showModalBox("Please select a import type first","Invalid inport type"),!1
 switch(e.me._importDataTypes){case"myob_ean":case"myob_upc":e.me.csvFileLineFormat=["sku","itemNo"]
 break
-case"stockAdjustment":e.me.csvFileLineFormat=["sku","stockOnPO","stockOnHand","stockOnOrder","stockInRMA","stockInParts","totalInPartsValue","totalOnHandValue","active"]
+case"stockAdjustment":e.me.csvFileLineFormat=["sku","stockOnPO","stockOnHand","stockOnOrder","stockInRMA","stockInParts","totalInPartsValue","totalOnHandValue","active","comment"]
 break
 case"accounting":e.me.csvFileLineFormat=["sku","assetAccNo","costAccNo","revenueAccNo"]
 break
