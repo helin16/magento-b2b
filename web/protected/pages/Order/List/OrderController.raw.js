@@ -343,7 +343,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					tmp.isTitle === true ? 'Customer' : row.customer.name
 			) })
 			.insert({'bottom': new Element('td', {'class': 'text-right col-xs-1 '}).update(
-				tmp.isTitle ? 'Payments' : tmp.me._getPaymentCell(row)
+				tmp.isTitle ? 'Due Amt' : tmp.me._getPaymentCell(row)
 			) })
 			.insert({'bottom': new Element('td', {'class': 'text-right'}).update(
 					tmp.isTitle ? 'Margin' : tmp.me._getMarginCell(row)
