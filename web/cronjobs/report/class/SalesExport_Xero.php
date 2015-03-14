@@ -87,12 +87,13 @@ class SalesExport_Xero extends ExportAbstract
 				$product = $orderItem->getProduct();
 				if(!$product instanceof Product)
 					continue;
+				$shouldTotal = StringUtilsAbstract::getValueFromCurrency($orderItem->getUnitPrice()) * $orderItem->getQtyOrdered();
 				$return[] = array_merge($row, array(
 					'InventoryItemCode' => $product->getSku()
 					,'Description'=> $product->getShortDescription()
 					,'Quantity'=> $orderItem->getQtyOrdered()
 					,'UnitAmount'=> $orderItem->getUnitPrice()
-					,'Discount'=> ''
+					,'Discount'=> ((($shouldTotal - StringUtilsAbstract::getValueFromCurrency($orderItem->getTotalPrice())) / $shouldTotal) * 100 ) . '%'
 					,'AccountCode'=> $product->getRevenueAccNo()
 					,'TaxType'=> "GST on Income"
 					,'TrackingName1'=> ''
