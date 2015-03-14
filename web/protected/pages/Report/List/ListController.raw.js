@@ -144,8 +144,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			,'onComplete': function(sender, param) {
 				jQuery('#' + btn.id).button('reset');
 			}
-		}, 12000);
-
+		}, 60000);
 		return tmp.me;
 	}
 });
