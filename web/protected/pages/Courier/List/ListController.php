@@ -1,6 +1,6 @@
 <?php
 /**
- * This is the listing page for customer
+ * This is the listing page for courier
  * 
  * @package    Web
  * @subpackage Controller
@@ -12,8 +12,8 @@ class ListController extends CRUDPageAbstract
 	 * (non-PHPdoc)
 	 * @see BPCPageAbstract::$menuItem
 	 */
-	public $menuItem = 'customer';
-	protected $_focusEntity = 'Customer';
+	public $menuItem = 'logistics.courier';
+	protected $_focusEntity = 'Courier';
 	/**
 	 * constructor
 	 */
@@ -30,9 +30,7 @@ class ListController extends CRUDPageAbstract
 	protected function _getEndJs()
 	{
 		$js = parent::_getEndJs();
-		$js .= "pageJs._bindSearchKey()";
-		$js .= ".setCallbackId('deactivateItems', '" . $this->deactivateItemBtn->getUniqueID() . "')";
-		$js .= ".getResults(true, " . $this->pageSize . ");";
+		$js .= "pageJs.getResults(true, " . $this->pageSize . ");";
 		return $js;
 	}
 	/**
@@ -45,67 +43,39 @@ class ListController extends CRUDPageAbstract
 	 */
 	public function getItems($sender, $param)
 	{
-        $results = $errors = array();
-        try
-        {
-            $class = trim($this->_focusEntity);
-            $pageNo = 1;
-            $pageSize = DaoQuery::DEFAUTL_PAGE_SIZE;
-            
-            if(isset($param->CallbackParameter->pagination))
-            {
-                $pageNo = $param->CallbackParameter->pagination->pageNo;
-                $pageSize = $param->CallbackParameter->pagination->pageSize * 3;
-            }
-            
-            $serachCriteria = isset($param->CallbackParameter->searchCriteria) ? json_decode(json_encode($param->CallbackParameter->searchCriteria), true) : array();
-
-            $where = array(1);
-            $params = array();
-            
-            foreach($serachCriteria as $field => $value)
-            {
-            	if((is_array($value) && count($value) === 0) || (is_string($value) && ($value = trim($value)) === ''))
-            		continue;
-            	
-            	$query = $class::getQuery();
-            	switch ($field)
-            	{
-            		case 'cust.name': 
-					{
-						$where[] = 'cust.name like ?';
-            			$params[] = '%' . $value . '%';
-						break;
-					}
-					case 'cust.email': 
-					{
-						$where[] =  $field . " = ? ";
-						$params[] = $value;
-						break;
-					}
-					case 'cust.description':
-					{
-						$where[] =  $field . " = ? ";
-						$params[] = $value;
-						break;
-					}
-            	}
-            }
-
-            $stats = array();
-
-            $objects = $class::getAllByCriteria(implode(' AND ', $where), $params, false, $pageNo, $pageSize, array('cust.name' => 'asc'), $stats);
-
-            $results['pageStats'] = $stats;
-            $results['items'] = array();
-            foreach($objects as $obj)
-                $results['items'][] = $obj->getJson();
-        }
-        catch(Exception $ex)
-        {
-            $errors[] = $ex->getMessage() . $ex->getTraceAsString();
-        }
-        $param->ResponseData = StringUtilsAbstract::getJson($results, $errors);
+		$results = $errors = array();
+		try
+		{
+			$class = trim($this->_focusEntity);
+			$pageNo = 1;
+			$pageSize = DaoQuery::DEFAUTL_PAGE_SIZE;
+			if(isset($param->CallbackParameter->pagination))
+			{
+				$pageNo = $param->CallbackParameter->pagination->pageNo;
+				$pageSize = $param->CallbackParameter->pagination->pageSize;
+			}
+			
+			$serachCriteria = isset($param->CallbackParameter->searchCriteria) ? json_decode(json_encode($param->CallbackParameter->searchCriteria), true) : array();
+				
+			$where = array(1);
+			$params = array();
+			if(isset($serachCriteria['courier.name']) && ($name = trim($serachCriteria['courier.name'])) !== '')
+			{
+				$where[] = 'courier.name like ?';
+				$params[] = '%' . $name . '%';
+			}
+			$stats = array();
+			$objects = $class::getAllByCriteria(implode(' AND ', $where), $params, false, $pageNo, $pageSize, array('courier.name' => 'asc'), $stats);
+			$results['pageStats'] = $stats;
+			$results['items'] = array();
+			foreach($objects as $obj)
+				$results['items'][] = $obj->getJson();
+		}
+		catch(Exception $ex)
+		{
+			$errors[] = $ex->getMessage();
+		}
+		$param->ResponseData = StringUtilsAbstract::getJson($results, $errors);
 	}
 	/**
 	 * save the items
@@ -115,27 +85,32 @@ class ListController extends CRUDPageAbstract
 	 * @throws Exception
 	 *
 	 */
-	public function deactivateItems($sender, $param)
+	public function saveItem($sender, $param)
 	{
 		$results = $errors = array();
 		try
 		{
 			$class = trim($this->_focusEntity);
-			$id = isset($param->CallbackParameter->item_id) ? $param->CallbackParameter->item_id : array();
-			
-			$customer = Customer::get($id);
-			
-			if(!$customer instanceof Customer)
-				throw new Exception();
-			$customer->setActive(false)
-				->save();
-			$results['item'] = $customer->getJson();
+			if(!isset($param->CallbackParameter->item))
+				throw new Exception("System Error: no item information passed in!");
+			$item = (isset($param->CallbackParameter->item->id) && ($item = $class::get($param->CallbackParameter->item->id)) instanceof $class) ? $item : null;
+			$name = trim($param->CallbackParameter->item->name);
+			if($item instanceof $class)
+			{
+				$item->setName($name)
+					->save();
+			}
+			else
+			{
+				$item = $class::create($name);
+			}
+			$results['item'] = $item->getJson();
 		}
-        catch(Exception $ex)
-        {
-            $errors[] = $ex->getMessage() . $ex->getTraceAsString();
-        }
-        $param->ResponseData = StringUtilsAbstract::getJson($results, $errors);
+		catch(Exception $ex)
+		{
+			$errors[] = $ex->getMessage();
+		}
+		$param->ResponseData = StringUtilsAbstract::getJson($results, $errors);
 	}
 }
 ?>
