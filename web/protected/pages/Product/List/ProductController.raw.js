@@ -452,10 +452,12 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 					})
 				})
 				.insert({'bottom':tmp.isTitle === true ? row.sku : new Element('a', {'href': 'javascript: void(0);', 'class': 'sku-link'})
-					.observe('click', function(){
+					.observe('click', function(e){
+						Event.stop(e);
 						tmp.me._displaySelectedProduct(row);
 					})
-					.observe('dblclick', function(){
+					.observe('dblclick', function(e){
+						Event.stop(e);
 						tmp.me._openProductDetails(row);
 					})
 					.update(row.sku)
@@ -484,6 +486,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 									.insert({'bottom': new Element('div', {'class': 'col-xs-4', 'title': 'Average Cost'}).update((row.totalOnHandValue != 0 && row.stockOnHand != 0) ? tmp.me.getCurrency(row.totalOnHandValue/row.stockOnHand) : 'N/A') })
 									.insert({'bottom': new Element('div', {'class': 'col-xs-4 hide-when-info', 'title': 'Stock On PO'}).update(row.stockOnPO) })
 									.observe('dblclick', function(e){
+										Event.stop(e);
 										tmp.me._openProductQtyLogPage(row.id);
 									})
 								)
