@@ -25,8 +25,7 @@ class ManualJournalExport_Xero extends ExportAbstract
 		$now = new UDate();
 		$now->setTimeZone('Australia/Melbourne');
 		$return = array();
-		foreach($items as $item)
-		{
+		foreach($items as $item) {
 			if(!($product = $item->getProduct()) instanceof Product)
 				continue;
 			$narration = '';
@@ -40,6 +39,7 @@ class ManualJournalExport_Xero extends ExportAbstract
 				else if ($item->getEntity() instanceof Order)
 					$narration = (($invoiceNo = trim($item->getEntity()->getInvNo())) === '' ? $item->getEntity()->getOrderNo() : $invoiceNo);
 			}
+			$comments = $item->getComments();
 			$return[] = array(
 				'Narration' => $narration
 				,'Date'=> trim($item->getCreated()->setTimeZone('Australia/Melbourne'))
@@ -51,6 +51,7 @@ class ManualJournalExport_Xero extends ExportAbstract
 				,'TrackingOption1'=> ''
 				,'TrackingName2'=> ''
 				,'TrackingOption2'=> ''
+				,'Comments' => $comments
 			);
 			$return[] = array(
 				'Narration' => $narration
@@ -63,6 +64,7 @@ class ManualJournalExport_Xero extends ExportAbstract
 				,'TrackingOption1'=> ''
 				,'TrackingName2'=> ''
 				,'TrackingOption2'=> ''
+				,'Comments' => $comments
 			);
 		}
 		return $return;
