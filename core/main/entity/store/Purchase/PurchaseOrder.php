@@ -388,6 +388,16 @@ class PurchaseOrder extends BaseEntityAbstract
 		return $totalValue;
 	}
 	/**
+	 * Getting the supplier invoices
+	 * 
+	 * @return array
+	 */
+	public function getSupplierInvoices()
+	{
+		$result = Dao::getResultsNative('select distinct invoiceNo `invoiceNo` from receivingitem where purchaseOrderId = ?', array($this->getId()), PDO::FETCH_ASSOC);
+		return array_map(create_function('$a', 'return $a["invoiceNo"];'), $result);
+	}
+	/**
 	 * (non-PHPdoc)
 	 * @see BaseEntityAbstract::postSave()
 	 */
@@ -499,6 +509,7 @@ class PurchaseOrder extends BaseEntityAbstract
 			$array['totalProductCount'] = $this->getTotalProductCount();
 			$array['totalReceivedCount'] = $this->getTotalReceivedCount();
 			$array['totalReceivedValue'] = $this->getTotalRecievedValue();
+			$array['supplierInvoices'] = $this->getSupplierInvoices();
 		}
 		return parent::getJson($array, $reset);
 	}
