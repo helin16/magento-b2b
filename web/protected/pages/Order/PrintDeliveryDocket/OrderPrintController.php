@@ -83,6 +83,11 @@ class OrderPrintController extends BPCPageAbstract
 		}
 		return $html;
 	}
+	public function getContact()
+	{
+		$contact = $this->order->getCustomer()->getContactNo();
+		return empty($contact) ? '' : '(' . $contact . ')';
+	}
 	public function getAddress($type)
 	{
 		$method = 'get' . ucfirst($type) . 'Addr';
