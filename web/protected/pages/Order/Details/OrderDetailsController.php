@@ -188,7 +188,7 @@ class OrderDetailsController extends BPCPageAbstract
 						SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_WSDL),
 						SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_USER),
 						SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_KEY)
-						)->changeOrderStatus($order, $order->getStatus()->getMageStatus(), $notificationMsg, $notifyCustomer);
+						)->changeOrderStatus($order, $order->getStatus()->getMageStatus(), $notificationMsg, false);
 // 					$emailTitle = 'Your Order ' . $order->getOrderNo() . ' has been updated';
 // 					// $order->getCustomer()->getEmail()
 // 					EmailSender::addEmail('', 'frank@budgetpc.com.au', $emailTitle, $this->_getNotifictionEmail($order, $emailBody, $emailTitle));
