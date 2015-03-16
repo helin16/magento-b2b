@@ -1375,7 +1375,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			} else if(tmp.me._originalOrder) {
 				tmp.me.selectCustomer(tmp.me._originalOrder.customer)
 					._populateOrderItems(tmp.me._originalOrder.items);
-				tmp.className = tmp.me._originalOrder.type === 'QUOTE' ? 'warning' : (tmp.me._order.type === 'ORDER' ? 'success' : 'default');
+				tmp.className = tmp.me._originalOrder.type === 'QUOTE' ? 'warning' : (tmp.me._originalOrder.type === 'ORDER' ? 'success' : 'default');
 
 			}else {
 				$(tmp.me._htmlIds.itemDiv).update(tmp.me._getCustomerListPanel());
