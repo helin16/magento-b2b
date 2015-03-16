@@ -1349,7 +1349,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					'itemDescription': item.itemDescription,
 					'unitPrice': tmp.me.getCurrency(tmp.unitPriceValue),
 					'qtyOrdered': item.qtyOrdered,
-					'discount' : (tmp.unitPriceValue * item.qtyOrdered - tmp.totalPriceValue) / tmp.totalPriceValue,
+					'discount' : Math.round(((tmp.unitPriceValue * item.qtyOrdered - tmp.totalPriceValue) * 100) / tmp.totalPriceValue),
 					'margin': tmp.me.getCurrency(tmp.me.getValueFromCurrency(item.margin)),
 					'totalPrice': tmp.me.getCurrency(tmp.totalPriceValue),
 					'scanTable': tmp.me._getScanTable(item),
