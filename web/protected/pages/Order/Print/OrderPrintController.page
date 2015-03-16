@@ -9,7 +9,7 @@
                             <span class="inlineblock logo">
                                 <img src="/themes/default/images/logo.png" style="padding: 0px; margin: 0px;display: block;"/>
                                 <span class="inlineblock orderno">
-                                    <%= $this->order->getType() %> No.: <%= $this->order->getOrderNo()%>
+                                    <%= $this->getType() %> No.: <%= $this->order->getOrderNo()%>
                                 </span>
                             </span>
                             <span class="inlineblock info">
