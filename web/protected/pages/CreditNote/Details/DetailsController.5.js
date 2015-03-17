@@ -1,41 +1,1268 @@
-var PageJs=new Class.create
-PageJs.prototype=Object.extend(new BPCPageJs,{_htmlIds:{itemDiv:"",searchPanel:"search_panel"},_customer:null,_item:null,_searchTxtBox:null,_applyToOptions:null,_commentsDiv:{pagination:{pageSize:5,pageNo:1},resultDivId:"comments_result_div",types:{purchasing:"",warehouse:""}},setHTMLIDs:function(e){return this._htmlIds.itemDiv=e,this},_getCommentsRow:function(e){var t={}
-return t.me=this,new Element("tr",{"class":"comments_row"}).store("data",e).insert({bottom:new Element("td",{"class":"created",width:"15%"}).update(new Element("small").update(e.id?t.me.loadUTCTime(e.created).toLocaleString():e.created))}).insert({bottom:new Element("td",{"class":"creator",width:"15%"}).update(new Element("small").update(e.createdBy.person.fullname))}).insert({bottom:new Element("td",{"class":"type",width:"10%"}).update(new Element("small").update(e.type))}).insert({bottom:new Element("td",{"class":"comments",width:"auto"}).update(e.comments)})},_getComments:function(e,t){var o={}
-return o.me=this,o.reset=e||!1,o.reset===!0&&$(o.me._commentsDiv.resultDivId).update(""),o.ajax=new Ajax.Request("/ajax/getComments",{method:"get",parameters:{entity:"CreditNote",entityId:o.me._creditNote.id,orderBy:{created:"desc"},pageNo:o.me._commentsDiv.pagination.pageNo,pageSize:o.me._commentsDiv.pagination.pageSize},onLoading:function(){t&&jQuery("#"+t.id).button("loading")},onSuccess:function(e){try{if(o.reset===!0&&$(o.me._commentsDiv.resultDivId).update(o.me._getCommentsRow({type:"Type",createdBy:{person:{fullname:"WHO"}},created:"WHEN",comments:"COMMENTS"}).addClassName("header").wrap(new Element("thead"))),o.result=o.me.getResp(e.responseText,!1,!0),!o.result||!o.result.items)return
-$$(".new-page-btn-div").size()>0&&$$(".new-page-btn-div").each(function(e){e.remove()}),o.tbody=$(o.me._commentsDiv.resultDivId).down("tbody"),o.tbody||$(o.me._commentsDiv.resultDivId).insert({bottom:o.tbody=new Element("tbody")}),o.result.items.each(function(e){o.tbody.insert({bottom:o.me._getCommentsRow(e)})}),o.result.pageStats.pageNumber<o.result.pageStats.totalPages&&o.tbody.insert({bottom:new Element("tr",{"class":"new-page-btn-div"}).insert({bottom:new Element("td",{colspan:4}).insert({bottom:new Element("span",{id:"comments_get_more_btn","class":"btn btn-primary","data-loading-text":"Getting More ..."}).update("Get More Comments").observe("click",function(){o.me._commentsDiv.pagination.pageNo=1*o.me._commentsDiv.pagination.pageNo+1,o.me._getComments(!1,this)})})})})}catch(t){$(o.me._commentsDiv.resultDivId).insert({bottom:o.me.getAlertBox("ERROR: ",t).addClassName("alert-danger")})}},onComplete:function(){t&&jQuery("#"+t.id).button("reset")}}),this},_addComments:function(e){var t={}
-return t.me=this,t.commentsBox=$(e).up(".new_comments_wrapper").down("[new_comments=comments]"),t.comments=$F(t.commentsBox),t.comments.blank()?this:(t.me.postAjax(t.me.getCallbackId("addComments"),{comments:t.comments,creditNote:t.me._creditNote},{onLoading:function(){jQuery("#"+e.id).button("loading")},onSuccess:function(e,o){try{if(t.result=t.me.getResp(o,!1,!0),!t.result)return
-t.tbody=$(t.me._commentsDiv.resultDivId).down("tbody"),t.tbody||$(t.me._commentsDiv.resultDivId).insert({bottom:t.tbody=new Element("tbody")}),t.tbody.insert({top:t.me._getCommentsRow(t.result)}),t.commentsBox.setValue("")}catch(n){alert(n)}},onComplete:function(){jQuery("#"+e.id).button("reset")}}),this)},_getEmptyCommentsDiv:function(){var e={}
-return e.me=this,new Element("div",{"class":"panel panel-default"}).insert({bottom:new Element("div",{"class":"panel-heading"}).update("Comments")}).insert({bottom:new Element("div",{"class":"table-responsive"}).insert({bottom:new Element("table",{id:e.me._commentsDiv.resultDivId,"class":"table table-hover table-condensed"})})}).insert({bottom:new Element("div",{"class":"panel-body new_comments_wrapper"}).insert({bottom:new Element("div",{"class":"row"}).insert({bottom:new Element("div",{"class":"col-xs-2"}).update("<strong>New Comments:</strong>")}).insert({bottom:new Element("div",{"class":"col-xs-10"}).insert({bottom:new Element("div",{"class":"input-group"}).insert({bottom:new Element("input",{"class":"form-control",type:"text",new_comments:"comments",placeholder:"add more comments to this order"}).observe("keydown",function(t){e.me.keydown(t,function(){$(t.currentTarget).up(".new_comments_wrapper").down("[new_comments=btn]").click()})})}).insert({bottom:new Element("span",{"class":"input-group-btn"}).insert({bottom:new Element("span",{id:"add_new_comments_btn",new_comments:"btn","class":"btn btn-primary","data-loading-text":"saving..."}).update("add").observe("click",function(){e.me._addComments(this)})})})})})})})},_submitOrder:function(e,t){var o={}
-return o.me=this,o.modalBoxPanel=$(e).up(".modal-content"),o.modalBoxTitlePanel=o.modalBoxPanel.down(".modal-title"),o.modalBoxBodyPanel=o.modalBoxPanel.down(".modal-body"),o.me.postAjax(o.me.getCallbackId("saveOrder"),t,{onLoading:function(){o.modalBoxTitlePanel.update("Please wait..."),o.modalBoxBodyPanel.update('<h4>Submitting the data, please be patient.</h4><div><h3 class="fa fa-spinner fa-spin"></h3></div>')},onSuccess:function(e,t){try{if(o.result=o.me.getResp(t,!1,!0),!o.result||!o.result.item)return
-if(o.me._item=o.result.item,o.modalBoxTitlePanel.update('<strong class="text-success">Success!</strong>'),o.me.hideModalBox(),o.me.disableAll(),window.location="/creditnote/"+o.result.item.id+".html",o.result.printURL&&(o.printWindow=window.open(o.result.printURL,"Printing Order","width=1300, location=no, scrollbars=yes, menubar=no, status=no, titlebar=no, fullscreen=no, toolbar=no"),!o.printWindow))throw'<h4>Your browser has block the popup window, please enable it for further operations.</h4><a href="'+o.result.printURL+'" target="_BLANK"> click here for now</a>'}catch(n){o.modalBoxTitlePanel.update('<h4 class="text-danger">Error:</h4>'),o.modalBoxBodyPanel.update(n)}},onComplete:function(){}}),o.me},disableAll:function(){jQuery("input").attr("disabled",!0),jQuery("textarea").attr("disabled",!0),jQuery(".btn").attr("disabled",!0),jQuery(".form-control").attr("disabled",!0)},_preConfirmSubmit:function(e){var t={}
-if(t.me=this,t.data=null,t.printIt=e===!0?!0:!1,t.data=t.me._collectFormData($(t.me._htmlIds.itemDiv),"save-order"),null===t.data)return null
-if(t.data.applyTo.blank())return t.me.hideModalBox(),t.me.showModalBox("Warning","You MUST select what this credit note is <strong>Apply To</strong>"),null
-if(t.data.printIt=t.printIt,t.data.customer={},t.data.customer.id=t.me._customer.id,t.data.creditNote=t.me._creditNote,t.data.order=t.me._order,t.shippAddrPanel=$$(".shipping-address.address-div").first(),t.shippAddrPanel){if(t.shippAddr=t.me._collectFormData(t.shippAddrPanel,"address-editable-field"),null===t.shippAddr)return t.me.hideModalBox(),t.me.showModalBox("Warning","some error in the shipping address"),null
-t.data.shippingAddr=t.shippAddr}return t.data.items=[],$$(".order-item-row").each(function(e){t.itemData=e.retrieve("data"),t.data.items.push({orderItemId:e.readAttribute("orderItemId"),creditNoteItemId:e.readAttribute("creditNoteItemId"),valid:e.visible(),product:{id:t.itemData.product.id},itemDescription:t.itemData.itemDescription,unitPrice:t.itemData.unitPrice,qtyOrdered:t.itemData.qtyOrdered,totalPrice:t.itemData.totalPrice,serials:e.retrieve("serials")})}),t.noValidItem=!0,t.data.items.each(function(e){t.noValidItem===!0&&e.valid===!0&&(t.noValidItem=!1)}),t.noValidItem===!0?(t.me.hideModalBox(),t.me.showModalBox('<strong class="text-danger">Error</strong>',"<strong>At least one Credit Note Item</strong> is needed!",!0),null):(t.data.items.each(function(e){e.totalPrice=t.me.getValueFromCurrency(e.totalPrice),e.unitPrice=t.me.getValueFromCurrency(e.unitPrice)}),t.newDiv=new Element("div",{"class":"confirm-div"}).insert({bottom:new Element("div").insert({bottom:t.me._getFormGroup("Do you want to send an email to this address:",new Element("input",{value:t.me._customer.email,"confirm-po":"po_email",required:!0,placeholder:"The email to send to. WIll NOT update the customer's email with this."}))})}).insert({bottom:new Element("div").insert({bottom:new Element("em").insert({bottom:new Element("small").update("The above email will be used to send the email to. WIll NOT update the customer's email with this.")})})}).insert({bottom:new Element("div").insert({bottom:new Element("span",{"class":"btn btn-primary pull-right"}).update("Yes, send the Credit Note to this email address").observe("click",function(){return t.confirmEmailBox=$(this).up(".confirm-div").down('[confirm-po="po_email"]'),$F(t.confirmEmailBox).blank()?void t.me._markFormGroupError(t.confirmEmailBox,"Email Address Required Here"):/^.+@.+(\..)*$/.test($F(t.confirmEmailBox).strip())?(t.data.confirmEmail=$F(t.confirmEmailBox).strip(),void t.me._submitOrder($(this),t.data)):void t.me._markFormGroupError(t.confirmEmailBox,"Please provide an valid email address")})}).insert({bottom:new Element("span",{"class":"btn btn-info"}).update("No, save Credit Note but DO NOT send email").observe("click",function(){t.me._submitOrder($(this),t.data)})})}),t.me.showModalBox("You're about to save creadit note for : "+t.me._customer.name,t.newDiv),t.me)},_saveBtns:function(){var e={}
-return e.me=this,e.newDiv=new Element("div").insert({bottom:new Element("div",{"class":"btn-group pull-right  visible-xs visible-sm visible-md visible-lg"}).insert({bottom:new Element("span",{"class":"btn btn-primary save-btn"}).insert({bottom:new Element("span").update(" Save & Email ")}).observe("click",function(){e.me._preConfirmSubmit()})}).insert({bottom:new Element("span",{"class":"btn btn-primary dropdown-toggle","data-toggle":"dropdown"}).setStyle("display: none;").insert({bottom:new Element("span",{"class":"caret"})})}).insert({bottom:new Element("ul",{"class":"dropdown-menu save-btn-dropdown-menu"}).setStyle("display: none;").insert({bottom:new Element("li").insert({bottom:new Element("a",{href:"javascript: void(0);"}).update("Save Only").observe("click",function(){e.me._preConfirmSubmit()})})})})}).insert({bottom:new Element("div",{"class":"btn btn-default"}).setStyle("display: none;").insert({bottom:new Element("span",{"class":"glyphicon glyphicon-remove-sign"})}).insert({bottom:new Element("span").update(" cancel ")}).observe("click",function(){e.me.showModalBox('<strong class="text-danger">Cancelling the current order</strong>','<div>You are about to cancel this new order, all input data will be lost.</div><br /><div>Continue?</div><div><span class="btn btn-primary" onclick="window.location = document.URL;"><span class="glyphicon glyphicon-ok"></span> YES</span><span class="btn btn-default pull-right" data-dismiss="modal"><span aria-hidden="true"><span class="glyphicon glyphicon-remove-sign"></span> NO</span></span></div>',!0)})}),e.newDiv.down(".btn-group").removeClassName("btn-group"),e.newDiv},_addNewProductRow:function(e){var t={}
-return t.me=this,t.currentRow=$(e).up(".new-order-item-input"),t.product=t.currentRow.retrieve("product"),t.product?(t.unitPriceBox=t.currentRow.down("[new-order-item=unitPrice]"),t.unitPrice=t.me.getValueFromCurrency($F(t.unitPriceBox)),null===t.unitPrice.match(/^\d+(\.\d{1,2})?$/)?void t.me._markFormGroupError(t.unitPriceBox,"Invalid value provided!"):(t.qtyOrderedBox=t.currentRow.down("[new-order-item=qtyOrdered]"),t.qtyOrdered=t.me.getValueFromCurrency($F(t.qtyOrderedBox)),null===t.qtyOrdered.match(/^\d+(\.\d{1,2})?$/)?void t.me._markFormGroupError(t.qtyOrderedBox,"Invalid value provided!"):(t.discountBox=t.currentRow.down("[new-order-item=discount]"),t.discount=t.me.getValueFromCurrency($F(t.discountBox)),null===t.discount.match(/^\d+(\.\d{1,2})?$/)?void t.me._markFormGroupError(t.discountBox,"Invalid value provided!"):(t.totalPriceBox=t.currentRow.down("[new-order-item=totalPrice]"),t.totalPrice=t.me.getValueFromCurrency($F(t.totalPriceBox)),null===t.totalPrice.match(/^\d+(\.\d{1,2})?$/)?void t.me._markFormGroupError(t.totalPriceBox,"Invalid value provided!"):(t.currentRow.getElementsBySelector(".form-group.has-error .form-control").each(function(e){$(e).retrieve("clearErrFunc")()}),t.itemDescription=$F(t.currentRow.down("[new-order-item=itemDescription]")).replace(/\n/g,"<br />"),t.data={product:t.product,itemDescription:t.itemDescription,unitPrice:t.me.getCurrency(t.unitPrice),qtyOrdered:t.qtyOrdered,discount:t.discount,margin:t.me.getCurrency(parseFloat(t.totalPrice)-parseFloat(1.1*t.product.unitCost*t.qtyOrdered)),totalPrice:t.me.getCurrency(t.totalPrice)},t.currentRow.up(".list-group").insert({bottom:t.itemRow=t.me._getProductRow(t.data)}),t.newRow=t.me._getNewProductRow(),t.currentRow.replace(t.newRow).addClassName(),t.newRow.down("[new-order-item=product]").focus(),t.me._recalculateSummary(),t.me))))):(t.productBox=t.currentRow.down("[new-order-item=product]"),void(t.currentRow.down("[new-order-item=product]")?t.me._markFormGroupError(t.productBox,"Select a product first!"):t.me.showModalBox("Product Needed","Select a product first!",!0)))},_searchProduct:function(e,t,o){var n={}
-return n.me=this,n.btn=e,n.showMore=$(e).retrieve("showMore")===!0?!0:!1,n.pageNo=t||1,n.me._signRandID(n.btn),n.searchTxtBox=$(n.btn).up(".product-autocomplete")&&$(n.btn).up(".product-autocomplete").down(".search-txt")?$(n.btn).up(".product-autocomplete").down(".search-txt"):$($(n.btn).retrieve("searchBoxId")),n.me._signRandID(n.searchTxtBox),n.searchTxt=$F(n.searchTxtBox),n.me.postAjax(n.me.getCallbackId("searchProduct"),{searchTxt:n.searchTxt,pageNo:n.pageNo},{onLoading:function(){jQuery("#"+n.btn.id).button("loading"),jQuery("#"+n.searchTxtBox.id).button("loading")},onSuccess:function(t,r){n.resultList=n.showMore===!1?new Element("div",{"class":"search-product-list"}):$(e).up(".search-product-list")
-try{if(n.result=n.me.getResp(r,!1,!0),!n.result||!n.result.items||0===n.result.items.size())throw"Nothing Found for: "+n.searchTxt
-n.me._signRandID(n.searchTxtBox),n.result.items.each(function(e){n.resultList.insert({bottom:n.me._getSearchPrductResultRow(e,n.searchTxtBox)})}),n.resultList.addClassName("list-group")}catch(s){n.resultList.update(n.me.getAlertBox("Error: ",s).addClassName("alert-danger"))}"function"==typeof o&&o(),n.result.pagination.pageNumber<n.result.pagination.totalPages&&n.resultList.insert({bottom:new Element("a",{"class":"item-group-item"}).insert({bottom:new Element("span",{"class":"btn btn-primary","data-loading-text":"Getting more ..."}).update("Show Me More")}).observe("click",function(){n.newBtn=$(this),$(n.newBtn).store("searchBoxId",n.searchTxtBox.id),$(n.newBtn).store("showMore",!0),n.me._searchProduct(this,1*n.pageNo+1,function(){$(n.newBtn).remove()})})}),n.showMore===!1&&n.me.showModalBox("Products that has: "+n.searchTxt,n.resultList,!1)},onComplete:function(){jQuery("#"+n.btn.id).button("reset"),jQuery("#"+n.searchTxtBox.id).button("reset")}}),n.me},_getSearchPrductResultRow:function(e,t){var o={}
-return o.me=this,o.defaultImgSrc="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjZWVlIi8+PHRleHQgdGV4dC1hbmNob3I9Im1pZGRsZSIgeD0iMzIiIHk9IjMyIiBzdHlsZT0iZmlsbDojYWFhO2ZvbnQtd2VpZ2h0OmJvbGQ7Zm9udC1zaXplOjEycHg7Zm9udC1mYW1pbHk6QXJpYWwsSGVsdmV0aWNhLHNhbnMtc2VyaWY7ZG9taW5hbnQtYmFzZWxpbmU6Y2VudHJhbCI+NjR4NjQ8L3RleHQ+PC9zdmc+",o.newRow=new Element("a",{"class":"list-group-item search-product-result-row",href:"javascript: void(0);"}).store("data",e).insert({bottom:new Element("div",{"class":"row"}).insert({bottom:new Element("div",{"class":"col-xs-2"}).insert({bottom:new Element("div",{"class":"thumbnail"}).insert({bottom:new Element("img",{"data-src":"holder.js/100%x64",alert:"Product Image",src:0===e.images.size()?o.defaultImgSrc:e.images[0].asset.url})})})}).insert({bottom:new Element("div",{"class":"col-xs-10"}).insert({bottom:new Element("strong").update(e.name).insert({bottom:new Element("small",{"class":"btn btn-xs btn-info"}).setStyle("margin-left: 10px;").insert({bottom:new Element("small",{"class":"glyphicon glyphicon-new-window"})}).observe("click",function(e){Event.stop(e),$productId=$(this).up(".search-product-result-row").retrieve("data").id,$productId&&o.me._openProductDetailPage($productId)})}).insert({bottom:new Element("small",{"class":"pull-right"}).update("SKU: "+e.sku)})}).insert({bottom:new Element("div").insert({bottom:new Element("small").update(e.shortDescription)})}).insert({bottom:new Element("div").insert({bottom:new Element("small",{"class":"col-xs-4"}).insert({bottom:new Element("div",{"class":"input-group",title:"stock on HAND"}).insert({bottom:new Element("span",{"class":"input-group-addon"}).update("SOH:")}).insert({bottom:new Element("strong",{"class":"form-control"}).update(e.stockOnHand)})})}).insert({bottom:new Element("small",{"class":"col-xs-4"}).insert({bottom:new Element("div",{"class":"input-group",title:"stock on ORDER"}).insert({bottom:new Element("span",{"class":"input-group-addon"}).update("SOO:")}).insert({bottom:new Element("strong",{"class":"form-control"}).update(e.stockOnOrder)})})}).insert({bottom:new Element("small",{"class":"col-xs-4"}).insert({bottom:new Element("div",{"class":"input-group",title:"stock on PO"}).insert({bottom:new Element("span",{"class":"input-group-addon"}).update("SOP:")}).insert({bottom:new Element("strong",{"class":"form-control"}).update(e.stockOnPO)})})})})})}).observe("click",function(){o.inputRow=$(t).up(".new-order-item-input").store("product",e),t.up(".productName").writeAttribute("colspan",!1).update(e.sku).removeClassName("col-xs-8").addClassName("col-xs-3").insert({bottom:new Element("small",{"class":"btn btn-xs btn-info"}).setStyle("margin-left: 10px;").insert({bottom:new Element("small",{"class":"glyphicon glyphicon-new-window"})}).observe("click",function(t){Event.stop(t),$productId=e.id,$productId&&o.me._openProductDetailPage($productId)})}).insert({bottom:new Element("a",{href:"javascript: void(0);","class":"text-danger pull-right",title:"click to change the product"}).insert({bottom:new Element("span",{"class":"glyphicon glyphicon-remove"})}).observe("click",function(){o.newRow=o.me._getNewProductRow(),$(this).up(".new-order-item-input").replace(o.newRow),o.newRow.down("[new-order-item=product]").select()})}).insert({after:new Element("div",{"class":"col-xs-5"}).update(new Element("textarea",{"new-order-item":"itemDescription"}).setStyle("width: 100%").update(e.name))}),jQuery("#"+o.me.modalId).modal("hide"),o.retailPrice=0===e.prices.size()?0:e.prices[0].price,o.inputRow.down("[new-order-item=unitPrice]").writeAttribute("value",o.me.getCurrency(o.retailPrice)).select(),o.me._calculateNewProductPrice(o.inputRow)}),o.newRow},_selectProduct:function(e){var t={}
-return t.me=this,t.data={product:e.product,itemDescription:e.itemDescription,unitPrice:t.me.getCurrency(e.unitPrice),qtyOrdered:e.qty?e.qty:e.qtyOrdered,discount:100,margin:0,totalPrice:t.me.getCurrency(e.unitPrice*(e.qty?e.qty:e.qtyOrdered))},$$(".order_change_details_table").first().insert({bottom:t.newDiv=t.me._getProductRow(t.data)}),t.me._recalculateSummary(),t.newDiv},_getSummaryFooter:function(){var e={}
-return e.me=this,e.applyTo=new Element("select",{"class":"select2 form-control input-sm","save-order":"applyTo","data-placeholder":"Select an option"}).insert({bottom:new Element("option",{value:""}).update("")}),e.me._applyToOptions.each(function(t){e.applyTo.insert({bottom:e.option=new Element("option",{value:t}).update(t)}),e.me._creditNote&&e.me._creditNote.applyTo==t&&e.option.writeAttribute("selected",!0)}),e.newDiv=new Element("div",{"class":"panel-footer"}).insert({bottom:new Element("div",{"class":"row"}).insert({bottom:new Element("div",{"class":"col-sm-8"}).insert({bottom:e.me._getFormGroup("Description:",new Element("textarea",{"save-order":"description",rows:e.me._creditNote?3:1}).update(e.me._creditNote?e.me._creditNote.description:""))}).insert({bottom:e.me._creditNote?"":e.me._getFormGroup("Comments:",new Element("textarea",{"save-order":"comments",rows:"1"}))})}).insert({bottom:new Element("div",{"class":"col-sm-4"}).insert({bottom:new Element("div",{"class":"row"}).insert({bottom:new Element("div",{"class":"col-xs-6 text-right"}).update(new Element("strong").update("Total Excl. GST: "))}).insert({bottom:new Element("div",{"class":"col-xs-6","order-price-summary":"totalPriceExcludeGST"}).update(e.me.getCurrency(0))})}).insert({bottom:new Element("div",{"class":"row"}).insert({bottom:new Element("div",{"class":"col-xs-6 text-right"}).update(new Element("strong").update("Total GST: "))}).insert({bottom:new Element("div",{"order-price-summary":"totalPriceGST","class":"col-xs-6"}).update(e.me.getCurrency(0))})}).insert({bottom:new Element("div",{"class":"row",style:"border-bottom: 1px solid brown"}).setStyle("display: none;").insert({bottom:new Element("div",{"class":"col-xs-6 text-right"}).update(new Element("strong").update("Total Discount:"))}).insert({bottom:new Element("div",{"order-price-summary":"totalDiscount","class":"col-xs-6"}).update(e.me.getCurrency(0))})}).insert({bottom:new Element("div",{"class":"row"}).insert({bottom:new Element("div",{"class":"col-xs-6 text-right"}).update(new Element("strong").update("Sub Total Incl. GST: "))}).insert({bottom:new Element("div",{"order-price-summary":"totalPriceIncludeGST","class":"col-xs-6"}).update(e.me.getCurrency(0))})}).insert({bottom:new Element("div",{"class":"row",style:"border-bottom: 1px solid brown"}).insert({bottom:new Element("div",{"class":"col-xs-6 text-right"}).update(new Element("strong").update("Apply To: "))}).insert({bottom:new Element("div",{"class":"col-xs-6"}).update(new Element("strong").update(e.applyTo))})}).insert({bottom:new Element("div",{"class":"row"}).insert({bottom:new Element("div",{"class":"col-xs-6 text-right"}).update(new Element("strong").update("Total Incl. GST:"))}).insert({bottom:new Element("strong",{"order-price-summary":"subTotal","class":"col-xs-6"}).update(e.me.getCurrency(0))})}).insert({bottom:new Element("div",{"class":"row"}).setStyle("display: none;").insert({bottom:new Element("h4",{"class":"col-xs-6 text-right"}).setStyle("color: #d30014 !important").update(new Element("strong").update("DUE:"))}).insert({bottom:new Element("h4",{"class":"col-xs-6","order-price-summary":"total-payment-due"}).setStyle("color: #d30014 !important").update(e.me.getCurrency(0))})}).insert({bottom:new Element("div",{"class":"row margin"}).setStyle("display: none;").insert({bottom:new Element("strong",{"class":"col-xs-6 text-right"}).update(new Element("strong").update("Margin Total Incl. GST:"))}).insert({bottom:new Element("strong",{"class":"col-xs-6","order-price-summary":"total-margin"}).update(e.me.getCurrency(0))})})})}),e.newDiv},_getNewProductProductAutoComplete:function(){var e={}
-return e.me=this,e.skuAutoComplete=e.me._getFormGroup(null,new Element("div",{"class":"input-group input-group-sm product-autocomplete"}).insert({bottom:new Element("input",{"class":"form-control search-txt visible-xs visible-sm visible-md visible-lg init-focus","new-order-item":"product",required:!0,placeholder:"search SKU, NAME and any BARCODE for this product"}).observe("keyup",function(t){e.txtBox=this,e.me.keydown(t,function(){$(e.txtBox).up(".product-autocomplete").down(".search-btn").click()})}).observe("keydown",function(t){e.txtBox=this,e.me.keydown(t,function(){$(e.txtBox).up(".product-autocomplete").down(".search-btn").click()},function(){},Event.KEY_TAB)})}).insert({bottom:new Element("span",{"class":"input-group-btn"}).insert({bottom:new Element("span",{"class":" btn btn-primary search-btn","data-loading-text":"searching..."}).insert({bottom:new Element("span",{"class":"glyphicon glyphicon-search"})}).observe("click",function(){$F($(this).up(".product-autocomplete").down(".search-txt")).blank()?$(this).up(".product-autocomplete").down(".search-txt").focus():e.me._searchProduct(this)})})})),e.skuAutoComplete.down(".input-group").removeClassName("form-control"),e.skuAutoComplete},_getNewProductRow:function(){var e={}
-return e.me=this,e.skuAutoComplete=e.me._getNewProductProductAutoComplete(),e.data={product:{name:e.skuAutoComplete},unitPrice:e.me._getFormGroup(null,new Element("input",{"class":"input-sm","new-order-item":"unitPrice",required:!0,value:e.me.getCurrency(0)}).observe("click",function(){$(this).select()}).observe("keydown",function(t){e.me._bindSubmitNewProductRow(t,this)}).observe("keyup",function(){e.me._calculateNewProductPrice($(this).up(".item_row"))})),qtyOrdered:e.me._getFormGroup(null,new Element("input",{"class":"input-sm","new-order-item":"qtyOrdered",required:!0,value:"1"}).observe("keyup",function(){e.me._calculateNewProductPrice($(this).up(".item_row"))}).observe("keydown",function(t){e.me._bindSubmitNewProductRow(t,this)}).observe("click",function(){$(this).select()})),discount:e.me._getFormGroup(null,new Element("input",{"class":"input-sm","new-order-item":"discount",value:"0"}).setStyle("display: none;").observe("keyup",function(){($F($(this)).blank()||$F($(this))>100)&&($(this).value=0,$(this).select()),e.me._calculateNewProductPrice($(this).up(".item_row"))}).observe("keydown",function(t){e.me._bindSubmitNewProductRow(t,this)}).observe("click",function(){$(this).select()})),totalPrice:e.me._getFormGroup(null,new Element("input",{"class":"input-sm",disabled:!0,"new-order-item":"totalPrice",required:!0,value:e.me.getCurrency(0)})),margin:e.me.getCurrency(0),btns:new Element("span",{"class":"btn-group btn-group-sm pull-right"}).insert({bottom:new Element("span",{"class":"btn btn-primary"}).insert({bottom:new Element("span",{"class":" glyphicon glyphicon-floppy-saved save-new-product-btn"})}).observe("click",function(){e.me._addNewProductRow(this)})}).insert({bottom:new Element("span",{"class":"btn btn-default"}).insert({bottom:new Element("span",{"class":"glyphicon glyphicon-floppy-remove"})}).observe("click",function(){confirm("You about to clear this entry. All input data for this entry will be lost.\n\nContinue?")&&(e.newRow=e.me._getNewProductRow(),e.currentRow=$(this).up(".new-order-item-input"),e.currentRow.getElementsBySelector(".form-group.has-error .form-control").each(function(e){$(e).retrieve("clearErrFunc")()}),e.currentRow.replace(e.newRow),e.newRow.down("[new-order-item=product]").focus())})})},e.me._getProductRow(e.data,!1).addClassName("new-order-item-input list-group-item-danger").removeClassName("order-item-row")},_getProductRow:function(e,t){var o={}
-return o.me=this,o.isTitle=t||!1,o.tag=o.isTitle===!0?"strong":"div",o.btns=e.btns?e.btns:new Element("span",{"class":"pull-right"}).insert({bottom:new Element("span",{"class":"btn btn-danger btn-xs"}).insert({bottom:new Element("span",{"class":"glyphicon glyphicon-trash"})}).observe("click",function(){confirm("You remove this entry.\n\nContinue?")&&(o.row=$(this).up(".item_row"),o.row&&(jQuery.isNumeric(o.row.readAttribute("creditNoteItemId"))?o.row.hide():o.row.remove()),o.me._recalculateSummary())})}),o.row=new Element("div",{"class":" list-group-item "+(o.isTitle===!0?"":"item_row order-item-row")}).store("data",e).insert({bottom:new Element("div",{"class":"row"}).store("data",e).insert({bottom:new Element(o.tag,{"class":"productName col-xs-8"}).insert({bottom:e.itemDescription?e.itemDescription:e.product.name})}).insert({bottom:new Element(o.tag,{"class":"uprice col-xs-1"}).insert({bottom:e.unitPrice})}).insert({bottom:new Element(o.tag,{"class":"col-xs-1"}).insert({bottom:new Element("div").insert({bottom:new Element("div",{"class":"qty col-xs-12"}).update(e.qtyOrdered)}).insert({bottom:new Element("div",{"class":"discount col-xs-6"}).update(e.discount).setStyle("display: none;")})})}).insert({bottom:new Element(o.tag,{"class":"tprice col-xs-1"}).insert({bottom:e.totalPrice})}).insert({bottom:new Element(o.tag,{"class":"margin col-xs-1 text-right"}).update(e.margin).setStyle("display: none;")}).insert({bottom:new Element(o.tag,{"class":"btns col-xs-1 text-right"}).update(o.btns)})}),e.product.sku&&o.row.down(".productName").removeClassName("col-xs-8").addClassName("col-xs-6").insert({before:new Element(o.tag,{"class":"productSku col-xs-2"}).update(e.product.sku).insert({bottom:new Element("small",{"class":e.product.id?"btn btn-xs btn-info":"hidden"}).setStyle("margin-left: 10px;").insert({bottom:new Element("small",{"class":"glyphicon glyphicon-new-window"})}).observe("click",function(t){Event.stop(t),$productId=e.product.id,$productId&&o.me._openProductDetailPage($productId)})})}),e.scanTable&&o.row.insert({bottom:new Element("div",{"class":"row product-content-row"}).insert({bottom:new Element("span",{"class":"col-sm-2 show-tools"}).insert({bottom:new Element("input",{type:"checkbox",checked:!0,"class":"show-panel-check"}).observe("click",function(){o.btn=this,o.panel=$(o.btn).up(".product-content-row").down(".serial-no-scan-pane"),o.btn.checked?o.panel.show():o.panel.hide()})}).insert({bottom:new Element("a",{href:"javascript: void(0);"}).update(" show serial scan panel?").observe("click",function(){$(this).up(".show-tools").down(".show-panel-check").click()})})}).insert({bottom:new Element("span",{"class":"col-sm-10 serial-no-scan-pane",style:"padding-top: 5px"}).update(e.scanTable)})}),o.row},_getPartsTable:function(){var e={}
-return e.me=this,e.productListDiv=new Element("div",{"class":"list-group order_change_details_table"}).insert({bottom:e.me._getProductRow({product:{sku:"SKU",name:"Description"},unitPrice:"Unit Price<div><small>(inc GST)</small><div>",qtyOrdered:"Qty",margin:"Margin",discount:"Disc. %",totalPrice:"Total Price<div><small>(inc GST)</small><div>",btns:new Element("div").setStyle("display:none;").insert({bottom:new Element("label",{"for":"hide-margin-checkbox"}).update("Show Margin ")}).insert({bottom:new Element("input",{id:"hide-margin-checkbox",type:"checkbox",checked:!0}).observe("click",function(){jQuery(".margin").toggle()})})},!0)}),e.productListDiv.insert({bottom:e.me._getNewProductRow().addClassName("list-group-item-danger")}),e.productListDiv},_getAddressDiv:function(e,t,o){var n={}
-return n.me=this,n.address=t||null,n.editable=o||!1,n.newDiv=new Element("div",{"class":"address-div"}).insert({bottom:new Element("strong").update(e)}).insert({bottom:new Element("dl",{"class":"dl-horizontal dl-condensed"}).insert({bottom:new Element("dt").update(new Element("span",{"class":"glyphicon glyphicon-user",title:"Customer Name"}))}).insert({bottom:new Element("dd").insert({bottom:new Element("div").insert({bottom:new Element("div",{"class":"col-sm-6"}).update(n.editable!==!0?t.contactName:new Element("input",{"address-editable-field":"contactName","class":"form-control input-sm",placeholder:"The name of contact person",value:n.address.contactName?n.address.contactName:""}))}).insert({bottom:new Element("div",{"class":"col-sm-6"}).update(n.editable!==!0?t.contactNo:new Element("input",{"address-editable-field":"contactNo","class":"form-control input-sm",placeholder:"The contact number of contact person",value:n.address.contactNo?n.address.contactNo:""}))})})}).insert({bottom:new Element("dt").update(new Element("span",{"class":"glyphicon glyphicon-map-marker",title:"Address"}))}).insert({bottom:new Element("dd").insert({bottom:new Element("div").insert({bottom:n.editable!==!0?t.street:new Element("div",{"class":"street col-sm-12"}).update(new Element("input",{"address-editable-field":"street","class":"form-control input-sm",placeholder:"Street Number and Street name",value:n.address.street?n.address.street:""}))})}).insert({bottom:new Element("div").insert({bottom:n.editable!==!0?t.city+" ":new Element("div",{"class":"city col-sm-6"}).update(new Element("input",{"address-editable-field":"city","class":"form-control input-sm",placeholder:"City / Suburb",value:n.address.city?n.address.city:""}))}).insert({bottom:n.editable!==!0?t.region+" ":new Element("div",{"class":"region col-sm-3"}).update(new Element("input",{"address-editable-field":"region","class":"form-control input-sm",placeholder:"State / Province",value:n.address.region?n.address.region:""}))}).insert({bottom:n.editable!==!0?t.postCode:new Element("div",{"class":"postcode col-sm-3"}).update(new Element("input",{"address-editable-field":"postCode","class":"form-control input-sm",placeholder:"PostCode",value:n.address.postCode?n.address.postCode:""}))})}).insert({bottom:new Element("div").insert({bottom:n.editable!==!0?t.country:new Element("div",{"class":"postcode col-sm-4"}).update(new Element("input",{"address-editable-field":"country","class":"form-control input-sm",placeholder:"Country",value:n.address.country?n.address.country:""}))})})})}),n.editable===!0&&n.newDiv.writeAttribute("address-editable",!0),n.newDiv},getCustomerInfoPanel:function(){var e={}
-return e.me=this,e.customer=e.me._customer,e.newDiv=new Element("div",{"class":"panel panel-danger CustomerInfoPanel"}).insert({bottom:new Element("div",{"class":"panel-heading"}).insert({bottom:new Element("div",{"class":"row"}).insert({bottom:new Element("div",{"class":"col-sm-8"}).insert({bottom:new Element("strong").update((e.me._creditNote&&e.me._creditNote.id?"EDITING":"CREATING")+" CREDIT NOTE FOR:  ")}).insert({bottom:new Element("a",{href:"javascript: void(0);"}).update(e.customer.name).observe("click",function(){e.me._openCustomerDetailsPage(e.customer)})}).insert({bottom:" <"}).insert({bottom:new Element("a",{href:"mailto:"+e.customer.email}).update(e.customer.email)}).insert({bottom:">"}).insert({bottom:e.me._order?new Element("strong").update(" with Order No. "):""}).insert({bottom:e.me._order?new Element("a",{target:"_blank",href:"/orderdetails/"+e.me._order.id}).update(e.me._order.orderNo):""})}).insert({bottom:new Element("div",{"class":"col-sm-4 text-right"}).setStyle("display: none;").insert({bottom:new Element("strong").update("Total Payment Due: ")}).insert({bottom:new Element("span",{"class":"badge","order-price-summary":"total-payment-due"}).update(e.me.getCurrency(0))})})})}).insert({bottom:new Element("div",{"class":"panel-body"}).insert({bottom:new Element("div",{"class":"row"}).insert({bottom:new Element("small").update(new Element("em").update(e.customer.description))})}).insert({bottom:new Element("div",{"class":"row"}).insert({bottom:e.me._getAddressDiv("Billing Address: ",e.customer.address?e.customer.address.billing:null).addClassName("col-xs-6")}).insert({bottom:e.me._getAddressDiv("Shipping Address: ",e.customer.address?e.customer.address.shipping:null,!0).addClassName("col-xs-6").addClassName("shipping-address")})})}),e.newDiv},_openCustomerDetailsPage:function(e){var t={}
-return t.me=this,jQuery.fancybox({width:"95%",height:"95%",autoScale:!1,autoDimensions:!1,fitToView:!1,autoSize:!1,type:"iframe",href:"/customer/"+e.id+".html?blanklayout=1",beforeClose:function(){t.customer=$$("iframe.fancybox-iframe").first().contentWindow.pageJs._item,t.customer&&t.customer.id&&t.me._selectCustomer(t.customer)}}),t.me},getViewOfCreditNote:function(){var e={}
-return e.me=this,e.newDiv=new Element("div").insert({bottom:new Element("div",{"class":"row"}).insert({bottom:new Element("div",{"class":"col-sm-12"}).update(e.me.getCustomerInfoPanel())})}).insert({bottom:new Element("div",{"class":"row"}).insert({bottom:new Element("div",{"class":"col-sm-12"}).insert({bottom:new Element("div",{"class":"panel panel-danger"}).update(e.me._getPartsTable()).insert({bottom:e.me._getSummaryFooter()})})})}).insert({bottom:new Element("div",{"class":"row"}).insert({bottom:new Element("div",{"class":"col-sm-12"}).update(e.me._saveBtns())})}).insert({bottom:pageJs._creditNote?new Element("div",{"class":"row"}).setStyle("padding-top: 20px").insert({bottom:new Element("div",{"class":"col-sm-12"}).update(e.me._getEmptyCommentsDiv())}):""}),e.newDiv},_selectCustomer:function(e){var t={}
-return t.me=this,t.me._customer=e,$$(".CustomerInfoPanel").size()>0&&jQuery(".CustomerInfoPanel").replaceWith(t.me.getCustomerInfoPanel()),$(t.me._htmlIds.itemDiv).update(t.me.getViewOfCreditNote()),$$(".init-focus").size()>0&&$$(".init-focus").first().focus(),t.me},_getCustomerRow:function(e,t){var o={}
-return o.me=this,o.isTitle=t||!1,o.tag=o.isTitle===!0?"th":"td",o.newDiv=new Element("tr",{"class":(o.isTitle===!0?"item_top_row":"btn-hide-row item_row")+(0==e.active?" danger":""),item_id:o.isTitle===!0?"":e.id}).store("data",e).insert({bottom:new Element(o.tag,{"class":"name col-xs-1"}).insert({bottom:o.isTitle===!0?"&nbsp;":new Element("span",{"class":"btn btn-primary btn-xs"}).update("select").observe("click",function(){o.me._selectCustomer(e)})})}).insert({bottom:new Element(o.tag,{"class":"name col-xs-1"}).update(e.name)}).insert({bottom:new Element(o.tag,{"class":"email col-xs-1",style:"text-decoration: underline;"}).update(e.email)}).insert({bottom:new Element(o.tag,{"class":"contact col-xs-1 truncate"}).update(e.contactNo)}).insert({bottom:new Element(o.tag,{"class":"description col-xs-1"}).update(e.description)}).insert({bottom:new Element(o.tag,{"class":"address col-xs-1"}).insert({bottom:o.isTitle===!0?e.addresses:new Element("span",{style:"display: inline-block"}).insert({bottom:new Element("a",{"class":"visible-xs visible-md visible-sm visible-lg",href:"javascript: void(0);"}).insert({bottom:new Element("span",{"class":"glyphicon glyphicon-plane address-shipping",style:"font-size: 1.3em",title:"Shipping"})}).observe("click",function(){o.me.showModalBox("<strong>Shipping Address</strong>",e.address.shipping.full)})})}).insert({bottom:o.isTitle===!0?"":new Element("span",{style:"display: inline-block"}).insert({bottom:new Element("a",{"class":"visible-xs visible-md visible-sm visible-lg",href:"javascript: void(0);"}).insert({bottom:new Element("span",{"class":"glyphicon glyphicon-usd address-billing",style:"font-size: 1.3em; padding-left:10%;",title:"Billing"})}).observe("click",function(){o.me.showModalBox("<strong>Billing Address</strong>",e.address.shipping.full)})})})}).insert({bottom:new Element(o.tag,{"class":"mageId col-xs-1"}).update(e.mageId)}).insert({bottom:new Element(o.tag,{"class":"cust_active col-xs-1"}).insert({bottom:o.isTitle===!0?e.active:new Element("input",{type:"checkbox",disabled:!0,checked:e.active})})}),o.newDiv},_searchCustomer:function(e){var t={}
-return t.me=this,t.searchTxt=$F(e).strip(),t.searchPanel=$(e).up("#"+t.me._htmlIds.searchPanel),t.me.postAjax(t.me.getCallbackId("searchCustomer"),{searchTxt:t.searchTxt},{onLoading:function(){$(t.searchPanel).down(".list-div")&&$(t.searchPanel).down(".list-div").remove(),$(t.searchPanel).insert({bottom:new Element("div",{"class":"panel-body"}).update(t.me.getLoadingImg())})},onSuccess:function(e,o){$(t.searchPanel).down(".panel-body").remove()
-try{if(t.result=t.me.getResp(o,!1,!0),!t.result||!t.result.items)return
-$(t.searchPanel).insert({bottom:new Element("small",{"class":"table-responsive list-div"}).insert({bottom:new Element("table",{"class":"table table-hover table-condensed"}).insert({bottom:new Element("thead").insert({bottom:t.me._getCustomerRow({email:"Email",name:"Name",contactNo:"Contact Num",description:"Description",addresses:"Addresses",address:{billing:{full:"Billing Address"},shipping:{full:"Shipping Address"}},mageId:"Mage Id",active:"Active?"},!0)})}).insert({bottom:t.listDiv=new Element("tbody")})})}),t.result.items.each(function(e){t.listDiv.insert({bottom:t.me._getCustomerRow(e)})})}catch(n){$(t.searchPanel).insert({bottom:new Element("div",{"class":"panel-body"}).update(t.me.getAlertBox("ERROR",n).addClassName("alert-danger"))})}}}),t.me},_getCustomerListPanel:function(){var e={}
-return e.me=this,e.newDiv=new Element("div",{id:e.me._htmlIds.searchPanel,"class":"panel panel-info search-panel"}).insert({bottom:new Element("div",{"class":"panel-heading form-inline"}).insert({bottom:new Element("strong").update("Creating a new order for: ")}).insert({bottom:new Element("span",{"class":"input-group col-sm-6"}).insert({bottom:new Element("input",{"class":"form-control search-txt init-focus",placeholder:"Customer name"}).observe("keydown",function(t){return e.txtBox=this,e.me.keydown(t,function(){void 0!=e.txtBox.up("#"+pageJs._htmlIds.searchPanel).down(".item_row")&&1===e.txtBox.up("#"+pageJs._htmlIds.searchPanel).down("tbody").getElementsBySelector(".item_row").length?e.txtBox.up("#"+pageJs._htmlIds.searchPanel).down("tbody .item_row .btn").click():$(e.me._htmlIds.searchPanel).down(".search-btn").click()}),e.me.keydown(t,function(){void 0!=e.txtBox.up("#"+pageJs._htmlIds.searchPanel).down(".item_row")&&1===e.txtBox.up("#"+pageJs._htmlIds.searchPanel).down("tbody").getElementsBySelector(".item_row").length?e.txtBox.up("#"+pageJs._htmlIds.searchPanel).down("tbody .item_row .btn").click():$(e.me._htmlIds.searchPanel).down(".search-btn").click()},function(){},Event.KEY_TAB),!1})}).insert({bottom:new Element("span",{"class":"input-group-btn search-btn"}).insert({bottom:new Element("span",{"class":" btn btn-primary"}).insert({bottom:new Element("span",{"class":"glyphicon glyphicon-search"})})}).observe("click",function(){e.btn=this,e.txtBox=$(e.me._htmlIds.searchPanel).down(".search-txt"),$F(e.txtBox).blank()?$(e.me._htmlIds.searchPanel).down(".table tbody")&&($(e.me._htmlIds.searchPanel).down(".table tbody").innerHTML=null):e.me._searchCustomer(e.txtBox)})})}).insert({bottom:new Element("span",{"class":"btn btn-success pull-right btn-sm btn-danger"}).insert({bottom:new Element("span",{"class":"glyphicon glyphicon-remove"})}).observe("click",function(){$(e.me._htmlIds.searchPanel).down(".search-txt").clear().focus(),$(e.me._htmlIds.searchPanel).down(".table tbody").innerHTML=null})})}),e.newDiv},init:function(){var e={}
-return e.me=this,e.me._creditNote?(e.me._creditNote.order&&e.me._creditNote.order.id&&jQuery.isNumeric(e.me._creditNote.order.id)&&(e.me._order=e.me._creditNote.order),e.me._selectCustomer(e.me._creditNote.customer)):e.me._customer?e.me._selectCustomer(e.me._customer):e.me._order?e.me._selectCustomer(e.me._order.customer):$(e.me._htmlIds.itemDiv).update(e.me._getCustomerListPanel()),$$(".init-focus").size()>0&&$$(".init-focus").first().focus(),jQuery(".select2").select2({}),e.me._creditNote?e.me._creditNote.items.each(function(t){e.me._selectProduct(t).writeAttribute("creditNoteItemId",t.id)}):e.me._order&&e.me._order.items.each(function(t){e.me._selectProduct(t).writeAttribute("orderItemId",t.id)}),e.me._creditNote&&e.me._getComments(!0),e.me},_getFormGroup:function(e,t){return new Element("div",{"class":"form-group"}).insert({bottom:e?new Element("label",{"class":"control-label"}).update(e):""}).insert({bottom:t.addClassName("form-control")})},_openProductDetailPage:function(e){var t={}
-return t.me=this,t.newWindow=window.open("/product/"+e+".html","Product Details","width=1300, location=no, scrollbars=yes, menubar=no, status=no, titlebar=no, fullscreen=no, toolbar=no"),t.newWindow.focus(),t.me},_calculateNewProductPrice:function(e){var t={}
-return t.me=this,t.row=e,t.unitPrice=t.me.getValueFromCurrency($F(t.row.down("[new-order-item=unitPrice]"))),t.discount=$F(t.row.down("[new-order-item=discount]")).strip().replace("%",""),t.qty=$F(t.row.down("[new-order-item=qtyOrdered]")).strip(),t.totalPrice=t.unitPrice*(1-t.discount/100)*t.qty,$(t.row.down("[new-order-item=totalPrice]")).value=t.me.getCurrency(t.totalPrice),e.retrieve("product")&&(t.unitCost=e.retrieve("product").unitCost,t.row.down(".margin")&&$(t.row.down(".margin")).update(t.me.getCurrency(1*t.totalPrice-1.1*t.unitCost*t.qty)+(0===parseInt(t.unitCost)?'<div><small class="label label-danger">No Cost Yet</small</div>':""))),t.me},_bindSubmitNewProductRow:function(e,t){var o={}
-return o.me=this,o.txtBox=t,o.me.keydown(e,function(){$(o.txtBox).up(".item_row").down(".save-new-product-btn").click()}),o.me},_recalculateSummary:function(){var e={}
-return e.me=this,e.totalPriceIncGSTNoDicount=0,e.totalPriceIncGSTWithDiscount=0,e.totalMargin=0,$$(".item_row.order-item-row").each(function(t){e.rowData=t.retrieve("data"),e.totalPriceIncGSTWithDiscount=1*e.totalPriceIncGSTWithDiscount+1*e.me.getValueFromCurrency(e.rowData.totalPrice),e.totalPriceIncGSTNoDicount=1*e.totalPriceIncGSTNoDicount+e.me.getValueFromCurrency(e.rowData.unitPrice)*e.rowData.qtyOrdered,e.rowData.margin&&(e.totalMargin=1*e.totalMargin+1*e.me.getValueFromCurrency(e.rowData.margin))}),e.totalPriceExcGST=1*e.totalPriceIncGSTWithDiscount/1.1,jQuery('[order-price-summary="totalPriceExcludeGST"]').val(e.me.getCurrency(e.totalPriceExcGST)).html(e.me.getCurrency(e.totalPriceExcGST)),e.totalGST=1*e.totalPriceIncGSTWithDiscount-1*e.totalPriceExcGST,jQuery('[order-price-summary="totalPriceGST"]').val(e.me.getCurrency(e.totalGST)).html(e.me.getCurrency(e.totalGST)),e.totalDiscount=1*e.totalPriceIncGSTNoDicount-1*e.totalPriceIncGSTWithDiscount,jQuery('[order-price-summary="totalDiscount"]').val(e.me.getCurrency(e.totalDiscount)).html(e.me.getCurrency(e.totalDiscount)),jQuery('[order-price-summary="totalPriceIncludeGST"]').val(e.me.getCurrency(e.totalPriceIncGSTWithDiscount)).html(e.me.getCurrency(e.totalPriceIncGSTWithDiscount)),e.totalShipping=jQuery('[order-price-summary="totalShippingCost"]').length>0?jQuery('[order-price-summary="totalShippingCost"]').val():0,e.subTotal=1*e.totalShipping+1*e.totalPriceIncGSTWithDiscount,jQuery('[order-price-summary="subTotal"]').val(e.me.getCurrency(e.subTotal)).html(e.me.getCurrency(e.subTotal)),e.totalPaid=jQuery('[order-price-summary="totalPaidAmount"]').length>0?jQuery('[order-price-summary="totalPaidAmount"]').val():0,e.totalDue=1*e.subTotal-1*e.totalPaid,e.totalDue<0&&e.me.showModalBox('<h4 class="text-danger">Attention!</h4>','<div><strong>The customer has paid more than the due amount?</strong></div><div><span class="btn btn-primary" onclick="pageJs.hideModalBox();">OK</span>',!0),jQuery('[order-price-summary="total-payment-due"]').val(e.me.getCurrency(e.totalDue)).html(e.me.getCurrency(e.totalDue)),jQuery('[order-price-summary="total-margin"]').val(e.me.getCurrency(e.totalMargin)).html(e.me.getCurrency(e.totalMargin)),e.me}})
+/**
+ * The page Js file
+ */
+var PageJs = new Class.create();
+PageJs.prototype = Object.extend(new BPCPageJs(), {
+	_htmlIds: {'itemDiv': '', 'searchPanel': 'search_panel'}
+	,_customer: null
+	,_item: null
+	,_searchTxtBox: null
+	,_applyToOptions: null
+	,_commentsDiv: {'pagination': {'pageSize': 5, 'pageNo': 1}, 'resultDivId': 'comments_result_div', 'types': {'purchasing': '', 'warehouse': ''}} //the pagination for the comments
+	/**
+	 * Setting the HTMLIDS
+	 */
+	,setHTMLIDs: function(itemDivId) {
+		this._htmlIds.itemDiv = itemDivId;
+		return this;
+	}
+	/**
+	 * Getting the comments row
+	 */
+	,_getCommentsRow: function(comments) {
+		var tmp = {};
+		tmp.me = this;
+		return new Element('tr', {'class': 'comments_row'})
+			.store('data', comments)
+			.insert({'bottom': new Element('td', {'class': 'created', 'width': '15%'}).update(new Element('small').update(!comments.id ? comments.created : tmp.me.loadUTCTime(comments.created).toLocaleString() ) ) })
+			.insert({'bottom': new Element('td', {'class': 'creator', 'width': '15%'}).update(new Element('small').update(comments.createdBy.person.fullname) ) })
+			.insert({'bottom': new Element('td', {'class': 'type', 'width': '10%'}).update(new Element('small').update(comments.type) ) })
+			.insert({'bottom': new Element('td', {'class': 'comments', 'width': 'auto'}).update(comments.comments) })
+			;
+	}
+	/**
+	 * Ajax: getting the comments into the comments div
+	 */
+	,_getComments: function (reset, btn) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.reset = (reset || false);
+		if(tmp.reset === true) {
+			$(tmp.me._commentsDiv.resultDivId).update('');
+		}
+		tmp.ajax = new Ajax.Request('/ajax/getComments', {
+			method:'get'
+			,parameters: {'entity': 'CreditNote', 'entityId': tmp.me._creditNote.id, 'orderBy': {'created':'desc'}, 'pageNo': tmp.me._commentsDiv.pagination.pageNo, 'pageSize': tmp.me._commentsDiv.pagination.pageSize}
+			,onLoading: function() {
+				if(btn) {
+					jQuery('#' + btn.id).button('loading');
+				}
+			}
+			,onSuccess: function(transport) {
+				try {
+					if(tmp.reset === true) {
+						$(tmp.me._commentsDiv.resultDivId).update(tmp.me._getCommentsRow({'type': 'Type', 'createdBy': {'person': {'fullname': 'WHO'}}, 'created': 'WHEN', 'comments': 'COMMENTS'}).addClassName('header').wrap( new Element('thead') ) );
+					}
+					tmp.result = tmp.me.getResp(transport.responseText, false, true);
+					if(!tmp.result || !tmp.result.items)
+						return;
+					//remove the pagination btn
+					if($$('.new-page-btn-div').size() > 0) {
+						$$('.new-page-btn-div').each(function(item){
+							item.remove();
+						})
+					}
+					//add each item
+					tmp.tbody = $(tmp.me._commentsDiv.resultDivId).down('tbody');
+					if(!tmp.tbody) {
+						$(tmp.me._commentsDiv.resultDivId).insert({'bottom': tmp.tbody = new Element('tbody') })
+					}
+					//add new data
+					tmp.result.items.each(function(item) {
+						tmp.tbody.insert({'bottom': tmp.me._getCommentsRow(item) });
+					})
+					//who new pagination btn
+					if(tmp.result.pageStats.pageNumber < tmp.result.pageStats.totalPages) {
+						tmp.tbody.insert({'bottom': new Element('tr', {'class': 'new-page-btn-div'})
+							.insert({'bottom': new Element('td', {'colspan': 4})
+								.insert({'bottom': new Element('span', {'id': 'comments_get_more_btn', 'class': 'btn btn-primary', 'data-loading-text': 'Getting More ...'})
+									.update('Get More Comments')
+									.observe('click', function(){
+										tmp.me._commentsDiv.pagination.pageNo = tmp.me._commentsDiv.pagination.pageNo * 1 + 1;
+										tmp.me._getComments(false, this);
+									})
+								})
+							})
+						})
+					}
+				} catch (e) {
+					$(tmp.me._commentsDiv.resultDivId).insert({'bottom': tmp.me.getAlertBox('ERROR: ', e).addClassName('alert-danger') });
+				}
+			}
+			,onComplete: function() {
+				if(btn) {
+					jQuery('#' + btn.id).button('reset');
+				}
+			}
+		});
+		return this;
+	}
+	/**
+	 * Ajax: adding a comments to this order
+	 */
+	,_addComments: function(btn) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.commentsBox = $(btn).up('.new_comments_wrapper').down('[new_comments=comments]');
+		tmp.comments = $F(tmp.commentsBox);
+		if(tmp.comments.blank())
+			return this;
+		tmp.me.postAjax(tmp.me.getCallbackId('addComments'), {'comments': tmp.comments, 'creditNote': tmp.me._creditNote}, {
+			'onLoading': function(sender, param) {
+				jQuery('#' + btn.id).button('loading');
+			}
+			,'onSuccess': function (sender, param) {
+				try {
+					tmp.result = tmp.me.getResp(param, false, true);
+					if(!tmp.result) {
+						return;
+					}
+					tmp.tbody = $(tmp.me._commentsDiv.resultDivId).down('tbody');
+					if(!tmp.tbody)
+						$(tmp.me._commentsDiv.resultDivId).insert({'bottom': tmp.tbody = new Element('tbody') });
+					tmp.tbody.insert({'top': tmp.me._getCommentsRow(tmp.result)})
+					tmp.commentsBox.setValue('');
+				} catch (e) {
+					alert(e);
+				}
+			}
+			,'onComplete': function () {
+				jQuery('#' + btn.id).button('reset');
+			}
+		})
+		return this;
+	}
+	/**
+	 * Getting a empty comments div
+	 */
+	,_getEmptyCommentsDiv: function() {
+		var tmp = {};
+		tmp.me = this;
+		return new Element('div', {'class': 'panel panel-default'})
+			.insert({'bottom': new Element('div', {'class': 'panel-heading'} ).update('Comments') })
+			.insert({'bottom': new Element('div', {'class': 'table-responsive'})
+				.insert({'bottom': new Element('table', {'id': tmp.me._commentsDiv.resultDivId, 'class': 'table table-hover table-condensed'}) })
+			})
+			.insert({'bottom': new Element('div', {'class': 'panel-body new_comments_wrapper'})
+				.insert({'bottom': new Element('div', {'class': 'row'})
+					.insert({'bottom': new Element('div', {'class': 'col-xs-2'}).update('<strong>New Comments:</strong>') })
+					.insert({'bottom': new Element('div', {'class': 'col-xs-10'})
+						.insert({'bottom': new Element('div', {'class': 'input-group'})
+							.insert({'bottom': new Element('input', {'class': 'form-control', 'type': 'text', 'new_comments': 'comments', 'placeholder': 'add more comments to this order'})
+								.observe('keydown', function(event) {
+									tmp.me.keydown(event, function() {
+										$(event.currentTarget).up('.new_comments_wrapper').down('[new_comments=btn]').click();
+									});
+								})
+							})
+							.insert({'bottom': new Element('span', {'class': 'input-group-btn'})
+								.insert({'bottom': new Element('span', {'id': 'add_new_comments_btn', 'new_comments': 'btn', 'class': 'btn btn-primary', 'data-loading-text': 'saving...'})
+									.update('add')
+									.observe('click', function() {
+										tmp.me._addComments(this);
+									})
+								})
+							})
+						})
+					})
+				})
+			});
+	}
+	/**
+	 * submitting order to php
+	 */
+	,_submitOrder: function(btn, data) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.modalBoxPanel = $(btn).up('.modal-content');
+		tmp.modalBoxTitlePanel = tmp.modalBoxPanel.down('.modal-title');
+		tmp.modalBoxBodyPanel = tmp.modalBoxPanel.down('.modal-body');
+		tmp.me.postAjax(tmp.me.getCallbackId('saveOrder'), data, {
+			'onLoading': function(sender, param) {
+				tmp.modalBoxTitlePanel.update('Please wait...');
+				tmp.modalBoxBodyPanel.update('<h4>Submitting the data, please be patient.</h4><div><h3 class="fa fa-spinner fa-spin"></h3></div>');
+			}
+			,'onSuccess': function(sender, param) {
+				try {
+					tmp.result = tmp.me.getResp(param, false, true);
+					if(!tmp.result || !tmp.result.item)
+						return;
+					tmp.me._item = tmp.result.item;
+					tmp.modalBoxTitlePanel.update('<strong class="text-success">Success!</strong>');
+					tmp.me.hideModalBox();
+					tmp.me.disableAll();
+					window.location = '/creditnote/' + tmp.result.item.id + '.html';
+					if(tmp.result.printURL) {
+						tmp.printWindow = window.open(tmp.result.printURL, 'Printing Order', 'width=1300, location=no, scrollbars=yes, menubar=no, status=no, titlebar=no, fullscreen=no, toolbar=no');
+						if(!tmp.printWindow)
+							throw '<h4>Your browser has block the popup window, please enable it for further operations.</h4><a href="' + tmp.result.printURL + '" target="_BLANK"> click here for now</a>';
+					}
+				} catch(e) {
+					tmp.modalBoxTitlePanel.update('<h4 class="text-danger">Error:</h4>');
+					tmp.modalBoxBodyPanel.update(e);
+				}
+			}
+			,'onComplete': function(sender, param) {
+			}
+		});
+		return tmp.me;
+	}
+	,disableAll: function() {
+		jQuery('input').attr("disabled", true);
+		jQuery('textarea').attr("disabled", true);
+		jQuery('.btn').attr("disabled", true);
+		jQuery('.form-control').attr("disabled", true);
+	}
+	,_preConfirmSubmit: function(printit) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.data = null;
+
+		tmp.printIt = (printit === true ? true : false);
+		tmp.data = tmp.me._collectFormData($(tmp.me._htmlIds.itemDiv),'save-order');
+		if(tmp.data === null)
+			return null;
+		if(tmp.data.applyTo.blank()) {
+			tmp.me.hideModalBox();
+			tmp.me.showModalBox('Warning', 'You MUST select what this credit note is <strong>Apply To</strong>');
+			return null;
+		}
+		tmp.data.printIt = tmp.printIt;
+		tmp.data.customer = {};
+		tmp.data.customer.id = tmp.me._customer.id;
+		tmp.data.creditNote = tmp.me._creditNote;
+		tmp.data.order = tmp.me._order;
+
+		tmp.shippAddrPanel = $$('.shipping-address.address-div').first();
+		if(tmp.shippAddrPanel) {
+			tmp.shippAddr = tmp.me._collectFormData(tmp.shippAddrPanel,'address-editable-field');
+			if(tmp.shippAddr === null) { //some error in the shipping address
+				tmp.me.hideModalBox();
+				tmp.me.showModalBox('Warning', 'some error in the shipping address');
+				return null;
+			}
+			tmp.data.shippingAddr = tmp.shippAddr;
+		}
+		tmp.data.items = [];
+		$$('.order-item-row').each(function(item){
+			tmp.itemData = item.retrieve('data');
+			tmp.data.items.push({'orderItemId': item.readAttribute('orderItemId'), 'creditNoteItemId': item.readAttribute('creditNoteItemId'), 'valid': item.visible(), 'product': {'id': tmp.itemData.product.id}, 'itemDescription': tmp.itemData.itemDescription,'unitPrice': tmp.itemData.unitPrice, 'qtyOrdered': tmp.itemData.qtyOrdered, 'totalPrice': tmp.itemData.totalPrice, 'serials': item.retrieve('serials') });
+		});
+		tmp.noValidItem = true;
+		tmp.data.items.each(function(item){
+			if(tmp.noValidItem === true && item.valid === true)
+				tmp.noValidItem = false;
+		})
+		if(tmp.noValidItem === true) {
+			tmp.me.hideModalBox();
+			tmp.me.showModalBox('<strong class="text-danger">Error</strong>', '<strong>At least one Credit Note Item</strong> is needed!', true);
+			return null;
+		}
+		tmp.data.items.each(function(item){
+			item.totalPrice = tmp.me.getValueFromCurrency(item.totalPrice);
+			item.unitPrice = tmp.me.getValueFromCurrency(item.unitPrice);
+		});
+
+		tmp.newDiv = new Element('div', {'class': 'confirm-div'})
+			.insert({'bottom': new Element('div')
+				.insert({'bottom': tmp.me._getFormGroup('Do you want to send an email to this address:',
+						new Element('input', {'value': tmp.me._customer.email, 'confirm-po': 'po_email', 'required': true, 'placeholder': 'The email to send to. WIll NOT update the customer\'s email with this.'})
+					)
+				})
+			})
+			.insert({'bottom': new Element('div')
+				.insert({'bottom': new Element('em')
+					.insert({'bottom': new Element('small').update('The above email will be used to send the email to. WIll NOT update the customer\'s email with this.') })
+				})
+			})
+			.insert({'bottom': new Element('div')
+				.insert({'bottom': new Element('span', {'class': 'btn btn-primary pull-right'}).update('Yes, send the Credit Note to this email address')
+					.observe('click', function(){
+						tmp.confirmEmailBox = $(this).up('.confirm-div').down('[confirm-po="po_email"]');
+						if($F(tmp.confirmEmailBox).blank()) {
+							tmp.me._markFormGroupError(tmp.confirmEmailBox, 'Email Address Required Here');
+							return;
+						}
+						if(!/^.+@.+(\..)*$/.test($F(tmp.confirmEmailBox).strip())) {
+							tmp.me._markFormGroupError(tmp.confirmEmailBox, 'Please provide an valid email address');
+							return;
+						}
+						tmp.data.confirmEmail = $F(tmp.confirmEmailBox).strip();
+						tmp.me._submitOrder($(this),tmp.data);
+					})
+				})
+				.insert({'bottom': new Element('span', {'class': 'btn btn-info'}).update('No, save Credit Note but DO NOT send email')
+					.observe('click', function(){
+						tmp.me._submitOrder($(this),tmp.data);
+					})
+				})
+			});
+		tmp.me.showModalBox("You're about to save creadit note for : " + tmp.me._customer.name, tmp.newDiv);
+
+		return tmp.me;
+	}
+	/**
+	 * Getting the save btn for this order
+	 */
+	,_saveBtns: function() {
+		var tmp = {};
+		tmp.me = this;
+		tmp.newDiv = new Element('div')
+			.insert({'bottom': new Element('div', {'class': 'btn-group pull-right  visible-xs visible-sm visible-md visible-lg'})
+				.insert({'bottom': new Element('span', {'class': 'btn btn-primary save-btn'})
+					.insert({'bottom': new Element('span').update(' Save & Email ') })
+					.observe('click', function() {
+						tmp.me._preConfirmSubmit();
+					})
+				})
+				.insert({'bottom': new Element('span', {'class': 'btn btn-primary dropdown-toggle', 'data-toggle': 'dropdown'}).setStyle('display: none;')
+					.insert({'bottom': new Element('span', {'class': 'caret'}) })
+				})
+				.insert({'bottom': new Element('ul', {'class': 'dropdown-menu save-btn-dropdown-menu'}).setStyle('display: none;')
+					.insert({'bottom': new Element('li')
+						.insert({'bottom': new Element('a', {'href': 'javascript: void(0);'}).update('Save Only')
+							.observe('click', function() {
+								tmp.me._preConfirmSubmit();
+							})
+						})
+					})
+				})
+			})
+			.insert({'bottom': new Element('div', {'class': 'btn btn-default'}).setStyle('display: none;')
+				.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-remove-sign'}) })
+				.insert({'bottom': new Element('span').update(' cancel ') })
+				.observe('click', function(){
+					tmp.me.showModalBox('<strong class="text-danger">Cancelling the current order</strong>',
+							'<div>You are about to cancel this new order, all input data will be lost.</div><br /><div>Continue?</div>'
+							+ '<div>'
+								+ '<span class="btn btn-primary" onclick="window.location = document.URL;"><span class="glyphicon glyphicon-ok"></span> YES</span>'
+								+ '<span class="btn btn-default pull-right" data-dismiss="modal"><span aria-hidden="true"><span class="glyphicon glyphicon-remove-sign"></span> NO</span></span>'
+							+ '</div>',
+					true);
+				})
+			});
+		tmp.newDiv.down('.btn-group').removeClassName('btn-group');
+		return tmp.newDiv;
+	}
+	/**
+	 * adding a new product row after hit save btn
+	 */
+	,_addNewProductRow: function(btn) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.currentRow = $(btn).up('.new-order-item-input');
+		tmp.product = tmp.currentRow.retrieve('product');
+		if(!tmp.product) {
+			tmp.productBox =tmp.currentRow.down('[new-order-item=product]');
+			if(tmp.currentRow.down('[new-order-item=product]')) {
+				tmp.me._markFormGroupError(tmp.productBox, 'Select a product first!');
+			} else {
+				tmp.me.showModalBox('Product Needed', 'Select a product first!', true);
+			}
+			return ;
+		}
+		tmp.unitPriceBox = tmp.currentRow.down('[new-order-item=unitPrice]');
+		tmp.unitPrice = tmp.me.getValueFromCurrency($F(tmp.unitPriceBox));
+		if(tmp.unitPrice.match(/^\d+(\.\d{1,2})?$/) === null) {
+			tmp.me._markFormGroupError(tmp.unitPriceBox, 'Invalid value provided!');
+			return ;
+		}
+		tmp.qtyOrderedBox = tmp.currentRow.down('[new-order-item=qtyOrdered]');
+		tmp.qtyOrdered = tmp.me.getValueFromCurrency($F(tmp.qtyOrderedBox));
+		if(tmp.qtyOrdered.match(/^\d+(\.\d{1,2})?$/) === null) {
+			tmp.me._markFormGroupError(tmp.qtyOrderedBox, 'Invalid value provided!');
+			return ;
+		}
+		tmp.discountBox = tmp.currentRow.down('[new-order-item=discount]');
+		tmp.discount = tmp.me.getValueFromCurrency($F(tmp.discountBox));
+		if(tmp.discount.match(/^\d+(\.\d{1,2})?$/) === null) {
+			tmp.me._markFormGroupError(tmp.discountBox, 'Invalid value provided!');
+			return ;
+		}
+		tmp.totalPriceBox = tmp.currentRow.down('[new-order-item=totalPrice]');
+		tmp.totalPrice = tmp.me.getValueFromCurrency($F(tmp.totalPriceBox));
+		if(tmp.totalPrice.match(/^\d+(\.\d{1,2})?$/) === null) {
+			tmp.me._markFormGroupError(tmp.totalPriceBox, 'Invalid value provided!');
+			return ;
+		}
+		//clear all error msg
+		tmp.currentRow.getElementsBySelector('.form-group.has-error .form-control').each(function(control){
+			$(control).retrieve('clearErrFunc')();
+		});
+		tmp.itemDescription = $F(tmp.currentRow.down('[new-order-item=itemDescription]')).replace(/\n/g, "<br />");
+		//get all data
+		tmp.data = {
+			'product': tmp.product,
+			'itemDescription': tmp.itemDescription,
+			'unitPrice': tmp.me.getCurrency(tmp.unitPrice),
+			'qtyOrdered': tmp.qtyOrdered,
+			'discount' : tmp.discount,
+			'margin': tmp.me.getCurrency(parseFloat(tmp.totalPrice) - parseFloat(tmp.product.unitCost * 1.1 * tmp.qtyOrdered)),
+			'totalPrice': tmp.me.getCurrency(tmp.totalPrice)
+		};
+
+//		tmp.data.scanTable = tmp.me._getScanTable(tmp.data);
+		tmp.currentRow.up('.list-group').insert({'bottom': tmp.itemRow = tmp.me._getProductRow(tmp.data) });
+
+
+		tmp.newRow = tmp.me._getNewProductRow();
+		tmp.currentRow.replace(tmp.newRow).addClassName();
+		tmp.newRow.down('[new-order-item=product]').focus();
+
+		tmp.me._recalculateSummary();
+		return tmp.me;
+	}
+	/**
+	 * Ajax: searching the product based on a string
+	 */
+	,_searchProduct: function(btn, pageNo, afterFunc) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.btn = btn;
+		tmp.showMore = $(btn).retrieve('showMore') === true ? true : false;
+		tmp.pageNo = (pageNo || 1);
+		tmp.me._signRandID(tmp.btn);
+		tmp.searchTxtBox = !$(tmp.btn).up('.product-autocomplete') || !$(tmp.btn).up('.product-autocomplete').down('.search-txt') ? $($(tmp.btn).retrieve('searchBoxId')) : $(tmp.btn).up('.product-autocomplete').down('.search-txt');
+
+		tmp.me._signRandID(tmp.searchTxtBox);
+		tmp.searchTxt = $F(tmp.searchTxtBox);
+
+		tmp.me.postAjax(tmp.me.getCallbackId('searchProduct'), {'searchTxt': tmp.searchTxt, 'pageNo': tmp.pageNo}, {
+			'onLoading': function() {
+				jQuery('#' + tmp.btn.id).button('loading');
+				jQuery('#' + tmp.searchTxtBox.id).button('loading');
+			}
+			,'onSuccess': function(sender, param) {
+				if(tmp.showMore === false)
+					tmp.resultList = new Element('div', {'class': 'search-product-list'});
+				else
+					tmp.resultList = $(btn).up('.search-product-list');
+				try {
+					tmp.result = tmp.me.getResp(param, false, true);
+					if(!tmp.result || !tmp.result.items || tmp.result.items.size() === 0)
+						throw 'Nothing Found for: ' + tmp.searchTxt;
+					tmp.me._signRandID(tmp.searchTxtBox);
+					tmp.result.items.each(function(product) {
+						tmp.resultList.insert({'bottom': tmp.me._getSearchPrductResultRow(product, tmp.searchTxtBox) });
+					});
+					tmp.resultList.addClassName('list-group');
+				} catch(e) {
+					tmp.resultList.update(tmp.me.getAlertBox('Error: ', e).addClassName('alert-danger'));
+				}
+				if(typeof(afterFunc) === 'function')
+					afterFunc();
+				if(tmp.result.pagination.pageNumber < tmp.result.pagination.totalPages) {
+					tmp.resultList.insert({'bottom': new Element('a', {'class': 'item-group-item'})
+						.insert({'bottom': new Element('span', {'class': 'btn btn-primary', 'data-loading-text': 'Getting more ...'}).update('Show Me More') })
+						.observe('click', function(){
+							tmp.newBtn = $(this);
+							$(tmp.newBtn).store('searchBoxId', tmp.searchTxtBox.id);
+							$(tmp.newBtn).store('showMore', true);
+							tmp.me._searchProduct(this, tmp.pageNo * 1 + 1, function() {
+								$(tmp.newBtn).remove();
+							});
+						})
+					});
+				}
+				if(tmp.showMore === false)
+					tmp.me.showModalBox('Products that has: ' + tmp.searchTxt, tmp.resultList, false);
+			}
+			,'onComplete': function(sender, param) {
+				jQuery('#' + tmp.btn.id).button('reset');
+				jQuery('#' + tmp.searchTxtBox.id).button('reset');
+			}
+		});
+		return tmp.me;
+	}
+	/**
+	 * Getting the search product result row
+	 */
+	,_getSearchPrductResultRow: function(product, searchTxtBox) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.defaultImgSrc = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjZWVlIi8+PHRleHQgdGV4dC1hbmNob3I9Im1pZGRsZSIgeD0iMzIiIHk9IjMyIiBzdHlsZT0iZmlsbDojYWFhO2ZvbnQtd2VpZ2h0OmJvbGQ7Zm9udC1zaXplOjEycHg7Zm9udC1mYW1pbHk6QXJpYWwsSGVsdmV0aWNhLHNhbnMtc2VyaWY7ZG9taW5hbnQtYmFzZWxpbmU6Y2VudHJhbCI+NjR4NjQ8L3RleHQ+PC9zdmc+';
+		tmp.newRow = new Element('a', {'class': 'list-group-item search-product-result-row', 'href': 'javascript: void(0);'})
+			.store('data',product)
+			.insert({'bottom': new Element('div', {'class': 'row'})
+				.insert({'bottom': new Element('div', {'class': 'col-xs-2'})
+					.insert({'bottom': new Element('div', {'class': 'thumbnail'})
+						.insert({'bottom': new Element('img', {'data-src': 'holder.js/100%x64', 'alert': 'Product Image', 'src': product.images.size() === 0 ? tmp.defaultImgSrc : product.images[0].asset.url}) })
+					})
+				})
+				.insert({'bottom': new Element('div', {'class': 'col-xs-10'})
+					.insert({'bottom': new Element('strong').update(product.name)
+						.insert({'bottom': new Element('small', {'class': 'btn btn-xs btn-info'}).setStyle('margin-left: 10px;')
+							.insert({'bottom': new Element('small', {'class': 'glyphicon glyphicon-new-window'}) })
+							.observe('click', function(event){
+								Event.stop(event);
+								$productId = $(this).up('.search-product-result-row').retrieve('data').id;
+								if($productId)
+									tmp.me._openProductDetailPage($productId);
+							})
+						})
+						.insert({'bottom': new Element('small', {'class': 'pull-right'}).update('SKU: ' + product.sku) })
+					})
+					.insert({'bottom': new Element('div')
+						.insert({'bottom': new Element('small').update(product.shortDescription) })
+					})
+					.insert({'bottom': new Element('div')
+						.insert({'bottom': new Element('small', {'class': 'col-xs-4'})
+							.insert({'bottom': new Element('div', {'class': 'input-group', 'title': 'stock on HAND'})
+								.insert({'bottom': new Element('span', {'class': 'input-group-addon'}).update('SOH:') })
+								.insert({'bottom': new Element('strong', {'class': 'form-control'}).update(product.stockOnHand) })
+							})
+						})
+						.insert({'bottom': new Element('small', {'class': 'col-xs-4'})
+							.insert({'bottom': new Element('div', {'class': 'input-group', 'title': 'stock on ORDER'})
+								.insert({'bottom': new Element('span', {'class': 'input-group-addon'}).update('SOO:') })
+								.insert({'bottom': new Element('strong', {'class': 'form-control'}).update(product.stockOnOrder) })
+							})
+						})
+						.insert({'bottom': new Element('small', {'class': 'col-xs-4'})
+							.insert({'bottom': new Element('div', {'class': 'input-group', 'title': 'stock on PO'})
+								.insert({'bottom': new Element('span', {'class': 'input-group-addon'}).update('SOP:') })
+								.insert({'bottom': new Element('strong', {'class': 'form-control'}).update(product.stockOnPO) })
+							})
+						})
+					})
+				})
+			})
+			.observe('click', function(){
+				tmp.inputRow = $(searchTxtBox).up('.new-order-item-input').store('product', product);
+				searchTxtBox.up('.productName')
+					.writeAttribute('colspan', false)
+					.update(new Element('a', {'href': '/product/' + product.id + '.html', 'target': '_BLANK'}).update(product.sku))
+					.removeClassName('col-xs-8')
+					.addClassName('col-xs-3')
+					.insert({'bottom': new Element('a', {'href': 'javascript: void(0);', 'class': 'text-danger pull-right', 'title': 'click to change the product'})
+						.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-remove'})  })
+						.observe('click', function() {
+							tmp.newRow = tmp.me._getNewProductRow();
+							$(this).up('.new-order-item-input').replace(tmp.newRow);
+							tmp.newRow.down('[new-order-item=product]').select();
+						})
+					})
+					.insert({'after': new Element('div', {'class': 'col-xs-5'})
+						.update(new Element('textarea', {'new-order-item': 'itemDescription'}).setStyle('width: 100%').update(product.name))
+					});
+				jQuery('#' + tmp.me.modalId).modal('hide');
+				tmp.retailPrice = product.prices.size() === 0 ? 0 : product.prices[0].price;
+				tmp.inputRow.down('[new-order-item=unitPrice]').writeAttribute('value', tmp.me.getCurrency(tmp.retailPrice)).select();
+				tmp.me._calculateNewProductPrice(tmp.inputRow);
+			})
+			;
+		return tmp.newRow;
+	}
+	,_selectProduct: function(creditNoteItem) {
+		var tmp = {};
+		tmp.me = this;
+		//get all data
+		tmp.data = {
+			'product': creditNoteItem.product,
+			'itemDescription': creditNoteItem.itemDescription,
+			'unitPrice': tmp.me.getCurrency(creditNoteItem.unitPrice),
+			'qtyOrdered': creditNoteItem.qty ? creditNoteItem.qty : creditNoteItem.qtyOrdered,
+			'discount' : 100,
+			'margin': 0,
+			'totalPrice': tmp.me.getCurrency(creditNoteItem.unitPrice * (creditNoteItem.qty ? creditNoteItem.qty : creditNoteItem.qtyOrdered))
+		};
+		$$('.order_change_details_table').first().insert({'bottom': tmp.newDiv = tmp.me._getProductRow(tmp.data) });
+
+		tmp.me._recalculateSummary();
+		return tmp.newDiv;
+	}
+	/**
+	 * Getting summary footer for the parts list
+	 */
+	,_getSummaryFooter: function() {
+		var tmp = {};
+		tmp.me = this;
+		tmp.applyTo = new Element('select', {'class': 'select2 form-control input-sm', 'save-order': 'applyTo', 'data-placeholder': 'Select an option'}).insert({'bottom': new Element('option', {'value': ''}).update('') });
+		tmp.me._applyToOptions.each(function(option){
+			tmp.applyTo.insert({'bottom': tmp.option = new Element('option', {'value': option}).update(option) });
+			if(tmp.me._creditNote && tmp.me._creditNote.applyTo == option)
+				tmp.option.writeAttribute('selected', true);
+		});
+		tmp.newDiv = new Element('div', {'class': 'panel-footer'})
+			.insert({'bottom': new Element('div', {'class': 'row list-group-item-danger'})
+				.insert({'bottom': new Element('div', {'class': 'col-sm-8'})
+						.insert({'bottom': tmp.me._getFormGroup( 'Description:', new Element('textarea', {'save-order': 'description', 'rows': tmp.me._creditNote ? 3 : 1}).update(tmp.me._creditNote ? tmp.me._creditNote.description : '') ) })
+						.insert({'bottom': tmp.me._creditNote ? '' : tmp.me._getFormGroup( 'Comments:', new Element('textarea', {'save-order': 'comments', 'rows': '1'}) ) })
+					})
+				.insert({'bottom': new Element('div', {'class': 'col-sm-4'})
+					.insert({'bottom': new Element('div', {'class': 'row'})
+						.insert({'bottom': new Element('div', {'class': 'col-xs-6 text-right'}).update( new Element('strong').update('Total Excl. GST: ') ) })
+						.insert({'bottom': new Element('div', {'class': 'col-xs-6', 'order-price-summary': 'totalPriceExcludeGST'}).update( tmp.me.getCurrency(0) ) })
+					})
+					.insert({'bottom': new Element('div', {'class': 'row'})
+						.insert({'bottom': new Element('div', {'class': 'col-xs-6 text-right'}).update( new Element('strong').update('Total GST: ') ) })
+						.insert({'bottom': new Element('div', {'order-price-summary': 'totalPriceGST', 'class': 'col-xs-6'}).update( tmp.me.getCurrency(0) ) })
+					})
+					.insert({'bottom': new Element('div', {'class': 'row', 'style': 'border-bottom: 1px solid brown'}).setStyle('display: none;')
+						.insert({'bottom': new Element('div', {'class': 'col-xs-6 text-right'}).update( new Element('strong').update('Total Discount:') ) })
+						.insert({'bottom': new Element('div', {'order-price-summary': 'totalDiscount', 'class': 'col-xs-6'}).update( tmp.me.getCurrency(0) ) })
+					})
+					.insert({'bottom': new Element('div', {'class': 'row'})
+						.insert({'bottom': new Element('div', {'class': 'col-xs-6 text-right'}).update( new Element('strong').update('Sub Total Incl. GST: ') ) })
+						.insert({'bottom': new Element('div', {'order-price-summary': 'totalPriceIncludeGST', 'class': 'col-xs-6'}).update( tmp.me.getCurrency(0) ) })
+					})
+					.insert({'bottom': new Element('div', {'class': 'row', 'style': 'border-bottom: 1px solid brown'})
+						.insert({'bottom': new Element('div', {'class': 'col-xs-6 text-right'}).update( new Element('strong').update('Apply To: ') ) })
+						.insert({'bottom': new Element('div', {'class': 'col-xs-6'}).update( new Element('strong').update(tmp.applyTo)) })
+					})
+					.insert({'bottom': new Element('div', {'class': 'row'})
+						.insert({'bottom': new Element('div', {'class': 'col-xs-6 text-right'}).update( new Element('strong').update('Total Incl. GST:') ) })
+						.insert({'bottom': new Element('strong', {'order-price-summary': 'subTotal', 'class': 'col-xs-6'}).update( tmp.me.getCurrency(0) ) })
+					})
+					.insert({'bottom': new Element('div', {'class': 'row'}).setStyle('display: none;')
+						.insert({'bottom': new Element('h4', {'class': 'col-xs-6 text-right'}).setStyle('color: #d30014 !important').update(new Element('strong').update('DUE:')) })
+						.insert({'bottom': new Element('h4', {'class': 'col-xs-6', 'order-price-summary': 'total-payment-due'}).setStyle('color: #d30014 !important').update(tmp.me.getCurrency(0)) })
+					})
+					.insert({'bottom': new Element('div', {'class': 'row margin'}).setStyle('display: none;')
+						.insert({'bottom': new Element('strong', {'class': 'col-xs-6 text-right'}).update(new Element('strong').update('Margin Total Incl. GST:')) })
+						.insert({'bottom': new Element('strong', {'class': 'col-xs-6', 'order-price-summary': 'total-margin'}).update(tmp.me.getCurrency(0)) })
+					})
+				})
+			});
+		return tmp.newDiv;
+	}
+	/**
+	 * Getting the autocomplete input box for product
+	 */
+	,_getNewProductProductAutoComplete: function() {
+		var tmp = {};
+		tmp.me = this;
+		tmp.skuAutoComplete = tmp.me._getFormGroup( null, new Element('div', {'class': 'input-group input-group-sm product-autocomplete'})
+			.insert({'bottom': new Element('input', {'class': 'form-control search-txt visible-xs visible-sm visible-md visible-lg init-focus', 'new-order-item': 'product', 'required': true, 'placeholder': 'search SKU, NAME and any BARCODE for this product'})
+				.observe('keyup', function(event){
+					tmp.txtBox = this;
+					tmp.me.keydown(event, function() {
+						$(tmp.txtBox).up('.product-autocomplete').down('.search-btn').click();
+					});
+				})
+				.observe('keydown', function(event){
+					tmp.txtBox = this;
+					tmp.me.keydown(event, function() {
+						$(tmp.txtBox).up('.product-autocomplete').down('.search-btn').click();
+					}, function(){}, Event.KEY_TAB);
+				})
+			})
+			.insert({'bottom': new Element('span', {'class': 'input-group-btn'})
+				.insert({'bottom': new Element('span', {'class': ' btn btn-primary search-btn' , 'data-loading-text': 'searching...'})
+					.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-search'}) })
+					.observe('click', function(){
+						if(!$F($(this).up('.product-autocomplete').down('.search-txt')).blank())
+							tmp.me._searchProduct(this);
+						else
+							$(this).up('.product-autocomplete').down('.search-txt').focus();
+					})
+				})
+			})
+		);
+		tmp.skuAutoComplete.down('.input-group').removeClassName('form-control');
+		return tmp.skuAutoComplete;
+	}
+	/**
+	 * Getting the new product row
+	 */
+	,_getNewProductRow: function() {
+		var tmp = {};
+		tmp.me = this;
+		tmp.skuAutoComplete = tmp.me._getNewProductProductAutoComplete();
+		tmp.data = {
+			'product': {'name': tmp.skuAutoComplete	}
+			,'unitPrice': tmp.me._getFormGroup( null, new Element('input', {'class': 'input-sm', 'new-order-item': 'unitPrice', 'required': true, 'value': tmp.me.getCurrency(0)})
+				.observe('click', function() {
+					$(this).select();
+				})
+				.observe('keydown', function(event){
+					tmp.me._bindSubmitNewProductRow(event, this);
+				})
+				.observe('keyup', function(){
+					tmp.me._calculateNewProductPrice($(this).up('.item_row'));
+				})
+			)
+			,'qtyOrdered': tmp.me._getFormGroup( null, new Element('input', {'class': 'input-sm', 'new-order-item': 'qtyOrdered', 'required': true, 'value': '1'})
+				.observe('keyup', function(){
+					tmp.me._calculateNewProductPrice($(this).up('.item_row'));
+				})
+				.observe('keydown', function(event){
+					tmp.me._bindSubmitNewProductRow(event, this);
+				})
+				.observe('click', function() {
+					$(this).select();
+				})
+			)
+			,'discount': tmp.me._getFormGroup( null, new Element('input', {'class': 'input-sm', 'new-order-item': 'discount', 'value': '0'}).setStyle('display: none;')
+				.observe('keyup', function(){
+					if($F($(this)).blank() || $F($(this)) > 100) {
+						$(this).value = 0;
+						$(this).select();
+					}
+					tmp.me._calculateNewProductPrice($(this).up('.item_row'));
+				})
+				.observe('keydown', function(event){
+					tmp.me._bindSubmitNewProductRow(event, this);
+				})
+				.observe('click', function() {
+					$(this).select();
+				})
+			)
+			,'totalPrice': tmp.me._getFormGroup( null, new Element('input', {'class': 'input-sm', 'disabled': true, 'new-order-item': 'totalPrice', 'required': true, 'value': tmp.me.getCurrency(0)}) )
+			,'margin': tmp.me.getCurrency(0)
+			, 'btns': new Element('span', {'class': 'btn-group btn-group-sm pull-right'})
+					.insert({'bottom': new Element('span', {'class': 'btn btn-primary'})
+					.insert({'bottom': new Element('span', {'class': ' glyphicon glyphicon-floppy-saved save-new-product-btn'}) })
+					.observe('click', function() {
+						tmp.me._addNewProductRow(this);
+					})
+				})
+				.insert({'bottom': new Element('span', {'class': 'btn btn-default'})
+					.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-floppy-remove'}) })
+					.observe('click', function() {
+						if(!confirm('You about to clear this entry. All input data for this entry will be lost.\n\nContinue?'))
+							return;
+						tmp.newRow = tmp.me._getNewProductRow();
+						tmp.currentRow = $(this).up('.new-order-item-input');
+						tmp.currentRow.getElementsBySelector('.form-group.has-error .form-control').each(function(control){
+							$(control).retrieve('clearErrFunc')();
+						});
+						tmp.currentRow.replace(tmp.newRow);
+						tmp.newRow.down('[new-order-item=product]').focus();
+					})
+				})
+		};
+		return tmp.me._getProductRow(tmp.data, false).addClassName('new-order-item-input list-group-item-danger').removeClassName('order-item-row');
+	}
+	/**
+	 * Getting each product row
+	 */
+	,_getProductRow: function(orderItem, isTitleRow) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.isTitle = (isTitleRow || false);
+		tmp.tag = (tmp.isTitle === true ? 'strong' : 'div');
+		tmp.btns = orderItem.btns ? orderItem.btns : new Element('span', {'class': 'pull-right'})
+			.insert({'bottom': new Element('span', {'class': 'btn btn-danger btn-xs item-del-btn'})
+				.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-trash'}) })
+				.observe('click', function() {
+					if(!confirm('You remove this entry.\n\nContinue?'))
+						return;
+					tmp.row = $(this).up('.item_row');
+					if(tmp.row) {
+						if(jQuery.isNumeric(tmp.row.readAttribute('creditNoteItemId')))
+							tmp.row.hide();
+						else tmp.row.remove();
+					}
+					tmp.me._recalculateSummary();
+				})
+			});
+		tmp.row = new Element('div', {'class': ' list-group-item ' + (tmp.isTitle === true ? 'list-group-item-danger' : 'item_row order-item-row')})
+			.store('data',orderItem)
+			.insert({'bottom': new Element('div', {'class': 'row'})
+				.store('data', orderItem)
+				.insert({'bottom': new Element(tmp.tag, {'class': 'productName col-xs-8'})
+					.insert({'bottom': orderItem.itemDescription ? orderItem.itemDescription : orderItem.product.name })
+				})
+				.insert({'bottom': new Element(tmp.tag, {'class': 'uprice col-xs-1'})
+					.insert({'bottom': (orderItem.unitPrice) })
+				})
+				.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-1'})
+					.insert({'bottom': new Element('div')
+						.insert({'bottom': new Element('div', {'class': 'qty col-xs-12'}).update(orderItem.qtyOrdered) })
+						.insert({'bottom': new Element('div', {'class': 'discount col-xs-6'}).update(orderItem.discount).setStyle('display: none;') })
+					})
+				})
+				.insert({'bottom': new Element(tmp.tag, {'class': 'tprice col-xs-1'})
+					.insert({'bottom': (orderItem.totalPrice) })
+				})
+				.insert({'bottom': new Element(tmp.tag, {'class': 'margin col-xs-1 text-right'}).update(orderItem.margin).setStyle('display: none;')})
+				.insert({'bottom': new Element(tmp.tag, {'class': 'btns col-xs-1 text-right'}).update(tmp.btns) })
+			});
+		if(orderItem.product.sku) {
+			tmp.row.down('.productName')
+				.removeClassName('col-xs-8')
+				.addClassName('col-xs-6')
+				.insert({'before': new Element(tmp.tag, {'class': 'productSku col-xs-2'})
+					.update( tmp.isTitle === true ? 'SKU' : new Element('a', {'href': '/product/' + orderItem.product.id + '.html', 'target': '_BLANK'}).update(orderItem.product.sku) )
+				});
+		}
+		if(orderItem.scanTable) {
+			tmp.row.insert({'bottom': new Element('div', {'class': 'row product-content-row'})
+				.insert({'bottom': new Element('span', {'class': 'col-sm-2 show-tools'})
+					.insert({'bottom': new Element('input', {'type': 'checkbox', 'checked': true, 'class': 'show-panel-check'})
+						.observe('click', function(){
+							tmp.btn = this;
+							tmp.panel = $(tmp.btn).up('.product-content-row').down('.serial-no-scan-pane');
+							if(tmp.btn.checked) {
+								tmp.panel.show();
+							} else {
+								tmp.panel.hide();
+							}
+						})
+					})
+					.insert({'bottom': new Element('a', {'href': 'javascript: void(0);'}).update(' show serial scan panel?')
+						.observe('click', function(){
+							$(this).up('.show-tools').down('.show-panel-check').click();
+						})
+					})
+				})
+				.insert({'bottom': new Element('span', {'class': 'col-sm-10 serial-no-scan-pane', 'style': 'padding-top: 5px'}).update(orderItem.scanTable) })
+			});
+		}
+		return tmp.row;
+	}
+	/**
+	 * Getting the parts panel
+	 */
+	,_getPartsTable: function () {
+		var tmp = {};
+		tmp.me = this;
+		//header row
+		tmp.productListDiv = new Element('div', {'class': 'list-group order_change_details_table'})
+			.insert({'bottom': tmp.me._getProductRow({'product': {'sku': 'SKU', 'name': 'Description'},
+				'unitPrice': 'Unit Price<div><small>(inc GST)</small><div>',
+				'qtyOrdered': 'Qty',
+				'margin': 'Margin',
+				'discount': 'Disc. %',
+				'totalPrice': 'Total Price<div><small>(inc GST)</small><div>'
+				,'btns': new Element('div').setStyle('display:none;')
+					.insert({'bottom': new Element('label', {'for': 'hide-margin-checkbox'}).update('Show Margin ') })
+					.insert({'bottom': new Element('input', {'id': 'hide-margin-checkbox', 'type': 'checkbox', 'checked': true})
+						.observe('click', function(){
+							jQuery('.margin').toggle();
+						})
+					})
+				}, true)
+			});
+		// tbody
+		tmp.productListDiv.insert({'bottom': tmp.me._getNewProductRow().addClassName('list-group-item-danger') });
+		return tmp.productListDiv;
+	}
+	/**
+	 * Getting the address div
+	 */
+	,_getAddressDiv: function(title, addr, editable) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.address = (addr || null);
+		tmp.editable = (editable || false);
+		tmp.newDiv = new Element('div', {'class': 'address-div'})
+			.insert({'bottom': new Element('strong').update(title) })
+			.insert({'bottom': new Element('dl', {'class': 'dl-horizontal dl-condensed'})
+				.insert({'bottom': new Element('dt')
+					.update(new Element('span', {'class': "glyphicon glyphicon-user", 'title': "Customer Name"}) )
+				})
+				.insert({'bottom': new Element('dd')
+					.insert({'bottom': new Element('div')
+						.insert({'bottom': new Element('div', {'class' : 'col-sm-6'}).update(
+							tmp.editable !== true ? addr.contactName : new Element('input', {'address-editable-field': 'contactName', 'class': 'form-control input-sm', 'placeholder': 'The name of contact person',  'value': tmp.address.contactName ? tmp.address.contactName : ''})
+						) })
+						.insert({'bottom': new Element('div', {'class' : 'col-sm-6'}).update(
+								tmp.editable !== true ? addr.contactNo : new Element('input', {'address-editable-field': 'contactNo', 'class': 'form-control input-sm', 'placeholder': 'The contact number of contact person',  'value': tmp.address.contactNo ? tmp.address.contactNo : ''})
+						) })
+					})
+				})
+				.insert({'bottom': new Element('dt').update(
+					new Element('span', {'class': "glyphicon glyphicon-map-marker", 'title': "Address"})
+				) })
+				.insert({'bottom': new Element('dd')
+					.insert({'bottom': new Element('div')
+						.insert({'bottom': tmp.editable !== true ? addr.street : new Element('div', {'class': 'street col-sm-12'}).update(
+								new Element('input', {'address-editable-field': 'street', 'class': 'form-control input-sm', 'placeholder': 'Street Number and Street name',  'value': tmp.address.street ? tmp.address.street : ''})
+						) })
+					})
+					.insert({'bottom': new Element('div')
+						.insert({'bottom': tmp.editable !== true ? addr.city + ' ' : new Element('div', {'class': 'city col-sm-6'}).update(
+								new Element('input', {'address-editable-field': 'city', 'class': 'form-control input-sm', 'placeholder': 'City / Suburb',  'value': tmp.address.city ? tmp.address.city : ''})
+						) })
+						.insert({'bottom':  tmp.editable !== true ? addr.region + ' ' : new Element('div', {'class': 'region col-sm-3'}).update(
+								new Element('input', {'address-editable-field': 'region', 'class': 'form-control input-sm', 'placeholder': 'State / Province',  'value': tmp.address.region ? tmp.address.region : ''})
+						) })
+						.insert({'bottom': tmp.editable !== true ? addr.postCode: new Element('div', {'class': 'postcode col-sm-3'}).update(
+								new Element('input', {'address-editable-field': 'postCode', 'class': 'form-control input-sm', 'placeholder': 'PostCode',  'value': tmp.address.postCode ? tmp.address.postCode : ''})
+						) })
+					})
+					.insert({'bottom': new Element('div')
+						.insert({'bottom': tmp.editable !== true ? addr.country: new Element('div', {'class': 'postcode col-sm-4'}).update(
+								new Element('input', {'address-editable-field': 'country', 'class': 'form-control input-sm', 'placeholder': 'Country',  'value': tmp.address.country ? tmp.address.country : ''})
+						) })
+					})
+				})
+			});
+		if(tmp.editable === true) {
+			tmp.newDiv.writeAttribute('address-editable', true);
+		}
+		return tmp.newDiv;
+	}
+	/**
+	 * getting the customer information div
+	 */
+	,getCustomerInfoPanel: function() {
+		var tmp = {};
+		tmp.me = this;
+		tmp.customer = tmp.me._customer;
+		tmp.newDiv = new Element('div', {'class': 'panel panel-danger CustomerInfoPanel'})
+			.insert({'bottom': new Element('div', {'class': 'panel-heading'})
+				.insert({'bottom': new Element('div', {'class': 'row'})
+					.insert({'bottom': new Element('div', {'class': 'col-sm-8'})
+						.insert({'bottom': new Element('strong').update((tmp.me._creditNote && tmp.me._creditNote.id ? 'EDITING' : 'CREATING') + ' CREDIT NOTE FOR:  ') })
+						.insert({'bottom': new Element('a', {'href': 'javascript: void(0);'})
+							.update(tmp.customer.name)
+							.observe('click', function(){
+								tmp.me._openCustomerDetailsPage(tmp.customer);
+							})
+						})
+						.insert({'bottom': ' <' })
+						.insert({'bottom': new Element('a', {'href': 'mailto:' + tmp.customer.email}).update(tmp.customer.email) })
+						.insert({'bottom': '>' })
+						.insert({'bottom': tmp.me._order ? new Element('strong').update(' with Order No. ') : '' })
+						.insert({'bottom': tmp.me._order ? new Element('a', {'target': '_blank', 'href': '/orderdetails/' + tmp.me._order.id}).update(tmp.me._order.orderNo) : '' })
+					})
+					.insert({'bottom': new Element('div', {'class': 'col-sm-4 text-right'}).setStyle('display: none;')
+						.insert({'bottom': new Element('strong').update('Total Payment Due: ') })
+						.insert({'bottom': new Element('span', {'class': 'badge', 'order-price-summary': 'total-payment-due'}).update(tmp.me.getCurrency(0) ) })
+					})
+				})
+			})
+			.insert({'bottom': new Element('div', {'class': 'panel-body'})
+				.insert({'bottom': new Element('div', {'class': 'row'})
+					.insert({'bottom': new Element('small').update(new Element('em').update(tmp.customer.description)) })
+				})
+				.insert({'bottom': new Element('div', {'class': 'row'})
+					.insert({'bottom': tmp.me._getAddressDiv("Billing Address: ", tmp.customer.address ? tmp.customer.address.billing : null).addClassName('col-xs-6') })
+					.insert({'bottom': tmp.me._getAddressDiv("Shipping Address: ", tmp.customer.address ? tmp.customer.address.shipping : null, true).addClassName('col-xs-6').addClassName('shipping-address') })
+				 })
+			});
+		return tmp.newDiv;
+	}
+	,_openCustomerDetailsPage: function(row) {
+		var tmp = {};
+		tmp.me = this;
+		jQuery.fancybox({
+			'width'			: '95%',
+			'height'		: '95%',
+			'autoScale'     : false,
+			'autoDimensions': false,
+			'fitToView'     : false,
+			'autoSize'      : false,
+			'type'			: 'iframe',
+			'href'			: '/customer/' + row.id + '.html?blanklayout=1',
+			'beforeClose'	    : function() {
+				tmp.customer = $$('iframe.fancybox-iframe').first().contentWindow.pageJs._item;
+				if(tmp.customer && tmp.customer.id) {
+					tmp.me._selectCustomer(tmp.customer);
+				}
+			}
+ 		});
+		return tmp.me;
+	}
+	/**
+	 * Getting the div of the order view
+	 */
+	,getViewOfCreditNote: function() {
+		var tmp = {};
+		tmp.me = this;
+		tmp.newDiv = new Element('div')
+			.insert({'bottom': new Element('div', {'class': 'row'})
+				.insert({'bottom': new Element('div', {'class': 'col-sm-12'}).update(tmp.me.getCustomerInfoPanel()) })
+			})
+			.insert({'bottom': new Element('div', {'class': 'row'})
+				.insert({'bottom': new Element('div', {'class': 'col-sm-12'})
+					.insert({'bottom': new Element('div', {'class': 'panel panel-danger'}).update(tmp.me._getPartsTable())
+						.insert({'bottom': tmp.me._getSummaryFooter() })
+					})
+				})
+			})
+			.insert({'bottom': new Element('div', {'class': 'row'})
+				.insert({'bottom': new Element('div', {'class': 'col-sm-12'}).update(tmp.me._saveBtns()) })
+			})
+			.insert({'bottom': pageJs._creditNote ? new Element('div', {'class': 'row'}).setStyle('padding-top: 20px')
+				.insert({'bottom': new Element('div', {'class': 'col-sm-12'}).update(tmp.me._getEmptyCommentsDiv()) })
+				: ''
+			})
+			;
+		return tmp.newDiv;
+	}
+	,_selectCustomer: function(customer) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.me._customer = customer;
+		if($$('.CustomerInfoPanel').size() > 0)
+			jQuery('.CustomerInfoPanel').replaceWith(tmp.me.getCustomerInfoPanel());
+		$(tmp.me._htmlIds.itemDiv).update(tmp.me.getViewOfCreditNote());
+		if($$('.init-focus').size() > 0)
+			$$('.init-focus').first().focus();
+		return tmp.me;
+	}
+	/**
+	 * Getting the customer row for displaying the searching result
+	 */
+	,_getCustomerRow: function(row, isTitle) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.isTitle = (isTitle || false);
+		tmp.tag = (tmp.isTitle === true ? 'th': 'td');
+		tmp.newDiv = new Element('tr', {'class': (tmp.isTitle === true ? 'item_top_row' : 'btn-hide-row item_row') + (row.active == 0 ? ' danger' : ''), 'item_id': (tmp.isTitle === true ? '' : row.id)}).store('data', row)
+			.insert({'bottom': new Element(tmp.tag, {'class': 'name col-xs-1'})
+				.insert({'bottom': (tmp.isTitle === true ? '&nbsp;':
+					new Element('span', {'class': 'btn btn-primary btn-xs'}).update('select')
+					.observe('click', function(){
+						tmp.me._selectCustomer(row);
+					})
+				) })
+			})
+			.insert({'bottom': new Element(tmp.tag, {'class': 'name col-xs-1'}).update(row.name) })
+			.insert({'bottom': new Element(tmp.tag, {'class': 'email col-xs-1', 'style': 'text-decoration: underline;'}).update(row.email) })
+			.insert({'bottom': new Element(tmp.tag, {'class': 'contact col-xs-1 truncate'}).update(row.contactNo)})
+			.insert({'bottom': new Element(tmp.tag, {'class': 'description col-xs-1'}).update(row.description) })
+			.insert({'bottom': new Element(tmp.tag, {'class': 'address col-xs-1'})
+				.insert({'bottom': tmp.isTitle === true ? row.addresses : new Element('span', {'style': 'display: inline-block'})
+					.insert({'bottom': new Element('a', {'class': 'visible-xs visible-md visible-sm visible-lg', 'href': 'javascript: void(0);'})
+						.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-plane address-shipping', 'style': 'font-size: 1.3em', 'title': 'Shipping'}) })
+						.observe('click', function(){
+							tmp.me.showModalBox('<strong>Shipping Address</strong>', row.address.shipping.full)
+						})
+					})
+				})
+				.insert({'bottom': tmp.isTitle === true ? '' : new Element('span', {'style': 'display: inline-block'})
+					.insert({'bottom':  new Element('a', {'class': 'visible-xs visible-md visible-sm visible-lg', 'href': 'javascript: void(0);'})
+						.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-usd address-billing', 'style': 'font-size: 1.3em; padding-left:10%;', 'title': 'Billing'}) })
+						.observe('click', function(){
+							tmp.me.showModalBox('<strong>Billing Address</strong>', row.address.shipping.full)
+						})
+					})
+				})
+			})
+			.insert({'bottom': new Element(tmp.tag, {'class': 'mageId col-xs-1'}).update(row.mageId) })
+			.insert({'bottom': new Element(tmp.tag, {'class': 'cust_active col-xs-1'})
+				.insert({'bottom': (tmp.isTitle === true ? row.active : new Element('input', {'type': 'checkbox', 'disabled': true, 'checked': row.active}) ) })
+			});
+		return tmp.newDiv;
+	}
+	/**
+	 * Ajax: searching the customer
+	 */
+	,_searchCustomer: function (txtbox) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.searchTxt = $F(txtbox).strip();
+		tmp.searchPanel = $(txtbox).up('#' + tmp.me._htmlIds.searchPanel);
+		tmp.me.postAjax(tmp.me.getCallbackId('searchCustomer'), {'searchTxt': tmp.searchTxt}, {
+			'onLoading': function() {
+				if($(tmp.searchPanel).down('.list-div'))
+					$(tmp.searchPanel).down('.list-div').remove();
+				$(tmp.searchPanel).insert({'bottom': new Element('div', {'class': 'panel-body'}).update(tmp.me.getLoadingImg()) });
+			}
+			,'onSuccess': function (sender, param) {
+				$(tmp.searchPanel).down('.panel-body').remove();
+				try {
+					tmp.result = tmp.me.getResp(param, false, true);
+					if(!tmp.result || !tmp.result.items)
+						return;
+					$(tmp.searchPanel).insert({'bottom': new Element('small', {'class': 'table-responsive list-div'})
+						.insert({'bottom': new Element('table', {'class': 'table table-hover table-condensed'})
+							.insert({'bottom': new Element('thead')
+								.insert({'bottom': tmp.me._getCustomerRow({'email': "Email", 'name': 'Name', 'contactNo': 'Contact Num', 'description': 'Description', 'addresses': 'Addresses',
+																			'address': {'billing': {'full': 'Billing Address'}, 'shipping': {'full': 'Shipping Address'} },
+																			'mageId': "Mage Id", 'active': "Active?"
+																			}, true)  })
+							})
+							.insert({'bottom': tmp.listDiv = new Element('tbody') })
+						})
+					});
+					tmp.result.items.each(function(item) {
+						tmp.listDiv.insert({'bottom': tmp.me._getCustomerRow(item) });
+					});
+				} catch (e) {
+					$(tmp.searchPanel).insert({'bottom': new Element('div', {'class': 'panel-body'}).update(tmp.me.getAlertBox('ERROR', e).addClassName('alert-danger')) });
+				}
+			}
+		});
+		return tmp.me;
+	}
+	/**
+	 * Getting the customer list panel
+	 */
+	,_getCustomerListPanel: function () {
+		var tmp = {};
+		tmp.me = this;
+		tmp.newDiv = new Element('div', {'id': tmp.me._htmlIds.searchPanel, 'class': 'panel panel-danger search-panel'})
+			.insert({'bottom': new Element('div', {'class': 'panel-heading form-inline'})
+				.insert({'bottom': new Element('strong').update('Creating a new Credit Note for: ') })
+				.insert({'bottom': new Element('span', {'class': 'input-group col-sm-6'})
+					.insert({'bottom': new Element('input', {'class': 'form-control search-txt init-focus', 'placeholder': 'Customer name'})
+						.observe('keydown', function(event){
+							tmp.txtBox = this;
+							tmp.me.keydown(event, function() {
+								if(tmp.txtBox.up('#'+pageJs._htmlIds.searchPanel).down('.item_row')!=undefined && tmp.txtBox.up('#'+pageJs._htmlIds.searchPanel).down('tbody').getElementsBySelector('.item_row').length===1) {
+									tmp.txtBox.up('#'+pageJs._htmlIds.searchPanel).down('tbody .item_row .btn').click();
+								}
+								else $(tmp.me._htmlIds.searchPanel).down('.search-btn').click();
+							});
+							tmp.me.keydown(event, function() {
+								if(tmp.txtBox.up('#'+pageJs._htmlIds.searchPanel).down('.item_row')!=undefined && tmp.txtBox.up('#'+pageJs._htmlIds.searchPanel).down('tbody').getElementsBySelector('.item_row').length===1) {
+									tmp.txtBox.up('#'+pageJs._htmlIds.searchPanel).down('tbody .item_row .btn').click();
+								}
+								else $(tmp.me._htmlIds.searchPanel).down('.search-btn').click();
+							}, function(){}, Event.KEY_TAB);
+							return false;
+						})
+					})
+					.insert({'bottom': new Element('span', {'class': 'input-group-btn search-btn'})
+						.insert({'bottom': new Element('span', {'class': ' btn btn-primary'})
+							.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-search'}) })
+						})
+						.observe('click', function(){
+							tmp.btn = this;
+							tmp.txtBox = $(tmp.me._htmlIds.searchPanel).down('.search-txt');
+							if(!$F(tmp.txtBox).blank())
+								tmp.me._searchCustomer(tmp.txtBox);
+							else {
+								if($(tmp.me._htmlIds.searchPanel).down('.table tbody'))
+									$(tmp.me._htmlIds.searchPanel).down('.table tbody').innerHTML = null;
+							}
+						})
+					})
+				})
+				.insert({'bottom': new Element('span', {'class': 'btn btn-success pull-right btn-sm btn-danger'})
+					.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-remove'}) })
+					.observe('click', function(){
+						$(tmp.me._htmlIds.searchPanel).down('.search-txt').clear().focus();
+						$(tmp.me._htmlIds.searchPanel).down('.table tbody').innerHTML = null;
+					})
+				})
+			})
+			;
+		return tmp.newDiv;
+	}
+	,init: function() {
+		var tmp = {};
+		tmp.me = this;
+		if(tmp.me._creditNote) {
+			if(tmp.me._creditNote.order && tmp.me._creditNote.order.id && jQuery.isNumeric(tmp.me._creditNote.order.id))
+				tmp.me._order = tmp.me._creditNote.order;
+			tmp.me._selectCustomer(tmp.me._creditNote.customer);
+			tmp.me._creditNote.items.each(function(item){
+				tmp.me._selectProduct(item).writeAttribute('creditNoteItemId', item.id);
+			});
+			tmp.me._getComments(true);
+			jQuery('.new-order-item-input').remove();
+			jQuery('.item-del-btn').remove();
+			jQuery('.shipping-address[address-editable="address-editable"]').find('.form-control').attr('disabled', true);
+		} else if(tmp.me._order) {
+			tmp.me._selectCustomer(tmp.me._order.customer);
+			tmp.me._order.items.each(function(item){
+				tmp.me._selectProduct(item).writeAttribute('orderItemId', item.id);
+			});
+		} else if(tmp.me._customer)
+			tmp.me._selectCustomer(tmp.me._customer);
+		else $(tmp.me._htmlIds.itemDiv).update(tmp.me._getCustomerListPanel());
+
+		if($$('.init-focus').size() > 0)
+			$$('.init-focus').first().focus();
+		jQuery('.select2').select2({});
+
+		return tmp.me;
+	}
+	/**
+	 * Getting the form group
+	 */
+	,_getFormGroup: function(title, content) {
+		return new Element('div', {'class': 'form-group'})
+			.insert({'bottom': title ? new Element('label', {'class': 'control-label'}).update(title) : '' })
+			.insert({'bottom': content.addClassName('form-control') });
+	}
+	/**
+	 * Open product Details Page in new Window
+	 */
+	,_openProductDetailPage: function(id) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.newWindow = window.open('/product/' + id + '.html', 'Product Details', 'width=1300, location=no, scrollbars=yes, menubar=no, status=no, titlebar=no, fullscreen=no, toolbar=no');
+		tmp.newWindow.focus();
+		return tmp.me;
+	}
+	/**
+	 * calculateNewProductPrice
+	 */
+	,_calculateNewProductPrice: function(row) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.row = row;
+		tmp.unitPrice = tmp.me.getValueFromCurrency( $F(tmp.row.down('[new-order-item=unitPrice]')) );
+		tmp.discount = $F(tmp.row.down('[new-order-item=discount]')).strip().replace('%', '');
+		tmp.qty = $F(tmp.row.down('[new-order-item=qtyOrdered]')).strip();
+		tmp.totalPrice = tmp.unitPrice * (1 - tmp.discount/100) * tmp.qty;
+		$(tmp.row.down('[new-order-item=totalPrice]')).value = tmp.me.getCurrency( tmp.totalPrice );
+		if(row.retrieve('product')) {
+			tmp.unitCost = row.retrieve('product').unitCost;
+			if(tmp.row.down('.margin'))
+				$(tmp.row.down('.margin')).update( tmp.me.getCurrency( tmp.totalPrice * 1 - tmp.unitCost * 1.1 * tmp.qty ) + (parseInt(tmp.unitCost) === 0 ? '<div><small class="label label-danger">No Cost Yet</small</div>' : '') );
+		}
+		return tmp.me;
+	}
+	/**
+	 * bindSubmit product row event
+	 */
+	,_bindSubmitNewProductRow: function(event, box) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.txtBox = box;
+		tmp.me.keydown(event, function() {
+			 $(tmp.txtBox).up('.item_row').down('.save-new-product-btn').click();
+		});
+		return tmp.me;
+	}
+	,_recalculateSummary: function() {
+		var tmp = {};
+		tmp.me = this;
+		//getting all the item row's total
+		tmp.totalPriceIncGSTNoDicount = 0;
+		tmp.totalPriceIncGSTWithDiscount = 0;
+		tmp.totalMargin = 0;
+		$$('.item_row.order-item-row').each(function(row) {
+			tmp.rowData = row.retrieve('data');
+			tmp.totalPriceIncGSTWithDiscount = tmp.totalPriceIncGSTWithDiscount * 1 + (tmp.me.getValueFromCurrency(tmp.rowData.totalPrice) * 1);
+			tmp.totalPriceIncGSTNoDicount = tmp.totalPriceIncGSTNoDicount * 1 + (tmp.me.getValueFromCurrency(tmp.rowData.unitPrice) * tmp.rowData.qtyOrdered);
+			if(tmp.rowData.margin)
+				tmp.totalMargin = tmp.totalMargin * 1 + tmp.me.getValueFromCurrency(tmp.rowData.margin) * 1;
+		});
+		//calculate total price without GST
+		tmp.totalPriceExcGST = ((tmp.totalPriceIncGSTWithDiscount * 1) / 1.1);
+		jQuery('[order-price-summary="totalPriceExcludeGST"]').val(tmp.me.getCurrency(tmp.totalPriceExcGST)).html(tmp.me.getCurrency(tmp.totalPriceExcGST));
+
+		//calculate total GST
+		tmp.totalGST = (tmp.totalPriceIncGSTWithDiscount * 1 - tmp.totalPriceExcGST * 1);
+		jQuery('[order-price-summary="totalPriceGST"]').val(tmp.me.getCurrency(tmp.totalGST)).html(tmp.me.getCurrency(tmp.totalGST));
+
+		//calculate the total price with GST
+		tmp.totalDiscount = (tmp.totalPriceIncGSTNoDicount * 1 - tmp.totalPriceIncGSTWithDiscount * 1);
+		jQuery('[order-price-summary="totalDiscount"]').val(tmp.me.getCurrency(tmp.totalDiscount)).html(tmp.me.getCurrency(tmp.totalDiscount));
+
+		//calculate the total price with GST
+		jQuery('[order-price-summary="totalPriceIncludeGST"]').val(tmp.me.getCurrency(tmp.totalPriceIncGSTWithDiscount)).html(tmp.me.getCurrency(tmp.totalPriceIncGSTWithDiscount));
+
+		//calculate the sub total
+		tmp.totalShipping = (jQuery('[order-price-summary="totalShippingCost"]').length > 0 ? jQuery('[order-price-summary="totalShippingCost"]').val() : 0);
+		tmp.subTotal = (tmp.totalShipping * 1 + tmp.totalPriceIncGSTWithDiscount * 1);
+		jQuery('[order-price-summary="subTotal"]').val(tmp.me.getCurrency(tmp.subTotal)).html(tmp.me.getCurrency(tmp.subTotal));
+
+		//calculate the total due
+		tmp.totalPaid = (jQuery('[order-price-summary="totalPaidAmount"]').length > 0 ? jQuery('[order-price-summary="totalPaidAmount"]').val() : 0);
+		tmp.totalDue = (tmp.subTotal * 1 - tmp.totalPaid * 1);
+		if(tmp.totalDue < 0) {
+			tmp.me.showModalBox(
+				'<h4 class="text-danger">Attention!</h4>',
+				'<div><strong>The customer has paid more than the due amount?</strong></div><div><span class="btn btn-primary" onclick="pageJs.hideModalBox();">OK</span>',
+				true
+			);
+		}
+		jQuery('[order-price-summary="total-payment-due"]').val(tmp.me.getCurrency(tmp.totalDue)).html(tmp.me.getCurrency(tmp.totalDue));
+
+		//display margin:
+		jQuery('[order-price-summary="total-margin"]').val(tmp.me.getCurrency(tmp.totalMargin)).html(tmp.me.getCurrency(tmp.totalMargin));
+
+		return tmp.me;
+	}
+});
