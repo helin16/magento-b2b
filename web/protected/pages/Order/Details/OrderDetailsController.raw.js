@@ -908,14 +908,15 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					.insert({'bottom': new Element('div', {'class': 'col-sm-6'})
 						.insert({'bottom': new Element('strong').update('Customer: ') })
 						.insert({'bottom': tmp.custName })
+						.insert({'bottom': tmp.me._order.customer.contactNo.blank() ? '' : '(' + tmp.me._order.customer.contactNo + ')'})
 					})
 					.insert({'bottom': new Element('div', {'class': 'col-sm-6'})
 						.insert({'bottom': new Element('a', {'href': 'mailto:' + tmp.custEmail}).update(tmp.custEmail) })
 					})
 				})
 				.insert({'bottom': new Element('div', {'class': 'row'})
-					.insert({'bottom': new Element('div', {'class': 'col-xs-6'}).update(tmp.me._getAddressDiv("Shipping Address: ", tmp.me._order.address.shipping, 'shipping')) })
 					.insert({'bottom': new Element('div', {'class': 'col-xs-6'}).update(tmp.me._getAddressDiv("Billing Address: ", tmp.me._order.address.billing, 'billing')) })
+					.insert({'bottom': new Element('div', {'class': 'col-xs-6'}).update(tmp.me._getAddressDiv("Shipping Address: ", tmp.me._order.address.shipping, 'shipping')) })
 				 })
 			});
 	}

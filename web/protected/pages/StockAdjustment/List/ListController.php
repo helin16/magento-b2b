@@ -1,7 +1,7 @@
 <?php
 /**
  * This is the OrderController
- * 
+ *
  * @package    Web
  * @subpackage Controller
  * @author     lhe<helin16@gmail.com>
@@ -43,10 +43,10 @@ class ListController extends BPCPageAbstract
 		{
 			$items = array();
 			$searchTxt = isset($param->CallbackParameter->searchTxt) ? trim($param->CallbackParameter->searchTxt) : '';
-			
+
 			$where = 'pro_pro_code.code = :searchExact or pro.name like :searchTxt OR sku like :searchTxt';
 			$params = array('searchExact' => $searchTxt , 'searchTxt' => '%' . $searchTxt . '%');
-				
+
 			$searchTxtArray = StringUtilsAbstract::getAllPossibleCombo(StringUtilsAbstract::tokenize($searchTxt));
 			if(count($searchTxtArray) > 1)
 			{
@@ -59,17 +59,17 @@ class ListController extends BPCPageAbstract
 			}
 			Product::getQuery()->eagerLoad('Product.codes', 'left join');
 			$products = Product::getAllByCriteria($where, $params, true, 1, DaoQuery::DEFAUTL_PAGE_SIZE, array('pro.sku' => 'asc'));
-			
+
 			foreach($products as $product)
 			{
 				if(!$product instanceof Product)
 					throw new Exception('Invalid Product passed in!');
 				$EANcodes = ProductCode::getAllByCriteria('pro_code.productId = :productId and pro_code.typeId = :typeId', array('productId'=> $product->getId(), 'typeId'=> ProductCodeType::ID_EAN), true, 1, 1);
 				$EANcodes = count($EANcodes) > 0 ? $EANcodes[0]->getCode() : '';
-				
+
 				$UPCcodes = ProductCode::getAllByCriteria('pro_code.productId = :productId and pro_code.typeId = :typeId', array('productId'=> $product->getId(), 'typeId'=> ProductCodeType::ID_UPC), true, 1, 1);
 				$UPCcodes = count($UPCcodes) > 0 ? $UPCcodes[0]->getCode() : '';
-				
+
 				$array = $product->getJson();
 				$array['codes'] = array('EAN'=>$EANcodes, 'UPC'=>$UPCcodes);
 				$items[] = $array;
@@ -98,9 +98,11 @@ class ListController extends BPCPageAbstract
 		{
 			Dao::beginTransaction();
 			$items = array();
+			var_dump($param->CallbackParameter->products);
+			$products = array();
 			foreach ($param->CallbackParameter->products as $item)
 			{
-				if(!($product = Product::get(trim($item->id))) instanceof Product)
+				if(!($product = Product::get(trim($item->productId))) instanceof Product)
 					throw new Exception('Invalid Product passed in!');
 				if(($stockOnPO = trim($item->stockOnPO)) !== $product->getstockOnPO())
 					$product->setStockOnPO($stockOnPO);
@@ -117,10 +119,11 @@ class ListController extends BPCPageAbstract
 				if(($totalOnHandValue = trim($item->totalOnHandValue)) !== $product->getTotalOnHandValue()) {
 					$product->setTotalOnHandValue($totalOnHandValue);
 				}
+				$product->snapshotQty(null, ProductQtyLog::TYPE_STOCK_ADJ, 'Manual Adjusted by ' . Core::getUser()->getPerson()->getFullName())->save();
+				$products[] = $product->getJson();
 			}
-			$product->snapshotQty(null, ProductQtyLog::TYPE_STOCK_ADJ, 'Manual Adjusted by ' . Core::getUser()->getPerson()->getFullName())->save();
-			
-			$results['item'] = $product->getJson();
+
+			$results['items'] = $products;
 			Dao::commitTransaction();
 		}
 		catch(Exception $ex)

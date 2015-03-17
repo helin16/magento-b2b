@@ -83,6 +83,7 @@ class OrderDetailsController extends BPCPageAbstract
 		$results = $errors = array();
 		try
 		{
+			var_dump($params->CallbackParameter);
 			Dao::beginTransaction();
 			if(!isset($params->CallbackParameter->order) || !($order = Order::getByOrderNo($params->CallbackParameter->order->orderNo)) instanceof Order)
 				throw new Exception('System Error: invalid order passed in!');
@@ -176,7 +177,7 @@ class OrderDetailsController extends BPCPageAbstract
 				$emailBody['orderUpdate'] = 'Order status changed from [' . $status . '] to [' . $order->getStatus() . ']';
 			}
 			$order->save();
-
+			
 			//notify customer
 			if($notifyCustomer === true && $order->getIsFromB2B() === true)
 			{

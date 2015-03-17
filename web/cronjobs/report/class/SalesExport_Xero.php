@@ -59,7 +59,7 @@ class SalesExport_Xero extends ExportAbstract
 			$fromDate = self::$_dateRange['start'];
 			$toDate = self::$_dateRange['end'];
 		}
-		$orders = Order::getAllByCriteria('invDate >= :fromDate and invDate < :toDate', array('fromDate' => trim($fromDate), 'toDate' => trim($toDate)));
+		$orders = Order::getAllByCriteria('invDate >= :fromDate and invDate < :toDate and statusId != :cancelStatusId', array('fromDate' => trim($fromDate), 'toDate' => trim($toDate), 'cancelStatusId' => trim(OrderStatus::ID_CANCELLED)));
 
 		$return = array();
 		foreach($orders as $order)
@@ -87,12 +87,13 @@ class SalesExport_Xero extends ExportAbstract
 				$product = $orderItem->getProduct();
 				if(!$product instanceof Product)
 					continue;
+				$shouldTotal = $orderItem->getUnitPrice() * $orderItem->getQtyOrdered();
 				$return[] = array_merge($row, array(
 					'InventoryItemCode' => $product->getSku()
 					,'Description'=> $product->getShortDescription()
 					,'Quantity'=> $orderItem->getQtyOrdered()
 					,'UnitAmount'=> $orderItem->getUnitPrice()
-					,'Discount'=> ''
+					,'Discount'=> (floatval($shouldTotal) === 0.0000 ? 0 : round((($shouldTotal - $orderItem->getTotalPrice()) * 100 / $shouldTotal), 2) ) . '%'
 					,'AccountCode'=> $product->getRevenueAccNo()
 					,'TaxType'=> "GST on Income"
 					,'TrackingName1'=> ''

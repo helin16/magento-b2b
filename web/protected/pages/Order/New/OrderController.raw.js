@@ -476,7 +476,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			.insert({'bottom': new Element('div', {'class': 'row'})
 				.store('data', orderItem)
 				.insert({'bottom': new Element(tmp.tag, {'class': 'productName col-xs-6'})
-					.insert({'bottom': orderItem.itemDescription ? orderItem.itemDescription : orderItem.product.name })
+					.insert({'bottom': orderItem.itemDescription ? orderItem.itemDescription : (orderItem.product.shortDescription && !orderItem.product.shortDescription.blank() ? orderItem.product.shortDescription : orderItem.product.name) })
 				})
 				.insert({'bottom': new Element(tmp.tag, {'class': 'uprice col-xs-1'})
 					.insert({'bottom': tmp.isTitle === true || typeof(orderItem.unitPrice) === 'object' ? orderItem.unitPrice : tmp.me._getFormGroup( null, tmp.me._getOrderItemInputBox('order-item', tmp.me.getCurrency(tmp.me.getValueFromCurrency(orderItem.unitPrice)), {'order-item': 'unitPrice', 'required': true}) )  })
@@ -557,7 +557,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					})
 				})
 				.insert({'bottom': new Element('div', {'class': 'col-xs-10'})
-					.insert({'bottom': new Element('strong').update(product.name)
+					.insert({'bottom': new Element('strong').update(!product.shortDescription.blank() ? product.shortDescription : product.name)
 						.insert({'bottom': new Element('small', {'class': 'btn btn-xs btn-info'})
 							.insert({'bottom': new Element('small', {'class': 'glyphicon glyphicon-new-window'} )})
 						})
@@ -619,7 +619,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 						})
 					})
 					.insert({'after': new Element('div', {'class': 'col-xs-4'})
-						.update(new Element('textarea', {'new-order-item': 'itemDescription'}).setStyle('width: 100%').update(product.name))
+						.update(new Element('textarea', {'new-order-item': 'itemDescription'}).setStyle('width: 100%').update(!product.shortDescription.blank() ? product.shortDescription : product.name))
 					});
 				jQuery('#' + tmp.me.modalId).modal('hide');
 				tmp.retailPrice = product.prices.size() === 0 ? 0 : product.prices[0].price;
@@ -888,8 +888,9 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.product = row.retrieve('product') ? row.retrieve('product') : (row.retrieve('data') && row.retrieve('data').product ? row.retrieve('data').product : {});
 		if(tmp.product.id) {
 			tmp.unitCost = tmp.product.unitCost;
+			tmp.margin = tmp.me.getCurrency( tmp.totalPrice * 1 - tmp.unitCost * 1.1 * tmp.qty );
 			if(tmp.row.down('.margin'))
-				$(tmp.row.down('.margin')).update( tmp.me.getCurrency( tmp.totalPrice * 1 - tmp.unitCost * 1.1 * tmp.qty ) + (parseInt(tmp.unitCost) === 0 ? '<div><small class="label label-danger">No Cost Yet</small</div>' : '') );
+				$(tmp.row.down('.margin')).update( tmp.margin + (parseInt(tmp.unitCost) === 0 ? '<div><small class="label label-danger">No Cost Yet</small</div>' : '') );
 		}
 
 		tmp.rowData = tmp.row.retrieve('data');
@@ -898,6 +899,9 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			tmp.rowData.discount = tmp.discount;
 			tmp.rowData.qtyOrdered = tmp.qty;
 			tmp.rowData.totalPrice = tmp.totalPrice;
+			if(tmp.margin) {
+				tmp.rowData.margin = tmp.margin;
+			}
 			tmp.row.store('data', tmp.rowData);
 		}
 		return tmp.me;
@@ -1000,7 +1004,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.me = this;
 		//header row
 		tmp.productListDiv = new Element('div', {'class': 'list-group order_item_list_table'})
-			.insert({'bottom': tmp.me._getProductRow({'product': {'sku': 'SKU', 'name': 'Description'},
+			.insert({'bottom': tmp.me._getProductRow({'product': {'sku': 'SKU', 'name': 'Description', 'shortDescription': 'Description'},
 				'unitPrice': 'Unit Price<div><small>(inc GST)</small><div>',
 				'qtyOrdered': 'Qty',
 				'margin': 'Margin',
@@ -1345,7 +1349,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					'itemDescription': item.itemDescription,
 					'unitPrice': tmp.me.getCurrency(tmp.unitPriceValue),
 					'qtyOrdered': item.qtyOrdered,
-					'discount' : Math.round(((tmp.unitPriceValue * item.qtyOrdered - tmp.totalPriceValue) * 100 / tmp.totalPriceValue)),
+					'discount' : tmp.totalPriceValue === 0.0000 ? 0 : Math.round(((tmp.unitPriceValue * item.qtyOrdered - tmp.totalPriceValue) * 100 / tmp.totalPriceValue)),
 					'margin': tmp.me.getCurrency(tmp.me.getValueFromCurrency(item.margin)),
 					'totalPrice': tmp.me.getCurrency(tmp.totalPriceValue),
 					'scanTable': tmp.me._getScanTable(item),

@@ -15,26 +15,31 @@ class ExportAbstract
 
 	public static function run($debug = false, $mailOut = true)
 	{
-		self::$_debug = $debug;
-		if($debug)
-			echo '<pre>';
-		$objPHPExcel = self::_getOutput();
-		if(!$objPHPExcel instanceof PHPExcel)
-			throw new Exception('System Error: can NOT generate CSV without PHPExcel object!');
-		// Set document properties
-		$filePath = self::$_rootDir . '/' . md5(new UDate()) . '.csv';
-		$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'CSV')->setDelimiter(',')
-			->setEnclosure('"')
-			->setLineEnding("\r\n")
-			->setSheetIndex(0);
-		ob_start();
-		$objWriter->save('php://output');
-		$excelOutput = ob_get_clean();
-		$class = get_called_class();
-		$asset = Asset::registerAsset($class::_getAttachedFileName(), $excelOutput, Asset::TYPE_TMP);
-		if($mailOut === true)
-			self::_mailOut($asset);
-		return $asset;
+		try{
+			self::$_debug = $debug;
+			if($debug)
+				echo '<pre>';
+			$objPHPExcel = self::_getOutput();
+			if(!$objPHPExcel instanceof PHPExcel)
+				throw new Exception('System Error: can NOT generate CSV without PHPExcel object!');
+			// Set document properties
+			$filePath = self::$_rootDir . '/' . md5(new UDate()) . '.csv';
+			$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'CSV')->setDelimiter(',')
+				->setEnclosure('"')
+				->setLineEnding("\r\n")
+				->setSheetIndex(0);
+			ob_start();
+			$objWriter->save('php://output');
+			$excelOutput = ob_get_clean();
+			$class = get_called_class();
+			$asset = Asset::registerAsset($class::_getAttachedFileName(), $excelOutput, Asset::TYPE_TMP);
+			if($mailOut === true)
+				self::_mailOut($asset);
+			return $asset;
+		} catch (Exception $ex) {
+			echo $ex->getMessage();
+			die('ERROR!');
+		}
 	}
 	/**
 	 * Debug output function

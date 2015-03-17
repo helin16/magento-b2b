@@ -662,7 +662,8 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				})
 			})
 		};
-		tmp.currentRow.insert({'after': tmp.me._getProductRow(tmp.data).addClassName('btn-hide-row') });
+		tmp.currentRow.insert({'after': tmp.productRow = tmp.me._getProductRow(tmp.data).addClassName('btn-hide-row') });
+		tmp.me.setProductLink(tmp.productRow.down('.productSku'), tmp.product.id);
 		tmp.newRow = tmp.me._getNewProductRow();
 		tmp.currentRow.replace(tmp.newRow);
 		tmp.newRow.down('[new-order-item=product]').focus();
@@ -670,6 +671,16 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 
 		tmp.me._recalculateSummary( tmp.totalPrice );
 		return tmp.me;
+	}
+	,setProductLink: function(dom, id) {
+		var tmp = {};
+		tmp.me = this;
+		$(dom).setStyle('text-decoration: underline; cursor: pointer;')
+		.observe('click', function(e){
+			Event.stop(e);
+			tmp.window = window.open('/product/' + id + '.html', '_blank');
+			tmp.window.focus()
+		});
 	}
 	/**
 	 * Getting the new product row

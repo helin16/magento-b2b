@@ -41,6 +41,10 @@ class OrderPrintController extends BPCPageAbstract
 			}
 		}
 	}
+	public function getType()
+	{
+		return $this->order->getType() === Order::TYPE_INVOICE ? 'TAX ' . Order::TYPE_INVOICE : $this->order->getType();
+	}
 	public function getInvDate()
 	{
 		return $this->order->getInvDate() == UDate::zeroDate() ? '' : $this->order->getInvDate()->format('d/M/Y');
@@ -82,6 +86,11 @@ class OrderPrintController extends BPCPageAbstract
 			$html .= $this->getRow('&nbsp;', '&nbsp;', '&nbsp;', '&nbsp;', '&nbsp;', 'itemRow');
 		}
 		return $html;
+	}
+	public function getContact()
+	{
+		$contact = $this->order->getCustomer()->getContactNo();
+		return empty($contact) ? '' : '(' . $contact . ')';
 	}
 	public function getAddress($type)
 	{
