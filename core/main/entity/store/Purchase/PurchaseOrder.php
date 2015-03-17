@@ -389,7 +389,7 @@ class PurchaseOrder extends BaseEntityAbstract
 	}
 	/**
 	 * Getting the supplier invoices
-	 * 
+	 *
 	 * @return array
 	 */
 	public function getSupplierInvoices()
@@ -437,12 +437,13 @@ class PurchaseOrder extends BaseEntityAbstract
 	 * @param string  $supplierItemCode
 	 * @param string  $description
 	 * @param double  $totalPrice
+	 * @param mixed   $newItem           The new PurhcaseOrderItem
 	 *
 	 * @return PurchaseOrder
 	 */
-	public function addItem(Product $product, $unitPrice = '0.0000', $qty = 1, $supplierItemCode = '', $description = '', $totalPrice = null)
+	public function addItem(Product $product, $unitPrice = '0.0000', $qty = 1, $supplierItemCode = '', $description = '', $totalPrice = null, &$newItem = null)
 	{
-		PurchaseOrderItem::create($this, $product, $unitPrice, $qty, $supplierItemCode, $description, $totalPrice);
+		$newItem = PurchaseOrderItem::create($this, $product, $unitPrice, $qty, $supplierItemCode, $description, $totalPrice);
 		return $this;
 	}
 	/**
