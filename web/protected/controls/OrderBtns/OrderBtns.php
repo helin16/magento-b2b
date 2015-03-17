@@ -59,7 +59,8 @@ class OrderBtns extends TTemplateControl
 
 			$pdfFile = EntityToPDF::getPDF($order);
 			$asset = Asset::registerAsset($order->getOrderNo() . '.pdf', file_get_contents($pdfFile), Asset::TYPE_TMP);
-			EmailSender::addEmail('sales@budgetpc.com.au', $emailAddress, 'BudgetPC Order:' . $order->getOrderNo() , (trim($emailBody) === '' ? '' : $emailBody . "<br /><br />") .'Please find attached Order (' . $order->getOrderNo() . ') from Budget PC Pty Ltd.', array($asset));
+			$type = $order->getType();
+			EmailSender::addEmail('sales@budgetpc.com.au', $emailAddress, 'BudgetPC ' . $type. ':' . $order->getOrderNo() , (trim($emailBody) === '' ? '' : $emailBody . "<br /><br />") .'Please find attached ' . $type. ' (' . $order->getOrderNo() . '.pdf) from Budget PC Pty Ltd.', array($asset));
 			$order->addComment('An email sent to "' . $emailAddress . '" with the attachment: ' . $asset->getAssetId(), Comments::TYPE_SYSTEM);
 			$results['item'] = $order->getJson();
 

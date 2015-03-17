@@ -19,7 +19,10 @@
 
 			<!-- FrontEnd:: login page -->
 			<url ServiceParameter="Login.LoginController" pattern="login.html" />
-
+			
+			<!-- FrontEnd:: Courier list page -->
+			<url ServiceParameter="Courier.List.ListController" pattern="courier.html" />
+			
 			<!-- FrontEnd:: order list page -->
 			<url ServiceParameter="Order.List.OrderController" pattern="order.html" />
 			<!-- FrontEnd:: order new page -->

@@ -47,7 +47,7 @@ class BillExport_Xero extends ExportAbstract
 				,'Quantity'=> $receivingItem->getQty()
 				,'UnitAmount'=> $receivingItem->getUnitPrice()
 				,'AccountCode'=> $product->getAssetAccNo()
-				,'TaxType'=> "GST on Expense"
+				,'TaxType'=> "GST on Expenses"
 				,'TrackingName1'=> ''
 				,'TrackingOption1'=> ''
 				,'TrackingName2'=> ''

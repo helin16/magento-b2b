@@ -149,7 +149,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			tmp.row.insert({'bottom': new Element('div', {'class': 'row product-content-row'})
 				.insert({'bottom': new Element('span', {'class': 'col-sm-10 col-sm-offset-2'}).update(orderItem.scanTable) })
 			});
-		
+
 		return tmp.row;
 	}
 	/**
@@ -185,14 +185,14 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					return false;
 				})
 			})
-			.insert({'bottom': new Element('span', {'class': 'input-group-btn'}) 
+			.insert({'bottom': new Element('span', {'class': 'input-group-btn'})
 				.insert({'bottom': new Element('span', {'class': ' btn btn-primary search-btn' , 'data-loading-text': 'searching...'})
 					.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-search'}) })
 					.observe('click', function(){
 						tmp.me._searchProduct(this);
 					})
 				})
-			}) 
+			})
 		);
 		tmp.skuAutoComplete.down('.input-group').removeClassName('form-control');
 		return tmp.skuAutoComplete;
@@ -225,7 +225,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				,'barcode': tmp.searchTxt
 		};
 		tmp.data = {
-				'product': tmp.product, 
+				'product': tmp.product,
 				'btns': new Element('span', {'class': 'pull-right'})
 					.insert({'bottom': new Element('span', {'class': 'btn btn-danger btn-xs'})
 					.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-trash'}) })
@@ -241,7 +241,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.currentRow.insert({'after': tmp.lastRow = new Element('div') });
 		tmp.newRow = tmp.me._getNewProductRow();
 		tmp.currentRow.replace(tmp.newRow);
-		
+
 		tmp.inputBox = jQuery('#' + tmp.me._htmlIds.barcodeInput);
 		tmp.me.postAjax(tmp.me.getCallbackId('searchProduct'), {'searchTxt': tmp.searchTxt}, {
 			'onLoading': function() {
@@ -255,7 +255,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					if(!tmp.result || !tmp.result.items || tmp.result.items.size() === 0) {
 						tmp.ModalBoxBody = new Element('div')
 							.insert({'bottom': new Element('span').update('You are searching for <b>' + tmp.searchTxt + '</b>') })
-							.insert({'bottom': new Element('span', {'class': 'btn btn-success btn-md pull-right'}).update('OK') 
+							.insert({'bottom': new Element('span', {'class': 'btn btn-success btn-md pull-right'}).update('OK')
 								.observe('click', function(){
 									tmp.me.hideModalBox();
 									$(tmp.me._htmlIds.barcodeInput).focus();
@@ -271,7 +271,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 						tmp.result.items.each(function(product) {
 							tmp.resultList.insert({'bottom': tmp.me._getSearchPrductResultRow(product, tmp.searchTxtBox,tmp.lastRow,tmp.newRow) });
 						});
-						tmp.resultList.addClassName('list-group'); 
+						tmp.resultList.addClassName('list-group');
 						tmp.me.showModalBox('Products that has: ' + tmp.searchTxt, tmp.resultList, false);
 					} else {
 						tmp.data.product = tmp.result.items[0];
@@ -308,12 +308,12 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.data = [];
 		tmp.product = product;
 		tmp.lastRow = lastRow;
-		
+
 		tmp.btn = $('barcode_input');
 		tmp.me._signRandID(tmp.btn);
-		
+
 		tmp.data = {
-				'product': tmp.product, 
+				'product': tmp.product,
 				'btns': new Element('span', {'class': 'pull-right'})
 					.insert({'bottom': new Element('span', {'class': 'btn btn-danger btn-xs'})
 					.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-trash'}) })
@@ -355,7 +355,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 							.insert({'bottom': new Element('small').update(product.shortDescription) })
 						})
 					})
-					
+
 				})
 			})
 			.observe('click', function(){
@@ -391,7 +391,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-remove-sign'}) })
 				.insert({'bottom': new Element('span').update(' cancel ') })
 				.observe('click', function(){
-					tmp.me.showModalBox('<strong class="text-danger">Cancelling this Quantity adjustment</strong>', 
+					tmp.me.showModalBox('<strong class="text-danger">Cancelling this Quantity adjustment</strong>',
 							'<div>You are about to cancel this quantity adjustment process, all input data will be lost.</div><br /><div>Continue?</div>'
 							+ '<div>'
 								+ '<span class="btn btn-primary" onclick="window.location = document.URL;"><span class="glyphicon glyphicon-ok"></span> YES</span>'
@@ -414,16 +414,18 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.data.products = [];
 		$(tmp.me._htmlIds.productsTable).getElementsBySelector('div.item_row').each(function(item) {
 			tmp.product = item.retrieve('data');
-			tmp.formData = tmp.me._collectFormData(item,'save-item');
-			if(tmp.product.id !== undefined) {
-				tmp.product.stockOnPO = tmp.formData.stockOnPO;
-				tmp.product.stockOnHand = tmp.formData.stockOnHand;
-				tmp.product.stockOnOrder = tmp.formData.stockOnOrder;
-				tmp.product.stockInRMA = tmp.formData.stockInRMA;
-				tmp.product.stockInParts = tmp.formData.stockInParts;
-				tmp.product.totalInPartsValue = tmp.me.getValueFromCurrency(tmp.formData.totalInPartsValue);
-				tmp.product.totalOnHandValue = tmp.me.getValueFromCurrency(tmp.formData.totalOnHandValue);
-				tmp.data.products.push(tmp.product);
+			tmp.formData = tmp.me._collectFormData(item, 'save-item');
+			if(tmp.product.id) {
+				tmp.data.products.push({
+					'productId': tmp.product.id
+					, 'stockOnPO': tmp.formData.stockOnPO
+					, 'stockOnOrder': tmp.formData.stockOnOrder
+					, 'stockOnHand': tmp.formData.stockOnHand
+					, 'stockInRMA': tmp.formData.stockInRMA
+					, 'stockInParts': tmp.formData.stockInParts
+					, 'totalInPartsValue': tmp.me.getValueFromCurrency(tmp.formData.totalInPartsValue)
+					, 'totalOnHandValue': tmp.me.getValueFromCurrency(tmp.formData.totalOnHandValue)
+				});
 			}
 		});
 		if(tmp.data === null)
@@ -440,10 +442,10 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			,'onSuccess': function(sender, param) {
 				try {
 					tmp.result = tmp.me.getResp(param, false, true);
-					if(!tmp.result || !tmp.result.item)
+					if(!tmp.result || !tmp.result.items|| !tmp.result.items.size() < 0)
 						return;
 					if(tmp.result.item.status === 'RECEIVING') {
-						tmp.me.showModalBox('<strong class="text-success">Success!</strong>', 
+						tmp.me.showModalBox('<strong class="text-success">Success!</strong>',
 							'<div>The current receiving process is succussed and saved.</div><br /><div><strong>There are more to go, Another One?</strong></div>'
 							+ '<div>'
 								+ '<span class="btn btn-primary" onclick="window.location = document.URL;"><span class="glyphicon glyphicon-ok"></span> YES</span>'

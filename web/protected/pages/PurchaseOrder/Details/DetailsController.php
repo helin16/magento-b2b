@@ -42,7 +42,7 @@ class DetailsController extends DetailsPageAbstract
 			die('Invalid Purchase Order!');
 		$comments = array();
 		foreach ($purchaseOrder->getComment() as $item) {
-			array_push($comments, $item->getJson());
+			$comments[] = $item->getJson();
 		};
 		$statusOptions =  $purchaseOrder->getStatusOptions();
 		$purchaseOrderItems = array();
@@ -54,9 +54,9 @@ class DetailsController extends DetailsPageAbstract
 			$qty = $item->getQty();
 			$totalPrice = $item->getTotalPrice();
 			$receivedQty = $item->getReceivedQty();
-// 			$serials = Rec;
-			array_push($purchaseOrderItems,array('product'=> $product->getJson(), 'unitPrice'=> $unitPrice, 'qty'=> $qty, 'totalPrice'=> $totalPrice, 'receievedQty'=> $receivedQty));
+			$purchaseOrderItems[] = array('id'=> $item->getId(), 'product'=> $product->getJson(), 'unitPrice'=> $unitPrice, 'qty'=> $qty, 'totalPrice'=> $totalPrice, 'receievedQty'=> $receivedQty);
 		};
+		$poitems = $receivingItems = array();
 		$js = parent::_getEndJs();
 		$js .= "pageJs.setPreData(" . json_encode($purchaseOrder->getJson()) . ")";
 		$js .= ".setComment(" . json_encode($comments) . ")";
@@ -158,10 +158,10 @@ class DetailsController extends DetailsPageAbstract
 		try
 		{
 			Dao::beginTransaction();
-			if(!($supplier = Supplier::get(trim($param->CallbackParameter->supplier->id))) instanceof Supplier)
-				throw new Exception('Invalid Supplier passed in!');
 			if(!($purchaseOrder = PurchaseOrder::get(trim($param->CallbackParameter->id))) instanceof PurchaseOrder)
 				throw new Exception('Invalid Purchase Order passed in!');
+			if(!($supplier = Supplier::get(trim($param->CallbackParameter->supplierId))) instanceof Supplier)
+				throw new Exception('Invalid Supplier passed in!');
 			$isSubmit = isset($param->CallbackParameter->isSubmit) && intval($param->CallbackParameter->isSubmit) === 1 ? true : false;
 			$supplierRefNum = trim($param->CallbackParameter->supplierRefNum);
 			$supplierContactName = trim($param->CallbackParameter->contactName);
@@ -183,15 +183,22 @@ class DetailsController extends DetailsPageAbstract
 				->setStatus($status)
 				->save();
 			$purchaseOrder->addComment($comment, Comments::TYPE_PURCHASING);
-			foreach ($param->CallbackParameter->newItems as $item) {
-				$productId = trim($item->product->id);
+			foreach ($param->CallbackParameter->items as $item) {
 				$productUnitPrice = trim($item->unitPrice);
 				$qtyOrdered = trim($item->qtyOrdered);
 				$productTotalPrice = trim($item->totalPrice);
-				$product = Product::get($productId);
-				if(!$product instanceof Product)
+				if(!($product = Product::get(trim($item->productId))) instanceof Product)
 					throw new Exception('Invalid Product passed in!');
-				$purchaseOrder->addItem($product, $productUnitPrice, $qtyOrdered, '', '', $productTotalPrice)
+				if(!isset($item->id) || trim($item->id) === '') {
+					$poItem = null;
+					$purchaseOrder->addItem($product, $productUnitPrice, $qtyOrdered, '', '', $productTotalPrice, $poItem);
+				} else if(($poItem = PurchaseOrderItem::get($item->id)) instanceof PurchaseOrderItem) {
+					$poItem->setProduct($product)
+						->setUnitPrice($productUnitPrice)
+						->setTotalPrice($productTotalPrice)
+						->setQty($qtyOrdered);
+				}
+				$poItem->setActive(intval($item->active) === 1)
 					->save();
 			};
 			$results['item'] = $purchaseOrder->getJson();

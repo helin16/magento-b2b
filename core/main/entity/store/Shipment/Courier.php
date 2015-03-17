@@ -151,4 +151,21 @@ class Courier extends InfoEntityAbstract
 		DaoMap::createIndex('code');
 		DaoMap::commit();
 	}
+	/**
+	 * Creating a courier
+	 * 
+	 * @param string $name
+	 * @param string $connector
+	 * @param string $code
+	 * 
+	 * @return Courier
+	 */
+	public static function create($name, $connector = 'CourierConn_Manual', $code = 'custom')
+	{
+		$item = new Courier();
+		return $item->setName(trim($name))
+			->setConnector(trim($connector))
+			->setCode(trim($code))
+			->save();
+	}
 }
