@@ -12,6 +12,7 @@ class ProductQtyLog extends InfoEntityAbstract
 	const TYPE_SALES_ORDER = 'S';
 	const TYPE_STOCK_ADJ = 'AD';
 	const TYPE_STOCK_MOVE_INTERNAL = 'SI';
+	const TYPE_RMA = 'RMA';
 	/**
 	 * Product
 	 * @var Product
@@ -549,7 +550,7 @@ class ProductQtyLog extends InfoEntityAbstract
 	}
 	/**
 	 * getting the entity
-	 * 
+	 *
 	 * @return BaseEntityAbstract|NULL
 	 */
 	public function getEntity()

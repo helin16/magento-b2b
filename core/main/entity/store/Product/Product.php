@@ -1032,6 +1032,50 @@ class Product extends InfoEntityAbstract
 			->addLog('StockOnOrder(' . $originStockOnOrder . ' => ' . $this->getStockOnOrder() . ')', Log::TYPE_SYSTEM, 'STOCK_QTY_CHG', __CLASS__ . '::' . __FUNCTION__);
 	}
 	/**
+	 * a product is returned for RMA
+	 *
+	 * @param unknown            $qty
+	 * @param dobuble            $unitCost
+	 * @param string             $comments
+	 * @param BaseEntityAbstract $entity
+	 */
+	public function returnedForRMA($qty, $unitCost, $comments, BaseEntityAbstract $entity = null)
+	{
+		$creditNote = ($entity instanceof CreditNote ? $entity : ($entity instanceof CreditNoteItem ? $entity->getCreditNote() : null));
+		$order = ($creditNote instanceof CreditNote ? $creditNote->getOrder() : null);
+		return $this->setStockInRMA(($originalStockOnRMA = $this->getStockInRMA()) + $qty)
+			->setTotalRMAValue(($originalTotalRMAValue = $this->getTotalRMAValue()) + ($qty * $unitCost))
+			->snapshotQty($entity instanceof BaseEntityAbstract ? $entity : $this, ProductQtyLog::TYPE_RMA, 'Stock RMAed from ' . ($creditNote instanceof CreditNote ? 'CreditNote[' . $creditNote->getCreditNoteNo() . ']' : '') . ($order instanceof Order ? ' generated from Order[' . $order->getOrderNo() . ']' : ''))
+			->save()
+			->addLog('StockInRMA(' . $originalStockOnRMA . ' => ' . $this->getStockInRMA() . '), TotalRMAValue(' . $originalTotalRMAValue . ' => ' . $this->getTotalRMAValue() . ')',
+					Log::TYPE_SYSTEM,
+					'STOCK_QTY_CHG',
+					__CLASS__ . '::' . __FUNCTION__);
+	}
+	/**
+	 * a product is fixed from RMA
+	 *
+	 * @param unknown            $qty
+	 * @param string             $comments
+	 * @param BaseEntityAbstract $entity
+	 */
+	public function fixedFromRMA($qty, $comments, BaseEntityAbstract $entity = null)
+	{
+		$rma = ($entity instanceof RMA ? $entity : ($entity instanceof RMAItem ? $entity->getRMA() : null));
+		$order = ($rma instanceof RMA ? $rma->getOrder() : null);
+		$unitCostFromRMA = intval($this->getStockInRMA()) === 0 ? 0 : ($this->getTotalRMAValue() /  $this->getStockInRMA());
+		return $this->setStockInRMA(($originalStockOnRMA = $this->getStockInRMA()) - $qty)
+			->setTotalRMAValue(($originalTotalRMAValue = $this->getTotalRMAValue()) - ($qty * $unitCostFromRMA))
+			->setStockOnHand(($originStockOnHand = $this->getStockOnHand()) + $qty)
+			->setTotalOnHandValue(($originalTotalOnHandValue = $this->getTotalOnHandValue()) + ($qty * $unitCostFromRMA))
+			->snapshotQty($entity instanceof BaseEntityAbstract ? $entity : $this, ProductQtyLog::TYPE_RMA, 'Stock Fixed from: ' . ($creditNote instanceof CreditNote ? 'RMA[' . $rma->getRaNo() . ']' : '') . ($order instanceof Order ? ' generated from Order[' . $order->getOrderNo() . ']' : ''))
+			->save()
+			->addLog('StockInRMA(' . $originalStockOnRMA . ' => ' . $this->getStockInRMA() . '), TotalRMAValue(' . $originalTotalRMAValue . ' => ' . $this->getTotalRMAValue() . '), StockOnHand(' . $originStockOnHand . ' => ' . $this->getStockOnHand() . '), TotalOnHandValue(' . $originalTotalOnHandValue . ' => ' . $this->getTotalOnHandValue() . ')'
+				, Log::TYPE_SYSTEM
+				, 'STOCK_QTY_CHG'
+				, __CLASS__ . '::' . __FUNCTION__);
+	}
+	/**
 	 * A product is stocktake
 	 *
 	 * @param int $stockOnHand
