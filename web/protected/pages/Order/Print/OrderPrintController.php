@@ -70,9 +70,9 @@ class OrderPrintController extends BPCPageAbstract
 	 * @param unknown $tprice
 	 * @return string
 	 */
-	public function getRow($qty, $sku, $name, $uprice, $tprice, $rowClass="")
+	public function getRow($qty, $sku, $name, $uprice, $discount, $tprice, $rowClass="")
 	{
-		return "<tr class='$rowClass'><td class='qty'>$qty</td><td class='sku'>$sku</td><td class='name'>$name</td><td class='uprice'>$uprice</td><td class='tprice'>$tprice</td></tr>";
+		return "<tr class='$rowClass'><td class='qty'>$qty</td><td class='sku'>$sku</td><td class='name'>$name</td><td class='uprice'>$uprice</td><td class='discount' width='8%'>$discount</td><td class='tprice'>$tprice</td></tr>";
 	}
 	/**
 	 *
@@ -81,6 +81,7 @@ class OrderPrintController extends BPCPageAbstract
 	public function showProducts()
 	{
 		$html = '';
+		$index = 0;
 		foreach($this->order->getOrderItems() as  $index => $orderItem)
 		{
 			$uPrice = '$' . number_format($orderItem->getUnitPrice(), 2, '.', ',');
@@ -90,12 +91,13 @@ class OrderPrintController extends BPCPageAbstract
 				if($item->getSerialNo() !== '' )
 					$sellingItems[] = $item->getSerialNo();
 			}
-			$html .= $this->getRow($orderItem->getQtyOrdered(), $orderItem->getProduct()->getSku(), $orderItem->getItemDescription() ?: $orderItem->getProduct()->getname(), $uPrice, $tPrice, 'itemRow');
-			$html .= $this->getRow('', '<span class="pull-right">Serial No: </span>', '<div style="max-width: 367px; word-wrap: break-word;">' . implode(', ', $sellingItems) . '</div>', '', '', 'itemRow itemRow-serials');
+			$discount = round(((($orderItem->getTotalPrice() - ($orderItem->getUnitPrice() * $orderItem->getQtyOrdered())) * 100) / $orderItem->getTotalPrice()), 2) . '%';
+			$html .= $this->getRow($orderItem->getQtyOrdered(), $orderItem->getProduct()->getSku(), $orderItem->getItemDescription() ?: $orderItem->getProduct()->getname(), $uPrice, $discount, $tPrice, 'itemRow');
+// 			$html .= $this->getRow('', '<span class="pull-right">Serial No: </span>', '<div style="max-width: 367px; word-wrap: break-word;">' . implode(', ', $sellingItems) . '</div>', '', '', '', 'itemRow itemRow-serials');
 		}
 		for ( $i = 5; $i > $index; $i--)
 		{
-			$html .= $this->getRow('&nbsp;', '&nbsp;', '&nbsp;', '&nbsp;', '&nbsp;', 'itemRow');
+			$html .= $this->getRow('&nbsp;', '&nbsp;', '&nbsp;', '&nbsp;', '&nbsp;', '', 'itemRow');
 		}
 		return $html;
 	}
@@ -123,7 +125,7 @@ class OrderPrintController extends BPCPageAbstract
 		$totalWithOutShipping = $total - $shippingCostIncGST;
 		$totalWithOutShippingNoGST = $totalWithOutShipping / 1.1;
 		$gst = $totalWithOutShipping - $totalWithOutShippingNoGST;
-		
+
 		$html = $this->_getPaymentSummaryRow('Total Excl. GST:', '$' . number_format($totalWithOutShippingNoGST, 2, '.', ','), 'grandTotalNoGST');
 		$html .= $this->_getPaymentSummaryRow('Total GST:', '$' . number_format($gst, 2, '.', ','), 'gst');
 		$html .= $this->_getPaymentSummaryRow('Sub Total Incl. GST:', '$' . number_format($totalWithOutShipping, 2, '.', ','), 'grandTotal');
