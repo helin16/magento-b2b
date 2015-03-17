@@ -62,7 +62,6 @@ class ListController extends CRUDPageAbstract
             }
             
             $serachCriteria = isset($param->CallbackParameter->searchCriteria) ? json_decode(json_encode($param->CallbackParameter->searchCriteria), true) : array();
-			var_dump($serachCriteria);
             $where = array(1);
             $params = array();
             foreach($serachCriteria as $field => $value)
@@ -161,7 +160,7 @@ class ListController extends CRUDPageAbstract
 			$order = $obj->getOrder();
 			$customer = $obj->getCustomer();
 			$raItems = $obj->getRMAItems();
-			$results['item'] = $obj->getJson(array('order'=> empty($order) ? '' : $order->getJson(), 'customer'=> $customer->getJson(), 'raItems'=> $raItems ? array_map(create_function('$a', 'return $a->getJson();'), $raItems) : ''));
+			$results['item'] = $obj->getJson(array('order'=> $order instanceof Order ? $order->getJson() : '', 'customer'=> $customer->getJson(), 'raItems'=> $raItems ? array_map(create_function('$a', 'return $a->getJson();'), $raItems) : ''));
 		}
         catch(Exception $ex)
         {

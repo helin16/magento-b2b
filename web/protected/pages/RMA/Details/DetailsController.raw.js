@@ -189,6 +189,8 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 						return;
 					tmp.me._item = tmp.result.item;
 					tmp.modalBoxTitlePanel.update('<strong class="text-success">Success!</strong>');
+					tmp.me.hideModalBox();
+					tmp.me.disableAll();
 					window.location = '/rma/' + tmp.result.item.id + '.html';
 					if(tmp.result.printURL) {
 						tmp.printWindow = window.open(tmp.result.printURL, 'Printing Order', 'width=1300, location=no, scrollbars=yes, menubar=no, status=no, titlebar=no, fullscreen=no, toolbar=no');
@@ -204,6 +206,12 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			}
 		});
 		return tmp.me;
+	}
+	,disableAll: function() {
+		jQuery('input').attr("disabled", true);
+		jQuery('textarea').attr("disabled", true);
+		jQuery('.btn').attr("disabled", true);
+		jQuery('.form-control').attr("disabled", true);
 	}
 	,_preConfirmSubmit: function(printit) {
 		var tmp = {};
@@ -307,10 +315,10 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 						tmp.me._preConfirmSubmit();
 					})
 				})
-				.insert({'bottom': new Element('span', {'class': 'btn btn-primary dropdown-toggle', 'data-toggle': 'dropdown'})
+				.insert({'bottom': new Element('span', {'class': 'btn btn-primary dropdown-toggle', 'data-toggle': 'dropdown'}).setStyle('display: none;')
 					.insert({'bottom': new Element('span', {'class': 'caret'}) })
 				})
-				.insert({'bottom': new Element('ul', {'class': 'dropdown-menu save-btn-dropdown-menu'})
+				.insert({'bottom': new Element('ul', {'class': 'dropdown-menu save-btn-dropdown-menu'}).setStyle('display: none;')
 					.insert({'bottom': new Element('li')
 						.insert({'bottom': new Element('a', {'href': 'javascript: void(0);'}).update('Save Only')
 							.observe('click', function() {
@@ -320,7 +328,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					})
 				})
 			})
-			.insert({'bottom': new Element('div', {'class': 'btn btn-default'})
+			.insert({'bottom': new Element('div', {'class': 'btn btn-default'}).setStyle('display: none;')
 				.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-remove-sign'}) })
 				.insert({'bottom': new Element('span').update(' cancel ') })
 				.observe('click', function(){
@@ -332,8 +340,8 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 							+ '</div>',
 					true);
 				})
-			})
-		;
+			});
+		tmp.newDiv.down('.btn-group').removeClassName('btn-group');
 		return tmp.newDiv;
 	}
 	/**
@@ -565,7 +573,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			'qtyOrdered': RMAItem.qty ? RMAItem.qty : RMAItem.qtyOrdered,
 			'discount' : 100,
 			'margin': 0,
-			'totalPrice': tmp.me.getCurrency(RMAItem.unitPrice * RMAItem.qty)
+			'totalPrice': tmp.me.getCurrency(RMAItem.unitPrice * (RMAItem.qty ? RMAItem.qty : RMAItem.qtyOrdered))
 		};
 		$$('.order_change_details_table').first().insert({'bottom': tmp.newDiv = tmp.me._getProductRow(tmp.data) });
 		
@@ -919,7 +927,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			.insert({'bottom': new Element('div', {'class': 'panel-heading'})
 				.insert({'bottom': new Element('div', {'class': 'row'})
 					.insert({'bottom': new Element('div', {'class': 'col-sm-8'})
-						.insert({'bottom': new Element('strong').update('CREATING A RMA FOR:  ') })
+						.insert({'bottom': new Element('strong').update((tmp.me._RMA && tmp.me._RMA.id ? 'EDITING' : 'CREATING') + '  RMA FOR:  ') })
 						.insert({'bottom': new Element('a', {'href': 'javascript: void(0);'})
 							.update(tmp.customer.name)
 							.observe('click', function(){
@@ -929,7 +937,8 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 						.insert({'bottom': ' <' })
 						.insert({'bottom': new Element('a', {'href': 'mailto:' + tmp.customer.email}).update(tmp.customer.email) })
 						.insert({'bottom': '>' })
-						.insert({'bottom': tmp.me._order ? new Element('strong').update(' with Order No. ' + tmp.me._order.orderNo) : '' })
+						.insert({'bottom': tmp.me._order ? new Element('strong').update(' with Order No. ') : '' })
+						.insert({'bottom': tmp.me._order ? new Element('a', {'target': '_blank', 'href': '/orderdetails/' + tmp.me._order.id}).update(tmp.me._order.orderNo) : '' })
 					})
 					.insert({'bottom': new Element('div', {'class': 'col-sm-4 text-right'}).setStyle('display: none;')
 						.insert({'bottom': new Element('strong').update('Total Payment Due: ') })
@@ -1111,7 +1120,13 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 									tmp.txtBox.up('#'+pageJs._htmlIds.searchPanel).down('tbody .item_row .btn').click();
 								}
 								else $(tmp.me._htmlIds.searchPanel).down('.search-btn').click();
-							});
+							}, function(){}, Event.KEY_TAB);
+							tmp.me.keydown(event, function() {
+								if(tmp.txtBox.up('#'+pageJs._htmlIds.searchPanel).down('.item_row')!=undefined && tmp.txtBox.up('#'+pageJs._htmlIds.searchPanel).down('tbody').getElementsBySelector('.item_row').length===1) {
+									tmp.txtBox.up('#'+pageJs._htmlIds.searchPanel).down('tbody .item_row .btn').click();
+								}
+								else $(tmp.me._htmlIds.searchPanel).down('.search-btn').click();
+							}, function(){});
 							return false;
 						})
 					})
@@ -1145,9 +1160,11 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 	,init: function() {
 		var tmp = {};
 		tmp.me = this;
-		if(tmp.me._RMA)
+		if(tmp.me._RMA) {
+			if(tmp.me._RMA.order && tmp.me._RMA.order.id && jQuery.isNumeric(tmp.me._RMA.order.id))
+				tmp.me._order = tmp.me._RMA.order;
 			tmp.me._selectCustomer(tmp.me._RMA.customer);
-		else if(tmp.me._customer)
+		} else if(tmp.me._customer)
 			tmp.me._selectCustomer(tmp.me._customer);
 		else if(tmp.me._order)
 			tmp.me._selectCustomer(tmp.me._order.customer);

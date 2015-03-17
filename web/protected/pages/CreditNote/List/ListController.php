@@ -156,7 +156,7 @@ class ListController extends CRUDPageAbstract
 			if(!$creditNote instanceof CreditNote)
 				throw new Exception('Invalid Credit Note passed in');
 			$creditNote->setActive(false)->save();
-			$results['item'] = $creditNote->getJson(array('order'=> empty($creditNote->getOrder()) ? '' : $creditNote->getOrder()->getJson(), 'customer'=> $creditNote->getCustomer()->getJson()));
+			$results['item'] = $creditNote->getJson(array('order'=> $creditNote->getOrder() instanceof Order ? '' : $creditNote->getOrder()->getJson(), 'customer'=> $creditNote->getCustomer()->getJson()));
 		}
         catch(Exception $ex)
         {
