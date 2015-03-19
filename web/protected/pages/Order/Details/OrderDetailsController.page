@@ -2,14 +2,13 @@
 	<com:Application.controls.chosen.Chosen />
 	<com:Application.controls.OrderBtns.OrderBtns />
 	<com:Application.controls.CommentsDiv.CommentsDiv />
+	<com:Application.controls.PaymentListPanel.PaymentListPanel />
 	<com:TDatePicker Style="display:none;"/>
 	<com:TCallback ID="updateOrderBtn" OnCallback="updateOrder" />
 	<com:TCallback ID="changeOrderStatusBtn" OnCallback="changeOrderStatus" />
-	<com:TCallback ID="confirmPaymentBtn" OnCallback="confirmPayment" />
 	<com:TCallback ID="updateOIForWHBtn" OnCallback="updateOrderItemForWarehouse" />
 	<com:TCallback ID="updateShippingInfoBtn" OnCallback="updateShippingDetails" />
 	<com:TCallback ID="clearETABtn" OnCallback="clearETA" />
-	<com:TCallback ID="deletePaymentBtn" OnCallback="deletePayment" />
 	<com:TCallback ID="changeIsOrderedBtn" OnCallback="changeIsOrdered" />
 	<com:TCallback ID="updateAddressBtn" OnCallback="updateAddress" />
 	<div class="pagewrapper orderdetails">

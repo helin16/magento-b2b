@@ -54,13 +54,11 @@ class OrderDetailsController extends BPCPageAbstract
 		$payments = array_map(create_function('$a', 'return $a->getJson();'), $order->getPayments());
 		$js .= 'pageJs';
 			$js .= '.setCallbackId("updateOrder", "' . $this->updateOrderBtn->getUniqueID() . '")';
-			$js .= '.setCallbackId("confirmPayment", "' . $this->confirmPaymentBtn->getUniqueID() . '")';
 			$js .= '.setCallbackId("changeOrderStatus", "' . $this->changeOrderStatusBtn->getUniqueID() . '")';
 			$js .= '.setCallbackId("updateOIForWH", "' . $this->updateOIForWHBtn->getUniqueID() . '")';
 			$js .= '.setCallbackId("updateShippingInfo", "' . $this->updateShippingInfoBtn->getUniqueID() . '")';
 			$js .= '.setCallbackId("clearETA", "' . $this->clearETABtn->getUniqueID() . '")';
 			$js .= '.setCallbackId("changeIsOrdered", "' . $this->changeIsOrderedBtn->getUniqueID() . '")';
-			$js .= '.setCallbackId("deletePayment", "' . $this->deletePaymentBtn->getUniqueID() . '")';
 			$js .= '.setCallbackId("updateAddress", "' . $this->updateAddressBtn->getUniqueID() . '")';
 			$js .= '.setEditMode(' . $purchaseEdit . ', ' . $warehouseEdit . ', ' . $accounEdit . ', ' . $statusEdit . ')';
 			$js .= '.setOrder('. json_encode($order->getJson()) . ', ' . json_encode($orderItems) . ', ' . json_encode($orderStatuses) . ', ' . OrderStatus::ID_SHIPPED . ')';
