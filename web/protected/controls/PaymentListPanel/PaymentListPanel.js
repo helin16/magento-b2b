@@ -73,6 +73,7 @@ PaymentListPanelJs.prototype = {
 			.insert({'bottom': label })
 			.insert({'bottom': control });
 	}
+	
 	,_clearCreatePaymentRow: function(selBox, paidMountBox) {
 		var tmp = {};
 		tmp.me = this;
