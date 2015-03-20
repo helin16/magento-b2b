@@ -91,8 +91,8 @@ class OrderPrintController extends BPCPageAbstract
 				if($item->getSerialNo() !== '' )
 					$sellingItems[] = $item->getSerialNo();
 			}
-			$discount = round(((($orderItem->getTotalPrice() - ($orderItem->getUnitPrice() * $orderItem->getQtyOrdered())) * 100) / $orderItem->getTotalPrice()), 2) . '%';
-			$html .= $this->getRow($orderItem->getQtyOrdered(), $orderItem->getProduct()->getSku(), $orderItem->getItemDescription() ?: $orderItem->getProduct()->getname(), $uPrice, $discount, $tPrice, 'itemRow');
+			$discount = (floatval($orderItem->getTotalPrice()) === 0.0000 ? 0.00 : round((((($orderItem->getUnitPrice() * $orderItem->getQtyOrdered()) - $orderItem->getTotalPrice()) * 100) / $orderItem->getTotalPrice()), 2));
+			$html .= $this->getRow($orderItem->getQtyOrdered(), $orderItem->getProduct()->getSku(), $orderItem->getItemDescription() ?: $orderItem->getProduct()->getname(), $uPrice, ($discount === 0.00 ? '' : $discount . '%'), $tPrice, 'itemRow');
 // 			$html .= $this->getRow('', '<span class="pull-right">Serial No: </span>', '<div style="max-width: 367px; word-wrap: break-word;">' . implode(', ', $sellingItems) . '</div>', '', '', '', 'itemRow itemRow-serials');
 		}
 		for ( $i = 5; $i > $index; $i--)
