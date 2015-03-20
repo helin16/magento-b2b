@@ -5,6 +5,10 @@ Core::setUser(UserAccount::get(UserAccount::ID_SYSTEM_ACCOUNT));
 require_once dirname(__FILE__) . '/class/SalesExport_Xero.php';
 SalesExport_Xero::run(true);
 
+// //run creditnote for xero
+require_once dirname(__FILE__) . '/class/CreditNoteExport_Xero.php';
+CreditNoteExport_Xero::run(true);
+
 //run bill export for xero
 require_once dirname(__FILE__) . '/class/BillExport_Xero.php';
 BillExport_Xero::run(true);
