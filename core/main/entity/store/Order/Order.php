@@ -514,12 +514,14 @@ class Order extends InfoEntityAbstract
 	 * @param PaymentMethod $method
 	 * @param double        $value
 	 * @param string        $comments
+	 * @param mixed         $newPayment The new payment that just created
 	 *
 	 * @return Order
 	 */
-	public function addPayment(PaymentMethod $method, $value, $comments = '')
+	public function addPayment(PaymentMethod $method, $value, $comments = '', &$newPayment = null)
 	{
-		return Payment::create($this, $method, $value, $comments)->getOrder();
+		$newPayment = Payment::create($this, $method, $value, $comments);
+		return $newPayment->getOrder();
 	}
 	/**
 	 * Getter for margin

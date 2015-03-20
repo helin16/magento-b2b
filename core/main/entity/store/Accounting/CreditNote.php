@@ -47,7 +47,7 @@ class CreditNote extends BaseEntityAbstract
 	private $totalValue = '';
 	/**
 	 * The description
-	 * 
+	 *
 	 * @var string
 	 */
 	private $description = '';
@@ -209,7 +209,7 @@ class CreditNote extends BaseEntityAbstract
 	}
 	/**
 	 * Setter for description
-	 * 
+	 *
 	 * @param mixed $value The new value of description
 	 *
 	 * @return CreditNote
@@ -218,6 +218,20 @@ class CreditNote extends BaseEntityAbstract
 	{
 	    $this->description = $value;
 	    return $this;
+	}
+	/**
+	 * Adding a payment to this creditNote
+	 *
+	 * @param PaymentMethod $method
+	 * @param double        $value
+	 * @param string        $comments
+	 *
+	 * @return Order
+	 */
+	public function addPayment(PaymentMethod $method, $value, $comments = '', &$newPayment = null)
+	{
+		$newPayment = Payment::createFromCreditNote($this, $method, $value, $comments);
+		return $newPayment->getOrder();
 	}
 	/**
 	 * (non-PHPdoc)
@@ -284,7 +298,7 @@ class CreditNote extends BaseEntityAbstract
 	}
 	/**
 	 * Getting all the credit note items
-	 * 
+	 *
 	 * @return Ambigous <Ambigous, NULL, multitype:, multitype:BaseEntityAbstract >
 	 */
 	public function getCreditNoteItems()
@@ -364,7 +378,7 @@ class CreditNote extends BaseEntityAbstract
 	}
 	/**
 	 * getting the types for the applyTo
-	 * 
+	 *
 	 * @return multitype:string
 	 */
 	public static function getApplyToTypes()

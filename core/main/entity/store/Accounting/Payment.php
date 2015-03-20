@@ -242,19 +242,15 @@ class Payment extends BaseEntityAbstract
 	public static function create(Order $order, PaymentMethod $method, $value, $comments = '')
 	{
 		$payment = new Payment();
-		$message = 'A payment via ' . $method->getName() . ' is made with value: ' . StringUtilsAbstract::getCurrency($value) . ' for Order(ID=' . $order->getId() . ', OrderNo.=' . $order->getOrderNo() . ').';
+		$message = 'A payment via ' . $method->getName() . ' is made with value: ' . StringUtilsAbstract::getCurrency($value) . ' for Order(ID=' . $order->getId() . ', OrderNo.=' . $order->getOrderNo() . ')' . (trim($comments) !== '' ? ': ' . $comments : '.');
 		$payment = $payment->setOrder($order)
 			->setMethod($method)
 			->setValue($value)
 			->save()
-			->addComment($message, Comments::TYPE_SYSTEM)
+			->addComment($message, Comments::Type)
 			->addLog($message, Log::TYPE_SYSTEM, get_class($payment) . '_CREATION', __CLASS__ . '::' . __FUNCTION__);
-		$order->addComment($message, Comments::TYPE_SYSTEM)
+		$order->addComment($message, Comments::TYPE_ACCOUNTING)
 			->addLog($message, Log::TYPE_SYSTEM, 'Auto Log', __CLASS__ . '::' . __FUNCTION__);
-		if(trim($comments) !== '') {
-			$payment->addComment($comments, Comments::TYPE_ACCOUNTING);
-			$order->addComment($comments, Comments::TYPE_ACCOUNTING);
-		}
 		return $payment;
 	}
 	/**
@@ -270,19 +266,15 @@ class Payment extends BaseEntityAbstract
 	public static function createFromCreditNote(CreditNote $creditNote, PaymentMethod $method, $value, $comments = '')
 	{
 		$payment = new Payment();
-		$message = 'A Credit payment via ' . $method->getName() . ' is created with value: ' . StringUtilsAbstract::getCurrency($value) . ' for CreditNote(ID=' . $creditNote->getId() . ', CreditNoteNo.=' . $creditNote->getCreditNoteNo() . ').';
+		$message = 'A Credit payment via ' . $method->getName() . ' is created with value: ' . StringUtilsAbstract::getCurrency($value) . ' for CreditNote(ID=' . $creditNote->getId() . ', CreditNoteNo.=' . $creditNote->getCreditNoteNo() . ')' . (trim($comments) !== '' ? ': ' . $comments : '.');
 		$payment = $payment->setCreditNote($creditNote)
 			->setMethod($method)
 			->setValue($value)
 			->save()
 			->addComment($message, Comments::TYPE_SYSTEM)
 			->addLog($message, Log::TYPE_SYSTEM, get_class($payment) . '_CREATION', __CLASS__ . '::' . __FUNCTION__);
-		$creditNote->addComment($message, Comments::TYPE_SYSTEM)
+		$creditNote->addComment($message, Comments::TYPE_ACCOUNTING)
 			->addLog($message, Log::TYPE_SYSTEM, 'Auto Log', __CLASS__ . '::' . __FUNCTION__);
-		if(trim($comments) !== '') {
-			$payment->addComment($comments, Comments::TYPE_ACCOUNTING);
-			$creditNote->addComment($comments, Comments::TYPE_ACCOUNTING);
-		}
 		return $payment;
 	}
 }
