@@ -1343,13 +1343,14 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			items.each(function(item) {
 				tmp.unitPriceValue = tmp.me.getValueFromCurrency(item.unitPrice);
 				tmp.totalPriceValue = tmp.me.getValueFromCurrency(item.totalPrice);
+				tmp.shouldTotalPriceValue = tmp.me.getValueFromCurrency(tmp.unitPriceValue * item.qtyOrdered);
 				tmp.data = {
 					'id': item.id,
 					'product': item.product,
 					'itemDescription': item.itemDescription,
 					'unitPrice': tmp.me.getCurrency(tmp.unitPriceValue),
 					'qtyOrdered': item.qtyOrdered,
-					'discount' : Math.round(((tmp.unitPriceValue * item.qtyOrdered - tmp.totalPriceValue) * 100) / tmp.totalPriceValue),
+					'discount' : Math.ceil(tmp.shouldTotalPriceValue) === 0 ? 0 : Math.round(((tmp.shouldTotalPriceValue - tmp.totalPriceValue) * 100) / tmp.shouldTotalPriceValue),
 					'margin': tmp.me.getCurrency(tmp.me.getValueFromCurrency(item.margin)),
 					'totalPrice': tmp.me.getCurrency(tmp.totalPriceValue),
 					'scanTable': tmp.me._getScanTable(item),
