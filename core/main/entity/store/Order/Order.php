@@ -514,12 +514,14 @@ class Order extends InfoEntityAbstract
 	 * @param PaymentMethod $method
 	 * @param double        $value
 	 * @param string        $comments
+	 * @param mixed         $newPayment The new payment that just created
 	 *
 	 * @return Order
 	 */
-	public function addPayment(PaymentMethod $method, $value, $comments = '')
+	public function addPayment(PaymentMethod $method, $value, $comments = '', &$newPayment = null)
 	{
-		return Payment::create($this, $method, $value, $comments)->getOrder();
+		$newPayment = Payment::create($this, $method, $value, $comments);
+		return $newPayment->getOrder();
 	}
 	/**
 	 * Getter for margin
@@ -760,7 +762,7 @@ class Order extends InfoEntityAbstract
 			->setPassPaymentCheck($passPaymentCheck)
 			->setPONo(trim($poNo));
 		if($cloneFrom instanceof Order) {
-			$counts = intval(OrderInfo::countByCriteria('orderId = ? and typeId = ?', array($cloneFrom->getId(), OrderInfoType::ID_CLONED_FROM_ORDER_NO)));
+			$counts = intval(OrderInfo::countByCriteria('value = ? and typeId = ?', array($cloneFrom->getOrderNo(), OrderInfoType::ID_CLONED_FROM_ORDER_NO)));
 			$newOrderNo = $cloneFrom->getOrderNo() . '-' . ($counts + 1);
 			$order->setOrderNo($newOrderNo);
 			$cloneFrom->addComment(($msg = 'A new order has been clone from this order:' . $newOrderNo), Comments::TYPE_SYSTEM)

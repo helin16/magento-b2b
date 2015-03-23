@@ -49,6 +49,11 @@ class ListController extends BPCPageAbstract
 					$asset = SalesExport_Xero::run(false, false);
 					break;
 				}
+				case 'creditnotes_daily': {
+					CreditNoteExport_Xero::setStartNEndDate(new UDate(trim($param->CallbackParameter->date_from)), new UDate(trim($param->CallbackParameter->date_to)));
+					$asset = CreditNoteExport_Xero::run(false, false);
+					break;
+				}
 				case 'supplier_bill_daily':  {
 					BillExport_Xero::setStartNEndDate(new UDate(trim($param->CallbackParameter->date_from)), new UDate(trim($param->CallbackParameter->date_to)));
 					$asset = BillExport_Xero::run(false, false);

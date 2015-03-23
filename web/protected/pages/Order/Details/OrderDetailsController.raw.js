@@ -6,8 +6,6 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 	_order: null //the order object
 	,_orderStatuses: [] //the order statuses object
 	,_orderStatusID_Shipped: '' //the order statuses object
-	,_paymentMethods: []
-	,_payments: []
 	,_orderItems: [] //the order items on that order
 	,_resultDivId: '' //the result div id
 	,_couriers: []
@@ -54,18 +52,6 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		return this;
 	}
 
-	/* *** This function sets all the payment methods to the class property *** */
-	,setPaymentMethods: function(paymentMethods) {
-		this._paymentMethods = paymentMethods;
-		return this;
-	}
-	/**
-	 * Setter for the payments
-	 */
-	,setPayments: function(payments) {
-		this._payments = payments;
-		return this;
-	}
 	,_updateAddress: function(btn, title) {
 		var tmp = {};
 		tmp.me = this;
@@ -239,39 +225,6 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			}
 		});
 		return (tmp.hasError === true ? null : tmp.data);
-	}
-	/**
-	 * Ajax: check and submit payment
-	 */
-	,_submitPaymentConfirmation: function(button) {
-		var tmp = {};
-		tmp.me = this;
-		tmp.data = tmp.me._collectData('payment_field');
-		if(tmp.data === null)
-			return;
-		tmp.me._signRandID(button);
-		tmp.me.postAjax(tmp.me.getCallbackId('confirmPayment'), {'payment': tmp.data, 'order': tmp.me._order}, {
-			'onLoading': function (sender, param) {
-				jQuery('#' + button.id).button('loading');
-			}
-			,'onSuccess': function (sender, param) {
-				try {
-					tmp.result = tmp.me.getResp(param, false, true);
-					if(tmp.result && tmp.result.items) {
-						tmp.me.showModalBox('<h4 class="text-success">Success</h4>', 'Payment saved successfully!');
-						window.location = document.URL;
-					}
-				}
-				catch (e) {
-					tmp.me.showModalBox('<h4 class="text-danger">Error</h4>', e);
-				}
-			},
-			'onComplete': function (sender, param) {
-				jQuery('#' + button.id).button('reset');
-			}
-		});
-
-		return this;
 	}
 	/**
 	 * Ajax: clearing the ETA
@@ -699,7 +652,10 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.me = this;
 		//display shipping information
 		tmp.shipmentDiv = new Element('div', {'class': 'panel panel-default'})
-			.insert({'bottom': new Element('div', {'class': 'panel-heading'}).update('Shipment') });
+			.insert({'bottom': new Element('div', {'class': 'panel-heading'})
+				.update('Shipment')
+				.insert({'bottom': !tmp.me._order.status || tmp.me._order.status.id != tmp.me._orderStatusID_Shipped ? '' : new Element('a', {'class': 'btn btn-danger btn-xs pull-right','href': '/rma/new.html?orderid=' + tmp.me._order.id}).update('Create RMA')	})
+			});
 		if(tmp.me._order.shippments.size() > 0) {
 			tmp.shippingInfos = tmp.me._order.shippments;
 			tmp.shipmentListDiv = new Element('small', {'class': 'viewShipping list-group'});
@@ -1011,158 +967,6 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		$(inputBox).value = tmp.me.getCurrency(tmp.inputValue);
 		return true;
 	}
-	,_deletePayment: function(btn, payment) {
-		var tmp = {};
-		tmp.me = this;
-		tmp.confirmPanel = $(btn).up('.deletion-confirm');
-		//remove all the msgs
-		tmp.confirmPanel.getElementsBySelector('.msg').each(function(item){ item.remove(); });
-		tmp.data = tmp.me._collectFormData(tmp.confirmPanel, 'deletion-confirm');
-		if(tmp.data === true)
-			return;
-		tmp.data.paymentId = payment.id;
-		tmp.me._signRandID(btn);
-		tmp.me.postAjax(tmp.me.getCallbackId('deletePayment'), tmp.data, {
-			'onLoading': function() {
-				jQuery('#' + btn.id).button('loading');
-			}
-			,'onSuccess': function(sender, params) {
-				try {
-					tmp.result = tmp.me.getResp(params, false, true);
-					if(!tmp.result || !tmp.result.item)
-						return;
-					tmp.confirmPanel.update('<h4 class="text-success">Payment delete successfully</h4>Please do NOT click anywhere, page will automaticall refersh.');
-					window.location = document.URL;
-				} catch (e) {
-					$(btn).insert({'before': tmp.me.getAlertBox('Error', e).addClassName('alert-danger').addClassName('msg')});
-				}
-			}
-			,'onComplete': function() {
-				jQuery('#' + btn.id).button('reset');
-			}
-		})
-		return tmp.me;
-	}
-	,_getPaymentListTable: function(payments) {
-		var tmp = {};
-		tmp.me = this;
-		if(payments.size() === 0)
-			return '';
-		tmp.paymentDiv = new Element('table', {"class": 'table table-hover table-condensed'})
-			.insert({'bottom': new Element('thead')
-				.insert({'bottom': new Element('th').update('Method') })
-				.insert({'bottom': new Element('th').update('Type') })
-				.insert({'bottom': new Element('th').update('value') })
-				.insert({'bottom': new Element('th').update('Confirmed By') })
-				.insert({'bottom': new Element('th').update('Comments') })
-				.insert({'bottom': new Element('th').update('&nbsp;') })
-			})
-			.insert({'bottom': tmp.tbody = new Element('tbody')});
-		payments.each(function(payment) {
-			tmp.tbody.insert({'bottom':  new Element('tr')
-				.insert({'bottom': new Element('td').update(payment.method.name) })
-				.insert({'bottom': new Element('td').update(payment.type) })
-				.insert({'bottom': new Element('td').update(tmp.me.getCurrency(payment.value)) })
-				.insert({'bottom': new Element('td').update(payment.createdBy.person.fullname + ' @ ' + tmp.me.loadUTCTime(payment.created).toLocaleString()) })
-				.insert({'bottom': new Element('td')
-					.insert({'bottom': new Element('a', {'href': 'javascript: void(0);', 'class': 'text-muted popover-comments', 'title': 'comments', 'comments-entity-id': payment.id, 'comments-entity': 'Payment'})
-						.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-comment'}) })
-					})
-				})
-				.insert({'bottom': new Element('td')
-					.insert({'bottom': new Element('a', {'href': 'javascript: void(0);', 'class': 'text-danger', 'title': 'Delete this payment'})
-						.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-remove'}) })
-						.observe('click', function() {
-							tmp.newConfirmDiv = new Element('div', {'class': 'deletion-confirm'})
-								.insert({'bottom': new Element('h4').update('You are about to delete a payment with a value: ' + tmp.me.getCurrency(payment.value) ) })
-								.insert({'bottom': new Element('div', {'class': 'form-group'})
-									.insert({'bottom': new Element('label').update('If you want to continue, please provide a reason/comments below and click <strong class="text-danger">"YES, Delete It"</strong> below:') })
-									.insert({'bottom': tmp.deleteMsgBox = new Element('input', {'class': 'form-control', 'placeholder': 'The reason of deleting this payment', 'deletion-confirm': 'reason', 'required': true}) })
-								})
-								.insert({'bottom': new Element('span', {'class': 'btn btn-danger'})
-									.update('YES, Delete It')
-									.observe('click', function() {
-										tmp.me._deletePayment(this, payment);
-									})
-								})
-								.insert({'bottom': new Element('span', {'class': 'btn btn-default pull-right'})
-									.update('NO, Cancel Deletion')
-									.observe('click', function(){
-										tmp.me.hideModalBox();
-									})
-								})
-							tmp.me.showModalBox('Deleting a Payment?', tmp.newConfirmDiv);
-							$(tmp.deleteMsgBox).focus();
-						})
-					})
-				})
-			})
-		});
-		return tmp.paymentDiv;
-	}
-	/**
-	 * Get Payment Row
-	 */
-	,_getPaymentRow: function() {
-		var tmp = {};
-		tmp.me = this;
-		tmp.paymentDiv = new Element('div', {"class": 'panel panel-default payment_row_panel'})
-			.insert({'bottom': new Element('div', {"class": 'panel-heading'}).update('Payments') });
-		if(tmp.me._editMode.accounting === true) {
-			//get payment div
-			//clearConfirmPanel function
-			tmp.clearConfirmPanel = function(paymentMethodBox, paidMountBox) {
-				tmp.paymentDiv.getElementsBySelector('.after_select_method').each(function(item) { item.remove(); });
-				if($F(paidMountBox).blank() || tmp.me._currencyInputChanged(paidMountBox) !== true) {
-					$(paidMountBox).select();
-					return;
-				}
-				//if paid amount is different from total amount
-				tmp.wrapperDiv = tmp.paymentDivBody.down('.row');
-				tmp.wrapperDiv.insert({'bottom': new Element('div', {"class": 'after_select_method col-sm-4', 'title': 'Notify Customer?'})
-					.insert({'bottom': tmp.me._getFormGroup('Notify Cust.?', new Element('input', {'type': 'checkbox', 'class': 'input-sm', 'payment_field': 'notifyCust', 'checked': true}) ) })
-				});
-				tmp.wrapperDiv.insert({'bottom': new Element('div', {"class": 'after_select_method col-sm-8'})
-					.insert({'bottom': tmp.me._getFormGroup('Comments:', tmp.commentsBox = new Element('input', {'type': 'text', 'class': 'after_select_method input-sm', 'payment_field': 'extraComments', 'required': true, 'placeholder': 'The reason why the paidAmount is different to Total Amount Due: ' + tmp.me.getCurrency(tmp.me._order.totalAmount) }) ) })
-				});
-				tmp.commentsBox.select();
-				tmp.wrapperDiv.insert({'bottom': new Element('div', {"class": 'after_select_method col-sm-4'})
-					.insert({'bottom': tmp.me._getFormGroup('&nbsp;', new Element('span', {'class': 'btn btn-primary after_select_method', 'data-loading-text': 'Saving...'}).update('Confirm')
-							.observe('click', function(){
-								tmp.me._submitPaymentConfirmation(this);
-							})
-						)
-					})
-				});
-			}
-			//getting the Payment method selection box
-			tmp.paymentMethodSelBox = new Element('select', {'class': 'input-sm', 'payment_field': 'payment_method_id', 'required': true})
-				.insert({'bottom': new Element('option', {'value': ''}).update('Payment Method:')  })
-				.observe('change', function() {
-					tmp.clearConfirmPanel(this, tmp.paymentDiv.down('[payment_field=paidAmount]'));
-				});
-			tmp.me._paymentMethods.each(function(item) {
-				tmp.paymentMethodSelBox.insert({'bottom': new Element('option', {'value': item.id}).update(item.name) });
-			});
-			//insert the content
-			tmp.paymentDivBody = new Element('div', {"class": 'panel-body panel_row_confirm_panel'})
-			.insert({'bottom': new Element('div', {"class": 'row'})
-				.insert({'bottom': new Element('div', {"class": 'col-sm-4'})
-					.insert({'bottom': tmp.me._getFormGroup('Method:', tmp.paymentMethodSelBox) })
-				})
-				.insert({'bottom': new Element('div', {"class": 'col-sm-4'})
-					.insert({'bottom': tmp.me._getFormGroup('Paid:', new Element('input', {'type': 'text', 'payment_field': 'paidAmount', 'class': 'input-sm', 'required': true, 'validate_currency': true, 'placeholder': 'The paid amount'})
-						.observe('change', function() {
-							tmp.clearConfirmPanel(tmp.paymentMethodSelBox, this); //clear all after_select_method
-						})
-					) })
-				})
-			});
-			tmp.paymentDiv.insert({'bottom': tmp.paymentDivBody });
-			tmp.paymentDiv.insert({'bottom': tmp.me._getPaymentListTable(tmp.me._payments) });
-		}
-		return tmp.paymentDiv;
-	}
 	/**
 	 * initialising the doms
 	 */
@@ -1170,6 +974,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		var tmp = {};
 		tmp.me = this;
 		tmp.me.orderBtnsJs = new OrderBtnsJs(tmp.me, tmp.me._order);
+		tmp.me.paymentListPanelJs = new PaymentListPanelJs(tmp.me, tmp.me._order, undefined, tmp.me._editMode.accounting);
 		tmp.me._resultDivId = resultdiv;
 		$(tmp.me._resultDivId).update(
 			new Element('div')
@@ -1184,11 +989,15 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				.insert({'bottom': tmp.me._getPartsTable() })   	//getting the parts row
 				.insert({'bottom': new Element('div', {'class': 'row'})
 					.insert({'bottom': new Element('div', {'class': 'col-md-8'}).update( tmp.me._getShippmentRow() ) })   //getting the EDITABLE shippment row
-					.insert({'bottom': new Element('div', {'class': 'col-md-4'}).update( tmp.me._getPaymentRow() ) })   //getting the payment row
+					.insert({'bottom': new Element('div', {'class': 'col-md-4'}).update( tmp.me.paymentListPanelJs.getPaymentListPanel() ) })   //getting the payment row
 				})
 				.insert({'bottom': new Element('div', {'class': 'comments-list-div'}) }) //getting the comments row
 		);
 		$(tmp.me._resultDivId).store('CommentsDivJs', new CommentsDivJs(tmp.me, 'Order', tmp.me._order.id)._setDisplayDivId($(tmp.me._resultDivId).down('.comments-list-div')).render() );
+		tmp.me.paymentListPanelJs
+			.setAfterAddFunc(function() { window.location = document.URL; })
+			.setAfterDeleteFunc(function() { window.location = document.URL; })
+			.load();
 		return this;
 	}
 	/**
