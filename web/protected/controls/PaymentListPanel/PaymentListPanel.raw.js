@@ -123,9 +123,10 @@ PaymentListPanelJs.prototype = {
 		tmp.tag = (tmp.isTitle === true ? 'th' : 'td');
 		tmp.newDiv = new Element('tr', {'class': 'item ' + tmp.isTitle === true ? '' : 'payment-item'})
 			.store('data', payment)
+			.insert({'bottom': new Element(tmp.tag).update(tmp.isTitle === true ? 'Date' : moment(tmp.me._pageJs.loadUTCTime(payment.paymentDate)).format('DD/MMM/YY') ) })
 			.insert({'bottom': new Element(tmp.tag).update(tmp.isTitle === true ? 'Method' : payment.method.name) })
 			.insert({'bottom': new Element(tmp.tag).update(tmp.isTitle === true ? 'Value' : tmp.me._pageJs.getCurrency(payment.value) ) })
-			.insert({'bottom': new Element(tmp.tag).update(tmp.isTitle === true ? 'Created' : (payment.createdBy.person.fullname + ' @ ' + tmp.me._pageJs.loadUTCTime(payment.created).toLocaleString()) ) })
+			.insert({'bottom': new Element(tmp.tag).update(tmp.isTitle === true ? 'Created' : (payment.createdBy.person.fullname + ' @ ' + moment(tmp.me._pageJs.loadUTCTime(payment.created)).format('DD/MM/YY h:mm a') ) ) })
 			.insert({'bottom': new Element(tmp.tag).update(tmp.isTitle === true ? 'Comments' :
 				new Element('a', {'href': 'javascript: void(0);', 'class': 'text-muted visible-lg visible-md visible-sm visible-xs', 'title': 'comments', 'comments-entity-id': payment.id, 'comments-entity': 'Payment'})
 					.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-comment'}) })
@@ -182,6 +183,12 @@ PaymentListPanelJs.prototype = {
 		if(tmp.data === null)
 			return tmp.me;
 
+		tmp.paymentDateBox = tmp.newPaymentDiv.down('[payment_field="paymentDate"]');
+		if(tmp.paymentDateBox) {
+			tmp.me._pageJs._signRandID(tmp.paymentDateBox);
+			tmp.data.paymentDate = jQuery('#' + tmp.paymentDateBox.id).data('DateTimePicker').date().utc().format();
+		}
+
 		tmp.againstEntity = null;
 		if (tmp.me._order && tmp.me._order.id)
 			tmp.againstEntity = {'entity' : 'Order', 'entityId' : tmp.me._order.id};
@@ -230,13 +237,13 @@ PaymentListPanelJs.prototype = {
 		}
 		//if paid amount is different from total amount
 		tmp.paymentDiv
-			.insert({'bottom': new Element('div', {"class": 'after_select_method  col-sm-4', 'title': 'Notify Customer?'})
+			.insert({'bottom': new Element('div', {"class": 'after_select_method  col-sm-3', 'title': 'Notify Customer?'})
 				.insert({'bottom': tmp.me._getFormGroup(
 					new Element('label', {'class': 'control-label'}).update('Notify Cust.?'),
-					new Element('div').update( new Element('input', {'type': 'checkbox', 'class': 'input-sm', 'payment_field': 'notifyCust', 'checked': true}) )
+					new Element('div', {'class': 'text-center'}).update( new Element('input', {'type': 'checkbox', 'class': 'input-sm', 'payment_field': 'notifyCust', 'checked': true}) )
 				) })
 			})
-			.insert({'bottom': new Element('div', {"class": 'after_select_method control-label col-sm-8'})
+			.insert({'bottom': new Element('div', {"class": 'after_select_method control-label col-sm-6'})
 				.insert({'bottom': tmp.me._getFormGroup(
 						new Element('label', {'class': 'control-label'}).update('Comments:'),
 						tmp.commentsBox = new Element('input', {'type': 'text', 'class': 'after_select_method input-sm form-control', 'payment_field': 'extraComments', 'required': true, 'placeholder': 'Some Comments' })
@@ -247,7 +254,7 @@ PaymentListPanelJs.prototype = {
 							})
 				) })
 			})
-			.insert({'bottom': new Element('div', {"class": 'after_select_method control-label col-sm-4'})
+			.insert({'bottom': new Element('div', {"class": 'after_select_method control-label col-sm-3'})
 				.insert({'bottom': tmp.me._getFormGroup('&nbsp;', new Element('span', {'class': 'btn btn-primary form-control add-btn', 'data-loading-text': '<i class="fa fa-refresh fa-spin"></i>'})
 						.update('Save')
 						.observe('click', function(){
@@ -270,7 +277,11 @@ PaymentListPanelJs.prototype = {
 		tmp.newDiv = new Element('tr')
 			.insert({'bottom': new Element('td', {'colspan': 4})
 			.insert({'bottom': new Element('div', {'class': 'new-payment-div'})
-				.insert({'bottom': new Element('div', {'class': 'col-sm-4'}).update(tmp.me._getFormGroup(
+				.insert({'bottom': new Element('div', {'class': 'col-sm-3'}).update(tmp.me._getFormGroup(
+						new Element('label', {'class': 'control-label'}).update('Date: '),
+						new Element('input', {'class': 'input-sm form-control', 'payment_field': 'paymentDate', 'required': true})
+				) ) })
+				.insert({'bottom': new Element('div', {'class': 'col-sm-5'}).update(tmp.me._getFormGroup(
 						new Element('label', {'class': 'control-label'}).update('Method: '),
 						tmp.paymentMethodSelBox = new Element('select', {'class': 'input-sm form-control', 'payment_field': 'payment_method_id', 'required': true})
 							.insert({'bottom': new Element('option', {'value': ''}).update('Payment Method:')  })
@@ -341,7 +352,15 @@ PaymentListPanelJs.prototype = {
 								.insert({'bottom': tmp.listPanel = new Element('tbody', {'class': 'payment-list'}) })
 							});
 						if(tmp.pageNo === 1 && tmp.result.paymentMethods) {
-							tmp.thead.insert({'top': tmp.me._getCreatePaymentRow(tmp.result.paymentMethods) })
+							tmp.thead.insert({'top': tmp.newRow = tmp.me._getCreatePaymentRow(tmp.result.paymentMethods) });
+							tmp.paymentDateBox = tmp.newRow.down('[payment_field="paymentDate"]');
+							if(tmp.paymentDateBox) {
+								tmp.me._pageJs._signRandID(tmp.paymentDateBox);
+								jQuery('#' + tmp.paymentDateBox.id).datetimepicker({
+									format: 'DD/MM/YYYY'
+								});
+								jQuery('#' + tmp.paymentDateBox.id).data('DateTimePicker').date(new Date());
+							}
 						}
 						tmp.result.items.each(function(payment) {
 							tmp.listPanel.insert({'bottom': tmp.me._getPaymentRow(payment) });

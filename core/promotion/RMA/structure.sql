@@ -99,3 +99,6 @@ CREATE TABLE `creditnoteitem` (
 
 ALTER TABLE `payment` CHANGE `orderId` `orderId` int(10) unsigned NULL DEFAULT NULL;
 ALTER TABLE `payment` ADD `creditNoteId` int(10) unsigned NULL DEFAULT NULL AFTER `orderId`, ADD INDEX (`creditNoteId`) ;
+
+ALTER TABLE `payment` ADD `paymentDate` DATETIME NOT NULL DEFAULT '0001-01-01 00:00:00' AFTER `type`, ADD INDEX (`paymentDate`) ;
+update payment set paymentDate = created;

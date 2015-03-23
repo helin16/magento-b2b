@@ -127,6 +127,64 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 			}
 		});
 	}
+	,_deactivateItem: function(po) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.row = $$('[item_id="'+ po.id +'"]').first();
+		tmp.me.postAjax(tmp.me.getCallbackId('deactivateItems'), {'item_id': po.id}, {
+			'onLoading': function() {
+				if(tmp.row)
+					tmp.row.hide();
+				tmp.me.hideModalBox();
+			}
+			,'onSuccess': function(sender, param){
+				try {
+					tmp.row.toggleClassName('danger');
+					tmp.result = tmp.me.getResp(param, false, true);
+					if(!tmp.result.item)
+						throw 'errror';
+					tmp.row.replace(tmp.me._getResultRow(tmp.result.item, false));
+				} catch(e) {
+					tmp.me.showModalBox('<span class="text-danger">ERROR</span>', e, true);
+				}
+			}
+			,'onComplete': function() {
+				if(tmp.row)
+					tmp.row.show();
+			}
+		});
+	}
+	/**
+	 * showing the confirmation panel for deleting the po
+	 */
+	,_shoConfirmDel: function(purchaseorder) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.confirmDiv = new Element('div')
+			.insert({'bottom': new Element('strong').update('You are about to delete a Purchase Order: ' + purchaseorder.purchaseOrderNo) })
+			.insert({'bottom': new Element('strong').update('After confirming deletion:') })
+			.insert({'bottom': new Element('ul')
+				.insert({'bottom': new Element('li').update(' - All received item will be deleted, and stock will be reverted from StockOnHand to StockOnPO.') })
+				.insert({'bottom': new Element('li').update(' - This PO will be dactivated.') })
+			})
+			.insert({'bottom': new Element('div').update(new Element('strong').update('Are you sure you want to continue?')) })
+			.insert({'bottom': new Element('div')
+				.insert({'bottom': new Element('span', {'class': 'btn btn-danger'})
+					.update('YES, deactivate it')
+					.observe('click', function(){
+						tmp.me._deactivateItem(purchaseorder);
+					})
+				})
+				.insert({'bottom': new Element('span', {'class': 'btn btn-default pull-right'})
+					.update('NO, cancel this')
+					.observe('click', function(){
+						tmp.me.hideModalBox();
+					})
+				})
+			});
+		tmp.me.showModalBox('<strong class="text-warning">Confirm</strong>', tmp.confirmDiv);
+		return tmp.me;
+	}
 	/**
 	 * Getting each row for displaying the result list
 	 */
@@ -171,11 +229,8 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 			.insert({'bottom': tmp.btns = new Element(tmp.tag, {'class': 'col-xs-1 text-right'}) 	});
 		if(tmp.isTitle !== true)
 			tmp.btns.insert({'bottom': new Element('div', {'class': 'btn-group'})
-				.insert({'bottom': (!(row.id && (row.status === 'ORDERED' || row.status === 'RECEIVING')) || row.active !== true)  ? '' : new Element('span', {'class': 'btn btn-success btn-xs', 'title': 'Receiving Items'}).update('Receiving')
-					.observe('click', function(){
-						tmp.newWindow = window.open('/receiving/' + row.id + '.html', 'PO Details','width=1300, location=no, scrollbars=yes, menubar=no, status=no, titlebar=no, fullscreen=no, toolbar=no');
-						tmp.newWindow.focus();
-					})
+				.insert({'bottom': (!(row.id && (row.status === 'ORDERED' || row.status === 'RECEIVING')) || row.active !== true)  ? '' : new Element('a', {'class': 'btn btn-success btn-xs', 'url': '/receiving/' + row.id + '.html', 'target': '_BLANK', 'title': 'Receiving Items'})
+					.update('Receiving')
 				})
 				.insert({'bottom': new Element('span', {'class': 'btn btn-default btn-xs', 'title': 'Edit'})
 					.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-pencil'}) })
@@ -186,10 +241,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 				.insert({'bottom': new Element('span', {'class': 'btn btn-danger btn-xs', 'title': 'Delete'})
 					.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-trash'}) })
 					.observe('click', function(){
-						if(!confirm('Are you sure you want to delete this item?'))
-							return false;
-						if(row.active)
-							tmp.me._deactivateItem(this);
+						tmp.me._shoConfirmDel(row);
 					})
 				})
 			});
@@ -199,22 +251,11 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 					.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-plus'}) })
 					.insert({'bottom': ' NEW' })
 					.observe('click', function(){
-						$(this).up('thead').insert({'bottom': tmp.me._openNewPage() });
+						$(this).up('thead').insert({'bottom': tmp.me._openEditPage({}) });
 					})
 				})
 			});
 		return tmp.row;
-	}
-	/**
-	 * Highlisht seleteted row
-	 */
-	,_highlightSelectedRow : function (btn) {
-		var tmp = {};
-		tmp.me = this;
-		tmp.item = btn.down('.glyphicon-plus') ? '' : $(btn).up('[item_id]').retrieve('data');
-		jQuery('.item_row.success').removeClass('success');
-		tmp.selectedRow = jQuery('[item_id=' + tmp.item.id + ']')
-		.addClass('success');
 	}
 	/**
 	 * Open edit page in a fancybox
@@ -225,41 +266,5 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		tmp.newWindow = window.open('/purchase/' + (row && row.id ? row.id : 'new') + '.html', 'PO Details','width=1300, location=no, scrollbars=yes, menubar=no, status=no, titlebar=no, fullscreen=no, toolbar=no');
 		tmp.newWindow.focus();
 		return tmp.me;
-	}
-	/**
-	 * Open edit page in a fancybox
-	 */
-	,_openNewPage: function(row) {
-		var tmp = {};
-		tmp.me = this;
-		tmp.newWindow = window.open('/purchase/new.html', 'PO Details','width=1300, location=no, scrollbars=yes, menubar=no, status=no, titlebar=no, fullscreen=no, toolbar=no');
-		tmp.newWindow.focus();
-		return tmp.me;
-	}
-	,_deactivateItem: function(btn) {
-		var tmp = {};
-		tmp.me = this;
-		tmp.row = $(btn).up('[item_id]');
-		tmp.item = tmp.row.retrieve('data');
-		tmp.me.postAjax(tmp.me.getCallbackId('deactivateItems'), {'item_id': tmp.item.id}, {
-			'onLoading': function() {
-				if(tmp.row) {
-					tmp.row.toggleClassName('danger');
-					tmp.row.hide();
-				}
-			}
-			,'onSuccess': function(sender, param){
-				try {
-					tmp.row.toggleClassName('danger');
-					tmp.result = tmp.me.getResp(param, false, true);
-					if(!tmp.result.item)
-						throw 'errror';
-					$$('[item_id="'+ tmp.result.item.id +'"]').first().replace(tmp.me._getResultRow(tmp.result.item, false));
-					//tmp.me._highlightSelectedRow($$('[item_id="'+ tmp.result.item.id +'"]').first().down('.glyphicon.glyphicon-trash'));
-				} catch(e) {
-					tmp.me.showModalBox('<span class="text-danger">ERROR</span>', e, true);
-				}
-			}
-		});
 	}
 });

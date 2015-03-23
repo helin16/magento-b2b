@@ -518,9 +518,9 @@ class Order extends InfoEntityAbstract
 	 *
 	 * @return Order
 	 */
-	public function addPayment(PaymentMethod $method, $value, $comments = '', &$newPayment = null)
+	public function addPayment(PaymentMethod $method, $value, $comments = '', $paymentDate = null, &$newPayment = null)
 	{
-		$newPayment = Payment::create($this, $method, $value, $comments);
+		$newPayment = Payment::create($this, $method, $value, $comments, $paymentDate);
 		return $newPayment->getOrder();
 	}
 	/**

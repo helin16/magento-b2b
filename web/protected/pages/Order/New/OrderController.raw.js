@@ -208,8 +208,14 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		var tmp = {};
 		tmp.me = this;
 		tmp.newDiv = new Element('div')
-			.insert({'bottom': new Element('div', {'class': 'btn-group pull-right  visible-xs visible-sm visible-md visible-lg'})
+			.insert({'bottom': new Element('div', {'class': 'btn-group pull-right'})
 				.insert({'bottom': new Element('span', {'class': 'btn btn-primary save-btn'})
+					.insert({'bottom': new Element('span').update(' Save ') })
+					.observe('click', function() {
+						tmp.me._preConfirmSubmit(false);
+					})
+				})
+				.insert({'bottom': new Element('span', {'class': 'btn btn-info save-btn'})
 					.insert({'bottom': new Element('span').update(' Save & Print ') })
 					.observe('click', function() {
 						tmp.me._preConfirmSubmit(true);

@@ -417,6 +417,12 @@ class PurchaseOrder extends BaseEntityAbstract
 					->addLog('UNMarked this item for StockOnPO and stockCalculated', Log::TYPE_SYSTEM, 'STOCK_QTY_CHG', __CLASS__ . '::' . __FUNCTION__);
 			}
 			$this->addComment(count($items) . ' POItem(s) are reverted, as this PO is now deactivated or CANCELLED');
+
+			$receivedItems = ReceivingItem::getAllByCriteria('purchaserOrderId = ?', array($this->getId()));
+			foreach($receivedItems as $item) {
+				$item->setActive(false)
+					->save();
+			}
 		}
 		else if(trim($this->getStatus()) === PurchaseOrder::STATUS_ORDERED) {
 			$items = PurchaseOrderItem::getAllByCriteria('purchaseOrderId = ? and stockCalculated = 0', array($this->getId()));

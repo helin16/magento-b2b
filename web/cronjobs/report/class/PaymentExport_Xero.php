@@ -23,6 +23,7 @@ class PaymentExport_Xero extends ExportAbstract
 		{
 			$return[] = array(
 					'InvNo' => (trim($item->getOrder()->getInvNo()) === '' ? '' : $item->getOrder()->getInvNo())
+					,'Payment Date' => $item->getPaymentDate()->setTimeZone('Australia/Melbourne')->format('Y-m-d')
 					,'Order No.' => $item->getOrder()->getOrderNo()
 					,'Processed Date'=> trim($item->getCreated()->setTimeZone('Australia/Melbourne'))
 					,'Processed By' => $item->getCreatedBy() instanceof UserAccount ? $item->getCreatedBy()->getPerson()->getFullName() : ''

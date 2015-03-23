@@ -41,6 +41,12 @@ class Payment extends BaseEntityAbstract
 	 */
 	private $value;
 	/**
+	 * The payment date of this payment
+	 *
+	 * @var UDate
+	 */
+	private $paymentDate;
+	/**
 	 * Getter for method
 	 *
 	 * @return PaymentMethod
@@ -149,6 +155,27 @@ class Payment extends BaseEntityAbstract
 	    return $this;
 	}
 	/**
+	 * Getter for paymentDate
+	 *
+	 * @return UDate
+	 */
+	public function getPaymentDate()
+	{
+		return new UDate(trim($this->paymentDate));
+	}
+	/**
+	 * Setter for paymentDate
+	 *
+	 * @param string $value The paymentDate
+	 *
+	 * @return Payment
+	 */
+	public function setPaymentDate($value)
+	{
+		$this->paymentDate = $value;
+		return $this;
+	}
+	/**
 	 * (non-PHPdoc)
 	 * @see BaseEntityAbstract::__toString()
 	 */
@@ -165,7 +192,9 @@ class Payment extends BaseEntityAbstract
 		if(!$this->getCreditNote() instanceof CreditNote && !$this->getOrder() instanceof Order)
 			throw new EntityException('You need to create a payment against at least one of these: Order / CreditNote');
 		if(trim($this->getType()) === '')
-			$this->setType($this->getValue() > 0 ? self::TYPE_PAYMENT : self::TYPE_CREDIT);
+			$this->setType($this->getValue() < 0 ? self::TYPE_CREDIT : self::TYPE_PAYMENT);
+		if(trim($this->paymentDate) === '')
+			$this->setPaymentDate(new UDate());
 	}
 	/**
 	 * (non-PHPdoc)
@@ -224,6 +253,7 @@ class Payment extends BaseEntityAbstract
 		DaoMap::setManyToOne('method', 'PaymentMethod', 'py_method');
 		DaoMap::setIntType('value', 'Double', '10,4', false);
 		DaoMap::setStringType('type', 'varchar', '10');
+		DaoMap::setDateType('paymentDate');
 		parent::__loadDaoMap();
 
 		DaoMap::createIndex('type');
@@ -239,15 +269,16 @@ class Payment extends BaseEntityAbstract
 	 *
 	 * @return Ambigous <BaseEntityAbstract, GenericDAO>
 	 */
-	public static function create(Order $order, PaymentMethod $method, $value, $comments = '')
+	public static function create(Order $order, PaymentMethod $method, $value, $comments = '', $paymentDate = '')
 	{
 		$payment = new Payment();
-		$message = 'A payment via ' . $method->getName() . ' is made with value: ' . StringUtilsAbstract::getCurrency($value) . ' for Order(ID=' . $order->getId() . ', OrderNo.=' . $order->getOrderNo() . ')' . (trim($comments) !== '' ? ': ' . $comments : '.');
+		$message = 'A ' . StringUtilsAbstract::getCurrency($value) . ' is made payment via ' . $method->getName() . ' for Order(OrderNo.=' . $order->getOrderNo() . ')' . (trim($comments) !== '' ? ': ' . $comments : '.');
 		$payment = $payment->setOrder($order)
 			->setMethod($method)
 			->setValue($value)
+			->setPaymentDate(new UDate(trim($paymentDate) === '' ? 'now' : trim($paymentDate)))
 			->save()
-			->addComment($message, Comments::Type)
+			->addComment($message, Comments::TYPE_ACCOUNTING)
 			->addLog($message, Log::TYPE_SYSTEM, get_class($payment) . '_CREATION', __CLASS__ . '::' . __FUNCTION__);
 		$order->addComment($message, Comments::TYPE_ACCOUNTING)
 			->addLog($message, Log::TYPE_SYSTEM, 'Auto Log', __CLASS__ . '::' . __FUNCTION__);
@@ -263,15 +294,16 @@ class Payment extends BaseEntityAbstract
 	 *
 	 * @return Ambigous <BaseEntityAbstract, GenericDAO>
 	 */
-	public static function createFromCreditNote(CreditNote $creditNote, PaymentMethod $method, $value, $comments = '')
+	public static function createFromCreditNote(CreditNote $creditNote, PaymentMethod $method, $value, $comments = '', $paymentDate = '')
 	{
 		$payment = new Payment();
-		$message = 'A Credit payment via ' . $method->getName() . ' is created with value: ' . StringUtilsAbstract::getCurrency($value) . ' for CreditNote(ID=' . $creditNote->getId() . ', CreditNoteNo.=' . $creditNote->getCreditNoteNo() . ')' . (trim($comments) !== '' ? ': ' . $comments : '.');
+		$message = 'A ' . StringUtilsAbstract::getCurrency($value) . ' Credit Payment is made via ' . $method->getName() . ' for CreditNote(CreditNoteNo.=' . $creditNote->getCreditNoteNo() . ')' . (trim($comments) !== '' ? ': ' . $comments : '.');
 		$payment = $payment->setCreditNote($creditNote)
 			->setMethod($method)
 			->setValue($value)
+			->setPaymentDate(new UDate(trim($paymentDate) === '' ? 'now' : trim($paymentDate)))
 			->save()
-			->addComment($message, Comments::TYPE_SYSTEM)
+			->addComment($message, Comments::TYPE_ACCOUNTING)
 			->addLog($message, Log::TYPE_SYSTEM, get_class($payment) . '_CREATION', __CLASS__ . '::' . __FUNCTION__);
 		$creditNote->addComment($message, Comments::TYPE_ACCOUNTING)
 			->addLog($message, Log::TYPE_SYSTEM, 'Auto Log', __CLASS__ . '::' . __FUNCTION__);

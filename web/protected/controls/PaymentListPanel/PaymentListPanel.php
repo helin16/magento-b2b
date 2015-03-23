@@ -113,7 +113,7 @@ class PaymentListPanel extends TTemplateControl
 
 			//save the payment
 			$newPayment = null;
-			$entity = $entity->addPayment($paymentMethod, $paidAmount, $extraComment, $newPayment);
+			$entity = $entity->addPayment($paymentMethod, $paidAmount, $extraComment, new UDate(), $newPayment);
 			$results['item'] = $newPayment->getJson();
 
 			//notify the customer

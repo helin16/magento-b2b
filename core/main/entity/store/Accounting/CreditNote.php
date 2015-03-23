@@ -228,9 +228,9 @@ class CreditNote extends BaseEntityAbstract
 	 *
 	 * @return Order
 	 */
-	public function addPayment(PaymentMethod $method, $value, $comments = '', &$newPayment = null)
+	public function addPayment(PaymentMethod $method, $value, $comments = '', $paymentDate = null, &$newPayment = null)
 	{
-		$newPayment = Payment::createFromCreditNote($this, $method, $value, $comments);
+		$newPayment = Payment::createFromCreditNote($this, $method, $value, $comments, $paymentDate);
 		return $newPayment->getOrder();
 	}
 	/**
