@@ -76,12 +76,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 	 * initiating the chosen input
 	 */
 	,_loadChosen: function () {
-		jQuery(".chosen").chosen({
-				search_contains: true,
-				inherit_select_classes: true,
-				no_results_text: "Oops, nothing found!",
-				width: "95%"
-		});
+		jQuery(".chosen").select2();
 		return this;
 	}
 	/**
@@ -322,7 +317,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		if(!tmp.selectedRow.hasClass('popover-loaded')) {
 			tmp.selectedRow
 			.popover({
-				'title'    : '<div class="row"><div class="col-xs-10">Details for: ' + item.sku + '</div><div class="col-xs-2"><span class="btn btn-danger pull-right btn-sm" onclick="pageJs.deSelectProduct();"><span class="glyphicon glyphicon-remove"></span></span></div></div>',
+				'title'    : '<div class="row"><div class="col-xs-10">Details for: ' + item.sku + '</div><div class="col-xs-2"><a class="btn btn-primary btn-sm" href="/product/' + item.id + '.html" target="_BLANK"><span class="glyphicon glyphicon-pencil"></span></a><span class="btn btn-danger pull-right btn-sm" onclick="pageJs.deSelectProduct();"><span class="glyphicon glyphicon-remove"></span></span></div></div>',
 				'html'     : true,
 				'placement': 'right',
 				'container': 'body',
@@ -335,14 +330,6 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		}
 		tmp.selectedRow.popover('toggle');
 		return tmp.me;
-	}
-	/**
-	 * open the product details page
-	 */
-	,_openProductDetails: function(product) {
-		var tmp = {};
-		tmp.newWindow = window.open('/product/' + (product == 'new' ? product : product.id) + '.html', 'Product Details for: ' + product.sku, 'width=1300, location=no, scrollbars=yes, menubar=no, status=no, titlebar=no, fullscreen=no, toolbar=no');
-		tmp.newWindow.focus();
 	}
 	,toggleActive: function(active, product) {
 		var tmp = {};
@@ -361,16 +348,6 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 				}
 			}
 		})
-		return tmp.me;
-	}
-	/**
-	 * Open product qty log Page in new Window
-	 */
-	,_openProductQtyLogPage: function(id) {
-		var tmp = {};
-		tmp.me = this;
-		tmp.newWindow = window.open('/productqtylog.html?productid=' + id, 'Product Details', 'width=1920, location=no, scrollbars=yes, menubar=no, status=no, titlebar=no, fullscreen=no, toolbar=no');
-		tmp.newWindow.focus();
 		return tmp.me;
 	}
 	,_updatePrice: function(productId, newPrice, originalPrice) {
@@ -453,12 +430,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 				})
 				.insert({'bottom':tmp.isTitle === true ? row.sku : new Element('a', {'href': 'javascript: void(0);', 'class': 'sku-link'})
 					.observe('click', function(e){
-						Event.stop(e);
 						tmp.me._displaySelectedProduct(row);
-					})
-					.observe('dblclick', function(e){
-						Event.stop(e);
-						tmp.me._openProductDetails(row);
 					})
 					.update(row.sku)
 				})
@@ -473,7 +445,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 			.insert({'bottom': new Element(tmp.tag, {'class': 'supplier col-xs-1 hide-when-info hidden-sm'}).update(
 					row.supplierCodes ? tmp.me._getSupplierCodes(row.supplierCodes, isTitle) : ''
 			) })
-			.insert({'bottom': new Element(tmp.tag, {'class': 'qty col-xs-2 hidden-sm'}).update(
+			.insert({'bottom': new Element(tmp.tag, {'class': 'qty col-xs-1 hidden-sm'}).update(
 					tmp.isTitle === true ?
 							new Element('div', {'class': 'row'})
 								.insert({'bottom': new Element('div', {'class': 'col-xs-4 hide-when-info', 'title': 'Stock on Hand'}).update('SH') })
@@ -481,34 +453,26 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 								.insert({'bottom': new Element('div', {'class': 'col-xs-4 hide-when-info', 'title': 'Stock On PO'}).update('SP') })
 							:
 							new Element('div', {'class': 'row'})
-								.update(new Element('a', {'href': 'javascript: void(0);'})
+								.update(new Element('a', {'href': '/productqtylog.html?productid=' + row.id, 'target': '_BLANK'})
 									.insert({'bottom': new Element('div', {'class': 'col-xs-4 hide-when-info', 'title': 'Stock on Hand'}).update(row.stockOnHand) })
 									.insert({'bottom': new Element('div', {'class': 'col-xs-4', 'title': 'Average Cost'}).update((row.totalOnHandValue != 0 && row.stockOnHand != 0) ? tmp.me.getCurrency(row.totalOnHandValue/row.stockOnHand) : 'N/A') })
 									.insert({'bottom': new Element('div', {'class': 'col-xs-4 hide-when-info', 'title': 'Stock On PO'}).update(row.stockOnPO) })
-									.observe('dblclick', function(e){
-										Event.stop(e);
-										tmp.me._openProductQtyLogPage(row.id);
-									})
 								)
 					)
 			})
-			.insert({'bottom': new Element(tmp.tag, {'class': 'product_active col-xs-1 hide-when-info hidden-sm'})
-				.insert({'bottom': (tmp.isTitle === true ? row.active :
+			.insert({'bottom': new Element(tmp.tag, {'class': 'product_active col-xs-2 hide-when-info hidden-sm'})
+				.insert({'bottom': (
 					new Element('div', {'class': 'row'})
-						.insert({'bottom': new Element('div', {'class': 'col-xs-3'})
-							.insert({'bottom': new Element('input', {'type': 'checkbox', 'disabled': true, 'checked': row.active}) })
+						.insert({'bottom': new Element('div', {'class': 'col-xs-5 text-right'})
+							.insert({'bottom': tmp.isTitle === true ? 'Act?' : new Element('input', {'type': 'checkbox', 'disabled': true, 'checked': row.active}) })
 						})
 						.insert({'bottom': new Element('div', {'class': 'col-xs-3'})
-							.insert({'bottom': new Element('a', {'href': '/serialnumbers.html?productid=' + row.id, 'target': '_BLANK', 'title': 'Serial Numbers.'}).update('SN') })
+							.insert({'bottom': tmp.isTitle === true ? '' : new Element('a', {'href': '/serialnumbers.html?productid=' + row.id, 'target': '_BLANK', 'title': 'Serial Numbers.'}).update('SN') })
 						})
-						.insert({'bottom': new Element('div', {'class': 'col-xs-6'})
-							.insert({'bottom': new Element('div', {'class': 'btn-group'})
-								.insert({'bottom': new Element('span', {'class': 'btn btn-primary btn-xs'})
+						.insert({'bottom': new Element('div', {'class': 'col-xs-4'})
+							.insert({'bottom': tmp.isTitle === true ? '' : new Element('div', {'class': 'btn-group'})
+								.insert({'bottom': new Element('a', {'class': 'btn btn-primary btn-xs', 'href': '/product/' + row.id + '.html', 'target': '_BLANK'})
 									.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-pencil'}) })
-									.observe('click', function(event){
-										Event.stop(event);
-										tmp.me._openProductDetails(row);
-									})
 								})
 								.insert({'bottom': (row.active === true ?
 									new Element('span', {'class': 'btn btn-danger btn-xs'})

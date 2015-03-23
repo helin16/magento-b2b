@@ -1,6 +1,6 @@
 <com:TContent ID="MainContent">
 <com:Application.controls.fancybox.FancyBox />
-<com:Application.controls.chosen.Chosen />
+<com:Application.controls.select2.select2 />
 <com:TCallback ID="priceMatchingBtn" OnCallback = 'Page.priceMatching' />
 <com:TCallback ID="toggleActiveBtn" OnCallback = 'Page.toggleActive' />
 <com:TCallback ID="updatePriceBtn" OnCallback = 'Page.updatePrice' />
@@ -18,19 +18,19 @@
 				<div class="panel-body search-panel" id="searchDiv">
 					<input type="hidden" search_field="pro.id" value="<%= $this->getRequestProductID() %>"/>
 					<div class="row">
-						<div class="col-md-2">
+						<div class="col-md-4">
 							<div class="form-group form-group-sm">
 	                           <label>SKU:</label>
 	                           <input type="text" search_field="pro.sku" placeholder="The SKU of the product" class="form-control input-sm">
 	                       </div>
 						</div>
-						<div class="col-md-2">
+						<div class="col-md-4">
 							<div class="form-group form-group-sm">
 	                           <label>Name:</label>
 	                           <input type="text" search_field="pro.name" placeholder="The name of the product" class="form-control input-sm">
 	                       </div>
 						</div>
-						<div class="col-md-1">
+						<div class="col-md-2">
                             <div class="form-group form-group-sm">
                                <label>Active:</label>
                                <select search_field="pro.active" class="form-control input-sm">
@@ -40,36 +40,28 @@
                                </select>
                            </div>
                         </div>
-						<div class="col-md-1">
+						<div class="col-md-2">
 							<div class="form-group form-group-sm">
-	                           <label>Status:</label>
-	                           <div class="form-control" style="padding: 0px; height: 100%;">
-                                    <select search_field="pro.productStatusIds" multiple class="chosen"></select>
-                                </div>
+	                           <label class="contorl-label">Status:</label>
+                               <select search_field="pro.productStatusIds" multiple class="chosen form-control input-sm"></select>
 	                       </div>
 						</div>
 						<div class="col-md-2">
 							<div class="form-group form-group-sm">
-				                <label>Manufacturers: </label>
-				                <div class="form-control" style="padding: 0px; height: 100%;">
-					                <select search_field="pro.manufacturerIds" multiple class="chosen"></select>
-				                </div>
+				                <label class="contorl-label">Manufacturers: </label>
+				                <select search_field="pro.manufacturerIds" multiple class="chosen form-control input-sm"></select>
 	                        </div>
                         </div>
                         <div class="col-md-2">
 	                        <div class="form-group form-group-sm">
-				                <label>Suppliers: </label>
-				                <div class="form-control" style="padding: 0px; height: 100%;">
-				                	<select search_field="pro.supplierIds" multiple class="chosen"></select>
-		                        </div>
+				                <label class="contorl-label">Suppliers: </label>
+			                	<select search_field="pro.supplierIds" multiple class="chosen form-control input-sm"></select>
 	                        </div>
 						</div>
-                        <div class="col-md-2">
+                        <div class="col-md-8">
 	                        <div class="form-group form-group-sm">
-				                <label>Categories: </label>
-				                <div class="form-control" style="padding: 0px; height: 100%;">
-				                	<select search_field="pro.productCategoryIds" multiple class="chosen"></select>
-		                        </div>
+				                <label class="contorl-label">Categories: </label>
+			                	<select search_field="pro.productCategoryIds" multiple class="chosen form-control input-sm"></select>
 	                        </div>
 						</div>
 					</div>
@@ -80,9 +72,6 @@
 			<div class="panel panel-default">
 				<div class="panel-heading">
 					Found <label id="total-found-count">0</label> Products:
-					<span class="pull-right btn btn-sm btn-success" onclick="pageJs._openProductDetails('new')">
-						<span class="fa fa-plus" />
-					</span>
 				</div>
 				<div class="table-responsive">
 	                <table class="table table-hover table-striped" id="item-list"></table>
