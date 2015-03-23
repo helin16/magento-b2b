@@ -269,6 +269,9 @@ class OrderController extends BPCPageAbstract
 				$product = Product::get(trim($item->product->id));
 				if(!$product instanceof Product)
 					throw new Exception('Invalid Product passed in!');
+				if(isset($item->active) && intval($item->active) === 1 && intval($product->getActive()) !== 1 && $type === Order::TYPE_INVOICE)
+					throw new Exception('Product(SKU:' . $product->getSku() . ') is DEACTIVATED, please change it to be proper product before converting it to a ' . $type . '!');
+
 				$unitPrice = trim($item->unitPrice);
 				$qtyOrdered = trim($item->qtyOrdered);
 				$totalPrice = trim($item->totalPrice);

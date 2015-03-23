@@ -109,16 +109,24 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 
 		tmp.data.items = [];
 		tmp.hasItems = false;
+		tmp.inactProductSkus = [];
 		$$('.order-item-row').each(function(item){
 			tmp.itemData = item.retrieve('data');
 			if(!item.hasClassName('deactivated'))
 				tmp.hasItems = true;
+			if(tmp.itemData.product && tmp.itemData.product.active && tmp.itemData.product.active !== true)
+				tmp.inactProductSkus.push(tmp.itemData.product.sku);
 			tmp.data.items.push({'id': (tmp.itemData.id ? tmp.itemData.id : ''), 'active': !item.hasClassName('deactivated'), 'product': {'id': tmp.itemData.product.id}, 'itemDescription': tmp.itemData.itemDescription,'unitPrice': tmp.itemData.unitPrice, 'qtyOrdered': tmp.itemData.qtyOrdered, 'totalPrice': tmp.itemData.totalPrice, 'serials': item.retrieve('serials') });
 		});
 		if(tmp.hasItems === false) {
 			tmp.me.showModalBox('<strong class="text-danger">Error</strong>', 'At least one order item is needed!', true);
 			return tmp.me;
 		}
+		if(tmp.data.type === 'INVOICE' && tmp.inactProductSkus.size() > 0) {
+			tmp.me.showModalBox('<strong class="text-danger">Error</strong>', 'Products (SKUs:' + tmp.inactProductSkus.join(', ') + ') are DEACTIVATED, please change them to the proper product firste before convert this to an INVOICE');
+			return tmp.me;
+		}
+
 		tmp.data.items.each(function(item){
 			item.totalPrice = tmp.me.getValueFromCurrency(item.totalPrice);
 			item.unitPrice = tmp.me.getValueFromCurrency(item.unitPrice);
