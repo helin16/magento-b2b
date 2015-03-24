@@ -518,9 +518,9 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			tmp.row.down('.productName')
 				.removeClassName('col-xs-6')
 				.addClassName('col-xs-4')
-				.insert({'before': new Element(tmp.tag, {'class': 'productSku col-xs-2'}).update(orderItem.product.sku)
-					.insert({'bottom': new Element('small', {'class': orderItem.product.id ? 'btn btn-xs btn-info' : 'hidden'})
-						.insert({'bottom': new Element('small', {'class': 'glyphicon glyphicon-new-window'} )})
+				.insert({'before': new Element(tmp.tag, {'class': 'productSku col-xs-2'})
+					.insert({'bottom': new Element('a', {'href': 'javascript: void(0);', 'class': orderItem.product.id ? '' : 'hidden'})
+						.update(orderItem.product.sku)
 						.observe('click', function(event){
 							Event.stop(event);
 							$productId = orderItem.product.id;
@@ -571,10 +571,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					})
 				})
 				.insert({'bottom': new Element('div', {'class': 'col-xs-10'})
-					.insert({'bottom': new Element('strong').update(!product.shortDescription.blank() ? product.shortDescription : product.name)
-						.insert({'bottom': new Element('small', {'class': 'btn btn-xs btn-info'})
-							.insert({'bottom': new Element('small', {'class': 'glyphicon glyphicon-new-window'} )})
-						})
+					.insert({'bottom': new Element('a', {'href': 'javascript: void(0);'}).update(!product.shortDescription.blank() ? product.shortDescription : product.name)
 						.observe('click', function(event){
 							Event.stop(event);
 							$productId = $(this).up('.search-product-result-row').retrieve('data').id;
@@ -588,21 +585,35 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					})
 					.insert({'bottom': new Element('div')
 						.insert({'bottom': new Element('small', {'class': 'col-xs-4'})
-							.insert({'bottom': new Element('div', {'class': 'input-group', 'title': 'stock on HAND'})
+							.insert({'bottom': new Element('div', {'class': 'input-group input-group-sm', 'title': 'stock on HAND'})
 								.insert({'bottom': new Element('span', {'class': 'input-group-addon'}).update('SOH:') })
 								.insert({'bottom': new Element('strong', {'class': 'form-control'}).update(product.stockOnHand) })
 							})
 						})
 						.insert({'bottom': new Element('small', {'class': 'col-xs-4'})
-							.insert({'bottom': new Element('div', {'class': 'input-group', 'title': 'stock on ORDER'})
+							.insert({'bottom': new Element('div', {'class': 'input-group input-group-sm', 'title': 'stock on ORDER'})
 								.insert({'bottom': new Element('span', {'class': 'input-group-addon'}).update('SOO:') })
 								.insert({'bottom': new Element('strong', {'class': 'form-control'}).update(product.stockOnOrder) })
 							})
 						})
 						.insert({'bottom': new Element('small', {'class': 'col-xs-4'})
-							.insert({'bottom': new Element('div', {'class': 'input-group', 'title': 'stock on PO'})
+							.insert({'bottom': new Element('div', {'class': 'input-group input-group-sm', 'title': 'stock on PO'})
 								.insert({'bottom': new Element('span', {'class': 'input-group-addon'}).update('SOP:') })
 								.insert({'bottom': new Element('strong', {'class': 'form-control'}).update(product.stockOnPO) })
+							})
+						})
+					})
+					.insert({'bottom': new Element('div')
+						.insert({'bottom': new Element('div', {'class': 'col-xs-6'})
+							.insert({'bottom': new Element('span').update('Last UnitPrice from this customer:') })
+							.insert({'bottom': (!product.lastOrderItemFromCustomer || !product.lastOrderItemFromCustomer.order || !product.lastOrderItemFromCustomer.order.id) ? 'NA' :
+								new Element('a', {'href': 'javascript: void(0);', 'title': 'Last purchased unit price for this customer:' + product.lastOrderItemFromCustomer.order.orderNo})
+									.update(tmp.me.getCurrency(product.lastOrderItemFromCustomer.unitPrice))
+									.observe('click', function(event){
+										Event.stop(event);
+										tmp.win = window.open('/orderdetails/' + product.lastOrderItemFromCustomer.order.id + '.html', '_blank');
+										tmp.win.focus();
+									})
 							})
 						})
 					})
@@ -612,18 +623,18 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				tmp.inputRow = $(searchTxtBox).up('.new-order-item-input').store('product', product);
 				searchTxtBox.up('.productName')
 					.writeAttribute('colspan', false)
-					.update(product.sku)
+					.update(
+						new Element('a', {'href': 'javascript: void(0);'})
+							.update(product.sku)
+							.observe('click', function(event){
+								Event.stop(event);
+								$productId = product.id;
+								if($productId)
+									tmp.me._openProductDetailPage($productId);
+							})
+					)
 					.removeClassName('col-xs-8')
 					.addClassName('col-xs-2')
-					.insert({'bottom': new Element('small', {'class': 'btn btn-xs btn-info'})
-						.insert({'bottom': new Element('small', {'class': 'glyphicon glyphicon-new-window'} )})
-						.observe('click', function(event){
-							Event.stop(event);
-							$productId = product.id;
-							if($productId)
-								tmp.me._openProductDetailPage($productId);
-						})
-					})
 					.insert({'bottom': new Element('a', {'href': 'javascript: void(0);', 'class': 'text-danger pull-right', 'title': 'click to change the product'})
 						.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-remove'})  })
 						.observe('click', function() {
@@ -658,7 +669,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.me._signRandID(tmp.searchTxtBox);
 		tmp.searchTxt = $F(tmp.searchTxtBox);
 
-		tmp.me.postAjax(tmp.me.getCallbackId('searchProduct'), {'searchTxt': tmp.searchTxt, 'pageNo': tmp.pageNo}, {
+		tmp.me.postAjax(tmp.me.getCallbackId('searchProduct'), {'searchTxt': tmp.searchTxt, 'pageNo': tmp.pageNo, 'customerId': tmp.me._customer ? tmp.me._customer.id : ''}, {
 			'onLoading': function() {
 				jQuery('#' + tmp.btn.id).button('loading');
 				jQuery('#' + tmp.searchTxtBox.id).button('loading');
@@ -1339,7 +1350,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 	,_openProductDetailPage: function(id) {
 		var tmp = {};
 		tmp.me = this;
-		tmp.newWindow = window.open('/product/' + id + '.html', 'Product Details', 'width=1300, location=no, scrollbars=yes, menubar=no, status=no, titlebar=no, fullscreen=no, toolbar=no');
+		tmp.newWindow = window.open('/product/' + id + '.html', '_BLANK');
 		tmp.newWindow.focus();
 		return tmp.me;
 	}

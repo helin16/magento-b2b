@@ -125,6 +125,7 @@ class OrderController extends BPCPageAbstract
 		{
 			$items = array();
 			$searchTxt = isset($param->CallbackParameter->searchTxt) ? trim($param->CallbackParameter->searchTxt) : '';
+			$customer = isset($param->CallbackParameter->customerId) ? Customer::get(trim($param->CallbackParameter->customerId)) : null;
 			$where = 'pro_pro_code.code = :searchExact or pro.name like :searchTxt OR sku like :searchTxt';
 			$params = array('searchExact' => $searchTxt, 'searchTxt' => '%' . $searchTxt . '%');
 			$pageNo = isset($param->CallbackParameter->pageNo) ? trim($param->CallbackParameter->pageNo) : '1';
@@ -145,7 +146,14 @@ class OrderController extends BPCPageAbstract
 			$products = Product::getAllByCriteria($where, $params, true, $pageNo, DaoQuery::DEFAUTL_PAGE_SIZE, array('pro.sku' => 'asc'), $stats);
 			foreach($products as $product)
 			{
-				$items[] = $product->getJson();
+				$jsonArray = $product->getJson();
+				$jsonArray['lastOrderItemFromCustomer'] = array();
+				if($customer instanceof Customer) {
+					$query = OrderItem::getQuery()->eagerLoad('OrderItem.order', 'inner join', 'ord', 'ord_item.orderId = ord.id and ord_item.active = 1 and ord.customerId = :custId and ord.type = :ordType');
+					$orderItems = OrderItem::getAllByCriteria('productId = :prodId', array('custId' => $customer->getId(), 'prodId' => $product->getId(), 'ordType' => Order::TYPE_INVOICE), true, 1, 1);
+					$jsonArray['lastOrderItemFromCustomer'] = count($orderItems) > 0 ? $orderItems[0]->getJson() : array();
+				}
+				$items[] = $jsonArray;
 			}
 			$results['items'] = $items;
 			$results['pagination'] = $stats;
