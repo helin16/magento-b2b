@@ -223,6 +223,23 @@ PaymentListPanelJs.prototype = {
 		return tmp.me;
 	}
 	/**
+	 * bind Change EVENT to current box for currency formating
+	 */
+	,_currencyInputChanged: function(inputBox) {
+		var tmp = {};
+		tmp.me = this;
+		if($F(inputBox).blank()) {
+			return false;
+		}
+		tmp.inputValue = tmp.me._pageJs.getValueFromCurrency($F(inputBox));
+		if(tmp.inputValue.match(/^(-)?\d+(\.\d{1,4})?$/) === null) {
+			tmp.me._pageJs._markFormGroupError(inputBox, 'Invalid currency format provided!');
+			return false;
+		}
+		$(inputBox).value = tmp.me._pageJs.getCurrency(tmp.inputValue);
+		return true;
+	}
+	/**
 	 * Clearing the new payment row
 	 */
 	,_clearCreatePaymentRow: function(selBox, paidMountBox) {
@@ -231,7 +248,7 @@ PaymentListPanelJs.prototype = {
 		tmp.paymentDiv = selBox.up('.new-payment-div');
 		tmp.paymentDiv.getElementsBySelector('.after_select_method').each(function(item) { item.remove(); });
 
-		if($F(paidMountBox).blank() || tmp.me._pageJs._currencyInputChanged(paidMountBox) !== true) {
+		if($F(paidMountBox).blank() || tmp.me._currencyInputChanged(paidMountBox) !== true) {
 			$(paidMountBox).select();
 			return;
 		}
@@ -339,7 +356,7 @@ PaymentListPanelJs.prototype = {
 				,'onSuccess': function (sender, param) {
 					try {
 						tmp.result = tmp.me._pageJs.getResp(param, false, true);
-						if(!tmp.result || !tmp.result.items || tmp.result.items.size() === 0)
+						if(!tmp.result || !tmp.result.items)
 							return;
 						tmp.panelBody = $(tmp.me._panelHTMLID).down('.panel-body');
 						if(tmp.panelBody)
