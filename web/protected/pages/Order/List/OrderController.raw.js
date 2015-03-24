@@ -401,7 +401,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			 allowClear: true,
 			 ajax: {
 				 delay: 250
-				 ,url: '/ajax/getCustomer'
+				 ,url: '/ajax/getCustomers'
 		         ,type: 'POST'
 	        	 ,data: function (params) {
 	        		 return {"searchTxt": params};
