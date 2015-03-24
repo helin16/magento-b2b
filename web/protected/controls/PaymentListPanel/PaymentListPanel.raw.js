@@ -174,6 +174,15 @@ PaymentListPanelJs.prototype = {
 		return new Element('div', {'class': 'form-group'}).insert({'bottom': label }).insert({'bottom': control });
 	}
 	/**
+	 * Clear New Payment Row
+	 */
+	,clearNewPaymentRow: function() {
+		var tmp = {};
+		tmp.me = this;
+		$(tmp.me._panelHTMLID).down('.new-payment-row').replace(tmp.me._getCreatePaymentRow());
+		return tmp.me;
+	}
+	/**
 	 * Ajax: check and submit payment
 	 */
 	,_submitPayment: function(btn) {
@@ -210,6 +219,7 @@ PaymentListPanelJs.prototype = {
 							return;
 						tmp.newPaymentDiv.insert({'top': tmp.me._pageJs.getAlertBox('Success: ', 'Payment saved successfully!').addClassName('alert-success').addClassName('msg') });
 						$(tmp.me._panelHTMLID).down('.payment-list').insert({'top': tmp.me._getPaymentRow(tmp.result.item) });
+						tmp.me.clearNewPaymentRow();
 						if(typeof(tmp.me._afterAddFunc) === 'function')
 							tmp.me._afterAddFunc(tmp.result.item);
 					}
@@ -288,12 +298,12 @@ PaymentListPanelJs.prototype = {
 	/**
 	 * gettinng the create payment row
 	 */
-	,_getCreatePaymentRow: function(paymentMethods) {
+	,_getCreatePaymentRow: function() {
 		var tmp = {};
 		tmp.me = this;
 		if(tmp.me._canEdit !== true)
 			return '';
-		tmp.newDiv = new Element('tr')
+		tmp.newDiv = new Element('tr', {'class': 'new-payment-row'})
 			.insert({'bottom': new Element('td', {'colspan': 4})
 			.insert({'bottom': new Element('div', {'class': 'new-payment-div'})
 				.insert({'bottom': new Element('div', {'class': 'col-sm-3'}).update(tmp.me._getFormGroup(
@@ -318,7 +328,7 @@ PaymentListPanelJs.prototype = {
 			})
 		});
 
-		paymentMethods.each(function(item) {
+		tmp.me.paymentMethods.each(function(item) {
 			tmp.paymentMethodSelBox.insert({'bottom': new Element('option', {'value': item.id}).update(item.name) });
 		});
 		return tmp.newDiv;
@@ -371,7 +381,8 @@ PaymentListPanelJs.prototype = {
 								.insert({'bottom': tmp.listPanel = new Element('tbody', {'class': 'payment-list'}) })
 							});
 						if(tmp.pageNo === 1 && tmp.result.paymentMethods) {
-							tmp.thead.insert({'top': tmp.newRow = tmp.me._getCreatePaymentRow(tmp.result.paymentMethods) });
+							tmp.me.paymentMethods = tmp.result.paymentMethods;
+							tmp.thead.insert({'top': tmp.newRow = tmp.me._getCreatePaymentRow() });
 							tmp.paymentDateBox = tmp.newRow.down('[payment_field="paymentDate"]');
 							if(tmp.paymentDateBox) {
 								tmp.me._pageJs._signRandID(tmp.paymentDateBox);
