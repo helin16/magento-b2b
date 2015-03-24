@@ -986,6 +986,12 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 						.insert({'bottom': tmp.me._getInfoPanel() })    	//getting the order info row
 					})
 				})
+				.insert({'bottom': new Element('div', {'class': 'row'})
+					.insert({'bottom': new Element('div', {'class': 'col-sm-12 memo-panel'})
+						.store('lastMemoJs', (tmp.lastMemoJs = new LastMemoPanelJs(tmp.me, 'Order', tmp.me._order && tmp.me._order.id ? tmp.me._order.id : '', true)))
+						.update(tmp.lastMemoJs ? tmp.lastMemoJs._getPanel() : '')
+					})
+				})
 				.insert({'bottom': tmp.me._getPartsTable() })   	//getting the parts row
 				.insert({'bottom': new Element('div', {'class': 'row'})
 					.insert({'bottom': new Element('div', {'class': 'col-md-8'}).update( tmp.me._getShippmentRow() ) })   //getting the EDITABLE shippment row
@@ -994,6 +1000,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				.insert({'bottom': new Element('div', {'class': 'comments-list-div'}) }) //getting the comments row
 		);
 		$(tmp.me._resultDivId).store('CommentsDivJs', new CommentsDivJs(tmp.me, 'Order', tmp.me._order.id)._setDisplayDivId($(tmp.me._resultDivId).down('.comments-list-div')).render() );
+		$(tmp.me._resultDivId).down('.memo-panel').retrieve('lastMemoJs').load();
 		if(tmp.paymentsPanel.down('.panel-heading'))
 			tmp.paymentsPanel.down('.panel-heading').insert({'bottom': new Element('a', {'class': 'btn btn-danger btn-xs pull-right', 'href': '/creditnote/new.html?blanklayout=1&orderid=' + tmp.me._order.id}).update('Create CreditNote')})
 		tmp.me.paymentListPanelJs
