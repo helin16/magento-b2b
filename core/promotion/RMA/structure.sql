@@ -102,3 +102,5 @@ ALTER TABLE `payment` ADD `creditNoteId` int(10) unsigned NULL DEFAULT NULL AFTE
 
 ALTER TABLE `payment` ADD `paymentDate` DATETIME NOT NULL DEFAULT '0001-01-01 00:00:00' AFTER `type`, ADD INDEX (`paymentDate`) ;
 update payment set paymentDate = created;
+
+ALTER TABLE `receivingitem` CHANGE `serialNo` `serialNo` VARCHAR(100) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL DEFAULT '', CHANGE `invoiceNo` `invoiceNo` VARCHAR(20) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL DEFAULT '';

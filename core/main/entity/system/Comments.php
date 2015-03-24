@@ -14,39 +14,40 @@ class Comments extends BaseEntityAbstract
 	const TYPE_ACCOUNTING = 'ACCOUNTING';
 	const TYPE_CUSTOMER = 'CUSTOMER';
 	const TYPE_SALES = 'SALES';
+	const TYPE_MEMO = 'MEMO';
 	/**
 	 * The id of the entity
-	 * 
+	 *
 	 * @var int
 	 */
 	private $entityId;
 	/**
 	 * The name of the entity
-	 * 
+	 *
 	 * @var string
 	 */
 	private $entityName;
 	/**
 	 * The comments
-	 * 
+	 *
 	 * @var string
 	 */
 	private $comments;
 	/**
 	 * The type of the comments
-	 * 
+	 *
 	 * @var string
 	 */
 	private $type;
 	/**
 	 * The groupId of a couple of comments
-	 * 
+	 *
 	 * @var string
 	 */
 	private $groupId;
 	/**
 	 * The cached groupid
-	 * 
+	 *
 	 * @var string
 	 */
 	private static $_groupId;
@@ -86,7 +87,7 @@ class Comments extends BaseEntityAbstract
 	 *
 	 * @return int
 	 */
-	public function getEntityId() 
+	public function getEntityId()
 	{
 	    return $this->entityId;
 	}
@@ -97,7 +98,7 @@ class Comments extends BaseEntityAbstract
 	 *
 	 * @return Comments
 	 */
-	public function setEntityId($value) 
+	public function setEntityId($value)
 	{
 	    $this->entityId = $value;
 	    return $this;
@@ -107,7 +108,7 @@ class Comments extends BaseEntityAbstract
 	 *
 	 * @return string
 	 */
-	public function getEntityName() 
+	public function getEntityName()
 	{
 	    return $this->entityName;
 	}
@@ -118,7 +119,7 @@ class Comments extends BaseEntityAbstract
 	 *
 	 * @return Comments
 	 */
-	public function setEntityName($value) 
+	public function setEntityName($value)
 	{
 	    $this->entityName = $value;
 	    return $this;
@@ -128,7 +129,7 @@ class Comments extends BaseEntityAbstract
 	 *
 	 * @return string
 	 */
-	public function getComments() 
+	public function getComments()
 	{
 	    return $this->comments;
 	}
@@ -139,7 +140,7 @@ class Comments extends BaseEntityAbstract
 	 *
 	 * @return Comments
 	 */
-	public function setComments($value) 
+	public function setComments($value)
 	{
 	    $this->comments = $value;
 	    return $this;
@@ -149,7 +150,7 @@ class Comments extends BaseEntityAbstract
 	 *
 	 * @return string
 	 */
-	public function getGroupId() 
+	public function getGroupId()
 	{
 	    return $this->groupId;
 	}
@@ -160,7 +161,7 @@ class Comments extends BaseEntityAbstract
 	 *
 	 * @return Comments
 	 */
-	public function setGroupId($value) 
+	public function setGroupId($value)
 	{
 	    $this->groupId = $value;
 	    return $this;
@@ -168,9 +169,9 @@ class Comments extends BaseEntityAbstract
 	/**
 	 * Getter for type
 	 *
-	 * @return 
+	 * @return
 	 */
-	public function getType() 
+	public function getType()
 	{
 	    return $this->type;
 	}
@@ -181,7 +182,7 @@ class Comments extends BaseEntityAbstract
 	 *
 	 * @return Comments
 	 */
-	public function setType($value) 
+	public function setType($value)
 	{
 	    $this->type = $value;
 	    return $this;
@@ -207,20 +208,20 @@ class Comments extends BaseEntityAbstract
 	public function __loadDaoMap()
 	{
 		DaoMap::begin($this, 'comm');
-	
+
 		DaoMap::setIntType('entityId');
 		DaoMap::setStringType('entityName','varchar', 100);
 		DaoMap::setStringType('comments','varchar', 255);
 		DaoMap::setStringType('groupId','varchar', 100);
 		DaoMap::setStringType('type','varchar', 50);
-	
+
 		parent::__loadDaoMap();
-	
+
 		DaoMap::createIndex('entityId');
 		DaoMap::createIndex('entityName');
 		DaoMap::createIndex('groupId');
 		DaoMap::createIndex('type');
-	
+
 		DaoMap::commit();
 	}
 }
