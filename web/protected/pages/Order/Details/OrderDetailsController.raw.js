@@ -989,11 +989,13 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				.insert({'bottom': tmp.me._getPartsTable() })   	//getting the parts row
 				.insert({'bottom': new Element('div', {'class': 'row'})
 					.insert({'bottom': new Element('div', {'class': 'col-md-8'}).update( tmp.me._getShippmentRow() ) })   //getting the EDITABLE shippment row
-					.insert({'bottom': new Element('div', {'class': 'col-md-4'}).update( tmp.me.paymentListPanelJs.getPaymentListPanel() ) })   //getting the payment row
+					.insert({'bottom': new Element('div', {'class': 'col-md-4'}).update( tmp.paymentsPanel = tmp.me.paymentListPanelJs.getPaymentListPanel() ) })   //getting the payment row
 				})
 				.insert({'bottom': new Element('div', {'class': 'comments-list-div'}) }) //getting the comments row
 		);
 		$(tmp.me._resultDivId).store('CommentsDivJs', new CommentsDivJs(tmp.me, 'Order', tmp.me._order.id)._setDisplayDivId($(tmp.me._resultDivId).down('.comments-list-div')).render() );
+		if(tmp.paymentsPanel.down('.panel-heading'))
+			tmp.paymentsPanel.down('.panel-heading').insert({'bottom': new Element('a', {'class': 'btn btn-danger btn-xs pull-right', 'href': '/creditnote/new.html?blanklayout=1&orderid=' + tmp.me._order.id}).update('Create CreditNote')})
 		tmp.me.paymentListPanelJs
 			.setAfterAddFunc(function() { window.location = document.URL; })
 			.setAfterDeleteFunc(function() { window.location = document.URL; })
