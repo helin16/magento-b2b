@@ -314,6 +314,9 @@ class OrderController extends BPCPageAbstract
 			$order->setTotalAmount($totalPaymentDue)
 				->save();
 
+			if(isset($param->CallbackParameter->newMemo) && ($newMemo = trim($param->CallbackParameter->newMemo)) !== '')
+				$order->addComment($newMemo, Comments::TYPE_MEMO);
+
 			$results['item'] = $order->getJson();
 			if($printItAfterSave === true)
 				$results['printURL'] = '/print/order/' . $order->getId() . '.html?pdf=1';
