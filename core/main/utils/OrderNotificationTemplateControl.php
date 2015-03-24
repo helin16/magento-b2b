@@ -8,17 +8,17 @@ abstract class OrderNotificationTemplateControl
 			return "";
 		return self::$method_name($order);
 	}
-	
+
 	private static function _eta(Order $order)
 	{
 		return self::_orderItems($order);
 	}
-	
+
 	private static function _stock_checked(Order $order)
 	{
 		return self::_orderItems($order);
 	}
-	
+
 	private static function _paid(Order $order)
 	{
 		$msg = '<div>Thank you for your order!</div>';
@@ -30,7 +30,7 @@ abstract class OrderNotificationTemplateControl
 		$msg = '<div style="margin: 10px 0 10px 0;">Your order(#:' . $order->getOrderNo() . ') is now completed and <b style="color: green">ready for PICKUP.</b></div>';
 		return $msg;
 	}
-	
+
 	private static function _shipped(Order $order)
 	{
 		$msg = '<div>Thank you for your order, your following order is now completed and shipped.</div>';
@@ -66,10 +66,14 @@ abstract class OrderNotificationTemplateControl
 		$msg .= '</div>';
 		return $msg;
 	}
-	
+
 	private static function _picked(Order $order)
 	{
-		$msg = '';
+		$msg = 'Thank you for your support!<br />';
+		$msg .= 'Your following order is now picked, it will be shipped out soon with the next available courier. ';
+		$msg .= 'Or if your order is for Instore Pickup, it is now <b style="color: green">ready for pickup</b>. <br />';
+		$msg .= 'Our trading hours, Mon to Fri: 9:30AM to 6:00PM, Sat: 10:00AM to 3:00PM, Sun: Closed.';
+		return $msg;
 	}
 	private static function _orderItems(Order $order)
 	{

@@ -76,7 +76,6 @@ class OrderDetailsController extends BPCPageAbstract
 		$results = $errors = array();
 		try
 		{
-			var_dump($params->CallbackParameter);
 			Dao::beginTransaction();
 			if(!isset($params->CallbackParameter->order) || !($order = Order::getByOrderNo($params->CallbackParameter->order->orderNo)) instanceof Order)
 				throw new Exception('System Error: invalid order passed in!');
@@ -181,7 +180,7 @@ class OrderDetailsController extends BPCPageAbstract
 						SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_WSDL),
 						SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_USER),
 						SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_KEY)
-						)->changeOrderStatus($order, $order->getStatus()->getMageStatus(), $notificationMsg, false);
+						)->changeOrderStatus($order, $order->getStatus()->getMageStatus(), $notificationMsg, true);
 // 					$emailTitle = 'Your Order ' . $order->getOrderNo() . ' has been updated';
 // 					// $order->getCustomer()->getEmail()
 // 					EmailSender::addEmail('', 'frank@budgetpc.com.au', $emailTitle, $this->_getNotifictionEmail($order, $emailBody, $emailTitle));
@@ -279,7 +278,6 @@ class OrderDetailsController extends BPCPageAbstract
 
 			$contactName = $shippingInfo->contactName;
 			$contactNo = $shippingInfo->contactNo;
-// 			if(($street = trim($shippingInfo->street)) !== '')
 			$shippingAddress = Address::create(
 					trim($shippingInfo->street),
 					trim($shippingInfo->city),
@@ -310,7 +308,6 @@ class OrderDetailsController extends BPCPageAbstract
 			//add shipment information
 			if($notifyCust === true && $order->getIsFromB2B() === true)
 			{
-				$templateName = (trim($shipment->getCourier()->getId()) === trim(Courier::ID_LOCAL_PICKUP) ? 'local_pickup' : $order->getStatus()->getName());
 				$notificationMsg = trim(OrderNotificationTemplateControl::getMessage($templateName, $order));
 				if($notificationMsg !== '')
 				{
@@ -320,14 +317,15 @@ class OrderDetailsController extends BPCPageAbstract
 						SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_KEY)
 						)
 						->shipOrder($order, $shipment, array(), $notificationMsg, false, false);
-
 					//push the status of the order to SHIPPed
+					$emailToCustomer = (trim($shipment->getCourier()->getId()) !== trim(Courier::ID_LOCAL_PICKUP));
 					B2BConnector::getConnector(B2BConnector::CONNECTOR_TYPE_ORDER,
 						SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_WSDL),
 						SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_USER),
 						SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_KEY)
-						)->changeOrderStatus($order, $order->getStatus()->getMageStatus(), $notificationMsg, true);
-					$order->addComment('An email notification contains shippment information has been sent to customer for: ' . $order->getStatus()->getName(), Comments::TYPE_SYSTEM);
+						)->changeOrderStatus($order, $order->getStatus()->getMageStatus(), $notificationMsg, $emailToCustomer);
+					if($emailToCustomer === true)
+						$order->addComment('An email notification contains shippment information has been sent to customer for: ' . $order->getStatus()->getName(), Comments::TYPE_SYSTEM);
 				}
 			}
 			Dao::commitTransaction();

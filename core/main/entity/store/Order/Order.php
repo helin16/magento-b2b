@@ -629,7 +629,7 @@ class Order extends InfoEntityAbstract
 			->setInvNo('BPCINV' .str_pad($this->getId(), 8, '0', STR_PAD_LEFT))
 			->setInvDate(new UDate())
 			->save()
-			->addComment('Changed this order to be an INVOCE with invoice no: ' . $this->getInvNo(), Comments::TYPE_SYSTEM, 'Auto Log', __CLASS__ . '::' . __FUNCTION__)
+			->addComment('Changed this order to be an INVOCE with invoice no: ' . $this->getInvNo(), Comments::TYPE_SYSTEM, 'Auto Log')
 			->addLog('Changed this order to be an INVOCE with invoice no: ' . $this->getInvNo(), Log::TYPE_SYSTEM, 'Auto Log', __CLASS__ . '::' . __FUNCTION__);
 	}
 	/**
