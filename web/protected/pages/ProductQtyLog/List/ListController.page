@@ -1,5 +1,6 @@
 <com:TContent ID="MainContent">
-<com:TDatePicker Style="display:none;"/>
+	<com:TDatePicker Style="display:none;"/>
+	<com:Application.controls.bootstrapDateTimePicker.bootstrapDateTimePicker />
 	<div class="pagewrapper item-list-wrapper">
 		<div class="panel panel-default" id="searchPanel">
 			<div class="panel-heading">

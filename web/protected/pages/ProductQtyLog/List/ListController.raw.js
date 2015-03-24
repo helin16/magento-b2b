@@ -22,8 +22,11 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 			$('searchDiv').down('[search_field="pql.createdDate_from"]').value = tmp.from.replace(/["']/g, "");
 		if(tmp.to !== false)
 			$('searchDiv').down('[search_field="pql.createdDate_to"]').value = tmp.to.replace(/["']/g, "");
-		if(tmp.productId !== false)
+		if(tmp.productId !== false) {
 			$('searchDiv').down('[search_field="pql.product"]').value = tmp.productId.replace(/["']/g, "");
+			if($$('#showSearch').first().checked)
+				$$('#showSearch').first().click();
+		}
 		if(tmp.from || tmp.to || tmp.productId)
 			$('searchPanel').down('#searchBtn').click();
 		return tmp.me;
@@ -36,10 +39,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		tmp.me = this;
 		$$('#searchBtn').first()
 			.observe('click', function(event) {
-				if(!$$('#showSearch').first().checked)
-					$$('#showSearch').first().click();
-				else
-					tmp.me.getSearchCriteria().getResults(true, tmp.me._pagination.pageSize);
+				tmp.me.getSearchCriteria().getResults(true, tmp.me._pagination.pageSize);
 			});
 		$('searchDiv').getElementsBySelector('[search_field]').each(function(item) {
 			item.observe('keydown', function(event) {
@@ -117,27 +117,41 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		tmp.me = this;
 		tmp.tag = (!row.id ? 'th' : 'td');
 		tmp.isTitle = (isTitle || false);
+		console.debug(row);
+		tmp.link = '';
+		if(row.order && row.order.id) {
+			tmp.link = new Element('a', {'href': '/orderdetails/' + row.order.id + '.html', 'target': '_BLANK'}).update(row.order.orderNo);
+		} else if (row.purchaseOrder && row.purchaseOrder.id) {
+			tmp.link = new Element('a', {'href': '/purchase/' + row.purchaseOrder.id + '.html', 'target': '_BLANK'}).update(row.purchaseOrder.purchaseOrderNo);
+		}
 		tmp.row = new Element('tr', {'class': (tmp.isTitle === true ? '' : 'btn-hide-row')})
 			.store('data', row)
 			.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-1'}).update(tmp.isTitle === true ? row.created :
-				new Element('div')
-					.insert({'bottom': new Element('div')
+				new Element('div', {'class': 'row'})
+					.insert({'bottom': new Element('div', {'class': 'col-xs-3'})
 						.insert({'bottom': new Element('abbr', {'title': tmp.me.getTypeName(row.type) }).update(row.type) })
 					})
-					.insert({'bottom': new Element('div')
-						.insert({'bottom': new Element('small').update(tmp.me.loadUTCTime(row.created).toLocaleString()) })
+					.insert({'bottom': new Element('div', {'class': 'col-xs-9'})
+						.insert({'bottom': new Element('small').update(moment(tmp.me.loadUTCTime(row.created)).format('DD/MMM/YY h:mm a')) })
 					})
 			) })
-			.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-1'}).update(tmp.isTitle === true ? 'Product' : new Element('a', {'href': '/product/' + row.product.id + '.html'}).update(row.product.name)) })
-			.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-1'}).update(tmp.isTitle ? row.stockOnPO : row.stockOnPO + '(' + tmp.me.getNumber(row.stockOnPOVar) + ')') })
-			.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-1'}).update(tmp.isTitle ? row.stockOnHand : row.stockOnHand + '(' + tmp.me.getNumber(row.stockOnHandVar) + ')') })
-			.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-1'}).update(tmp.isTitle ? row.totalOnHandValue : tmp.me.getCurrency(row.totalOnHandValue) + '(' + tmp.me.getNumber(tmp.me.getCurrency(row.totalOnHandValueVar)) + ')') })
-			.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-1'}).update(tmp.isTitle ? row.stockOnOrder : row.stockOnOrder + '(' + tmp.me.getNumber(row.stockOnOrderVar) + ')') })
-			.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-1'}).update(tmp.isTitle ? row.stockInParts : row.stockInParts + '(' + tmp.me.getNumber(row.stockInPartsVar) + ')') })
-			.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-1'}).update(tmp.isTitle ? row.totalInPartsValue : tmp.me.getCurrency(row.totalInPartsValue) + '(' + tmp.me.getNumber(tmp.me.getCurrency(row.totalInPartsValueVar)) + ')') })
-			.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-1'}).update(tmp.isTitle ? row.stockInRMA : row.stockInRMA + '(' + tmp.me.getNumber(row.stockInRMAVar) + ')') })
-			.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-1'}).update(tmp.isTitle ? row.totalRMAValue : tmp.me.getCurrency(row.totalRMAValue) + '(' + tmp.me.getNumber(tmp.me.getCurrency(row.totalRMAValueVar)) + ')') })
-			.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-2'}).update(row.comments) })
+			.insert({'bottom': new Element(tmp.tag).update(tmp.isTitle === true ? 'Product' : new Element('a', {'href': '/product/' + row.product.id + '.html', 'target': '_BLANK'}).update(row.product.name)) })
+			.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-6'})
+				.insert({'bottom': new Element('div', {'class': 'row'})
+					.insert({'bottom': new Element('div', {'class': 'col-xs-1'}).update(tmp.isTitle ? row.stockOnPO : row.stockOnPO + '(' + tmp.me.getNumber(row.stockOnPOVar) + ')') })
+					.insert({'bottom': new Element('div', {'class': 'col-xs-1'}).update(tmp.isTitle ? row.stockOnHand : row.stockOnHand + '(' + tmp.me.getNumber(row.stockOnHandVar) + ')') })
+					.insert({'bottom': new Element('div', {'class': 'col-xs-3'}).update(tmp.isTitle ? row.totalOnHandValue : tmp.me.getCurrency(row.totalOnHandValue) + '(' + tmp.me.getNumber(tmp.me.getCurrency(row.totalOnHandValueVar)) + ')') })
+					.insert({'bottom': new Element('div', {'class': 'col-xs-1'}).update(tmp.isTitle ? row.stockOnOrder : row.stockOnOrder + '(' + tmp.me.getNumber(row.stockOnOrderVar) + ')') })
+					.insert({'bottom': new Element('div', {'class': 'col-xs-1'}).update(tmp.isTitle ? row.stockInParts : row.stockInParts + '(' + tmp.me.getNumber(row.stockInPartsVar) + ')') })
+					.insert({'bottom': new Element('div', {'class': 'col-xs-2'}).update(tmp.isTitle ? row.totalInPartsValue : tmp.me.getCurrency(row.totalInPartsValue) + '(' + tmp.me.getNumber(tmp.me.getCurrency(row.totalInPartsValueVar)) + ')') })
+					.insert({'bottom': new Element('div', {'class': 'col-xs-1'}).update(tmp.isTitle ? row.stockInRMA : row.stockInRMA + '(' + tmp.me.getNumber(row.stockInRMAVar) + ')') })
+					.insert({'bottom': new Element('div', {'class': 'col-xs-2'}).update(tmp.isTitle ? row.totalRMAValue : tmp.me.getCurrency(row.totalRMAValue) + '(' + tmp.me.getNumber(tmp.me.getCurrency(row.totalRMAValueVar)) + ')') })
+				})
+			})
+			.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-2'})
+				.update(row.comments + ' ')
+				.insert({'bottom': tmp.link })
+			})
 		;
 		return tmp.row;
 	}

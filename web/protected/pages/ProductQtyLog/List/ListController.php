@@ -63,7 +63,6 @@ class ListController extends CRUDPageAbstract
 			}
 
 			$serachCriteria = isset($param->CallbackParameter->searchCriteria) ? json_decode(json_encode($param->CallbackParameter->searchCriteria), true) : array();
-			var_dump($serachCriteria);
 			$where = array(1);
 			$params = array();
 			if(isset($serachCriteria['pql.product']) && ($skuORid = trim($serachCriteria['pql.product'])) !== '')
@@ -88,7 +87,16 @@ class ListController extends CRUDPageAbstract
 			$results['pageStats'] = $stats;
 			$results['items'] = array();
 			foreach($objects as $obj)
-				$results['items'][] = $obj->getJson(array('product'=> $obj->getproduct()->getJson()));
+			{
+				$order = ($obj->getEntity() instanceof OrderItem ? $obj->getEntity()->getOrder() : ($obj->getEntity() instanceof Order ? $obj->getEntity() : null));
+				$purchaseOrder = ($obj->getEntity() instanceof PurchaseOrderItem ? $obj->getEntity()->getPurchaseOrder() : ($obj->getEntity() instanceof PurchaseOrder ? $obj->getEntity() : null));
+				$extra = array(
+					'product'=> $obj->getproduct()->getJson()
+					,'order' => $order instanceof Order ? $order->getJson() : null
+					,'purchaseOrder' => $purchaseOrder instanceof PurchaseOrder ? $purchaseOrder->getJson() : null
+				);
+				$results['items'][] = $obj->getJson($extra);
+			}
 		}
 		catch(Exception $ex)
 		{

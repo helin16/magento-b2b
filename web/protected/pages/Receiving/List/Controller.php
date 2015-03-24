@@ -27,12 +27,14 @@ class Controller extends CRUDPageAbstract
 				if(!($product = Product::get(trim($_REQUEST['productid']))) instanceof Product)
 					die('Invalid Product Provided');
 				$js .= "$('searchBtn').up('.panel').down('.panel-body').insert({'bottom': new Element('input', {'type': 'hidden', 'search_field': 'productid', 'value': '" . $product->getId() . "'}) });";
+				$js .= "$('searchBtn').up('.panel').hide();";
 			}
 
 			if(isset($_REQUEST['purchaseorderid'])) {
 				if (!($purchaseOrder = PurchaseOrder::get(trim($_REQUEST['purchaseorderid']))) instanceof PurchaseOrder)
 					die('Invalid PurchaseOrder Provided');
 				$js .= "$('searchBtn').up('.panel').down('.panel-body').insert({'bottom': new Element('input', {'type': 'hidden', 'search_field': 'purchaseorderid', 'value': '" . $purchaseOrder->getId() . "'}) });";
+				$js .= "$('searchBtn').up('.panel').hide();";
 			}
 
 			$js .= "$('searchBtn').click();";
