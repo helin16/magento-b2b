@@ -44,7 +44,13 @@ class CreditNote extends BaseEntityAbstract
 	 *
 	 * @var double
 	 */
-	private $totalValue = '';
+	private $totalValue = 0.0000;
+	/**
+	 * Total paid amount
+	 * 
+	 * @var double
+	 */
+	private $totalPaid = 0.0000;
 	/**
 	 * The description
 	 *
@@ -132,6 +138,27 @@ class CreditNote extends BaseEntityAbstract
 	public function setTotalValue($value)
 	{
 	    $this->totalValue = $value;
+	    return $this;
+	}
+	/**
+	 * Getter for totalPaid
+	 *
+	 * @return double
+	 */
+	public function getTotalPaid()
+	{
+	    return $this->totalPaid;
+	}
+	/**
+	 * Setter for totalPaid
+	 *
+	 * @param double $value The totalPaid
+	 *
+	 * @return CreditNote
+	 */
+	public function setTotalPaid($value)
+	{
+	    $this->totalPaid = $value;
 	    return $this;
 	}
 	/**
@@ -245,6 +272,12 @@ class CreditNote extends BaseEntityAbstract
 			foreach($items as $item)
 				$total += $item->getQty() * $item->getUnitPrice();
 			$this->setTotalValue($total);
+			
+			$payments = Payment::getAllByCriteria('creditNoteId = ?', array($this->getId()));
+			$totalPaid = 0;
+			foreach($payments as $payment)
+				$totalPaid += $payment->getValue();
+			$this->setTotalPaid($totalPaid);
 		}
 	}
 	/**
@@ -332,6 +365,7 @@ class CreditNote extends BaseEntityAbstract
 		DaoMap::setStringType('applyTo', 'varchar', 10);
 		DaoMap::setDateType('applyDate');
 		DaoMap::setIntType('totalValue', 'double', '10,4');
+		DaoMap::setIntType('totalPaid', 'double', '10,4');
 		DaoMap::setStringType('description', 'varchar', 255);
 		DaoMap::setOneToMany('items', 'CreditNoteItem', 'cn_item');
 		parent::__loadDaoMap();

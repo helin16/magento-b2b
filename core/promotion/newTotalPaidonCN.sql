@@ -1,0 +1,1 @@
+ALTER TABLE `creditnote` ADD `totalPaid` DOUBLE(10,4) NOT NULL DEFAULT '0.0000' AFTER `totalValue`;
