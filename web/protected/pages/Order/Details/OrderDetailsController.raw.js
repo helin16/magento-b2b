@@ -974,7 +974,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		var tmp = {};
 		tmp.me = this;
 		tmp.me.orderBtnsJs = new OrderBtnsJs(tmp.me, tmp.me._order);
-		tmp.me.paymentListPanelJs = new PaymentListPanelJs(tmp.me, tmp.me._order, undefined, tmp.me._editMode.accounting);
+		tmp.me.paymentListPanelJs = new PaymentListPanelJs(tmp.me, tmp.me._order, undefined, tmp.me._editMode.accounting, true);
 		tmp.me._resultDivId = resultdiv;
 		$(tmp.me._resultDivId).update(
 			new Element('div')

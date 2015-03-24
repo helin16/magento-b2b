@@ -12,7 +12,7 @@ PaymentListPanelJs.prototype = {
 		this._panelHTMLID = 'PaymentListPanelJs_' + String.fromCharCode(65 + Math.floor(Math.random() * 26)) + Date.now();
 		this._order = _order;
 		this._creditNote = _creditNote;
-		this._showNotifyCustBox = _showNotifyCustBox;
+		this._showNotifyCustBox = (_showNotifyCustBox || this._showNotifyCustBox);
 		this._canEdit = (_canEdit || this._canEdit);
 	}
 	,setAfterAddFunc: function(_afterAddFunc) {
@@ -302,7 +302,7 @@ PaymentListPanelJs.prototype = {
 		var tmp = {};
 		tmp.me = this;
 		if(tmp.me._canEdit !== true)
-			return '';
+			return null;
 		tmp.newDiv = new Element('tr', {'class': 'new-payment-row'})
 			.insert({'bottom': new Element('td', {'colspan': 4})
 			.insert({'bottom': new Element('div', {'class': 'new-payment-div'})
@@ -383,13 +383,15 @@ PaymentListPanelJs.prototype = {
 						if(tmp.pageNo === 1 && tmp.result.paymentMethods) {
 							tmp.me.paymentMethods = tmp.result.paymentMethods;
 							tmp.thead.insert({'top': tmp.newRow = tmp.me._getCreatePaymentRow() });
-							tmp.paymentDateBox = tmp.newRow.down('[payment_field="paymentDate"]');
-							if(tmp.paymentDateBox) {
-								tmp.me._pageJs._signRandID(tmp.paymentDateBox);
-								jQuery('#' + tmp.paymentDateBox.id).datetimepicker({
-									format: 'DD/MM/YYYY'
-								});
-								jQuery('#' + tmp.paymentDateBox.id).data('DateTimePicker').date(new Date());
+							if(tmp.newRow) {
+								tmp.paymentDateBox = tmp.newRow.down('[payment_field="paymentDate"]');
+								if(tmp.paymentDateBox) {
+									tmp.me._pageJs._signRandID(tmp.paymentDateBox);
+									jQuery('#' + tmp.paymentDateBox.id).datetimepicker({
+										format: 'DD/MM/YYYY'
+									});
+									jQuery('#' + tmp.paymentDateBox.id).data('DateTimePicker').date(new Date());
+								}
 							}
 						}
 						tmp.result.items.each(function(payment) {
