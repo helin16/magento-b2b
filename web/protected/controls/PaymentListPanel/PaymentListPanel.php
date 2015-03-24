@@ -117,7 +117,7 @@ class PaymentListPanel extends TTemplateControl
 			$results['item'] = $newPayment->getJson();
 
 			//notify the customer
-			if($notifyCust === true && $entity->getIsFromB2B() === true && $entity instanceof Order)
+			if($entity instanceof Order && $notifyCust === true && $entity->getIsFromB2B() === true)
 			{
 				$notificationMsg = trim(OrderNotificationTemplateControl::getMessage('paid', $entity));
 				if($notificationMsg !== '')

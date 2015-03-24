@@ -5,12 +5,14 @@ PaymentListPanelJs.prototype = {
 	,_creditNote: null
 	,_canEdit: false
 	,_panelHTMLID: ''
+	,_showNotifyCustBox: true
 
-	,initialize : function(_pageJs, _order, _creditNote, _canEdit) {
+	,initialize : function(_pageJs, _order, _creditNote, _canEdit, _showNotifyCustBox) {
 		this._pageJs = _pageJs;
 		this._panelHTMLID = 'PaymentListPanelJs_' + String.fromCharCode(65 + Math.floor(Math.random() * 26)) + Date.now();
 		this._order = _order;
 		this._creditNote = _creditNote;
+		this._showNotifyCustBox = _showNotifyCustBox;
 		this._canEdit = (_canEdit || this._canEdit);
 	}
 	,setAfterAddFunc: function(_afterAddFunc) {
@@ -47,7 +49,7 @@ PaymentListPanelJs.prototype = {
 		//remove all the msgs
 		tmp.confirmPanel.getElementsBySelector('.msg').each(function(item){ item.remove(); });
 		tmp.data = tmp.me._pageJs._collectFormData(tmp.confirmPanel, 'deletion-confirm');
-		if(tmp.data === true)
+		if(tmp.data === null)
 			return;
 		tmp.data.paymentId = payment.id;
 		tmp.me._pageJs.postAjax(PaymentListPanelJs.callbackIds.delPayment, tmp.data, {
@@ -254,7 +256,7 @@ PaymentListPanelJs.prototype = {
 		}
 		//if paid amount is different from total amount
 		tmp.paymentDiv
-			.insert({'bottom': new Element('div', {"class": 'after_select_method  col-sm-3', 'title': 'Notify Customer?'})
+			.insert({'bottom': tmp.me._showNotifyCustBox !== true ? '' : new Element('div', {"class": 'after_select_method  col-sm-3', 'title': 'Notify Customer?'})
 				.insert({'bottom': tmp.me._getFormGroup(
 					new Element('label', {'class': 'control-label'}).update('Notify Cust.?'),
 					new Element('div', {'class': 'text-center'}).update( new Element('input', {'type': 'checkbox', 'class': 'input-sm', 'payment_field': 'notifyCust', 'checked': true}) )
