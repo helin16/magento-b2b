@@ -20,9 +20,9 @@ class PaymentListPanel extends TTemplateControl
 		foreach($scriptArray as $key => $value) {
 			if(($value = trim($value)) !== '') {
 				if($key === 'js')
-					$this->getPage()->getClientScript()->registerScriptFile('latestETAJs', $this->publishAsset($value));
+					$this->getPage()->getClientScript()->registerScriptFile('PaymentListPanelJs', $this->publishAsset($value));
 				else if($key === 'css')
-					$this->getPage()->getClientScript()->registerStyleSheetFile('latestETACss', $this->publishAsset($value));
+					$this->getPage()->getClientScript()->registerStyleSheetFile('PaymentListPanelCss', $this->publishAsset($value));
 			}
 		}
 		if(!$this->getPage()->IsCallBack && !$this->getPage()->IsPostBack) {
@@ -33,7 +33,7 @@ class PaymentListPanel extends TTemplateControl
 						,'addPayment' => $this->addPaymentBtn->getUniqueID()
 				)) . ';';
 			$js .= '}';
-			$this->getPage()->getClientScript()->registerEndScript('lepJs', $js);
+			$this->getPage()->getClientScript()->registerEndScript('plpJs', $js);
 		}
 	}
 	/**
