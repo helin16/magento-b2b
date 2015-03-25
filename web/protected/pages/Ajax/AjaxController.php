@@ -117,12 +117,12 @@ class AjaxController extends TService
   		$sql = "select distinct pro.id, sum(ord_item.qtyOrdered) `orderedQty`, pro.stockOnHand
   				from product pro
   				inner join orderitem ord_item on (ord_item.productId = pro.id and ord_item.active = 1)
-  				inner join `order` ord on (ord.id = ord_item.orderId and ord.active = 1 and ord.type = :ordType and ord.statusId = :ordStatusId)
+  				inner join `order` ord on (ord.id = ord_item.orderId and ord.active = 1 and ord.type in (:ordType1, :ordType2) and ord.statusId in (:ordStatusId1, :orderStatusId2))
   				where pro.active = 1
   				group by pro.id
   				having `orderedQty` > pro.stockOnHand
   				order by ord.id";
-  		$result = Dao::getResultsNative($sql, array('ordType' => Order::TYPE_ORDER, 'ordStatusId' => OrderStatus::ID_NEW), PDO::FETCH_ASSOC);
+  		$result = Dao::getResultsNative($sql, array('ordType1' => Order::TYPE_ORDER, 'ordType2' => Order::TYPE_INVOICE, 'ordStatusId1' => OrderStatus::ID_NEW, 'ordStatusId2' => OrderStatus::ID_INSUFFICIENT_STOCK), PDO::FETCH_ASSOC);
   		if(count($result) === 0)
   			return array();
 
@@ -131,11 +131,11 @@ class AjaxController extends TService
 			$productMap[$row['id']] = $row;
 		}
 
-  		OrderItem::getQuery()->eagerLoad('OrderItem.order', 'inner join', 'ord', 'ord.id = ord_item.orderId and ord.active = 1 and ord.type = ? and ord.statusId = ?');
-  		$sqlParams = array(Order::TYPE_ORDER, OrderStatus::ID_NEW);
+  		OrderItem::getQuery()->eagerLoad('OrderItem.order', 'inner join', 'ord', 'ord.id = ord_item.orderId and ord.active = 1 and ord.type in (?,?) and ord.statusId in (?,?)');
+  		$sqlParams = array(Order::TYPE_ORDER, Order::TYPE_INVOICE, OrderStatus::ID_NEW, OrderStatus::ID_INSUFFICIENT_STOCK);
   		$where = 'ord_item.active = 1 and ord_item.productId in (' . implode(', ', array_fill(0, count(array_keys($productMap)), '?')) . ')';
   		$sqlParams = array_merge($sqlParams, array_keys($productMap));
-  		$items = OrderItem::getAllByCriteria($where, $sqlParams, true, $pageNo, $pageSize);
+  		$items = OrderItem::getAllByCriteria($where, $sqlParams, true, $pageNo, $pageSize, array('ord_item.id' => 'desc'));
   		$return = array();
   		foreach($items as $item) {
   			$extra = array('totalOrderedQty' => isset($productMap[$item->getProduct()->getId()]) ? $productMap[$item->getProduct()->getId()]['orderedQty'] : 0);

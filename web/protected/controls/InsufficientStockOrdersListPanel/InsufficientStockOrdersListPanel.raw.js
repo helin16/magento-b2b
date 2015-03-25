@@ -21,13 +21,12 @@ InsufficientStockOrdersListPanelJs.prototype = {
 		tmp.newDiv = new Element('a', {'class': 'list-group-item', 'href': 'javascript: void(0);'})
 			.store('data', item)
 			.insert({'bottom': new Element('div', {'class': 'row'})
-				.insert({'bottom': new Element('strong', {'class': 'col-sm-4'})
+				.insert({'bottom': new Element('strong', {'class': 'col-sm-12'})
 					.insert({'bottom': new Element('a', {'href': '/product/' + item.product.id + '.html', 'target': '_BLANK', 'title': item.product.sku})
 						.setStyle('overflow: hidden; text-align: right; text-overflow: ellipsis; white-space: nowrap;')
 						.update(item.product.sku)
 					})
 				})
-				.insert({'bottom': new Element('small', {'class': 'col-sm-8', 'title': item.product.name}).setStyle('overflow: hidden; text-align: right; text-overflow: ellipsis; white-space: nowrap;').update(item.product.name) })
 			})
 			.insert({'bottom': new Element('div', {'class': 'row'})
 				.insert({'bottom': new Element('div', {'class': 'col-sm-4'})
@@ -61,7 +60,7 @@ InsufficientStockOrdersListPanelJs.prototype = {
 		tmp.loadingDiv = new Element('div', {'class': 'panel-body'}).update(tmp.me._pageJs.getLoadingImg());
 		tmp.ajax = new Ajax.Request('/ajax/getInsufficientStockOrders', {
 			method: 'get'
-			,parameters: {'pageNo': 1, 'pageSize': 15}
+			,parameters: {'pageNo': 1, 'pageSize': 30}
 			,onLoading: function() {
 				$(tmp.me._panelHTMLID).insert({'bottom': tmp.loadingDiv});
 			}
