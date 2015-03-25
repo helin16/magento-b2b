@@ -1215,7 +1215,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			if(tmp.commentsDiv)
 				tmp.commentsDiv.retrieve('CommentsDivJs')._setDisplayDivId(tmp.commentsDiv).render();
 		}
-		tmp.resultListDiv.down('.memo-panel').retrieve('lastMemoJs').load();
+		tmp.resultDiv.down('.memo-panel').retrieve('lastMemoJs').load();
 		tmp.resultListDiv.down('.new-order-item-input [new-order-item="product"]').focus();
 		return tmp.me;
 	}
