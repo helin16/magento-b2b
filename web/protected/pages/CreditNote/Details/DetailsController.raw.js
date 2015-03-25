@@ -207,19 +207,23 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		});
 		return tmp.me;
 	}
-	,disableAll: function() {
+	,disableAll: function(reload) {
+		reload = (reload || false);
 		jQuery('input').attr("disabled", true);
 		jQuery('textarea').attr("disabled", true);
 		jQuery('.btn').attr("disabled", true);
 		jQuery('.form-control').attr("disabled", true);
+		if(reload !== false)
+			window.location = document.URL
 	}
 	,_preConfirmSubmit: function(printit) {
 		var tmp = {};
 		tmp.me = this;
 		tmp.data = null;
-		
+
 		tmp.printIt = (printit === true ? true : false);
 		tmp.data = tmp.me._collectFormData($(tmp.me._htmlIds.itemDiv),'save-order');
+		tmp.data.totalPaidAmount = tmp.me.getValueFromCurrency(tmp.data.totalPaidAmount);
 		if(tmp.data === null)
 			return null;
 		if(tmp.data.applyTo.blank()) {
@@ -232,7 +236,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.data.customer.id = tmp.me._customer.id;
 		tmp.data.creditNote = tmp.me._creditNote;
 		tmp.data.order = tmp.me._order;
-		
+
 		tmp.shippAddrPanel = $$('.shipping-address.address-div').first();
 		if(tmp.shippAddrPanel) {
 			tmp.shippAddr = tmp.me._collectFormData(tmp.shippAddrPanel,'address-editable-field');
@@ -262,7 +266,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			item.totalPrice = tmp.me.getValueFromCurrency(item.totalPrice);
 			item.unitPrice = tmp.me.getValueFromCurrency(item.unitPrice);
 		});
-		
+
 		tmp.newDiv = new Element('div', {'class': 'confirm-div'})
 			.insert({'bottom': new Element('div')
 				.insert({'bottom': tmp.me._getFormGroup('Do you want to send an email to this address:',
@@ -298,7 +302,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				})
 			});
 		tmp.me.showModalBox("You're about to save creadit note for : " + tmp.me._customer.name, tmp.newDiv);
-		
+
 		return tmp.me;
 	}
 	/**
@@ -531,18 +535,9 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				tmp.inputRow = $(searchTxtBox).up('.new-order-item-input').store('product', product);
 				searchTxtBox.up('.productName')
 					.writeAttribute('colspan', false)
-					.update(product.sku)
+					.update(new Element('a', {'href': '/product/' + product.id + '.html', 'target': '_BLANK'}).update(product.sku))
 					.removeClassName('col-xs-8')
 					.addClassName('col-xs-3')
-					.insert({'bottom': new Element('small', {'class': 'btn btn-xs btn-info'}).setStyle('margin-left: 10px;')
-						.insert({'bottom': new Element('small', {'class': 'glyphicon glyphicon-new-window'}) })
-						.observe('click', function(event){
-							Event.stop(event);
-							$productId = product.id;
-							if($productId)
-								tmp.me._openProductDetailPage($productId);
-						})
-					})
 					.insert({'bottom': new Element('a', {'href': 'javascript: void(0);', 'class': 'text-danger pull-right', 'title': 'click to change the product'})
 						.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-remove'})  })
 						.observe('click', function() {
@@ -576,7 +571,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			'totalPrice': tmp.me.getCurrency(creditNoteItem.unitPrice * (creditNoteItem.qty ? creditNoteItem.qty : creditNoteItem.qtyOrdered))
 		};
 		$$('.order_change_details_table').first().insert({'bottom': tmp.newDiv = tmp.me._getProductRow(tmp.data) });
-		
+
 		tmp.me._recalculateSummary();
 		return tmp.newDiv;
 	}
@@ -586,18 +581,42 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 	,_getSummaryFooter: function() {
 		var tmp = {};
 		tmp.me = this;
+		tmp.ifNew = !(tmp.me._creditNote && tmp.me._creditNote.id);
 		tmp.applyTo = new Element('select', {'class': 'select2 form-control input-sm', 'save-order': 'applyTo', 'data-placeholder': 'Select an option'}).insert({'bottom': new Element('option', {'value': ''}).update('') });
 		tmp.me._applyToOptions.each(function(option){
 			tmp.applyTo.insert({'bottom': tmp.option = new Element('option', {'value': option}).update(option) });
 			if(tmp.me._creditNote && tmp.me._creditNote.applyTo == option)
 				tmp.option.writeAttribute('selected', true);
 		});
+		tmp.paymentMethodSel = !tmp.ifNew ? 'Total Paid' : new Element('select', {'class': 'form-control input-sm', 'save-order': 'paymentMethodId'})
+			.insert({'bottom': new Element('option', {'value': ''}).update('Paid Via:') });
+		if(tmp.ifNew) {
+			tmp.me._paymentMethods.each(function(method){
+				tmp.paymentMethodSel.insert({'bottom': new Element('option', {'value': method.id}).update(method.name) });
+			});
+			tmp.paymentMethodSel.observe('change', function() {
+				tmp.btn = this;
+				$(tmp.btn).up('.row').down('.input-field').update($F(tmp.btn).blank() ? tmp.me.getCurrency(0) : new Element('span', {'class': 'form-group'}).update(
+					tmp.paidAmountBox = new Element('input', {'value': ($F(tmp.btn).strip() === '5' ? '0' : ''), 'order-price-summary': 'totalPaidAmount', 'class': 'form-control input-sm', 'save-order': 'totalPaidAmount', 'placeholder': tmp.me.getCurrency(0), 'required': true, 'validate_currency': 'Invalid number provided!' })
+					.observe('keyup', function() {
+						tmp.me._recalculateSummary();
+					})
+				) );
+				tmp.me._recalculateSummary();
+				if(tmp.paidAmountBox)
+					tmp.paidAmountBox.select();
+			})
+		}
+		tmp.me.paymentListPanelJs = new PaymentListPanelJs(tmp.me, undefined, tmp.me._creditNote, true);
 		tmp.newDiv = new Element('div', {'class': 'panel-footer'})
-			.insert({'bottom': new Element('div', {'class': 'row'})
-				.insert({'bottom': new Element('div', {'class': 'col-sm-8'})
+			.insert({'bottom': new Element('div', {'class': 'row list-group-item-danger'})
+				.insert({'bottom': new Element('div', {'class': tmp.ifNew ? 'col-sm-8' : 'col-sm-4'})
 						.insert({'bottom': tmp.me._getFormGroup( 'Description:', new Element('textarea', {'save-order': 'description', 'rows': tmp.me._creditNote ? 3 : 1}).update(tmp.me._creditNote ? tmp.me._creditNote.description : '') ) })
 						.insert({'bottom': tmp.me._creditNote ? '' : tmp.me._getFormGroup( 'Comments:', new Element('textarea', {'save-order': 'comments', 'rows': '1'}) ) })
 					})
+				.insert({'bottom': tmp.ifNew ? '' : new Element('div', {'class': 'col-sm-4'})
+					.insert({'bottom': tmp.me.paymentListPanelJs.getPaymentListPanel() })
+				})
 				.insert({'bottom': new Element('div', {'class': 'col-sm-4'})
 					.insert({'bottom': new Element('div', {'class': 'row'})
 						.insert({'bottom': new Element('div', {'class': 'col-xs-6 text-right'}).update( new Element('strong').update('Total Excl. GST: ') ) })
@@ -619,11 +638,15 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 						.insert({'bottom': new Element('div', {'class': 'col-xs-6 text-right'}).update( new Element('strong').update('Apply To: ') ) })
 						.insert({'bottom': new Element('div', {'class': 'col-xs-6'}).update( new Element('strong').update(tmp.applyTo)) })
 					})
+					.insert({'bottom': new Element('div', {'class': 'row', 'style': 'border-bottom: 1px solid brown'})
+						.insert({'bottom': new Element('div', {'class': 'col-xs-6 text-right'}).update( new Element('strong').update(tmp.paymentMethodSel) ) })
+						.insert({'bottom': new Element('div', {'class': 'col-xs-6 input-field'}).update( tmp.me.getCurrency(tmp.ifNew ? 0 : tmp.me._creditNote.totalPaid) ) })
+					})
 					.insert({'bottom': new Element('div', {'class': 'row'})
 						.insert({'bottom': new Element('div', {'class': 'col-xs-6 text-right'}).update( new Element('strong').update('Total Incl. GST:') ) })
 						.insert({'bottom': new Element('strong', {'order-price-summary': 'subTotal', 'class': 'col-xs-6'}).update( tmp.me.getCurrency(0) ) })
 					})
-					.insert({'bottom': new Element('div', {'class': 'row'}).setStyle('display: none;')
+					.insert({'bottom': new Element('div', {'class': 'row'})
 						.insert({'bottom': new Element('h4', {'class': 'col-xs-6 text-right'}).setStyle('color: #d30014 !important').update(new Element('strong').update('DUE:')) })
 						.insert({'bottom': new Element('h4', {'class': 'col-xs-6', 'order-price-summary': 'total-payment-due'}).setStyle('color: #d30014 !important').update(tmp.me.getCurrency(0)) })
 					})
@@ -752,7 +775,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.isTitle = (isTitleRow || false);
 		tmp.tag = (tmp.isTitle === true ? 'strong' : 'div');
 		tmp.btns = orderItem.btns ? orderItem.btns : new Element('span', {'class': 'pull-right'})
-			.insert({'bottom': new Element('span', {'class': 'btn btn-danger btn-xs'})
+			.insert({'bottom': new Element('span', {'class': 'btn btn-danger btn-xs item-del-btn'})
 				.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-trash'}) })
 				.observe('click', function() {
 					if(!confirm('You remove this entry.\n\nContinue?'))
@@ -766,7 +789,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					tmp.me._recalculateSummary();
 				})
 			});
-		tmp.row = new Element('div', {'class': ' list-group-item ' + (tmp.isTitle === true ? '' : 'item_row order-item-row')})
+		tmp.row = new Element('div', {'class': ' list-group-item ' + (tmp.isTitle === true ? 'list-group-item-danger' : 'item_row order-item-row')})
 			.store('data',orderItem)
 			.insert({'bottom': new Element('div', {'class': 'row'})
 				.store('data', orderItem)
@@ -792,16 +815,8 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			tmp.row.down('.productName')
 				.removeClassName('col-xs-8')
 				.addClassName('col-xs-6')
-				.insert({'before': new Element(tmp.tag, {'class': 'productSku col-xs-2'}).update(orderItem.product.sku)
-					.insert({'bottom': new Element('small', {'class': orderItem.product.id ? 'btn btn-xs btn-info' : 'hidden'}).setStyle('margin-left: 10px;')
-						.insert({'bottom': new Element('small', {'class': 'glyphicon glyphicon-new-window'}) })
-						.observe('click', function(event){
-							Event.stop(event);
-							$productId = orderItem.product.id;
-							if($productId)
-								tmp.me._openProductDetailPage($productId);
-						})
-					})
+				.insert({'before': new Element(tmp.tag, {'class': 'productSku col-xs-2'})
+					.update( tmp.isTitle === true ? 'SKU' : new Element('a', {'href': '/product/' + orderItem.product.id + '.html', 'target': '_BLANK'}).update(orderItem.product.sku) )
 				});
 		}
 		if(orderItem.scanTable) {
@@ -997,8 +1012,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			.insert({'bottom': pageJs._creditNote ? new Element('div', {'class': 'row'}).setStyle('padding-top: 20px')
 				.insert({'bottom': new Element('div', {'class': 'col-sm-12'}).update(tmp.me._getEmptyCommentsDiv()) })
 				: ''
-			})
-			;
+			});
 		return tmp.newDiv;
 	}
 	,_selectCustomer: function(customer) {
@@ -1023,7 +1037,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.newDiv = new Element('tr', {'class': (tmp.isTitle === true ? 'item_top_row' : 'btn-hide-row item_row') + (row.active == 0 ? ' danger' : ''), 'item_id': (tmp.isTitle === true ? '' : row.id)}).store('data', row)
 			.insert({'bottom': new Element(tmp.tag, {'class': 'name col-xs-1'})
 				.insert({'bottom': (tmp.isTitle === true ? '&nbsp;':
-					new Element('span', {'class': 'btn btn-primary btn-xs'}).update('select')	
+					new Element('span', {'class': 'btn btn-primary btn-xs'}).update('select')
 					.observe('click', function(){
 						tmp.me._selectCustomer(row);
 					})
@@ -1079,7 +1093,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 						return;
 					$(tmp.searchPanel).insert({'bottom': new Element('small', {'class': 'table-responsive list-div'})
 						.insert({'bottom': new Element('table', {'class': 'table table-hover table-condensed'})
-							.insert({'bottom': new Element('thead') 
+							.insert({'bottom': new Element('thead')
 								.insert({'bottom': tmp.me._getCustomerRow({'email': "Email", 'name': 'Name', 'contactNo': 'Contact Num', 'description': 'Description', 'addresses': 'Addresses',
 																			'address': {'billing': {'full': 'Billing Address'}, 'shipping': {'full': 'Shipping Address'} },
 																			'mageId': "Mage Id", 'active': "Active?"
@@ -1104,11 +1118,11 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 	,_getCustomerListPanel: function () {
 		var tmp = {};
 		tmp.me = this;
-		tmp.newDiv = new Element('div', {'id': tmp.me._htmlIds.searchPanel, 'class': 'panel panel-info search-panel'})
+		tmp.newDiv = new Element('div', {'id': tmp.me._htmlIds.searchPanel, 'class': 'panel panel-danger search-panel'})
 			.insert({'bottom': new Element('div', {'class': 'panel-heading form-inline'})
-				.insert({'bottom': new Element('strong').update('Creating a new order for: ') })
+				.insert({'bottom': new Element('strong').update('Creating a new Credit Note for: ') })
 				.insert({'bottom': new Element('span', {'class': 'input-group col-sm-6'})
-					.insert({'bottom': new Element('input', {'class': 'form-control search-txt init-focus', 'placeholder': 'Customer name'}) 
+					.insert({'bottom': new Element('input', {'class': 'form-control search-txt init-focus', 'placeholder': 'Customer name'})
 						.observe('keydown', function(event){
 							tmp.txtBox = this;
 							tmp.me.keydown(event, function() {
@@ -1160,28 +1174,30 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			if(tmp.me._creditNote.order && tmp.me._creditNote.order.id && jQuery.isNumeric(tmp.me._creditNote.order.id))
 				tmp.me._order = tmp.me._creditNote.order;
 			tmp.me._selectCustomer(tmp.me._creditNote.customer);
-		} else if(tmp.me._customer)
-			tmp.me._selectCustomer(tmp.me._customer);
-		else if(tmp.me._order)
-			tmp.me._selectCustomer(tmp.me._order.customer);
-		else $(tmp.me._htmlIds.itemDiv).update(tmp.me._getCustomerListPanel());
-		
-		if($$('.init-focus').size() > 0)
-			$$('.init-focus').first().focus();
-		jQuery('.select2').select2({});
-		
-		if(tmp.me._creditNote) {
 			tmp.me._creditNote.items.each(function(item){
 				tmp.me._selectProduct(item).writeAttribute('creditNoteItemId', item.id);
 			});
-		}
-		else if(tmp.me._order) {
+			tmp.me._getComments(true);
+			jQuery('.new-order-item-input').remove();
+			jQuery('.item-del-btn').remove();
+			jQuery('.shipping-address[address-editable="address-editable"]').find('.form-control').attr('disabled', true);
+		} else if(tmp.me._order) {
+			tmp.me._selectCustomer(tmp.me._order.customer);
 			tmp.me._order.items.each(function(item){
 				tmp.me._selectProduct(item).writeAttribute('orderItemId', item.id);
 			});
-		}
-		if(tmp.me._creditNote)
-			tmp.me._getComments(true);
+		} else if(tmp.me._customer)
+			tmp.me._selectCustomer(tmp.me._customer);
+		else $(tmp.me._htmlIds.itemDiv).update(tmp.me._getCustomerListPanel());
+
+		if($$('.init-focus').size() > 0)
+			$$('.init-focus').first().focus();
+		jQuery('.select2').select2({});
+
+		tmp.me.paymentListPanelJs
+			.setAfterAddFunc(function() { tmp.me.disableAll(true); })
+			.setAfterDeleteFunc(function() { tmp.me.disableAll(true); })
+			.load();
 		return tmp.me;
 	}
 	/**
@@ -1268,12 +1284,12 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		jQuery('[order-price-summary="subTotal"]').val(tmp.me.getCurrency(tmp.subTotal)).html(tmp.me.getCurrency(tmp.subTotal));
 
 		//calculate the total due
-		tmp.totalPaid = (jQuery('[order-price-summary="totalPaidAmount"]').length > 0 ? jQuery('[order-price-summary="totalPaidAmount"]').val() : 0);
+		tmp.totalPaid = (jQuery('[order-price-summary="totalPaidAmount"]').length > 0 ? jQuery('[order-price-summary="totalPaidAmount"]').val() : (tmp.me._creditNote.totalPaid ? tmp.me._creditNote.totalPaid : 0));
 		tmp.totalDue = (tmp.subTotal * 1 - tmp.totalPaid * 1);
 		if(tmp.totalDue < 0) {
 			tmp.me.showModalBox(
 				'<h4 class="text-danger">Attention!</h4>',
-				'<div><strong>The customer has paid more than the due amount?</strong></div><div><span class="btn btn-primary" onclick="pageJs.hideModalBox();">OK</span>',
+				'<div><strong>We are paying more than the due amount!</strong></div><div><span class="btn btn-primary" onclick="pageJs.hideModalBox();">OK</span>',
 				true
 			);
 		}
@@ -1283,5 +1299,9 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		jQuery('[order-price-summary="total-margin"]').val(tmp.me.getCurrency(tmp.totalMargin)).html(tmp.me.getCurrency(tmp.totalMargin));
 
 		return tmp.me;
+	}
+	,setPaymentMethods: function(paymentMethods) {
+		this._paymentMethods = paymentMethods;
+		return this;
 	}
 });

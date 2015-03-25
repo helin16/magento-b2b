@@ -48,12 +48,16 @@ class DetailsController extends BPCPageAbstract
 		else $js .= "pageJs._customer=" . json_encode($customer) . ";";
 		if($creditNote instanceof CreditNote)
 			$js .= "pageJs._creditNote=" . json_encode($creditNote->getJson(array('customer'=> $creditNote->getCustomer()->getJson(), 'items'=> array_map(create_function('$a', 'return $a->getJson(array("product"=>$a->getProduct()->getJson()));'), $creditNote->getCreditNoteItems())))) . ";";
+		
+		$paymentMethods =  array_map(create_function('$a', 'return $a->getJson();'), PaymentMethod::getAll(true, null, DaoQuery::DEFAUTL_PAGE_SIZE, array('name' => 'asc')));
+		
 		$js .= "pageJs._applyToOptions=" . json_encode($applyToOptions) . ";";
 		$js .= "pageJs";
 			$js .= ".setHTMLIDs('detailswrapper')";
 			$js .= ".setCallbackId('searchCustomer', '" . $this->searchCustomerBtn->getUniqueID() . "')";
 			$js .= ".setCallbackId('searchProduct', '" . $this->searchProductBtn->getUniqueID() . "')";
 			$js .= ".setCallbackId('saveOrder', '" . $this->saveOrderBtn->getUniqueID() . "')";
+			$js .= ".setPaymentMethods(" . json_encode($paymentMethods) . ")";
 			$js .= '.setCallbackId("addComments", "' . $this->addCommentsBtn->getUniqueID() . '")';
 			$js .= ".init();";
 		return $js;
@@ -215,7 +219,6 @@ public function saveOrder($sender, $param)
 			$totalPaymentDue = 0;
 			foreach ($param->CallbackParameter->items as $item)
 			{
-				var_dump($item);
 				$product = Product::get(trim($item->product->id));
 				if(!$product instanceof Product)
 					throw new Exception('Invalid Product passed in!');
@@ -238,10 +241,20 @@ public function saveOrder($sender, $param)
 					$creditNoteItem->setUnitCost($orderItem->getUnitCost())->save();
 				else $creditNoteItem->setUnitCost($product->getUnitCost())->save();
 			}
+			
+			if(($paymentMethod = PaymentMethod::get(trim($param->CallbackParameter->paymentMethodId))) instanceof PaymentMethod)
+			{
+				$creditNote->setTotalPaid($totalPaidAmount = $param->CallbackParameter->totalPaidAmount)->addPayment($paymentMethod, $totalPaidAmount);
+			}
+			
 			$creditNote->setTotalValue($totalPaymentDue)->setApplyTo($applyTo)->save();
 			$results['item'] = $creditNote->getJson();
 			if(isset($param->CallbackParameter->confirmEmail) && filter_var(($email = $param->CallbackParameter->confirmEmail), FILTER_VALIDATE_EMAIL))
-				var_dump('YES, SEND EMAIL!');
+			{
+				$subject = "message SUBJECT from CreditNote";
+				$msg = "message BODY from CreditNote";
+				EmailSender::addEmail('sales@budgetpc.com.au', $email, $subject, $msg); // TODO: email template
+			}
 			if($printItAfterSave === true)
 				$results['printURL'] = '/print/creditnote/' . $creditNote->getId() . '.html?pdf=1';
 			Dao::commitTransaction();
