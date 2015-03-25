@@ -114,7 +114,7 @@ class AjaxController extends TService
   	{
   		$pageNo = isset($params['pageNo']) ? trim($params['pageNo']) : 1;
   		$pageSize = isset($params['pageSize']) ? trim($params['pageSize']) : DaoQuery::DEFAUTL_PAGE_SIZE;
-  		$sql = "select distinct pro.id, sum(ord_item.qtyOrdered) `orderedQty`, pro.stockOnHand
+  		$sql = "select distinct pro.id, sum(ord_item.qtyOrdered) `orderedQty`, pro.stockOnHand, pro.stockOnPO
   				from product pro
   				inner join orderitem ord_item on (ord_item.productId = pro.id and ord_item.active = 1)
   				inner join `order` ord on (ord.id = ord_item.orderId and ord.active = 1 and ord.type in (:ordType1, :ordType2) and ord.statusId in (:ordStatusId1, :ordStatusId2))
