@@ -462,6 +462,10 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			format: 'DD/MM/YYYY'
 		});
 		tmp.me._initDeliveryMethods()._initCustomerSelect2()._initTypeSwither();
+		$('right-panel')
+			.store('InsufficientStockOrdersListPanelJs', tmp.insufficientStockOrdersListPanelJs = new InsufficientStockOrdersListPanelJs(tmp.me))
+			.update(tmp.insufficientStockOrdersListPanelJs.getListPanel().addClassName('panel-default'));
+		tmp.insufficientStockOrdersListPanelJs.load();
 		return tmp.me;
 	}
 });

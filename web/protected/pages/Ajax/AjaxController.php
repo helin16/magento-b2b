@@ -1,24 +1,24 @@
 <?php
 /**
  * Ajax Controller
- * 
+ *
  * @package	web
  * @subpackage	Controller-Page
- * 
+ *
  * @version	1.0
- * 
+ *
  * @todo :NOTE If anyone copies this controller, then you require this method to profile ajax requests
  */
-class AjaxController extends TService 
+class AjaxController extends TService
 {
   	/**
   	 * Run
   	 */
-  	public function run() 
+  	public function run()
   	{
 //   		if(!($this->getUser()->getUserAccount() instanceof UserAccount))
 //   			die (BPCPageAbstract::show404Page('Invalid request',"No defined access."));
-  		
+
   		$results = $errors = array();
 		try
 		{
@@ -26,7 +26,7 @@ class AjaxController extends TService
             if(!method_exists($this, $method))
                 throw new Exception('No such a method: ' . $method . '!');
 			$results = $this->$method($_REQUEST);
-		} 
+		}
 		catch (Exception $ex)
 		{
 			$errors[] = $ex->getMessage();
@@ -37,20 +37,20 @@ class AjaxController extends TService
   	}
 	/**
 	 * Getting the comments for an entity
-	 * 
+	 *
 	 * @param array $params
-	 * 
+	 *
 	 * @return string The json string
-	 */  	
+	 */
   	private function _getComments(Array $params)
   	{
   		if(!isset($params['entityId']) || !isset($params['entity']) || ($entityId = trim($params['entityId'])) === '' || ($entity = trim($params['entity'])) === '')
   			throw  new Exception('SYSTEM ERROR: INCOMPLETE DATA PROVIDED');
-  		
+
   		$pageSize = (isset($params['pageSize']) && ($pageSize = trim($params['pageSize'])) !== '' ? $pageSize : DaoQuery::DEFAUTL_PAGE_SIZE);
   		$pageNo = (isset($params['pageNo']) && ($pageNo = trim($params['pageNo'])) !== '' ? $pageNo : 1);
   		$orderBy = (isset($params['orderBy']) ? $params['orderBy'] : array('created' => 'desc'));
-  		
+
   		$where ='entityName = ? and entityId = ?';
   		$sqlParams = array($entity, $entityId);
   		if(isset($params['type']) && ($commentType = trim($params['type'])) !== '')
@@ -66,7 +66,7 @@ class AjaxController extends TService
   		$results['pageStats'] = $stats;
   		return $results;
   	}
-  	
+
   	/**
   	 * Getting the comments for an entity
   	 *
@@ -82,7 +82,7 @@ class AjaxController extends TService
   		$pageSize = (isset($params['pageSize']) && ($pageSize = trim($params['pageSize'])) !== '' ? $pageSize : DaoQuery::DEFAUTL_PAGE_SIZE);
   		$pageNo = (isset($params['pageNo']) && ($pageNo = trim($params['pageNo'])) !== '' ? $pageNo : null);
   		$orderBy = (isset($params['orderBy']) ? $params['orderBy'] : array());
-  		
+
   		$where = array('name like :searchTxt or email like :searchTxt or contactNo like :searchTxt');
   		$sqlParams = array('searchTxt' => '%' . $searchTxt . '%');
   		$stats = array();
@@ -100,7 +100,7 @@ class AjaxController extends TService
   		$pageSize = (isset($params['pageSize']) && ($pageSize = trim($params['pageSize'])) !== '' ? $pageSize : DaoQuery::DEFAUTL_PAGE_SIZE);
   		$pageNo = (isset($params['pageNo']) && ($pageNo = trim($params['pageNo'])) !== '' ? $pageNo : null);
   		$orderBy = (isset($params['orderBy']) ? $params['orderBy'] : array());
-  		
+
   		$where = array('name like :searchTxt or mageId = :searchTxtExact or sku = :searchTxtExact');
   		$sqlParams = array('searchTxt' => '%' . $searchTxt . '%', 'searchTxtExact' => $searchTxt);
   		$stats = array();
@@ -109,6 +109,78 @@ class AjaxController extends TService
   		$results['items'] = array_map(create_function('$a', 'return $a->getJson();'), $items);
   		$results['pageStats'] = $stats;
   		return $results;
+  	}
+  	private function _getInsufficientStockOrders($params)
+  	{
+  		$pageNo = isset($params['pageNo']) ? trim($params['pageNo']) : 1;
+  		$pageSize = isset($params['pageSize']) ? trim($params['pageSize']) : DaoQuery::DEFAUTL_PAGE_SIZE;
+  		$sql = "select distinct pro.id, sum(ord_item.qtyOrdered) `orderedQty`, pro.stockOnHand
+  				from product pro
+  				inner join orderitem ord_item on (ord_item.productId = pro.id and ord_item.active = 1)
+  				inner join `order` ord on (ord.id = ord_item.orderId and ord.active = 1 and ord.type = :ordType and ord.statusId = :ordStatusId)
+  				where pro.active = 1
+  				group by pro.id
+  				having `orderedQty` > pro.stockOnHand
+  				order by ord.id";
+  		$result = Dao::getResultsNative($sql, array('ordType' => Order::TYPE_ORDER, 'ordStatusId' => OrderStatus::ID_NEW), PDO::FETCH_ASSOC);
+  		if(count($result) === 0)
+  			return array();
+
+		$productMap = array();
+		foreach($result as $row) {
+			$productMap[$row['id']] = $row;
+		}
+
+  		OrderItem::getQuery()->eagerLoad('OrderItem.order', 'inner join', 'ord', 'ord.id = ord_item.orderId and ord.active = 1 and ord.type = ? and ord.statusId = ?');
+  		$sqlParams = array(Order::TYPE_ORDER, OrderStatus::ID_NEW);
+  		$where = 'ord_item.active = 1 and ord_item.productId in (' . implode(', ', array_fill(0, count(array_keys($productMap)), '?')) . ')';
+  		$sqlParams = array_merge($sqlParams, array_keys($productMap));
+  		$items = OrderItem::getAllByCriteria($where, $sqlParams, true, $pageNo, $pageSize);
+  		$return = array();
+  		foreach($items as $item) {
+  			$extra = array('totalOrderedQty' => isset($productMap[$item->getProduct()->getId()]) ? $productMap[$item->getProduct()->getId()]['orderedQty'] : 0);
+			$return[] = $item->getJson($extra);
+  		}
+  		return array('items' => $return);
+  	}
+  	/**
+  	 * Getting an entity
+  	 *
+  	 * @param unknown $params
+  	 *
+  	 * @throws Exception
+  	 * @return multitype:
+  	 */
+  	private function _get($params)
+  	{
+  		if(!isset($params['entityName']) || ($entityName = trim($params['entityName'])) === '')
+  			throw new Exception('What are we going to get?');
+  		if(!isset($params['entityId']) || ($entityId = trim($params['entityId'])) === '')
+  			throw new Exception('What are we going to get with?');
+  		return ($entity = $entityName::get($entityId)) instanceof BaseEntityAbstract ? $entity->getJson() : array();
+  	}
+  	/**
+  	 * Getting All for entity
+  	 *
+  	 * @param unknown $params
+  	 *
+  	 * @throws Exception
+  	 * @return multitype:multitype:
+  	 */
+  	private function _getAll($params)
+  	{
+  		if(!isset($params['entityName']) || ($entityName = trim($params['entityName'])) === '')
+  			throw new Exception('What are we going to get?');
+  		$searchTxt = trim(isset($params['searchTxt']) ? trim($params['searchTxt']) : '');
+  		$searchParams = trim(isset($params['searchParams']) ? $params['searchParams'] : array());
+  		$pageNo = isset($params['pageNo']) ? trim($params['pageNo']) : null;
+  		$pageSize = isset($params['pageSize']) ? trim($params['pageSize']) : DaoQuery::DEFAUTL_PAGE_SIZE;
+  		$active = isset($params['active']) ? intval($params['active']) : null;
+  		$orderBy = isset($params['orderBy']) ? trim($params['orderBy']) : array();
+
+  		$stats = array();
+  		$items = $entityName::getAllByCriteria($searchTxt, $searchParams, $active, $pageNo, $pageSize, $orderBy, $stats);
+  		return array('items' => array_map(create_function('$a', 'return $a->getJson();'), $items), 'pagination' => $stats);
   	}
 }
 ?>

@@ -3,6 +3,7 @@
 	<com:Application.controls.chosen.Chosen />
 	<com:Application.controls.bootstrapDateTimePicker.bootstrapDateTimePicker />
 	<com:Application.controls.select2.select2 />
+	<com:Application.controls.InsufficientStockOrdersListPanel.InsufficientStockOrdersListPanel />
 	<com:TCallback ID="getOrdersBtn" onCallBack="Page.getOrders" />
 	<div class="row">
 	   <div class="col-md-9">
@@ -116,8 +117,7 @@
                  </div>
 			</div>
 	   </div>
-	   <div class="col-md-3">
-	       <com:Application.controls.latest_eta_box.LatestETAPanel />
+	   <div class="col-md-3" id="right-panel">
 	   </div>
 	</div>
 </com:TContent>
