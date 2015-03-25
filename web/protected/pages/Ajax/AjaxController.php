@@ -120,7 +120,7 @@ class AjaxController extends TService
   				inner join `order` ord on (ord.id = ord_item.orderId and ord.active = 1 and ord.type in (:ordType1, :ordType2) and ord.statusId in (:ordStatusId1, :ordStatusId2))
   				where pro.active = 1
   				group by pro.id
-  				having `orderedQty` > pro.stockOnHand
+  				having `orderedQty` > (pro.stockOnHand + pro.stockOnPO)
   				order by ord.id";
   		$result = Dao::getResultsNative($sql, array('ordType1' => Order::TYPE_ORDER, 'ordType2' => Order::TYPE_INVOICE, 'ordStatusId1' => OrderStatus::ID_NEW, 'ordStatusId2' => OrderStatus::ID_INSUFFICIENT_STOCK), PDO::FETCH_ASSOC);
   		if(count($result) === 0)
