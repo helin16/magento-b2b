@@ -861,12 +861,8 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 				})
 			});
 		tmp.newDiv = tmp.newDiv.wrap(new Element('div'));
-		tmp.newDiv.insert({'top': (!(tmp.me._purchaseorder.id && (tmp.me._purchaseorder.status === 'ORDERED' || tmp.me._purchaseorder.status === 'RECEIVING')) || tmp.me._purchaseorder.active !== true)  ? '' : new Element('span', {'class': 'btn btn-success', 'title': 'Receiving Items'}).update('Receiving')
-				.addClassName('pull-left')
-				.observe('click', function(){
-					tmp.newWindow = window.open('/receiving/' + tmp.me._purchaseorder.id + '.html', 'PO Details','width=1300, location=no, scrollbars=yes, menubar=no, status=no, titlebar=no, fullscreen=no, toolbar=no');
-					tmp.newWindow.focus();
-				})
+		tmp.newDiv.insert({'top': (!(tmp.me._purchaseorder.id && (tmp.me._purchaseorder.status === 'ORDERED' || tmp.me._purchaseorder.status === 'RECEIVING')) || tmp.me._purchaseorder.active !== true)  ? '' :
+				new Element('a', {'class': 'btn btn-success pull-left', 'title': 'Receiving Items', 'href': '/receiving/' + tmp.me._purchaseorder.id + '.html'}).update('Receiving')
 			});
 		return tmp.newDiv;
 	}

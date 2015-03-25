@@ -199,16 +199,9 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 				tmp.invoiceNoDiv.insert({'bottom': new Element('div').update(item)})
 			});
 		tmp.row = new Element('tr', {'class': (tmp.isTitle === true ? 'item_top_row' : 'btn-hide-row item_row po_item') + (row.active == 0 ? ' danger' : ''), 'item_id': (tmp.isTitle === true ? '' : row.id)}).store('data', row)
-			.observe('dblclick', function(){
-				if(!tmp.isTitle)
-					tmp.me._openEditPage(row);
-			})
 			.insert({'bottom': new Element(tmp.tag, {'class': 'purchaseOrderNo col-xs-1'}).update( tmp.isTitle ? row.purchaseOrderNo :
-				new Element('a', {'href': 'javascript: void(0)'})
+				new Element('a', {'href': '/purchase/' + row.id + '.html', 'target': '_BLANK'})
 					.update(row.purchaseOrderNo)
-					.observe('click', function() {
-						tmp.me._openEditPage(row);
-					})
 			) })
 			.insert({'bottom': new Element(tmp.tag, {'class': ' col-xs-1'}).update(tmp.me.loadUTCTime(row.orderDate).toLocaleString())})
 			.insert({'bottom': new Element(tmp.tag, {'class': ' col-xs-1'}).update(row.supplier.name ? row.supplier.name : '')})
@@ -232,11 +225,8 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 				.insert({'bottom': (!(row.id && (row.status === 'ORDERED' || row.status === 'RECEIVING')) || row.active !== true)  ? '' : new Element('a', {'class': 'btn btn-success btn-xs', 'href': '/receiving/' + row.id + '.html', 'target': '_BLANK', 'title': 'Receiving Items'})
 					.update('Receiving')
 				})
-				.insert({'bottom': new Element('span', {'class': 'btn btn-default btn-xs', 'title': 'Edit'})
+				.insert({'bottom': new Element('a', {'class': 'btn btn-default btn-xs', 'title': 'Edit', 'href': '/purchase/' + row.id + '.html', 'target': '_BLANK'})
 					.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-pencil'}) })
-					.observe('click', function(){
-							tmp.me._openEditPage(row);
-					})
 				})
 				.insert({'bottom': new Element('span', {'class': 'btn btn-danger btn-xs', 'title': 'Delete'})
 					.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-trash'}) })
@@ -245,26 +235,6 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 					})
 				})
 			});
-		else
-			tmp.btns.insert({'bottom': new Element('div', {'class': 'btn-group'})
-				.insert({'bottom': new Element('span', {'class': 'btn btn-primary btn-sm', 'title': 'New'})
-					.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-plus'}) })
-					.insert({'bottom': ' NEW' })
-					.observe('click', function(){
-						$(this).up('thead').insert({'bottom': tmp.me._openEditPage({}) });
-					})
-				})
-			});
 		return tmp.row;
-	}
-	/**
-	 * Open edit page in a fancybox
-	 */
-	,_openEditPage: function(row) {
-		var tmp = {};
-		tmp.me = this;
-		tmp.newWindow = window.open('/purchase/' + (row && row.id ? row.id : 'new') + '.html', 'PO Details','width=1300, location=no, scrollbars=yes, menubar=no, status=no, titlebar=no, fullscreen=no, toolbar=no');
-		tmp.newWindow.focus();
-		return tmp.me;
 	}
 });
