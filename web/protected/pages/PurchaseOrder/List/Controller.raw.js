@@ -229,7 +229,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 			.insert({'bottom': tmp.btns = new Element(tmp.tag, {'class': 'col-xs-1 text-right'}) 	});
 		if(tmp.isTitle !== true)
 			tmp.btns.insert({'bottom': new Element('div', {'class': 'btn-group'})
-				.insert({'bottom': (!(row.id && (row.status === 'ORDERED' || row.status === 'RECEIVING')) || row.active !== true)  ? '' : new Element('a', {'class': 'btn btn-success btn-xs', 'url': '/receiving/' + row.id + '.html', 'target': '_BLANK', 'title': 'Receiving Items'})
+				.insert({'bottom': (!(row.id && (row.status === 'ORDERED' || row.status === 'RECEIVING')) || row.active !== true)  ? '' : new Element('a', {'class': 'btn btn-success btn-xs', 'href': '/receiving/' + row.id + '.html', 'target': '_BLANK', 'title': 'Receiving Items'})
 					.update('Receiving')
 				})
 				.insert({'bottom': new Element('span', {'class': 'btn btn-default btn-xs', 'title': 'Edit'})
