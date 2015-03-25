@@ -308,6 +308,7 @@ class OrderDetailsController extends BPCPageAbstract
 			//add shipment information
 			if($notifyCust === true && $order->getIsFromB2B() === true)
 			{
+				$templateName = (trim($shipment->getCourier()->getId()) === trim(Courier::ID_LOCAL_PICKUP) ? 'local_pickup' : $order->getStatus()->getName());
 				$notificationMsg = trim(OrderNotificationTemplateControl::getMessage($templateName, $order));
 				if($notificationMsg !== '')
 				{
