@@ -117,7 +117,7 @@ class AjaxController extends TService
   		$sql = "select distinct pro.id, sum(ord_item.qtyOrdered) `orderedQty`, pro.stockOnHand
   				from product pro
   				inner join orderitem ord_item on (ord_item.productId = pro.id and ord_item.active = 1)
-  				inner join `order` ord on (ord.id = ord_item.orderId and ord.active = 1 and ord.type in (:ordType1, :ordType2) and ord.statusId in (:ordStatusId1, :orderStatusId2))
+  				inner join `order` ord on (ord.id = ord_item.orderId and ord.active = 1 and ord.type in (:ordType1, :ordType2) and ord.statusId in (:ordStatusId1, :ordStatusId2))
   				where pro.active = 1
   				group by pro.id
   				having `orderedQty` > pro.stockOnHand
