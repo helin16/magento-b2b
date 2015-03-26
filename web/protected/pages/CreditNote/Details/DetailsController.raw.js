@@ -892,7 +892,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 						.insert({'bottom': new Element('a', {'href': 'mailto:' + tmp.customer.email}).update(tmp.customer.email) })
 						.insert({'bottom': '>' })
 						.insert({'bottom': tmp.me._order ? new Element('strong').update(' with Order No. ') : '' })
-						.insert({'bottom': tmp.me._order ? new Element('a', {'target': '_blank', 'href': '/orderdetails/' + tmp.me._order.id}).update(tmp.me._order.orderNo) : '' })
+						.insert({'bottom': tmp.me._order ? new Element('a', {'target': '_blank', 'href': '/orderdetails/' + tmp.me._order.id + '.html'}).update(tmp.me._order.orderNo) : '' })
 					})
 					.insert({'bottom': new Element('div', {'class': 'col-sm-4 text-right'}).setStyle('display: none;')
 						.insert({'bottom': new Element('strong').update('Total Payment Due: ') })
