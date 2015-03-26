@@ -108,16 +108,16 @@ class CreditNoteExport_Xero extends ExportAbstract
 	}
 	protected static function _getMailTitle()
 	{
-		return 'Sales Export for Xero from last day';
+		return 'CreditNote Export for Xero from last day';
 	}
 	protected static function _getMailBody()
 	{
-		return 'Please find the attached export from BudgetPC internal system for all the sales from last day to import to xero.';
+		return 'Please find the attached export from BudgetPC internal system for all the CreditNotes from last day to import to xero.';
 	}
 	protected static function _getAttachedFileName()
 	{
 		$now = new UDate();
 		$now->setTimeZone('Australia/Melbourne');
-		return 'sales_xero_' . $now->format('Y_m_d_H_i_s') . '.csv';
+		return 'creditnote_xero_' . $now->format('Y_m_d_H_i_s') . '.csv';
 	}
 }
