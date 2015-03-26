@@ -39,18 +39,16 @@ class DetailsController extends BPCPageAbstract
 		$order = null;
 		if(isset($_REQUEST['orderid']) && !($order = Order::get(trim($_REQUEST['orderid']))) instanceof Order)
 			die('Invalid Order passed in!');
-		if($order instanceof Order && $creditNote instanceof CreditNote)
+		if($order instanceof Order && $creditNote instanceof CreditNote && $creditNote->getOrder() instanceof Order && $creditNote->getOrder()->getId() !== $order->getId())
 			die('You can ONLY create NEW Credit Note from an existing ORDER');
-		$applyToOptions = CreditNote::getApplyToTypes();
-
+		if($creditNote instanceof CreditNote)
+			$js .= "pageJs._creditNote=" . json_encode($creditNote->getJson(array('customer'=> $creditNote->getCustomer()->getJson(), 'items'=> array_map(create_function('$a', 'return $a->getJson(array("product"=>$a->getProduct()->getJson()));'), $creditNote->getCreditNoteItems())))) . ";";
 		if($order instanceof Order)
 			$js .= "pageJs._order=" . json_encode($order->getJson(array('customer'=> $order->getCustomer()->getJson(), 'items'=> array_map(create_function('$a', 'return $a->getJson(array("product"=>$a->getProduct()->getJson()));'), $order->getOrderItems())))) . ";";
 		else $js .= "pageJs._customer=" . json_encode($customer) . ";";
-		if($creditNote instanceof CreditNote)
-			$js .= "pageJs._creditNote=" . json_encode($creditNote->getJson(array('customer'=> $creditNote->getCustomer()->getJson(), 'items'=> array_map(create_function('$a', 'return $a->getJson(array("product"=>$a->getProduct()->getJson()));'), $creditNote->getCreditNoteItems())))) . ";";
 
 		$paymentMethods =  array_map(create_function('$a', 'return $a->getJson();'), PaymentMethod::getAll(true, null, DaoQuery::DEFAUTL_PAGE_SIZE, array('name' => 'asc')));
-
+		$applyToOptions = CreditNote::getApplyToTypes();
 		$js .= "pageJs._applyToOptions=" . json_encode($applyToOptions) . ";";
 		$js .= "pageJs";
 			$js .= ".setHTMLIDs('detailswrapper')";
