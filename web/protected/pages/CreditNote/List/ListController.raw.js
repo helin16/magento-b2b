@@ -285,4 +285,15 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 			}
 		})
 	}
+	,init: function(reset, pageSize) {
+		var tmp = {};
+		tmp.me = this;
+		
+		if(tmp.me._order && jQuery.isNumeric(tmp.me._order.id) && $F($$('[search_field="ord.orderNo"]').first()).empty()) {
+			$$('[search_field="ord.orderNo"]').first().value = tmp.me._order.orderNo;
+			$('searchBtn').click();
+		}
+		tmp.me.getResults(reset, pageSize);
+		return tmp.me;
+	}
 });

@@ -31,11 +31,14 @@ class ListController extends CRUDPageAbstract
 	{
 		$applyToOptions = CreditNote::getApplyToTypes();
 
+		
 		$js = parent::_getEndJs();
+		if(isset($_REQUEST['orderid']) && ($order = Order::get(trim($_REQUEST['orderid'])))instanceof Order)
+			$js .= "pageJs._order=" . json_encode($order->getJson()) . ";";
 		$js .= "pageJs._applyToOptions=" . json_encode($applyToOptions) . ";";
 		$js .= "pageJs._bindSearchKey()";
 		$js .= ".setCallbackId('deactivateItems', '" . $this->deactivateItemBtn->getUniqueID() . "')";
-		$js .= ".getResults(true, " . $this->pageSize . ");";
+		$js .= ".init(true, " . $this->pageSize . ");";
 		return $js;
 	}
 	/**
