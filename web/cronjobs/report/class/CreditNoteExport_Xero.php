@@ -59,7 +59,7 @@ class CreditNoteExport_Xero extends ExportAbstract
 			$fromDate = self::$_dateRange['start'];
 			$toDate = self::$_dateRange['end'];
 		}
-		$creditNotes = CreditNote::getAllByCriteria('applyDate >= :fromDate and applyDate < :toDate', array('fromDate' => trim($fromDate), 'toDate' => trim($toDate)));
+		$creditNotes = CreditNoteItem::getAllByCriteria('applyDate >= :fromDate and applyDate < :toDate', array('fromDate' => trim($fromDate), 'toDate' => trim($toDate)));
 
 		$return = array();
 		foreach($creditNotes as $creditNote)
@@ -87,12 +87,13 @@ class CreditNoteExport_Xero extends ExportAbstract
 				$product = $item->getProduct();
 				if(!$product instanceof Product)
 					continue;
+				$shouldTotal = $item->getUnitPrice() * $item->getQty();
 				$return[] = array_merge($row, array(
 					'InventoryItemCode' => $product->getSku()
 					,'Description'=> $product->getShortDescription()
 					,'Quantity'=> 0 - $item->getQty()
 					,'UnitAmount'=> $item->getUnitPrice()
-					,'Discount'=> ''
+					,'Discount'=> (floatval($shouldTotal) === 0.0000 ? 0 : round((($shouldTotal - $item->getTotalPrice()) * 100 / $shouldTotal), 2) ) . '%'
 					,'AccountCode'=> $product->getRevenueAccNo()
 					,'TaxType'=> "GST on Income"
 					,'TrackingName1'=> ''
@@ -101,6 +102,23 @@ class CreditNoteExport_Xero extends ExportAbstract
 					,'TrackingOption2'=> ''
 					,'Currency'=> ''
 					,'BrandingTheme'=> ''
+				));
+			}
+			if(($shippingValue = $creditNote->getShippingValue()) > 0) {
+				$return[] = array_merge($row, array(
+						'InventoryItemCode' => 'Credit Note Shipping'
+						,'Description'=> 'Credit Note Shipping'
+						,'Quantity'=> 1
+						,'UnitAmount'=> StringUtilsAbstract::getCurrency( $shippingValue )
+						,'Discount'=> ''
+						,'AccountCode'=> '43300'
+						,'TaxType'=> "GST on Income"
+						,'TrackingName1'=> ''
+						,'TrackingOption1'=> ''
+						,'TrackingName2'=> ''
+						,'TrackingOption2'=> ''
+						,'Currency'=> ''
+						,'BrandingTheme'=> ''
 				));
 			}
 		}

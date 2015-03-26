@@ -183,12 +183,10 @@ class DetailsController extends BPCPageAbstract
 				throw new Exception('Invalid Customer passed in!');
 			if(!isset($param->CallbackParameter->applyTo) || ($applyTo = trim($param->CallbackParameter->applyTo)) === '' || !in_array($applyTo, CreditNote::getApplyToTypes()))
 				throw new Exception('Invalid Apply To passed in!');
-			if(isset($param->CallbackParameter->creditNote) && !($creditNote = CreditNote::get(trim($param->CallbackParameter->creditNote->id))) instanceof CreditNote)
-				throw new Exception('Invalid CreditNote To passed in!');
 			$creditNote = (isset($param->CallbackParameter->creditNoteId) && ($creditNote = CreditNote::get(trim($param->CallbackParameter->creditNoteId))) instanceof CreditNote) ? $creditNote : CreditNote::create($customer, trim($param->CallbackParameter->description));
 			if(isset($param->CallbackParameter->orderId) && ($order = Order::get(trim($param->CallbackParameter->orderId))) instanceof Order)
 				$creditNote->setOrder($order);
-
+			$creditNote->setShippingValue(isset($param->CallbackParameter->totalShippingCost) ? StringUtilsAbstract::getValueFromCurrency($param->CallbackParameter->totalShippingCost) : 0);
 			if(isset($param->CallbackParameter->shippingAddr))
 			{
 				$shippAddress = Address::create(
@@ -213,7 +211,7 @@ class DetailsController extends BPCPageAbstract
 				$creditNote->addComment($comments, Comments::TYPE_SALES);
 			}
 
-			$totalPaymentDue = 0;
+			$totalPaymentDue = $creditNote->getShippingValue();
 			foreach ($param->CallbackParameter->items as $item) {
 				if(!($product = Product::get(trim($item->product->id))) instanceof Product)
 					throw new Exception('Invalid Product passed in!');
@@ -226,16 +224,20 @@ class DetailsController extends BPCPageAbstract
 				$totalPaymentDue += $totalPrice;
 				if(is_numeric($item->creditNoteItemId) && !CreditNoteItem::get(trim($item->creditNoteItemId)) instanceof CreditNoteItem)
 					throw new Exception('Invalid Credit Note Item passed in');
-				$creditNoteItem = is_numeric($item->creditNoteItemId) ?
-					CreditNoteItem::get(trim($item->creditNoteItemId))->setActive($active)->setProduct($product)->setQty($qtyOrdered)->setUnitPrice($unitPrice)->setItemDescription($itemDescription)
-					:
-					CreditNoteItem::create($creditNote, $product, $qtyOrdered, $unitPrice, $itemDescription);
+				$unitCost = $product->getUnitCost();
+				$orderItem = null;
 				if(isset($item->orderItemId) && ($orderItem = OrderItem::get(trim($item->orderItemId))) instanceof OrderItem)
-					$creditNoteItem->setOrderItem($orderItem)->setUnitCost($orderItem->getUnitCost());
-				if(isset($item->orderItemId) && ($orderItem = OrderItem::get(trim($item->orderItemId))) instanceof OrderItem && $product->getUnitCost() != 0)
-					$creditNoteItem->setUnitCost($orderItem->getUnitCost())->save();
-				else $creditNoteItem->setUnitCost($product->getUnitCost())->save();
-
+					$unitCost = $orderItem->getUnitCost();
+				
+				$creditNoteItem = is_numeric($item->creditNoteItemId) ?
+					CreditNoteItem::get(trim($item->creditNoteItemId))->setActive($active)->setProduct($product)->setQty($qtyOrdered)->setUnitPrice($unitPrice)->setItemDescription($itemDescription)->setUnitCost($unitCost)->setTotalPrice($totalPrice)->save()
+					:
+					($orderItem instanceof OrderItem ? 
+							CreditNoteItem::createFromOrderItem($creditNote, $orderItem, $qtyOrdered, $unitPrice, $itemDescription, $unitCost, $totalPrice) 
+							: 
+							CreditNoteItem::create($creditNote, $product, $qtyOrdered, $unitPrice, $itemDescription, $unitCost, $totalPrice)
+					);
+var_dump($creditNoteItem->getTotalPrice());
 				switch(trim($item->stockData)) {
 					case 'StockOnHand': {
 						$product->returnedIntoSOH($qtyOrdered, $creditNoteItem->getUnitCost(), '', $creditNoteItem);

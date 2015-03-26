@@ -43,8 +43,8 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					});
 					tmp.me.disableAll();
 					tmp.modalBoxTitlePanel.update('<strong class="text-success">Success!</strong>');
-					tmp.succDiv = new Element('div')
-						.insert({'bottom': new Element('h4', {'class': 'text-success'}).update('Saved Successfull.') })
+					tmp.succDiv = new Element('div', {'class': 'panel'})
+						.insert({'bottom': new Element('h4', {'class': 'text-success'}).update('Saved Successfully.') })
 						.insert({'bottom': new Element('div').update(new Element('div', {'class': 'btn btn-primary col-xs-6 col-xs-offset-3'})
 							.update('OK')
 							.observe('click', function(){
@@ -440,7 +440,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					})
 				})
 				.insert({'bottom': new Element('div', {'class': 'col-xs-10'})
-					.insert({'bottom': new Element('strong').update( new Element('a', {'href': '/product/' + id + '.html', 'target': '_BLANK'}).update(product.name) )
+					.insert({'bottom': new Element('strong').update( new Element('a', {'href': '/product/' + product.id + '.html', 'target': '_BLANK'}).update(product.name) )
 						.insert({'bottom': new Element('small', {'class': 'pull-right'}).update('SKU: ' + product.sku) })
 					})
 					.insert({'bottom': new Element('div')
@@ -498,14 +498,17 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		var tmp = {};
 		tmp.me = this;
 		//get all data
+		tmp.qty = creditNoteItem.qty ? creditNoteItem.qty : creditNoteItem.qtyOrdered;
+		tmp.shouldBeTotal = creditNoteItem.unitPrice * tmp.qty;
+		tmp.discount = Math.ceil(tmp.shouldBeTotal) == 0 ? 0 : Math.round((tmp.shouldBeTotal - creditNoteItem.totalPrice) * 100 / tmp.shouldBeTotal);
 		tmp.data = {
 			'product': creditNoteItem.product,
 			'itemDescription': creditNoteItem.itemDescription,
 			'unitPrice': tmp.me.getCurrency(creditNoteItem.unitPrice),
-			'qtyOrdered': creditNoteItem.qty ? creditNoteItem.qty : creditNoteItem.qtyOrdered,
-			'discount' : 100,
+			'qtyOrdered': tmp.qty,
+			'discount' : tmp.discount + '%',
 			'margin': 0,
-			'totalPrice': tmp.me.getCurrency(creditNoteItem.unitPrice * (creditNoteItem.qty ? creditNoteItem.qty : creditNoteItem.qtyOrdered))
+			'totalPrice': tmp.me.getCurrency(creditNoteItem.totalPrice)
 		};
 		$$('.order_change_details_table').first().insert({'bottom': tmp.newDiv = tmp.me._getProductRow(tmp.data) });
 
@@ -562,13 +565,17 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 						.insert({'bottom': new Element('div', {'class': 'col-xs-6 text-right'}).update( new Element('strong').update('Total GST: ') ) })
 						.insert({'bottom': new Element('div', {'order-price-summary': 'totalPriceGST', 'class': 'col-xs-6'}).update( tmp.me.getCurrency(0) ) })
 					})
-					.insert({'bottom': new Element('div', {'class': 'row', 'style': 'border-bottom: 1px solid brown'}).setStyle('display: none;')
+					.insert({'bottom': new Element('div', {'class': 'row', 'style': 'border-bottom: 1px solid brown'})
 						.insert({'bottom': new Element('div', {'class': 'col-xs-6 text-right'}).update( new Element('strong').update('Total Discount:') ) })
 						.insert({'bottom': new Element('div', {'order-price-summary': 'totalDiscount', 'class': 'col-xs-6'}).update( tmp.me.getCurrency(0) ) })
 					})
 					.insert({'bottom': new Element('div', {'class': 'row'})
 						.insert({'bottom': new Element('div', {'class': 'col-xs-6 text-right'}).update( new Element('strong').update('Sub Total Incl. GST: ') ) })
 						.insert({'bottom': new Element('div', {'order-price-summary': 'totalPriceIncludeGST', 'class': 'col-xs-6'}).update( tmp.me.getCurrency(0) ) })
+					})
+					.insert({'bottom': new Element('div', {'class': 'row'})
+						.insert({'bottom': new Element('div', {'class': 'col-xs-6 text-right'}).update( new Element('strong').update('Shipping Cost: ') ) })
+						.insert({'bottom': tmp.me._getShippingCostBox(tmp.me._creditNote && tmp.me._creditNote.id ? tmp.me._creditNote.shippingValue : (tmp.me._order && tmp.me._order.infos['14'] ? tmp.me.getValueFromCurrency(tmp.me._order.infos[14][0].value) : 0) ) })
 					})
 					.insert({'bottom': new Element('div', {'class': 'row', 'style': 'border-bottom: 1px solid brown'})
 						.insert({'bottom': new Element('div', {'class': 'col-xs-6 text-right'}).update( new Element('strong').update('Apply To: ') ) })
@@ -661,7 +668,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					$(this).select();
 				})
 			)
-			,'discount': tmp.me._getFormGroup( null, new Element('input', {'class': 'input-sm', 'new-order-item': 'discount', 'value': '0'}).setStyle('display: none;')
+			,'discount': tmp.me._getFormGroup( null, new Element('input', {'class': 'input-sm', 'new-order-item': 'discount', 'value': '0'})
 				.observe('keyup', function(){
 					if($F($(this)).blank() || $F($(this)) > 100) {
 						$(this).value = 0;
@@ -737,8 +744,8 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				})
 				.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-1'})
 					.insert({'bottom': new Element('div')
-						.insert({'bottom': new Element('div', {'class': 'qty col-xs-12'}).update(orderItem.qtyOrdered) })
-						.insert({'bottom': new Element('div', {'class': 'discount col-xs-6'}).update(orderItem.discount).setStyle('display: none;') })
+						.insert({'bottom': new Element('div', {'class': 'qty col-xs-6'}).update(orderItem.qtyOrdered) })
+						.insert({'bottom': new Element('div', {'class': 'discount col-xs-6'}).update(orderItem.discount) })
 					})
 				})
 				.insert({'bottom': new Element(tmp.tag, {'class': 'tprice col-xs-1'})
@@ -1177,6 +1184,15 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		});
 		return tmp.me;
 	}
+	,_getShippingCostBox: function(value) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.shippingCostBox = new Element('input', {'order-price-summary': 'totalShippingCost', 'class': 'form-control input-sm', 'save-order': 'totalShippingCost', 'placeholder': tmp.me.getCurrency(0), 'required': true, 'validate_currency': 'Invalid number provided!', 'value': tmp.me.getCurrency(value ? value : 0) })
+			.observe('keyup', function() {
+				tmp.me._recalculateSummary();
+			});
+		return tmp.shippingCostBox.wrap(new Element('div', {'class': 'form-group'}));
+	}
 	,_recalculateSummary: function() {
 		var tmp = {};
 		tmp.me = this;
@@ -1207,7 +1223,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		jQuery('[order-price-summary="totalPriceIncludeGST"]').val(tmp.me.getCurrency(tmp.totalPriceIncGSTWithDiscount)).html(tmp.me.getCurrency(tmp.totalPriceIncGSTWithDiscount));
 
 		//calculate the sub total
-		tmp.totalShipping = (jQuery('[order-price-summary="totalShippingCost"]').length > 0 ? jQuery('[order-price-summary="totalShippingCost"]').val() : 0);
+		tmp.totalShipping = (jQuery('[order-price-summary="totalShippingCost"]').length > 0 ? tmp.me.getValueFromCurrency(jQuery('[order-price-summary="totalShippingCost"]').val()) : 0);
 		tmp.subTotal = (tmp.totalShipping * 1 + tmp.totalPriceIncGSTWithDiscount * 1);
 		jQuery('[order-price-summary="subTotal"]').val(tmp.me.getCurrency(tmp.subTotal)).html(tmp.me.getCurrency(tmp.subTotal));
 

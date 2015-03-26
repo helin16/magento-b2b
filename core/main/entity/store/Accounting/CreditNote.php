@@ -52,6 +52,12 @@ class CreditNote extends BaseEntityAbstract
 	 */
 	private $totalPaid = 0.0000;
 	/**
+	 * shipping value of the creditnote
+	 * 
+	 * @var double
+	 */
+	private $shippingValue = 0.0000;
+	/**
 	 * The description
 	 *
 	 * @var string
@@ -247,6 +253,27 @@ class CreditNote extends BaseEntityAbstract
 	    return $this;
 	}
 	/**
+	 * The getter for shippingValue
+	 *
+	 * @return double
+	 */
+	public function getShippingValue ()
+	{
+	    return $this->shippingValue;
+	}
+	/**
+	 * Setter for shippingValue
+	 * 
+	 * @param mixed $value The new value of shippingValue
+	 *
+	 * @return CreditNote
+	 */
+	public function setShippingValue ($value)
+	{
+	    $this->shippingValue = $value;
+	    return $this;
+	}
+	/**
 	 * Adding a payment to this creditNote
 	 *
 	 * @param PaymentMethod $method
@@ -279,6 +306,7 @@ class CreditNote extends BaseEntityAbstract
 				$totalPaid += $payment->getValue();
 			$this->setTotalPaid($totalPaid);
 		}
+		$this->setTotalValue($this->getTotalValue() + $this->getShippingValue());
 	}
 	/**
 	 * (non-PHPdoc)
@@ -308,9 +336,9 @@ class CreditNote extends BaseEntityAbstract
 	 *
 	 * @return CreditNote
 	 */
-	public function addItem(Product $product, $qty, $unitPrice, $itemDescription = '', $unitCost = null, &$creditNoteItem = null)
+	public function addItem(Product $product, $qty, $unitPrice, $itemDescription = '', $unitCost = null, $totalPrice = null, &$creditNoteItem = null)
 	{
-		$creditNoteItem = CreditNoteItem::create($this, $product, $qty, $unitPrice, $itemDescription, $unitCost);
+		$creditNoteItem = CreditNoteItem::create($this, $product, $qty, $unitPrice, $itemDescription, $unitCost, $totalPrice);
 		return $this;
 	}
 	/**
@@ -324,9 +352,9 @@ class CreditNote extends BaseEntityAbstract
 	 *
 	 * @return CreditNote
 	 */
-	public function addItemFromOrderItem(OrderItem $orderItem, $qty, $unitPrice, $itemDescription = '', $unitCost = null, &$creditNoteItem = null)
+	public function addItemFromOrderItem(OrderItem $orderItem, $qty, $unitPrice, $itemDescription = '', $unitCost = null, $totalPrice = null, &$creditNoteItem = null)
 	{
-		$creditNoteItem = CreditNoteItem::createFromOrderItem($this, $orderItem, $qty, $unitPrice, $itemDescription, $unitCost);
+		$creditNoteItem = CreditNoteItem::createFromOrderItem($this, $orderItem, $qty, $unitPrice, $itemDescription, $unitCost, $totalPrice);
 		return $this;
 	}
 	/**
@@ -366,6 +394,7 @@ class CreditNote extends BaseEntityAbstract
 		DaoMap::setDateType('applyDate');
 		DaoMap::setIntType('totalValue', 'double', '10,4');
 		DaoMap::setIntType('totalPaid', 'double', '10,4');
+		DaoMap::setIntType('shippingValue', 'double', '10,4');
 		DaoMap::setStringType('description', 'varchar', 255);
 		DaoMap::setOneToMany('items', 'CreditNoteItem', 'cn_item');
 		parent::__loadDaoMap();

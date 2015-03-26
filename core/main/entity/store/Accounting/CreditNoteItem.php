@@ -38,6 +38,12 @@ class CreditNoteItem extends BaseEntityAbstract
 	 */
 	private $unitPrice;
 	/**
+	 * total Price for the refund
+	 * 
+	 * @var double
+	 */
+	private $totalPrice;
+	/**
 	 * The item description
 	 *
 	 * @var string
@@ -194,6 +200,27 @@ class CreditNoteItem extends BaseEntityAbstract
 	    return $this;
 	}
 	/**
+	 * The getter for totalPrice
+	 *
+	 * @return double
+	 */
+	public function getTotalPrice ()
+	{
+	    return $this->totalPrice;
+	}
+	/**
+	 * Setter for totalPrice
+	 * 
+	 * @param mixed $value The new value of totalPrice
+	 *
+	 * @return CreditNoteItem
+	 */
+	public function setTotalPrice ($value)
+	{
+	    $this->totalPrice = $value;
+	    return $this;
+	}
+	/**
 	 * (non-PHPdoc)
 	 * @see BaseEntityAbstract::preSave()
 	 */
@@ -201,6 +228,8 @@ class CreditNoteItem extends BaseEntityAbstract
 	{
 		if(!is_numeric($this->getQty()))
 			throw new EntityException('Qty of the CreditNoteItem needs to be a integer.');
+		if(trim($this->getTotalPrice()) === '')
+			$this->setTotalPrice($this->getUnitPrice() * $this->getQty());
 	}
 	/**
 	 * (non-PHPdoc)
@@ -216,13 +245,10 @@ class CreditNoteItem extends BaseEntityAbstract
 		DaoMap::setIntType('qty');
 		DaoMap::setIntType('unitPrice', 'double', '10,4');
 		DaoMap::setIntType('unitCost', 'double', '10,4');
+		DaoMap::setIntType('totalPrice', 'double', '10,4');
 		DaoMap::setStringType('itemDescription', 'varchar', '255');
 
 		parent::__loadDaoMap();
-
-		DaoMap::createIndex('qty');
-		DaoMap::createIndex('unitPrice');
-		DaoMap::createIndex('unitCost');
 
 		DaoMap::commit();
 	}
@@ -238,7 +264,7 @@ class CreditNoteItem extends BaseEntityAbstract
 	 *
 	 * @return CreditNoteItem
 	 */
-	public static function create(CreditNote $creditNote, Product $product, $qty, $unitPrice, $itemDescription = '', $unitCost = null)
+	public static function create(CreditNote $creditNote, Product $product, $qty, $unitPrice, $itemDescription = '', $unitCost = null, $totalPrice = null)
 	{
 		$item = new CreditNoteItem();
 		$item->setCreditNote($creditNote)
@@ -246,9 +272,10 @@ class CreditNoteItem extends BaseEntityAbstract
 			->setQty($qty)
 			->setUnitPrice($unitPrice)
 			->setItemDescription(trim($itemDescription))
+			->setTotalPrice($totalPrice)
 			->setUnitCost($unitCost !== null ? $unitCost : $product->getUnitCost())
 			->save();
-		$msg = 'A credit item has been created with ' . $qty . 'Product(s) (SKU=' . $product->getSku() . ', ID=' . $product->getId() . '), unitPrice=' . StringUtilsAbstract::getCurrency($unitPrice) . ', unitCost=' . StringUtilsAbstract::getCurrency($item->getUnitCost()) ;
+		$msg = 'A credit item has been created with ' . $qty . 'Product(s) (SKU=' . $product->getSku() . ', ID=' . $product->getId() . '), unitPrice=' . StringUtilsAbstract::getCurrency($unitPrice) . ', unitCost=' . StringUtilsAbstract::getCurrency($item->getUnitCost()) . ', qty=' . $item->getQty() . ', totalPrice=' . StringUtilsAbstract::getCurrency($item->getTotalPrice()) ;
 		$creditNote->addComment($msg, Comments::TYPE_SYSTEM)
 			->addLog($msg, Comments::TYPE_SYSTEM);
 		return $item;
@@ -265,7 +292,7 @@ class CreditNoteItem extends BaseEntityAbstract
 	 *
 	 * @return CreditNoteItem
 	 */
-	public static function createFromOrderItem(CreditNote $creditNote, OrderItem $orderItem, $qty, $unitPrice = null, $itemDescription = '', $unitCost = null)
+	public static function createFromOrderItem(CreditNote $creditNote, OrderItem $orderItem, $qty, $unitPrice = null, $itemDescription = '', $unitCost = null, $totalPrice = null)
 	{
 		$item = new CreditNoteItem();
 		$item->setCreditNote($creditNote)
@@ -275,8 +302,9 @@ class CreditNoteItem extends BaseEntityAbstract
 			->setUnitPrice($unitPrice === null ? $orderItem->getUnitPrice() : $unitPrice)
 			->setItemDescription(trim($itemDescription))
 			->setUnitCost($unitCost !== null ? $unitCost : $orderItem->getUnitCost())
+			->setTotalPrice($totalPrice !== null ? $totalPrice : $orderItem->getTotalPrice())
 			->save();
-		$msg = 'A credit item has been created based on OrderItem(ID=' . $orderItem->getId() . ', OrderNo=' . $orderItem->getOrder()->getOrderNo() . ') with ' . $qty . 'Product(s) (SKU=' . $item->getProduct()->getSku() . ', ID=' . $item->getProduct()->getId() . '), unitPrice=' . StringUtilsAbstract::getCurrency($unitPrice) . ', unitCost=' . StringUtilsAbstract::getCurrency($item->getUnitCost()) ;
+		$msg = 'A credit item has been created based on OrderItem(ID=' . $orderItem->getId() . ', OrderNo=' . $orderItem->getOrder()->getOrderNo() . ') with ' . $qty . 'Product(s) (SKU=' . $item->getProduct()->getSku() . ', ID=' . $item->getProduct()->getId() . '), unitPrice=' . StringUtilsAbstract::getCurrency($unitPrice) . ', unitCost=' . StringUtilsAbstract::getCurrency($item->getUnitCost()) . ', qty=' . $item->getQty() . ', totalPrice=' . StringUtilsAbstract::getCurrency($item->getTotalPrice()) ;
 		$creditNote->addComment($msg, Comments::TYPE_SYSTEM)
 			->addLog($msg, Comments::TYPE_SYSTEM);
 		return $item;
