@@ -1039,15 +1039,36 @@ class Product extends InfoEntityAbstract
 	 * @param string             $comments
 	 * @param BaseEntityAbstract $entity
 	 */
-	public function returnedForRMA($qty, $unitCost, $comments, BaseEntityAbstract $entity = null)
+	public function returnedIntoRMA($qty, $unitCost, $comments, BaseEntityAbstract $entity = null)
+	{
+		$rma = ($entity instanceof RMA ? $entity : ($entity instanceof RMAItem ? $entity->getRMA() : null));
+		$order = ($rma instanceof RMA ? $rma->getOrder() : null);
+		return $this->setStockInRMA(($originalStockOnRMA = $this->getStockInRMA()) + $qty)
+			->setTotalRMAValue(($originalTotalRMAValue = $this->getTotalRMAValue()) + ($qty * $unitCost))
+			->snapshotQty($entity instanceof BaseEntityAbstract ? $entity : $this, ProductQtyLog::TYPE_RMA, 'Stock RMAed from ' . ($rma instanceof RMA ? 'RMA[' . $rma->getRaNo() . ']' : '') . ($order instanceof Order ? ' generated from Order[' . $order->getOrderNo() . ']' : '') . (trim($comments) === '' ? '.' : ': ' . $comments))
+			->save()
+			->addLog('StockInRMA(' . $originalStockOnRMA . ' => ' . $this->getStockInRMA() . '), TotalRMAValue(' . $originalTotalRMAValue . ' => ' . $this->getTotalRMAValue() . ')' . (trim($comments) === '' ? '.' : ': ' . $comments),
+					Log::TYPE_SYSTEM,
+					'STOCK_QTY_CHG',
+					__CLASS__ . '::' . __FUNCTION__);
+	}
+	/**
+	 * a product is returned for into stock on hand
+	 *
+	 * @param unknown            $qty
+	 * @param dobuble            $unitCost
+	 * @param string             $comments
+	 * @param BaseEntityAbstract $entity
+	 */
+	public function returnedIntoSOH($qty, $unitCost, $comments, BaseEntityAbstract $entity = null)
 	{
 		$creditNote = ($entity instanceof CreditNote ? $entity : ($entity instanceof CreditNoteItem ? $entity->getCreditNote() : null));
 		$order = ($creditNote instanceof CreditNote ? $creditNote->getOrder() : null);
-		return $this->setStockInRMA(($originalStockOnRMA = $this->getStockInRMA()) + $qty)
-			->setTotalRMAValue(($originalTotalRMAValue = $this->getTotalRMAValue()) + ($qty * $unitCost))
-			->snapshotQty($entity instanceof BaseEntityAbstract ? $entity : $this, ProductQtyLog::TYPE_RMA, 'Stock RMAed from ' . ($creditNote instanceof CreditNote ? 'CreditNote[' . $creditNote->getCreditNoteNo() . ']' : '') . ($order instanceof Order ? ' generated from Order[' . $order->getOrderNo() . ']' : ''))
+		return $this->setStockOnHand(($originalStockOnHand = $this->getStockOnHand()) + $qty)
+			->setTotalOnHandValue(($originalTotalOnHandValue = $this->getTotalOnHandValue()) + ($qty * $unitCost))
+			->snapshotQty($entity instanceof BaseEntityAbstract ? $entity : $this, ProductQtyLog::TYPE_RMA, 'Return StockOnHand ' . ($creditNote instanceof CreditNote ? ' from CreditNote[' . $creditNote->getCreditNoteNo() . ']' : '') . ($order instanceof Order ? ' generated from Order[' . $order->getOrderNo() . ']' : '') . (trim($comments) === '' ? '.' : ': ' . $comments))
 			->save()
-			->addLog('StockInRMA(' . $originalStockOnRMA . ' => ' . $this->getStockInRMA() . '), TotalRMAValue(' . $originalTotalRMAValue . ' => ' . $this->getTotalRMAValue() . ')',
+			->addLog('StockOnHand(' . $originalStockOnHand . ' => ' . $this->getStockOnHand() . '), TotalRMAValue(' . $originalTotalOnHandValue . ' => ' . $this->getTotalOnHandValue() . ')' . (trim($comments) === '' ? '.' : ': ' . $comments),
 					Log::TYPE_SYSTEM,
 					'STOCK_QTY_CHG',
 					__CLASS__ . '::' . __FUNCTION__);
@@ -1068,9 +1089,9 @@ class Product extends InfoEntityAbstract
 			->setTotalRMAValue(($originalTotalRMAValue = $this->getTotalRMAValue()) - ($qty * $unitCostFromRMA))
 			->setStockOnHand(($originStockOnHand = $this->getStockOnHand()) + $qty)
 			->setTotalOnHandValue(($originalTotalOnHandValue = $this->getTotalOnHandValue()) + ($qty * $unitCostFromRMA))
-			->snapshotQty($entity instanceof BaseEntityAbstract ? $entity : $this, ProductQtyLog::TYPE_RMA, 'Stock Fixed from: ' . ($creditNote instanceof CreditNote ? 'RMA[' . $rma->getRaNo() . ']' : '') . ($order instanceof Order ? ' generated from Order[' . $order->getOrderNo() . ']' : ''))
+			->snapshotQty($entity instanceof BaseEntityAbstract ? $entity : $this, ProductQtyLog::TYPE_RMA, 'Stock Fixed from: ' . ($creditNote instanceof CreditNote ? 'RMA[' . $rma->getRaNo() . ']' : '') . ($order instanceof Order ? ' generated from Order[' . $order->getOrderNo() . ']' : ''). (trim($comments) === '' ? '.' : ': ' . $comments))
 			->save()
-			->addLog('StockInRMA(' . $originalStockOnRMA . ' => ' . $this->getStockInRMA() . '), TotalRMAValue(' . $originalTotalRMAValue . ' => ' . $this->getTotalRMAValue() . '), StockOnHand(' . $originStockOnHand . ' => ' . $this->getStockOnHand() . '), TotalOnHandValue(' . $originalTotalOnHandValue . ' => ' . $this->getTotalOnHandValue() . ')'
+			->addLog('StockInRMA(' . $originalStockOnRMA . ' => ' . $this->getStockInRMA() . '), TotalRMAValue(' . $originalTotalRMAValue . ' => ' . $this->getTotalRMAValue() . '), StockOnHand(' . $originStockOnHand . ' => ' . $this->getStockOnHand() . '), TotalOnHandValue(' . $originalTotalOnHandValue . ' => ' . $this->getTotalOnHandValue() . ')' . (trim($comments) === '' ? '.' : ': ' . $comments)
 				, Log::TYPE_SYSTEM
 				, 'STOCK_QTY_CHG'
 				, __CLASS__ . '::' . __FUNCTION__);

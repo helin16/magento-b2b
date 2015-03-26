@@ -12,7 +12,7 @@ PaymentListPanelJs.prototype = {
 		this._panelHTMLID = 'PaymentListPanelJs_' + String.fromCharCode(65 + Math.floor(Math.random() * 26)) + Date.now();
 		this._order = _order;
 		this._creditNote = _creditNote;
-		this._showNotifyCustBox = (_showNotifyCustBox || this._showNotifyCustBox);
+		this._showNotifyCustBox = (_showNotifyCustBox === false ? false : true);
 		this._canEdit = (_canEdit || this._canEdit);
 	}
 	,setAfterAddFunc: function(_afterAddFunc) {

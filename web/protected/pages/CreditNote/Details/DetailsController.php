@@ -48,9 +48,9 @@ class DetailsController extends BPCPageAbstract
 		else $js .= "pageJs._customer=" . json_encode($customer) . ";";
 		if($creditNote instanceof CreditNote)
 			$js .= "pageJs._creditNote=" . json_encode($creditNote->getJson(array('customer'=> $creditNote->getCustomer()->getJson(), 'items'=> array_map(create_function('$a', 'return $a->getJson(array("product"=>$a->getProduct()->getJson()));'), $creditNote->getCreditNoteItems())))) . ";";
-		
+
 		$paymentMethods =  array_map(create_function('$a', 'return $a->getJson();'), PaymentMethod::getAll(true, null, DaoQuery::DEFAUTL_PAGE_SIZE, array('name' => 'asc')));
-		
+
 		$js .= "pageJs._applyToOptions=" . json_encode($applyToOptions) . ";";
 		$js .= "pageJs";
 			$js .= ".setHTMLIDs('detailswrapper')";
@@ -58,7 +58,6 @@ class DetailsController extends BPCPageAbstract
 			$js .= ".setCallbackId('searchProduct', '" . $this->searchProductBtn->getUniqueID() . "')";
 			$js .= ".setCallbackId('saveOrder', '" . $this->saveOrderBtn->getUniqueID() . "')";
 			$js .= ".setPaymentMethods(" . json_encode($paymentMethods) . ")";
-			$js .= '.setCallbackId("addComments", "' . $this->addCommentsBtn->getUniqueID() . '")';
 			$js .= ".init();";
 		return $js;
 	}
@@ -175,7 +174,7 @@ class DetailsController extends BPCPageAbstract
 	 * @throws Exception
 	 *
 	 */
-public function saveOrder($sender, $param)
+	public function saveOrder($sender, $param)
 	{
 		$results = $errors = array();
 		try
@@ -188,8 +187,8 @@ public function saveOrder($sender, $param)
 				throw new Exception('Invalid Apply To passed in!');
 			if(isset($param->CallbackParameter->creditNote) && !($creditNote = CreditNote::get(trim($param->CallbackParameter->creditNote->id))) instanceof CreditNote)
 				throw new Exception('Invalid CreditNote To passed in!');
-			$creditNote = (isset($param->CallbackParameter->creditNote) && ($creditNote = CreditNote::get(trim($param->CallbackParameter->creditNote->id))) instanceof CreditNote) ? $creditNote : CreditNote::create($customer, trim($param->CallbackParameter->description));
-			if(isset($param->CallbackParameter->order) && ($order = Order::get(trim($param->CallbackParameter->order->id))) instanceof Order)
+			$creditNote = (isset($param->CallbackParameter->creditNoteId) && ($creditNote = CreditNote::get(trim($param->CallbackParameter->creditNoteId))) instanceof CreditNote) ? $creditNote : CreditNote::create($customer, trim($param->CallbackParameter->description));
+			if(isset($param->CallbackParameter->orderId) && ($order = Order::get(trim($param->CallbackParameter->orderId))) instanceof Order)
 				$creditNote->setOrder($order);
 
 			if(isset($param->CallbackParameter->shippingAddr))
@@ -217,14 +216,12 @@ public function saveOrder($sender, $param)
 			}
 
 			$totalPaymentDue = 0;
-			foreach ($param->CallbackParameter->items as $item)
-			{
-				$product = Product::get(trim($item->product->id));
-				if(!$product instanceof Product)
+			foreach ($param->CallbackParameter->items as $item) {
+				if(!($product = Product::get(trim($item->product->id))) instanceof Product)
 					throw new Exception('Invalid Product passed in!');
-				$unitPrice = trim($item->unitPrice);
+				$unitPrice = StringUtilsAbstract::getValueFromCurrency(trim($item->unitPrice));
 				$qtyOrdered = trim($item->qtyOrdered);
-				$totalPrice = trim($item->totalPrice);
+				$totalPrice = StringUtilsAbstract::getValueFromCurrency(trim($item->totalPrice));
 				$itemDescription = trim($item->itemDescription);
 				$active = trim($item->valid);
 
@@ -240,21 +237,31 @@ public function saveOrder($sender, $param)
 				if(isset($item->orderItemId) && ($orderItem = OrderItem::get(trim($item->orderItemId))) instanceof OrderItem && $product->getUnitCost() != 0)
 					$creditNoteItem->setUnitCost($orderItem->getUnitCost())->save();
 				else $creditNoteItem->setUnitCost($product->getUnitCost())->save();
+
+				switch(trim($item->stockData)) {
+					case 'StockOnHand': {
+						$product->returnedIntoSOH($qtyOrdered, '', $creditNoteItem);
+						break;
+					}
+					case 'StockOnRMA': {
+						$product->returnedIntoRMA($qtyOrdered, '', $creditNoteItem);
+						break;
+					}
+					default: {
+						throw new Exception('System Error: NO where to transfer the stock: ' .trim($item->stockData) . ' for product(SKU=' . $product->getSku() . ').');
+					}
+				}
 			}
-			
-			if(($paymentMethod = PaymentMethod::get(trim($param->CallbackParameter->paymentMethodId))) instanceof PaymentMethod)
-			{
-				$creditNote->setTotalPaid($totalPaidAmount = $param->CallbackParameter->totalPaidAmount)->addPayment($paymentMethod, $totalPaidAmount);
+
+			if(($paymentMethod = PaymentMethod::get(trim($param->CallbackParameter->paymentMethodId))) instanceof PaymentMethod) {
+				$creditNote->setTotalPaid($totalPaidAmount = $param->CallbackParameter->totalPaidAmount)
+					->addPayment($paymentMethod, $totalPaidAmount);
 			}
-			
-			$creditNote->setTotalValue($totalPaymentDue)->setApplyTo($applyTo)->save();
+			$creditNote->setTotalValue($totalPaymentDue)
+				->setApplyTo($applyTo)
+				->save();
 			$results['item'] = $creditNote->getJson();
-			if(isset($param->CallbackParameter->confirmEmail) && filter_var(($email = $param->CallbackParameter->confirmEmail), FILTER_VALIDATE_EMAIL))
-			{
-				$subject = "message SUBJECT from CreditNote";
-				$msg = "message BODY from CreditNote";
-				EmailSender::addEmail('sales@budgetpc.com.au', $email, $subject, $msg); // TODO: email template
-			}
+			$results['redirectURL'] = '/creditnote/'. $creditNote->getId() . '.html?' . $_SERVER['QUERY_STRING'];
 			if($printItAfterSave === true)
 				$results['printURL'] = '/print/creditnote/' . $creditNote->getId() . '.html?pdf=1';
 			Dao::commitTransaction();
@@ -262,7 +269,7 @@ public function saveOrder($sender, $param)
 		catch(Exception $ex)
 		{
 			Dao::rollbackTransaction();
-			$errors[] = $ex->getMessage();
+			$errors[] = $ex->getMessage() . '<pre>' . $ex->getTraceAsString() . '</pre>';
 		}
 		$param->ResponseData = StringUtilsAbstract::getJson($results, $errors);
 	}

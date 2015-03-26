@@ -7,10 +7,11 @@ CommentsDivJs.prototype = {
 	,_pageJs: null
 
 	//constructor
-	,initialize : function(_pageJs, _entityName, _entityId, _pageSize) {
+	,initialize : function(_pageJs, _entityName, _entityId, _pageSize, _displayDivId) {
 		this._pageJs = _pageJs;
 		this._entityName = _entityName;
 		this._entityId = _entityId;
+		this._displayDivId = _displayDivId;
 		this._pageSize = (_pageSize || 5);
 	}
 	/**
