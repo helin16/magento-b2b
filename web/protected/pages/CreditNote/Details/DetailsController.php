@@ -240,11 +240,11 @@ class DetailsController extends BPCPageAbstract
 
 				switch(trim($item->stockData)) {
 					case 'StockOnHand': {
-						$product->returnedIntoSOH($qtyOrdered, '', $creditNoteItem);
+						$product->returnedIntoSOH($qtyOrdered, $creditNoteItem->getUnitCost(), '', $creditNoteItem);
 						break;
 					}
 					case 'StockOnRMA': {
-						$product->returnedIntoRMA($qtyOrdered, '', $creditNoteItem);
+						$product->returnedIntoRMA($qtyOrdered, $creditNoteItem->getUnitCost(), '', $creditNoteItem);
 						break;
 					}
 					default: {
