@@ -108,7 +108,7 @@ class CreditNoteExport_Xero extends ExportAbstract
 				$return[] = array_merge($row, array(
 						'InventoryItemCode' => 'Credit Note Shipping'
 						,'Description'=> 'Credit Note Shipping'
-						,'Quantity'=> 1
+						,'Quantity'=> 0 - 1
 						,'UnitAmount'=> StringUtilsAbstract::getCurrency( $shippingValue )
 						,'Discount'=> ''
 						,'AccountCode'=> '43300'
