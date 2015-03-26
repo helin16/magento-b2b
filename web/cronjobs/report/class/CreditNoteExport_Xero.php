@@ -59,7 +59,7 @@ class CreditNoteExport_Xero extends ExportAbstract
 			$fromDate = self::$_dateRange['start'];
 			$toDate = self::$_dateRange['end'];
 		}
-		$creditNotes = CreditNoteItem::getAllByCriteria('applyDate >= :fromDate and applyDate < :toDate', array('fromDate' => trim($fromDate), 'toDate' => trim($toDate)));
+		$creditNotes = CreditNote::getAllByCriteria('applyDate >= :fromDate and applyDate < :toDate', array('fromDate' => trim($fromDate), 'toDate' => trim($toDate)));
 
 		$return = array();
 		foreach($creditNotes as $creditNote)
