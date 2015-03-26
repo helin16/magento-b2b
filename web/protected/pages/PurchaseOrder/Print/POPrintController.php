@@ -1,7 +1,7 @@
 <?php
 /**
  * This is the OrderDetailsController
- * 
+ *
  * @package    Web
  * @subpackage Controller
  * @author     lhe<helin16@gmail.com>
@@ -15,7 +15,7 @@ class POPrintController extends BPCPageAbstract
 	public $menuItem = 'purchaseorders.prints';
 	/**
 	 * The order that we are viewing
-	 * 
+	 *
 	 * @var Order
 	 */
 	public $order = null;
@@ -59,7 +59,7 @@ class POPrintController extends BPCPageAbstract
 		return "<tr class='$rowClass'><td class='qty'>$qty</td><td class='sku'>$sku</td><td class='name'>$name</td><td class='uprice'>$uprice</td><td class='tprice'>$tprice</td></tr>";
 	}
 	/**
-	 * 
+	 *
 	 * @return string
 	 */
 	public function showProducts()
@@ -86,7 +86,7 @@ class POPrintController extends BPCPageAbstract
 			return '';
 		foreach($comments as $comment)
 		{
-			$html .= '<div class="print-row">' . $comment->getComments() . '</div>';
+			$html .= '<div>' . $comment->getComments() . '</div>';
 		}
 		return $html;
 	}
