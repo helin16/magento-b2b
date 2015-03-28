@@ -12,6 +12,8 @@
 	<com:TCallback ID="clearETABtn" OnCallback="clearETA" />
 	<com:TCallback ID="changeIsOrderedBtn" OnCallback="changeIsOrdered" />
 	<com:TCallback ID="updateAddressBtn" OnCallback="updateAddress" />
+	<com:TCallback ID="updatePONoBtn" OnCallback="updatePONo" />
+	<com:TCallback ID="changeShippingMethodBtn" OnCallback="changeShippingMethod" />
 	<div class="pagewrapper orderdetails">
 		<div id="detailswrapper" class="contentDiv"></div>
 	</div>

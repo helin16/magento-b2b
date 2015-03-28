@@ -57,6 +57,8 @@ class OrderDetailsController extends BPCPageAbstract
 			$js .= '.setCallbackId("clearETA", "' . $this->clearETABtn->getUniqueID() . '")';
 			$js .= '.setCallbackId("changeIsOrdered", "' . $this->changeIsOrderedBtn->getUniqueID() . '")';
 			$js .= '.setCallbackId("updateAddress", "' . $this->updateAddressBtn->getUniqueID() . '")';
+			$js .= '.setCallbackId("updatePONo", "' . $this->updatePONoBtn->getUniqueID() . '")';
+			$js .= '.setCallbackId("changeShippingMethod", "' . $this->changeShippingMethodBtn->getUniqueID() . '")';
 			$js .= '.setEditMode(' . $purchaseEdit . ', ' . $warehouseEdit . ', ' . $accounEdit . ', ' . $statusEdit . ')';
 			$js .= '.setOrder('. json_encode($order->getJson()) . ', ' . json_encode($orderItems) . ', ' . json_encode($orderStatuses) . ', ' . OrderStatus::ID_SHIPPED . ')';
 			$js .= '.setCourier('. json_encode($courierArray) . ', ' . Courier::ID_LOCAL_PICKUP . ')';
@@ -267,6 +269,8 @@ class OrderDetailsController extends BPCPageAbstract
 				throw new Exception('System Error: invalid order passed in!');
 			if(!$order->getStatus() instanceof OrderStatus || trim($order->getStatus()->getId()) !== trim(OrderStatus::ID_PICKED))
 				throw new Exception('System Error: Order ['.$order->getOrderNo().'] Is Not is PICKED status. Current status is ['.($order->getStatus() instanceof OrderStatus ? $order->getStatus()->getName() : 'NULL').']');
+			if(intval($order->getPassPaymentCheck()) !== 1)
+				throw new Exception('Error: there is no payment or payments has been cancelled!');
 			if(!isset($params->CallbackParameter->shippingInfo))
 				throw new Exception('System Error: invalid Shipping Info Details passed in!');
 			$shippingInfo = $params->CallbackParameter->shippingInfo;
@@ -460,11 +464,77 @@ class OrderDetailsController extends BPCPageAbstract
 					->save()
 					->addComment($msg, Comments::TYPE_NORMAL)
 					->addLog($msg, Log::TYPE_SYSTEM);
-				$address->addLog($msg, Log::TYPE_SYSTEM);
+				$address->addLog($msg, Log::TYPE_SYSTEM, '', __CLASS__ . '::' . __FUNCTION__);
 				$results['item'] = $address->getJson();
 			} else {
 				$results['item'] = array();
 			}
+			Dao::commitTransaction();
+		}
+		catch(Exception $ex)
+		{
+			Dao::rollbackTransaction();
+			$errors[] = $ex->getMessage();
+		}
+		$param->ResponseData = StringUtilsAbstract::getJson($results, $errors);
+	}
+	/**
+	 * Update the updatePONo
+	 *
+	 * @param unknown $sender
+	 * @param unknown $param
+	 *
+	 * @throws Exception
+	 */
+	public function updatePONo($sender, $param)
+	{
+		$results = $errors = array();
+		try
+		{
+			Dao::beginTransaction();
+			if(!isset($param->CallbackParameter->orderId) || !($order = Order::get($param->CallbackParameter->orderId)) instanceof Order)
+				throw new Exception('System Error: invalid order provided!');
+			if(!isset($param->CallbackParameter->poNo))
+				throw new Exception('System Error: invalid poNo provided!');
+			$poNo = trim($param->CallbackParameter->poNo);
+			$order->setPONo($poNo)
+				->save()
+				->addComment(($msg = 'Changed PONo. to "' . $poNo . '"'), Comments::TYPE_NORMAL)
+				->addLog($msg, Log::TYPE_SYSTEM, '', __CLASS__ . '::' . __FUNCTION__);
+			$results['item'] = $poNo;
+			Dao::commitTransaction();
+		}
+		catch(Exception $ex)
+		{
+			Dao::rollbackTransaction();
+			$errors[] = $ex->getMessage();
+		}
+		$param->ResponseData = StringUtilsAbstract::getJson($results, $errors);
+	}
+	/**
+	 * Update the changeShippingMethod
+	 *
+	 * @param unknown $sender
+	 * @param unknown $param
+	 *
+	 * @throws Exception
+	 */
+	public function changeShippingMethod($sender, $param)
+	{
+		$results = $errors = array();
+		try
+		{
+			Dao::beginTransaction();
+			if(!isset($param->CallbackParameter->orderId) || !($order = Order::get($param->CallbackParameter->orderId)) instanceof Order)
+				throw new Exception('System Error: invalid order provided!');
+			if(!isset($param->CallbackParameter->shippingMethod) || ($shippingMethod = trim($param->CallbackParameter->shippingMethod)) === '')
+				throw new Exception('System Error: invalid shippingMethod provided!');
+			
+			$order->addInfo(OrderInfoType::ID_MAGE_ORDER_SHIPPING_METHOD, $shippingMethod, true)
+				->save()
+				->addComment(($msg = 'Changed Shipping Method to "' . $shippingMethod . '"'), Comments::TYPE_NORMAL)
+				->addLog($msg, Log::TYPE_SYSTEM, '', __CLASS__ . '::' . __FUNCTION__);
+			$results['item'] = $order->getJson();
 			Dao::commitTransaction();
 		}
 		catch(Exception $ex)

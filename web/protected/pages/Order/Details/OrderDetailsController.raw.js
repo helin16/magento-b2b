@@ -833,6 +833,28 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		return tmp.selBox;
 	}
 	/**
+	 * Ajax: updating the PO NO
+	 */
+	,_updatePONo: function(inputBox) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.me.postAjax(tmp.me.getCallbackId('updatePONo'), {'orderId': tmp.me._order.id, 'poNo': $F(inputBox)}, {
+			'onLoading': function() {}
+			,'onSuccess': function(sende, param) {
+				try {
+					tmp.result = tmp.me.getResp(param, false, true);
+					if(!tmp.result || !tmp.me.item)
+						return;
+					tmp.me._order.pONo = tmp.me.item;
+				} catch (e) {
+					tmp.me.showModalBox('<strong class="text-danger">Error</strong>', e);
+				}
+			}
+		});
+		return tmp.me;
+	}
+	
+	/**
 	 * Getting the address panel
 	 */
 	,_getAddressPanel: function() {
@@ -851,6 +873,13 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			.insert({'bottom': new Element('div', {'class': 'panel-heading'})
 				.insert({'bottom': new Element('strong').update(tmp.me._order.type + ': ') })
 				.insert({'bottom': new Element('strong').update(tmp.me._order.orderNo) })
+				.insert({'bottom': new Element('span').update('&nbsp;') })
+				.insert({'bottom': new Element('span').update('PO No.:') })
+				.insert({'bottom': new Element('input', {'placeholder': 'Optional - PO No. From Customer', 'value': (tmp.me._order.pONo ? tmp.me._order.pONo : '')}) 
+					.observe('change', function() {
+						tmp.me._updatePONo(this);
+					})
+				})
 				.insert({'bottom': new Element('span', {'class': 'pull-right'})
 					.update('Status: ')
 					.insert({'bottom': tmp.me._getOrderStatus() })
@@ -887,6 +916,74 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		});
 		return tmp.newDiv;
 	}
+	,_getShippingMethodEditDiv: function(_shippingMethods) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.shippingMethodSel = new Element('select', {'class': 'form-control input-sm'})
+			.observe('change', function(){
+				tmp.sel = $(this);
+				tmp.me.postAjax(tmp.me.getCallbackId('changeShippingMethod'), {'orderId': tmp.me._order.id, 'shippingMethod': $F(tmp.sel)}, {
+					'onSuccess': function(sender, param) {
+						try {
+							tmp.result = tmp.me.getResp(param, false, true);
+							if(!tmp.result || !tmp.result.item)
+								return;
+							window.location = document.URL;
+						} catch (e) {
+							tmp.me.showModalBox('<strong class="text-danger">Error</strong>', e);
+						}
+					}
+				})
+			});
+		tmp.shippingMethod = (tmp.me._order && tmp.me._order.infos['9'] ? tmp.me._order.infos[9][0].value : '');
+		tmp.foundMatchedShippingMethod = false;
+		_shippingMethods.each(function(method){
+			tmp.sameShippingMethod = (method.name.strip() === tmp.shippingMethod.strip());
+			tmp.shippingMethodSel.insert({'bottom': new Element('option', {'value': method.name, 'selected': tmp.sameShippingMethod}).update(method.name) });
+			if(tmp.foundMatchedShippingMethod === false && tmp.sameShippingMethod === true)
+				tmp.foundMatchedShippingMethod = tmp.sameShippingMethod;
+		});
+		if(!tmp.shippingMethod.blank() && tmp.foundMatchedShippingMethod === false) { //shipping method from online, no matched shipping method
+			tmp.shippingMethodSel.insert({'bottom': new Element('option', {'value': tmp.shippingMethod, 'selected': true}).update(tmp.shippingMethod.stripTags()) });
+		}
+		return tmp.shippingMethodSel;
+	}
+	/**
+	 * Getting the display of the shipping method
+	 */
+	,_getShippingMethodDisplayDiv: function() {
+		var tmp = {};
+		tmp.me = this;
+		tmp.newDiv = new Element('div')
+			.setStyle('cursor: pointer')
+			.insert({'bottom': new Element('em', {'title': 'Double click to change'})
+				.insert({'bottom': new Element('small').update(tmp.me._order.infos['9']? tmp.me._order.infos[9][0].value : '') })
+			})
+			.observe('dblclick', function() {
+				tmp.div = $(this);
+				tmp.loadingDiv = new Element('div').update(tmp.me.getLoadingImg().removeClassName('fa-5x'));
+				tmp.ajax = new Ajax.Request('/ajax/getAll', {
+					method: 'get'
+					,parameters: {'entityName': 'Courier','orderBy': {'name':'asc'}}
+					,onLoading: function() {tmp.div.update(tmp.loadingDiv);}
+					,onSuccess: function(transport) {
+						try {
+							tmp.result = tmp.me.getResp(transport.responseText, false, true);
+							if(!tmp.result || !tmp.result.items)
+								return;
+							tmp.div.update(tmp.me._getShippingMethodEditDiv(tmp.result.items));
+						} catch (e) {
+							tmp.me.showModalBox('<strong class="text-danger">Error</strong>', e);
+							tmp.div.replace(tmp.me._getShippingMethodDisplayDiv());
+						}
+					}
+					,onComplete: function() {
+						tmp.loadingDiv.remove();
+					}
+				});
+			});
+		return tmp.newDiv;
+	}
 	/**
 	 * Getting the order information panel
 	 */
@@ -908,7 +1005,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				.insert({'bottom': new Element('a', {'class': 'list-group-item'}).setStyle('padding: 3px 0px;')
 					.insert({'bottom': new Element('div', {'class': 'row'})
 						.insert({'bottom': new Element('div', {'class': 'col-xs-4 text-right'}).update('<strong><small>Delivery Method:</small></strong>') })
-						.insert({'bottom': new Element('div', {'class': 'col-xs-8'}).update('<em><small>' + (tmp.me._order.infos['9']? tmp.me._order.infos[9][0].value : '') + '</small></em>') })
+						.insert({'bottom': new Element('div', {'class': 'col-xs-8'}).update(tmp.me._getShippingMethodDisplayDiv()) })
 					})
 				})
 				.insert({'bottom': new Element('a', {'class': 'list-group-item'}).setStyle('padding: 3px 0px;')

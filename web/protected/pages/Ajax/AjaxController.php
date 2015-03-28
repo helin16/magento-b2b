@@ -172,7 +172,7 @@ class AjaxController extends TService
   		if(!isset($params['entityName']) || ($entityName = trim($params['entityName'])) === '')
   			throw new Exception('What are we going to get?');
   		$searchTxt = trim(isset($params['searchTxt']) ? trim($params['searchTxt']) : '');
-  		$searchParams = trim(isset($params['searchParams']) ? $params['searchParams'] : array());
+  		$searchParams = isset($params['searchParams']) ? $params['searchParams'] : array();
   		$pageNo = isset($params['pageNo']) ? trim($params['pageNo']) : null;
   		$pageSize = isset($params['pageSize']) ? trim($params['pageSize']) : DaoQuery::DEFAUTL_PAGE_SIZE;
   		$active = isset($params['active']) ? intval($params['active']) : null;
