@@ -77,8 +77,8 @@ class CreditNoteExport_Xero extends ExportAbstract
 				,'PORegion'=> ''
 				,'POPostalCode'=> ''
 				,'POCountry'=> ''
-				,'InvoiceNumber' => $creditNote->getOrder() instanceof Order ? $creditNote->getOrder()->getInvNo() : ''
-				,'Reference'=> $creditNote->getCreditNoteNo()
+				,'InvoiceNumber'=> $creditNote->getCreditNoteNo()
+				,'Reference' => $creditNote->getOrder() instanceof Order ? $creditNote->getOrder()->getInvNo() : ''
 				,'InvoiceDate' => $creditNote->getApplyDate()->setTimeZone('Australia/Melbourne')->__toString()
 				,'DueDate' => ''
 			);
