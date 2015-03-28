@@ -269,7 +269,7 @@ class Payment extends BaseEntityAbstract
 	 *
 	 * @return Ambigous <BaseEntityAbstract, GenericDAO>
 	 */
-	public static function create(Order $order, PaymentMethod $method, $value, $comments = '', $paymentDate = '')
+	public static function create(Order &$order, PaymentMethod $method, $value, $comments = '', $paymentDate = '')
 	{
 		$payment = new Payment();
 		$message = 'A ' . StringUtilsAbstract::getCurrency($value) . ' is made payment via ' . $method->getName() . ' for Order(OrderNo.=' . $order->getOrderNo() . ')' . (trim($comments) !== '' ? ': ' . $comments : '.');
@@ -294,7 +294,7 @@ class Payment extends BaseEntityAbstract
 	 *
 	 * @return Ambigous <BaseEntityAbstract, GenericDAO>
 	 */
-	public static function createFromCreditNote(CreditNote $creditNote, PaymentMethod $method, $value, $comments = '', $paymentDate = '')
+	public static function createFromCreditNote(CreditNote &$creditNote, PaymentMethod $method, $value, $comments = '', $paymentDate = '')
 	{
 		$payment = new Payment();
 		$message = 'A ' . StringUtilsAbstract::getCurrency($value) . ' Credit Payment is made via ' . $method->getName() . ' for CreditNote(CreditNoteNo.=' . $creditNote->getCreditNoteNo() . ')' . (trim($comments) !== '' ? ': ' . $comments : '.');

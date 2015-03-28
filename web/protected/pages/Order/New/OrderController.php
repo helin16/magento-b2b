@@ -69,8 +69,7 @@ class OrderController extends BPCPageAbstract
 		}
 		$js .= ".init(" . json_encode($customer) . ")";
 		if(!AccessControl::canAccessCreateOrderPage(Core::getRole())) {
-			$js .= ".disableEverything()";
-			$js .= ".showModalBox('<h4>Error</h4>', '<h4>You DO NOT Have Access To This " . ($order instanceof Order ? $order->getType() : 'Page')  . "</h4>')";
+			$js .= ".disableEverything(" . (in_array(Core::getRole()->getId(), array(Role::ID_ACCOUNTING, Role::ID_SALES, Role::ID_PURCHASING)) ? 'true' : '') . ")";
 		} else if($order instanceof Order && trim($order->getId()) !== '' && intval($order->getStatus()->getId()) === OrderStatus::ID_CANCELLED ) {
 			$js .= ".disableEverything()";
 			$js .= ".showModalBox('<h4>Error</h4>', '<h4>This " . $order->getType()  . " has been " . $order->getStatus()->getName() . "!</h4><h4>No one can edit it anymore</h4>')";

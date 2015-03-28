@@ -443,7 +443,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 						.insert({'bottom': tmp.typeSelBox })
 						.insert({'bottom': (tmp.me._order && tmp.me._order.id ? new Element('strong').update(' ' + tmp.me._order.orderNo).setStyle("margin-left: 5px; margin-right: 25px;") : '') })
 						.insert({'bottom': new Element('strong').update(' FOR:  ') })
-						.insert({'bottom': new Element('a', {'href': 'javascript: void(0);'})
+						.insert({'bottom': new Element('a', {'href': 'javascript: void(0);', 'class': 'customer-edit-link'})
 							.update(tmp.customer.name)
 							.observe('click', function(){
 								tmp.me._openCustomerDetailsPage(tmp.customer);
@@ -1439,12 +1439,21 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			$$('.init-focus').first().focus();
 		return tmp.me;
 	}
-	,disableEverything: function() {
+	,disableEverything: function(canEditPayment) {
 		var tmp = {};
 		tmp.me = this;
-		jQuery('.btn').attr('disabled', true);
+		tmp.canEditPayment = (canEditPayment || false);
+		jQuery('.btn').not('.new_comments_wrapper #add_new_comments_btn').attr('disabled', true);
 		jQuery('input').attr('disabled', true);
+		jQuery('select').attr('disabled', true);
 		jQuery('.form-control').attr('disabled', true);
+		jQuery('.new-order-item-input').remove();
+		jQuery('.customer-edit-link').replaceWith(jQuery('.customer-edit-link').html());
+		jQuery('.new_comments_wrapper input').attr('disabled', false);
+		if(tmp.canEditPayment === true) {
+			jQuery('[save-order="paymentMethodId"]').attr('disabled', false);
+			jQuery('.save-btn').attr('disabled', false);
+		}
 		return tmp.me;
 	}
 });
