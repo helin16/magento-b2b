@@ -80,7 +80,7 @@ class SalesExport_Xero extends ExportAbstract
 				,'InvoiceNumber' => $order->getInvNo()
 				,'Reference'=> $order->getOrderNo()
 				,'InvoiceDate' => $order->getInvDate()->setTimeZone('Australia/Melbourne')->__toString()
-				,'DueDate' => $order->getInvDate()->modify('+30 day')->setTimeZone('Australia/Melbourne')->__toString()
+				,'DueDate' => $order->getInvDate()->setTimeZone('Australia/Melbourne')->__toString()
 			);
 			foreach($order->getOrderItems() as $orderItem)
 			{
