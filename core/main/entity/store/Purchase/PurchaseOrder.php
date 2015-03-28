@@ -418,7 +418,7 @@ class PurchaseOrder extends BaseEntityAbstract
 			}
 			$this->addComment(count($items) . ' POItem(s) are reverted, as this PO is now deactivated or CANCELLED');
 
-			$receivedItems = ReceivingItem::getAllByCriteria('purchaserOrderId = ?', array($this->getId()));
+			$receivedItems = ReceivingItem::getAllByCriteria('purchaseOrderId = ?', array($this->getId()));
 			foreach($receivedItems as $item) {
 				$item->setActive(false)
 					->save();
