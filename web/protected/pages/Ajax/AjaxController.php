@@ -144,6 +144,21 @@ class AjaxController extends TService
   		return array('items' => $return);
   	}
   	/**
+  	 * Getting all the delivery methods
+  	 * 
+  	 * @param unknown $params
+  	 * 
+  	 * @return array
+  	 */
+  	private function _getDeliveryMethods($params)
+  	{
+  		$searchTxt = (isset($params['searchTxt']) && ($searchTxt = trim($params['searchTxt'])) !== '' ? $searchTxt : '');
+  		$sql = 'select distinct value from orderinfo where value like ? and active = 1 and typeId = ' . OrderInfoType::ID_MAGE_ORDER_SHIPPING_METHOD;
+  		$results = array();
+  		$results['items'] = array_map(create_function('$a', 'return $a["value"];'), Dao::getResultsNative($sql, array('%' . trim($searchTxt) . '%'), PDO::FETCH_ASSOC));
+  		return $results;
+  	}
+  	/**
   	 * Getting an entity
   	 *
   	 * @param unknown $params
