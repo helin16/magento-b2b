@@ -259,22 +259,17 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		return tmp.newDiv;
 	}
 
-	,_getPaymentCell: function(row) {
+	,_getPaymentCell: function(number,row) {
 		var tmp = {};
-		tmp.me = this
+		tmp.me = this;
 		return new Element('a', {'href': 'javascript: void(0);'})
-			.insert({'bottom': ( !row.passPaymentCheck ? '' :
-					new Element('span', {'title': (row.totalDue === 0 ? 'Full Paid' : 'Short Paid'), 'class': (row.totalDue === 0 ? 'text-success' : 'text-danger') })
-						.update(new Element('span', {'class': 'glyphicon ' + (row.totalDue === 0 ? 'glyphicon-ok-sign' : 'glyphicon-warning-sign') }))
-				) })
-				.insert({'bottom': " " })
-				.insert({'bottom': new Element('span')
-					.update(tmp.me.getCurrency(row.totalDue))
-					.writeAttribute('title', 'Total Due Amount:' + tmp.me.getCurrency(row.totalDue))
-				})
-				.observe('click', function() {
-					tmp.me._openDetailsPage(row);
-				});
+			.insert({'bottom': new Element('span')
+				.update(tmp.me.getCurrency(number))
+				.writeAttribute('title', 'Total Due Amount:' + tmp.me.getCurrency(number))
+			})
+			.observe('click', function() {
+				tmp.me._openDetailsPage(row);
+			});
 	}
 	,_getMarginCell: function(row) {
 		var tmp = {};
@@ -343,7 +338,13 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					tmp.isTitle === true ? 'Customer' : row.customer.name
 			) })
 			.insert({'bottom': new Element('td', {'class': 'text-right col-xs-1 '}).update(
-				tmp.isTitle ? 'Due Amt' : tmp.me._getPaymentCell(row)
+				tmp.isTitle ? 'Due Amt' : tmp.me._getPaymentCell(row.totalDue, row)
+			) })
+			.insert({'bottom': new Element('td', {'class': 'text-right col-xs-1 '}).update(
+					tmp.isTitle ? 'Paid Amt' : tmp.me._getPaymentCell(row.totalPaid, row)
+			) })
+			.insert({'bottom': new Element('td', {'class': 'text-right col-xs-1 '}).update(
+					tmp.isTitle ? 'Credit Amt' : tmp.me._getPaymentCell(row.totalCreditNoteValue, row)
 			) })
 			.insert({'bottom': new Element('td', {'class': 'text-right'}).update(
 					tmp.isTitle ? 'Margin' : tmp.me._getMarginCell(row)
@@ -357,8 +358,9 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			.insert({'bottom': new Element('td', {'class': 'status col-xs-2', 'order_status': row.status.name}).update(
 					row.status ? row.status.name : ''
 			) })
-			.insert({'bottom': new Element('td', {'class': 'col-xs-5 ' + (tmp.deliveryMethod.toLowerCase().indexOf('pickup') > -1 ? 'danger' : ''), 'title': 'Delivery Method'}).update(tmp.deliveryMethod) })
+			.insert({'bottom': tmp.deliveryMethodEl = new Element('td', {'class': 'col-xs-3 truncate' + (tmp.deliveryMethod.toLowerCase().indexOf('pickup') > -1 ? 'danger' : ''), 'title': tmp.deliveryMethod}).update(tmp.deliveryMethod) })
 		;
+		tmp.me.observeClickNDbClick(tmp.deliveryMethodEl, function(){}, tmp.isTitle ? function(){} : function(){tmp.me.showModalBox('Delivery Method for Order ' + row.orderNo, tmp.deliveryMethod)})
 		return tmp.row;
 	}
 	,_initDeliveryMethods: function() {

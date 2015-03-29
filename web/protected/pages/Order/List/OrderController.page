@@ -103,8 +103,8 @@
 				     			<li class="type-swither-item" data-type="QUOTE"><a href="javascript: void(0);">QUOTE</a></li>
 				     			<li class="type-swither-item" data-type="ORDER"><a href="javascript: void(0);">ORDER</a></li>
 				     			<li class="type-swither-item active" data-type="INVOICE"><a href="javascript: void(0);">All INVOICES</a></li>
-				     			<li class="type-swither-item" data-type="INVOICE" extraSearchCriteria="(ROUND(ord.totalAmount,2) - ROUND(ord.totalPaid, 2)) > 0"><a href="javascript: void(0);">Open INVOICES</a></li>
-				     			<li class="type-swither-item" data-type="INVOICE" extraSearchCriteria="(ROUND(ord.totalAmount,2) - ROUND(ord.totalPaid, 2)) <= 0"><a href="javascript: void(0);">Closed INVOICES</a></li>
+				     			<li class="type-swither-item" data-type="INVOICE" extraSearchCriteria="(ROUND(ord.totalAmount,2) - ROUND(ord.totalPaid, 2) - ROUND(ord.totalCreditNoteValue, 2)) > 0"><a href="javascript: void(0);">Open INVOICES</a></li>
+				     			<li class="type-swither-item" data-type="INVOICE" extraSearchCriteria="(ROUND(ord.totalAmount,2) - ROUND(ord.totalPaid, 2) - ROUND(ord.totalCreditNoteValue, 2)) <= 0"><a href="javascript: void(0);">Closed INVOICES</a></li>
 				     		</ul>
 				     	</div>
 				     	<div class="col-xs-4 text-right">
