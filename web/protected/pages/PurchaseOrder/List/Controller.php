@@ -33,16 +33,12 @@ class Controller extends CRUDPageAbstract
 	 */
 	protected function _getEndJs()
 	{
-		$suppliersArray = array();
-		foreach(Supplier::getAll() as $os)
-			$suppliersArray[] = $os->getJson();
 		$statusOptions = PurchaseOrder::getStatusOptions();
 		$js = parent::_getEndJs();
+		$js .= "pageJs._status=" . json_encode($statusOptions) . ";";
 		$js .= 'pageJs';
 		$js .= ".setCallbackId('deactivateItems', '" . $this->deactivateItemBtn->getUniqueID() . "')";
 		$js .= "._bindSearchKey()";
-		$js .= "._loadSuppliers(" . json_encode($suppliersArray) . ")";
-		$js .= "._setStatusOptions(" . json_encode($statusOptions) . ")";
 		$js .= "._loadChosen()";
 		$js .= "._loadDataPicker()";
 		$js .= ".getResults(true, " . $this->pageSize . ");";
@@ -110,6 +106,7 @@ class Controller extends CRUDPageAbstract
             			{
             				if(count($value) > 0)
             				{
+            					$value = explode(',', $value);
             					$where[] = 'po.supplierId IN ('.implode(", ", array_fill(0, count($value), "?")).')';
             					$params = array_merge($params, $value);
             				}

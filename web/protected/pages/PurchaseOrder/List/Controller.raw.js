@@ -35,41 +35,61 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 				else
 					tmp.me.getSearchCriteria().getResults(true, tmp.me._pagination.pageSize);
 			});
+		tmp.selectEl = new Element('input', {'class': 'select2 form-control', 'data-placeholder': 'the Name of Supplier', 'search_field': 'po.supplierIds'}).insert({'bottom': new Element('option').update('')});
+		$(tmp.me.searchDivId).down('[search_field="po.supplierIds"]').replace(tmp.selectEl);
+		jQuery('.select2[search_field="po.supplierIds"]').select2({
+			allowClear: true,
+			hidden: true,
+			multiple: true,
+			 ajax: { url: "/ajax/getSuppliers",
+					 dataType: 'json',
+					 delay: 10,
+					 data: function (params) {
+						 return {
+							 searchTxt: params, // search term
+						 };
+					 },
+					 results: function (data) {
+						 tmp.result = [];
+						 data.resultData.items.each(function(item){
+							 tmp.result.push({"id": item.id, 'text': item.name, 'data': item});
+						 })
+		                return {
+		                    results:  tmp.result 
+		                };
+		             },
+					 cache: true
+				 },
+				 formatResult : function(result) {
+					 if(!result)
+						 return '';
+					 return '<div value=' + result.data.id + '>' + result.data.name + '</div >';
+				 },
+				 escapeMarkup: function (markup) { return markup; }, // let our custom formatter work
+				 minimumInputLength: 1,
+		});
+		tmp.selectEl = new Element('select', {'class': 'select2 form-control', 'multiple': true, 'data-placeholder': 'the Status of PO', 'search_field': 'po.status'});
+		tmp.me._status.each(function(item){
+			tmp.selectEl.insert({'bottom': new Element('option', {'value': item}).update(item)});
+		});
+		$(tmp.me.searchDivId).down('[search_field="po.status"]').replace(tmp.selectEl);
+		jQuery('.select2[search_field="po.status"]').select2({
+			allowClear: true,
+			hidden: true,
+		});
+		// bind search key
 		$('searchDiv').getElementsBySelector('[search_field]').each(function(item) {
 			item.observe('keydown', function(event) {
 				tmp.me.keydown(event, function() {
-					$('searchPanel').down('#searchBtn').click();
+					$(tmp.me.searchDivId).down('#searchBtn').click();
 				});
-			});
+			})
 		});
 		return this;
 	}
 	,_loadDataPicker: function () {
 		$$('.datepicker').each(function(item){
 			new Prado.WebUI.TDatePicker({'ID': item, 'InputMode':"TextBox",'Format':"yyyy-MM-dd 00:00:00",'FirstDayOfWeek':1,'CalendarStyle':"default",'FromYear':2009,'UpToYear':2024,'PositionMode':"Bottom", "ClassName": 'datepicker-layer-fixer'});
-		});
-		return this;
-	}
-	/**
-	 * setting the status options
-	 */
-	,_setStatusOptions: function(statusOptions) {
-		var tmp = {};
-		tmp.me = this;
-		tmp.selBox = $$('#searchPanel').first().down('#statusSelect');
-		tmp.me._statusOptions = statusOptions;
-		tmp.me._statusOptions.each(function(status) {
-			tmp.selBox.insert({'bottom': new Element('option').update(status) });
-		});
-		return tmp.me;
-	}
-	,_loadSuppliers: function(suppliers) {
-		var tmp = {};
-		tmp.me = this;
-		tmp.me.suppliers = suppliers;
-		tmp.listBox = $(tmp.me.searchDivId).down('[search_field="po.supplierIds"]');
-		tmp.me.suppliers.each(function(supplier) {
-			tmp.listBox.insert({'bottom': new Element('option', {'value': supplier.id}).update(supplier.name) });
 		});
 		return this;
 	}

@@ -66,14 +66,6 @@ class AjaxController extends TService
   		$results['pageStats'] = $stats;
   		return $results;
   	}
-
-  	/**
-  	 * Getting the comments for an entity
-  	 *
-  	 * @param array $params
-  	 *
-  	 * @return string The json string
-  	 */
   	private function _getCustomers(Array $params)
   	{
   		$searchTxt = trim(isset($params['searchTxt']) ? $params['searchTxt'] : '');
@@ -87,6 +79,24 @@ class AjaxController extends TService
   		$sqlParams = array('searchTxt' => '%' . $searchTxt . '%');
   		$stats = array();
   		$items = Customer::getAllByCriteria(implode(' AND ', $where), $sqlParams, true, $pageNo, $pageSize, $orderBy, $stats);
+  		$results = array();
+  		$results['items'] = array_map(create_function('$a', 'return $a->getJson();'), $items);
+  		$results['pageStats'] = $stats;
+  		return $results;
+  	}
+  	private function _getSuppliers(Array $params)
+  	{
+  		$searchTxt = trim(isset($params['searchTxt']) ? $params['searchTxt'] : '');
+  		if($searchTxt === '')
+  			throw new Exception('SearchTxt is needed');
+  		$pageSize = (isset($params['pageSize']) && ($pageSize = trim($params['pageSize'])) !== '' ? $pageSize : DaoQuery::DEFAUTL_PAGE_SIZE);
+  		$pageNo = (isset($params['pageNo']) && ($pageNo = trim($params['pageNo'])) !== '' ? $pageNo : null);
+  		$orderBy = (isset($params['orderBy']) ? $params['orderBy'] : array());
+  	
+  		$where = array('name like :searchTxt or description like :searchTxt');
+  		$sqlParams = array('searchTxt' => '%' . $searchTxt . '%');
+  		$stats = array();
+  		$items = Supplier::getAllByCriteria(implode(' AND ', $where), $sqlParams, true, $pageNo, $pageSize, $orderBy, $stats);
   		$results = array();
   		$results['items'] = array_map(create_function('$a', 'return $a->getJson();'), $items);
   		$results['pageStats'] = $stats;
