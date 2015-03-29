@@ -1,0 +1,1 @@
+ALTER TABLE `order` ADD `totalCreditNoteValue` DOUBLE(10,4) UNSIGNED NOT NULL DEFAULT '0' AFTER `totalPaid`;

@@ -8,8 +8,10 @@ c:\wamp\bin\mysql\mysql5.6.17\bin\mysql.exe -u root -proot -e "CREATE DATABASE `
 Pause
 
 :: Import sql file
-"S:\Program Files\7-Zip\7z.exe" x -so 13_03_2015.7z | c:\wamp\bin\mysql\mysql5.6.17\bin\mysql.exe -u root -proot bpcinternal
-c:\wamp\bin\mysql\mysql5.6.17\bin\mysql.exe -u root -proot bpcinternal < ..\RMA\structure.sql
+"S:\Program Files\7-Zip\7z.exe" x -so 29_03_2015.7z | c:\wamp\bin\mysql\mysql5.6.17\bin\mysql.exe -u root -proot bpcinternal
+c:\wamp\bin\mysql\mysql5.6.17\bin\mysql.exe -u root -proot bpcinternal < ..\enlargeItemDescription.sql
+c:\wamp\bin\mysql\mysql5.6.17\bin\mysql.exe -u root -proot bpcinternal < ..\creditNoteValue.sql
+c:\wamp\bin\mysql\mysql5.6.17\bin\mysql.exe -u root -proot bpcinternal < ..\flushCreditNoteandRMA.sql
 c:\wamp\bin\mysql\mysql5.6.17\bin\mysql.exe -u root -proot bpcinternal < ..\wamp.sql
 c:\wamp\bin\mysql\mysql5.6.17\bin\mysql.exe -u root -proot bpcinternal < ..\debugMode.sql
 Pause

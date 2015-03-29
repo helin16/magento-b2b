@@ -60,6 +60,12 @@ class Order extends InfoEntityAbstract
 	 */
 	private $totalPaid = 0;
 	/**
+	 * The total credit note value for the order
+	 *
+	 * @var number
+	 */
+	private $totalCreditNoteValue = 0;
+	/**
 	 * The shippment of the order
 	 *
 	 * @var multiple:Shippment
@@ -291,6 +297,25 @@ class Order extends InfoEntityAbstract
 	{
 	    $this->totalPaid = $value;
 	    return $this;
+	}
+	/**
+	 * getter for totalCreditNoteValue
+	 *
+	 * @return number
+	 */
+	public function getTotalCreditNoteValue()
+	{
+		return $this->totalCreditNoteValue;
+	}
+	/**
+	 * Setter for totalCreditNoteValue
+	 *
+	 * @return Order
+	 */
+	public function setTotalCreditNoteValue($totalCreditNoteValue)
+	{
+		$this->totalCreditNoteValue = $totalCreditNoteValue;
+		return $this;
 	}
 	/**
 	 * Getter for shippments
@@ -699,6 +724,7 @@ class Order extends InfoEntityAbstract
 		DaoMap::setManyToOne('customer', 'Customer', 'o_cust');
 		DaoMap::setIntType('totalAmount', 'Double', '10,4');
 		DaoMap::setIntType('totalPaid', 'Double', '10,4');
+		DaoMap::setIntType('totalCreditNoteValue', 'Double', '10,4');
 		DaoMap::setBoolType('passPaymentCheck');
 		DaoMap::setBoolType('isFromB2B');
 		DaoMap::setManyToOne('status', 'OrderStatus', 'o_status');

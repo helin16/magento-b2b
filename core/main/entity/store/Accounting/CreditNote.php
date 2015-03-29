@@ -324,6 +324,17 @@ class CreditNote extends BaseEntityAbstract
 					->addLog($msg, Log::TYPE_SYSTEM, 'AUTO', __CLASS__ . '::' . __FUNCTION__);
 			}
 		}
+		if($this->order instanceof Order)
+		{
+			$totalCreditNoteValue = 0;
+			foreach (CreditNote::getAllByCriteria('cn.orderId = ?', array($this->order->getId())) as $creditNote)
+			{
+				if($creditNote->getTotalValue() >= 0)
+					$totalCreditNoteValue += $creditNote->getTotalValue();
+				else throw new Exception('Credit Note (id=' . $creditNote->getId() . ') has a negative total value.');
+				$this->order->setTotalCreditNoteValue($totalCreditNoteValue)->save();
+			}
+		}
 	}
 	/**
 	 * Adding a creaditNoteItem to this creditNote
