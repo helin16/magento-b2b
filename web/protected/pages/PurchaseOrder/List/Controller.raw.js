@@ -77,6 +77,41 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 			allowClear: true,
 			hidden: true,
 		});
+		tmp.selectEl = new Element('input', {'class': 'select2 form-control', 'data-placeholder': 'search for a Products', 'search_field': 'pro.ids'}).insert({'bottom': new Element('option').update('')});
+		$('searchDiv').down('[search_field="pro.ids"]').replace(tmp.selectEl);
+		jQuery('.select2[search_field="pro.ids"]').select2({
+			allowClear: true,
+			hidden: true,
+			multiple: true,
+			ajax: { url: "/ajax/getProducts",
+				dataType: 'json',
+				delay: 10,
+				data: function (params) {
+					return {
+						searchTxt: params, // search term
+						pageNo: 1,
+						pageSize: 10,
+					};
+				},
+				results: function (data) {
+					tmp.result = [];
+					data.resultData.items.each(function(item){
+						tmp.result.push({"id": item.id, 'text': item.name, 'data': item});
+					})
+					return {
+						results:  tmp.result 
+					};
+				},
+				cache: true
+			},
+			formatResult : function(result) {
+				if(!result)
+					return '';
+				return '<div value=' + result.data.id + '>' + result.data.name + '</div >';
+			},
+			escapeMarkup: function (markup) { return markup; }, // let our custom formatter work
+			minimumInputLength: 3,
+		});
 		// bind search key
 		$('searchDiv').getElementsBySelector('[search_field]').each(function(item) {
 			item.observe('keydown', function(event) {

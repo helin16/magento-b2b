@@ -47,19 +47,19 @@
 						</div>
 					</div>
 					<div class="row">
-						<div class="col-sm-4">
+						<div class="col-sm-3">
 							<div class="form-group form-group-sm input-group">
 								<label class="input-group-addon">Suppliers: </label>
 								<input type="text" search_field="po.supplierIds" class="form-control input-sm">
 							</div>
 						</div>
-						<div class="col-sm-4">
+						<div class="col-sm-3">
 							<div class="form-group form-group-sm input-group">
 	                           <label class="input-group-addon">Status:</label>
 	                           <input type="text" search_field="po.status" class="form-control input-sm">
 	                       </div>
 						</div>
-                        <div class="col-sm-4">
+                        <div class="col-sm-3">
 							<div class="form-group form-group-sm input-group">
 	                           <label class="input-group-addon">Order Date:</label>
 	                           <div class="form-control" style="padding: 1px;">
@@ -67,6 +67,12 @@
 		                           <input type="datetime" search_field="po.orderDate_to" placeholder="The order date - to" class="datepicker" style="float:left; width: 49%;">
 		                       </div>
 	                       </div>
+						</div>
+						<div class="col-sm-3">
+							<div class="form-group form-group-sm input-group">
+	                           <label class="input-group-addon">Product:</label>
+	                           <input type="text" search_field="pro.ids" placeholder="The Product for credit note" class="form-control input-sm">
+                        	</div>
 						</div>
 					</div>
 				</div>
