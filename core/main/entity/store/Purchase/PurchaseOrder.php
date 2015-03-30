@@ -74,6 +74,12 @@ class PurchaseOrder extends BaseEntityAbstract
 	 * @var UDate
 	 */
 	private $eta = '';
+	/**
+	 * The items of the purchaseorder
+	 *
+	 * @var array
+	 */
+	protected $items;
 
 	private $totalAmount = 0;
 	private $totalPaid = 0;
@@ -245,6 +251,28 @@ class PurchaseOrder extends BaseEntityAbstract
 	{
 		$this->handlingCost = $value;
 		return $this;
+	}
+	/**
+	 * Getter for items
+	 *
+	 * @return array
+	 */
+	public function getItems()
+	{
+		$this->loadOneToMany('items');
+	    return $this->items;
+	}
+	/**
+	 * Setter for items
+	 *
+	 * @param array $value The items
+	 *
+	 * @return PurchaseOrder
+	 */
+	public function setItems($value)
+	{
+	    $this->items = $value;
+	    return $this;
 	}
 	/**
 	 * Getter for totalProdcutCount
@@ -487,6 +515,7 @@ class PurchaseOrder extends BaseEntityAbstract
 		DaoMap::setDateType('eta');
 		DaoMap::setIntType('totalAmount', 'Double', '10,4');
 		DaoMap::setIntType('totalPaid', 'Double', '10,4');
+		DaoMap::setOneToMany('items', 'PurchaseOrderItem', 'po_item');
 		parent::__loadDaoMap();
 
 		DaoMap::createUniqueIndex('purchaseOrderNo');
