@@ -262,6 +262,9 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 	,_getPaymentCell: function(number,row) {
 		var tmp = {};
 		tmp.me = this;
+		tmp.row = (row || false);
+		if(tmp.row === false)
+			tmp.me.showModalBox('Error', 'need to pass row to getPaymentCell');
 		return new Element('a', {'href': 'javascript: void(0);'})
 			.insert({'bottom': new Element('span')
 				.update(tmp.me.getCurrency(number))
@@ -338,7 +341,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					tmp.isTitle === true ? 'Customer' : row.customer.name
 			) })
 			.insert({'bottom': new Element('td', {'class': 'text-right col-xs-1 '}).update(
-				tmp.isTitle ? 'Due Amt' : tmp.me._getPaymentCell(row.totalDue, row)
+				tmp.isTitle ? 'Total Amt' : tmp.me._getPaymentCell(row.totalAmount, row)
 			) })
 			.insert({'bottom': new Element('td', {'class': 'text-right col-xs-1 '}).update(
 					tmp.isTitle ? 'Paid Amt' : tmp.me._getPaymentCell(row.totalPaid, row)
@@ -358,7 +361,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			.insert({'bottom': new Element('td', {'class': 'status col-xs-2', 'order_status': row.status.name}).update(
 					row.status ? row.status.name : ''
 			) })
-			.insert({'bottom': tmp.deliveryMethodEl = new Element('td', {'class': 'col-xs-3 truncate' + (tmp.deliveryMethod.toLowerCase().indexOf('pickup') > -1 ? 'danger' : ''), 'title': tmp.deliveryMethod}).update(tmp.deliveryMethod) })
+			.insert({'bottom': tmp.deliveryMethodEl = new Element('td', {'class': 'col-xs-3 truncate' + (tmp.deliveryMethod.toLowerCase().indexOf('pickup') > -1 ? ' danger' : ''), 'title': tmp.deliveryMethod}).update(tmp.deliveryMethod) })
 		;
 		tmp.me.observeClickNDbClick(tmp.deliveryMethodEl, function(){}, tmp.isTitle ? function(){} : function(){tmp.me.showModalBox('Delivery Method for Order ' + row.orderNo, tmp.deliveryMethod)})
 		return tmp.row;
