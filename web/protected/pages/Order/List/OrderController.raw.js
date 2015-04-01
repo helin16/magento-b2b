@@ -284,7 +284,9 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					.writeAttribute('title', tmp.name + ':' + tmp.me.getCurrency(row.totalDue))
 				})
 				.observe('click', function() {
-					tmp.me._openDetailsPage(row);
+					if(type === 'totalCreditNoteValue')
+						window.open('/creditnote.html?orderid=' + row.id, '_blank')
+					else tmp.me._openDetailsPage(row);
 				});
 	}
 	,_getMarginCell: function(row) {
