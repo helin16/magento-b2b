@@ -264,24 +264,27 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		switch(type) {
 			case 'totalAmount':
 				tmp.name = 'Total Amout';
+				tmp.fieldName = 'totalAmount';
 				break;
 			case 'totalPaid':
 				tmp.name = 'Total Paid';
+				tmp.fieldName = 'totalPaid';
 				break;
 			case 'totalCreditNoteValue':
 				tmp.name = 'Total Credit Note Value';
+				tmp.fieldName = 'totalCreditNoteValue';
 				break;
 			default: tmp.name = 'ERROR(_getPaymentCell)';
 		}
 		return new Element('a', {'href': 'javascript: void(0);'})
 			.insert({'bottom': ( (!row.passPaymentCheck || type !== 'totalPaid') ? '' :
-					new Element('span', {'title': (row.totalDue === 0 ? 'Full Paid' : 'Short Paid'), 'class': (row.totalDue === 0 ? 'text-success' : 'text-danger') })
-						.update(new Element('span', {'class': 'glyphicon ' + (row.totalDue === 0 ? 'glyphicon-ok-sign' : 'glyphicon-warning-sign') }))
+					new Element('span', {'title': (row.totalDue <= 0 ? 'Full Paid' : 'Short Paid'), 'class': (row.totalDue <= 0 ? 'text-success' : 'text-danger') })
+						.update(new Element('span', {'class': 'glyphicon ' + (row.totalDue <= 0 ? 'glyphicon-ok-sign' : 'glyphicon-warning-sign') }))
 				) })
 				.insert({'bottom': " " })
 				.insert({'bottom': new Element('span')
-					.update(tmp.me.getCurrency(row.totalDue))
-					.writeAttribute('title', tmp.name + ':' + tmp.me.getCurrency(row.totalDue))
+					.update(tmp.currencyValue = tmp.me.getCurrency(row[tmp.fieldName]))
+					.writeAttribute('title', tmp.name + ':' + tmp.currencyValue)
 				})
 				.observe('click', function() {
 					if(type === 'totalCreditNoteValue')
