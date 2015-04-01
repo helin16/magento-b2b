@@ -369,6 +369,27 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		})
 		return tmp.me;
 	}
+	,_updateStockLevel: function(productId, newValue, originalValue, type) {
+		var tmp = {};
+		tmp.me = this;
+		if(type !== 'stockMinLevel' && type !== 'stockReorderLevel')
+			tmp.me.showModalBox('Error', 'Invalid type passin to tmp.me._updateStockLevel');
+		tmp.me.postAjax(tmp.me.getCallbackId('updateStockLevel'), {'productId': productId, 'newValue': newValue, 'type': type}, {
+			'onLoading': function() {}
+		,'onSuccess': function(sender, param) {
+			try {
+				tmp.result = tmp.me.getResp(param, false, true);
+				if(!tmp.result || !tmp.result.item || !tmp.result.item.id)
+					return;
+				jQuery('.' + type + '-input[product-id=' + tmp.result.item.id + ']').attr('original-' + type, newValue);
+			} catch (e) {
+				tmp.me.showModalBox('<strong class="text-danger">Error When Update ' + type + ':</strong>', '<strong>' + e + '</strong>');
+				jQuery('.' + type + '-input[product-id=' + productId + ']').val(originalValue);
+			}
+		}
+		})
+		return tmp.me;
+	}
 	/**
 	 * binding the price input event
 	 */
@@ -395,6 +416,46 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 				tmp.me._updatePrice(jQuery(this).attr('product-id'), jQuery(this).val(), tmp.me.getValueFromCurrency( jQuery(this).attr('original-price') ));
 			})
 			.addClass('price-input-binded');
+		jQuery('.stockMinLevel-input[product-id]').not('.stockMinLevel-input-binded')
+			.click(function (){
+				jQuery(this)
+				.attr('original-stockMinLevel', jQuery(this).val())
+				.select();
+			})
+			.keydown(function(event) {
+				tmp.inputBox = jQuery(this);
+				tmp.me.keydown(event, function(){
+					tmp.inputBox.blur();
+				});
+			})
+			.focusout(function(){
+				tmp.value = jQuery(this).val();
+				jQuery(this).val(tmp.value);
+			})
+			.change(function() {
+				tmp.me._updateStockLevel(jQuery(this).attr('product-id'), jQuery(this).val(), jQuery(this).attr('original-stockMinLevel'), 'stockMinLevel' );
+			})
+			.addClass('stockMinLevel-input-binded');
+		jQuery('.stockReorderLevel-input[product-id]').not('.stockReorderLevel-input-binded')
+			.click(function (){
+				jQuery(this)
+				.attr('original-stockReorderLevel', jQuery(this).val())
+				.select();
+			})
+			.keydown(function(event) {
+				tmp.inputBox = jQuery(this);
+				tmp.me.keydown(event, function(){
+					tmp.inputBox.blur();
+				});
+			})
+			.focusout(function(){
+				tmp.value = jQuery(this).val();
+				jQuery(this).val(tmp.value);
+			})
+			.change(function() {
+				tmp.me._updateStockLevel(jQuery(this).attr('product-id'), jQuery(this).val(), jQuery(this).attr('original-stockReorderLevel'), 'stockReorderLevel' );
+			})
+			.addClass('stockReorderLevel-input-binded');
 		return tmp.me;
 	}
 	/**
@@ -437,6 +498,8 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 			})
 			.insert({'bottom': new Element(tmp.tag, {'class': 'product_name hidden-xs hide-when-info hidden-sm', 'style': (tmp.me._showRightPanel ? 'display: none' : '')}).update(row.name) })
 			.insert({'bottom': new Element(tmp.tag, {'class': 'product_price hidden-xs hide-when-info hidden-sm', 'style': (tmp.me._showRightPanel ? 'display: none' : '')}).update(tmp.isTitle === true ? 'Price' : new Element('input', {'class': "click-to-edit price-input", 'value': tmp.me.getCurrency(tmp.price), 'product-id': row.id}) ) })
+			.insert({'bottom': new Element(tmp.tag, {'class': 'product_stockMinLevel hidden-xs hide-when-info hidden-sm', 'style': (tmp.me._showRightPanel ? 'display: none' : '')}).update(tmp.isTitle === true ? 'Min St' : new Element('input', {'class': "click-to-edit stockMinLevel-input", 'value': row.stockMinLevel, 'product-id': row.id}) ) })
+			.insert({'bottom': new Element(tmp.tag, {'class': 'product_stockReorderLevel hidden-xs hide-when-info hidden-sm', 'style': (tmp.me._showRightPanel ? 'display: none' : '')}).update(tmp.isTitle === true ? 'Re St' : new Element('input', {'class': "click-to-edit stockReorderLevel-input", 'value': row.stockReorderLevel, 'product-id': row.id}) ) })
 			.insert({'bottom': new Element(tmp.tag, {'class': 'locations col-xs-1  hide-when-info hidden-sm'}).update(
 					row.locations ? tmp.me._getLocations(row.locations, isTitle) : ''
 			) })

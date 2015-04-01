@@ -57,6 +57,18 @@ class Product extends InfoEntityAbstract
 	 */
 	private $stockInRMA = 0;
 	/**
+	 * The minimum stock level
+	 *
+	 * @var int
+	 */
+	private $stockMinLevel = null;
+	/**
+	 * The reorder stock lelvel
+	 *
+	 * @var int
+	 */
+	private $stockReorderLevel = null;
+	/**
 	 * The total value for RMA stock
 	 *
 	 * @var double
@@ -452,6 +464,44 @@ class Product extends InfoEntityAbstract
 	{
 	    $this->stockInRMA = $value;
 	    return $this;
+	}
+	/**
+	 * getter for stockMinLevel
+	 *
+	 * @return int|null
+	 */
+	public function getStockMinLevel()
+	{
+		return $this->stockMinLevel;
+	}
+	/**
+	 * Setter for stockMinLevel
+	 *
+	 * @return Product
+	 */
+	public function setStockMinLevel($stockMinLevel)
+	{
+		$this->stockMinLevel = $stockMinLevel;
+		return $this;
+	}
+	/**
+	 * getter for stockReorderLevel
+	 *
+	 * @return int|null
+	 */
+	public function getStockReorderLevel()
+	{
+		return $this->stockReorderLevel;
+	}
+	/**
+	 * Setter for stockReorderLevel
+	 *
+	 * @return Product
+	 */
+	public function setStockReorderLevel($stockReorderLevel)
+	{
+		$this->stockReorderLevel = $stockReorderLevel;
+		return $this;
 	}
 	/**
 	 * Getter for isFromB2B
@@ -1154,6 +1204,8 @@ class Product extends InfoEntityAbstract
 		DaoMap::setIntType('stockOnPO', 'int', 10, false);
 		DaoMap::setIntType('stockInParts', 'int', 10, false);
 		DaoMap::setIntType('stockInRMA', 'int', 10, false);
+		DaoMap::setIntType('stockMinLevel', 'int', 10, true, true);
+		DaoMap::setIntType('stockReorderLevel', 'int', 10, true, true);
 		DaoMap::setIntType('totalRMAValue', 'double', '10,4', false);
 		DaoMap::setStringType('assetAccNo', 'varchar', 10);
 		DaoMap::setStringType('revenueAccNo', 'varchar', 10);
@@ -1205,18 +1257,20 @@ class Product extends InfoEntityAbstract
 	/**
 	 * Creating the product based on sku
 	 *
-	 * @param string $sku           The sku of the product
-	 * @param string $name          The name of the product
-	 * @param string $mageProductId The magento id of the product
-	 * @param int    $stockOnHand   The total quantity on hand for this product
-	 * @param int    $stockOnOrder  The total quantity on order from supplier for this product
-	 * @param bool   $isFromB2B     Whether this product is created via B2B?
-	 * @param string $shortDescr    The short description of the product
-	 * @param string $fullDescr     The assetId of the full description asset of the product
+	 * @param string $sku           	The sku of the product
+	 * @param string $name          	The name of the product
+	 * @param string $mageProductId 	The magento id of the product
+	 * @param int    $stockOnHand   	The total quantity on hand for this product
+	 * @param int    $stockOnOrder  	The total quantity on order from supplier for this product
+	 * @param int    $stockMinLevel 	The minimum stock level for this product
+	 * @param int    $stockReorderLevel	The reorder stock level for this product
+	 * @param bool   $isFromB2B     	Whether this product is created via B2B?
+	 * @param string $shortDescr    	The short description of the product
+	 * @param string $fullDescr     	The assetId of the full description asset of the product
 	 *
 	 * @return Ambigous <Product, Ambigous, NULL, BaseEntityAbstract>
 	 */
-	public static function create($sku, $name, $mageProductId = '', $stockOnHand = null, $stockOnOrder = null, $isFromB2B = false, $shortDescr = '', $fullDescr = '', Manufacturer $manufacturer = null, $assetAccNo = null, $revenueAccNo = null, $costAccNo = null)
+	public static function create($sku, $name, $mageProductId = '', $stockOnHand = null, $stockOnOrder = null, $isFromB2B = false, $shortDescr = '', $fullDescr = '', Manufacturer $manufacturer = null, $assetAccNo = null, $revenueAccNo = null, $costAccNo = null, $stockMinLevel = null, $stockReorderLevel = null)
 	{
 		if(!($product = self::getBySku($sku)) instanceof Product)
 			$product = new Product();
@@ -1233,6 +1287,10 @@ class Product extends InfoEntityAbstract
 				$product->setStockOnOrder(intval($stockOnOrder));
 			if($stockOnHand !== null && is_numeric($stockOnHand))
 				$product->setStockOnHand(intval($stockOnHand));
+			if($stockMinLevel !== null && is_numeric($stockMinLevel))
+				$product->setStockMinLevel(intval($stockMinLevel));
+			if($stockReorderLevel !== null && is_numeric($stockReorderLevel))
+				$product->setStockReorderLevel(intval($stockReorderLevel));
 			if($assetAccNo !== null && is_string($assetAccNo))
 				$product->setAssetAccNo(trim($assetAccNo));
 			if($revenueAccNo !== null && is_string($revenueAccNo))

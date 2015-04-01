@@ -4,6 +4,7 @@
 <com:TCallback ID="priceMatchingBtn" OnCallback = 'Page.priceMatching' />
 <com:TCallback ID="toggleActiveBtn" OnCallback = 'Page.toggleActive' />
 <com:TCallback ID="updatePriceBtn" OnCallback = 'Page.updatePrice' />
+<com:TCallback ID="updateStockLevelBtn" OnCallback = 'Page.updateStockLevel' />
 	<div class="pagewrapper productlistwraper">
 		<div class="col-xs-12">
 			<div class="panel panel-default" id="searchPanel">

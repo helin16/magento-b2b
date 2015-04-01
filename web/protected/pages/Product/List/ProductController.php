@@ -53,6 +53,7 @@ class ProductController extends CRUDPageAbstract
 		$js .= ".setCallbackId('priceMatching', '" . $this->priceMatchingBtn->getUniqueID() . "')";
 		$js .= ".setCallbackId('toggleActive', '" . $this->toggleActiveBtn->getUniqueID() . "')";
 		$js .= ".setCallbackId('updatePrice', '" . $this->updatePriceBtn->getUniqueID() . "')";
+		$js .= ".setCallbackId('updateStockLevel', '" . $this->updateStockLevelBtn->getUniqueID() . "')";
 		$js .= ".getResults(true, " . $this->pageSize . ");";
 		return $js;
 	}
@@ -217,6 +218,48 @@ class ProductController extends CRUDPageAbstract
 	    		->addLog($msg, Log::TYPE_SYSTEM);
     		$product->addComment($msg, Log::TYPE_SYSTEM)
 	    		->addLog($msg, Log::TYPE_SYSTEM);
+    		$results['item'] = $product->getJson();
+    		Dao::commitTransaction();
+    	}
+    	catch(Exception $ex)
+    	{
+    		Dao::rollbackTransaction();
+    		$errors[] = $ex->getMessage() . $ex->getTraceAsString();
+    	}
+    	$param->ResponseData = StringUtilsAbstract::getJson($results, $errors);
+    }
+    public function updateStockLevel($sender, $param)
+    {
+    	$results = $errors = array();
+    	try
+    	{
+    		Dao::beginTransaction();
+    		$id = isset($param->CallbackParameter->productId) ? $param->CallbackParameter->productId : '';
+    		if(!($product = Product::get($id)) instanceof Product)
+    			throw new Exception('Invalid product!');
+    		if(!isset($param->CallbackParameter->newValue))
+    			throw new Exception('No New ' . $param->CallbackParameter->type .' Provided!');
+    		else $newValue = intval($param->CallbackParameter->newValue);
+    		if(!isset($param->CallbackParameter->type))
+    			throw new Exception('Invalue Type "' . $param->CallbackParameter->type . '" Provided!');
+    		else $type = $param->CallbackParameter->type;
+    		switch($param->CallbackParameter->type)
+    		{
+    			case 'stockMinLevel':
+    				$msg = 'Update ' . $type .' for product(SKU=' . $product->getSku() . ') to '. $param->CallbackParameter->newValue;
+    				$product->setStockMinLevel($newValue)
+	    				->addComment($msg, Comments::TYPE_NORMAL)
+	    				->addLog($msg, Log::TYPE_SYSTEM);
+    				break;
+    			case 'stockReorderLevel':
+    				$msg = 'Update ' . $type .' for product(SKU=' . $product->getSku() . ') to '. $param->CallbackParameter->newValue;
+    				$product->setStockReorderLevel($newValue)
+	    				->addComment($msg, Comments::TYPE_NORMAL)
+	    				->addLog($msg, Log::TYPE_SYSTEM);
+    				break;
+    			default: throw new Exception('Invalue Type "' . $param->CallbackParameter->type . '" Provided!');
+    		}
+    		$product->save();
     		$results['item'] = $product->getJson();
     		Dao::commitTransaction();
     	}
