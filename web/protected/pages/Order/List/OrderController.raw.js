@@ -171,7 +171,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.me = this;
 		return new Element('tfoot')
 			.insert({'bottom': new Element('tr')
-				.insert({'bottom': new Element('td', {'colspan': '5', 'class': 'text-center'})
+				.insert({'bottom': new Element('td', {'colspan': '11', 'class': 'text-center'})
 					.insert({'bottom': new Element('span', {'class': 'btn btn-primary', 'data-loading-text':"Fetching more results ..."}).update('Show More')
 						.observe('click', function() {
 							tmp.me._pagination.pageNo = tmp.me._pagination.pageNo*1 + 1;
@@ -258,33 +258,46 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			})
 		return tmp.newDiv;
 	}
-
-	,_getPaymentCell: function(number,row) {
+	,_getPaymentCell: function(row,type) {
 		var tmp = {};
 		tmp.me = this;
-		tmp.row = (row || false);
-		if(tmp.row === false)
-			tmp.me.showModalBox('Error', 'need to pass row to getPaymentCell');
+		switch(type) {
+			case 'totalAmount':
+				tmp.name = 'Total Amout';
+				break;
+			case 'totalPaid':
+				tmp.name = 'Total Paid';
+				break;
+			case 'totalCreditNoteValue':
+				tmp.name = 'Total Credit Note Value';
+				break;
+			default: tmp.name = 'ERROR(_getPaymentCell)';
+		}
 		return new Element('a', {'href': 'javascript: void(0);'})
-			.insert({'bottom': new Element('span')
-				.update(tmp.me.getCurrency(number))
-				.writeAttribute('title', 'Total Due Amount:' + tmp.me.getCurrency(number))
-			})
-			.observe('click', function() {
-				tmp.me._openDetailsPage(row);
-			});
+			.insert({'bottom': ( (!row.passPaymentCheck || type !== 'totalPaid') ? '' :
+					new Element('span', {'title': (row.totalDue === 0 ? 'Full Paid' : 'Short Paid'), 'class': (row.totalDue === 0 ? 'text-success' : 'text-danger') })
+						.update(new Element('span', {'class': 'glyphicon ' + (row.totalDue === 0 ? 'glyphicon-ok-sign' : 'glyphicon-warning-sign') }))
+				) })
+				.insert({'bottom': " " })
+				.insert({'bottom': new Element('span')
+					.update(tmp.me.getCurrency(row.totalDue))
+					.writeAttribute('title', tmp.name + ':' + tmp.me.getCurrency(row.totalDue))
+				})
+				.observe('click', function() {
+					tmp.me._openDetailsPage(row);
+				});
 	}
 	,_getMarginCell: function(row) {
 		var tmp = {};
 		tmp.me = this;
 		return new Element('a', {'href': 'javascript: void(0);'})
-		.insert({'bottom': new Element('span')
-		.update(tmp.me.getCurrency(row.margin))
-		.writeAttribute('title', 'Order margin:' + tmp.me.getCurrency(row.margin))
-		})
-		.observe('click', function() {
-			tmp.me._openDetailsPage(row);
-		});
+			.insert({'bottom': new Element('span')
+			.update(tmp.me.getCurrency(row.margin))
+			.writeAttribute('title', 'Order margin:' + tmp.me.getCurrency(row.margin))
+			})
+			.observe('click', function() {
+				tmp.me._openDetailsPage(row);
+			});
 	}
 
 	,_getPurchasingCell: function(row) {
@@ -341,13 +354,13 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					tmp.isTitle === true ? 'Customer' : row.customer.name
 			) })
 			.insert({'bottom': new Element('td', {'class': 'text-right col-xs-1 '}).update(
-				tmp.isTitle ? 'Total Amt' : tmp.me._getPaymentCell(row.totalAmount, row)
+				tmp.isTitle ? 'Total Amt' : tmp.me._getPaymentCell(row, 'totalAmount')
 			) })
 			.insert({'bottom': new Element('td', {'class': 'text-right col-xs-1 '}).update(
-					tmp.isTitle ? 'Paid Amt' : tmp.me._getPaymentCell(row.totalPaid, row)
+					tmp.isTitle ? 'Paid Amt' : tmp.me._getPaymentCell(row, 'totalPaid')
 			) })
 			.insert({'bottom': new Element('td', {'class': 'text-right col-xs-1 '}).update(
-					tmp.isTitle ? 'Credit Amt' : tmp.me._getPaymentCell(row.totalCreditNoteValue, row)
+					tmp.isTitle ? 'Credit Amt' : tmp.me._getPaymentCell(row, 'totalCreditNoteValue')
 			) })
 			.insert({'bottom': new Element('td', {'class': 'text-right'}).update(
 					tmp.isTitle ? 'Margin' : tmp.me._getMarginCell(row)
