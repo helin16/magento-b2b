@@ -12,7 +12,7 @@
 					<label for="showSearch">Show Search Criteria?</label>
 					<input id="showSearch" type="checkbox" checked onclick="pageJs.toggleSearchPanel($(this).up('#searchPanel').down('.panel-body'));">
 					<span class="pull-right">
-						<span class="btn btn-success btn-sm" onclick="pageJs._openProductDetails('new')"><i class="fa fa-plus"></i> NEW</span>
+						<a class="btn btn-success btn-sm" href="/product/new.html" target="_BLANK"><i class="fa fa-plus"></i> NEW</a>
 						<span id="searchBtn" class="btn btn-primary btn-sm" data-loading-text="searching ..." >Search</span>
 					</span>
 				</div>
