@@ -1324,7 +1324,7 @@ class Product extends InfoEntityAbstract
 	 *
 	 * @return Ambigous <Ambigous, multitype:, multitype:BaseEntityAbstract >
 	 */
-	public static function getProducts($sku, $name, array $supplierIds = array(), array $manufacturerIds = array(), array $categoryIds = array(), array $statusIds = array(), $active = null, $pageNo = null, $pageSize = DaoQuery::DEFAUTL_PAGE_SIZE, $orderBy = array(), &$stats = array())
+	public static function getProducts($sku, $name, array $supplierIds = array(), array $manufacturerIds = array(), array $categoryIds = array(), array $statusIds = array(), $active = null, $pageNo = null, $pageSize = DaoQuery::DEFAUTL_PAGE_SIZE, $orderBy = array(), &$stats = array(), $stockLevel = null)
 	{
 		$where = array(1);
 		$params = array();
@@ -1362,6 +1362,10 @@ class Product extends InfoEntityAbstract
 		{
 			self::getQuery()->eagerLoad('Product.categories', 'inner join', 'pro_cate', 'pro.id = pro_cate.productId and pro_cate.categoryId in (' . implode(',', array_fill(0, count($categoryIds), '?')) . ')');
 			$params = array_merge($categoryIds, $params);
+		}
+		if(($stockLevel = trim($stockLevel)) !== '')
+		{
+			$where[] = 'pro.stockOnHand <= pro.' . $stockLevel. ' and pro.' . $stockLevel . ' is not null';
 		}
 		return Product::getAllByCriteria(implode(' AND ', $where), $params, false, $pageNo, $pageSize, $orderBy, $stats);
 	}

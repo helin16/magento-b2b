@@ -19,7 +19,7 @@
 				<div class="panel-body search-panel" id="searchDiv">
 					<input type="hidden" search_field="pro.id" value="<%= $this->getRequestProductID() %>"/>
 					<div class="row">
-						<div class="col-md-4">
+						<div class="col-md-2">
 							<div class="form-group form-group-sm">
 	                           <label>SKU:</label>
 	                           <input type="text" search_field="pro.sku" placeholder="The SKU of the product" class="form-control input-sm">
@@ -45,6 +45,16 @@
 							<div class="form-group form-group-sm">
 	                           <label class="contorl-label">Status:</label>
                                <select search_field="pro.productStatusIds" multiple class="chosen form-control input-sm"></select>
+	                       </div>
+						</div>
+						<div class="col-md-2">
+							<div class="form-group form-group-sm">
+	                           <label class="contorl-label">Stock Level:</label>
+                               <select search_field="pro.stockLevel" class=" form-control input-sm">
+                               		<option value="">All</option>
+                               		<option value="stockReorderLevel">Lower than Reordering Level</option>
+                               		<option value="stockMinLevel">Lower than MSL</option>
+                               </select>
 	                       </div>
 						</div>
 						<div class="col-md-2">

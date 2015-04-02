@@ -115,7 +115,9 @@ class ProductController extends CRUDPageAbstract
 	            $supplierIds = (!isset($serachCriteria['pro.supplierIds']) || is_null($serachCriteria['pro.supplierIds'])) ? array() : $serachCriteria['pro.supplierIds'];
 	            $manufacturerIds = (!isset($serachCriteria['pro.manufacturerIds']) || is_null($serachCriteria['pro.manufacturerIds'])) ? array() : $serachCriteria['pro.manufacturerIds'];
 	            $productStatusIds = (!isset($serachCriteria['pro.productStatusIds']) || is_null($serachCriteria['pro.productStatusIds'])) ? array() : $serachCriteria['pro.productStatusIds'];
-	            $objects = Product::getProducts(trim($serachCriteria['pro.sku']), trim($serachCriteria['pro.name']), $supplierIds, $manufacturerIds, $categoryIds, $productStatusIds, trim($serachCriteria['pro.active']), $pageNo, $pageSize, array('pro.name' => 'asc'), $stats);
+	            Dao::$debug = true;
+	            $objects = Product::getProducts(trim($serachCriteria['pro.sku']), trim($serachCriteria['pro.name']), $supplierIds, $manufacturerIds, $categoryIds, $productStatusIds, trim($serachCriteria['pro.active']), $pageNo, $pageSize, array('pro.name' => 'asc'), $stats, $serachCriteria['pro.stockLevel']);
+	            Dao::$debug = false;
             }
             $results['pageStats'] = $stats;
             $results['items'] = array();

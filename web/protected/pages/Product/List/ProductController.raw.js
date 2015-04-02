@@ -382,6 +382,11 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 				if(!tmp.result || !tmp.result.item || !tmp.result.item.id)
 					return;
 				jQuery('.' + type + '-input[product-id=' + tmp.result.item.id + ']').attr('original-' + type, newValue);
+				tmp.row = $(tmp.me.resultDivId).down('.product_item[product_id=' + tmp.result.item.id + ']');
+				if(tmp.row) {
+					tmp.row.replace(tmp.me._getResultRow(tmp.result.item, false));
+					tmp.me._bindPriceInput();
+				}
 			} catch (e) {
 				tmp.me.showModalBox('<strong class="text-danger">Error When Update ' + type + ':</strong>', '<strong>' + e + '</strong>');
 				jQuery('.' + type + '-input[product-id=' + productId + ']').val(originalValue);
@@ -474,7 +479,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 				}
 			});
 		}
-		tmp.row = new Element('tr', {'class': 'visible-xs visible-md visible-lg visible-sm ' + (tmp.isTitle === true ? '' : 'product_item'), 'product_id' : row.id})
+		tmp.row = new Element('tr', {'class': 'visible-xs visible-md visible-lg visible-sm ' + (tmp.isTitle === true ? '' : 'product_item ' + (row.stockOnHand <= row.stockMinLevel ? 'danger': (row.stockOnHand <= row.stockReorderLevel ? 'warning' : '' ))), 'product_id' : row.id})
 			.store('data', row)
 			.insert({'bottom': new Element(tmp.tag, {'class': 'sku', 'title': row.name})
 				.insert({'bottom': new Element('span', {'style': 'margin: 0 5px 0 0;'})
