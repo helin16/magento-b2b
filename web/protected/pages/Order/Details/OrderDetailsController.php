@@ -40,8 +40,11 @@ class OrderDetailsController extends BPCPageAbstract
 			{
 				if(trim(Core::getRole()->getId()) === trim(Role::ID_PURCHASING))
 					$purchaseEdit = 'true';
-				else if(trim(Core::getRole()->getId()) === trim(Role::ID_WAREHOUSE))
+				else if(trim(Core::getRole()->getId()) === trim(Role::ID_WAREHOUSE)) {
+					$purchaseEdit = 'true';
 					$warehouseEdit = 'true';
+					$statusEdit = 'false';
+				}
 			}
 		}
 		if(in_array(intval(Core::getRole()->getId()), array(Role::ID_SYSTEM_ADMIN, Role::ID_STORE_MANAGER, Role::ID_ACCOUNTING)))
