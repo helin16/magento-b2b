@@ -108,7 +108,8 @@
             <!-- FrontEnd:: PO list page -->
             <url ServiceParameter="PurchaseOrder.List.Controller" pattern="purchase.html" />
             <!-- FrontEnd:: PO details page -->
-            <url ServiceParameter="PurchaseOrder.New.POController" pattern="purchase/{id}.html" parameters.id="new"/>
+            <url ServiceParameter="PurchaseOrder.New.POController" pattern="purchase/new.html"/>
+            <url ServiceParameter="PurchaseOrder.POCredit.POCreditController" pattern="purchase/credit/new.html"/>
             <url ServiceParameter="PurchaseOrder.Details.DetailsController" pattern="purchase/{id}.html" parameters.id="\d+"/>
 			<!-- FrontEnd:: PO print page -->
 			<url ServiceParameter="PurchaseOrder.Print.POPrintController" pattern="print/purchase/{POId}.html" parameters.POId="\d+"/>

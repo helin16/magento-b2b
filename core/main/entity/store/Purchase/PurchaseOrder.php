@@ -22,6 +22,12 @@ class PurchaseOrder extends BaseEntityAbstract
 	 */
 	private $purchaseOrderNo = '';
 	/**
+	 * If PO is credit
+	 *
+	 * @varisCredit
+	 */
+	private $isCredit = false;
+	/**
 	 * The supplier
 	 *
 	 * @var Supplier
@@ -103,6 +109,25 @@ class PurchaseOrder extends BaseEntityAbstract
 	{
 	    $this->purchaseOrderNo = $value;
 	    return $this;
+	}
+	/**
+	 * getter for isCredit
+	 *
+	 * @return bool
+	 */
+	public function getIsCredit()
+	{
+		return $this->isCredit;
+	}
+	/**
+	 * Setter for isCredit
+	 *
+	 * @return PurchaseOrder
+	 */
+	public function setIsCredit($isCredit)
+	{
+		$this->isCredit = $isCredit;
+		return $this;
 	}
 	/**
 	 * Getter for supplier
@@ -558,19 +583,20 @@ class PurchaseOrder extends BaseEntityAbstract
 	 * @param string   $supplierContactNumber
 	 * @param string   $shippingCost
 	 * @param string   $handlingCost
+	 * @param bool	   $isCredit
 	 *
 	 * @return PurchaseOrder
 	 */
-	public static function create(Supplier $supplier, $supplierRefNo = '', $supplierContact = '', $supplierContactNumber = '',$shippingCost = 0, $handlingCost = 0)
+	public static function create(Supplier $supplier, $supplierRefNo = '', $supplierContact = '', $supplierContactNumber = '',$shippingCost = 0, $handlingCost = 0, $isCredit = false)
 	{
-		$class = get_called_class();
-		$entity = new $class();
+		$entity = new PurchaseOrder();
 		return $entity->setSupplier($supplier)
 			->setSupplierRefNo(trim($supplierRefNo))
 			->setSupplierContact($supplierContact)
 			->setSupplierContactNumber($supplierContactNumber)
 			->setshippingCost($shippingCost)
 			->sethandlingCost($handlingCost)
+			->setIsCredit($isCredit)
 			->save();
 	}
 	/**

@@ -1,4 +1,5 @@
 <?php
+require_once dirname(__FILE__) . '/../New/POController.php';
 /**
  * This is the OrderController
  *
@@ -6,13 +7,13 @@
  * @subpackage Controller
  * @author     lhe<helin16@gmail.com>
  */
-class POController extends BPCPageAbstract
+class POCreditController extends POController
 {
 	/**
 	 * (non-PHPdoc)
 	 * @see BPCPageAbstract::$menuItem
 	 */
-	public $menuItem = 'purchase.new';
+	public $menuItem = 'order.new';
 	/**
 	 * (non-PHPdoc)
 	 * @see BPCPageAbstract::onLoad()
@@ -28,11 +29,8 @@ class POController extends BPCPageAbstract
 	 */
 	protected function _getEndJs()
 	{
-		$class = get_called_class();
-		var_dump($class);
-		var_dump($class::_getJSPrefix());
 		$js = parent::_getEndJs();
-		
+
 		$paymentMethods =  array_map(create_function('$a', 'return $a->getJson();'), PaymentMethod::getAll());
 		$shippingMethods =  array_map(create_function('$a', 'return $a->getJson();'), Courier::getAll());
 		$supplier = (isset($_REQUEST['supplierid']) && ($supplier = Supplier::get(trim($_REQUEST['supplierid']))) instanceof Supplier) ? $supplier->getJson() : null;
@@ -48,7 +46,7 @@ class POController extends BPCPageAbstract
 	}
 	protected function _getJSPrefix()
 	{
-		return "var PageJs = new Class.create();PageJs.prototype = Object.extend(new POCreateJs(), {});";
+		return "";
 	}
 	/**
 	 * Searching Customer

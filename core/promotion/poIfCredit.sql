@@ -1,0 +1,1 @@
+ALTER TABLE `purchaseorder` ADD `isCredit` BOOLEAN NOT NULL DEFAULT FALSE AFTER `status`, ADD INDEX (`isCredit`) ;
