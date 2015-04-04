@@ -1,2 +1,0 @@
-ALTER TABLE `product` ADD `stockMinLevel` INT(10) UNSIGNED NULL DEFAULT NULL AFTER `stockInRMA`;
-ALTER TABLE `product` ADD `stockReorderLevel` INT(10) UNSIGNED NULL DEFAULT NULL AFTER `stockMinLevel`;

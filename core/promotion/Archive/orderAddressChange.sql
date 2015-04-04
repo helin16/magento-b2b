@@ -1,1 +1,0 @@
-ALTER TABLE `order` CHANGE `billingAddrId` `billingAddrId` INT(10) UNSIGNED NULL DEFAULT NULL, CHANGE `shippingAddrId` `shippingAddrId` INT(10) UNSIGNED NULL DEFAULT NULL;
