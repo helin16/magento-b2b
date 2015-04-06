@@ -13,14 +13,14 @@ class POCreditController extends POController
 	 * (non-PHPdoc)
 	 * @see BPCPageAbstract::$menuItem
 	 */
-	public $menuItem = 'order.new';
+	public $menuItem = 'purchase.newCredit';
 	/**
 	 * (non-PHPdoc)
 	 * @see BPCPageAbstract::onLoad()
 	 */
-	public function onLoad($param)
+	protected function _getJSPrefix()
 	{
-		parent::onLoad($param);
+		return "";
 	}
 	/**
 	 * Getting The end javascript
@@ -30,127 +30,10 @@ class POCreditController extends POController
 	protected function _getEndJs()
 	{
 		$js = parent::_getEndJs();
-
-		$paymentMethods =  array_map(create_function('$a', 'return $a->getJson();'), PaymentMethod::getAll());
-		$shippingMethods =  array_map(create_function('$a', 'return $a->getJson();'), Courier::getAll());
-		$supplier = (isset($_REQUEST['supplierid']) && ($supplier = Supplier::get(trim($_REQUEST['supplierid']))) instanceof Supplier) ? $supplier->getJson() : null;
-		$js .= "pageJs";
-			$js .= ".setHTMLIDs('detailswrapper')";
-			$js .= ".setCallbackId('searchSupplier', '" . $this->searchSupplierBtn->getUniqueID() . "')";
-			$js .= ".setCallbackId('searchProduct', '" . $this->searchProductBtn->getUniqueID() . "')";
-			$js .= ".setCallbackId('saveOrder', '" . $this->saveOrderBtn->getUniqueID() . "')";
-			$js .= ".setPaymentMethods(" . json_encode($paymentMethods) . ")";
-			$js .= ".setShippingMethods(" . json_encode($shippingMethods) . ")";
-			$js .= ".init(" . json_encode($supplier) . ");";
+		if(isset($_REQUEST['poid']) && ($po = PurchaseOrder::get(trim($_REQUEST['poid']))) instanceof PurchaseOrder)
+			$js .= "pageJs.loadPO( " . json_encode($po->getJson(array(), false, true)) . " );";
+		$customer = (isset($_REQUEST['customerid']) && ($customer = Customer::get(trim($_REQUEST['customerid']))) instanceof Customer) ? $customer->getJson() : null;
 		return $js;
-	}
-	protected function _getJSPrefix()
-	{
-		return "";
-	}
-	/**
-	 * Searching Customer
-	 *
-	 * @param unknown $sender
-	 * @param unknown $param
-	 *
-	 * @throws Exception
-	 *
-	 */
-	public function searchSupplier($sender, $param)
-	{
-		$results = $errors = array();
-		try
-		{
-			$items = array();
-			$searchTxt = isset($param->CallbackParameter->searchTxt) ? trim($param->CallbackParameter->searchTxt) : '';
-			foreach(Supplier::getAllByCriteria('name like :searchTxt or contactName like :searchTxt', array('searchTxt' => $searchTxt . '%')) as $supplier)
-			{
-				$items[] = $supplier->getJson();
-			}
-			$results['items'] = $items;
-		}
-		catch(Exception $ex)
-		{
-			$errors[] = $ex->getMessage();
-		}
-		$param->ResponseData = StringUtilsAbstract::getJson($results, $errors);
-	}
-	/**
-	 * Searching searchProduct
-	 *
-	 * @param unknown $sender
-	 * @param unknown $param
-	 *
-	 * @throws Exception
-	 *
-	 */
-	public function searchProduct($sender, $param)
-	{
-		$results = $errors = array();
-		try
-		{
-			$items = array();
-			$searchTxt = isset($param->CallbackParameter->searchTxt) ? trim($param->CallbackParameter->searchTxt) : '';
-			$pageNo = isset($param->CallbackParameter->pageNo) ? trim($param->CallbackParameter->pageNo) : '1';
-			$where = 'pro_pro_code.code = :searchExact or pro.name like :searchTxt OR sku like :searchTxt';
-			$params = array('searchExact' => $searchTxt , 'searchTxt' => '%' . $searchTxt . '%');
-
-			$searchTxtArray = StringUtilsAbstract::getAllPossibleCombo(StringUtilsAbstract::tokenize($searchTxt));
-			if(count($searchTxtArray) > 1)
-			{
-				foreach($searchTxtArray as $index => $comboArray)
-				{
-					$key = 'combo' . $index;
-					$where .= ' OR pro.name like :' . $key;
-					$params[$key] = '%' . implode('%', $comboArray) . '%';
-				}
-			}
-			$stats = array();
-			$supplierID = isset($param->CallbackParameter->supplierID) ? trim($param->CallbackParameter->supplierID) : '';
-			Product::getQuery()->eagerLoad('Product.codes', 'left join');
-			$products = Product::getAllByCriteria($where, $params, true, $pageNo, DaoQuery::DEFAUTL_PAGE_SIZE, array('pro.sku' => 'asc'), $stats);
-			foreach($products as $product)
-			{
-				$array = $product->getJson();
-
-				$array['minProductPrice'] = 0;
-				$array['lastSupplierPrice'] = 0;
-				$array['minSupplierPrice'] = 0;
-
-				$minProductPriceProduct = PurchaseOrderItem::getAllByCriteria('productId = ?', array($product->getId()), true, 1, 1, array('unitPrice'=> 'asc'));
-				$minProductPrice = sizeof($minProductPriceProduct) ? $minProductPriceProduct[0]->getUnitPrice() : 0;
-				$minProductPriceId = sizeof($minProductPriceProduct) ? $minProductPriceProduct[0]->getPurchaseOrder()->getId() : '';
-
-				PurchaseOrderItem::getQuery()->eagerLoad('PurchaseOrderItem.purchaseOrder');
-				$lastSupplierPriceProduct = PurchaseOrderItem::getAllByCriteria('po_item.productId = ? and po_item_po.supplierId = ?', array($product->getId(), $supplierID), true, 1, 1, array('po_item.id'=> 'desc'));
-				$lastSupplierPrice = sizeof($lastSupplierPriceProduct) ? $lastSupplierPriceProduct[0]->getUnitPrice() : 0;
-				$lastSupplierPriceId = sizeof($lastSupplierPriceProduct) ? $lastSupplierPriceProduct[0]->getPurchaseOrder()->getId() : '';
-
-				PurchaseOrderItem::getQuery()->eagerLoad('PurchaseOrderItem.purchaseOrder');
-				$minSupplierPriceProduct = PurchaseOrderItem::getAllByCriteria('po_item.productId = ? and po_item_po.supplierId = ?', array($product->getId(), $supplierID), true, 1, 1, array('po_item.unitPrice'=> 'asc'));
-				$minSupplierPrice = sizeof($minSupplierPriceProduct) ? $minSupplierPriceProduct[0]->getUnitPrice() : 0;
-				$minSupplierPriceId = sizeof($minSupplierPriceProduct) ? $minSupplierPriceProduct[0]->getPurchaseOrder()->getId() : '';
-
-				$array['minProductPrice'] = $minProductPrice;
-				$array['minProductPriceId'] = $minProductPriceId;
-
-				$array['lastSupplierPrice'] = $lastSupplierPrice;
-				$array['lastSupplierPriceId'] = $lastSupplierPriceId;
-
-				$array['minSupplierPrice'] = $minSupplierPrice;
-				$array['minSupplierPriceId'] = $minSupplierPriceId;
-
-				$items[] = $array;
-			}
-			$results['items'] = $items;
-			$results['pagination'] = $stats;
-		}
-		catch(Exception $ex)
-		{
-			$errors[] = $ex->getMessage();
-		}
-		$param->ResponseData = StringUtilsAbstract::getJson($results, $errors);
 	}
 	/**
 	 * saveOrder
@@ -172,7 +55,7 @@ class POCreditController extends POController
 			$supplier = Supplier::get(trim($param->CallbackParameter->supplier->id));
 			if(!$supplier instanceof Supplier)
 				throw new Exception('Invalid Supplier passed in!');
-
+	
 			$supplierContactName = trim($param->CallbackParameter->supplier->contactName);
 			$supplierContactNo = trim($param->CallbackParameter->supplier->contactNo);
 			$supplierEmail = trim($param->CallbackParameter->supplier->email);
@@ -183,7 +66,7 @@ class POCreditController extends POController
 			if(!empty($supplierEmail) && $supplierEmail !== $supplier->getEmail())
 				$supplier->setEmail($supplierEmail);
 			$supplier->save();
-
+	
 			$purchaseOrder = PurchaseOrder::create(
 					$supplier,
 					trim($param->CallbackParameter->supplierRefNum),
@@ -204,9 +87,15 @@ class POCreditController extends POController
 			};
 			if($param->CallbackParameter->submitToSupplier === true) {
 				$purchaseOrder->setStatus( PurchaseOrder::STATUS_ORDERED )
-					->save();
+				->save();
 			}
-
+			// For credit PO
+			if(isset($param->CallbackParameter->type) && trim($param->CallbackParameter->type) === 'CREDIT')
+			{
+				$purchaseOrder->setIsCredit(true);
+				if(isset($param->CallbackParameter->po) && ($fromPO = PurchaseOrder::get(trim($param->CallbackParameter->po->id))) instanceof PurchaseOrder)
+					$purchaseOrder->setFromPO($fromPO);
+			}
 			$daoStart = false;
 			Dao::commitTransaction();
 			$results['item'] = $purchaseOrder->getJson();

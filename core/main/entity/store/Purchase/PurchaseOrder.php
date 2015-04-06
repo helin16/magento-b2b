@@ -34,6 +34,11 @@ class PurchaseOrder extends BaseEntityAbstract
 	 */
 	protected $supplier;
 	/**
+	 * 
+	 * @var unknown
+	 */
+	protected $fromPO = null;
+	/**
 	 * The supplier Reference No
 	 *
 	 * @var string
@@ -127,6 +132,26 @@ class PurchaseOrder extends BaseEntityAbstract
 	public function setIsCredit($isCredit)
 	{
 		$this->isCredit = $isCredit;
+		return $this;
+	}
+	/**
+	 * getter for fromPO
+	 *
+	 * @return PurchaseOrder
+	 */
+	public function getFromPO()
+	{
+		$this->loadManyToOne('fromPO');
+		return $this->fromPO;
+	}
+	/**
+	 * Setter for fromPO
+	 *
+	 * @return PurchaseOrder
+	 */
+	public function setFromPO($fromPO)
+	{
+		$this->fromPO = $fromPO;
 		return $this;
 	}
 	/**
@@ -532,6 +557,8 @@ class PurchaseOrder extends BaseEntityAbstract
 		DaoMap::setManyToOne('supplier', 'Supplier', 'po_sup');
 		DaoMap::setStringType('supplierRefNo', 'varchar', 100);
 		DaoMap::setStringType('status', 'varchar', 20);
+		DaoMap::setBoolType('isCredit', 'bool', false);
+		DaoMap::setManyToOne('fromPO', 'PurchaseOrder', 'po_fromPO');
 		DaoMap::setStringType('supplierContact', 'varchar', 100);
 		DaoMap::setStringType('supplierContactNumber', 'varchar', 100);
 		DaoMap::setStringType('shippingCost', 'Double', '10,4');
@@ -546,6 +573,7 @@ class PurchaseOrder extends BaseEntityAbstract
 		DaoMap::createUniqueIndex('purchaseOrderNo');
 		DaoMap::createIndex('supplierRefNo');
 		DaoMap::createIndex('status');
+		DaoMap::createIndex('isCredit');
 		DaoMap::createIndex('orderDate');
 		DaoMap::createIndex('eta');
 		DaoMap::createIndex('totalAmount');
@@ -561,7 +589,7 @@ class PurchaseOrder extends BaseEntityAbstract
 	 * (non-PHPdoc)
 	 * @see BaseEntityAbstract::getJson()
 	 */
-	public function getJson($extra = array(), $reset = false)
+	public function getJson($extra = array(), $reset = false, $getItems = false)
 	{
 		$array = $extra;
 		if(!$this->isJsonLoaded($reset))
@@ -571,8 +599,19 @@ class PurchaseOrder extends BaseEntityAbstract
 			$array['totalReceivedCount'] = $this->getTotalReceivedCount();
 			$array['totalReceivedValue'] = $this->getTotalRecievedValue();
 			$array['supplierInvoices'] = $this->getSupplierInvoices();
+			if($getItems === true)
+				$array['purchaseOrderItems'] =  array_map(create_function('$a', 'return $a->getJson();'), $this->getPurchaseOrderItems());
 		}
 		return parent::getJson($array, $reset);
+	}
+	/**
+	 * get all purchase order items under this PO
+	 * 
+	 * @return array
+	 */
+	public function getPurchaseOrderItems()
+	{
+		return PurchaseOrderItem::getAllByCriteria('po_item.purchaseOrderId = ?', array($this->getId()));
 	}
 	/**
 	 * creating a PO

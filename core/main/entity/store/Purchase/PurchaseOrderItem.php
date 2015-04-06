@@ -201,6 +201,19 @@ class PurchaseOrderItem extends BaseEntityAbstract
 	}
 	/**
 	 * (non-PHPdoc)
+	 * @see BaseEntityAbstract::getJson()
+	 */
+	public function getJson($extra = array(), $reset = false, $getItems = false)
+	{
+		$array = $extra;
+		if(!$this->isJsonLoaded($reset))
+		{
+			$array['product'] = $this->getProduct() instanceof Product ? $this->getProduct()->getJson() : array();
+		}
+		return parent::getJson($array, $reset);
+	}
+	/**
+	 * (non-PHPdoc)
 	 * 
 	 * @see BaseEntityAbstract::preSave()
 	 */

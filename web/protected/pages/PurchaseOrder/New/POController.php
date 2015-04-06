@@ -22,6 +22,20 @@ class POController extends BPCPageAbstract
 		parent::onLoad($param);
 	}
 	/**
+	 * loading the page js class files
+	 */
+	protected function _loadPageJsClass()
+	{
+		parent::_loadPageJsClass();
+		$thisClass = __CLASS__;
+		$cScripts = self::getLastestJS(__CLASS__);
+		if (isset($cScripts['js']) && ($lastestJs = trim($cScripts['js'])) !== '')
+			$this->getPage()->getClientScript()->registerScriptFile($thisClass . 'Js', $this->publishFilePath(dirname(__FILE__) . DIRECTORY_SEPARATOR . $lastestJs));
+		if (isset($cScripts['css']) && ($lastestCss = trim($cScripts['css'])) !== '')
+			$this->getPage()->getClientScript()->registerStyleSheetFile($thisClass . 'Css', $this->publishFilePath(dirname(__FILE__) . DIRECTORY_SEPARATOR . $lastestCss));
+		return $this;
+	}
+	/**
 	 * Getting The end javascript
 	 *
 	 * @return string
@@ -29,9 +43,8 @@ class POController extends BPCPageAbstract
 	protected function _getEndJs()
 	{
 		$class = get_called_class();
-		var_dump($class);
-		var_dump($class::_getJSPrefix());
-		$js = parent::_getEndJs();
+		$js = $this->_getJSPrefix();
+		$js .= parent::_getEndJs();
 		
 		$paymentMethods =  array_map(create_function('$a', 'return $a->getJson();'), PaymentMethod::getAll());
 		$shippingMethods =  array_map(create_function('$a', 'return $a->getJson();'), Courier::getAll());

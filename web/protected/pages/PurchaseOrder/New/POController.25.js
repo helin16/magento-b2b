@@ -7,6 +7,8 @@ POCreateJs.prototype = Object.extend(new BPCPageJs(), {
 	,_supplier: null
 	,_item: null
 	,_searchTxtBox: null
+	,_isCredit: false
+	,_purchaseOrderItems: []
 	/**
 	 * Setting the HTMLIDS
 	 */
@@ -133,7 +135,15 @@ POCreateJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.submitData.shippingCost = tmp.data.shippingCost ? tmp.me.getValueFromCurrency( tmp.data.shippingCost ) : 0;
 		tmp.submitData.handlingCost = tmp.data.handlingCost ? tmp.me.getValueFromCurrency( tmp.data.handlingCost ) : 0;
 		tmp.submitData.totalPaymentDue = tmp.data.totalPaymentDue ? tmp.me.getValueFromCurrency( tmp.data.totalPaymentDue ) : 0;
-
+		
+		//for creadit po
+		console.debug(tmp.me._isCredit === true);
+		if(tmp.me._isCredit === true) {
+			tmp.submitData.type = 'CREDIT';
+			if(tmp.me._po && jQuery.isNumeric(tmp.me._po.id))
+				tmp.submitData.po = tmp.me._po;
+		}
+		
 		if(tmp.submitData.submitToSupplier === true) {
 			tmp.newDiv = new Element('div', {'class': 'confirm-div'})
 				.insert({'bottom': new Element('div')
@@ -226,11 +236,12 @@ POCreateJs.prototype = Object.extend(new BPCPageJs(), {
 		var tmp = {};
 		tmp.me = this;
 		tmp.supplier = tmp.me._supplier;
-		tmp.newDiv = new Element('div', {'class': 'panel panel-info'})
+		tmp.newDiv = new Element('div', {'class': 'panel'}).addClassName(tmp.me._isCredit === true ? 'panel-danger' : 'panel-info')
 			.insert({'bottom': new Element('div', {'class': 'panel-heading'})
 				.insert({'bottom': new Element('div', {'class': 'row'})
 					.insert({'bottom': new Element('div', {'class': 'col-sm-4'})
-						.insert({'bottom': new Element('strong').update('Creating PO for: ' + tmp.supplier.name + ' ') })
+						.insert({'bottom': new Element('strong', {'class': 'creatingFor'}).update('Creating ' + (tmp.me._ifCredit === true ? 'PO Credit' : 'PO') + ' for: ' + tmp.supplier.name + ' ') })
+						.insert({'bottom': new Element('strong', {'class': 'creatingFor'}).update(((tmp.me._po && jQuery.isNumeric(tmp.me._po.id)) ? (' for Purchase Order <a target="_blank" href="/purchase/' + tmp.me._po.id + '">' + tmp.me._po.purchaseOrderNo + '</a>') : '')) })
 					})
 					.insert({'bottom': new Element('div', {'class': 'col-sm-8 text-right'})
 						.insert({'bottom': new Element('div', {'class': 'col-sm-8 text-right'})
@@ -410,38 +421,6 @@ POCreateJs.prototype = Object.extend(new BPCPageJs(), {
 			;
 		return tmp.newRow;
 	}
-	,selectProduct: function(product, btn) {
-		var tmp = {};
-		tmp.me = this;
-		tmp.inputRow = tmp.me._searchTxtBox.up('.new-order-item-input').store('product', product);
-		tmp.me._searchTxtBox.up('.productName')
-			.writeAttribute('colspan', false)
-			.update(product.sku)
-			.insert({'bottom': new Element('small', {'class': 'btn btn-xs btn-info'})
-				.insert({'bottom': new Element('small', {'class': 'glyphicon glyphicon-new-window'} )})
-				.observe('click', function(event){
-					Event.stop(event);
-					$productId = product.id;
-					if($productId)
-						tmp.me._openProductDetailPage($productId);
-				})
-			})
-			.insert({'after': new Element('td')
-				.update(product.name)
-				.insert({'bottom': new Element('a', {'href': 'javascript: void(0);', 'class': 'text-danger pull-right', 'title': 'click to change the product'})
-					.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-remove'})  })
-					.observe('click', function() {
-						tmp.newRow = tmp.me._getNewProductRow();
-						$(this).up('.new-order-item-input').replace(tmp.newRow);
-						tmp.newRow.down('[new-order-item=product]').select();
-					})
-				})
-			});
-		jQuery('#' + tmp.me.modalId).modal('hide');
-		tmp.inputRow.down('[new-order-item=totalPrice]').writeAttribute('value', tmp.me.getCurrency(product.minProductPrice));
-		tmp.inputRow.down('[new-order-item=qtyOrdered]').writeAttribute('value', 1);
-		tmp.inputRow.down('[new-order-item=unitPrice]').writeAttribute('value', tmp.me.getCurrency(product.minProductPrice)).select();
-	}
 	/**
 	 * Open PO page in a fancybox
 	 */
@@ -613,11 +592,11 @@ POCreateJs.prototype = Object.extend(new BPCPageJs(), {
 	/**
 	 * adding a new product row after hit save btn
 	 */
-	,_addNewProductRow: function(btn) {
+	,_addNewProductRow: function(btn, poItem) {
 		var tmp = {};
 		tmp.me = this;
 		tmp.currentRow = $(btn).up('.new-order-item-input');
-		tmp.product = tmp.currentRow.retrieve('product');
+		tmp.product = (typeof poItem === 'undefined') ? tmp.currentRow.retrieve('product') : poItem.product;
 		if(!tmp.product) {
 			tmp.productBox =tmp.currentRow.down('[new-order-item=product]');
 			if(tmp.currentRow.down('[new-order-item=product]')) {
@@ -628,13 +607,13 @@ POCreateJs.prototype = Object.extend(new BPCPageJs(), {
 			return ;
 		}
 		tmp.unitPriceBox = tmp.currentRow.down('[new-order-item=unitPrice]');
-		tmp.unitPrice = tmp.me.getValueFromCurrency($F(tmp.unitPriceBox));
-		if(tmp.unitPrice.match(/^\d+(\.\d{1,2})?$/) === null) {
+		tmp.unitPrice =  (typeof poItem === 'undefined') ? tmp.me.getValueFromCurrency($F(tmp.unitPriceBox)) : poItem.unitPrice;
+		if( (!jQuery.isNumeric(tmp.unitPrice)) && (tmp.unitPrice.match(/^\d+(\.\d{1,2})?$/)  === null) ) {
 			tmp.me._markFormGroupError(tmp.unitPriceBox, 'Invalid value provided!');
 			return ;
 		}
 		tmp.qtyOrderedBox = tmp.currentRow.down('[new-order-item=qtyOrdered]');
-		tmp.qtyOrdered = tmp.me.getValueFromCurrency($F(tmp.qtyOrderedBox));
+		tmp.qtyOrdered = (typeof poItem === 'undefined') ? tmp.me.getValueFromCurrency($F(tmp.qtyOrderedBox)) : poItem.qty;
 		if(tmp.qtyOrdered.match(/^\d+(\.\d{1,2})?$/) === null) {
 			tmp.me._markFormGroupError(tmp.qtyOrderedBox, 'Invalid value provided!');
 			return ;
@@ -646,6 +625,7 @@ POCreateJs.prototype = Object.extend(new BPCPageJs(), {
 		});
 		//get all data
 		tmp.data = {
+			'id': poItem && poItem.id ? poItem.id : '',
 			'product': tmp.product,
 			'unitPrice': tmp.me.getCurrency(tmp.unitPrice),
 			'qtyOrdered': tmp.qtyOrdered,
@@ -724,7 +704,7 @@ POCreateJs.prototype = Object.extend(new BPCPageJs(), {
 					$(this).select();
 				})
 			)
-			, 'btns': new Element('span', {'class': 'btn-group btn-group-sm pull-right'})
+			, 'btns': new Element('span', {'class': 'btn-group btn-group-sm pull-right new-order-item-btn'})
 					.insert({'bottom': new Element('span', {'class': 'btn btn-primary'})
 					.insert({'bottom': new Element('span', {'class': ' glyphicon glyphicon-floppy-saved'}) })
 					.observe('click', function() {
@@ -747,7 +727,7 @@ POCreateJs.prototype = Object.extend(new BPCPageJs(), {
 					})
 				})
 		};
-		return tmp.me._getProductRow(tmp.data, false).addClassName('new-order-item-input info').removeClassName('order-item-row');
+		return tmp.me._getProductRow(tmp.data, false).addClassName('new-order-item-input').addClassName(tmp.me._isCredit === true ? 'danger' : 'info').removeClassName('order-item-row');
 	}
 	/**
 	 * Getting the parts panel
@@ -806,7 +786,7 @@ POCreateJs.prototype = Object.extend(new BPCPageJs(), {
 				) })
 			})
 		});
-		return new Element('div', {'class': 'panel panel-info'})
+		return new Element('div', {'class': 'panel'}).addClassName(tmp.me._isCredit === true ? 'panel-danger' : 'panel-info')
 			.insert({'bottom': new Element('div', {'class': 'panel-body table-responsive'})
 				.insert({'bottom':  tmp.productListDiv})
 			});
@@ -912,7 +892,7 @@ POCreateJs.prototype = Object.extend(new BPCPageJs(), {
 	,_getSupplierListPanel: function () {
 		var tmp = {};
 		tmp.me = this;
-		tmp.newDiv = new Element('div', {'id': tmp.me._htmlIds.searchPanel, 'class': 'panel panel-info search-panel'})
+		tmp.newDiv = new Element('div', {'id': tmp.me._htmlIds.searchPanel, 'class': 'panel search-panel'}).addClassName(tmp.me._isCredit === true ? 'panel-danger' : 'panel-info')
 			.insert({'bottom': new Element('div', {'class': 'panel-heading form-inline'})
 				.insert({'bottom': new Element('strong').update('Creating a new order for: ') })
 				.insert({'bottom': new Element('span', {'class': 'input-group col-sm-6'})
@@ -925,6 +905,12 @@ POCreateJs.prototype = Object.extend(new BPCPageJs(), {
 								}
 								else $(tmp.me._htmlIds.searchPanel).down('.search-btn').click();
 							});
+							tmp.me.keydown(event, function() {
+								if(tmp.txtBox.up('#'+pageJs._htmlIds.searchPanel).down('.item_row')!=undefined && tmp.txtBox.up('#'+pageJs._htmlIds.searchPanel).down('tbody').getElementsBySelector('.item_row').length===1) {
+									tmp.txtBox.up('#'+pageJs._htmlIds.searchPanel).down('tbody .item_row .btn').click();
+								}
+								else $(tmp.me._htmlIds.searchPanel).down('.search-btn').click();
+							}, null, 9);
 							return false;
 						})
 					})
@@ -966,8 +952,7 @@ POCreateJs.prototype = Object.extend(new BPCPageJs(), {
 				 		});
 					})
 				})
-			})
-			;
+			});
 		return tmp.newDiv;
 	}
 	,init: function(supplier) {
