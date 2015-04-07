@@ -86,8 +86,7 @@ class POCreditController extends POController
 				$purchaseOrder->addItem($product, StringUtilsAbstract::getValueFromCurrency(trim($item->unitPrice)), intval(trim($item->qtyOrdered)));
 			};
 			if($param->CallbackParameter->submitToSupplier === true) {
-				$purchaseOrder->setStatus( PurchaseOrder::STATUS_ORDERED )
-				->save();
+				$purchaseOrder->setStatus( PurchaseOrder::STATUS_ORDERED );
 			}
 			// For credit PO
 			if(isset($param->CallbackParameter->type) && trim($param->CallbackParameter->type) === 'CREDIT')
@@ -96,6 +95,7 @@ class POCreditController extends POController
 				if(isset($param->CallbackParameter->po) && ($fromPO = PurchaseOrder::get(trim($param->CallbackParameter->po->id))) instanceof PurchaseOrder)
 					$purchaseOrder->setFromPO($fromPO);
 			}
+			$purchaseOrder->save();
 			$daoStart = false;
 			Dao::commitTransaction();
 			$results['item'] = $purchaseOrder->getJson();
