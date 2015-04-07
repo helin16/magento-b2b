@@ -34,8 +34,9 @@ class PurchaseOrder extends BaseEntityAbstract
 	 */
 	protected $supplier;
 	/**
-	 * 
-	 * @var unknown
+	 * The purchaseOrder that we are credit from
+	 *
+	 * @var PurchaseOrder
 	 */
 	protected $fromPO = null;
 	/**
@@ -149,7 +150,7 @@ class PurchaseOrder extends BaseEntityAbstract
 	 *
 	 * @return PurchaseOrder
 	 */
-	public function setFromPO($fromPO)
+	public function setFromPO(PurchaseOrder $fromPO = null)
 	{
 		$this->fromPO = $fromPO;
 		return $this;
@@ -544,6 +545,8 @@ class PurchaseOrder extends BaseEntityAbstract
 					->addLog($msg, Log::TYPE_SYSTEM, 'PO_STATUS_CHANGE', __CLASS__ . '::' . __FUNCTION__);
 			}
 		}
+		if($this->getFromPO() instanceof PurchaseOrder && intval($this->getIsCredit()) !== 1)
+			throw new Exception('You can onlye set the From PO field, when this purchase order is for a credit');
 	}
 	/**
 	 * (non-PHPdoc)
@@ -558,7 +561,7 @@ class PurchaseOrder extends BaseEntityAbstract
 		DaoMap::setStringType('supplierRefNo', 'varchar', 100);
 		DaoMap::setStringType('status', 'varchar', 20);
 		DaoMap::setBoolType('isCredit', 'bool', false);
-		DaoMap::setManyToOne('fromPO', 'PurchaseOrder', 'po_fromPO');
+		DaoMap::setManyToOne('fromPO', 'PurchaseOrder', 'po_fromPO', true);
 		DaoMap::setStringType('supplierContact', 'varchar', 100);
 		DaoMap::setStringType('supplierContactNumber', 'varchar', 100);
 		DaoMap::setStringType('shippingCost', 'Double', '10,4');
@@ -606,7 +609,7 @@ class PurchaseOrder extends BaseEntityAbstract
 	}
 	/**
 	 * get all purchase order items under this PO
-	 * 
+	 *
 	 * @return array
 	 */
 	public function getPurchaseOrderItems()
@@ -626,7 +629,7 @@ class PurchaseOrder extends BaseEntityAbstract
 	 *
 	 * @return PurchaseOrder
 	 */
-	public static function create(Supplier $supplier, $supplierRefNo = '', $supplierContact = '', $supplierContactNumber = '',$shippingCost = 0, $handlingCost = 0, $isCredit = false)
+	public static function create(Supplier $supplier, $supplierRefNo = '', $supplierContact = '', $supplierContactNumber = '',$shippingCost = 0, $handlingCost = 0, $isCredit = false, PurchaseOrder $fromPO = null)
 	{
 		$entity = new PurchaseOrder();
 		return $entity->setSupplier($supplier)
@@ -636,6 +639,7 @@ class PurchaseOrder extends BaseEntityAbstract
 			->setshippingCost($shippingCost)
 			->sethandlingCost($handlingCost)
 			->setIsCredit($isCredit)
+			->setFromPO($fromPO)
 			->save();
 	}
 	/**
