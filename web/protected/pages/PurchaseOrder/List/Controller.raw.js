@@ -70,7 +70,9 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		});
 		tmp.selectEl = new Element('select', {'class': 'select2 form-control', 'multiple': true, 'data-placeholder': 'the Status of PO', 'search_field': 'po.status'});
 		tmp.me._status.each(function(item){
-			tmp.selectEl.insert({'bottom': new Element('option', {'value': item}).update(item)});
+			tmp.selectEl.insert({'bottom': tmp.option = new Element('option', {'value': item}).update(item)});
+			if(item === 'NEW' || item === 'ORDERED' || item === 'RECEIVING')
+				tmp.option.writeAttribute('selected', true);
 		});
 		$(tmp.me.searchDivId).down('[search_field="po.status"]').replace(tmp.selectEl);
 		jQuery('.select2[search_field="po.status"]').select2({
