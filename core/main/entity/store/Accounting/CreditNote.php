@@ -298,15 +298,16 @@ class CreditNote extends BaseEntityAbstract
 			$total = 0;
 			foreach($items as $item)
 				$total += $item->getQty() * $item->getUnitPrice();
-			$this->setTotalValue($total);
+			$this->setTotalValue($total + $this->getShippingValue());
 			
 			$payments = Payment::getAllByCriteria('creditNoteId = ?', array($this->getId()));
 			$totalPaid = 0;
 			foreach($payments as $payment)
 				$totalPaid += $payment->getValue();
 			$this->setTotalPaid($totalPaid);
+		} else  {
+			$this->setTotalValue($this->getTotalValue() + $this->getShippingValue());
 		}
-		$this->setTotalValue($this->getTotalValue() + $this->getShippingValue());
 	}
 	/**
 	 * (non-PHPdoc)
@@ -318,7 +319,7 @@ class CreditNote extends BaseEntityAbstract
 			$this->setCreditNoteNo('BPCC' . str_pad($this->getId(), 8, '0', STR_PAD_LEFT))
 				->save();
 			if($this->getOrder() instanceof Order) {
-				$msg = "An Credit Note(" . $this->getCreditNoteNo() . ") has created for this order with a unitPrice: " . StringUtilsAbstract::getCurrency($this->getUnitPrice()) . ', qty: ' . $this->getQty() . ', totalValue: ' . StringUtilsAbstract::getCurrency($this->getTotalValue());
+				$msg = "An Credit Note(" . $this->getCreditNoteNo() . ") has created for this order";
 				$this->getOrder()
 					->addComment($msg, Comments::TYPE_SYSTEM)
 					->addLog($msg, Log::TYPE_SYSTEM, 'AUTO', __CLASS__ . '::' . __FUNCTION__);
@@ -445,9 +446,6 @@ class CreditNote extends BaseEntityAbstract
 			->setCustomer($customer instanceof Customer ? $customer : $order->getCustomer())
 			->setDescription(trim($description))
 			->save();
-		$msg = 'An CreditNote(' . $creditNote->getCreditNoteNo() . ') has been created for Order(ID= ' . $order->getId() . ', OrderNo.=' . $order->getOrderNo() . '): ' . $description;
-		$order->addComment($msg, Comments::TYPE_SYSTEM)
-			->addLog($msg, Log::TYPE_SYSTEM);
 		return $creditNote;
 	}
 	/**

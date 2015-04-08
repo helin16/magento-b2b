@@ -183,9 +183,14 @@ class DetailsController extends BPCPageAbstract
 				throw new Exception('Invalid Customer passed in!');
 			if(!isset($param->CallbackParameter->applyTo) || ($applyTo = trim($param->CallbackParameter->applyTo)) === '' || !in_array($applyTo, CreditNote::getApplyToTypes()))
 				throw new Exception('Invalid Apply To passed in!');
-			$creditNote = (isset($param->CallbackParameter->creditNoteId) && ($creditNote = CreditNote::get(trim($param->CallbackParameter->creditNoteId))) instanceof CreditNote) ? $creditNote : CreditNote::create($customer, trim($param->CallbackParameter->description));
-			if(isset($param->CallbackParameter->orderId) && ($order = Order::get(trim($param->CallbackParameter->orderId))) instanceof Order)
-				$creditNote->setOrder($order);
+			if(isset($param->CallbackParameter->creditNoteId) && ($creditNote = CreditNote::get(trim($param->CallbackParameter->creditNoteId))) instanceof CreditNote)
+				$creditNote = $creditNote;
+			else
+			{
+				if(isset($param->CallbackParameter->orderId) && ($order = Order::get(trim($param->CallbackParameter->orderId))) instanceof Order)
+					$creditNote = CreditNote::createFromOrder($order, $customer, trim($param->CallbackParameter->description));
+				else $creditNote = CreditNote::create($customer, trim($param->CallbackParameter->description));
+			}
 			$creditNote->setShippingValue(isset($param->CallbackParameter->totalShippingCost) ? StringUtilsAbstract::getValueFromCurrency($param->CallbackParameter->totalShippingCost) : 0);
 			if(isset($param->CallbackParameter->shippingAddr))
 			{
@@ -237,7 +242,6 @@ class DetailsController extends BPCPageAbstract
 							: 
 							CreditNoteItem::create($creditNote, $product, $qtyOrdered, $unitPrice, $itemDescription, $unitCost, $totalPrice)
 					);
-var_dump($creditNoteItem->getTotalPrice());
 				switch(trim($item->stockData)) {
 					case 'StockOnHand': {
 						$product->returnedIntoSOH($qtyOrdered, $creditNoteItem->getUnitCost(), '', $creditNoteItem);
