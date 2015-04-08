@@ -77,7 +77,7 @@ class Controller extends CRUDPageAbstract
 			}
 			$objects = array();
 			if(count($where) > 0)
-				$objects = ReceivingItem::getAllByCriteria(implode(' AND ', $where), $params, true, $pageNo, $pageSize, array('rec_item.id' => 'desc'), $stats);
+				$objects = ReceivingItem::getAllByCriteria(implode(' AND ', $where), $params, true, $pageNo, $pageSize, array('rec_item.productId' => 'desc'), $stats);
 			$results['pageStats'] = $stats;
 			$results['items'] = array();
 			foreach($objects as $obj)
