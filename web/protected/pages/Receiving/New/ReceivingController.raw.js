@@ -4,6 +4,7 @@
 var PageJs = new Class.create();
 PageJs.prototype = Object.extend(new BPCPageJs(), {
 	_htmlIds: {itemDiv: '',searchPanel: '',paymentPanel: '',supplierInfoPanel: '',partsTable:'',barcodeInput:''}
+	,_forceInvNo: true
 	,_purchaseOrder: null
 	/**
 	 * Setting the HTMLIDS
@@ -565,7 +566,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 						),
 						'serialNo': tmp.me._getFormGroup('',new Element('input', {'class': 'form-control', 'scanned-item': 'serialNo', 'type': 'text', 'placeholder': 'Serial Number:', 'required': true})),
 						'unitPrice': tmp.me._getFormGroup('', new Element('input', {'class': 'form-control', 'scanned-item': 'unitPrice', 'type': 'value', 'placeholder': 'Unit Price:', 'validate_currency': 'Invalid currency', 'value': product.purchaseOrderItem ? tmp.me.getValueFromCurrency(tmp.me.getCurrency(product.purchaseOrderItem.unitPrice)) : ''})),
-						'invoiceNo': tmp.me._getFormGroup('', new Element('input', {'class': 'form-control', 'scanned-item': 'invoiceNo', 'type': 'text', 'placeholder': 'Inv. No.:'})),
+						'invoiceNo': tmp.me._getFormGroup('', tmp.invoiceNoBox = new Element('input', {'class': 'form-control', 'scanned-item': 'invoiceNo', 'type': 'text', 'placeholder': 'Inv. No.:'})),
 						'comments': tmp.me._getFormGroup('', new Element('input', {'class': 'form-control', 'scanned-item': 'comments', 'type': 'text', 'placeholder': 'Comments:'})),
 						'btns': new Element('span', {'class': 'btn-group btn-group-sm pull-right'})
 								.insert({'bottom': new Element('span', {'class': 'scanned-item-save-btn btn btn-primary'})
@@ -646,6 +647,8 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					}).addClassName('warning')
 				})
 			});
+		if(tmp.me._forceInvNo)
+			tmp.invoiceNoBox.writeAttribute('required', true);
 		return tmp.table;
 	}
 	/**
@@ -920,7 +923,6 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		outStandingOrders.each(function(item) {
 			tmp.orderRow = new Element('div', {'class': 'row'});
 			item.outStandingOrders.each(function(order) {
-				console.debug(order);
 				tmp.orderRow.insert({'bottom': new Element('div', {'class': 'col-sm-3'})
 					.insert({'bottom': new Element('a', {'href': '/orderdetails/' + order.id + '.html', 'target': '_BLANK'}).update(order.orderNo) })
 				});
