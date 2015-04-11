@@ -83,7 +83,7 @@ class OpenInvoiceExport extends ExportAbstract
 				,'Total Paid'=> StringUtilsAbstract::getValueFromCurrency($order->getTotalPaid())
 				,'Total Credited'=> StringUtilsAbstract::getValueFromCurrency($order->getTotalCreditNoteValue())
 				,'Total Due'=> StringUtilsAbstract::getValueFromCurrency($order->getTotalAmount() - $order->getTotalPaid() - $order->getTotalCreditNoteValue())
-				,'CreditNote Nos.'=> implode(', ', array_map(create_funciton('$a', 'return $a->getCreditNoteNo();'), $creditNotes))
+				,'CreditNote Nos.'=> implode(', ', array_map(create_function('$a', 'return $a->getCreditNoteNo();'), $creditNotes))
 			);
 		}
 		return $return;
