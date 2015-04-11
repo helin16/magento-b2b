@@ -76,7 +76,7 @@ class OpenInvoiceExport extends ExportAbstract
 				,'Invoice Date' => $order->getInvDate()->setTimeZone('Australia/Melbourne')->__toString()
 				,'Order No.'=> $order->getOrderNo()
 				,'Customer Name' => $customer->getName()
-				,'Customer Ph.'=> $customer->contactNo()
+				,'Customer Ph.'=> $customer->getContactNo()
 				,'Customer Email'=> $customer->getEmail()
 				,'Status'=> $order->getStatus()->getName()
 				,'Total Amt.'=> StringUtilsAbstract::getValueFromCurrency($order->getTotalAmount())
