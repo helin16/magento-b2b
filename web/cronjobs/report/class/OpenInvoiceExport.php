@@ -1,8 +1,8 @@
 <?php
 class OpenInvoiceExport extends ExportAbstract
 {
-	private $fromDate;
-	private $toDate;
+	private static $_fromDate;
+	private static $_toDate;
 	/**
 	 * @return PHPExcel
 	 */
@@ -61,8 +61,8 @@ class OpenInvoiceExport extends ExportAbstract
 			$fromDate = self::$_dateRange['start'];
 			$toDate = self::$_dateRange['end'];
 		}
-		$this->fromDate = $fromDate;
-		$this->toDate= $toDate;
+		self::$_fromDate = $fromDate;
+		self::$_toDate= $toDate;
 		$orders = Order::getAllByCriteria('invDate >= :fromDate and invDate <= :toDate', array('fromDate' => trim($fromDate), 'toDate' => trim($toDate)));
 
 		$return = array();
@@ -90,11 +90,11 @@ class OpenInvoiceExport extends ExportAbstract
 	}
 	protected static function _getMailTitle()
 	{
-		return 'Open Invoice from "' . $this->fromDate->setTimeZone('Australia/Melbourne')->__toString() . '" to "' . $this->fromDate->setTimeZone('Australia/Melbourne')->__toString()  . '"';
+		return 'Open Invoice from "' . self::$_fromDate->setTimeZone('Australia/Melbourne')->__toString() . '" to "' . self::$_toDate->setTimeZone('Australia/Melbourne')->__toString()  . '"';
 	}
 	protected static function _getMailBody()
 	{
-		return 'Open Invoice from "' . $this->fromDate->setTimeZone('Australia/Melbourne')->__toString() . '" to "' . $this->fromDate->setTimeZone('Australia/Melbourne')->__toString()  . '"';
+		return 'Open Invoice from "' . self::$_fromDate->setTimeZone('Australia/Melbourne')->__toString() . '" to "' . self::$_toDate->setTimeZone('Australia/Melbourne')->__toString()  . '"';
 	}
 	protected static function _getAttachedFileName()
 	{
