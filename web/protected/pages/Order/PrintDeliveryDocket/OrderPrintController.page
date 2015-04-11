@@ -33,7 +33,7 @@
                         </td>
                     </tr>
                     <tr class="addr_info">
-                        <td colspan=6>
+                        <td colspan=6 style="padding-bottom: 35px">
                         	<h4><%= $this->order->getCustomer()->getName() %><%= $this->getContact() %></h4>
                             <span class="inlineblock half">
                                 <div class="title">Billing To:</div>
