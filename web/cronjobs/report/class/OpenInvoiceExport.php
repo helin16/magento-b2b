@@ -63,7 +63,9 @@ class OpenInvoiceExport extends ExportAbstract
 		}
 		self::$_fromDate = $fromDate;
 		self::$_toDate= $toDate;
+		Dao::$debug = true;
 		$orders = Order::getAllByCriteria('invDate >= :fromDate and invDate <= :toDate', array('fromDate' => trim($fromDate), 'toDate' => trim($toDate)));
+		Dao::$debug = false;
 
 		$return = array();
 		foreach($orders as $order)
@@ -85,6 +87,7 @@ class OpenInvoiceExport extends ExportAbstract
 				,'Total Due'=> StringUtilsAbstract::getValueFromCurrency($order->getTotalAmount() - $order->getTotalPaid() - $order->getTotalCreditNoteValue())
 				,'CreditNote Nos.'=> implode(', ', array_map(create_function('$a', 'return $a->getCreditNoteNo();'), $creditNotes))
 			);
+			$return[] = $row;
 		}
 		return $return;
 	}
