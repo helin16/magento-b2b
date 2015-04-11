@@ -78,6 +78,11 @@ class ListController extends BPCPageAbstract
 					$asset = ItemExport_Magento::run(false, false);
 					break;
 				}
+				case 'open_inv': {
+					OpenInvoiceExport::setStartNEndDate(new UDate(trim($param->CallbackParameter->date_from)), new UDate(trim($param->CallbackParameter->date_to)));
+					$asset = ItemExport_Magento::run(false, false);
+					break;
+				}
 				default: {
 					throw new Exception('SYSTEM ERROR: invalid type passed in: ' . $type);
 				}

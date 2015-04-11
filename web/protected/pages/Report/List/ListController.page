@@ -6,6 +6,7 @@
 			<h4>List of Reports:</h4>
 			<div class="list-group">
 				<a class="list-group-item gen-report-btn" data-type="sales_daily" href="javascript: void(0);">Sales Report</a>
+				<a class="list-group-item gen-report-btn" data-type="open_inv" href="javascript: void(0);">Open Invoices</a>
 				<a class="list-group-item gen-report-btn" data-type="supplier_bill_daily" href="javascript: void(0);">Bill Report</a>
 				<a class="list-group-item gen-report-btn" data-type="creditnotes_daily" href="javascript: void(0);">CreditNotes Report</a>
 				<a class="list-group-item gen-report-btn" data-type="manual_journal" href="javascript: void(0);">Manual Journal</a>
