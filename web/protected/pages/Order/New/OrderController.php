@@ -227,9 +227,10 @@ class OrderController extends BPCPageAbstract
 				$paymentMethod = PaymentMethod::get(trim($param->CallbackParameter->paymentMethodId));
 				if(!$paymentMethod instanceof PaymentMethod)
 					throw new Exception('Invalid PaymentMethod passed in!');
-				$order->addInfo(OrderInfoType::ID_MAGE_ORDER_PAYMENT_METHOD, $paymentMethod->getName(), true);
 				$totalPaidAmount = trim($param->CallbackParameter->totalPaidAmount);
-						$order->addPayment($paymentMethod, $totalPaidAmount);
+				$order->addPayment($paymentMethod, $totalPaidAmount);
+				$order = Order::get($order->getId());
+				$order->addInfo(OrderInfoType::ID_MAGE_ORDER_PAYMENT_METHOD, $paymentMethod->getName(), true);
 				if($shipped === true)
 					$order->setType(Order::TYPE_INVOICE);
 			}
