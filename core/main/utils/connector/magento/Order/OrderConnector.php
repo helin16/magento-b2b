@@ -18,7 +18,7 @@ class OrderConnector extends B2BConnector
 // 			$lastImportTime = new UDate(SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_LAST_IMPORT_TIME), SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_TIMEZONE));
 			$lastUpdatedTime = trim(SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_LAST_IMPORT_TIME));
 		}
-		
+
 		//getting the lastest order since last updated time
 		$orders = $this->getlastestOrders($lastUpdatedTime);
 		Log::logging(0, get_class($this), 'Found ' . count($orders) . ' order(s) since "' . $lastUpdatedTime . '".', self::LOG_TYPE, '', __FUNCTION__);
@@ -28,21 +28,21 @@ class OrderConnector extends B2BConnector
 			try
 			{
 				try {Dao::beginTransaction();} catch(Exception $e) {$transStarted = true;}
-				
+
 				Log::logging(0, get_class($this), 'Found order from Magento with orderNo = ' . trim($order->increment_id) . '.', self::LOG_TYPE, '', __FUNCTION__);
-				
+
 				$order = $this->getOrderInfo(trim($order->increment_id));
 				if(($status = trim($order->state)) === '')
 				{
 					Log::logging(0, get_class($this), 'Found no state Elment from $order, next element!', self::LOG_TYPE, '$index = ' . $index, __FUNCTION__);
 					continue;
 				}
-	
+
 				//saving the order
 				$orderDate = new UDate(trim($order->created_at), SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_TIMEZONE));
 				$orderDate->setTimeZone('UTC');
-				$totalPaid = (!isset($order->total_paid) ? 0 : trim($order->total_paid));
-	
+// 				$totalPaid = (!isset($order->total_paid) ? 0 : trim($order->total_paid));
+
 				$shippingAddr = $billingAddr = null;
 				if(!($o = Order::getByOrderNo(trim($order->increment_id))) instanceof Order)
 				{
@@ -55,23 +55,23 @@ class OrderConnector extends B2BConnector
 					$billingAddr = $o->getBillingAddr();
 					Log::logging(0, get_class($this), 'Found order from DB, ID = ' . $o->getId(), self::LOG_TYPE, '$index = ' . $index, __FUNCTION__);
 				}
-				
+
 				$customer = Customer::create(
-						(isset($order->billing_address) && isset($order->billing_address->company) && trim($order->billing_address->company) !== '') ? trim($order->billing_address->company) : (isset($order->customer_firstname) ? trim($order->customer_firstname) . ' ' . trim($order->customer_lastname) : ''), 
-						'', 
-						trim($order->customer_email), 
+						(isset($order->billing_address) && isset($order->billing_address->company) && trim($order->billing_address->company) !== '') ? trim($order->billing_address->company) : (isset($order->customer_firstname) ? trim($order->customer_firstname) . ' ' . trim($order->customer_lastname) : ''),
+						'',
+						trim($order->customer_email),
 						$this->_createAddr($order->billing_address, $billingAddr),
 						true,
 						'',
 						$this->_createAddr($order->shipping_address, $shippingAddr),
 						isset($order->customer_id) ? trim($order->customer_id) : 0
 				);
-	
+
 				$o->setOrderNo(trim($order->increment_id))
 					->setOrderDate(trim($orderDate))
 					->setTotalAmount(trim($order->grand_total))
 					->setStatus((strtolower($status) === 'canceled' ? OrderStatus::get(OrderStatus::ID_CANCELLED) : OrderStatus::get(OrderStatus::ID_NEW)))
-					->setTotalPaid($totalPaid)
+// 					->setTotalPaid(0)
 					->setIsFromB2B(true)
 					->setShippingAddr($customer->getShippingAddress())
 					->setBillingAddr($customer->getBillingAddress())
@@ -86,12 +86,12 @@ class OrderConnector extends B2BConnector
 					->_createOrderInfo($o, OrderInfoType::get(OrderInfoType::ID_MAGE_ORDER_STATUS), trim($order->status))
 					->_createOrderInfo($o, OrderInfoType::get(OrderInfoType::ID_MAGE_ORDER_STATE), trim($order->state))
 					->_createOrderInfo($o, OrderInfoType::get(OrderInfoType::ID_MAGE_ORDER_TOTAL_AMOUNT), trim($order->grand_total))
-					->_createOrderInfo($o, OrderInfoType::get(OrderInfoType::ID_MAGE_ORDER_PAID_AMOUNT), $totalPaid)
+// 					->_createOrderInfo($o, OrderInfoType::get(OrderInfoType::ID_MAGE_ORDER_PAID_AMOUNT), $totalPaid)
 					->_createOrderInfo($o, OrderInfoType::get(OrderInfoType::ID_MAGE_ORDER_SHIPPING_METHOD), trim($order->shipping_description))
 					->_createOrderInfo($o, OrderInfoType::get(OrderInfoType::ID_MAGE_ORDER_SHIPPING_COST), $totalShippingCost)
 					->_createOrderInfo($o, OrderInfoType::get(OrderInfoType::ID_MAGE_ORDER_PAYMENT_METHOD), (!isset($order->payment) ? '' : (!isset($order->payment->method) ? '' : trim($order->payment->method))));
 				Log::logging(0, get_class($this), 'Updated order info', self::LOG_TYPE, '$index = ' . $index, __FUNCTION__);
-	
+
 				//saving the order item
 				$totalItemCost = 0;
 				foreach($order->items as $item)	{
@@ -104,7 +104,7 @@ class OrderConnector extends B2BConnector
 				//record the last imported time for this import process
 				SystemSettings::addSettings(SystemSettings::TYPE_B2B_SOAP_LAST_IMPORT_TIME, trim($order->created_at));
 				Log::logging(0, get_class($this), 'Updating the last updated time', self::LOG_TYPE, '', __FUNCTION__);
-				
+
 				$totalItems++;
 				if($transStarted === false)
 					Dao::commitTransaction();
@@ -116,7 +116,7 @@ class OrderConnector extends B2BConnector
 				throw $e;
 			}
 		}
-				
+
 		return $lastUpdatedTime . " => " . SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_LAST_IMPORT_TIME) . ' => ' . $totalItems;
 // 		return $this;
 	}
@@ -205,7 +205,7 @@ class OrderConnector extends B2BConnector
 		);
 		return $this->_connect()->salesOrderList($this->_session, $params);
 	}
-	
+
 	/**
 	 * Getting the information of an order
 	 *
@@ -219,12 +219,12 @@ class OrderConnector extends B2BConnector
 	}
 	/**
 	 * change the order status to something in Magento
-	 * 
+	 *
 	 * @param Order  $order         The order
 	 * @param string $orderStatus   The new status of the order
 	 * @param string $comments      The new comments fo the order
 	 * @param bool   $notifCustomer Whether we want to notify the customer
-	 * 
+	 *
 	 * @return bool Whether the action has done successfully
 	 */
 	public function changeOrderStatus(Order $order, $orderStatus, $comments = '', $notifCustomer = false)
@@ -233,7 +233,7 @@ class OrderConnector extends B2BConnector
 	}
 	/**
 	 * Adding comments to a order in Magento
-	 * 
+	 *
 	 * @param Order  $order         The order
 	 * @param string $comments      The new comments fo the order
 	 * @param bool   $notifCustomer Whether we want to notify the customer
@@ -244,9 +244,9 @@ class OrderConnector extends B2BConnector
 	}
 	/**
 	 * Hold an order
-	 * 
+	 *
 	 * @param Order  $order         The order
-	 * 
+	 *
 	 * @return bool Whether the action has done successfully
 	 */
 	public function holdOrder(Order $order)
@@ -255,9 +255,9 @@ class OrderConnector extends B2BConnector
 	}
 	/**
 	 * unHold an order
-	 * 
+	 *
 	 * @param Order  $order         The order
-	 * 
+	 *
 	 * @return bool Whether the action has done successfully
 	 */
 	public function unHoldOrder(Order $order)
@@ -266,9 +266,9 @@ class OrderConnector extends B2BConnector
 	}
 	/**
 	 * Cancel an order
-	 * 
+	 *
 	 * @param Order  $order         The order
-	 * 
+	 *
 	 * @return bool Whether the action has done successfully
 	 */
 	public function cancelOrder(Order $order)
