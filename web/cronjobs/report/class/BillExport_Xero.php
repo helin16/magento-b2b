@@ -28,7 +28,8 @@ class BillExport_Xero extends ExportAbstract
 				continue;
 			if(!array_key_exists(($key = trim($product->getId() . '|' . $receivingItem->getInvoiceNo())), $formatArray))
 				$formatArray[$key] = $receivingItem;
-			$formatArray[$key]->setQty($formatArray[$key]->getQty() + $receivingItem->getQty());
+			if($formatArray[$key]->getId() !== $receivingItem->getId())
+				$formatArray[$key]->setQty($formatArray[$key]->getQty() + $receivingItem->getQty());
 		}
 
 		$return = array();
