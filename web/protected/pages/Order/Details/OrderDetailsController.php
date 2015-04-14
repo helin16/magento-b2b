@@ -41,7 +41,7 @@ class OrderDetailsController extends BPCPageAbstract
 				if(trim(Core::getRole()->getId()) === trim(Role::ID_PURCHASING))
 					$purchaseEdit = 'true';
 				else if(trim(Core::getRole()->getId()) === trim(Role::ID_WAREHOUSE)) {
-					$purchaseEdit = 'true';
+					$purchaseEdit = 'false';
 					$warehouseEdit = 'true';
 					$statusEdit = 'false';
 				}
@@ -66,7 +66,7 @@ class OrderDetailsController extends BPCPageAbstract
 			$js .= '.setOrder('. json_encode($order->getJson()) . ', ' . json_encode($orderItems) . ', ' . json_encode($orderStatuses) . ', ' . OrderStatus::ID_SHIPPED . ')';
 			$js .= '.setCourier('. json_encode($courierArray) . ', ' . Courier::ID_LOCAL_PICKUP . ')';
 			$js .= '.setCommentType("'. Comments::TYPE_PURCHASING . '", "' . Comments::TYPE_WAREHOUSE . '")';
-			$js .= '.setOrderStatusIds(['. OrderStatus::ID_NEW . ', ' . OrderStatus::ID_INSUFFICIENT_STOCK . '], ['. OrderStatus::ID_ETA . ', ' . OrderStatus::ID_STOCK_CHECKED_BY_PURCHASING . '], ['. OrderStatus::ID_PICKED . '])';
+			$js .= '.setOrderStatusIds(['. OrderStatus::ID_NEW . ', ' . OrderStatus::ID_INSUFFICIENT_STOCK . '], ['. OrderStatus::ID_ETA . ', ' . OrderStatus::ID_STOCK_CHECKED_BY_PURCHASING . ', ' . OrderStatus::ID_INSUFFICIENT_STOCK . '], ['. OrderStatus::ID_PICKED . '])';
 			$js .= '.init("detailswrapper")';
 			$js .= '.load();';
 		return $js;

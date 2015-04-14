@@ -31,7 +31,7 @@ Abstract class AccessControl
 					}
 				case Role::ID_WAREHOUSE:
 					{
-						self::$_cache['accessOrderStatusIds'][$role->getId()] = array(OrderStatus::ID_ETA, OrderStatus::ID_STOCK_CHECKED_BY_PURCHASING, OrderStatus::ID_PICKED);
+						self::$_cache['accessOrderStatusIds'][$role->getId()] = array(OrderStatus::ID_ETA, OrderStatus::ID_STOCK_CHECKED_BY_PURCHASING, OrderStatus::ID_PICKED, OrderStatus::ID_INSUFFICIENT_STOCK);
 						break;
 					}
 			}
