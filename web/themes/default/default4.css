@@ -97,6 +97,10 @@ html, body {
 .order_item:hover [order_status="CANCELLED"],
 .order_item [order_status="ON HOLD"],
 .order_item:hover [order_status="ON HOLD"],
+.order_item .tr-red,
+.order_item:hover .tr-red,
+.order_item .tr-red a,
+.order_item:hover .tr-red a
 .po_item [order_status="CANCELED"],
 .po_item [order_status="CANCELED"] {
 	background-color: red;
@@ -202,7 +206,7 @@ table.table thead td {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 250px;
+  max-width: 120px;
 }
 .click-to-edit {
 	border: none;
