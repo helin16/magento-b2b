@@ -26,7 +26,7 @@ class BillExport_Xero extends ExportAbstract
 			$product = $receivingItem->getProduct();
 			if(!$product instanceof Product)
 				continue;
-			if(!array_key_exists(($key = trim($product->getId() . '|' . $receivingItem->getInvoiceNo() . '|' . $receivingItem->getPurchaseOrder()->getId())), $formatArray))
+			if(!array_key_exists(($key = trim($product->getId() . '|' . $receivingItem->getInvoiceNo())), $formatArray))
 				$formatArray[$key] = $receivingItem;
 			$formatArray[$key]->setQty($formatArray[$key]->getQty() + $receivingItem->getQty());
 		}
