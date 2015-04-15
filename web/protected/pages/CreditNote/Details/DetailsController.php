@@ -14,6 +14,15 @@ class DetailsController extends BPCPageAbstract
 	 */
 	public $menuItem = 'order.new';
 	/**
+	 * constructor
+	 */
+	public function __construct()
+	{
+		parent::__construct();
+		if(!AccessControl::canAccessAccountsPage(Core::getRole()))
+			die('You do NOT have access to this page');
+	}
+	/**
 	 * (non-PHPdoc)
 	 * @see BPCPageAbstract::onLoad()
 	 */
@@ -233,13 +242,13 @@ class DetailsController extends BPCPageAbstract
 				$orderItem = null;
 				if(isset($item->orderItemId) && ($orderItem = OrderItem::get(trim($item->orderItemId))) instanceof OrderItem)
 					$unitCost = $orderItem->getUnitCost();
-				
+
 				$creditNoteItem = is_numeric($item->creditNoteItemId) ?
 					CreditNoteItem::get(trim($item->creditNoteItemId))->setActive($active)->setProduct($product)->setQty($qtyOrdered)->setUnitPrice($unitPrice)->setItemDescription($itemDescription)->setUnitCost($unitCost)->setTotalPrice($totalPrice)->save()
 					:
-					($orderItem instanceof OrderItem ? 
-							CreditNoteItem::createFromOrderItem($creditNote, $orderItem, $qtyOrdered, $unitPrice, $itemDescription, $unitCost, $totalPrice) 
-							: 
+					($orderItem instanceof OrderItem ?
+							CreditNoteItem::createFromOrderItem($creditNote, $orderItem, $qtyOrdered, $unitPrice, $itemDescription, $unitCost, $totalPrice)
+							:
 							CreditNoteItem::create($creditNote, $product, $qtyOrdered, $unitPrice, $itemDescription, $unitCost, $totalPrice)
 					);
 				switch(trim($item->stockData)) {

@@ -20,7 +20,7 @@ class ListController extends CRUDPageAbstract
 	public function __construct()
 	{
 		parent::__construct();
-		if(!AccessControl::canAccessProductsPage(Core::getRole()))
+		if(!AccessControl::canAccessAccountsPage(Core::getRole()))
 			die('You do NOT have access to this page');
 	}
 	/**
@@ -31,7 +31,7 @@ class ListController extends CRUDPageAbstract
 	{
 		$applyToOptions = CreditNote::getApplyToTypes();
 
-		
+
 		$js = parent::_getEndJs();
 		if(isset($_REQUEST['orderid']) && ($order = Order::get(trim($_REQUEST['orderid'])))instanceof Order)
 			$js .= "pageJs._order=" . json_encode($order->getJson()) . ";";
