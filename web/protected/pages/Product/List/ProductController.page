@@ -91,7 +91,7 @@
 								Total Qty: <strong id="total-found-qty" class="text-info">0</strong>
 							</div>
 							<div class="col-xs-6">
-								Total Value: <strong id="total-found-value" class="text-info">$0</strong>
+								Total Value(Ex GST): <strong id="total-found-value" class="text-info">$0</strong>
 							</div>
 						</div>
 					</div>
