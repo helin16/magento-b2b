@@ -357,6 +357,7 @@ class OrderItem extends BaseEntityAbstract
 	    {
 	    	$array['product'] = $this->getProduct()->getJson();
 	    	$array['order'] = $this->getOrder()->getJson();
+	    	$array['sellingitems'] = array_map(create_function('$a', 'return $a->getJson();'), $this->getSellingItems());
 	    }
 	    return parent::getJson($array, $reset);
 	}

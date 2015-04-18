@@ -897,7 +897,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.item = item;
 		tmp.newDiv = new Element('div', {'class': 'scanTable'});
 		for(tmp.i = 0; tmp.i < item.qtyOrdered; tmp.i++) {
-			tmp.newDiv.insert({'bottom': new Element('input', {'class': 'form-control', 'scanned-item': 'serialNo', 'type': 'text', 'placeholder': 'Serial Number:'})
+			tmp.newDiv.insert({'bottom': new Element('input', {'class': 'form-control', 'scanned-item': 'serialNo', 'type': 'text', 'placeholder': 'Serial Number:', 'value': (tmp.item.sellingitems && tmp.item.sellingitems[tmp.i] && jQuery.isNumeric(tmp.item.sellingitems[tmp.i].id)) ? tmp.item.sellingitems[tmp.i].serialNo : ''})
 				.observe('change', function() {
 					tmp.emptyIput = null;
 					tmp.serials = [];
