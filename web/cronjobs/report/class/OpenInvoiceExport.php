@@ -63,9 +63,7 @@ class OpenInvoiceExport extends ExportAbstract
 		}
 		self::$_fromDate = $fromDate;
 		self::$_toDate= $toDate;
-		Dao::$debug = true;
 		$orders = Order::getAllByCriteria('invDate >= :fromDate and invDate <= :toDate', array('fromDate' => trim($fromDate), 'toDate' => trim($toDate)));
-		Dao::$debug = false;
 
 		$return = array();
 		foreach($orders as $order)
@@ -77,6 +75,7 @@ class OpenInvoiceExport extends ExportAbstract
 				'Invoice No.' => $order->getInvNo()
 				,'Invoice Date' => $order->getInvDate()->setTimeZone('Australia/Melbourne')->__toString()
 				,'Order No.'=> $order->getOrderNo()
+				,'Order Date'=> $order->getOrderDate()->setTimeZone('Australia/Melbourne')->__toString()
 				,'Customer Name' => $customer->getName()
 				,'Customer Ph.'=> $customer->getContactNo()
 				,'Customer Email'=> $customer->getEmail()

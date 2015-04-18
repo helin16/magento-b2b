@@ -1324,12 +1324,17 @@ class Product extends InfoEntityAbstract
 	 *
 	 * @return Ambigous <Ambigous, multitype:, multitype:BaseEntityAbstract >
 	 */
-	public static function getProducts($sku, $name, array $supplierIds = array(), array $manufacturerIds = array(), array $categoryIds = array(), array $statusIds = array(), $active = null, $pageNo = null, $pageSize = DaoQuery::DEFAUTL_PAGE_SIZE, $orderBy = array(), &$stats = array(), $stockLevel = null)
+	public static function getProducts($sku, $name, array $supplierIds = array(), array $manufacturerIds = array(), array $categoryIds = array(), array $statusIds = array(), $active = null, $pageNo = null, $pageSize = DaoQuery::DEFAUTL_PAGE_SIZE, $orderBy = array(), &$stats = array(), $stockLevel = null, &$sumValues = null)
 	{
 		$where = array(1);
 		$params = array();
-		if(($sku = trim($sku)) !== '')
-		{
+		if(is_array($sumValues)) {
+			$innerJoins = array();
+		}
+		if(is_array($sku)) {
+			$where[] = 'pro.sku in (' . implode(',', array_fill(0, count($sku), '?')) . ')';
+			$params = array_merge($params, $sku);
+		} else if(($sku = trim($sku)) !== '') {
 			$where[] = 'pro.sku like ?';
 			$params[] = '%' . $sku . '%';
 		}
@@ -1356,16 +1361,31 @@ class Product extends InfoEntityAbstract
 		if(count($supplierIds) > 0)
 		{
 			self::getQuery()->eagerLoad('Product.supplierCodes', 'inner join', 'pro_sup_code', 'pro.id = pro_sup_code.productId and pro_sup_code.supplierId in (' . implode(',', array_fill(0, count($supplierIds), '?')) . ')');
+			if(is_array($sumValues)) {
+				$innerJoins[] = 'inner join suppliercodes pro_sup_code on (pro.id = pro_sup_code.productId and pro_sup_code.supplierId in (' . implode(',', array_fill(0, count($supplierIds), '?')) . '))';
+			}
 			$params = array_merge($supplierIds, $params);
 		}
 		if(count($categoryIds) > 0)
 		{
 			self::getQuery()->eagerLoad('Product.categories', 'inner join', 'pro_cate', 'pro.id = pro_cate.productId and pro_cate.categoryId in (' . implode(',', array_fill(0, count($categoryIds), '?')) . ')');
+			if(is_array($sumValues)) {
+				$innerJoins[] = 'inner join productcategory pro_cate on (pro.id = pro_cate.productId and pro_cate.categoryId in (' . implode(',', array_fill(0, count($categoryIds), '?')) . '))';
+			}
 			$params = array_merge($categoryIds, $params);
 		}
 		if(($stockLevel = trim($stockLevel)) !== '')
 		{
 			$where[] = 'pro.stockOnHand <= pro.' . $stockLevel. ' and pro.' . $stockLevel . ' is not null';
+		}
+		
+		if(is_array($sumValues)) {
+			$sql = 'select sum(pro.stockOnHand) `totalStockOnHand`, sum(pro.totalOnHandValue) `totalOnHandValue` from product pro ' . implode(' ', $innerJoins) . ' where pro.active = 1 and (' . implode(' AND ', $where) . ')';
+			$sumResult = Dao::getResultsNative($sql, $params);
+			if(count($sumResult) > 0 ){
+				$sumValues['totalStockOnHand'] = $sumResult[0]['totalStockOnHand'];
+				$sumValues['totalOnHandValue'] = $sumResult[0]['totalOnHandValue'];
+			}
 		}
 		return Product::getAllByCriteria(implode(' AND ', $where), $params, false, $pageNo, $pageSize, $orderBy, $stats);
 	}
