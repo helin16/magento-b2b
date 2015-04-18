@@ -884,7 +884,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		}
 		tmp.qtyOrderedBox = tmp.currentRow.down('[new-order-item=qtyOrdered]');
 		tmp.qtyOrdered = tmp.me.getValueFromCurrency($F(tmp.qtyOrderedBox));
-		if(tmp.qtyOrdered.match(/^\d+(\.\d{1,2})?$/) === null) {
+		if(tmp.qtyOrdered.match(/^\d+(\.\d{1,2})?$/) === null || tmp.qtyOrdered == 0) {
 			tmp.me._markFormGroupError(tmp.qtyOrderedBox, 'Invalid value provided!');
 			return ;
 		}
@@ -1055,7 +1055,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			,'margin': tmp.me.getCurrency(0)
 			, 'btns': new Element('span', {'class': 'btn-group btn-group-sm pull-right'})
 					.insert({'bottom': new Element('span', {'class': 'btn btn-primary'})
-					.insert({'bottom': new Element('span', {'class': ' glyphicon glyphicon-floppy-saved save-new-product-btn'}) })
+					.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-floppy-saved save-new-product-btn'}) })
 					.observe('click', function() {
 						tmp.me._addNewProductRow(this);
 					})
