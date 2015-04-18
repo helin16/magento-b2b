@@ -176,9 +176,9 @@ class OrderConnector extends B2BConnector
 			->getProductInfo(trim($itemObj->sku));
 		$product = Product::create(trim($itemObj->sku), trim($itemObj->name), trim($itemObj->product_id));
 		$updateOptions = ($updateOptions = trim($itemObj->product_options)) === '' ? $updateOptions : unserialize($updateOptions);
-		if($updateOptions !== '') {
+		if(is_array($updateOptions)) {
 			$stringArray = array();
-			foreach($options as $option) {
+			foreach($updateOptions as $option) {
 				$stringArray[] = '<b>' . trim($option->label) . '</b>';
 				$stringArray[] = trim($option->print_value);
 				$stringArray[] = '';
