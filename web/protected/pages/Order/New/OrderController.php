@@ -274,7 +274,6 @@ class OrderController extends BPCPageAbstract
 
 			foreach ($param->CallbackParameter->items as $item)
 			{
-				var_dump($item);
 				$product = Product::get(trim($item->product->id));
 				if(!$product instanceof Product)
 					throw new Exception('Invalid Product passed in!');
