@@ -86,14 +86,15 @@ class OrderPrintController extends BPCPageAbstract
 		{
 			$uPrice = '$' . number_format($orderItem->getUnitPrice(), 2, '.', ',');
 			$tPrice = '$' . number_format($orderItem->getTotalPrice(), 2, '.', ',');
-			$sellingItems = array();
-			foreach($orderItem->getSellingItems() as $item) {
-				if($item->getSerialNo() !== '' )
-					$sellingItems[] = $item->getSerialNo();
-			}
 			$shouldTotal = $orderItem->getUnitPrice() * $orderItem->getQtyOrdered();
 			$discount = (floatval($shouldTotal) === 0.0000 ? 0.00 : round(((($shouldTotal - $orderItem->getTotalPrice()) * 100) / $shouldTotal), 2));
 			$html .= $this->getRow($orderItem->getQtyOrdered(), $orderItem->getProduct()->getSku(), $orderItem->getItemDescription() ?: $orderItem->getProduct()->getname(), $uPrice, ($discount === 0.00 ? '' : $discount . '%'), $tPrice, 'itemRow');
+			if(($sellingItems = $orderItem->getSellingItems()) && count($sellingItems) > 0)
+			{
+				$html .= $this->getRow('&nbsp;', '&nbsp;', 'Serial Numbers:', '&nbsp;', '&nbsp;', '', 'itemRow');
+				foreach ($sellingItems as $sellingItem)
+					$html .= $this->getRow('&nbsp;', '&nbsp;', '&nbsp;&nbsp;&nbsp;&nbsp;' . $sellingItem->getSerialNo(), '&nbsp;', '&nbsp;', '', 'itemRow');
+			}
 // 			$html .= $this->getRow('', '<span class="pull-right">Serial No: </span>', '<div style="max-width: 367px; word-wrap: break-word;">' . implode(', ', $sellingItems) . '</div>', '', '', '', 'itemRow itemRow-serials');
 		}
 		for ( $i = 5; $i > $index; $i--)
