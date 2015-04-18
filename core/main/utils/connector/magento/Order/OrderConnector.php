@@ -178,6 +178,7 @@ class OrderConnector extends B2BConnector
 		$updateOptions = ($updateOptions = trim($itemObj->product_options)) === '' ? $updateOptions : unserialize($updateOptions);
 		if(is_array($updateOptions)) {
 			$stringArray = array();
+			var_dump($updateOptions);
 			foreach($updateOptions as $option) {
 				$stringArray[] = '<b>' . trim($option->label) . '</b>';
 				$stringArray[] = trim($option->print_value);
