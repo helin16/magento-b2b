@@ -88,7 +88,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.newDiv = new Element('div', {'class': 'scanTable'});
 		for(tmp.i = 0; tmp.i < item.qtyOrdered; tmp.i++) {
 			tmp.sellingitem = (tmp.item.sellingitems && tmp.item.sellingitems[tmp.i] && jQuery.isNumeric(tmp.item.sellingitems[tmp.i].id)) ? tmp.item.sellingitems[tmp.i] : false;
-			tmp.newDiv.insert({'bottom': tmp.me._getScanTableRow(tmp.sellingitem).wrap(new Element('div', {'class': 'col-sm-3'})) });
+			tmp.newDiv.insert({'bottom': tmp.me._getScanTableRow(tmp.sellingitem).wrap(new Element('div', {'class': 'col-sm-12'})) });
 		}
 		return tmp.newDiv;
 	}
