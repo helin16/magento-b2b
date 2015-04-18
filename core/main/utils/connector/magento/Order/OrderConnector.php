@@ -175,12 +175,27 @@ class OrderConnector extends B2BConnector
 		$productXml = CatelogConnector::getConnector(B2BConnector::CONNECTOR_TYPE_CATELOG, $this->_getWSDL(), $this->_getApiUser(), $this->_getApiKey())
 			->getProductInfo(trim($itemObj->sku));
 		$product = Product::create(trim($itemObj->sku), trim($itemObj->name), trim($itemObj->product_id));
+		if(($updateOptions = trim($itemObj->product_options)) !== '' && is_array($updateOptions = unserialize($updateOptions))) {
+			if(isset($updateOptions['options'])) {
+				$stringArray = array();
+				foreach($updateOptions['options'] as $option) {
+					$stringArray[] = '<b>' . trim($option['label']) . '</b>';
+					$stringArray[] = trim($option['print_value']);
+					$stringArray[] = '';
+				}
+				$updateOptions = '<br />' . implode('<br />', $stringArray);
+			} else {
+				$updateOptions = '';
+			}
+		}
 		return OrderItem::create($order,
-				$product,
-				trim($itemObj->price) * 1.1,
-				trim($itemObj->qty_ordered),
-				trim($itemObj->row_total) * 1.1,
-				trim($itemObj->item_id)
+			$product,
+			trim($itemObj->price) * 1.1,
+			trim($itemObj->qty_ordered),
+			trim($itemObj->row_total) * 1.1,
+			trim($itemObj->item_id),
+			null,
+			$product->getName() . $updateOptions
 		);
 	}
 	/**
