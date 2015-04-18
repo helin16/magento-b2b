@@ -182,10 +182,11 @@ class OrderController extends BPCPageAbstract
 			{
 				$results['items'][] = $order->getJson();
 			}
-			$sql = 'select sum(`ord`.totalAmount) `totalAmount`, sum(`ord`.totalPaid) `totalPaid` from `order` ord ' . implode(' ', $innerJoinStrings) . ' where ord.active = 1 AND (' . implode(' AND ', $where) . ')';
+			$sql = 'select sum(`ord`.totalAmount) `totalAmount`, sum(`ord`.totalPaid) `totalPaid`, sum(`ord`.totalCreditNoteValue) `totalCreditNoteValue` from `order` ord ' . implode(' ', $innerJoinStrings) . ' where ord.active = 1 AND (' . implode(' AND ', $where) . ')';
 			$sumResult = Dao::getResultsNative($sql, $params);
 			$results['totalAmount'] = count($sumResult) > 0 ? $sumResult[0]['totalAmount'] : 0;
 			$results['totalPaid'] = count($sumResult) > 0 ? $sumResult[0]['totalPaid'] : 0;
+			$results['totalCreditNoteValue'] = count($sumResult) > 0 ? $sumResult[0]['totalCreditNoteValue'] : 0;
 		}
 		catch(Exception $ex)
 		{
