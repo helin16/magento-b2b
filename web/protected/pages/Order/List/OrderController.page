@@ -98,7 +98,7 @@
 			<div class="panel panel-default">
 			     <div class="panel-heading" style="padding: 8px 4px 0 4px; border-bottom:none;">
 			     	<div class="row">
-				     	<div id="order-type-list" class="col-xs-8">
+				     	<div id="order-type-list" class="col-xs-6">
 				     		<ul class="nav nav-tabs">
 				     			<li class="type-swither-item" data-type="QUOTE"><a href="javascript: void(0);">QUOTE</a></li>
 				     			<li class="type-swither-item" data-type="ORDER"><a href="javascript: void(0);">ORDER</a></li>
@@ -107,8 +107,16 @@
 				     			<li class="type-swither-item" data-type="INVOICE" extraSearchCriteria="(ROUND(ord.totalAmount,2) - ROUND(ord.totalPaid, 2) - ROUND(ord.totalCreditNoteValue, 2)) <= 0"><a href="javascript: void(0);">Closed INVOICES</a></li>
 				     		</ul>
 				     	</div>
-				     	<div class="col-xs-4 text-right">
-		                   <span id='total_no_of_items'>0</span> Records Found!
+				     	<div class="col-xs-6 text-right">
+						     	<div class="col-xs-4">
+			                   		Total Amt: <strong id='total_amount' class="text-info">$0</strong> 
+						     	</div>
+						     	<div class="col-xs-4">
+			                   		Total Due: <strong id='total_due' class="text-danger">$0</strong> 
+						     	</div>
+						     	<div class="col-xs-4">
+			                   		<span id='total_no_of_items'>0</span> Records Found!
+						     	</div>
 				     	</div>
 			     	</div>
                  </div>

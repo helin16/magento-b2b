@@ -109,6 +109,8 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				jQuery('.popovershipping').popover('hide');
 				if(tmp.reset === true) {
 					$(tmp.me.totalNoOfItemsId).update('0');
+					$(tmp.me.totalSumId).update(tmp.me.getCurrency(0));
+					$(tmp.me.totalDueId).update(tmp.me.getCurrency(0));
 					$(tmp.me.resultDivId).update('').insert({'after': new Element('div', {'class': 'panel-body'}).update(tmp.me.getLoadingImg()) });
 				}
 			}
@@ -118,7 +120,9 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					if(!tmp.result)
 						return;
 					$(tmp.me.totalNoOfItemsId).update(tmp.result.pageStats.totalRows);
-
+					$(tmp.me.totalSumId).update(tmp.me.getCurrency(tmp.result.totalAmount));
+					$(tmp.me.totalDueId).update(tmp.me.getCurrency(tmp.result.totalAmount - tmp.result.totalPaid));
+					
 					tmp.resultDiv = $(tmp.me.resultDivId);
 					//reset div
 					if(tmp.reset === true) {
