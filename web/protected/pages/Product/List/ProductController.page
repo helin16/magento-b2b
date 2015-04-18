@@ -82,7 +82,19 @@
 		<div class="col-xs-12 list-panel">
 			<div class="panel panel-default">
 				<div class="panel-heading">
-					Found <label id="total-found-count">0</label> Products:
+					<div class="row">
+						<div class="col-xs-8">
+							Found <label id="total-found-count">0</label> Products:
+						</div>
+						<div class="col-xs-4 text-right">
+							<div class="col-xs-6">
+								Total Qty: <strong id="total-found-qty" class="text-info">0</strong>
+							</div>
+							<div class="col-xs-6">
+								Total Value: <strong id="total-found-value" class="text-info">$0</strong>
+							</div>
+						</div>
+					</div>
 				</div>
 				<div class="table-responsive">
 	                <table class="table table-hover table-striped" id="item-list"></table>

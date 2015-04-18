@@ -260,6 +260,8 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 				if(tmp.reset === true) {
 					tmp.resultDiv.update( new Element('tr').update( new Element('td').update( tmp.me.getLoadingImg() ) ) );
 				}
+				$(tmp.me.totalQtyId).update(0);
+				$(tmp.me.totalValueId).update(tmp.me.getCurrency(0));
 			}
 			,'onSuccess': function(sender, param) {
 				try{
@@ -267,6 +269,8 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 					if(!tmp.result)
 						return;
 					$(tmp.me.totalNoOfItemsId).update(tmp.result.pageStats.totalRows);
+					$(tmp.me.totalQtyId).update(tmp.result.totalStockOnHand);
+					$(tmp.me.totalValueId).update(tmp.me.getCurrency(tmp.result.totalOnHandValue));
 
 					//reset div
 					if(tmp.reset === true) {

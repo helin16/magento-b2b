@@ -44,6 +44,8 @@ class ProductController extends CRUDPageAbstract
 			$js .= "$('searchPanel').hide();";
 			$js .= "pageJs._singleProduct = true;";
 		}
+		$js .= 'pageJs.totalValueId = "total-found-value";';
+		$js .= 'pageJs.totalQtyId = "total-found-qty";';
 		$js .= 'pageJs._loadManufactures('.json_encode($manufactureArray).')';
 		$js .= '._loadSuppliers('.json_encode($supplierArray).')';
 		$js .= '._loadCategories('.json_encode($productCategoryArray).')';
@@ -97,6 +99,7 @@ class ProductController extends CRUDPageAbstract
             $class = trim($this->_focusEntity);
             if(!isset($param->CallbackParameter->searchCriteria) || count($serachCriteria = json_decode(json_encode($param->CallbackParameter->searchCriteria), true)) === 0)
                 throw new Exception('System Error: search criteria not provided!');
+            $sumArray = array();
             if(isset($serachCriteria['pro.id']) && ($product = Product::get($serachCriteria['pro.id'])) instanceof Product) {
             	$objects = array($product);
             	$stats = array('totalPages' => 1);
@@ -115,14 +118,18 @@ class ProductController extends CRUDPageAbstract
 	            $supplierIds = (!isset($serachCriteria['pro.supplierIds']) || is_null($serachCriteria['pro.supplierIds'])) ? array() : $serachCriteria['pro.supplierIds'];
 	            $manufacturerIds = (!isset($serachCriteria['pro.manufacturerIds']) || is_null($serachCriteria['pro.manufacturerIds'])) ? array() : $serachCriteria['pro.manufacturerIds'];
 	            $productStatusIds = (!isset($serachCriteria['pro.productStatusIds']) || is_null($serachCriteria['pro.productStatusIds'])) ? array() : $serachCriteria['pro.productStatusIds'];
-	            Dao::$debug = true;
-	            $objects = Product::getProducts(trim($serachCriteria['pro.sku']), trim($serachCriteria['pro.name']), $supplierIds, $manufacturerIds, $categoryIds, $productStatusIds, trim($serachCriteria['pro.active']), $pageNo, $pageSize, array('pro.name' => 'asc'), $stats, $serachCriteria['pro.stockLevel']);
-	            Dao::$debug = false;
+	            $sku = trim($serachCriteria['pro.sku']);
+	            if(strpos($sku, ',') !== false) {
+	            	$sku = array_map(create_function('$a', 'return trim($a);'), explode(',', $sku));
+	            }
+	            $objects = Product::getProducts($sku, trim($serachCriteria['pro.name']), $supplierIds, $manufacturerIds, $categoryIds, $productStatusIds, trim($serachCriteria['pro.active']), $pageNo, $pageSize, array('pro.name' => 'asc'), $stats, $serachCriteria['pro.stockLevel'], $sumArray);
             }
             $results['pageStats'] = $stats;
             $results['items'] = array();
             foreach($objects as $obj)
                 $results['items'][] = $obj->getJson();
+            $results['totalStockOnHand'] = isset($sumArray['totalStockOnHand']) ? trim($sumArray['totalStockOnHand']) : 0;
+            $results['totalOnHandValue'] = isset($sumArray['totalOnHandValue']) ? trim($sumArray['totalOnHandValue']) : 0;
         }
         catch(Exception $ex)
         {
