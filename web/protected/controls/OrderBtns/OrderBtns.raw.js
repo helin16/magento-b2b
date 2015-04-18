@@ -14,16 +14,19 @@ OrderBtnsJs.prototype = {
 	/**
 	 * Open order print in new Window
 	 */
-	,openOrderPrintPage: function(pdf) {
+	,openOrderPrintPage: function(pdf, viewOnly) {
 		var tmp = {};
 		tmp.me = this;
 		tmp.pdf = (pdf || 0);
+		tmp.viewOnly = (viewOnly || false);
 		tmp.newWindow = window.open('/print/order/' + tmp.me._order.id + '.html?pdf=' + parseInt(tmp.pdf), tmp.me._order.status.name + ' Order ' + tmp.me._order.orderNo, 'width=1300, location=no, scrollbars=yes, menubar=no, status=no, titlebar=no, fullscreen=no, toolbar=no');
 		tmp.newWindow.onload = function(){
 			tmp.newWindow.document.title = tmp.me._order.status.name + ' Order ' + tmp.me._order.orderNo;
 			tmp.newWindow.focus();
-			tmp.newWindow.print();
-			tmp.newWindow.close();
+			if(tmp.viewOnly !== true) {
+				tmp.newWindow.print();
+				tmp.newWindow.close();
+			}
 		}
 		return tmp.me;
 	}
@@ -153,6 +156,15 @@ OrderBtnsJs.prototype = {
 							.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-print'}) })
 							.observe('click', function() {
 								tmp.me.openOrderPrintPage(0);
+							})
+						})
+					})
+					.insert({'bottom': new Element('li')
+						.insert({'bottom': new Element('a', {'href': 'javascript: void(0);'})
+							.insert({'bottom': new Element('span').update('View HTML') })
+							.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-list-alt'}) })
+							.observe('click', function() {
+								tmp.me.openOrderPrintPage(0, true);
 							})
 						})
 					})
