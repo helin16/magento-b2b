@@ -8,7 +8,7 @@ try {
 			SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_USER),
 			SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_KEY)
 	)->getOrderInfo('BPC00030375');
-	var_dump($result);
+	var_dump($result['items'][0]['product_options']);
 	echo '</pre>';
 
 	Dao::commitTransaction();
