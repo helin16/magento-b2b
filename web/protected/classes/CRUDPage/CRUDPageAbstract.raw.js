@@ -8,6 +8,7 @@ CRUDPageJs.prototype = Object.extend(new BPCPageJs(), {
 	,totalNoOfItemsId: '' //the html if of the total no of items
 	,_pagination: {'pageNo': 1, 'pageSize': 30} //the pagination details
 	,_searchCriteria: {} //the searching criteria
+	,_nextPageColSpan: 5
 
 	,setHTMLIds: function(resultDivId, searchDivId, totalNoOfItemsId) {
 		this.resultDivId = resultDivId;
@@ -93,7 +94,7 @@ CRUDPageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.me = this;
 		return new Element('tfoot')
 			.insert({'bottom': new Element('tr')
-				.insert({'bottom': new Element('td', {'colspan': '5', 'class': 'text-center'})
+				.insert({'bottom': new Element('td', {'colspan': tmp.me._nextPageColSpan, 'class': 'text-center'})
 					.insert({'bottom': new Element('span', {'class': 'btn btn-primary', 'data-loading-text':"Fetching more results ..."}).update('Show More')
 						.observe('click', function() {
 							tmp.me._pagination.pageNo = tmp.me._pagination.pageNo*1 + 1;

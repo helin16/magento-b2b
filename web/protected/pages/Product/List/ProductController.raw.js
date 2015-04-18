@@ -8,6 +8,8 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 	,productCategories: []
 	,productStatuses: []
 	,_showRightPanel: false
+	,_nextPageColSpan: 9
+	
 	,_getTitleRowData: function() {
 		return {'sku': 'SKU', 'name': 'Product Name','locations': 'Locations', 'invenAccNo': 'AccNo.', 'manufacturer' : {'name': 'Brand'}, 'supplierCodes': [{'supplier': {'name': 'Supplier'}, 'code': ''}],  'active': 'act?', 'stockOnOrder': 'OnOrder', 'stockOnHand': 'OnHand', 'stockOnPO': 'OnPO'};
 	}
@@ -481,8 +483,8 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		}
 		tmp.row = new Element('tr', {'class': 'visible-xs visible-md visible-lg visible-sm ' + (tmp.isTitle === true ? '' : 'product_item ' + (row.stockOnHand <= row.stockMinLevel ? 'danger': (row.stockOnHand <= row.stockReorderLevel ? 'warning' : '' ))), 'product_id' : row.id})
 			.store('data', row)
-			.insert({'bottom': new Element(tmp.tag, {'class': 'sku', 'title': row.name})
-				.insert({'bottom': new Element('span', {'style': 'margin: 0 5px 0 0;'})
+			.insert({'bottom': new Element(tmp.tag, {'class': 'sku', 'title': row.name}).addClassName('col-xs-2')
+				.insert({'bottom': new Element('span').setStyle('margin: 0 5px 0 0')
 					.insert({'bottom': new Element('input', {'type': 'checkbox', 'class': 'product-selected'})
 						.observe('click', function(){
 							tmp.checked = this.checked;
@@ -501,21 +503,21 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 					.update(row.sku)
 				})
 			})
-			.insert({'bottom': new Element(tmp.tag, {'class': 'product_name hidden-xs hide-when-info hidden-sm', 'style': (tmp.me._showRightPanel ? 'display: none' : '')}).update(row.name) })
-			.insert({'bottom': new Element(tmp.tag, {'class': 'hidden-xs hide-when-info hidden-sm', 'style': (tmp.me._showRightPanel ? 'display: none' : '')})
+			.insert({'bottom': new Element(tmp.tag, {'class': 'product_name hidden-xs hide-when-info hidden-sm'}).addClassName('col-xs-2').setStyle(tmp.me._showRightPanel ? 'display: none' : '').update(row.name) })
+			.insert({'bottom': new Element(tmp.tag, {'class': 'hidden-xs hide-when-info hidden-sm'}).addClassName('col-xs-2').setStyle(tmp.me._showRightPanel ? 'display: none' : '')
 				.insert({'bottom': new Element('div', {'class': 'col-sm-4'}).update(tmp.isTitle === true ? 'Price' : new Element('input', {'class': "click-to-edit price-input", 'value': tmp.me.getCurrency(tmp.price), 'product-id': row.id}).setStyle('width: 100%') ) })
 				.insert({'bottom': new Element('div', {'class': 'col-sm-4'}).update(tmp.isTitle === true ? 'Min St' : new Element('input', {'class': "click-to-edit stockMinLevel-input", 'value': row.stockMinLevel, 'product-id': row.id}).setStyle('width: 100%') ) })
 				.insert({'bottom': new Element('div', {'class': 'col-sm-4'}).update(tmp.isTitle === true ? 'Re St' : new Element('input', {'class': "click-to-edit stockReorderLevel-input", 'value': row.stockReorderLevel, 'product-id': row.id}).setStyle('width: 100%') ) })
 			})
-			.insert({'bottom': new Element(tmp.tag, {'class': 'locations col-xs-1  hide-when-info hidden-sm'}).update(
+			.insert({'bottom': new Element(tmp.tag, {'class': 'locations hide-when-info hidden-sm'}).addClassName('col-xs-1').update(
 					row.locations ? tmp.me._getLocations(row.locations, isTitle) : ''
 			) })
-			.insert({'bottom': new Element(tmp.tag, {'class': 'inventeryCode col-xs-1 hide-when-info'}).update(row.invenAccNo ? row.invenAccNo : '') })
-			.insert({'bottom': new Element(tmp.tag, {'class': 'manufacturer col-xs-1 hide-when-info'}).update(row.manufacturer ? row.manufacturer.name : '') })
-			.insert({'bottom': new Element(tmp.tag, {'class': 'supplier col-xs-1 hide-when-info hidden-sm'}).update(
+			.insert({'bottom': new Element(tmp.tag, {'class': 'inventeryCode hide-when-info'}).addClassName('col-xs-1').update(row.invenAccNo ? row.invenAccNo : '') })
+			.insert({'bottom': new Element(tmp.tag, {'class': 'manufacturer hide-when-info'}).addClassName('col-xs-1').update(row.manufacturer ? row.manufacturer.name : '') })
+			.insert({'bottom': new Element(tmp.tag, {'class': 'supplier hide-when-info hidden-sm'}).addClassName('col-xs-1').update(
 					row.supplierCodes ? tmp.me._getSupplierCodes(row.supplierCodes, isTitle) : ''
 			) })
-			.insert({'bottom': new Element(tmp.tag, {'class': 'qty col-xs-1 hidden-sm'}).update(
+			.insert({'bottom': new Element(tmp.tag, {'class': 'qty hidden-sm'}).addClassName('col-xs-1').update(
 					tmp.isTitle === true ?
 							new Element('div', {'class': 'row'})
 								.insert({'bottom': new Element('div', {'class': 'col-xs-4 hide-when-info', 'title': 'Stock on Hand'}).update('SH') })
@@ -530,7 +532,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 								)
 					)
 			})
-			.insert({'bottom': new Element(tmp.tag, {'class': 'product_active col-xs-2 hide-when-info hidden-sm'})
+			.insert({'bottom': new Element(tmp.tag, {'class': 'product_active hide-when-info hidden-sm'}).addClassName('col-xs-1')
 				.insert({'bottom': (
 					new Element('div', {'class': 'row'})
 						.insert({'bottom': new Element('div', {'class': 'col-xs-5 text-right'})
@@ -540,7 +542,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 							.insert({'bottom': tmp.isTitle === true ? '' : new Element('a', {'href': '/serialnumbers.html?productid=' + row.id, 'target': '_BLANK', 'title': 'Serial Numbers.'}).update('SN') })
 						})
 						.insert({'bottom': new Element('div', {'class': 'col-xs-4'})
-							.insert({'bottom': tmp.isTitle === true ? '' : new Element('div', {'class': 'btn-group'})
+							.insert({'bottom': tmp.isTitle === true ? '' : new Element('div', {'class': ''})
 								.insert({'bottom': new Element('a', {'class': 'btn btn-primary btn-xs', 'href': '/product/' + row.id + '.html', 'target': '_BLANK'})
 									.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-pencil'}) })
 								})
