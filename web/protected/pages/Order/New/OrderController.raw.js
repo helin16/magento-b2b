@@ -977,16 +977,15 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		}
 
 		tmp.rowData = tmp.row.retrieve('data');
-		if(tmp.rowData && tmp.rowData.id) {
-			tmp.rowData.unitPrice = tmp.unitPrice;
-			tmp.rowData.discount = tmp.discount;
-			tmp.rowData.qtyOrdered = tmp.qty;
-			tmp.rowData.totalPrice = tmp.totalPrice;
-			if(tmp.margin) {
-				tmp.rowData.margin = tmp.margin;
-			}
-			tmp.row.store('data', tmp.rowData);
-		}
+		
+		tmp.rowData.unitPrice = tmp.unitPrice;
+		tmp.rowData.discount = tmp.discount;
+		tmp.rowData.qtyOrdered = tmp.qty;
+		tmp.rowData.totalPrice = tmp.totalPrice;
+		if(tmp.margin)
+			tmp.rowData.margin = tmp.margin;
+		tmp.row.store('data', tmp.rowData);
+			
 		return tmp.me;
 	}
 	/**
@@ -1024,7 +1023,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 						tmp.me._calculateNewProductPrice($(this).up('.item_row'), attrName);
 						tmp.me._recalculateSummary();
 					} catch (e) {
-						//console.error(e);
+						tmp.me.showModalBox('Error',e);
 					}
 				}
 			});
@@ -1430,6 +1429,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		if(items.size() > 0) {
 			tmp.productListDiv = $(tmp.me._htmlIds.itemDiv).down('.order_item_list_table');
 			items.each(function(item) {
+				item.sellingitems = [];
 				tmp.unitPriceValue = tmp.me.getValueFromCurrency(item.unitPrice);
 				tmp.totalPriceValue = tmp.me.getValueFromCurrency(item.totalPrice);
 				tmp.shouldTotalPriceValue = tmp.me.getValueFromCurrency(tmp.unitPriceValue * item.qtyOrdered);

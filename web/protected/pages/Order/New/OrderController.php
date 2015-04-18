@@ -274,6 +274,7 @@ class OrderController extends BPCPageAbstract
 
 			foreach ($param->CallbackParameter->items as $item)
 			{
+				var_dump($item);
 				$product = Product::get(trim($item->product->id));
 				if(!$product instanceof Product)
 					throw new Exception('Invalid Product passed in!');
@@ -286,18 +287,24 @@ class OrderController extends BPCPageAbstract
 				$itemDescription = trim($item->itemDescription);
 
 				if(intval($item->active) === 1)
+				{
 					$totalPaymentDue += $totalPrice;
-				if($orderCloneFrom instanceof Order || !($orderItem = OrderItem::get($item->id)) instanceof OrderItem)
-					$orderItem = OrderItem::create($order, $product, $unitPrice, $qtyOrdered, $totalPrice, 0, null, $itemDescription);
-				else {
-					$orderItem->setActive(intval($item->active))
-						->setProduct($product)
-						->setUnitPrice($unitPrice)
-						->setQtyOrdered($qtyOrdered)
-						->setTotalPrice($totalPrice)
-						->setItemDescription($itemDescription)
-						->save();
-					SellingItem::deleteByCriteria('orderItemId = ?', array($orderItem->getId())); //DELETING ALL SERIAL NUMBER BEFORE ADDING
+					
+					if($orderCloneFrom instanceof Order || !($orderItem = OrderItem::get($item->id)) instanceof OrderItem)
+						$orderItem = OrderItem::create($order, $product, $unitPrice, $qtyOrdered, $totalPrice, 0, null, $itemDescription);
+					else {
+						$orderItem->setActive(intval($item->active))
+							->setProduct($product)
+							->setUnitPrice($unitPrice)
+							->setQtyOrdered($qtyOrdered)
+							->setTotalPrice($totalPrice)
+							->setItemDescription($itemDescription)
+							->save();
+						SellingItem::deleteByCriteria('orderItemId = ?', array($orderItem->getId())); //DELETING ALL SERIAL NUMBER BEFORE ADDING
+					}
+				} else if(($orderItem = OrderItem::get($item->id)) instanceof OrderItem)
+				{
+					$orderItem->setActive(false)->save();
 				}
 				if(isset($item->serials)){
 					foreach($item->serials as $serialNo)
