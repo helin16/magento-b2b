@@ -81,6 +81,36 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		})
 		return tmp.me;
 	}
+	,_getScanTable: function(item) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.item = item;
+		tmp.newDiv = new Element('div', {'class': 'scanTable'});
+		for(tmp.i = 0; tmp.i < item.qtyOrdered; tmp.i++) {
+			tmp.sellingitem = (tmp.item.sellingitems && tmp.item.sellingitems[tmp.i] && jQuery.isNumeric(tmp.item.sellingitems[tmp.i].id)) ? tmp.item.sellingitems[tmp.i] : false;
+			tmp.newDiv.insert({'bottom': tmp.me._getScanTableRow(tmp.sellingitem).wrap(new Element('div', {'class': 'col-sm-3'})) });
+		}
+		return tmp.newDiv;
+	}
+	,_getScanTableRow: function(sellingitem) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.newDiv = new Element('input', {'class': 'form-control', 'scanned-item': 'serialNo', 'type': 'text', 'placeholder': 'Serial Number:', 'value': ((sellingitem.serialNo && sellingitem.serialNo !== '') ? sellingitem.serialNo : '')})
+			.observe('change', function() {
+				tmp.emptyIput = null;
+				tmp.serials = [];
+				$(this).up('.scanTable').getElementsBySelector('input[scanned-item="serialNo"]').each(function(input){
+					if(!$F(input).blank())
+						tmp.serials.push($F(input));
+					if(tmp.emptyIput === null && $F(input).blank())
+						tmp.emptyIput = input;
+				});
+				$(this).up('.productRow').store('serials', tmp.serials);
+				if(tmp.emptyIput !== null)
+					tmp.emptyIput.select();
+			});
+		return tmp.newDiv;
+	}
 	,_getAddresEditDiv: function(title, addr, type){
 		var tmp = {};
 		tmp.me = this;
@@ -446,7 +476,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.me = this;
 		tmp.isTitle = (isTitleRow || false);
 		tmp.tag = (tmp.isTitle === true ? 'th' : 'td');
-		return new Element('tr', {'class': (tmp.isTitle === true ? '' : 'productRow'), 'order_item_id': orderItem.id})
+		tmp.newDiv =  new Element('tr', {'class': (tmp.isTitle === true ? '' : 'productRow'), 'order_item_id': orderItem.id})
 			.store('data', orderItem)
 			.insert({'bottom': new Element(tmp.tag, {'class': 'productName'})
 				.insert({'bottom': (tmp.isTitle === true ? orderItem.product.name :
@@ -454,7 +484,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 							.insert({'bottom': new Element('div').update(new Element('a', {'href': '/product/' + orderItem.product.id + '.html', 'target': '_BLANK'}).update(
 									new Element('strong', {'class': 'text-info'}).update('SKU: ' + orderItem.product.sku)
 							)) })
-							.insert({'bottom': new Element('em').update(new Element('small').update(orderItem.itemDescription)) })
+							.insert({'bottom': tmp.itemDescriptionEl = new Element('em').update(new Element('small').update(orderItem.itemDescription)) })
 				) })
 			})
 			.insert({'bottom': new Element(tmp.tag, {'class': 'uprice'}).update(tmp.isTitle === true ? orderItem.unitPrice : tmp.me.getCurrency(orderItem.unitPrice)) })
@@ -465,6 +495,40 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			) })
 			.insert({'bottom': new Element(tmp.tag, {'class': 'purchasing'}).update(tmp.isTitle === true ? 'Purchasing' : tmp.me._getPurchasingCell(orderItem)) })
 			.insert({'bottom': new Element(tmp.tag, {'class': 'warehouse'}).update(tmp.isTitle === true ? 'Warehouse' : tmp.me._getWarehouseCell(orderItem)) });
+		
+		if(tmp.itemDescriptionEl) {
+			tmp.itemDescriptionEl.insert({'bottom': new Element('div', {'class': 'row product-content-row'})
+				.insert({'bottom': new Element('span', {'class': 'col-sm-12 show-tools'})
+					.insert({'bottom': new Element('input', {'type': 'checkbox', 'checked': false, 'class': 'show-panel-check'})
+						.observe('click', function(){
+							tmp.btn = this;
+							tmp.panel = $(tmp.btn).up('.product-content-row').down('.serial-no-scan-panel');
+							if(tmp.btn.checked) {
+								tmp.panel.show();
+							} else {
+								tmp.panel.hide();
+							}
+						})
+					})
+					.insert({'bottom': new Element('a', {'href': 'javascript: void(0);'}).update(' show serial scan panel?')
+						.observe('click', function(){
+							$(this).up('.show-tools').down('.show-panel-check').click();
+						})
+					})
+				})
+				.insert({'bottom': new Element('span', {'class': 'col-sm-12 serial-no-scan-panel'}).setStyle('padding-top: 5px; display: none;').update(tmp.me._getScanTable(orderItem)) })
+			});
+			if(orderItem && orderItem.sellingitems && orderItem.sellingitems.length > 0) {
+				tmp.serials = [];
+				orderItem.sellingitems.each(function(item){
+					tmp.serials.push(item.serialNo);
+				});
+				tmp.newDiv.store('serials', tmp.serials);
+			}
+		}
+
+		
+		return tmp.newDiv;
 	}
 	/**
 	 * Ajax: update order item and order
