@@ -304,10 +304,9 @@ class OrderDetailsController extends BPCPageAbstract
 					trim($contactNo), // $contactNo = '' ,
 					trim($shippingInfo->noOfCartons), //$noOfCartons = 0,
 					'0', //$estShippingCost = '0.00',  //TODO:: need to fetch this from the order
-					trim($shippingInfo->actualShippingCost), //$actualShippingCost = '0.00',
+					StringUtilsAbstract::getValueFromCurrency(trim($shippingInfo->actualShippingCost)), //$actualShippingCost = '0.00',
 					(isset($shippingInfo->deliveryInstructions) ? trim($shippingInfo->deliveryInstructions) : '') //$deliveryInstructions = ''
 			);
-
 			$order->setStatus(OrderStatus::get(OrderStatus::ID_SHIPPED))
 				->save();
 			$result['shipment'] = $shipment->getJson();
@@ -532,7 +531,7 @@ class OrderDetailsController extends BPCPageAbstract
 				throw new Exception('System Error: invalid order provided!');
 			if(!isset($param->CallbackParameter->shippingMethod) || ($shippingMethod = trim($param->CallbackParameter->shippingMethod)) === '')
 				throw new Exception('System Error: invalid shippingMethod provided!');
-			
+
 			$order->addInfo(OrderInfoType::ID_MAGE_ORDER_SHIPPING_METHOD, $shippingMethod, true)
 				->save()
 				->addComment(($msg = 'Changed Shipping Method to "' . $shippingMethod . '"'), Comments::TYPE_NORMAL)

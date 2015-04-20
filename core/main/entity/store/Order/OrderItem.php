@@ -420,11 +420,11 @@ class OrderItem extends BaseEntityAbstract
 		if(trim($this->getMageOrderId()) === '')
 			$this->setMageOrderId('0');
 
+		//when brandnew, calculate margin
 		if(trim($this->getUnitCost()) === '' || (($this->getOrder() instanceof Order) && in_array($this->getOrder()->getType(), array(Order::TYPE_ORDER, Order::TYPE_QUOTE))))
 			$this->setUnitCost($this->getProduct()->getUnitCost());
 		$this->setMargin(StringUtilsAbstract::getValueFromCurrency($this->getTotalPrice()) - StringUtilsAbstract::getValueFromCurrency($this->getUnitCost()) * 1.1 * intval($this->getQtyOrdered()));
 
-		//when brandnew, calculate margin
 		if(trim($this->getId()) === '') {
 			if(trim($this->getItemDescription()) === '')
 				$this->setItemDescription($this->getProduct()->getName());

@@ -10,94 +10,94 @@ class Shippment extends BaseEntityAbstract
 {
 	/**
 	 * The courier of shipping
-	 * 
+	 *
 	 * @var Courier
 	 */
 	protected $courier;
 	/**
 	 * The order this shippment is for
-	 * 
+	 *
 	 * @var Order
 	 */
 	protected $order;
 	/**
 	 * The number of cartons on the shipping
-	 * 
+	 *
 	 * @var int
 	 */
 	private $noOfCartons;
 	/**
 	 * The receiver's name
-	 * 
+	 *
 	 * @var string
 	 */
 	private $receiver;
 	/**
 	 * The address of the shipping
-	 * 
+	 *
 	 * @var Address
 	 */
 	protected $address;
 	/**
 	 * The contact number of the receiver
-	 * 
+	 *
 	 * @var string
 	 */
 	private $contact;
 	/**
 	 * The date of the shippment
-	 * 
+	 *
 	 * @var UDate
 	 */
 	private $shippingDate;
 	/**
 	 * The consignment note number
-	 * 
+	 *
 	 * @var string
 	 */
 	private $conNoteNo;
 	/**
 	 * The estimated shipping cost from courier
-	 * 
+	 *
 	 * @var number
 	 */
 	private $estShippingCost = '0.00';
 	/**
 	 * The actual shipping cost from courier
-	 * 
+	 *
 	 * @var number
 	 */
 	private $actualShippingCost = '0.00';
 	/**
 	 * The delivery instruction of the shipping
-	 * 
+	 *
 	 * @var string
 	 */
 	private $deliveryInstructions;
 	/**
 	 * The shipment id from magento
-	 * 
+	 *
 	 * @var string
 	 */
 	private $mageShipmentId = '';
 	/**
 	 * Getter of the courier
-	 * 
+	 *
 	 * @return Courier
-	 */ 
-	public function getCourier() 
+	 */
+	public function getCourier()
 	{
 		$this->loadManyToOne('courier');
 	    return $this->courier;
 	}
 	/**
 	 * Setter of the courier
-	 * 
+	 *
 	 * @param Courier $value The Courier of the shippment
-	 * 
+	 *
 	 * @return Shippment
 	 */
-	public function setCourier($value) 
+	public function setCourier($value)
 	{
 	    $this->courier = $value;
 	    return $this;
@@ -105,9 +105,9 @@ class Shippment extends BaseEntityAbstract
 	/**
 	 * Getter for order
 	 *
-	 * @return 
+	 * @return
 	 */
-	public function getOrder() 
+	public function getOrder()
 	{
 		$this->loadManyToOne('order');
 	    return $this->order;
@@ -119,49 +119,49 @@ class Shippment extends BaseEntityAbstract
 	 *
 	 * @return Shippment
 	 */
-	public function setOrder(Order $value) 
+	public function setOrder(Order $value)
 	{
 	    $this->order = $value;
 	    return $this;
 	}
 	/**
 	 * Getter of noOfCartons
-	 * 
+	 *
 	 * @return int
 	 */
-	public function getNoOfCartons() 
+	public function getNoOfCartons()
 	{
 	    return $this->noOfCartons;
 	}
 	/**
 	 * Setter of noOfCartons
-	 * 
+	 *
 	 * @param int $value The noOfCartons
-	 * 
+	 *
 	 * @return Shippment
 	 */
-	public function setNoOfCartons($value) 
+	public function setNoOfCartons($value)
 	{
 	    $this->noOfCartons = $value;
 	    return $this;
 	}
 	/**
 	 * Getter of the receiver
-	 * 
+	 *
 	 * @return string
 	 */
-	public function getReceiver() 
+	public function getReceiver()
 	{
 	    return $this->receiver;
 	}
 	/**
 	 * Setter of the receiver
-	 * 
+	 *
 	 * @param string $value The receiver
-	 * 
+	 *
 	 * @return Shippment
 	 */
-	public function setReceiver($value) 
+	public function setReceiver($value)
 	{
 	    $this->receiver = $value;
 	    return $this;
@@ -171,7 +171,7 @@ class Shippment extends BaseEntityAbstract
 	 *
 	 * @return Address
 	 */
-	public function getAddress() 
+	public function getAddress()
 	{
 		$this->loadManyToOne('address');
 	    return $this->address;
@@ -183,9 +183,9 @@ class Shippment extends BaseEntityAbstract
 	 *
 	 * @return Shippment
 	 */
-	public function setAddress(Address $value) 
+	public function setAddress(Address $value)
 	{
-	    $this->address = $value; 
+	    $this->address = $value;
 	    return $this;
 	}
 	/**
@@ -193,7 +193,7 @@ class Shippment extends BaseEntityAbstract
 	 *
 	 * @return string
 	 */
-	public function getContact() 
+	public function getContact()
 	{
 	    return $this->contact;
 	}
@@ -204,7 +204,7 @@ class Shippment extends BaseEntityAbstract
 	 *
 	 * @return Shippment
 	 */
-	public function setContact($value) 
+	public function setContact($value)
 	{
 	    $this->contact = $value;
 	    return $this;
@@ -214,7 +214,7 @@ class Shippment extends BaseEntityAbstract
 	 *
 	 * @return UDate
 	 */
-	public function getShippingDate() 
+	public function getShippingDate()
 	{
 	    return $this->shippingDate;
 	}
@@ -225,7 +225,7 @@ class Shippment extends BaseEntityAbstract
 	 *
 	 * @return Shippment
 	 */
-	public function setShippingDate($value) 
+	public function setShippingDate($value)
 	{
 	    $this->shippingDate = $value;
 	    return $this;
@@ -235,7 +235,7 @@ class Shippment extends BaseEntityAbstract
 	 *
 	 * @return string
 	 */
-	public function getConNoteNo() 
+	public function getConNoteNo()
 	{
 	    return $this->conNoteNo;
 	}
@@ -246,7 +246,7 @@ class Shippment extends BaseEntityAbstract
 	 *
 	 * @return Shippment
 	 */
-	public function setConNoteNo($value) 
+	public function setConNoteNo($value)
 	{
 	    $this->conNoteNo = $value;
 	    return $this;
@@ -256,7 +256,7 @@ class Shippment extends BaseEntityAbstract
 	 *
 	 * @return Double
 	 */
-	public function getEstShippingCost() 
+	public function getEstShippingCost()
 	{
 	    return $this->estShippingCost;
 	}
@@ -267,7 +267,7 @@ class Shippment extends BaseEntityAbstract
 	 *
 	 * @return Shippment
 	 */
-	public function setEstShippingCost($value) 
+	public function setEstShippingCost($value)
 	{
 	    $this->estShippingCost = $value;
 	    return $this;
@@ -277,7 +277,7 @@ class Shippment extends BaseEntityAbstract
 	 *
 	 * @return Double
 	 */
-	public function getActualShippingCost() 
+	public function getActualShippingCost()
 	{
 	    return $this->actualShippingCost;
 	}
@@ -288,9 +288,9 @@ class Shippment extends BaseEntityAbstract
 	 *
 	 * @return Shippment
 	 */
-	public function setActualShippingCost($value) 
+	public function setActualShippingCost($value)
 	{
-	    $this->estShippingCost = $value;
+	    $this->actualShippingCost = $value;
 	    return $this;
 	}
 	/**
@@ -298,7 +298,7 @@ class Shippment extends BaseEntityAbstract
 	 *
 	 * @return string
 	 */
-	public function getDeliveryInstructions() 
+	public function getDeliveryInstructions()
 	{
 	    return $this->deliveryInstructions;
 	}
@@ -309,7 +309,7 @@ class Shippment extends BaseEntityAbstract
 	 *
 	 * @return Shippment
 	 */
-	public function setDeliveryInstructions($value) 
+	public function setDeliveryInstructions($value)
 	{
 	    $this->deliveryInstructions = $value;
 	    return $this;
@@ -319,7 +319,7 @@ class Shippment extends BaseEntityAbstract
 	 *
 	 * @return string
 	 */
-	public function getMageShipmentId() 
+	public function getMageShipmentId()
 	{
 	    return $this->mageShipmentId;
 	}
@@ -330,12 +330,12 @@ class Shippment extends BaseEntityAbstract
 	 *
 	 * @return Shippment
 	 */
-	public function setMageShipmentId($value) 
+	public function setMageShipmentId($value)
 	{
 	    $this->mageShipmentId = $value;
 	    return $this;
 	}
-	
+
 	/**
 	 * (non-PHPdoc)
 	 * @see BaseEntityAbstract::getJson()
@@ -348,10 +348,10 @@ class Shippment extends BaseEntityAbstract
 			$array['courier'] = $this->getCourier()->getJson();
 			$array['address'] = $this->getAddress()->getJson();
 		}
-		
+
 		return parent::getJson($array, $reset);
 	}
-	
+
 	/**
 	 * (non-PHPdoc)
 	 * @see BaseEntity::__loadDaoMap()
@@ -359,7 +359,7 @@ class Shippment extends BaseEntityAbstract
 	public function __loadDaoMap()
 	{
 		DaoMap::begin($this, 'shippment');
-		
+
 		DaoMap::setManyToOne('order', 'Order', 'sh_order');
 		DaoMap::setManyToOne('courier', 'Courier', 'sh_courier');
 		DaoMap::setIntType('noOfCartons');
@@ -372,8 +372,8 @@ class Shippment extends BaseEntityAbstract
 		DaoMap::setIntType('actualShippingCost', 'Double', '10,4');
 		DaoMap::setStringType('deliveryInstructions', 'varchar', 255);
 		DaoMap::setStringType('mageShipmentId', 'varchar', 100);
-		
-		
+
+
 		parent::__loadDaoMap();
 		DaoMap::createIndex('receiver');
 		DaoMap::createIndex('conNoteNo');
@@ -404,7 +404,9 @@ class Shippment extends BaseEntityAbstract
 		$shippment = new Shippment();
 		if(($shippingDate = trim($shippingDate)) === '')
 			$shippingDate = new UDate();
-		$msg = 'Shipment create for Order(' . $order->getOrderNo() . ') to address(' . trim($address) . ') via Courier(' . $courier->getName() . ') with ConNote(=' . $consignmentNo . ') on ' . $shippingDate . '(UTC)';
+		$estShippingCost = StringUtilsAbstract::getValueFromCurrency(trim($estShippingCost));
+		$actualShippingCost = StringUtilsAbstract::getValueFromCurrency(trim($actualShippingCost));
+		$msg = 'Shipment create for Order(' . $order->getOrderNo() . ') to address(' . trim($address) . ') via Courier(' . $courier->getName() . ') with ConNote(=' . $consignmentNo . ') on ' . $shippingDate . '(UTC) with actualCost = ' . StringUtilsAbstract::getCurrency($actualShippingCost);
 		$shippment = $shippment->setAddress($address)
 			->setCourier($courier)
 			->setConNoteNo(trim($consignmentNo))
@@ -413,8 +415,8 @@ class Shippment extends BaseEntityAbstract
 			->setContact(trim($contactNo))
 			->setShippingDate(trim($shippingDate))
 			->setNoOfCartons(trim($noOfCartons))
-			->setEstShippingCost(trim($estShippingCost))
-			->setActualShippingCost(trim($actualShippingCost))
+			->setEstShippingCost($estShippingCost)
+			->setActualShippingCost($actualShippingCost)
 			->setDeliveryInstructions(trim($deliveryInstructions))
 			->setMageShipmentId(trim($mageShipmentId))
 			->setActive(true)
