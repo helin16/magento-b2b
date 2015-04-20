@@ -417,12 +417,12 @@ class OrderItem extends BaseEntityAbstract
 	 */
 	public function preSave()
 	{
-		$this->setMargin(StringUtilsAbstract::getValueFromCurrency($this->getTotalPrice()) - StringUtilsAbstract::getValueFromCurrency($this->getUnitCost()) * 1.1 * intval($this->getQtyOrdered()));
 		if(trim($this->getMageOrderId()) === '')
 			$this->setMageOrderId('0');
 
-		if(trim($this->getUnitCost()) === '')
+		if(trim($this->getUnitCost()) === '' || (($this->getOrder() instanceof Order) && in_array($this->getOrder()->getType(), array(Order::TYPE_ORDER, Order::TYPE_QUOTE))))
 			$this->setUnitCost($this->getProduct()->getUnitCost());
+		$this->setMargin(StringUtilsAbstract::getValueFromCurrency($this->getTotalPrice()) - StringUtilsAbstract::getValueFromCurrency($this->getUnitCost()) * 1.1 * intval($this->getQtyOrdered()));
 
 		//when brandnew, calculate margin
 		if(trim($this->getId()) === '') {
