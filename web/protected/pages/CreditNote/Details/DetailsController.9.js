@@ -262,86 +262,10 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 							});
 					})
 				})
-			});
-		
-		// new saving process 25Apr15
-		
-		if(tmp.me._order && tmp.me._order.id && jQuery.isNumeric(tmp.me._order.id)) {
-			if(tmp.me._order.shippments && tmp.me._order.shippments.length === 0) {
-				if(tmp.me._checkOrderItems('anyPicked') === true) {
-					tmp.confirmDiv = new Element('div', {'class': 'confirm-div'})
-						.insert({'bottom': new Element('div')
-							.insert({'bottom': new Element('span', {'class': 'text-warning'}).setStyle('color: red;').update('Reverse to Stock On Hand').wrap(new Element('div')) })
-							.insert({'bottom': new Element('h4', {'class': 'text-warning'}).update('Products List') })
-							.insert({'bottom': tmp.me._getConfirmPartsTable(tmp.me._order.items) })
-						})
-						.insert({'bottom': new Element('div')
-							.insert({'bottom': new Element('span', {'class': 'btn btn-primary'})
-								.update('YES')
-								.observe('click', function() {
-									// is from order -> No shipment -> some is picked -> confirmed
-									tmp.data.backToSOH = true;
-									tmp.me._confirmSubmit(this, tmp.data, tmp.originalItems);
-								})
-							})
-							.insert({'bottom': new Element('span', {'class': 'btn btn-default pull-right'})
-								.update('NO')
-								.observe('click', function() {
-									tmp.me.hideModalBox();
-								})
-							})
-						});
-					tmp.me.showModalBox("You're about to save a credit note for : " + tmp.me._customer.name, tmp.confirmDiv);
-				}
-				else { // is from order -> No shipment -> nothing picked
-					if(tmp.me._order.totalAmount < (tmp.me.getValueFromCurrency(jQuery('[order-price-summary="totalPriceIncludeGST"]').val()) + tmp.me.getValueFromCurrency(tmp.me._order.totalCreditNoteValue) )) {
-						tmp.confirmDiv = new Element('div', {'class': 'confirm-div'})
-							.insert({'bottom': new Element('div')
-								.insert({'bottom': new Element('span', {'class': 'text-warning'}).setStyle('color: red;').update('Exceeding!').wrap(new Element('div')) })
-								.insert({'bottom': new Element('h4', {'class': 'text-warning'}).update('Products List') })
-								.insert({'bottom': tmp.me._getConfirmPartsTable(tmp.me._order.items) })
-							})
-							.insert({'bottom': new Element('div')
-								.insert({'bottom': new Element('span', {'class': 'btn btn-primary'})
-									.update('YES')
-									.observe('click', function() {
-										// is from order -> No shipment -> nothing picked -> confirmed
-										tmp.me._confirmSubmit(this, tmp.data, tmp.originalItems);
-									})
-								})
-								.insert({'bottom': new Element('span', {'class': 'btn btn-default pull-right'})
-									.update('NO')
-									.observe('click', function() {
-										tmp.me.hideModalBox();
-									})
-								})
-							});
-						tmp.me.showModalBox("You're about to save a credit note for : " + tmp.me._customer.name, tmp.confirmDiv);
-					}
-				}
-			}
-			else tmp.me.showModalBox("You're about to save a credit note for : " + tmp.me._customer.name, tmp.newDiv); // there is shipment
-		}
-		else tmp.me.showModalBox("You're about to save a credit note for : " + tmp.me._customer.name, tmp.newDiv); // not from order
+			})
+		tmp.me.showModalBox("You're about to save a credit note for : " + tmp.me._customer.name, tmp.newDiv);
 
 		return tmp.me;
-	}
-	,_checkOrderItems: function(job) {
-		var tmp = {};
-		tmp.me = this;
-		
-		tmp.result = false;
-		tmp.me._order.items.each(function(item){
-			switch(job) {
-				case 'anyPicked':
-					if(tmp.result === false && item.isPicked === true)
-						tmp.result = true;
-					break;
-				default: tmp.me.showModalBox('<strong>Error</strong>', 'Invalid Job' + job + ' passed to tmp.me._checkOrderItems');
-			};
-		});
-		
-		return tmp.result;
 	}
 	/**
 	 * Getting the save btn for this order
@@ -651,7 +575,9 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					})
 					.insert({'bottom': new Element('div', {'class': 'row'})
 						.insert({'bottom': new Element('div', {'class': 'col-xs-6 text-right'}).update( new Element('strong').update('Shipping Cost: ') ) })
-						.insert({'bottom': tmp.me._getShippingCostBox(tmp.me._creditNote && tmp.me._creditNote.id ? tmp.me._creditNote.shippingValue : (tmp.me._order && tmp.me._order.infos['14'] ? tmp.me.getValueFromCurrency(tmp.me._order.infos[14][0].value) : 0) ) })
+						.insert({'bottom': tmp.me._getShippingCostBox(tmp.me._creditNote && tmp.me._creditNote.id ? tmp.me._creditNote.shippingValue : (tmp.me._order && tmp.me._order.infos['14'] ? tmp.me.getValueFromCurrency(tmp.me._order.infos[14][0].value) : 0) )
+							.wrap(new Element('div', {'class': 'col-xs-6 input-field'}))
+						})
 					})
 					.insert({'bottom': new Element('div', {'class': 'row', 'style': 'border-bottom: 1px solid brown'})
 						.insert({'bottom': new Element('div', {'class': 'col-xs-6 text-right'}).update( new Element('strong').update('Apply To: ') ) })
@@ -1213,14 +1139,12 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 
 		if($$('.init-focus').size() > 0)
 			$$('.init-focus').first().focus();
-		jQuery('.select2').select2({minimumResultsForSearch: -1}); // no search bar for select2
+		jQuery('.select2').select2({minimumResultsForSearch: Infinity});
 
-		if(tmp.me.paymentListPanelJs) {
-			tmp.me.paymentListPanelJs
-				.setAfterAddFunc(function() { tmp.me.disableAll(true); })
-				.setAfterDeleteFunc(function() { tmp.me.disableAll(true); })
-				.load();
-		}
+		tmp.me.paymentListPanelJs
+			.setAfterAddFunc(function() { tmp.me.disableAll(true); })
+			.setAfterDeleteFunc(function() { tmp.me.disableAll(true); })
+			.load();
 		return tmp.me;
 	}
 	/**
