@@ -1,6 +1,5 @@
 <com:TContent ID="MainContent">
 	<com:Application.controls.fancybox.FancyBox />
-	<com:Application.controls.chosen.Chosen />
 	<com:Application.controls.bootstrapDateTimePicker.bootstrapDateTimePicker />
 	<com:Application.controls.select2.select2 />
 	<com:Application.controls.InsufficientStockOrdersListPanel.InsufficientStockOrdersListPanel />
@@ -89,7 +88,7 @@
 	                   <div class="col-xs-12">
 		                   <div class="form-group form-group-sm input-group">
 		                       <label for="status" class="input-group-addon">Status: </label>
-		                       <select search_field="ord.status" id="orderStatusId" multiple class="chosen"></select>
+		                       <select search_field="ord.status" id="orderStatusId" multiple class="chosen" style="width:100%"></select>
 		                   </div>
                         </div>
 	               </div>
