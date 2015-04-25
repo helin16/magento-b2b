@@ -80,8 +80,9 @@ class OrderDetailsController extends BPCPageAbstract
 			Dao::beginTransaction();
 			if(!isset($params->CallbackParameter->orderItemId) || !($orderItem = OrderItem::get($params->CallbackParameter->orderItemId)) instanceof OrderItem)
 				throw new Exception('System Error: invalid order item passed in!');
-			if(!isset($params->CallbackParameter->serials) || count($serials = ($params->CallbackParameter->serials)) <= 0)
+			if(!isset($params->CallbackParameter->serials))
 				throw new Exception('System Error: invalid serials passed in!');
+			else $serials = $params->CallbackParameter->serials;
 			SellingItem::deleteByCriteria('orderItemId = ?', array($orderItem->getId())); //DELETING ALL SERIAL NUMBER BEFORE ADDING
 			foreach($serials as $serialNo)
 				$orderItem->addSellingItem($serialNo)
