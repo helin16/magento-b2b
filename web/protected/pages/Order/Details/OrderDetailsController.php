@@ -62,6 +62,7 @@ class OrderDetailsController extends BPCPageAbstract
 			$js .= '.setCallbackId("updateAddress", "' . $this->updateAddressBtn->getUniqueID() . '")';
 			$js .= '.setCallbackId("updatePONo", "' . $this->updatePONoBtn->getUniqueID() . '")';
 			$js .= '.setCallbackId("changeShippingMethod", "' . $this->changeShippingMethodBtn->getUniqueID() . '")';
+			$js .= '.setCallbackId("updateSerials", "' . $this->updateSerialsBtn->getUniqueID() . '")';
 			$js .= '.setEditMode(' . $purchaseEdit . ', ' . $warehouseEdit . ', ' . $accounEdit . ', ' . $statusEdit . ')';
 			$js .= '.setOrder('. json_encode($order->getJson()) . ', ' . json_encode($orderItems) . ', ' . json_encode($orderStatuses) . ', ' . OrderStatus::ID_SHIPPED . ')';
 			$js .= '.setCourier('. json_encode($courierArray) . ', ' . Courier::ID_LOCAL_PICKUP . ')';
@@ -70,6 +71,29 @@ class OrderDetailsController extends BPCPageAbstract
 			$js .= '.init("detailswrapper")';
 			$js .= '.load();';
 		return $js;
+	}
+	public function updateSerials($sender, $params)
+{
+		$results = $errors = array();
+		try
+		{
+			Dao::beginTransaction();
+			if(!isset($params->CallbackParameter->orderItemId) || !($orderItem = OrderItem::get($params->CallbackParameter->orderItemId)) instanceof OrderItem)
+				throw new Exception('System Error: invalid order item passed in!');
+			if(!isset($params->CallbackParameter->serials) || count($serials = ($params->CallbackParameter->serials)) <= 0)
+				throw new Exception('System Error: invalid serials passed in!');
+			SellingItem::deleteByCriteria('orderItemId = ?', array($orderItem->getId())); //DELETING ALL SERIAL NUMBER BEFORE ADDING
+			foreach($serials as $serialNo)
+				$orderItem->addSellingItem($serialNo)
+				->save();
+			Dao::commitTransaction();
+		}
+		catch(Exception $ex)
+		{
+			Dao::rollbackTransaction();
+			$errors[] = $ex->getMessage();
+		}
+		$params->ResponseData = StringUtilsAbstract::getJson($results, $errors);
 	}
 	/**
 	 *

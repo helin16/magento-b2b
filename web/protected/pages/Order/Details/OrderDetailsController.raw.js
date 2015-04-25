@@ -106,10 +106,37 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 						tmp.emptyIput = input;
 				});
 				$(this).up('.productRow').store('serials', tmp.serials);
+				tmp.orderItemId = $(this).up('.productRow').readAttribute('order_item_id');
+				tmp.me._signRandID($(this));
+				tmp.me._updateSerialNumber(tmp.orderItemId, tmp.serials, $(this).id);
 				if(tmp.emptyIput !== null)
 					tmp.emptyIput.select();
 			});
 		return tmp.newDiv;
+	}
+	,_updateSerialNumber: function(orderItemId, serials, elementId) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.elementId = (elementId || false);
+		
+		tmp.me.postAjax(tmp.me.getCallbackId('updateSerials'), {'orderItemId': orderItemId, 'serials': serials}, {
+			'onLoading': function() {
+				if(tmp.elementId !== false)
+					jQuery('#' + tmp.elementId).prop( "disabled", true );
+			}
+			,'onSuccess': function(sender, param) {
+				try {
+
+				} catch (e) {
+					tmp.me.showModalBox('<strong class="text-danger">Error When Updating Address</strong>', e);
+				}
+			}
+			,'onComplete': function() {
+				if(tmp.elementId !== false)
+					jQuery('#' + tmp.elementId).prop( "disabled", false );
+			}
+		})
+		return tmp.me;
 	}
 	,_getAddresEditDiv: function(title, addr, type){
 		var tmp = {};
