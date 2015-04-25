@@ -13,11 +13,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 	,_type: 'INVOICE'
 
 	,_loadChosen: function () {
-		jQuery(".chosen").chosen({
-			disable_search_threshold: 10,
-			no_results_text: "Oops, nothing found!",
-			width: "100%"
-		});
+		jQuery(".chosen").select2();
 		return this;
 	}
 
