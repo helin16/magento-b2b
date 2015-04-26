@@ -214,9 +214,10 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.data.items = [];
 		tmp.originalItems = [];
 		$$('.order-item-row').each(function(item){
+			console.debug(item);
 			tmp.itemData = item.retrieve('data');
 			tmp.originalItems.push(tmp.itemData);
-			tmp.data.items.push({'orderItemId': item.readAttribute('orderItemId'), 'creditNoteItemId': item.readAttribute('creditNoteItemId'), 'valid': item.visible(), 'product': {'id': tmp.itemData.product.id}, 'itemDescription': tmp.itemData.itemDescription,'unitPrice': tmp.itemData.unitPrice, 'qtyOrdered': tmp.itemData.qtyOrdered, 'totalPrice': tmp.itemData.totalPrice, 'serials': item.retrieve('serials') });
+			tmp.data.items.push({'orderItemId': item.readAttribute('orderItemId'), 'creditNoteItemId': item.readAttribute('creditNoteItemId'), 'valid': item.visible(), 'product': {'id': tmp.itemData.product.id, 'name': tmp.itemData.product.name, 'sku': tmp.itemData.product.sku},  'itemDescription': tmp.itemData.itemDescription,'unitPrice': tmp.itemData.unitPrice, 'qtyOrdered': tmp.itemData.qtyOrdered, 'totalPrice': tmp.itemData.totalPrice, 'serials': item.retrieve('serials') });
 		});
 		tmp.noValidItem = true;
 		tmp.data.items.each(function(item){
@@ -230,11 +231,11 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		}
 		tmp.newDiv = new Element('div', {'class': 'confirm-div'})
 			.insert({'bottom': new Element('div')
-				.insert({'bottom': new Element('h4', {'class': 'text-warning'}).update('Have the customer returned all the goods on this credit note already?') })
+				.insert({'bottom': tmp.confirmHeadingEl = new Element('h4', {'class': 'text-warning'}).update('Have the customer returned all the goods on this credit note already?') })
 				.insert({'bottom': tmp.me._getConfirmPartsTable(tmp.originalItems) })
 			})
 			.insert({'bottom': new Element('div')
-				.insert({'bottom': new Element('span', {'class': 'btn btn-primary'})
+				.insert({'bottom': tmp.confirmBtn = new Element('span', {'class': 'btn btn-primary'})
 					.update('YES')
 					.observe('click', function() {
 						tmp.me._confirmSubmit(this, tmp.data, tmp.originalItems);
@@ -262,10 +263,117 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 							});
 					})
 				})
-			})
-		tmp.me.showModalBox("You're about to save a credit note for : " + tmp.me._customer.name, tmp.newDiv);
-
+			});
+		
+		// new saving process 25Apr15
+		
+		if(tmp.me._order && tmp.me._order.id && jQuery.isNumeric(tmp.me._order.id)) { // if from order
+			if(tmp.me._order.shippments && tmp.me._order.shippments.length === 0) { // if don't have shipment
+				if(tmp.me._order.totalAmount < (tmp.me.getValueFromCurrency(jQuery('[order-price-summary="totalPriceIncludeGST"]').val()) + tmp.me.getValueFromCurrency(tmp.me._order.totalCreditNoteValue) )) { // if exceed
+					
+					tmp.confirmDivExceed = new Element('div', {'class': 'confirm-div'})
+						.insert({'bottom': new Element('div')
+							.insert({'bottom': new Element('span', {'class': 'text-warning'}).setStyle('color: red;').update('is from order -> exceeding -> need confirm').wrap(new Element('div')) })
+							.insert({'bottom': new Element('h4', {'class': 'text-warning'}).update('Products List') })
+							.insert({'bottom': tmp.me._getConfirmPartsTable(tmp.data.items) })
+						})
+						.insert({'bottom': new Element('div')
+							.insert({'bottom': new Element('span', {'class': 'btn btn-primary'})
+								.update('YES')
+								.observe('click', function() {
+									if(tmp.me._checkOrderItems('anyPicked') === true) { // is from order -> No shipment -> confirm exceed -> something picked
+										tmp.confirmDivPicked = new Element('div', {'class': 'confirm-div'})
+											.insert({'bottom': new Element('div')
+												.insert({'bottom': new Element('span', {'class': 'text-warning'}).setStyle('color: red;').update('is from order -> No shipment -> confirm exceed -> something picked -> Reverse to Stock On Hand -> confirm').wrap(new Element('div')) })
+												.insert({'bottom': new Element('h4', {'class': 'text-warning'}).update('Products List') })
+												.insert({'bottom': tmp.me._getConfirmPartsTable(tmp.data.items) })
+											})
+											.insert({'bottom': new Element('div')
+												.insert({'bottom': new Element('span', {'class': 'btn btn-primary'})
+													.update('YES')
+													.observe('click', function() {
+														// is from order -> No shipment -> confirm exceed -> yes some is picked -> confirmed
+														console.debug('is from order -> No shipment -> confirm exceed -> yes some is picked -> confirmed ');
+														tmp.data.backToSOH = true;
+														tmp.data.createNewOrder = true;
+														tmp.me._submitOrder($(this), tmp.data);
+													})
+												})
+												.insert({'bottom': new Element('span', {'class': 'btn btn-default pull-right'})
+													.update('NO')
+													.observe('click', function() {
+														tmp.me.hideModalBox();
+													})
+												})
+											});
+										tmp.me.hideModalBox();
+										tmp.me.showModalBox("You're about to save a credit note for : " + tmp.me._customer.name, tmp.confirmDivPicked);
+									}
+									else { // is from order -> No shipment -> confirm exceed -> nothing picked
+										console.debug('is from order -> No shipment -> confirm exceed -> nothing picked ');
+									}
+								})
+							})
+							.insert({'bottom': new Element('span', {'class': 'btn btn-default pull-right'})
+								.update('NO')
+								.observe('click', function() {
+									tmp.me.hideModalBox();
+								})
+							})
+						});
+					tmp.me.hideModalBox();
+					tmp.me.showModalBox("You're about to save a credit note for : " + tmp.me._customer.name, tmp.confirmDivExceed);
+					
+				}
+				else { // from order -> no shipment -> not exceeding
+					tmp.confirmDivNewOrder = new Element('div', {'class': 'confirm-div'})
+						.insert({'bottom': new Element('div')
+							.insert({'bottom': new Element('span', {'class': 'text-warning'}).setStyle('color: red;').update('from order -> no shipment -> not exceeding -> new order -> confirm').wrap(new Element('div')) })
+							.insert({'bottom': new Element('h4', {'class': 'text-warning'}).update('Products List') })
+							.insert({'bottom': tmp.me._getConfirmPartsTable(tmp.me._order.items) })
+						})
+						.insert({'bottom': new Element('div')
+							.insert({'bottom': new Element('span', {'class': 'btn btn-primary'})
+								.update('YES')
+								.observe('click', function() {
+									console.debug('confirm save, from order -> no shipment -> not exceeding ');
+									tmp.data.createNewOrder = true;
+									tmp.me._submitOrder($(this), tmp.data);
+								})
+							})
+							.insert({'bottom': new Element('span', {'class': 'btn btn-default pull-right'})
+								.update('NO')
+								.observe('click', function() {
+									tmp.me.hideModalBox();
+								})
+							})
+						});
+					tmp.me.hideModalBox();
+					tmp.me.showModalBox("You're about to save a credit note for : " + tmp.me._customer.name, tmp.confirmDivNewOrder);
+				}
+			}
+			else tmp.me.showModalBox("You're about to save a credit note for : " + tmp.me._customer.name, tmp.newDiv); // from order -> there is shipment
+		}
+		else tmp.me.showModalBox("You're about to save a credit note for : " + tmp.me._customer.name, tmp.newDiv); // not from order
+		
 		return tmp.me;
+	}
+	,_checkOrderItems: function(job) {
+		var tmp = {};
+		tmp.me = this;
+		
+		tmp.result = false;
+		tmp.me._order.items.each(function(item){
+			switch(job) {
+				case 'anyPicked':
+					if(tmp.result === false && item.isPicked === true)
+						tmp.result = true;
+					break;
+				default: tmp.me.showModalBox('<strong>Error</strong>', 'Invalid Job' + job + ' passed to tmp.me._checkOrderItems');
+			};
+		});
+		
+		return tmp.result;
 	}
 	/**
 	 * Getting the save btn for this order
@@ -575,9 +683,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					})
 					.insert({'bottom': new Element('div', {'class': 'row'})
 						.insert({'bottom': new Element('div', {'class': 'col-xs-6 text-right'}).update( new Element('strong').update('Shipping Cost: ') ) })
-						.insert({'bottom': tmp.me._getShippingCostBox(tmp.me._creditNote && tmp.me._creditNote.id ? tmp.me._creditNote.shippingValue : (tmp.me._order && tmp.me._order.infos['14'] ? tmp.me.getValueFromCurrency(tmp.me._order.infos[14][0].value) : 0) )
-							.wrap(new Element('div', {'class': 'col-xs-6 input-field'}))
-						})
+						.insert({'bottom': tmp.me._getShippingCostBox(tmp.me._creditNote && tmp.me._creditNote.id ? tmp.me._creditNote.shippingValue : (tmp.me._order && tmp.me._order.infos['14'] ? tmp.me.getValueFromCurrency(tmp.me._order.infos[14][0].value) : 0) ) })
 					})
 					.insert({'bottom': new Element('div', {'class': 'row', 'style': 'border-bottom: 1px solid brown'})
 						.insert({'bottom': new Element('div', {'class': 'col-xs-6 text-right'}).update( new Element('strong').update('Apply To: ') ) })
@@ -1139,12 +1245,14 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 
 		if($$('.init-focus').size() > 0)
 			$$('.init-focus').first().focus();
-		jQuery('.select2').select2({minimumResultsForSearch: Infinity});
+		jQuery('.select2').select2({minimumResultsForSearch: -1}); // no search bar for select2
 
-		tmp.me.paymentListPanelJs
-			.setAfterAddFunc(function() { tmp.me.disableAll(true); })
-			.setAfterDeleteFunc(function() { tmp.me.disableAll(true); })
-			.load();
+		if(tmp.me.paymentListPanelJs) {
+			tmp.me.paymentListPanelJs
+				.setAfterAddFunc(function() { tmp.me.disableAll(true); })
+				.setAfterDeleteFunc(function() { tmp.me.disableAll(true); })
+				.load();
+		}
 		return tmp.me;
 	}
 	/**
