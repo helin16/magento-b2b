@@ -92,8 +92,6 @@ class Controller extends CRUDPageAbstract
 					where ' . implode(' AND ', $where) . '
 					group by po.supplierId,  ri.invoiceNo
 					limit ' . ($pageNo - 1) * $pageSize . ', ' . $pageSize;
-			var_dump($sql);
-			var_dump($params);
 			$rows = Dao::getResultsNative($sql, $params);
 
 			$stats = array();

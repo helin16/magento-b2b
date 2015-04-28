@@ -107,7 +107,7 @@
 
 			<!-- FrontEnd:: bill page -->
 			<url ServiceParameter="Bill.List.Controller" pattern="bills.html" />
-			<!-- <url ServiceParameter="Bill.List.Controller" pattern="receiving/{poid}.html" parameters.poid="\d+"/> -->
+			<url ServiceParameter="Bill.Details.Controller" pattern="bills/{supplierId}/{invoiceNo}.html" parameters.supplierId="\d+" parameters.invoiceNo="\w+"/>
 
             <!-- FrontEnd:: PO list page -->
             <url ServiceParameter="PurchaseOrder.List.Controller" pattern="purchase.html" />
