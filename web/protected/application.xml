@@ -19,12 +19,12 @@
 
 			<!-- FrontEnd:: login page -->
 			<url ServiceParameter="Login.LoginController" pattern="login.html" />
-			
+
 			<!-- FrontEnd:: CreditNote list page -->
 			<url ServiceParameter="CreditNote.List.ListController" pattern="creditnote.html" />
 			<!-- FrontEnd:: CreditNote detail page -->
 			<url ServiceParameter="CreditNote.Details.DetailsController" pattern="creditnote/{id}.html" parameters.id="new|\d+"/>
-			
+
 			<!-- FrontEnd:: RMA list page -->
 			<url ServiceParameter="RMA.List.ListController" pattern="rma.html" />
 			<!-- FrontEnd:: RMA detail page -->
@@ -32,7 +32,7 @@
 
 			<!-- FrontEnd:: Courier list page -->
 			<url ServiceParameter="Courier.List.ListController" pattern="courier.html" />
-			
+
 			<!-- FrontEnd:: order list page -->
 			<url ServiceParameter="Order.List.OrderController" pattern="order.html" />
 			<!-- FrontEnd:: order new page -->
@@ -104,6 +104,10 @@
 			<!-- FrontEnd:: receiving page -->
 			<url ServiceParameter="Receiving.New.ReceivingController" pattern="receiving.html" />
 			<url ServiceParameter="Receiving.New.ReceivingController" pattern="receiving/{poid}.html" parameters.poid="\d+"/>
+
+			<!-- FrontEnd:: bill page -->
+			<url ServiceParameter="Bill.List.Controller" pattern="bills.html" />
+			<!-- <url ServiceParameter="Bill.List.Controller" pattern="receiving/{poid}.html" parameters.poid="\d+"/> -->
 
             <!-- FrontEnd:: PO list page -->
             <url ServiceParameter="PurchaseOrder.List.Controller" pattern="purchase.html" />

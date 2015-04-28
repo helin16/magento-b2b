@@ -1,0 +1,48 @@
+<com:TContent ID="MainContent">
+	<com:Application.controls.select2.select2 />
+	<div class="pagewrapper list-wrapper">
+		<div class="col-xs-12">
+			<div class="panel panel-default" id="searchPanel">
+				<div class="panel-heading">
+					<label for="showSearch">Show Search Criteria?</label>
+					<input id="showSearch" type="checkbox" checked onclick="$(this).up('#searchPanel').down('.panel-body').toggle();">
+					<span class="pull-right">
+						<span id="searchBtn" class="btn btn-primary btn-sm" data-loading-text="searching ..." >Search</span>
+					</span>
+				</div>
+				<div class="panel-body search-panel" id="searchDiv">
+					<div class="row">
+						<div class="col-md-3">
+							<div class="form-group form-group-sm input-group">
+	                           <label class="input-group-addon">Invoice No:</label>
+	                           <input type="text" search_field="invoiceNo" placeholder="The supplier's invoice number" class="form-control input-sm">
+	                       </div>
+						</div>
+						<div class="col-sm-3">
+							<div class="form-group form-group-sm input-group">
+								<label class="input-group-addon">Purchase Order:</label>
+								<input type="text" search_field="purchaseOrderIds" placeholder="The Purchase Order Number" class="form-control input-sm select2">
+							</div>
+						</div>
+						<div class="col-sm-4">
+							<div class="form-group form-group-sm input-group">
+								<label class="input-group-addon">Suppliers: </label>
+								<input type="text" search_field="supplierIds" placeholder="The supplier"  class="form-control input-sm select2">
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="col-xs-12 list-panel">
+			<div class="panel panel-default">
+				<div class="panel-heading">
+					Found <label id="total-found-count">0</label> records(s):
+				</div>
+				<div class="table-responsive">
+	                <table class="table table-hover table-striped" id="item-list"></table>
+	            </div>
+			</div>
+		</div>
+	</div>
+</com:TContent>

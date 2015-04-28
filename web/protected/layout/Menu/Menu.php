@@ -64,6 +64,7 @@ class Menu extends TTemplateControl
 			$array['Accounts'] = array(
 					'icon' => '<span class="glyphicon glyphicon-time"></span>',
 					'PaymentMethod' =>array('url' => '/paymentmethod.html', 'name' => 'Payment Method', 'icon' => '<span class="glyphicon glyphicon-record"></span>'),
+					'Bill' =>array('url' => '/bills.html', 'name' => 'Bills', 'icon' => '<span class="glyphicon glyphicon-usd"></span>'),
 					'accounting' => array('url' => '/accounting.html', 'name' => 'Accounting Info', 'icon'=> '<span class=""></span>'),
 					'report' => array('url' => '/report.html', 'name' => 'Report', 'icon'=> '<span class=""></span>'),
 					'CreditNote' => array('url' => '/creditnote.html', 'name' => 'Credit Note', 'icon'=> '<span class=""></span>'),

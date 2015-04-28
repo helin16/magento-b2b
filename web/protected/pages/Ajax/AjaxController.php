@@ -92,7 +92,7 @@ class AjaxController extends TService
   		$pageSize = (isset($params['pageSize']) && ($pageSize = trim($params['pageSize'])) !== '' ? $pageSize : DaoQuery::DEFAUTL_PAGE_SIZE);
   		$pageNo = (isset($params['pageNo']) && ($pageNo = trim($params['pageNo'])) !== '' ? $pageNo : null);
   		$orderBy = (isset($params['orderBy']) ? $params['orderBy'] : array());
-  	
+
   		$where = array('name like :searchTxt or description like :searchTxt');
   		$sqlParams = array('searchTxt' => '%' . $searchTxt . '%');
   		$stats = array();
@@ -155,9 +155,9 @@ class AjaxController extends TService
   	}
   	/**
   	 * Getting all the delivery methods
-  	 * 
+  	 *
   	 * @param unknown $params
-  	 * 
+  	 *
   	 * @return array
   	 */
   	private function _getDeliveryMethods($params)
@@ -200,7 +200,7 @@ class AjaxController extends TService
   		$searchParams = isset($params['searchParams']) ? $params['searchParams'] : array();
   		$pageNo = isset($params['pageNo']) ? trim($params['pageNo']) : null;
   		$pageSize = isset($params['pageSize']) ? trim($params['pageSize']) : DaoQuery::DEFAUTL_PAGE_SIZE;
-  		$active = isset($params['active']) ? intval($params['active']) : null;
+  		$active = isset($params['active']) ? intval($params['active']) : 1;
   		$orderBy = isset($params['orderBy']) ? trim($params['orderBy']) : array();
 
   		$stats = array();
