@@ -6,6 +6,21 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 	_getTitleRowData: function() {
 		return {};
 	}
+	,_openDetailsPage: function(row) {
+		var tmp = {};
+		tmp.me = this;
+		jQuery.fancybox({
+			'width'			: '95%',
+			'height'		: '95%',
+			'autoScale'     : false,
+			'autoDimensions': false,
+			'fitToView'     : false,
+			'autoSize'      : false,
+			'type'			: 'iframe',
+			'href'			: '/bills/' + row.supplier.id + '/' + row.invoiceNo + '.html?blanklayout=1'
+			});
+		return tmp.me;
+}
 	/**
 	 * Getting each row for displaying the result list
 	 */
@@ -17,7 +32,13 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 
 		tmp.row = new Element('tr', {'class': (tmp.isTitle === true ? '' : 'item_row')})
 			.store('data', row)
-			.insert({'bottom': new Element(tmp.tag, {'class': 'col-sm-2'}).update(tmp.isTitle === true ? 'Inv. No.' : row.invoiceNo) })
+			.insert({'bottom': new Element(tmp.tag, {'class': 'col-sm-2'}).update(tmp.isTitle === true ? 'Inv. No.' :
+				new Element('a', {'href': 'javascript: void(0);'})
+					.update(row.invoiceNo)
+					.observe('click', function() {
+						tmp.me._openDetailsPage(row);
+					})
+			) })
 			.insert({'bottom': new Element(tmp.tag, {'class': 'col-sm-2'}).update(tmp.isTitle === true ? 'Supplier' : row.supplier.name) })
 			.insert({'bottom': new Element(tmp.tag, {'class': 'col-sm-2'}).update(tmp.isTitle === true ? 'Total Qty' : row.totalQty) })
 			.insert({'bottom': new Element(tmp.tag, {'class': 'col-sm-2'}).update(tmp.isTitle === true ? 'Total Price' : tmp.me.getCurrency(row.totalPrice)) })

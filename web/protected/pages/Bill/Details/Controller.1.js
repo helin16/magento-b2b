@@ -43,8 +43,14 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		}
 		return tmp.row;
 	}
-	,_getSummaryPanel: function() {
-
+	,_getSummaryPanel: function(supplier, invoiceNo) {
+		var tmp = {};
+		tmp.newDiv = new Element('div',{'class': 'panel panel-default'})
+			.insert({'bottom': new Element('div', {'class': 'panel-body'})
+				.insert({'bottom': new Element('h3').update('Invoice No.:' + invoiceNo) })
+				.insert({'bottom': new Element('div').update('Supplier:' + supplier.name) })
+			});
+		return tmp.newDiv;
 	}
 	,getResults: function(reset, pageSize) {
 		var tmp = {};
@@ -73,7 +79,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 						tmp.tbody.insert({'bottom': tmp.me._getResultRow(item).addClassName('item_row').writeAttribute('item_id', item.id) });
 					});
 					jQuery('.total-price').html(tmp.me.getCurrency(tmp.totalPrice));
-					jQuery('.summaryPanel').html(tmp.me._getSummaryPanel(tmp.result.supplier));
+					jQuery('.summaryPanel').html(tmp.me._getSummaryPanel(tmp.result.supplier, tmp.me._preLoadData.invoiceNo));
 				} catch (e) {
 					tmp.resultDiv.insert({'bottom': tmp.me.getAlertBox('Error', e).addClassName('alert-danger') });
 				}
