@@ -216,6 +216,7 @@ class ReceivingController extends BPCPageAbstract
 			$products = $param->CallbackParameter->products;
 
 			$outStandingOrders = array();
+			$invoiceNos = array();
 			foreach ($products->matched as $item) {
 				$product = Product::get(trim($item->product->id));
 				if(!$product instanceof Product)
@@ -252,6 +253,7 @@ class ReceivingController extends BPCPageAbstract
 					$serialNo = trim($serial->serialNo);
 					$unitPrice = trim($serial->unitPrice);
 					$invoiceNo = trim($serial->invoiceNo);
+					$invoiceNos[] = $invoiceNo;
 					$comments = trim($serial->comments);
 					ReceivingItem::create($purchaseOrder, $product, $unitPrice, $qty, $serialNo, $invoiceNo, $comments);
 				}
@@ -274,6 +276,9 @@ class ReceivingController extends BPCPageAbstract
 			}
 			$results['outStandingOrders'] = count($outStandingOrders) > 0 ? array_values($outStandingOrders) : array();
 			$results['item'] = PurchaseOrder::get($purchaseOrder->getId())->getJson();
+			array_unique($invoiceNos);
+			var_dump($invoiceNos);
+			$results['invoiceNos'] = $invoiceNos;
 
 			Dao::commitTransaction();
 		}

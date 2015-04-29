@@ -48,7 +48,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 							 tmp.result.push({"id": item.id, 'text': item.name, 'data': item});
 						 })
 		                return {
-		                    results:  tmp.result 
+		                    results:  tmp.result
 		                };
 		             },
 					 cache: true
@@ -83,7 +83,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 						tmp.result.push({"id": item.id, 'text': item.name, 'data': item});
 					})
 					return {
-						results:  tmp.result 
+						results:  tmp.result
 					};
 				},
 				cache: true
@@ -138,7 +138,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 			}
  		});
 		return tmp.me;
-		
+
 	}
 	/**
 	 * Highlisht seleteted row
@@ -152,29 +152,29 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		.addClass('success');
 	}
 	/**
-	 * Displaying the selected address 
+	 * Displaying the selected address
 	 */
 	,_displaySelectedAddress: function(btn) {
 		var tmp = {};
 		tmp.me = this;
 		tmp.item = $(btn).up('[item_id]').retrieve('data');
 		tmp.type = $(btn).down('span').classList.contains('address-shipping');
-		
+
 		jQuery('.popover-loaded').popover('hide');
 		//remove highlight
 		jQuery('.item_row.success').removeClass('success');
 		//mark this one as active
 		tmp.selectedRow = jQuery('[item_id=' + tmp.item.id + ']')
 			.addClass('success');
-		
+
 		tmp.me._signRandID(btn); //sign it with a HTML ID to commnunicate with jQuery
 		if(!jQuery('#' + btn.id).hasClass('popover-loaded')) {
 			jQuery('#' + btn.id).popover({
 				'title'    : '<div class="row"><div class="col-xs-10">Details for: ' + tmp.item.name + '</div><div class="col-xs-2" style="cursor: pointer" href="javascript:void(0);" onclick="jQuery(' + "'#" + btn.id + "'" + ').popover(' + "'hide'" + ');"><span class="pull-right glyphicon glyphicon-remove" ></span></div></div>',
-				'html'     : true, 
+				'html'     : true,
 				'placement': function () {return tmp.type? 'left' : 'right'},
-				'container': 'body', 
-				'trigger'  : 'manual', 
+				'container': 'body',
+				'trigger'  : 'manual',
 				'viewport' : {"selector": ".list-panel", "padding": 0 },
 				'content'  : function () {
 					return tmp.type? '<p>' + tmp.item.address.shipping.full +'</p>' : '<p>' + tmp.item.address.billing.full +'</p>'
@@ -192,35 +192,38 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 	,_getResultRow: function(row, isTitle) {
 		var tmp = {};
 		tmp.me = this;
-		tmp.tag = (tmp.isTitle === true ? 'th' : 'td');
 		tmp.isTitle = (isTitle || false);
+		tmp.tag = (tmp.isTitle === true ? 'th' : 'td');
 		tmp.row = new Element('tr', {'class': (tmp.isTitle === true ? 'item_top_row' : 'btn-hide-row item_row') + (row.active == 0 ? ' danger' : ''), 'item_id': (tmp.isTitle === true ? '' : row.id)}).store('data', row)
-			.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-1'}).update(row.creditNoteNo).setStyle('cursor: pointer;')
-				.observe('click',function(){
-					tmp.me._openEditPage(row);
+			.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-1'})
+				.insert({'bottom': tmp.isTitle === true ? row.creditNoteNo : new Element('a', {'href': 'javascript: void(0);'})
+					.update(row.creditNoteNo)
+					.observe('click',function(){
+						tmp.me._openEditPage(row);
+					})
 				})
 			})
+			.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-1'}).update(tmp.isTitle === true ? 'Customer' : row.customer.name)})
+			.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-1'}).update(tmp.isTitle === true ? row.order.orderNo :
+				new Element('a', {'href': '/orderdetails/' + row.order.id + '.html', 'target': '_BLANK'}).update(row.order.orderNo)
+			)})
+			.insert({'bottom': new Element(tmp.tag).update(row.description)})
+			.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-1 text-right'}).update(tmp.isTitle === true ? 'Total Value' : tmp.me.getCurrency(row.totalValue))})
+			.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-1 text-right'}).update(tmp.isTitle === true ? 'Total Paid' : tmp.me.getCurrency(row.totalPaid))})
 			.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-1'}).update(row.applyTo)})
-			.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-1'}).update(row.description)})
-			.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-1'}).update(tmp.isTitle ? tmp.me._getTitleRowData().totalValue : tmp.me.getCurrency(row.totalValue))})
-			.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-1'}).update(row.applyDate)})
-			.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-1'}).update(row.customer.name)})
-			.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-1'}).update(row.order.orderNo ? row.order.orderNo : '')})
+			.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-1'}).update(tmp.isTitle === true ? row.applyDate : moment(tmp.me.loadUTCTime(row.applyDate)).format('ll') )})
 			.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-1'}).update(tmp.isTitle ? 'Credit NoteItems' : row.creditNoteItems ? row.creditNoteItems.length : '')})
 			.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-1'}).setStyle('display: none;')
 				.insert({'bottom': (tmp.isTitle === true ? row.active : new Element('input', {'type': 'checkbox', 'disabled': true, 'checked': row.active}) ) })
 			})
-			
+
 			.insert({'bottom': new Element(tmp.tag, {'class': 'text-right col-xs-1'}).update(
-				tmp.isTitle === true ?  
+				tmp.isTitle === true ?
 				''
 				: (new Element('span', {'class': 'btn-group btn-group-xs'})
 					.insert({'bottom': new Element('span', {'class': 'btn btn-default', 'title': 'Edit'})
 						.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-pencil'}) })
 						.observe('click', function(){
-							$$('.popover-loaded').each(function(item){
-								jQuery(item).popover('hide');
-							});
 							tmp.me._openEditPage(row);
 						})
 					})
@@ -231,11 +234,8 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 								return false;
 							if(row.active)
 								tmp.me._deactivateItem(this);
-							$$('.popover-loaded').each(function(item){
-								jQuery(item).popover('hide');
-							});
 						})
-					}) ) 
+					}) )
 				)
 			});
 		return tmp.row;
@@ -268,7 +268,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 			'onLoading': function() {
 				if(tmp.row) {
 					tmp.row.toggleClassName('danger');
-					tmp.row.hide(); 
+					tmp.row.hide();
 				}
 			}
 			,'onSuccess': function(sender, param){
@@ -285,15 +285,75 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 			}
 		})
 	}
+	,getResults: function(reset, pageSize) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.reset = (reset || false);
+		tmp.resultDiv = $(tmp.me.resultDivId);
+
+		if(tmp.reset === true)
+			tmp.me._pagination.pageNo = 1;
+		tmp.me._pagination.pageSize = (pageSize || tmp.me._pagination.pageSize);
+		tmp.me.postAjax(tmp.me.getCallbackId('getItems'), {'pagination': tmp.me._pagination, 'searchCriteria': tmp.me._searchCriteria}, {
+			'onLoading': function () {
+				jQuery('#' + tmp.me.searchDivId + ' #searchBtn').button('loading');
+				//reset div
+				if(tmp.reset === true) {
+					tmp.resultDiv.update( new Element('tr').update( new Element('td').update( tmp.me.getLoadingImg() ) ) );
+				}
+			}
+			,'onSuccess': function(sender, param) {
+				try{
+					tmp.result = tmp.me.getResp(param, false, true);
+					if(!tmp.result)
+						return;
+					$(tmp.me.totalNoOfItemsId).update(tmp.result.pageStats.totalRows);
+
+					//reset div
+					if(tmp.reset === true) {
+						tmp.resultDiv.update(tmp.me._getResultRow(tmp.me._getTitleRowData(), true).wrap(new Element('thead')));
+						if(!tmp.result.items || tmp.result.items.size() === 0) {
+							tmp.resultDiv.insert({'bottom': tmp.me.getAlertBox('Nothing found.', '').addClassName('alert-warning') });
+						}
+					}
+					//remove next page button
+					tmp.resultDiv.getElementsBySelector('.paginWrapper').each(function(item){
+						item.remove();
+					});
+
+					//show all items
+					tmp.tbody = $(tmp.resultDiv).down('tbody');
+					if(!tmp.tbody)
+						$(tmp.resultDiv).insert({'bottom': tmp.tbody = new Element('tbody') });
+					tmp.result.items.each(function(item) {
+						tmp.tbody.insert({'bottom': tmp.me._getResultRow(item).addClassName('item_row').writeAttribute('item_id', item.id) });
+					});
+					//show the next page button
+					if(tmp.result.pageStats.pageNumber < tmp.result.pageStats.totalPages)
+						tmp.resultDiv.insert({'bottom': tmp.me._getNextPageBtn().addClassName('paginWrapper') });
+					jQuery('.total-value').html(tmp.me.getCurrency(tmp.result.totalValue));
+					jQuery('.total-paid').html(tmp.me.getCurrency(tmp.result.totalPaid));
+				} catch (e) {
+					tmp.resultDiv.insert({'bottom': tmp.me.getAlertBox('Error', e).addClassName('alert-danger') });
+				}
+			}
+			,'onComplete': function() {
+				jQuery('#' + tmp.me.searchDivId + ' #searchBtn').button('reset');
+			}
+		});
+	}
 	,init: function(reset, pageSize) {
 		var tmp = {};
 		tmp.me = this;
-		
+
 		if(tmp.me._order && jQuery.isNumeric(tmp.me._order.id) && $F($$('[search_field="ord.orderNo"]').first()).empty()) {
+			jQuery('#' + tmp.me.searchDivId).find('#searchDiv').hide().end()
+				.find('.new-btn').hide();
 			$$('[search_field="ord.orderNo"]').first().value = tmp.me._order.orderNo;
 			$('searchBtn').click();
+		} else{
+			tmp.me.getResults(reset, pageSize);
 		}
-		tmp.me.getResults(reset, pageSize);
 		return tmp.me;
 	}
 });

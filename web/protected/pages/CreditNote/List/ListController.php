@@ -61,12 +61,13 @@ class ListController extends CRUDPageAbstract
             if(isset($param->CallbackParameter->pagination))
             {
                 $pageNo = $param->CallbackParameter->pagination->pageNo;
-                $pageSize = $param->CallbackParameter->pagination->pageSize * 3;
+                $pageSize = $param->CallbackParameter->pagination->pageSize;
             }
 
             $serachCriteria = isset($param->CallbackParameter->searchCriteria) ? json_decode(json_encode($param->CallbackParameter->searchCriteria), true) : array();
-            $where = array(1);
+            $where = array('cn.active = 1');
             $params = array();
+            $innerJoinStrings = array();
             foreach($serachCriteria as $field => $value)
             {
             	if((is_array($value) && count($value) === 0) || (is_string($value) && ($value = trim($value)) === ''))
@@ -98,6 +99,7 @@ class ListController extends CRUDPageAbstract
 						$query->eagerLoad("CreditNote.order", 'inner join', 'ord', '');
 						$where[] = 'ord.orderNo = ?';
 						$params[] = trim($value);
+						$innerJoinStrings[] = 'inner join `order` ord on (ord.id = cn.orderId)';
 						break;
 					}
 					case 'cust.id':
@@ -112,6 +114,7 @@ class ListController extends CRUDPageAbstract
 						$value = explode(',', $value);
 						$query->eagerLoad("CreditNote.items", 'inner join', 'cn_item', 'cn_item.creditNoteId = cn.id and cn_item.active = 1');
 						$where[] = 'cn_item.productId in ('.implode(", ", array_fill(0, count($value), "?")).')';
+						$innerJoinStrings[] = 'inner join `creditnoteitem` cn_item on (cn_item.creditNoteId = cn.id and cn_item.active = 1)';
 						$params = array_merge($params, $value);
 						break;
 					}
@@ -119,9 +122,7 @@ class ListController extends CRUDPageAbstract
             }
 
             $stats = array();
-
             $objects = $class::getAllByCriteria(implode(' AND ', $where), $params, true, $pageNo, $pageSize, array('cn.creditNoteNo' => 'desc'), $stats);
-
             $results['pageStats'] = $stats;
             $results['items'] = array();
             foreach($objects as $obj)
@@ -131,6 +132,10 @@ class ListController extends CRUDPageAbstract
             	$creditNoteItems = $obj->getCreditNoteItems();
                 $results['items'][] = $obj->getJson(array('order'=> empty($order) ? '' : $order->getJson(), 'customer'=> $customer->getJson(), 'creditNoteItems'=> $creditNoteItems ? array_map(create_function('$a', 'return $a->getJson();'), $creditNoteItems) : ''));
             }
+            $sql = 'select sum(`cn`.totalValue) `totalValue`, sum(`cn`.totalPaid) `totalPaid` from `creditnote` cn ' . implode(' ', $innerJoinStrings) . ' where cn.active = 1 AND (' . implode(' AND ', $where) . ')';
+            $sumResult = Dao::getResultsNative($sql, $params);
+            $results['totalValue'] = count($sumResult) > 0 ? $sumResult[0]['totalValue'] : 0;
+            $results['totalPaid'] = count($sumResult) > 0 ? $sumResult[0]['totalPaid'] : 0;
         }
         catch(Exception $ex)
         {

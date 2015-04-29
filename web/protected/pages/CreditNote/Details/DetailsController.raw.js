@@ -22,6 +22,10 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		var tmp = {};
 		tmp.me = this;
 		tmp.modalBoxPanel = $(btn).up('.modal-content');
+		if(!tmp.modalBoxPanel) {
+			tmp.me.showModalBox('saving...', new Element('div', {'class': 'confirm-div'}));
+			tmp.modalBoxPanel = $$('.modal-content').first();
+		}
 		tmp.modalBoxTitlePanel = tmp.modalBoxPanel.down('.modal-title');
 		tmp.oldTitlePanel = tmp.modalBoxTitlePanel.clone(true);
 		tmp.modalBoxBodyPanel = tmp.modalBoxPanel.down('.modal-body');
@@ -30,7 +34,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			'onLoading': function(sender, param) {
 				tmp.modalBoxTitlePanel.update('Submiting data, please wait...');
 				tmp.modalBoxBodyPanel.insert({'bottom': tmp.loadingDiv});
-				tmp.modalBoxBodyPanel.down('.confirm-panel').hide().getElementsBySelector('.result-msg').each(function(el){ el.remove(); });
+				tmp.modalBoxBodyPanel.down('.confirm-div').hide().getElementsBySelector('.result-msg').each(function(el){ el.remove(); });
 			}
 			,'onSuccess': function(sender, param) {
 				try {
@@ -59,7 +63,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					}
 				} catch(e) {
 					tmp.modalBoxTitlePanel.replace(tmp.oldTitlePanel);
-					tmp.modalBoxBodyPanel.down('.confirm-panel').insert({'top': tmp.me.getAlertBox('', e).addClassName('alert-danger result-msg') }).show();
+					tmp.modalBoxBodyPanel.down('.confirm-div').insert({'top': tmp.me.getAlertBox('', e).addClassName('alert-danger result-msg') }).show();
 				}
 			}
 			,'onComplete': function(sender, param) {
@@ -143,7 +147,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.me = this;
 		tmp.modalWrapper =$(btn).up('.modal-content');
 		tmp.modalWrapper.down('.modal-title').update('<strong class="text-success">Please confirm the condition of returned goods</strong>');
-		tmp.newDiv = new Element('div', {'class': 'panel confirm-panel'})
+		tmp.newDiv = new Element('div', {'class': 'panel confirm-div'})
 			.insert({'bottom': new Element('div')
 				.insert({'bottom': new Element('h4', {'class': 'text-success'}).update('What are the confiditions of these returned goods?') })
 				.insert({'bottom': tmp.partsTable = tmp.me._getConfirmPartsTable(items, true) })
@@ -182,10 +186,99 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.modalWrapper.down('.modal-body').update(tmp.newDiv);
 		return tmp.me
 	}
+	,_getConfirmGoodsReturnedPanel: function(submitData, originalItems) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.newDiv = new Element('div', {'class': 'confirm-div'})
+			.insert({'bottom': new Element('div')
+			.insert({'bottom': tmp.confirmHeadingEl = new Element('h4', {'class': 'text-warning'}).update('Have the customer returned all the goods on this credit note already?') })
+			.insert({'bottom': tmp.me._getConfirmPartsTable(originalItems) })
+		})
+		.insert({'bottom': new Element('div')
+			.insert({'bottom': tmp.confirmBtn = new Element('span', {'class': 'btn btn-primary'})
+				.update('YES')
+				.observe('click', function() {
+					tmp.me._confirmSubmit(this, submitData, originalItems);
+				})
+			})
+			.insert({'bottom': new Element('span', {'class': 'btn btn-default pull-right'})
+				.update('NO')
+				.observe('click', function() {
+					tmp.modalWrapper =$(this).up('.modal-content');
+					tmp.modalWrapper.down('.modal-title').update('<strong class="text-danger">Stop Now!</strong>');
+					tmp.modalWrapper.down('.modal-body').update('')
+						.insert({'bottom': new Element('div', {'class': 'panel'})
+							.insert({'bottom': new Element('div').update('<h4 class="text-danger">You need to create a RMA ' +
+									(tmp.me._order && tmp.me._order.orderNo ? '<a href="/orderdetails/' + tmp.me._order.id + '.html" target="_BLANK">' + tmp.me._order.orderNo + '</a>' : '') +
+								' first, and waiting until the goods are back then create a credit note against those returned goods!</h4>')
+							})
+							.insert({'bottom': new Element('div')
+								.insert({'bottom': new Element('div', {'class': 'btn btn-primary col-sm-6 col-sm-offset-3'})
+									.update('OK')
+									.observe('click', function() {
+										tmp.me.hideModalBox();
+									})
+								})
+							})
+						});
+				})
+			})
+		});
+		return tmp.newDiv;
+	}
+	,_getValueExceededPanel: function(printit, data, orirginalItems, totalCreditValueForCurrent) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.totalCreditableValue = (tmp.me._order.totalAmount - tmp.me._order.totalCreditNoteValue);
+		tmp.newDiv = new Element('div', {'class': 'confirm-div'})
+			.insert({'bottom': new Element('div')
+				.insert({'bottom': new Element('div', {'class': 'text-warning'})
+					.update(tmp.me.getAlertBox('Warning: ', '<strong>Exeeded Total Creditable Value(' + tmp.me.getCurrency(tmp.totalCreditableValue) + ') of this order: </strong>'
+							+ '<a href="/orderdetails/' + tmp.me._order.id + '.html" target="_BLANK">' + tmp.me._order.orderNo + '</a>'
+							+ '<div>Order Total Value: ' + tmp.me.getCurrency(tmp.me._order.totalAmount) + '</div>'
+							+ '<div>Order Total Credited Value: ' + tmp.me.getCurrency(tmp.me._order.totalCreditNoteValue) + '</div>'
+							+ '<div>Order Total Creditable Value: ' + tmp.me.getCurrency(tmp.totalCreditableValue) + '</div>'
+							+ '<div>Current CreditNote Value: <strong>' + tmp.me.getCurrency(totalCreditValueForCurrent) + '</div>'
+						).addClassName('alert-danger')
+					)
+				})
+			})
+			.insert({'bottom': new Element('div').update('Are you sure you want to continue?') })
+			.insert({'bottom': new Element('div')
+				.insert({'bottom': new Element('span', {'class': 'btn btn-primary'})
+					.update('YES, continue')
+					.observe('click', function() {
+						tmp.me._confirmOrderAgainShipments(this, printit, data, orirginalItems);
+					})
+				})
+				.insert({'bottom': new Element('span', {'class': 'btn btn-default pull-right'})
+					.update('NO')
+					.observe('click', function() {
+						tmp.me.hideModalBox();
+					})
+				})
+			});
+		return tmp.newDiv;
+	}
+	,_confirmOrderAgainShipments: function(btn, printit, data, orirginalItems) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.data = data;
+		//if we have a order, and shipped
+		if(tmp.me._order.shippments && tmp.me._order.shippments.size() > 0) {
+			tmp.me.hideModalBox();
+			tmp.me.showModalBox("You're about to save a credit note for : " + tmp.me._customer.name, tmp.me._getConfirmGoodsReturnedPanel(tmp.data, orirginalItems));
+			return tmp.me;
+		}
+		//else we have an order but no shipments, then check
+		tmp.data.printIt = (printit === true ? true : false);
+		tmp.me._submitOrder(btn, tmp.data);
+		return tmp.me;
+	}
 	/**
 	 * pre confirming submit
 	 */
-	,_preConfirmSubmit: function(printit) {
+	,_preConfirmSubmit: function(btn, printit) {
 		var tmp = {};
 		tmp.me = this;
 		tmp.data = tmp.me._collectFormData($(tmp.me._htmlIds.itemDiv),'save-order');
@@ -216,7 +309,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		$$('.order-item-row').each(function(item){
 			tmp.itemData = item.retrieve('data');
 			tmp.originalItems.push(tmp.itemData);
-			tmp.data.items.push({'orderItemId': item.readAttribute('orderItemId'), 'creditNoteItemId': item.readAttribute('creditNoteItemId'), 'valid': item.visible(), 'product': {'id': tmp.itemData.product.id}, 'itemDescription': tmp.itemData.itemDescription,'unitPrice': tmp.itemData.unitPrice, 'qtyOrdered': tmp.itemData.qtyOrdered, 'totalPrice': tmp.itemData.totalPrice, 'serials': item.retrieve('serials') });
+			tmp.data.items.push({'orderItemId': item.readAttribute('orderItemId'), 'creditNoteItemId': item.readAttribute('creditNoteItemId'), 'valid': item.visible(), 'product': {'id': tmp.itemData.product.id, 'name': tmp.itemData.product.name, 'sku': tmp.itemData.product.sku},  'itemDescription': tmp.itemData.itemDescription,'unitPrice': tmp.itemData.unitPrice, 'qtyOrdered': tmp.itemData.qtyOrdered, 'totalPrice': tmp.itemData.totalPrice, 'serials': item.retrieve('serials') });
 		});
 		tmp.noValidItem = true;
 		tmp.data.items.each(function(item){
@@ -228,44 +321,39 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			tmp.me.showModalBox('<strong class="text-danger">Error</strong>', '<strong>At least one Credit Note Item</strong> is needed!', true);
 			return null;
 		}
-		tmp.newDiv = new Element('div', {'class': 'confirm-div'})
-			.insert({'bottom': new Element('div')
-				.insert({'bottom': new Element('h4', {'class': 'text-warning'}).update('Have the customer returned all the goods on this credit note already?') })
-				.insert({'bottom': tmp.me._getConfirmPartsTable(tmp.originalItems) })
-			})
-			.insert({'bottom': new Element('div')
-				.insert({'bottom': new Element('span', {'class': 'btn btn-primary'})
-					.update('YES')
-					.observe('click', function() {
-						tmp.me._confirmSubmit(this, tmp.data, tmp.originalItems);
-					})
-				})
-				.insert({'bottom': new Element('span', {'class': 'btn btn-default pull-right'})
-					.update('NO')
-					.observe('click', function() {
-						tmp.modalWrapper =$(this).up('.modal-content');
-						tmp.modalWrapper.down('.modal-title').update('<strong class="text-danger">Stop Now!</strong>');
-						tmp.modalWrapper.down('.modal-body').update('')
-							.insert({'bottom': new Element('div', {'class': 'panel'})
-								.insert({'bottom': new Element('div').update('<h4 class="text-danger">You need to create a RMA ' +
-										(tmp.me._order && tmp.me._order.orderNo ? '<a href="/orderdetails/' + tmp.me._order.id + '.html" target="_BLANK">' + tmp.me._order.orderNo + '</a>' : '') +
-									' first, and waiting until the goods are back then create a credit note against those returned goods!</h4>')
-								})
-								.insert({'bottom': new Element('div')
-									.insert({'bottom': new Element('div', {'class': 'btn btn-primary col-sm-6 col-sm-offset-3'})
-										.update('OK')
-										.observe('click', function() {
-											tmp.me.hideModalBox();
-										})
-									})
-								})
-							});
-					})
-				})
-			})
-		tmp.me.showModalBox("You're about to save a credit note for : " + tmp.me._customer.name, tmp.newDiv);
-
+		//if we don't have a order or we have a shipped order, then ask the user to confirm the returning of the goods
+		if(!tmp.me._order || !tmp.me._order.id) {
+			tmp.me.hideModalBox();
+			tmp.me.showModalBox("You're about to save a credit note for : " + tmp.me._customer.name, tmp.me._getConfirmGoodsReturnedPanel(tmp.data, tmp.originalItems));
+			return tmp.me;
+		}
+		//now we should have a order
+		//checking whether the value is more than the order's credited value, if we are crediting more than it should be
+		tmp.totalCreditValueForCurrentNote = tmp.me.getValueFromCurrency(jQuery('[order-price-summary="totalPriceIncludeGST"]').val());
+		if(tmp.totalCreditValueForCurrentNote > (tmp.me._order.totalAmount * 1 - tmp.me._order.totalCreditNoteValue * 1)) {
+			tmp.me.hideModalBox();
+			tmp.me.showModalBox("You're about to save a credit note for : " + tmp.me._customer.name, tmp.me._getValueExceededPanel(printit, tmp.data, tmp.originalItems, tmp.totalCreditValueForCurrentNote));
+			return tmp.me;
+		}
+		tmp.me._confirmOrderAgainShipments(btn, printit, tmp.data, tmp.originalItems);
 		return tmp.me;
+	}
+	,_checkOrderItems: function(job) {
+		var tmp = {};
+		tmp.me = this;
+
+		tmp.result = false;
+		tmp.me._order.items.each(function(item){
+			switch(job) {
+				case 'anyPicked':
+					if(tmp.result === false && item.isPicked === true)
+						tmp.result = true;
+					break;
+				default: tmp.me.showModalBox('<strong>Error</strong>', 'Invalid Job' + job + ' passed to tmp.me._checkOrderItems');
+			};
+		});
+
+		return tmp.result;
 	}
 	/**
 	 * Getting the save btn for this order
@@ -278,7 +366,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				.insert({'bottom': new Element('span', {'class': 'btn btn-primary save-btn'})
 					.insert({'bottom': new Element('span').update(' Save ') })
 					.observe('click', function() {
-						tmp.me._preConfirmSubmit();
+						tmp.me._preConfirmSubmit(this);
 					})
 				})
 			})
@@ -893,6 +981,26 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 						.insert({'bottom': '>' })
 						.insert({'bottom': tmp.me._order ? new Element('strong').update(' with Order No. ') : '' })
 						.insert({'bottom': tmp.me._order ? new Element('a', {'target': '_blank', 'href': '/orderdetails/' + tmp.me._order.id + '.html'}).update(tmp.me._order.orderNo) : '' })
+						.insert({'bottom': tmp.me._order ? ' with creditable value: ' : '' })
+						.insert({'bottom': tmp.me._order ? new Element('a', {'class': 'badge', 'href': 'javascript: void(0)'})
+								.update(tmp.me.getCurrency(tmp.me._order.totalAmount - tmp.me._order.totalCreditNoteValue))
+								.observe('click', function() {
+									jQuery.fancybox({
+										'width'			: '95%',
+										'height'		: '95%',
+										'autoScale'     : false,
+										'autoDimensions': false,
+										'fitToView'     : false,
+										'autoSize'      : false,
+										'type'			: 'iframe',
+										'frameborder'	: '0',
+										'border'		: '0',
+										'seamless'		: 'seamless',
+										'href'			: '/creditnote.html?blanklayout=1&orderid=' + tmp.me._order.id + '.html'
+							 		});
+								})
+							: ''
+						})
 					})
 					.insert({'bottom': new Element('div', {'class': 'col-sm-4 text-right'}).setStyle('display: none;')
 						.insert({'bottom': new Element('strong').update('Total Payment Due: ') })
@@ -1137,12 +1245,14 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 
 		if($$('.init-focus').size() > 0)
 			$$('.init-focus').first().focus();
-		jQuery('.select2').select2({});
+		jQuery('.select2').select2({minimumResultsForSearch: -1}); // no search bar for select2
 
-		tmp.me.paymentListPanelJs
-			.setAfterAddFunc(function() { tmp.me.disableAll(true); })
-			.setAfterDeleteFunc(function() { tmp.me.disableAll(true); })
-			.load();
+		if(tmp.me.paymentListPanelJs) {
+			tmp.me.paymentListPanelJs
+				.setAfterAddFunc(function() { tmp.me.disableAll(true); })
+				.setAfterDeleteFunc(function() { tmp.me.disableAll(true); })
+				.load();
+		}
 		return tmp.me;
 	}
 	/**

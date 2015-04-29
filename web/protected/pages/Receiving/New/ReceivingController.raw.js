@@ -440,7 +440,19 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			tmp.infoRow.insert({'top': new Element('span', {'class': 'col-sm-2 productSku'}).update(orderItem.product.sku ? orderItem.product.sku : '') });
 		if(orderItem.scanTable && tmp.me._canReceive() === true) {
 			tmp.row.insert({'bottom': new Element('div', {'class': 'row product-content-row'})
-				.insert({'bottom': new Element('span', {'class': 'col-sm-10 col-sm-offset-2'}).update(orderItem.scanTable) })
+				.insert({'bottom': new Element('div', {'class': 'col-sm-2'})
+					.insert({'bottom': new Element('span')
+						.insert({'bottom': new Element('input', {'type': 'checkbox', 'class': 'show-checkbox'}) })
+						.insert({'bottom': new Element('label').update(' show input panel') })
+					})
+					.observe('click', function(){
+						tmp.productRow = $(this).up('.row.product-content-row');
+						tmp.checkBox = tmp.productRow.down('.show-checkbox');
+						tmp.checkBox.checked = !tmp.checkBox.checked;
+						tmp.productRow.down('.scanTable').toggle();
+					})
+				})
+				.insert({'bottom': new Element('div', {'class': 'col-sm-10'}).update(orderItem.scanTable.setStyle('display:none;')) })
 			});
 		}
 
@@ -529,7 +541,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			.insert({'bottom': new Element('thead').update(tmp.me._getScanTableROW({'qty': 'Qty', 'serialNo': 'Serial No.', 'unitPrice': 'Unit Price (Ex)', 'invoiceNo': 'Inv. No.', 'comments': 'Comments', 'btns': ''}, true)) })
 			.insert({'bottom': new Element('tbody')
 				.insert({'bottom': tmp.me._getScanTableROW({
-						'qty': tmp.me._getFormGroup('',new Element('input', {'class': 'form-control', 'scanned-item': 'qty', 'type': 'text', 'placeholder': 'How many you received.', 'required': true, 'value': 1, 'validate_currency': 'Invalid qty'})
+						'qty': tmp.me._getFormGroup('',new Element('input', {'class': 'form-control input-sm', 'scanned-item': 'qty', 'type': 'text', 'placeholder': 'How many you received.', 'required': true, 'value': 1, 'validate_currency': 'Invalid qty'})
 							.observe('keyup', function() {
 								tmp.serialNoBox = $(this).up('.scanned-item-row').down('[scanned-item=serialNo]');
 								if($F(this) > 1) {
@@ -564,10 +576,10 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 								});
 							})
 						),
-						'serialNo': tmp.me._getFormGroup('',new Element('input', {'class': 'form-control', 'scanned-item': 'serialNo', 'type': 'text', 'placeholder': 'Serial Number:', 'required': true})),
-						'unitPrice': tmp.me._getFormGroup('', new Element('input', {'class': 'form-control', 'scanned-item': 'unitPrice', 'type': 'value', 'placeholder': 'Unit Price:', 'validate_currency': 'Invalid currency', 'value': product.purchaseOrderItem ? tmp.me.getValueFromCurrency(tmp.me.getCurrency(product.purchaseOrderItem.unitPrice)) : ''})),
+						'serialNo': tmp.me._getFormGroup('',new Element('input', {'class': 'form-control input-sm', 'scanned-item': 'serialNo', 'type': 'text', 'placeholder': 'Serial Number:', 'required': true})),
+						'unitPrice': tmp.me._getFormGroup('', new Element('input', {'class': 'form-control input-sm', 'scanned-item': 'unitPrice', 'type': 'value', 'placeholder': 'Unit Price:', 'validate_currency': 'Invalid currency', 'value': product.purchaseOrderItem ? tmp.me.getValueFromCurrency(tmp.me.getCurrency(product.purchaseOrderItem.unitPrice)) : ''})),
 						'invoiceNo': tmp.me._getFormGroup('', tmp.invoiceNoBox = new Element('input', {'class': 'form-control', 'scanned-item': 'invoiceNo', 'type': 'text', 'placeholder': 'Inv. No.:'})),
-						'comments': tmp.me._getFormGroup('', new Element('input', {'class': 'form-control', 'scanned-item': 'comments', 'type': 'text', 'placeholder': 'Comments:'})),
+						'comments': tmp.me._getFormGroup('', new Element('input', {'class': 'form-control input-sm', 'scanned-item': 'comments', 'type': 'text', 'placeholder': 'Comments:'})),
 						'btns': new Element('span', {'class': 'btn-group btn-group-sm pull-right'})
 								.insert({'bottom': new Element('span', {'class': 'scanned-item-save-btn btn btn-primary'})
 									.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-floppy-saved'}) })
@@ -592,7 +604,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 														$(this).up('.scanned-item-row').remove();
 													})
 												});
-											tmp.newRow.removeClassName('warning new-scan-row').addClassName('btn-hide-row');
+											tmp.newRow.removeClassName('info').removeClassName('new-scan-row').addClassName('btn-hide-row');
 											tmp.newRow.down('.scanned-item-save-btn').remove();
 											tmp.newRow.down('.btns').replace(tmp.newDeleteBtn);
 											tmp.newRow.down('input[scanned-item=qty]').disable();
@@ -644,7 +656,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 									tmp.serialNoBox.focus();
 								})
 							})
-					}).addClassName('warning')
+					}).addClassName('info')
 				})
 			});
 		if(tmp.me._forceInvNo)
@@ -761,12 +773,6 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.me._focusNext(tmp.newRow,'serialNo','unitPrice');
 		tmp.me._focusNext(tmp.newRow,'unitPrice','invoiceNo');
 		tmp.me._focusNext(tmp.newRow,'invoiceNo','comments');
-
-		tmp.newRow.down('.product-head-row').setStyle({cursor: 'pointer'});
-		tmp.newRow.down('.product-head-row').observe('click', function(event){
-			if(tmp.newRow.down('.product-content-row'))
-				tmp.newRow.down('.product-content-row').toggle();
-		});
 
 		tmp.serialNoBox = tmp.newRow.down('input[scanned-item=serialNo]');
 		if(tmp.serialNoBox) {
@@ -908,7 +914,6 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		var tmp = {};
 		tmp.me = this;
 		tmp.newDiv = new Element('div')
-			.insert({'bottom': new Element('div').update(new Element('strong').update('Saved successfully') ) })
 			.insert({'bottom': new Element('div').update('There are outstanding orders that need these parts that you just recieved:') })
 			.insert({'bottom': new Element('table', {'class': 'table table-hover table-condensed'})
 				.insert({'bottom': new Element('thead')
@@ -978,9 +983,16 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					tmp.result = tmp.me.getResp(param, false, true);
 					if(!tmp.result || !tmp.result.item || !tmp.result.outStandingOrders)
 						return;
-					tmp.newDiv = new Element('div').update('<h3>Saved successfully</h3>');
+					tmp.newDiv = new Element('div')
+						.update('<strong>All items saved successfully! Bill(s) generated as following:</strong>')
+						.insert({'bottom': tmp.billList = new Element('ul', {'class': 'list-inline'}) });
+					if(tmp.result.invoiceNos && tmp.result.invoiceNos.size() > 0) {
+						tmp.result.invoiceNos.each(function(invoiceNo){
+							tmp.billList.insert({'bottom': new Element('li').update( new Element('a', {'class': 'btn btn-success', 'href': '/bills/' + tmp.result.item.supplier.id + '/' + invoiceNo + '.html', 'target': '_BLANK'}).update(invoiceNo) ) })
+						})
+					}
 					if(tmp.result.outStandingOrders.size() > 0) {
-						tmp.newDiv = tmp.me._getOutStandingOrderPanel(tmp.result.outStandingOrders);
+						tmp.newDiv.insert({'bottom': tmp.me._getOutStandingOrderPanel(tmp.result.outStandingOrders) });
 					}
 					tmp.me.showModalBox('<strong class="text-success">Success!</strong>', tmp.newDiv, false, null,  {
 						'hide.bs.modal': function(){

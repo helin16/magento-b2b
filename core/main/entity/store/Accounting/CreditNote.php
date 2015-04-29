@@ -47,13 +47,13 @@ class CreditNote extends BaseEntityAbstract
 	private $totalValue = 0.0000;
 	/**
 	 * Total paid amount
-	 * 
+	 *
 	 * @var double
 	 */
 	private $totalPaid = 0.0000;
 	/**
 	 * shipping value of the creditnote
-	 * 
+	 *
 	 * @var double
 	 */
 	private $shippingValue = 0.0000;
@@ -263,7 +263,7 @@ class CreditNote extends BaseEntityAbstract
 	}
 	/**
 	 * Setter for shippingValue
-	 * 
+	 *
 	 * @param mixed $value The new value of shippingValue
 	 *
 	 * @return CreditNote
@@ -299,7 +299,7 @@ class CreditNote extends BaseEntityAbstract
 			foreach($items as $item)
 				$total += $item->getQty() * $item->getUnitPrice();
 			$this->setTotalValue($total + $this->getShippingValue());
-			
+
 			$payments = Payment::getAllByCriteria('creditNoteId = ?', array($this->getId()));
 			$totalPaid = 0;
 			foreach($payments as $payment)
@@ -377,6 +377,25 @@ class CreditNote extends BaseEntityAbstract
 	public function getCreditNoteItems()
 	{
 		return CreditNoteItem::getByCreditNote($this);
+	}
+	/**
+	 * crediting the full order
+	 */
+	public function creditFullOrder()
+	{
+		if(trim($this->getId()) === '')
+			throw new EntityException('To credit the full order, you need to create the CreditNote first!');
+		if(!$this->getOrder() instanceof Order)
+			return $this;
+		//deactivating the credit note items first.
+		CreditNoteItem::updateByCriteria('active = 0', 'creditNoteId = ?', array($this->getId()));
+		foreach($this->getOrder()->getOrderItems() as $orderItem) {
+			$this->addItemFromOrderItem($orderItem, $orderItem->getQtyOrdered(), $orderItem->getUnitPrice(), $orderItem->getItemDescription(), $orderItem->getUnitCost(), $orderItem->getTotalPrice());
+		}
+		$this->setShippingValue($this->getOrder()->getInfo(OrderInfoType::ID_MAGE_ORDER_SHIPPING_COST))
+			->setTotalValue($this->getOrder()->getTotalAmount())
+			->save();
+		return $this;
 	}
 	/**
 	 * (non-PHPdoc)

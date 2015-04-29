@@ -201,8 +201,7 @@ class DetailsController extends BPCPageAbstract
 				else $creditNote = CreditNote::create($customer, trim($param->CallbackParameter->description));
 			}
 			$creditNote->setShippingValue(isset($param->CallbackParameter->totalShippingCost) ? StringUtilsAbstract::getValueFromCurrency($param->CallbackParameter->totalShippingCost) : 0);
-			if(isset($param->CallbackParameter->shippingAddr))
-			{
+			if(isset($param->CallbackParameter->shippingAddr)) {
 				$shippAddress = Address::create(
 					$param->CallbackParameter->shippingAddr->street,
 					$param->CallbackParameter->shippingAddr->city,
@@ -219,13 +218,13 @@ class DetailsController extends BPCPageAbstract
 			if(isset($param->CallbackParameter->printIt))
 				$printItAfterSave = (intval($param->CallbackParameter->printIt) === 1 ? true : false);
 
-			if(isset($param->CallbackParameter->comments))
-			{
+			if(isset($param->CallbackParameter->comments)) {
 				$comments = trim($param->CallbackParameter->comments);
 				$creditNote->addComment($comments, Comments::TYPE_SALES);
 			}
-
 			$totalPaymentDue = $creditNote->getShippingValue();
+			$hasShippedItems = ($creditNote->getOrder() instanceof Order && (OrderItem::countByCriteria('orderId = ? and isShipped = 1', array($creditNote->getOrder()->getId())) > 0));
+			$creditNoteItemsMap = array();
 			foreach ($param->CallbackParameter->items as $item) {
 				if(!($product = Product::get(trim($item->product->id))) instanceof Product)
 					throw new Exception('Invalid Product passed in!');
@@ -251,18 +250,33 @@ class DetailsController extends BPCPageAbstract
 							:
 							CreditNoteItem::create($creditNote, $product, $qtyOrdered, $unitPrice, $itemDescription, $unitCost, $totalPrice)
 					);
-				switch(trim($item->stockData)) {
-					case 'StockOnHand': {
-						$product->returnedIntoSOH($qtyOrdered, $creditNoteItem->getUnitCost(), '', $creditNoteItem);
-						break;
+				if(intval($creditNoteItem->getActive()) === 1) {
+					if(!isset($creditNoteItemsMap[$product->getId()]))
+						$creditNoteItemsMap[$product->getId()] = 0;
+					$creditNoteItemsMap[$product->getId()] += $qtyOrdered;
+				}
+				//if we are not creating from a order, or there are shippments for this order then
+				if(!$creditNote->getOrder() instanceof Order || $hasShippedItems === true ) {
+					switch(trim($item->stockData)) {
+						case 'StockOnHand': {
+							$product->returnedIntoSOH($qtyOrdered, $creditNoteItem->getUnitCost(), '', $creditNoteItem);
+							break;
+						}
+						case 'StockOnRMA': {
+							$product->returnedIntoRMA($qtyOrdered, $creditNoteItem->getUnitCost(), '', $creditNoteItem);
+							break;
+						}
+						default: {
+							throw new Exception('System Error: NO where to transfer the stock: ' .trim($item->stockData) . ' for product(SKU=' . $product->getSku() . ').');
+						}
 					}
-					case 'StockOnRMA': {
-						$product->returnedIntoRMA($qtyOrdered, $creditNoteItem->getUnitCost(), '', $creditNoteItem);
-						break;
-					}
-					default: {
-						throw new Exception('System Error: NO where to transfer the stock: ' .trim($item->stockData) . ' for product(SKU=' . $product->getSku() . ').');
-					}
+				} else {
+					//revert all the picked stock
+					foreach(OrderItem::getAllByCriteria('ord_item.orderId = ? and ord_item.isPicked = 1', array($creditNote->getOrder()->getId())) as $orderItem)
+						$orderItem->getProduct()->picked(0 - $orderItem->getQtyOrdered(), 'UnPicked this item (SKU:' . $orderItem->getProduct()->getSku() . ') as of CreditNote(CreditNoteNo:' . $creditNote->getCreditNoteNo() . ')', $creditNoteItem);
+					$creditNote->getOrder()->setStatus(OrderStatus::get(OrderStatus::ID_CANCELLED))
+						->save()
+						->addComment('This order is now CANCELLED, because of full credit note(CreditNoteNo:<a href="/creditnote/' . $creditNote->getId() . '.html" target="_BLANK">' . $creditNote->getCreditNoteNo() . '</a>) is created.', Comments::TYPE_MEMO);
 				}
 			}
 
@@ -273,6 +287,48 @@ class DetailsController extends BPCPageAbstract
 			$creditNote->setTotalValue($totalPaymentDue)
 				->setApplyTo($applyTo)
 				->save();
+			//if need to check half credited orders
+			if($creditNote->getOrder() instanceof Order && $hasShippedItems === false) {
+				$orderItemMap = array();
+				foreach($order->getOrderItems() as $orderItem) {
+					$productId = $orderItem->getProduct()->getId();
+					if(!isset($orderItemMap[$productId]))
+						$orderItemMap[$productId] = 0;
+					$orderItemMap[$productId] += $orderItem->getQtyOrdered();
+				}
+				//figure out the difference
+				foreach($creditNoteItemsMap as $productId => $qty) {
+					if(isset($orderItemMap[$productId]) ) {
+						if($orderItemMap[$productId] <= $qty)//credited more than orderred
+							unset($orderItemMap[$productId]);
+						else  //credited less then ordered
+							$orderItemMap[$productId] = ($orderItemMap[$productId] - $qty);
+					}
+				}
+				$orderItemMap = array_filter($orderItemMap);
+				if(count($orderItemMap) > 0 ) { //there are difference
+					$creditNote->creditFullOrder();
+					$newOrder = Order::create($creditNote->getOrder()->getCustomer(),
+							$creditNote->getOrder()->getType(),
+							null,
+							'Spliting order because of partial credit note(CreditNoteNo:.' . $creditNote->getCreditNoteNo() . ')',
+							null,
+							$creditNote->getOrder()->getOrderDate(),
+							$creditNote->getOrder()->getIsFromB2B(),
+							$creditNote->getOrder()->getShippingAddr(),
+							$creditNote->getOrder()->getBillingAddr(),
+							$creditNote->getOrder()->getPassPaymentCheck(),
+							$creditNote->getOrder()->getPONo(),
+							$creditNote->getOrder()
+					);
+					$results['newOrder'] = $newOrder->getJson();
+					$creditNote->getOrder()->setStatus(OrderStatus::get(OrderStatus::ID_CANCELLED))
+						->save()
+						->addComment('This order is now CANCELLED, because of partial credit note(CreditNoteNo:<a href="/creditnote/' . $creditNote->getId() . '.html" target="_BLANK">' . $creditNote->getCreditNoteNo() . '</a>) is created. A new order <a href="/orderdetails/' . $newOrder->getId() . '.html?blanklayout=1">' . $newOrder->getOrderNo() . '<a> is created for the diference.', Comments::TYPE_MEMO);
+				}
+			}
+
+
 			$results['item'] = $creditNote->getJson();
 			$results['redirectURL'] = '/creditnote/'. $creditNote->getId() . '.html?' . $_SERVER['QUERY_STRING'];
 			if($printItAfterSave === true)

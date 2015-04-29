@@ -25,15 +25,17 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		tmp.row = new Element('tr', {'class': (tmp.isTitle === true ? '' : 'item_row')})
 			.store('data', row)
 			.insert({'bottom': new Element(tmp.tag, {'class': 'col-sm-2'}).update(tmp.isTitle === true ? 'SKU' :
-				new Element('a').update(row.product.sku)
-			) })
-			.insert({'bottom': new Element(tmp.tag, {'class': 'col-sm-3'}).update(tmp.isTitle === true ? 'Product' :
-				new Element('a').update(row.product.name)
+				new Element('div')
+					.insert({'bottom': new Element('div').update( new Element('a', {'href': '/products/' + row.product.id + '.html', 'target': '_BLANK'}).update(row.product.sku) ) })
+					.insert({'bottom': new Element('small').update(row.product.name) })
 			) })
 			.insert({'bottom': new Element(tmp.tag, {'class': 'col-sm-1 text-center'}).update(tmp.isTitle === true ? 'Qty' : row.totalQty) })
 			.insert({'bottom': new Element(tmp.tag, {'class': 'col-sm-1'}).update(tmp.isTitle === true ? 'Unit Price' : tmp.me.getCurrency(row.totalPrice)) })
 			.insert({'bottom': new Element(tmp.tag, {'class': 'col-sm-1'}).update(tmp.isTitle === true ? 'Total Price' : tmp.me.getCurrency(row.totalPrice * row.totalQty)) })
-			.insert({'bottom': new Element(tmp.tag, {'class': 'col-sm-4'}).update(tmp.isTitle === true ? 'Serial No.' :
+			.insert({'bottom': new Element(tmp.tag, {'class': 'col-sm-2'}).update(tmp.isTitle === true ? 'PurchaseOrders' :
+				tmp.poList = new Element('ul', {'class': 'list-inline'})
+			) })
+			.insert({'bottom': new Element(tmp.tag, {'class': 'col-sm-5'}).update(tmp.isTitle === true ? 'Serial No.' :
 				tmp.serialNoList = new Element('ul', {'class': 'list-inline'})
 			) });
 		if(row.items && tmp.serialNoList) {
@@ -41,15 +43,31 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 				tmp.serialNoList.insert({'bottom': new Element('li').update(item.serialNo) });
 			});
 		}
+		if(row.purchaseOrders && tmp.poList) {
+			row.purchaseOrders.each(function(po){
+				tmp.poList.insert({'bottom': new Element('li').update( new Element('a', {'href': '/purchase/' + po.id + '.html', 'target': '_BLANK'}).update(po.purchaseOrderNo) ) });
+			});
+		}
 		return tmp.row;
 	}
-	,_getSummaryPanel: function(supplier, invoiceNo) {
+	,_getSummaryPanel: function(supplier, invoiceNo, purchaseOrders) {
 		var tmp = {};
 		tmp.newDiv = new Element('div',{'class': 'panel panel-default'})
 			.insert({'bottom': new Element('div', {'class': 'panel-body'})
-				.insert({'bottom': new Element('h3').update('Invoice No.:' + invoiceNo) })
-				.insert({'bottom': new Element('div').update('Supplier:' + supplier.name) })
+				.insert({'bottom': new Element('h3').update('Invoice No.: ' + invoiceNo) })
+				.insert({'bottom': new Element('div').update('Supplier: ' + supplier.name) })
+				.insert({'bottom': new Element('div', {'class': 'row'})
+					.insert({'bottom': new Element('div', {'class': 'col-xs-2 text-right'}).update('Purchase Order(s): ') })
+					.insert({'bottom': new Element('div', {'class': 'col-xs-10'})
+						.insert({'bottom': tmp.poList = new Element('ul', {'class': 'list-inline'}) })
+					})
+				})
 			});
+		if(purchaseOrders && tmp.poList) {
+			$H(purchaseOrders).each(function(po){
+				tmp.poList.insert({'bottom': new Element('li').update( new Element('a', {'href': '/purchase/' + po.value.id + '.html', 'target': '_BLANK'}).update(po.value.purchaseOrderNo) ) });
+			});
+		}
 		return tmp.newDiv;
 	}
 	,getResults: function(reset, pageSize) {
@@ -74,12 +92,16 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 					if(!tmp.tbody)
 						$(tmp.resultDiv).insert({'bottom': tmp.tbody = new Element('tbody') });
 					tmp.totalPrice = 0;
+					tmp.purchaseOrders = {};
 					tmp.result.items.each(function(item) {
 						tmp.totalPrice += (item.totalPrice * item.totalQty);
 						tmp.tbody.insert({'bottom': tmp.me._getResultRow(item).addClassName('item_row').writeAttribute('item_id', item.id) });
+						item.purchaseOrders.each(function(po){
+							tmp.purchaseOrders[po.id] = po;
+						})
 					});
 					jQuery('.total-price').html(tmp.me.getCurrency(tmp.totalPrice));
-					jQuery('.summaryPanel').html(tmp.me._getSummaryPanel(tmp.result.supplier, tmp.me._preLoadData.invoiceNo));
+					jQuery('.summaryPanel').html(tmp.me._getSummaryPanel(tmp.result.supplier, tmp.me._preLoadData.invoiceNo, tmp.purchaseOrders));
 				} catch (e) {
 					tmp.resultDiv.insert({'bottom': tmp.me.getAlertBox('Error', e).addClassName('alert-danger') });
 				}

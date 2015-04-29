@@ -58,7 +58,8 @@ class Controller extends CRUDPageAbstract
 			$sql = 'select ri.productId,
 						sum(ri.qty) `qty`,
 						sum(ri.unitPrice) `price`,
-						group_concat(distinct ri.id) `itemIds`
+						group_concat(distinct ri.id) `itemIds`,
+						group_concat(distinct po.id) `poIds`
 					from receivingitem ri
 					inner join purchaseorder po on (po.id = ri.purchaseOrderId)
 					where ri.active = 1 and ri.invoiceNo = ? and po.supplierId = ?
@@ -70,11 +71,13 @@ class Controller extends CRUDPageAbstract
 			foreach($rows as $row)
 			{
 				$items = count($itemIds = explode(',', $row['itemIds'])) === 0 ? array() : ReceivingItem::getAllByCriteria('id in (' . implode(',', array_fill(0, count($itemIds), '?')) . ')', $itemIds);
+				$pos = count($poIds = explode(',', $row['poIds'])) === 0 ? array() : PurchaseOrder::getAllByCriteria('id in (' . implode(',', array_fill(0, count($poIds), '?')) . ')', $poIds);
 				$results['items'][] = array(
 					'product' => Product::get($row['productId'])->getJson(),
 					'totalQty' => $row['qty'],
 					'totalPrice' => $row['price'],
-					'items' => array_map(create_function('$a', 'return $a->getJson();'), $items)
+					'items' => array_map(create_function('$a', 'return $a->getJson();'), $items),
+					'purchaseOrders' => array_map(create_function('$a', 'return $a->getJson();'), $pos)
 				);
 			}
 		}

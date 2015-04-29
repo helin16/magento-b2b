@@ -116,11 +116,11 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 			.insert({'bottom': new Element('div', {'class': 'panel-heading'})
 				.insert({'bottom': new Element('strong').update('Invoice Number(s)') })
 			})
-			.insert({'bottom': new Element('table', {'class': 'table'})
-				.insert({'bottom': tmp.tr =  new Element('tr')})
-			 });
-		tmp.me._purchaseorder.supplierInvoices.each(function(item){
-			tmp.tr.insert({'bottom': new Element('td').update(item)});
+			.insert({'bottom': new Element('div', {'class': 'panel-body'})
+				.insert({'bottom': tmp.list = new Element('ul', {'class': 'list-inline'})  })
+			});
+		tmp.me._purchaseorder.supplierInvoices.each(function(invoiceNo){
+			tmp.list.insert({'bottom': new Element('li').update( new Element('a', {'href': '/bills/' + tmp.me._purchaseorder.supplier.id + '/' + invoiceNo + '.html', 'target': '_BLANK'}).update(invoiceNo) )});
 		})
 		return tmp.newDiv;
 	}
