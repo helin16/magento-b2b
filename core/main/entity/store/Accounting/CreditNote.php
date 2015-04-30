@@ -295,11 +295,10 @@ class CreditNote extends BaseEntityAbstract
 	{
 		if(trim($this->getId()) !== '') {
 			$items = CreditNoteItem::getAllByCriteria('creditNoteId = ?', array($this->getId()));
-			$total = 0;
+			$total = $this->getShippingValue();
 			foreach($items as $item)
-				$total += $item->getQty() * $item->getUnitPrice();
-			$this->setTotalValue($total + $this->getShippingValue());
-
+				$total = ($total * 1) + ($item->getTotalPrice() * 1);
+			$this->setTotalValue($total);
 			$payments = Payment::getAllByCriteria('creditNoteId = ?', array($this->getId()));
 			$totalPaid = 0;
 			foreach($payments as $payment)
@@ -325,16 +324,12 @@ class CreditNote extends BaseEntityAbstract
 					->addLog($msg, Log::TYPE_SYSTEM, 'AUTO', __CLASS__ . '::' . __FUNCTION__);
 			}
 		}
-		if($this->order instanceof Order)
-		{
+		if($this->getOrder() instanceof Order) {
 			$totalCreditNoteValue = 0;
-			foreach (CreditNote::getAllByCriteria('cn.orderId = ?', array($this->order->getId())) as $creditNote)
-			{
-				if($creditNote->getTotalValue() >= 0)
-					$totalCreditNoteValue += $creditNote->getTotalValue();
-				else throw new Exception('Credit Note (id=' . $creditNote->getId() . ') has a negative total value.');
-				$this->order->setTotalCreditNoteValue($totalCreditNoteValue)->save();
+			foreach (CreditNote::getAllByCriteria('cn.orderId = ?', array($this->getOrder()->getId())) as $creditNote) {
+				$totalCreditNoteValue += $creditNote->getTotalValue();
 			}
+			$this->getOrder()->setTotalCreditNoteValue($totalCreditNoteValue)->save();
 		}
 	}
 	/**
@@ -389,10 +384,12 @@ class CreditNote extends BaseEntityAbstract
 			return $this;
 		//deactivating the credit note items first.
 		CreditNoteItem::updateByCriteria('active = 0', 'creditNoteId = ?', array($this->getId()));
+		$this->items = array();
 		foreach($this->getOrder()->getOrderItems() as $orderItem) {
 			$this->addItemFromOrderItem($orderItem, $orderItem->getQtyOrdered(), $orderItem->getUnitPrice(), $orderItem->getItemDescription(), $orderItem->getUnitCost(), $orderItem->getTotalPrice());
 		}
-		$this->setShippingValue($this->getOrder()->getInfo(OrderInfoType::ID_MAGE_ORDER_SHIPPING_COST))
+		$shippingCosts = $this->getOrder()->getInfo(OrderInfoType::ID_MAGE_ORDER_SHIPPING_COST);
+		$this->setShippingValue(count($shippingCosts) > 0 ? $shippingCosts[0] : 0)
 			->setTotalValue($this->getOrder()->getTotalAmount())
 			->save();
 		return $this;

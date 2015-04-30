@@ -274,9 +274,6 @@ class DetailsController extends BPCPageAbstract
 					//revert all the picked stock
 					foreach(OrderItem::getAllByCriteria('ord_item.orderId = ? and ord_item.isPicked = 1', array($creditNote->getOrder()->getId())) as $orderItem)
 						$orderItem->getProduct()->picked(0 - $orderItem->getQtyOrdered(), 'UnPicked this item (SKU:' . $orderItem->getProduct()->getSku() . ') as of CreditNote(CreditNoteNo:' . $creditNote->getCreditNoteNo() . ')', $creditNoteItem);
-					$creditNote->getOrder()->setStatus(OrderStatus::get(OrderStatus::ID_CANCELLED))
-						->save()
-						->addComment('This order is now CANCELLED, because of full credit note(CreditNoteNo:<a href="/creditnote/' . $creditNote->getId() . '.html" target="_BLANK">' . $creditNote->getCreditNoteNo() . '</a>) is created.', Comments::TYPE_MEMO);
 				}
 			}
 
@@ -287,6 +284,7 @@ class DetailsController extends BPCPageAbstract
 			$creditNote->setTotalValue($totalPaymentDue)
 				->setApplyTo($applyTo)
 				->save();
+			
 			//if need to check half credited orders
 			if($creditNote->getOrder() instanceof Order && $hasShippedItems === false) {
 				$orderItemMap = array();
@@ -321,10 +319,26 @@ class DetailsController extends BPCPageAbstract
 							$creditNote->getOrder()->getPONo(),
 							$creditNote->getOrder()
 					);
+					foreach($orderItemMap as $productId => $qty) {
+						$orderItems = OrderItem::getAllByCriteria('productId = ? and orderId = ?', array($productId, $creditNote->getOrder()->getId()), true, 1, 1);
+						if(count($orderItems) >0)
+							$newOrder->addItem($orderItems[0]->getProduct(), 
+									$orderItems[0]->getUnitPrice(), 
+									$qty, 
+									$orderItems[0]->getTotalPrice(), 
+									$orderItems[0]->getMageOrderId(), 
+									$orderItems[0]->getEta(), 
+									$orderItems[0]->getItemDescription()
+							);
+					}
 					$results['newOrder'] = $newOrder->getJson();
 					$creditNote->getOrder()->setStatus(OrderStatus::get(OrderStatus::ID_CANCELLED))
 						->save()
-						->addComment('This order is now CANCELLED, because of partial credit note(CreditNoteNo:<a href="/creditnote/' . $creditNote->getId() . '.html" target="_BLANK">' . $creditNote->getCreditNoteNo() . '</a>) is created. A new order <a href="/orderdetails/' . $newOrder->getId() . '.html?blanklayout=1">' . $newOrder->getOrderNo() . '<a> is created for the diference.', Comments::TYPE_MEMO);
+						->addComment('This order is now CANCELLED, because of partial credit note(CreditNoteNo:<a href="/creditnote/' . $creditNote->getId() . '.html" target="_BLANK">' . $creditNote->getCreditNoteNo() . '</a>) is created. A new order <a href="/orderdetails/' . $newOrder->getId() . '.html?blanklayout=1">' . $newOrder->getOrderNo() . '</a> is created for the diference.', Comments::TYPE_MEMO);
+				} else {
+					$creditNote->getOrder()->setStatus(OrderStatus::get(OrderStatus::ID_CANCELLED))
+						->save()
+						->addComment('This order is now CANCELLED, because of full credit note(CreditNoteNo:<a href="/creditnote/' . $creditNote->getId() . '.html" target="_BLANK">' . $creditNote->getCreditNoteNo() . '</a>) is created.', Comments::TYPE_MEMO);
 				}
 			}
 
