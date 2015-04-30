@@ -48,7 +48,10 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					tmp.me.disableAll();
 					tmp.modalBoxTitlePanel.update('<strong class="text-success">Success!</strong>');
 					tmp.succDiv = new Element('div', {'class': 'panel'})
-						.insert({'bottom': new Element('h4', {'class': 'text-success'}).update('Saved Successfully.') })
+						.insert({'bottom': new Element('h4', {'class': 'text-success'}).update('CreditNote (No.: ' + tmp.result.item.creditNoteNo + ') Saved Successfully.') })
+						.insert({'bottom': tmp.me.getAlertBox('Note: ', 'The original ' + tmp.result.item.order.type + '(<a href="/orderdetails/' + tmp.result.item.order.id + '.html" target="_BLANK">' + tmp.result.item.order.orderNo + '</a>) is now CANCELED. '
+							+ (tmp.result.newOrder && tmp.result.newOrder.id ? 'As a result of a partial credit for a order, a new order(<a href="/orderdetails/' + tmp.result.newOrder.id + '.html" target="_BLANK">' + tmp.result.newOrder.orderNo + '</a>)  is created with the remaining items.' : '')
+						).addClassName('alert-danger') })
 						.insert({'bottom': new Element('div').update(new Element('div', {'class': 'btn btn-primary col-xs-6 col-xs-offset-3'})
 							.update('OK')
 							.observe('click', function(){
