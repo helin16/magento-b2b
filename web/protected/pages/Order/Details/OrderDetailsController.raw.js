@@ -1119,6 +1119,17 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				})
 				.insert({'bottom': new Element('a', {'class': 'list-group-item'}).setStyle('padding: 3px 0px;')
 					.insert({'bottom': new Element('div', {'class': 'row'})
+						.insert({'bottom': new Element('div', {'class': 'col-xs-4 text-right'}).update('<strong><small>Total Credit Value:</small></strong>') })
+						.insert({'bottom': new Element('div', {'class': 'col-xs-8'}).update(
+								new Element('a', {'class': 'text-danger', 'href': '/creditnote.html?orderid='+ tmp.me._order.id, 'target': '_BLANK'}).update(
+									tmp.me.getCurrency(tmp.me._order.totalCreditNoteValue)
+								)
+							)
+						})
+					})
+				})
+				.insert({'bottom': new Element('a', {'class': 'list-group-item'}).setStyle('padding: 3px 0px;')
+					.insert({'bottom': new Element('div', {'class': 'row'})
 						.insert({'bottom': new Element('div', {'class': 'col-xs-4 text-right'}).update('<strong><small>Total Paid Incl. GST:</small></strong>') })
 						.insert({'bottom': new Element('div', {'class': 'col-xs-8'}).update( tmp.me.getCurrency(tmp.me._order.totalPaid) ) })
 					})
@@ -1136,6 +1147,34 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					})
 				})
 			});
+		return tmp.newDiv;
+	}
+	,_getChildrenOrderListPanel: function() {
+		var tmp = {};
+		tmp.me = this;
+		tmp.newDiv = new Element('div')
+			.insert({'bottom': tmp.list = new Element('ul', {'class': 'list-inline'})
+				.insert({'bottom': new Element('li').update('<strong>Orders Cloned from this order:</strong>') })
+			});
+		tmp.me._order.childrenOrders.each(function(order){
+			tmp.list.insert({'bottom': new Element('li')
+				.insert({'bottom': new Element('a', {'class': 'btn btn-primary btn-xs', 'href': '/orderdetails/' + order.id + '.html', 'target': '_BLANK'}).update(order.orderNo) })
+			});
+		})
+		return tmp.newDiv;
+	}
+	,_getCreditNoteListPanel: function() {
+		var tmp = {};
+		tmp.me = this;
+		tmp.newDiv = new Element('div')
+		.insert({'bottom': tmp.list = new Element('ul', {'class': 'list-inline'})
+		.insert({'bottom': new Element('li').update('<strong>CreditNotes from this order:</strong>') })
+		});
+		tmp.me._order.creditNotes.each(function(creditNote){
+			tmp.list.insert({'bottom': new Element('li')
+				.insert({'bottom': new Element('a', {'class': 'btn btn-warning btn-xs', 'href': '/creditnote/' + creditNote.id + '.html', 'target': '_BLANK'}).update(creditNote.creditNoteNo) })
+			});
+		})
 		return tmp.newDiv;
 	}
 	/**
@@ -1169,6 +1208,8 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				.insert({'bottom': new Element('div', {'class': 'row'})
 					.insert({'bottom': new Element('div', {'class': 'col-sm-8'})
 						.insert({'bottom': tmp.me._getAddressPanel() }) 	//getting the address row
+						.insert({'bottom': tmp.me._getChildrenOrderListPanel() }) 	//getting children list
+						.insert({'bottom': tmp.me._getCreditNoteListPanel() }) 	//getting creditNote list
 					})
 					.insert({'bottom': new Element('div', {'class': 'col-sm-4'})
 						.insert({'bottom': tmp.me._getInfoPanel() })    	//getting the order info row
@@ -1190,7 +1231,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		$(tmp.me._resultDivId).store('CommentsDivJs', new CommentsDivJs(tmp.me, 'Order', tmp.me._order.id)._setDisplayDivId($(tmp.me._resultDivId).down('.comments-list-div')).render() );
 		$(tmp.me._resultDivId).down('.memo-panel').retrieve('lastMemoJs').load();
 		if(tmp.paymentsPanel.down('.panel-heading'))
-			tmp.paymentsPanel.down('.panel-heading').insert({'bottom': new Element('a', {'class': 'btn btn-danger btn-xs pull-right', 'href': '/creditnote/new.html?blanklayout=1&orderid=' + tmp.me._order.id}).update('Create CreditNote')})
+			tmp.paymentsPanel.down('.panel-heading').insert({'bottom': tmp.me._order.status.id == 2 ? '' : new Element('a', {'class': 'btn btn-danger btn-xs pull-right', 'href': '/creditnote/new.html?blanklayout=1&orderid=' + tmp.me._order.id}).update('Create CreditNote')})
 		tmp.me.paymentListPanelJs
 			.setAfterAddFunc(function() { window.location = document.URL; })
 			.setAfterDeleteFunc(function() { window.location = document.URL; })

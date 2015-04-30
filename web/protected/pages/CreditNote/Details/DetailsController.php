@@ -50,6 +50,8 @@ class DetailsController extends BPCPageAbstract
 			die('Invalid Order passed in!');
 		if($order instanceof Order && $creditNote instanceof CreditNote && $creditNote->getOrder() instanceof Order && $creditNote->getOrder()->getId() !== $order->getId())
 			die('You can ONLY create NEW Credit Note from an existing ORDER');
+		if($order instanceof Order && intval($order->getStatus()->getId()) === OrderStatus::ID_CANCELLED)
+			die('You can NOT create a credit note against a CANCELED order(OrderNo: ' . $order->getOrderNo() . ')');
 		if($creditNote instanceof CreditNote)
 			$js .= "pageJs._creditNote=" . json_encode($creditNote->getJson(array('customer'=> $creditNote->getCustomer()->getJson(), 'items'=> array_map(create_function('$a', 'return $a->getJson(array("product"=>$a->getProduct()->getJson()));'), $creditNote->getCreditNoteItems())))) . ";";
 		if($order instanceof Order)
@@ -334,11 +336,11 @@ class DetailsController extends BPCPageAbstract
 					$results['newOrder'] = $newOrder->getJson();
 					$creditNote->getOrder()->setStatus(OrderStatus::get(OrderStatus::ID_CANCELLED))
 						->save()
-						->addComment('This ' . $creditNote->getOrder()->getType() . ' is now CANCELLED, because of partial credit note(CreditNoteNo:<a href="/creditnote/' . $creditNote->getId() . '.html" target="_BLANK">' . $creditNote->getCreditNoteNo() . '</a>) is created. A new ' . $newOrder->getType() . ' (<a href="/orderdetails/' . $newOrder->getId() . '.html?blanklayout=1">' . $newOrder->getOrderNo() . '</a>) is created for the diference.', Comments::TYPE_MEMO);
+						->addComment('This ' . $creditNote->getOrder()->getType() . ' is CANCELED, because of partial credit (CreditNoteNo:<a href="/creditnote/' . $creditNote->getId() . '.html" target="_BLANK">' . $creditNote->getCreditNoteNo() . '</a>) is created and a new ' . $newOrder->getType() . ' (<a href="/orderdetails/' . $newOrder->getId() . '.html?blanklayout=1">' . $newOrder->getOrderNo() . '</a>) is created for the diference.', Comments::TYPE_MEMO);
 				} else {
 					$creditNote->getOrder()->setStatus(OrderStatus::get(OrderStatus::ID_CANCELLED))
 						->save()
-						->addComment('This ' . $creditNote->getOrder()->getType() . ' is now CANCELLED, because of full credit note(CreditNoteNo:<a href="/creditnote/' . $creditNote->getId() . '.html" target="_BLANK">' . $creditNote->getCreditNoteNo() . '</a>) is created.', Comments::TYPE_MEMO);
+						->addComment('This ' . $creditNote->getOrder()->getType() . ' is CANCELED, because of full credit (CreditNoteNo:<a href="/creditnote/' . $creditNote->getId() . '.html" target="_BLANK">' . $creditNote->getCreditNoteNo() . '</a>) is created.', Comments::TYPE_MEMO);
 				}
 			}
 

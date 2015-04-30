@@ -49,7 +49,9 @@ class OrderDetailsController extends BPCPageAbstract
 		}
 		if(in_array(intval(Core::getRole()->getId()), array(Role::ID_SYSTEM_ADMIN, Role::ID_STORE_MANAGER, Role::ID_ACCOUNTING)))
 			$accounEdit = 'true';
-
+		$orderArray = $order->getJson();
+		$orderArray['childrenOrders'] = array_map(create_function('$a', 'return $a->getOrder()->getJson();'), OrderInfo::getAllByCriteria('typeId = ? and value = ?', array(OrderInfoType::ID_CLONED_FROM_ORDER_NO, trim($order->getOrderNo()))));
+		$orderArray['creditNotes'] = array_map(create_function('$a', 'return $a->getJson();'), CreditNote::getAllByCriteria('orderId = ?', array(trim($order->getId()))));
 		$orderStatuses = array_map(create_function('$a', 'return $a->getJson();'), OrderStatus::findAll());
 		$courierArray = array_map(create_function('$a', 'return $a->getJson();'), Courier::findAll());
 		$js .= 'pageJs';
@@ -64,7 +66,7 @@ class OrderDetailsController extends BPCPageAbstract
 			$js .= '.setCallbackId("changeShippingMethod", "' . $this->changeShippingMethodBtn->getUniqueID() . '")';
 			$js .= '.setCallbackId("updateSerials", "' . $this->updateSerialsBtn->getUniqueID() . '")';
 			$js .= '.setEditMode(' . $purchaseEdit . ', ' . $warehouseEdit . ', ' . $accounEdit . ', ' . $statusEdit . ')';
-			$js .= '.setOrder('. json_encode($order->getJson()) . ', ' . json_encode($orderItems) . ', ' . json_encode($orderStatuses) . ', ' . OrderStatus::ID_SHIPPED . ')';
+			$js .= '.setOrder('. json_encode($orderArray) . ', ' . json_encode($orderItems) . ', ' . json_encode($orderStatuses) . ', ' . OrderStatus::ID_SHIPPED . ')';
 			$js .= '.setCourier('. json_encode($courierArray) . ', ' . Courier::ID_LOCAL_PICKUP . ')';
 			$js .= '.setCommentType("'. Comments::TYPE_PURCHASING . '", "' . Comments::TYPE_WAREHOUSE . '")';
 			$js .= '.setOrderStatusIds(['. OrderStatus::ID_NEW . ', ' . OrderStatus::ID_INSUFFICIENT_STOCK . '], ['. OrderStatus::ID_ETA . ', ' . OrderStatus::ID_STOCK_CHECKED_BY_PURCHASING . ', ' . OrderStatus::ID_INSUFFICIENT_STOCK . '], ['. OrderStatus::ID_PICKED . '])';

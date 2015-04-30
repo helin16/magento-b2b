@@ -346,7 +346,7 @@ class Order extends InfoEntityAbstract
 	 */
 	public function getTotalDue()
 	{
-		return round($this->getTotalAmount() - $this->getTotalPaid(), 4);
+		return round($this->getTotalAmount() - $this->getTotalPaid() - $this->getTotalCreditNoteValue(), 4);
 	}
 	/**
 	 * Getter for shippingAddr

@@ -305,6 +305,8 @@ class CreditNote extends BaseEntityAbstract
 				$totalPaid += $payment->getValue();
 			$this->setTotalPaid($totalPaid);
 		} else  {
+			if($this->getOrder() instanceof Order && intval($this->getOrder()->getStatus()->getId()) === OrderStatus::ID_CANCELLED)
+				throw new EntityException('You can NOT create a credit note against a CANCELED order(OrderNo: ' . $this->getOrder()->getOrderNo() . ')');
 			$this->setTotalValue($this->getTotalValue() + $this->getShippingValue());
 		}
 	}
@@ -329,7 +331,10 @@ class CreditNote extends BaseEntityAbstract
 			foreach (CreditNote::getAllByCriteria('cn.orderId = ?', array($this->getOrder()->getId())) as $creditNote) {
 				$totalCreditNoteValue += $creditNote->getTotalValue();
 			}
-			$this->getOrder()->setTotalCreditNoteValue($totalCreditNoteValue)->save();
+			$this->getOrder()
+				->setTotalCreditNoteValue($totalCreditNoteValue)
+				->setMargin($this->getOrder()->getCalculatedTotalMargin() - $totalCreditNoteValue)
+				->save();
 		}
 	}
 	/**
