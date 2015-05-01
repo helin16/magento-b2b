@@ -79,7 +79,8 @@ class Menu extends TTemplateControl
 					'Locations' =>array('url' => '/locations.html', 'name' => 'Locations', 'icon' => '<span class="fa fa-arrows"></span>'),
 					'PreferLocationTypes' =>array('url' => '/locationtypes.html', 'name' => 'Prefer Location Types', 'icon' => '<span class="glyphicon glyphicon-tasks"></span>'),
 					'stockadjustment' => array('url' => '/stockadjustment.html', 'name' => 'Stock Adjustment', 'icon'=> '<span class=""></span>'),
-					'courier' => array('url' => '/courier.html', 'name' => 'Courier', 'icon'=> '<span class=""></span>')
+					'courier' => array('url' => '/courier.html', 'name' => 'Courier', 'icon'=> '<span class=""></span>'),
+					'Bill' =>array('url' => '/bills.html', 'name' => 'Supplier Invoices', 'icon' => '<span class="glyphicon glyphicon-usd"></span>')
 			);
 		if(AccessControl::canAccessUsersPage(Core::getRole()) )
 		{
