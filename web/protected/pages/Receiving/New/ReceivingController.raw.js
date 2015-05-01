@@ -346,6 +346,21 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.productListDiv.insert({'bottom': tmp.newDiv = tmp.me._getNewProductRow()});
 		return new Element('div', {'class': 'panel panel-warning'}).insert({'bottom':  tmp.productListDiv});
 	}
+	,_openReceivedItemsListPage: function(productId) {
+		var tmp = {};
+		tmp.me = this;
+		jQuery.fancybox({
+			'width'			: '95%',
+			'height'		: '95%',
+			'autoScale'     : false,
+			'autoDimensions': false,
+			'fitToView'     : false,
+			'autoSize'      : false,
+			'type'			: 'iframe',
+			'href'			: '/serialnumbers.html?blanklayout=1&productid=' + productId + '&purchaseorderid=' + tmp.me._purchaseOrder.id
+ 		});
+		return tmp.me;
+	}
 	/**
 	 * Getting each product row
 	 */
@@ -423,8 +438,14 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					.insert({'bottom': orderItem.product.name ? orderItem.product.name : orderItem.product.barcode })
 				})
 				.insert({'bottom': new Element('span', {'class': 'col-sm-1'})
-					.insert({'bottom': new Element('span', {'class': 'scannedQty'}).update(tmp.isTitle === true ? 'Qty': (!orderItem.product.id ? '' : (orderItem.product.purchaseOrderItem ? orderItem.product.purchaseOrderItem.receivedQty : 0))) })
-					.insert({'bottom': new Element('span', {'class': 'orderedQty'}).update(orderItem.product.purchaseOrderItem ? '/' + orderItem.product.purchaseOrderItem.qty : '') })
+					.insert({'bottom': new Element('a', {'href': 'javascript: void(0);'})
+						.insert({'bottom': new Element('span', {'class': 'scannedQty'}).update(tmp.isTitle === true ? 'Qty': (!orderItem.product.id ? '' : (orderItem.product.purchaseOrderItem ? orderItem.product.purchaseOrderItem.receivedQty : 0))) })
+						.insert({'bottom': new Element('span', {'class': 'orderedQty'}).update(orderItem.product.purchaseOrderItem ? '/' + orderItem.product.purchaseOrderItem.qty : '') })
+						.observe('click', function(){
+							if(orderItem.product.id && tmp.me._purchaseOrder.id)
+								tmp.me._openReceivedItemsListPage(orderItem.product.id);
+						})
+					})
 				})
 				.insert({'bottom': new Element('span', {'class': ' col-sm-2 EANcode'})
 					.update(orderItem.product.id ? tmp.EANcodeEl : orderItem.product.EANcode)
