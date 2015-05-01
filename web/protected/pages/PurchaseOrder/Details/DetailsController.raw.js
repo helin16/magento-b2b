@@ -117,7 +117,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 				.insert({'bottom': new Element('li').update(new Element('strong').update('Invoice Number(s): ')) })
 			});
 		tmp.me._purchaseorder.supplierInvoices.each(function(invoiceNo){
-			tmp.list.insert({'bottom': new Element('li').update( new Element('a', {'href': '/bills/' + tmp.me._purchaseorder.supplier.id + '/' + invoiceNo + '.html', 'target': '_BLANK'}).update(invoiceNo) )});
+			tmp.list.insert({'bottom': new Element('li').update( new Element('a', {'href': '/bills/' + tmp.me._purchaseorder.supplier.id + '.html?invoiceNo=' + invoiceNo, 'target': '_BLANK'}).update(invoiceNo) )});
 		})
 		return tmp.newDiv;
 	}

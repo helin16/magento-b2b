@@ -17,7 +17,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 			'fitToView'     : false,
 			'autoSize'      : false,
 			'type'			: 'iframe',
-			'href'			: '/bills/' + row.supplier.id + '/' + row.invoiceNo + '.html?blanklayout=1'
+			'href'			: '/bills/' + row.supplier.id + '.html?blanklayout=1&invoiceNo=' + row.invoiceNo
 			});
 		return tmp.me;
 }

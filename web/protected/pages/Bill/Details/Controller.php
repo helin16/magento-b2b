@@ -28,7 +28,7 @@ class Controller extends CRUDPageAbstract
 	protected function _getEndJs()
 	{
 		$js = parent::_getEndJs();
-		$preloadData = array('supplierId' => trim($this->Request['supplierId']), 'invoiceNo' => trim($this->Request['invoiceNo']));
+		$preloadData = array('supplierId' => trim($this->Request['supplierId']), 'invoiceNo' => (isset($_REQUEST['invoiceNo']) ? trim($this->Request['invoiceNo']) : ''));
 		$js .= "pageJs";
 		$js .= ".setPreloadData(" . json_encode($preloadData) .")";
 		$js .= ".getResults(true, " . $this->pageSize . ");";
