@@ -89,7 +89,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					$(tmp.searchPanel).insert({'bottom': new Element('small', {'class': 'table-responsive list-div'})
 						.insert({'bottom': new Element('table', {'class': 'table table-hover table-condensed'})
 							.insert({'bottom': new Element('thead')
-								.insert({'bottom': tmp.me._getPORow({'purchaseOrderNo': 'PO Number', 'supplier': {'name': 'Supplier'} , 'supplierRefNo': 'Supplier Ref', 'orderDate': 'Order Date', 'totalAmount': 'Total Amount', 'totalProdcutCount': 'Total Prodcut Count','status': 'Status', 'active': 'Active?'}, true)  })
+								.insert({'bottom': tmp.me._getPORow({'purchaseOrderNo': 'PO Number', 'supplier': {'name': 'Supplier'} , 'supplierRefNo': 'Supplier Ref', 'orderDate': 'Order Date', 'totalAmount': 'Total Amount', 'totalProductCount': 'Total Prodcut Count','status': 'Status', 'active': 'Active?'}, true)  })
 							})
 							.insert({'bottom': tmp.listDiv = new Element('tbody') })
 						})
@@ -126,7 +126,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			.insert({'bottom': new Element(tmp.tag).update(po.supplierRefNo) })
 			.insert({'bottom': new Element(tmp.tag).update(po.orderDate) })
 			.insert({'bottom': new Element(tmp.tag).update(po.totalAmount) })
-			.insert({'bottom': new Element(tmp.tag).update(po.totalProdcutCount) })
+			.insert({'bottom': new Element(tmp.tag).update(po.totalProductCount) })
 			.insert({'bottom': new Element(tmp.tag).update(po.status) })
 			.insert({'bottom': new Element(tmp.tag)
 				.insert({'bottom': (tmp.isTitle === true ? po.active : new Element('input', {'type': 'checkbox', 'disabled': true, 'checked': po.active}) ) })
@@ -205,11 +205,11 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 						})
 						.insert({'bottom': new Element('div', {'class': 'row'}).setStyle('border-bottom: 1px #ccc solid; padding: 4px 0;')
 							.insert({'bottom': new Element('div', {'class': 'col-xs-8  text-right'}).update('<strong>Total Received Value(Ex):</strong>') })
-							.insert({'bottom': new Element('div', {'class': 'col-xs-4', 'summary': 'total-recieved-value-ex'}).update(tmp.me.getCurrency(tmp.purchaseOrder.totalRecievedValue)) })
+							.insert({'bottom': new Element('div', {'class': 'col-xs-4', 'summary': 'total-recieved-value-ex'}).update(tmp.me.getCurrency(tmp.purchaseOrder.totalReceivedValue)) })
 						})
 						.insert({'bottom': new Element('div', {'class': 'row'}).setStyle('border-bottom: 1px #ccc solid; padding: 4px 0;')
 							.insert({'bottom': new Element('div', {'class': 'col-xs-8  text-right'}).update('<strong>Total Received Value(Inc):</strong>') })
-							.insert({'bottom': new Element('div', {'class': 'col-xs-4', 'summary': 'total-recieved-value'}).update(tmp.me.getCurrency(tmp.purchaseOrder.totalRecievedValue * 1.1)) })
+							.insert({'bottom': new Element('div', {'class': 'col-xs-4', 'summary': 'total-recieved-value'}).update(tmp.me.getCurrency(tmp.purchaseOrder.totalReceivedValue * 1.1)) })
 						})
 					})
 					.insert({'bottom': tmp.me._saveBtns().setStyle('padding: 4px 0;') })
@@ -354,7 +354,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.me = this;
 		tmp.isTitle = (isTitleRow || false);
 		tmp.EANcodeEl = new Element('div', {'class': 'form-group'} )
-			.insert({'bottom': new Element('input', {'class': 'form-control', 'save-item': 'EANcode', 'placeholder': 'EAN code', 'type': 'text', 'value': orderItem.product.codes ? (orderItem.product.codes.EAN ? orderItem.product.codes.EAN : '') : ''}) })
+			.insert({'bottom': new Element('input', {'class': 'form-control input-sm', 'save-item': 'EANcode', 'placeholder': 'EAN code', 'type': 'text', 'value': orderItem.product.codes ? (orderItem.product.codes.EAN ? orderItem.product.codes.EAN : '') : ''}) })
 			.observe('keydown', function(event){
 				tmp.txtBox = $(this);
 				tmp.me.keydown(event, function() {
@@ -373,7 +373,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				$(this).select();
 			});
 		tmp.UPCcodeEl = new Element('div', {'class': 'form-group'} )
-			.insert({'bottom': new Element('input', {'class': 'form-control', 'save-item': 'UPCcode', 'placeholder': 'UPC code', 'type': 'text', 'value': orderItem.product.codes ? (orderItem.product.codes.UPC ? orderItem.product.codes.UPC : '') : ''}) })
+			.insert({'bottom': new Element('input', {'class': 'form-control input-sm', 'save-item': 'UPCcode', 'placeholder': 'UPC code', 'type': 'text', 'value': orderItem.product.codes ? (orderItem.product.codes.UPC ? orderItem.product.codes.UPC : '') : ''}) })
 			.observe('keydown', function(event){
 				tmp.txtBox = $(this);
 				tmp.me.keydown(event, function() {
@@ -392,7 +392,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				$(this).select();
 			});
 		tmp.wareLocationEL = new Element('div', {'class': 'form-group'} )
-			.insert({'bottom': new Element('input', {'class': 'form-control', 'save-item': 'wareLocation', 'placeholder': 'Warehouse Location', 'type': 'text', 'value': orderItem.product.locations ? (orderItem.product.warehouseLocation ? orderItem.product.warehouseLocation : '') : ''}) })
+			.insert({'bottom': new Element('input', {'class': 'form-control input-sm', 'save-item': 'wareLocation', 'placeholder': 'Warehouse Location', 'type': 'text', 'value': orderItem.product.locations ? (orderItem.product.warehouseLocation ? orderItem.product.warehouseLocation : '') : ''}) })
 			.observe('keydown', function(event){
 				tmp.txtBox = $(this);
 				tmp.me.keydown(event, function() {
@@ -518,10 +518,10 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			.insert({'bottom': new Element(tmp.tag, {'class': 'btns'}).update(item.btns ? item.btns : '') });
 		return tmp.newDiv;
 	}
-	,_updateTotalRecievedValue: function() {
+	,_updatetotalReceivedValue: function() {
 		var tmp = {};
 		tmp.me = this;
-		tmp.totalScanedValue = 0;
+		tmp.totalScanedValue = tmp.me._purchaseOrder.totalReceivedValue;
 		$$('.scanned-item-row').each(function(item) {
 			tmp.qtyBox =item.down('[scanned-item="qty"]');
 			tmp.unitPriceBox =item.down('[scanned-item="unitPrice"]');
@@ -534,9 +534,10 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		jQuery('[summary="total-recieved-value"]').html(tmp.me.getCurrency(tmp.totalValueInc)).val(tmp.me.getCurrency(tmp.totalValueInc));
 		return tmp.me;
 	}
-	,_getScanTable: function(product) {
+	,_getScanTable: function(product, orderItem) {
 		var tmp = {};
 		tmp.me = this;
+		console.debug(orderItem);
 		tmp.table = new Element('table', {'class': 'table scanTable'})
 			.insert({'bottom': new Element('thead').update(tmp.me._getScanTableROW({'qty': 'Qty', 'serialNo': 'Serial No.', 'unitPrice': 'Unit Price (Ex)', 'invoiceNo': 'Inv. No.', 'comments': 'Comments', 'btns': ''}, true)) })
 			.insert({'bottom': new Element('tbody')
@@ -616,7 +617,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 												.observe('keyup',function(){
 													tmp.unitPriceBox = $(this);
 													if(!tmp.unitPriceBox.up('.scanned-item-row').hasClassName('new-scan-row'))
-														tmp.me._updateTotalRecievedValue();
+														tmp.me._updatetotalReceivedValue();
 												});
 
 											tmp.currentRow.insert({'after': tmp.newRow});
@@ -631,7 +632,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 												$(this).up('.item_row').down('.product-head-row .scannedQty').setStyle({color: 'red'});
 											else
 												$(this).up('.item_row').down('.product-head-row .scannedQty').setStyle({color: 'inherit'});
-											tmp.me._updateTotalRecievedValue();
+											tmp.me._updatetotalReceivedValue();
 										}
 									})
 							})
@@ -763,7 +764,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				}),
 				'qty': 0,
 			};
-		tmp.data.scanTable = tmp.me._getScanTable(tmp.data.product);
+		tmp.data.scanTable = tmp.me._getScanTable(tmp.data.product, tmp.data);
 		tmp.lastRow.replace(tmp.newRow = tmp.me._getProductRow(tmp.data, false) );
 
 		tmp.me._checkProduct(tmp.product, tmp.newRow.down('.product-head-row'));

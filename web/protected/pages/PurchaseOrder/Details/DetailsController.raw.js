@@ -112,12 +112,9 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 	,_getInvoiceNoPanel: function() {
 		var tmp = {};
 		tmp.me = this;
-		tmp.newDiv = new Element('div', {'class': 'panel panel-info'})
-			.insert({'bottom': new Element('div', {'class': 'panel-heading'})
-				.insert({'bottom': new Element('strong').update('Invoice Number(s)') })
-			})
-			.insert({'bottom': new Element('div', {'class': 'panel-body'})
-				.insert({'bottom': tmp.list = new Element('ul', {'class': 'list-inline'})  })
+		tmp.newDiv = new Element('div', {'class': 'well well-sm'})
+			.insert({'bottom': tmp.list = new Element('ul', {'class': 'list-inline'})
+				.insert({'bottom': new Element('li').update(new Element('strong').update('Invoice Number(s): ')) })
 			});
 		tmp.me._purchaseorder.supplierInvoices.each(function(invoiceNo){
 			tmp.list.insert({'bottom': new Element('li').update( new Element('a', {'href': '/bills/' + tmp.me._purchaseorder.supplier.id + '/' + invoiceNo + '.html', 'target': '_BLANK'}).update(invoiceNo) )});

@@ -40,8 +40,8 @@ class Controller extends CRUDPageAbstract
 		$js .= ".setCallbackId('deactivateItems', '" . $this->deactivateItemBtn->getUniqueID() . "')";
 		$js .= "._bindSearchKey()";
 		$js .= "._loadChosen()";
-		$js .= "._loadDataPicker()";
-		$js .= ".getResults(true, " . $this->pageSize . ");";
+		$js .= "._loadDataPicker();";
+		$js .= "$('searchBtn').click();";
 		return $js;
 	}
 	/**

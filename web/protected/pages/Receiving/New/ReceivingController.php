@@ -87,8 +87,8 @@ class ReceivingController extends BPCPageAbstract
 	private function _getPOJson(PurchaseOrder $po)
 	{
 		$array = $po->getJson();
-		$array['totalProdcutCount'] = $po->getTotalProductCount();
-		$array['totalRecievedValue'] = $po->getTotalRecievedValue();
+		$array['totalProductCount'] = $po->getTotalProductCount();
+		$array['totalReceivedValue'] = $po->getTotalRecievedValue();
 
 		$array['purchaseOrderItem'] = [];
 		foreach (PurchaseOrderItem::getAllByCriteria('po_item.purchaseOrderId = :purchaseOrderId', array('purchaseOrderId'=> $po->getId() )) as $purchaseOrderItem)
@@ -276,8 +276,7 @@ class ReceivingController extends BPCPageAbstract
 			}
 			$results['outStandingOrders'] = count($outStandingOrders) > 0 ? array_values($outStandingOrders) : array();
 			$results['item'] = PurchaseOrder::get($purchaseOrder->getId())->getJson();
-			array_unique($invoiceNos);
-			var_dump($invoiceNos);
+			$invoiceNos = array_unique($invoiceNos);
 			$results['invoiceNos'] = $invoiceNos;
 
 			Dao::commitTransaction();
