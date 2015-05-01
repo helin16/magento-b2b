@@ -92,6 +92,7 @@ class Controller extends CRUDPageAbstract
 					inner join purchaseorder po on (po.id = ri.purchaseOrderId)
 					where ' . implode(' AND ', $where) . '
 					group by po.supplierId,  ri.invoiceNo
+					order by ri.id desc
 					limit ' . ($pageNo - 1) * $pageSize . ', ' . $pageSize;
 			$rows = Dao::getResultsNative($sql, $params);
 
