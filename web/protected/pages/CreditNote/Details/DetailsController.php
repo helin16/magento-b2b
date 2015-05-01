@@ -225,7 +225,7 @@ class DetailsController extends BPCPageAbstract
 				$creditNote->addComment($comments, Comments::TYPE_SALES);
 			}
 			$totalPaymentDue = $creditNote->getShippingValue();
-			$hasShippedItems = ($creditNote->getOrder() instanceof Order && (OrderItem::countByCriteria('orderId = ? and isShipped = 1', array($creditNote->getOrder()->getId())) > 0));
+			$hasShipped = ($creditNote->getOrder() instanceof Order && (Shippment::countByCriteria('orderId = ?', array($creditNote->getOrder()->getId())) > 0));
 			$creditNoteItemsMap = array();
 			foreach ($param->CallbackParameter->items as $item) {
 				if(!($product = Product::get(trim($item->product->id))) instanceof Product)
@@ -258,7 +258,7 @@ class DetailsController extends BPCPageAbstract
 					$creditNoteItemsMap[$product->getId()] += $qtyOrdered;
 				}
 				//if we are not creating from a order, or there are shippments for this order then
-				if(!$creditNote->getOrder() instanceof Order || $hasShippedItems === true ) {
+				if(!$creditNote->getOrder() instanceof Order || $hasShipped === true ) {
 					switch(trim($item->stockData)) {
 						case 'StockOnHand': {
 							$product->returnedIntoSOH($qtyOrdered, $creditNoteItem->getUnitCost(), '', $creditNoteItem);
@@ -274,6 +274,9 @@ class DetailsController extends BPCPageAbstract
 					}
 				} else {
 					//revert all the picked stock
+					foreach(OrderItem::getAllByCriteria('ord_item.orderId = ? and ord_item.isShipped = 1', array($creditNote->getOrder()->getId())) as $orderItem)
+						$orderItem->getProduct()->shipped(0 - $orderItem->getQtyOrdered(), 'UnShipped this item (SKU:' . $orderItem->getProduct()->getSku() . ') as of CreditNote(CreditNoteNo:' . $creditNote->getCreditNoteNo() . ')', $creditNoteItem);
+					//revert all the picked stock
 					foreach(OrderItem::getAllByCriteria('ord_item.orderId = ? and ord_item.isPicked = 1', array($creditNote->getOrder()->getId())) as $orderItem)
 						$orderItem->getProduct()->picked(0 - $orderItem->getQtyOrdered(), 'UnPicked this item (SKU:' . $orderItem->getProduct()->getSku() . ') as of CreditNote(CreditNoteNo:' . $creditNote->getCreditNoteNo() . ')', $creditNoteItem);
 				}
@@ -288,7 +291,7 @@ class DetailsController extends BPCPageAbstract
 				->save();
 			
 			//if need to check half credited orders
-			if($creditNote->getOrder() instanceof Order && $hasShippedItems === false) {
+			if($creditNote->getOrder() instanceof Order && $hasShipped === false) {
 				$orderItemMap = array();
 				foreach($order->getOrderItems() as $orderItem) {
 					$productId = $orderItem->getProduct()->getId();
@@ -309,7 +312,7 @@ class DetailsController extends BPCPageAbstract
 				if(count($orderItemMap) > 0 ) { //there are difference
 					$creditNote->creditFullOrder();
 					$newOrder = Order::create($creditNote->getOrder()->getCustomer(),
-							$creditNote->getOrder()->getType(),
+							($creditNote->getOrder()->getType() === 'INVOICE' ? Order::TYPE_ORDER : $creditNote->getOrder()->getType()),
 							null,
 							'Spliting order because of partial credit note(CreditNoteNo:.' . $creditNote->getCreditNoteNo() . ') created',
 							null,
@@ -321,9 +324,11 @@ class DetailsController extends BPCPageAbstract
 							$creditNote->getOrder()->getPONo(),
 							$creditNote->getOrder()
 					)->addComment('Created because of partial credit from ');
+					$totalAmount = 0;
 					foreach($orderItemMap as $productId => $qty) {
 						$orderItems = OrderItem::getAllByCriteria('productId = ? and orderId = ?', array($productId, $creditNote->getOrder()->getId()), true, 1, 1);
 						if(count($orderItems) >0)
+							$totalAmount += $orderItems[0]->getUnitPrice() * $qty;
 							$newOrder->addItem($orderItems[0]->getProduct(), 
 									$orderItems[0]->getUnitPrice(), 
 									$qty, 
@@ -333,7 +338,15 @@ class DetailsController extends BPCPageAbstract
 									$orderItems[0]->getItemDescription()
 							);
 					}
-					$results['newOrder'] = $newOrder->getJson();
+					if(count($shippingMethods = $creditNote->getOrder()->getInfo(OrderInfoType::ID_MAGE_ORDER_SHIPPING_METHOD)) > 0)
+						$newOrder->addInfo(OrderInfoType::ID_MAGE_ORDER_SHIPPING_METHOD, $shippingMethods[0], true);
+					if(count($shippingCost = $creditNote->getOrder()->getInfo(OrderInfoType::ID_MAGE_ORDER_SHIPPING_COST)) > 0) {
+						$newOrder->addInfo(OrderInfoType::ID_MAGE_ORDER_SHIPPING_COST, $shippingCost[0], true);
+						$totalAmount +=	StringUtilsAbstract::getValueFromCurrency($shippingCost[0]);			
+					}
+					$results['newOrder'] = $newOrder->setTotalAmount($totalAmount)
+						->save()
+						->getJson();
 					$creditNote->getOrder()->setStatus(OrderStatus::get(OrderStatus::ID_CANCELLED))
 						->save()
 						->addComment('This ' . $creditNote->getOrder()->getType() . ' is CANCELED, because of partial credit (CreditNoteNo:<a href="/creditnote/' . $creditNote->getId() . '.html" target="_BLANK">' . $creditNote->getCreditNoteNo() . '</a>) is created and a new ' . $newOrder->getType() . ' (<a href="/orderdetails/' . $newOrder->getId() . '.html?blanklayout=1">' . $newOrder->getOrderNo() . '</a>) is created for the diference.', Comments::TYPE_MEMO);
