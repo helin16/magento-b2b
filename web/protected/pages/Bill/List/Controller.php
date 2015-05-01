@@ -86,7 +86,8 @@ class Controller extends CRUDPageAbstract
 						sum(ri.qty) `qty`,
 						sum(ri.unitPrice) `price`,
 						group_concat(distinct po.id) `poIds`,
-						group_concat(distinct ri.id) `itemIds`
+						group_concat(distinct ri.id) `itemIds`,
+						min(ri.created) `created`
 					from receivingitem ri
 					inner join purchaseorder po on (po.id = ri.purchaseOrderId)
 					where ' . implode(' AND ', $where) . '
@@ -98,7 +99,7 @@ class Controller extends CRUDPageAbstract
 			$statsResult = Dao::getSingleResultNative('select found_rows()', array(), PDO::FETCH_NUM);
 			$stats['totalRows'] = intval($statsResult[0]);
 			$stats['pageSize'] = $pageSize;
-			$stats['pageNo'] = $pageNo;
+			$stats['pageNumber'] = $pageNo;
 			$stats['totalPages'] = intval(ceil($stats['totalRows'] / $stats['pageSize']));
 
 			$results['items'] = array();
@@ -108,6 +109,7 @@ class Controller extends CRUDPageAbstract
 				$results['items'][] = array(
 					'invoiceNo' => $row['invoiceNo'],
 					'supplier' => Supplier::get($row['supplierId'])->getJson(),
+					'created' => $row['created'],
 					'totalQty' => $row['qty'],
 					'totalPrice' => $row['price'],
 					'purchaseOrders' => array_map(create_function('$a', 'return $a->getJson();'), $pos),
