@@ -72,6 +72,12 @@ class ListController extends CRUDPageAbstract
 				$params[] = $skuORid;
 				$params[] = $skuORid;
 			}
+			if(isset($serachCriteria['pro.id']) && ($productId = trim($serachCriteria['pro.id'])) !== '')
+			{
+				ProductQtyLog::getQuery()->eagerLoad('ProductQtyLog.product', 'inner join', 'pql_pro');
+				$where[] = '(pql_pro.id = ? )';
+				$params[] = $productId;
+			}
 			if(isset($serachCriteria['pql.createdDate_from']) && ($from = trim($serachCriteria['pql.createdDate_from'])) !== '')
 			{
 				$where[] = 'pql.created >= ?';
