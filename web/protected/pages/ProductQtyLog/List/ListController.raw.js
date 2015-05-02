@@ -12,22 +12,20 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 				, 'product': {'name': 'Product', 'sku': 'sku'}
 				};
 	}
-	,setPreData: function(from, to, productId) {
+	,setPreData: function(from, to, product) {
 		var tmp = {};
 		tmp.me = this;
 		tmp.from = (from || false);
 		tmp.to = (to || false);
-		tmp.productId = (productId || false);
+		tmp.product = (product || false);
 		if(tmp.from !== false)
 			$('searchDiv').down('[search_field="pql.createdDate_from"]').value = tmp.from.replace(/["']/g, "");
 		if(tmp.to !== false)
 			$('searchDiv').down('[search_field="pql.createdDate_to"]').value = tmp.to.replace(/["']/g, "");
-		if(tmp.productId !== false) {
-			$('searchDiv').down('[search_field="pql.product"]').value = tmp.productId.replace(/["']/g, "");
-			if($$('#showSearch').first().checked)
-				$$('#showSearch').first().click();
+		if(tmp.product !== false) {
+			jQuery('.select2[search_field="pro.id"]').select2('data', {"id": tmp.product.id, 'text': tmp.product.name, 'data': tmp.product}, true)
 		}
-		if(tmp.from || tmp.to || tmp.productId)
+		if(tmp.from || tmp.to || tmp.product)
 			$('searchPanel').down('#searchBtn').click();
 		return tmp.me;
 	}

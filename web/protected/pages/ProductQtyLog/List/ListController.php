@@ -36,7 +36,7 @@ class ListController extends CRUDPageAbstract
 		$js .= "pageJs";
 		$js .= "._bindSearchKey()";
 		$js .= "._loadDataPicker()";
-		$js .= ".setPreData(" . json_encode($from) . ", " . json_encode($to) . ", " . json_encode($productId) . ")";
+		$js .= ".setPreData(" . json_encode($from) . ", " . json_encode($to) . ", " . json_encode(Product::get($productId)->getJson()) . ")";
 		$js .= ";";
 		return $js;
 	}
