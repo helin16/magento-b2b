@@ -333,8 +333,8 @@ class DetailsController extends DetailsPageAbstract
 			if (!($status = ProductStatus::get(trim($param->CallbackParameter->statusId))) instanceof ProductStatus)
 				throw new Exception('Invalid Status!');
 			$sku = trim($param->CallbackParameter->sku);
-			if($sku === '' || Product::getBySku($sku) instanceof Product)
-				throw new Exception('Invalid SKU (' . $sku . ') passed in.');
+			if(!isset($param->CallbackParameter->id) && ($sku === '' || Product::getBySku($sku) instanceof Product))
+				throw new Exception('Invalid SKU (' . $sku . ') passed in OR already exist.');
 			$name = trim($param->CallbackParameter->name);
 			$shortDescription = trim($param->CallbackParameter->shortDescription);
 			$sellOnWeb = (trim($param->CallbackParameter->sellOnWeb) === '1');

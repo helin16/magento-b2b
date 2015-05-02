@@ -614,6 +614,19 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 			tmp.img.active= (element.readAttribute('active') === '1');
 			tmp.data.images.push(tmp.img);
 		});
+		// validate accounting codes
+		if(tmp.me._validateAccountingCode(tmp.data.assetAccNo) !== true) {
+			tmp.me.showModalBox('Notice', '<span class="text-warning">You <b>MUST</b> enter a valid <b>Asset Account Number</b>');
+			return;
+		}
+		if(tmp.me._validateAccountingCode(tmp.data.revenueAccNo) !== true) {
+			tmp.me.showModalBox('Notice', '<span class="text-warning">You <b>MUST</b> enter a valid <b>Revenue Account Number</b>');
+			return;
+		}
+		if(tmp.me._validateAccountingCode(tmp.data.costAccNo) !== true) {
+			tmp.me.showModalBox('Notice', '<span class="text-warning">You <b>MUST</b> enter a valid <b>Cost Account Number</b>');
+			return;
+		}
 		//submit all data
 		tmp.me.saveItem(btn, tmp.data, function(data){
 			if(!data.url)
@@ -624,6 +637,19 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 			window.location = data.url; 
 		});
 		return tmp.me;
+	}
+	,_validateAccountingCode: function(code) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.code = (code || false);
+		tmp.result = false;
+		
+		tmp.me._accountingCodes.each(function(item){
+			if(tmp.result === false && tmp.code === item.code)
+				tmp.result = true;
+		});
+		
+		return tmp.result;
 	}
 	/**
 	 * initiating the chosen input
@@ -740,7 +766,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 					.insert({'bottom': new Element('div', {'class': 'form-group form-group-sm'})
 						.insert({'bottom': new Element('label').update('Asset Account No.') })
 						.insert({'bottom': new Element('div', {'class': 'form-control chosen-container'}).setStyle("padding: 0px; height: 100%;")
-							.insert({'bottom': tmp.me._getAccCodeSelectEl('assetAccNo')})
+							.insert({'bottom': tmp.me._getAccCodeSelectEl('assetAccNo').writeAttribute('save-item', 'assetAccNo')})
 						})
 					})
 				})
@@ -748,7 +774,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 					.insert({'bottom': new Element('div', {'class': 'form-group form-group-sm'})
 						.insert({'bottom': new Element('label').update('Revenue Account No.') })
 						.insert({'bottom': new Element('div', {'class': 'form-control chosen-container'}).setStyle("padding: 0px; height: 100%;")
-							.insert({'bottom': tmp.me._getAccCodeSelectEl('revenueAccNo')})
+							.insert({'bottom': tmp.me._getAccCodeSelectEl('revenueAccNo').writeAttribute('save-item', 'revenueAccNo')})
 						})
 					})
 				})
@@ -756,7 +782,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 					.insert({'bottom': new Element('div', {'class': 'form-group form-group-sm'})
 						.insert({'bottom': new Element('label').update('Cost Account No.') })
 						.insert({'bottom': new Element('div', {'class': 'form-control chosen-container'}).setStyle("padding: 0px; height: 100%;")
-							.insert({'bottom': tmp.me._getAccCodeSelectEl('costAccNo')})
+							.insert({'bottom': tmp.me._getAccCodeSelectEl('costAccNo').writeAttribute('save-item', 'costAccNo')})
 						})
 					})
 				})
