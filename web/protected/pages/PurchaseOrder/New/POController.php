@@ -182,7 +182,8 @@ class POController extends BPCPageAbstract
 		$daoStart = false;
 		try
 		{
-			Dao::beginTransaction($param->CallbackParameter);
+			var_dump($param->CallbackParameter);
+			Dao::beginTransaction();
 			$daoStart = true;
 			$supplier = Supplier::get(trim($param->CallbackParameter->supplier->id));
 			if(!$supplier instanceof Supplier)
@@ -237,7 +238,7 @@ class POController extends BPCPageAbstract
 		{
 			if($daoStart === true)
 				Dao::rollbackTransaction();
-			$errors[] = $ex->getMessage();
+			$errors[] = $ex->getMessage() . "<pre>" . $ex->getTraceAsString() . "</pre>";
 		}
 		$param->ResponseData = StringUtilsAbstract::getJson($results, $errors);
 	}

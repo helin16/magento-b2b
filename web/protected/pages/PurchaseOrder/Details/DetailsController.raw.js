@@ -455,7 +455,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 					$(this).select();
 				})
 			)
-			,'qtyOrdered': tmp.me._getFormGroup( null, new Element('input', {'class': 'input-sm', 'new-order-item': 'qtyOrdered', 'required': 'Required!', 'value': '1'})
+			,'qtyOrdered': tmp.me._getFormGroup( null, new Element('input', {'class': 'input-sm', 'type': 'number', 'new-order-item': 'qtyOrdered', 'required': 'Required!', 'value': '1'})
 				.observe('keyup', function(){
 					tmp.row =$(this).up('.item_row');
 					tmp.unitPrice = tmp.me.getValueFromCurrency($F(tmp.row.down('[new-order-item=unitPrice]')));
@@ -623,7 +623,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		}
 		tmp.qtyOrderedBox = tmp.currentRow.down('[new-order-item=qtyOrdered]');
 		tmp.qtyOrdered = (typeof poItem === 'undefined') ? tmp.me.getValueFromCurrency($F(tmp.qtyOrderedBox)) : poItem.qty;
-		if(tmp.qtyOrdered.match(/^\d+(\.\d{1,2})?$/) === null) {
+		if(tmp.qtyOrdered.match(/^(-)?\d+(\.\d{1,2})?$/) === null) {
 			tmp.me._markFormGroupError(tmp.qtyOrderedBox, 'Invalid value provided!');
 			return ;
 		}

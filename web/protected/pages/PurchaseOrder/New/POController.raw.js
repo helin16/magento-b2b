@@ -681,7 +681,7 @@ POCreateJs.prototype = Object.extend(new BPCPageJs(), {
 					$(this).select();
 				})
 			)
-			,'qtyOrdered': tmp.me._getFormGroup( null, new Element('input', {'class': 'input-sm', 'new-order-item': 'qtyOrdered', 'required': 'Required!', 'value': '1'})
+			,'qtyOrdered': tmp.me._getFormGroup( null, new Element('input', {'class': 'input-sm', 'type': 'number', 'new-order-item': 'qtyOrdered', 'required': 'Required!', 'value': '1'})
 				.observe('keyup', function(){
 					tmp.row =$(this).up('.item_row');
 					tmp.unitPrice = tmp.me.getValueFromCurrency($F(tmp.row.down('[new-order-item=unitPrice]')));
