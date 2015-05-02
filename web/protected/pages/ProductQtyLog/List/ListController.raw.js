@@ -48,6 +48,41 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 				});
 			});
 		});
+		tmp.selectEl = new Element('input', {'class': 'select2 form-control', 'data-placeholder': 'search for a Products', 'search_field': 'pro.id'}).insert({'bottom': new Element('option').update('')});
+		$('searchDiv').down('[search_field="pro.id"]').replace(tmp.selectEl);
+		jQuery('.select2[search_field="pro.id"]').select2({
+			allowClear: true,
+			hidden: true,
+			multiple: false,
+			ajax: { url: "/ajax/getProducts",
+				dataType: 'json',
+				delay: 10,
+				data: function (params) {
+					return {
+						searchTxt: params, // search term
+						pageNo: 1,
+						pageSize: 10
+					};
+				},
+				results: function (data) {
+					tmp.result = [];
+					data.resultData.items.each(function(item){
+						tmp.result.push({"id": item.id, 'text': item.name, 'data': item});
+					})
+					return {
+						results:  tmp.result 
+					};
+				},
+				cache: true
+			},
+			formatResult : function(result) {
+				if(!result)
+					return '';
+				return '<div value=' + result.data.id + '>' + result.data.name + '</div >';
+			},
+			escapeMarkup: function (markup) { return markup; }, // let our custom formatter work
+			minimumInputLength: 3
+		});
 		return this;
 	}
 	,_getEditPanel: function(row) {
@@ -80,24 +115,24 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 						})
 					})
 				})
-			})
+			});
 		return tmp.newDiv;
 	}
 
-	,getTypeName: function(short) {
-		switch(short) {
-		case 'P':
-			return 'Purchase';
-		case 'S':
-			return 'Sales Order';
-		case 'AD':
-			return 'Stock Adjustment';
-		case 'SI':
-			return 'Internal Stock movement';
-		case 'Type':
-			return short; // Title
-		default:
-			return 'Invalid type!';
+	,getTypeName: function(shortName) {
+		switch(shortName) {
+			case 'P':
+				return 'Purchase';
+			case 'S':
+				return 'Sales Order';
+			case 'AD':
+				return 'Stock Adjustment';
+			case 'SI':
+				return 'Internal Stock movement';
+			case 'Type':
+				return shortName; // Title
+			default:
+				return 'Invalid type!';
 		}
 	}
 	,_loadDataPicker: function () {
@@ -117,7 +152,6 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		tmp.me = this;
 		tmp.tag = (!row.id ? 'th' : 'td');
 		tmp.isTitle = (isTitle || false);
-		console.debug(row);
 		tmp.link = '';
 		if(row.order && row.order.id) {
 			tmp.link = new Element('a', {'href': '/orderdetails/' + row.order.id + '.html', 'target': '_BLANK'}).update(row.order.orderNo);
