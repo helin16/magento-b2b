@@ -30,8 +30,8 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 					.insert({'bottom': new Element('small').update(row.product.name) })
 			) })
 			.insert({'bottom': new Element(tmp.tag, {'class': 'col-sm-1 text-center'}).update(tmp.isTitle === true ? 'Qty' : row.totalQty) })
-			.insert({'bottom': new Element(tmp.tag, {'class': 'col-sm-1'}).update(tmp.isTitle === true ? 'Unit Price' : tmp.me.getCurrency(row.totalPrice)) })
-			.insert({'bottom': new Element(tmp.tag, {'class': 'col-sm-1'}).update(tmp.isTitle === true ? 'Total Price' : tmp.me.getCurrency(row.totalPrice)) })
+			.insert({'bottom': new Element(tmp.tag, {'class': 'col-sm-1'}).update(tmp.isTitle === true ? 'Unit Price (Ex GST)' : tmp.me.getCurrency(row.totalPrice / row.totalQty)) })
+			.insert({'bottom': new Element(tmp.tag, {'class': 'col-sm-1'}).update(tmp.isTitle === true ? 'Total Price (Ex GST)' : tmp.me.getCurrency(row.totalPrice)) })
 			.insert({'bottom': new Element(tmp.tag, {'class': 'col-sm-2'}).update(tmp.isTitle === true ? 'PurchaseOrders' :
 				tmp.poList = new Element('ul', {'class': 'list-inline'})
 			) })
@@ -100,7 +100,8 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 							tmp.purchaseOrders[po.id] = po;
 						})
 					});
-					jQuery('.total-price').html(tmp.me.getCurrency(tmp.totalPrice));
+					jQuery('.total-price-ex').html(tmp.me.getCurrency(tmp.totalPrice));
+					jQuery('.total-price-inc').html(tmp.me.getCurrency(tmp.totalPrice * 1.1));
 					jQuery('.summaryPanel').html(tmp.me._getSummaryPanel(tmp.result.supplier, tmp.me._preLoadData.invoiceNo, tmp.purchaseOrders));
 				} catch (e) {
 					tmp.resultDiv.insert({'bottom': tmp.me.getAlertBox('Error', e).addClassName('alert-danger') });

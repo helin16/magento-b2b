@@ -10,8 +10,11 @@
 			<div class="panel panel-default">
 				<div class="panel-heading">
 					Found <label id="total-found-count">0</label> items(s) for:
-					<div class="col-xs-4 pull-right">
-						<span class="pull-right">Total: <span class="badge total-price">$0</span></span>
+					<div class="col-xs-2 pull-right">
+						<span class="pull-right">Total (inc GST): <span class="badge total-price-inc">$0</span></span>
+					</div>
+					<div class="col-xs-2 pull-right">
+						<span class="pull-right">Total (ex GST): <span class="badge total-price-ex">$0</span></span>
 					</div>
 				</div>
 				<div class="table-responsive">
