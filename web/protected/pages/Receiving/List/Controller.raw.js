@@ -162,7 +162,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 			.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-2'}).update(tmp.isTitle === true ? row.created : row.createdBy.person.fullname + ' @ ' + tmp.me.loadUTCTime(row.created).toLocaleString()) })
 			.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-1'}).update(tmp.isTitle === true ? '': new Element('div', {'class': 'btn-group'})
 				.insert({'bottom': new Element('span', {'class': 'btn btn-xs btn-danger'})
-					.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-remove'}) })
+					.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-trash'}) })
 					.observe('click', function() {
 						tmp.me._showDeleteConfirmPanel(row);
 					})
