@@ -42,7 +42,8 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 			.insert({'bottom': new Element(tmp.tag, {'class': 'col-sm-1'}).update(tmp.isTitle === true ? 'Created' : moment(tmp.me.loadUTCTime(row.created)).format('ll')) })
 			.insert({'bottom': new Element(tmp.tag, {'class': 'col-sm-2'}).update(tmp.isTitle === true ? 'Supplier' : row.supplier.name) })
 			.insert({'bottom': new Element(tmp.tag, {'class': 'col-sm-2'}).update(tmp.isTitle === true ? 'Total Qty' : row.totalQty) })
-			.insert({'bottom': new Element(tmp.tag, {'class': 'col-sm-2'}).update(tmp.isTitle === true ? 'Total Price' : tmp.me.getCurrency(row.totalPrice)) })
+			.insert({'bottom': new Element(tmp.tag, {'class': 'col-sm-2'}).update(tmp.isTitle === true ? 'Total Price(ex GST)' : tmp.me.getCurrency(row.totalPrice)) })
+			.insert({'bottom': new Element(tmp.tag, {'class': 'col-sm-2'}).update(tmp.isTitle === true ? 'Total Price(inc GST)' : tmp.me.getCurrency(row.totalPrice * 1.1)) })
 			.insert({'bottom': new Element(tmp.tag, {'class': 'col-sm-4'}).update(tmp.isTitle === true ? 'Purchase Orders' :
 				tmp.purchaseOrderList = new Element('ul', {'class': 'list-inline'})
 			) });
