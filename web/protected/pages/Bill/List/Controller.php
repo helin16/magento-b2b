@@ -84,7 +84,7 @@ class Controller extends CRUDPageAbstract
 			$sql = 'select sql_calc_found_rows ri.invoiceNo,
 						po.supplierId,
 						sum(ri.qty) `qty`,
-						sum(ri.unitPrice) `price`,
+						sum(ri.unitPrice * ri.qty) `price`,
 						group_concat(distinct po.id) `poIds`,
 						group_concat(distinct ri.id) `itemIds`,
 						min(ri.created) `created`
