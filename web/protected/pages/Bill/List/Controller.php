@@ -29,6 +29,7 @@ class Controller extends CRUDPageAbstract
 	{
 		$js = parent::_getEndJs();
 		$js .= "pageJs";
+		$js .= ".setCallbackId('updateInvoiceNo', '" . $this->updateInvoiceNoBtn->getUniqueID() . "')";
 		$js .= ".init()";
 		$js .= ".getResults(true, " . $this->pageSize . ");";
 		return $js;
@@ -119,6 +120,35 @@ class Controller extends CRUDPageAbstract
 				);
 			}
 			$results['pageStats'] = $stats;
+		}
+		catch(Exception $ex)
+		{
+			$errors[] = $ex->getMessage();
+		}
+		$param->ResponseData = StringUtilsAbstract::getJson($results, $errors);
+	}
+	/**
+	 * updateInvoiceNo
+	 *
+	 * @param unknown $sender
+	 * @param unknown $param
+	 * @throws Exception
+	 *
+	 */
+	public function updateInvoiceNo($sender, $param)
+	{
+		$results = $errors = array();
+		try
+		{
+			if(!isset($param->CallbackParameter->supplierId) || !($supplier = Supplier::get(trim($param->CallbackParameter->supplierId))) instanceof Supplier)
+				throw new Exception('Invalid Supplier provided.');
+			if(!isset($param->CallbackParameter->newInoviceNo) || ($newInoviceNo = trim($param->CallbackParameter->newInoviceNo)) === '')
+				throw new Exception('Invalid newInoviceNo.');
+			if(!isset($param->CallbackParameter->oldInvoiceNo))
+				throw new Exception('Invalid oldInvoiceNo.');
+			$oldInvoiceNo = trim($param->CallbackParameter->oldInvoiceNo);
+			ReceivingItem::updateByCriteria('invoiceNo = :newInvoiceNo', 'invoiceNo = :oldInvoiceNo and purchaseOrderId in (select po.id from purchaseorder po where po.active = 1 and po.supplierId = :supplierId)', 
+					array('newInvoiceNo' => $newInoviceNo, 'oldInvoiceNo' => $oldInvoiceNo, 'supplierId' => $supplier->getId()));
 		}
 		catch(Exception $ex)
 		{
