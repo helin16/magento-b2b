@@ -18,9 +18,59 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 			'autoSize'      : false,
 			'type'			: 'iframe',
 			'href'			: '/bills/' + row.supplier.id + '.html?blanklayout=1&invoiceNo=' + row.invoiceNo
-			});
+		});
 		return tmp.me;
-}
+	}
+	,_getShowInvoiceNoDiv: function(row) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.newDiv = new Element('div', {'class': 'inovice-input-div'})
+			.insert({'bottom': new Element('a', {'href': 'javascript: void(0);'})
+				.update(row.invoiceNo)
+				.observe('click', function() {
+					tmp.me._openDetailsPage(row);
+				})
+			})
+			.insert({'bottom': new Element('span', {'class': 'btn btn-default btn-xs pull-right'})
+				.update('edit')
+				.observe('click', function() {
+					$(this).up('.inovice-input-div').update(tmp.newInput = tmp.me._getInvoiceNoInputBox(row));
+					tmp.newInput.select();
+				})
+			});
+		return tmp.newDiv;
+	}
+	,_getInvoiceNoInputBox: function(row) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.newDiv = new Element('div')
+			.insert({'bottom': new Element('input', {'class': 'form-control input-sm', 'value': row && row.invoiceNo ? row.invoiceNo : ''}) 
+				.observe('change', function() {
+					tmp.inputBox = $(this);
+					tmp.newInvoiceNo = $F(tmp.inputBox);
+					if(tmp.newInvoiceNo.blank()) {
+						alert('Invoice No. can NOT be empty!');
+						return;
+					}
+					tmp.me.postAjax(tmp.me.getCallbackId('updateInvoiceNo'), {'oldInvoiceNo': row.invoiceNo, 'newInoviceNo': tmp.newInvoiceNo, 'supplierId': row.supplier.id}, {
+						'onLoading': function() {}
+						,'onSuccess': function(sender, param){
+							try {
+								tmp.result = tmp.me.getResp(param, false, true);
+								if(!tmp.result)
+									return;
+								row.invoiceNo = tmp.newInvoiceNo;
+								$(tmp.inputBox).up('.inovice-input-div').replace(tmp.me._getShowInvoiceNoDiv(row));
+							} catch (e) {
+								tmp.me.showModalBox('<strong class="text-danger">Error</strong>', new Element('h3').update(e));
+							}
+						}
+						,'onComplete': function(){}
+					});
+				})
+			});
+		return tmp.newDiv;
+	}
 	/**
 	 * Getting each row for displaying the result list
 	 */
@@ -32,13 +82,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 
 		tmp.row = new Element('tr', {'class': (tmp.isTitle === true ? '' : 'item_row')})
 			.store('data', row)
-			.insert({'bottom': new Element(tmp.tag, {'class': 'col-sm-1'}).update(tmp.isTitle === true ? 'Inv. No.' :
-				new Element('a', {'href': 'javascript: void(0);'})
-					.update(row.invoiceNo)
-					.observe('click', function() {
-						tmp.me._openDetailsPage(row);
-					})
-			) })
+			.insert({'bottom': new Element(tmp.tag, {'class': 'col-sm-1'}).update(tmp.isTitle === true ? 'Inv. No.' : tmp.me._getShowInvoiceNoDiv(row) ) })
 			.insert({'bottom': new Element(tmp.tag, {'class': 'col-sm-1'}).update(tmp.isTitle === true ? 'Created' : moment(tmp.me.loadUTCTime(row.created)).format('ll')) })
 			.insert({'bottom': new Element(tmp.tag, {'class': 'col-sm-2'}).update(tmp.isTitle === true ? 'Supplier' : row.supplier.name) })
 			.insert({'bottom': new Element(tmp.tag, {'class': 'col-sm-2'}).update(tmp.isTitle === true ? 'Total Qty' : row.totalQty) })
