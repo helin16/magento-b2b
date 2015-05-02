@@ -613,7 +613,7 @@ POCreateJs.prototype = Object.extend(new BPCPageJs(), {
 		}
 		tmp.qtyOrderedBox = tmp.currentRow.down('[new-order-item=qtyOrdered]');
 		tmp.qtyOrdered = (typeof poItem === 'undefined') ? tmp.me.getValueFromCurrency($F(tmp.qtyOrderedBox)) : poItem.qty;
-		if(tmp.qtyOrdered.match(/^\d+(\.\d{1,2})?$/) === null) {
+		if(tmp.qtyOrdered.match(/^(-)?\d+(\.\d{1,2})?$/) === null) {
 			tmp.me._markFormGroupError(tmp.qtyOrderedBox, 'Invalid value provided!');
 			return ;
 		}
