@@ -445,18 +445,8 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					tmp.result = tmp.me.getResp(param, false, true);
 					if(!tmp.result || !tmp.result.items|| !tmp.result.items.size() < 0)
 						return;
-//					if(tmp.result.item.status === 'RECEIVING') {
-//						tmp.me.showModalBox('<strong class="text-success">Success!</strong>',
-//							'<div>The current receiving process is succussed and saved.</div><br /><div><strong>There are more to go, Another One?</strong></div>'
-//							+ '<div>'
-//								+ '<span class="btn btn-primary" onclick="window.location = document.URL;"><span class="glyphicon glyphicon-ok"></span> YES</span>'
-//								+ '<span class="btn btn-default pull-right" data-dismiss="modal"><span aria-hidden="true"><span class="glyphicon glyphicon-remove-sign"></span> NO</span></span>'
-//							+ '</div>',
-//							true);
-//					} else {
-						tmp.me.showModalBox('<strong class="text-success">Success!</strong>', '<h3>Saved successfully</h3>', true);
-						window.location = document.URL;
-//					}
+					tmp.me.showModalBox('<strong class="text-success">Success!</strong>', '<h3>Saved successfully</h3>', true);
+					window.location = document.URL;
 				} catch(e) {
 					tmp.me.showModalBox('Error!', e, false);
 				}
