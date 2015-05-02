@@ -56,8 +56,8 @@ class Controller extends CRUDPageAbstract
 				throw new Exception('There is no such a invoice(invoice No=' . $invoiceNo . ') for supplier:' . $supplier->getName());
 
 			$sql = 'select ri.productId,
+						ri.unitPrice `unitPrice`,
 						sum(ri.qty) `qty`,
-						sum(ri.unitPrice) `price`,
 						group_concat(distinct ri.id) `itemIds`,
 						group_concat(distinct po.id) `poIds`
 					from receivingitem ri
@@ -75,7 +75,7 @@ class Controller extends CRUDPageAbstract
 				$results['items'][] = array(
 					'product' => Product::get($row['productId'])->getJson(),
 					'totalQty' => $row['qty'],
-					'totalPrice' => $row['price'],
+					'totalPrice' => $row['unitPrice'] * $row['qty'],
 					'items' => array_map(create_function('$a', 'return $a->getJson();'), $items),
 					'purchaseOrders' => array_map(create_function('$a', 'return $a->getJson();'), $pos)
 				);

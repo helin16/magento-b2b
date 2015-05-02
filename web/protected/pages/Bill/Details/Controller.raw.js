@@ -31,7 +31,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 			) })
 			.insert({'bottom': new Element(tmp.tag, {'class': 'col-sm-1 text-center'}).update(tmp.isTitle === true ? 'Qty' : row.totalQty) })
 			.insert({'bottom': new Element(tmp.tag, {'class': 'col-sm-1'}).update(tmp.isTitle === true ? 'Unit Price' : tmp.me.getCurrency(row.totalPrice)) })
-			.insert({'bottom': new Element(tmp.tag, {'class': 'col-sm-1'}).update(tmp.isTitle === true ? 'Total Price' : tmp.me.getCurrency(row.totalPrice * row.totalQty)) })
+			.insert({'bottom': new Element(tmp.tag, {'class': 'col-sm-1'}).update(tmp.isTitle === true ? 'Total Price' : tmp.me.getCurrency(row.totalPrice)) })
 			.insert({'bottom': new Element(tmp.tag, {'class': 'col-sm-2'}).update(tmp.isTitle === true ? 'PurchaseOrders' :
 				tmp.poList = new Element('ul', {'class': 'list-inline'})
 			) })
@@ -94,7 +94,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 					tmp.totalPrice = 0;
 					tmp.purchaseOrders = {};
 					tmp.result.items.each(function(item) {
-						tmp.totalPrice += (item.totalPrice * item.totalQty);
+						tmp.totalPrice += (item.totalPrice);
 						tmp.tbody.insert({'bottom': tmp.me._getResultRow(item).addClassName('item_row').writeAttribute('item_id', item.id) });
 						item.purchaseOrders.each(function(po){
 							tmp.purchaseOrders[po.id] = po;
