@@ -352,7 +352,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 			.insert({'bottom': new Element('div', {'class': 'panel-body'})
 				.insert({'bottom': new Element('div', {'class': ''})
 					.insert({'bottom': new Element('div', {'class': 'col-sm-4'}).update(tmp.me._getFormGroup('Name', new Element('input', {'save-item': 'name', 'type': 'text', 'required': true, 'value': tmp.item.name ? tmp.item.name : ''}) ) ) })
-					.insert({'bottom': new Element('div', {'class': 'col-sm-4'}).update(tmp.me._getFormGroup('sku', new Element('input', {'save-item': 'sku', 'type': 'text', 'required': true, 'value': tmp.item.sku ? tmp.item.sku : ''}) ) ) })
+					.insert({'bottom': new Element('div', {'class': 'col-sm-4'}).update(tmp.me._getFormGroup('sku', tmp.skuInputEl = new Element('input', {'save-item': 'sku', 'type': 'text', 'required': true, 'value': tmp.item.sku ? tmp.item.sku : ''}) ) ) })
 					.insert({'bottom': new Element('div', {'class': 'col-sm-4'}).update(tmp.me._getFormGroup('Status', 
 							tmp.me._getSelBox(tmp.me._statuses, tmp.item.status ? tmp.item.status.id : null).writeAttribute('save-item', 'statusId').addClassName('chosen') 
 					) ) })
@@ -375,7 +375,55 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 					.insert({'bottom': new Element('div', {'class': 'col-sm-12 fullDescriptionEl'}).update(tmp.me._getFullDescriptionPanel(tmp.item) ) })
 				})
 			});
+		// check if sku exist when creating new product
+		if(!tmp.me._item.id || jQuery.isNumeric(tmp.me._item.id) === false) {
+			tmp.skuInputEl.observe('change', function(e){
+				tmp.me._validateSKU($F(tmp.skuInputEl), tmp.skuInputEl);
+			});
+		}
 		return tmp.newDiv;
+	}
+	,_validateSKU: function(sku, inputEl) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.inputEl = (tmp.inputEl || false);
+		tmp.sku = sku;
+		
+		tmp.me.postAjax(tmp.me.getCallbackId('validateSKU'), {'sku': sku}, {
+			'onLoading': function (sender, param) {
+				if(tmp.inputEl !== false)
+					tmp.inputEl.writeAttribute('disabled', true);
+			}
+			, 'onSuccess': function (sender, param) {
+				try {
+					tmp.result = tmp.me.getResp(param, false, true);
+					if(!tmp.result || !tmp.result.item)
+						return;
+					if(tmp.result.item.id && jQuery.isNumeric(tmp.result.item.id) === true) {
+						tmp.product = tmp.result.item;
+						tmp.message = new Element('div', {'class': ''})
+							.insert({'bottom': new Element('div', {'class': 'row'})
+								.insert({'bottom': new Element('div', {'class': 'col-md-3'}).update('SKU') })
+								.insert({'bottom': new Element('div', {'class': 'col-md-9'})
+									.insert({'bottom': new Element('a', {'href': '/product/' + tmp.product.id + '.html', 'target': '_BLANK'}).update(tmp.product.sku) })
+								})
+							})
+							.insert({'bottom': new Element('div', {'class': 'row'})
+								.insert({'bottom': new Element('div', {'class': 'col-md-3'}).update('Name') })
+								.insert({'bottom': new Element('div', {'class': 'col-md-9'}).update(tmp.product.name) })
+							});
+						tmp.me.showModalBox('<span class="text-warinig"><b>The SKU ' + sku + ' already exist</b></span>', tmp.message);
+					}
+				} catch (e) {
+					tmp.me.showModalBox('Error', '<pre>' + e + '</pre>');
+				}
+			}
+			,'onComplete': function() {
+				if(tmp.inputEl !== false)
+					tmp.inputEl.removeAttribute('disabled');
+			}
+		});
+		return tmp.me;
 	}
 	/**
 	 * Bind the fancy box
@@ -621,7 +669,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 			default:
 				tmp.showModelBox('Error', 'Invalid Account Code Type');
 		}
-		tmp.selectEl = new Element('select', {'class': 'chosen', 'save-item': type, 'data-placeholder': type,}).setStyle('z-index: 9999;')
+		tmp.selectEl = new Element('select', {'class': 'chosen', 'save-item': 'type', 'data-placeholder': 'Type'}).setStyle('z-index: 9999;')
 			.insert({'bottom': new Element('option', {'value': tmp.me._selectTypeTxt}).update(tmp.me._selectTypeTxt) });
 		tmp.me._signRandID(tmp.selectEl);
 		
