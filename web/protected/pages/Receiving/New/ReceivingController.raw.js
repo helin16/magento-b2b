@@ -126,12 +126,14 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			.insert({'bottom': new Element(tmp.tag).update(po.supplierRefNo) })
 			.insert({'bottom': new Element(tmp.tag).update(po.orderDate) })
 			.insert({'bottom': new Element(tmp.tag).update(po.totalAmount) })
-			.insert({'bottom': new Element(tmp.tag).update(po.totalProductCount) })
+			.insert({'bottom': tmp.totalProductCountEl = new Element(tmp.tag).update(po.totalProductCount) })
 			.insert({'bottom': new Element(tmp.tag).update(po.status) })
 			.insert({'bottom': new Element(tmp.tag)
 				.insert({'bottom': (tmp.isTitle === true ? po.active : new Element('input', {'type': 'checkbox', 'disabled': true, 'checked': po.active}) ) })
 			})
 		;
+		if(tmp.isTitle !== true)
+			tmp.totalProductCountEl.update(new Element('a', {'href': '/serialnumbers.html?purchaseorderid=' + po.id, 'target': '_BLANK' }).update('<abbr>' + tmp.totalProductCountEl.innerHTML + '</abbr>'));
 		return tmp.newDiv;
 	}
 	/**
@@ -558,7 +560,6 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 	,_getScanTable: function(product, orderItem) {
 		var tmp = {};
 		tmp.me = this;
-		console.debug(orderItem);
 		tmp.table = new Element('table', {'class': 'table scanTable'})
 			.insert({'bottom': new Element('thead').update(tmp.me._getScanTableROW({'qty': 'Qty', 'serialNo': 'Serial No.', 'unitPrice': 'Unit Price (Ex)', 'invoiceNo': 'Inv. No.', 'comments': 'Comments', 'btns': ''}, true)) })
 			.insert({'bottom': new Element('tbody')
@@ -783,7 +784,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 						tmp.row.remove();
 					})
 				}),
-				'qty': 0,
+				'qty': 0
 			};
 		tmp.data.scanTable = tmp.me._getScanTable(tmp.data.product, tmp.data);
 		tmp.lastRow.replace(tmp.newRow = tmp.me._getProductRow(tmp.data, false) );
