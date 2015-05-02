@@ -1,7 +1,7 @@
 <?php
 class BillExport_Xero extends ExportAbstract
 {
-	const DEFAULT_DUE_DELAY = "+7 day";
+	const DEFAULT_DUE_DELAY = "+0 day";
 	protected static function _getData()
 	{
 		if(count(self::$_dateRange) === 0) {
