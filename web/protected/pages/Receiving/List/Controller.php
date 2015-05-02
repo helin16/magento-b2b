@@ -39,6 +39,7 @@ class Controller extends CRUDPageAbstract
 
 			$js .= "$('searchBtn').click();";
 		}
+		$js .= "pageJs._bindSearchKey();";
 		return $js;
 	}
 	/**
@@ -74,6 +75,16 @@ class Controller extends CRUDPageAbstract
 			if(isset($serachCriteria['purchaseorderid']) && ($purchaseorderid = trim($serachCriteria['purchaseorderid'])) !== '') {
 				$where[] = 'purchaseorderid = ?';
 				$params[] = trim($purchaseorderid);
+			}
+			if(isset($serachCriteria['pro.ids']) && ($productids = trim($serachCriteria['pro.ids'])) !== '' && count($productids = trim($serachCriteria['pro.ids'])) > 0) {
+				$value = explode(',', $productids);
+				$where[] = 'productId in ('.implode(", ", array_fill(0, count($value), "?")).')';
+				$params = array_merge($params, $value);
+			}
+			if(isset($serachCriteria['purchaseorderids']) && ($purchaseorderids = trim($serachCriteria['purchaseorderids'])) !== '') {
+				$value = explode(',', $purchaseorderids);
+				$where[] = 'purchaseOrderId in ('.implode(", ", array_fill(0, count($value), "?")).')';
+				$params = array_merge($params, $value);
 			}
 			$objects = array();
 			if(count($where) > 0)
