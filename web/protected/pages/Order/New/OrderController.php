@@ -288,9 +288,10 @@ class OrderController extends BPCPageAbstract
 				if(intval($item->active) === 1)
 				{
 					$totalPaymentDue += $totalPrice;
-					
 					if($orderCloneFrom instanceof Order || !($orderItem = OrderItem::get($item->id)) instanceof OrderItem)
+					{
 						$orderItem = OrderItem::create($order, $product, $unitPrice, $qtyOrdered, $totalPrice, 0, null, $itemDescription);
+					}
 					else {
 						$orderItem->setActive(intval($item->active))
 							->setProduct($product)
@@ -301,9 +302,14 @@ class OrderController extends BPCPageAbstract
 							->save();
 						SellingItem::deleteByCriteria('orderItemId = ?', array($orderItem->getId())); //DELETING ALL SERIAL NUMBER BEFORE ADDING
 					}
-				} else if(($orderItem = OrderItem::get($item->id)) instanceof OrderItem)
-				{
-					$orderItem->setActive(false)->save();
+				} else {
+					if($orderCloneFrom instanceof Order)
+					{
+						continue;
+					}
+					elseif(($orderItem = OrderItem::get($item->id)) instanceof OrderItem) {
+						$orderItem->setActive(false)->save();
+					}
 				}
 				if(isset($item->serials) && count($item->serials) > 0){
 					foreach($item->serials as $serialNo)
