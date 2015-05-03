@@ -1,5 +1,6 @@
 <com:TContent ID="MainContent">
 	<com:Application.controls.fancybox.FancyBox />
+	<com:Application.controls.SerialBulkUploader.SerialBulkUploader />
 	<com:TDatePicker Style="display:none;"/>
 	<com:TCallback ID="searchPOBtn" onCallback="searchPO" />
 	<com:TCallback ID="searchProductBtn" onCallback="searchProduct" />

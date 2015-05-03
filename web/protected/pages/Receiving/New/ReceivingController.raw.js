@@ -464,7 +464,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		if(orderItem.scanTable && tmp.me._canReceive() === true) {
 			tmp.row.insert({'bottom': new Element('div', {'class': 'row product-content-row'})
 				.insert({'bottom': new Element('div', {'class': 'col-sm-2'})
-					.insert({'bottom': new Element('span')
+					.insert({'bottom': new Element('span', {'class': 'col-sm-12'})
 						.insert({'bottom': new Element('input', {'type': 'checkbox', 'class': 'show-checkbox'}) })
 						.insert({'bottom': new Element('label').update(' show input panel') })
 					})
@@ -1089,6 +1089,9 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		} else {
 			$(tmp.me._htmlIds.itemDiv).update(tmp.me._getPOListPanel()).down('.init-focus').focus();
 		}
+		// init SerialBulkUploaderJs
+		tmp.me.serialUploader = new SerialBulkUploaderJs(tmp.me);
+		tmp.me.showModalBox('test', tmp.me.serialUploader.getInputPanel());
 	}
 });
 
