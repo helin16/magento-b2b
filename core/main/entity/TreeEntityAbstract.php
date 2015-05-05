@@ -8,54 +8,28 @@
 abstract class TreeEntityAbstract extends BaseEntityAbstract
 {
     /**
-     * how many digits of PER LEVEL
-     * @var int
-     */
-    const POS_LENGTH_PER_LEVEL = 4;
-    /**
-     * The default separator for breadCrubms
+     * The default separator for PATH
      * @var string
      */
-    const BREADCRUMBS_SEPARATOR = ' / ';
+    const PATH_SEPARATOR = ',';
 	/**
      * The parent category of this category
-     * 
+     *
      * @var Category
      */
     protected $parent;
     /**
-     * The position of the category with the category tree
-     *
-     * @var string
-     */
-    protected $position = 1;
-    /**
      * The root category of this category
-     * 
+     *
      * @var Category
      */
     protected $root;
     /**
-     * getter position
+     * The path of the entity
      *
-     * @return string
+     * @var string
      */
-    public function getPosition()
-    {
-        return $this->position;
-    }
-    /**
-     * setter position
-     * 
-     * @param string $position The new position
-     * 
-     * @return TreeEntityAbstract
-     */
-    public function setPosition($position)
-    {
-        $this->position = $position;
-        return $this;
-    }
+    private $path;
     /**
      * getter parent
      *
@@ -68,9 +42,9 @@ abstract class TreeEntityAbstract extends BaseEntityAbstract
     }
     /**
      * setter parent
-     * 
+     *
      * @param TreeEntityAbstract $parent The parent node
-     * 
+     *
      * @return TreeEntityAbstract
      */
     public function setParent($parent)
@@ -90,9 +64,9 @@ abstract class TreeEntityAbstract extends BaseEntityAbstract
     }
     /**
      * setter parent
-     * 
+     *
      * @param TreeEntityAbstract $root The root node
-     * 
+     *
      * @return TreeEntityAbstract
      */
     public function setRoot($root)
@@ -101,39 +75,115 @@ abstract class TreeEntityAbstract extends BaseEntityAbstract
         return $this;
     }
     /**
-     * Getting the next position for the new children of the provided parent
+     * Getter for Path
      *
-     * @throws ServiceException
-     * @return int
+     * @return string
      */
-    public function getNextPosition()
+    public function getPath()
     {
-        $parentPos = trim($this->getPosition());
-        $sql="select position from " . strtolower(get_class($this)) . " where active = 1 and position like '" . $parentPos . str_repeat('_', self::POS_LENGTH_PER_LEVEL). "' order by position asc";
-        $result = Dao::getResultsNative($sql);
-        if(count($result) === 0)
-        return $parentPos . str_repeat('0', self::POS_LENGTH_PER_LEVEL);
-         
-        $expectedAccountNos = array_map(create_function('$a', 'return "' . $parentPos . '".str_pad($a, ' . self::POS_LENGTH_PER_LEVEL . ', 0, STR_PAD_LEFT);'), range(0, str_repeat('9', self::POS_LENGTH_PER_LEVEL)));
-        $usedAccountNos = array_map(create_function('$a', 'return $a["position"];'), $result);
-        $unUsed = array_diff($expectedAccountNos, $usedAccountNos);
-        sort($unUsed);
-        if (count($unUsed) === 0)
-        throw new ServiceException("Position over loaded (parentId = " . $this->getId() . ")!");
-         
-        return $unUsed[0];
+        return $this->path;
     }
+    /**
+     * Setter for Path
+     *
+     * @param string $value The Path
+     *
+     * @return TreeEntityAbstract
+     */
+    public function setPath($value)
+    {
+        $this->path = $value;
+        return $this;
+    }
+    /**
+     * Getting the Path
+     *
+     * @return multitype:
+     */
+    public function getPaths()
+    {
+    	return explode(self::PATH_SEPARATOR, trim($this->getPath()));
+    }
+    /**
+     * Getting the name paths
+     *
+     * @param bool $reset Whether to reset the cache
+     *
+     * @return multitype:|NULL
+     */
+    public function getNamePaths($reset = false)
+    {
+    	if(trim($this->getId()) === '')
+    		return array();
+    	$key = 'name_paths_' . $this->getId();
+		if($reset === false && self::cacheExsits($key))
+			return self::getCache($key);
+		if(count($pathIds = $this->getPaths()) === 0)
+			return array();
+		$entityClass = get_class($this);
+		$names = array();
+		foreach(self::getAllByCriteria('id in (' . implode(', ', array_fill(0, count($pathIds), '?')). ')', $pathIds, false) as $node) {
+			$names[$node->getId()] = trim($node->getName());
+		}
+		$return = array();
+		foreach($pathIds as $id)
+			$return = isset($names[$id]) ? $names[$id] : '';
+		$return = array_filter($return);
+
+		self::addCache($key, $return);
+		return $return;
+    }
+    /**
+     * (non-PHPdoc)
+     * @see BaseEntityAbstract::preSave()
+     */
+    public function preSave()
+    {
+    	$entityClass = get_class($this);
+    	if($this->getParent() instanceof $entityClass) {
+    		if($this->getParent()->getId() === $this->getId())
+    			throw new EntityException('You can NOT save a ' . $entityClass . ' with parent of itself');
+    	}
+    	if($this->getRoot() instanceof $entityClass) {
+    		if($this->getRoot()->getId() === $this->getId())
+    			throw new EntityException('You can NOT save a ' . $entityClass . ' with root of itself');
+    	}
+    }
+    /**
+     * (non-PHPdoc)
+     * @see BaseEntityAbstract::postSave()
+     */
     public function postSave()
     {
-        $class = get_class($this);
-        if(!$this->getRoot() instanceof $class)
-        {
-            $fakeParent = new $class();
-            $fakeParent->setProxyMode(true);
-            $fakeParent->setId($this->getId());
-            $this->setRoot($fakeParent);
-            EntityDao::getInstance($class)->save($this);
-        }
+    	$entityClass = get_class($this);
+    	if($this->getParent() instanceof $entityClass) {
+    		$parentPathIds = $this->getParent()->getPaths();
+    		$parentPathIds[] = $this->getId();
+    		$root = $this->getParent()->getRoot() instanceof $entityClass ? $this->getParent()->getRoot() : $this->getParent();
+    		$this->setRoot($root)
+    			->setPath(($pathStrig = implode(self::PATH_SEPARATOR, $parentPathIds)));
+    		self::updateByCriteria('path = ?, rootId = ?', 'id = ?', array($pathStrig, $root->getId(), $this->getId()));
+    	} else {
+    		$this->setRoot(null)
+    			->setPath(($pathStrig = $this->getId()));
+    		self::updateByCriteria('path = ?, rootId = null', 'id = ?', array($pathStrig, $this->getId()));
+    	}
+    }
+    /**
+     * (non-PHPdoc)
+     * @see BaseEntityAbstract::getJson()
+     */
+    public function getJson($extra = array(), $reset = false)
+    {
+    	$array = $extra;
+    	if(!$this->isJsonLoaded($reset))
+    	{
+    		$entityClass = get_class($this);
+    		$array['breadCrumbs'] = array('ids' => $this->getPaths(), 'names' => $this->getNamePaths($reset));
+    		$array['parent'] = $this->getParent() instanceof $entityClass ? $this->getParent()->getJson(array(), $reset) : array();
+    		$array['root'] = $this->getRoot() instanceof $entityClass && $this->getRoot()->getId() !== $this->getId() ? $this->getRoot()->getJson(array(), $reset) : $array;
+    	}
+    	return parent::getJson($array, $reset);
     }
 	/**
 	 * load the default elments of the base entity
@@ -142,7 +192,7 @@ abstract class TreeEntityAbstract extends BaseEntityAbstract
 	{
 	    DaoMap::setManyToOne('root', get_class($this), null, true);
 	    DaoMap::setManyToOne('parent', get_class($this), null, true);
-		DaoMap::setStringType('position', 'varchar', 255, false, '1');
+		DaoMap::setStringType('path', 'varchar', 255);
 	    parent::__loadDaoMap();
 	}
 }

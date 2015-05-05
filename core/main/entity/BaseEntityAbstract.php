@@ -46,6 +46,12 @@ abstract class BaseEntityAbstract
      */
     protected $proxyMode = false;
     /**
+     * The entity level runtime cache
+     *
+     * @var array
+     */
+    private static $_entityCache = array();
+    /**
      * __constructor
      */
     public function __construct()
@@ -581,7 +587,7 @@ abstract class BaseEntityAbstract
      *
      * @return int
      */
-    public function saveManyToManyJoin(BaseEntityAbstract &$leftEntity, BaseEntityAbstract $rightEntity)
+    public static function saveManyToManyJoin(BaseEntityAbstract &$leftEntity, BaseEntityAbstract $rightEntity)
     {
     	FactoryAbastract::dao(get_called_class())->saveManyToManyJoin($leftEntity, $rightEntity);
     	return $leftEntity;
@@ -598,6 +604,61 @@ abstract class BaseEntityAbstract
     {
     	FactoryAbastract::dao(get_called_class())->deleteManyToManyJoin($leftEntity, $rightEntity);
     	return $leftEntity;
+    }
+    /**
+     * Getting the runtime cache
+     *
+     * @param string $key The key of the cache
+     *
+     * @param mixed
+     */
+    protected static function getCache($key)
+    {
+    	if(!self::cacheExsits($key))
+    		return null;
+    	$class = get_called_class();
+    	return BaseEntityAbstract::$_entityCache[$class][$key];
+    }
+    /**
+     * adding the runtime cache
+     *
+     * @param string $key  The key of the cache
+     * @param mixed  $data The data of the cache
+     *
+     * @param mixed
+     */
+    protected static function addCache($key, $data)
+    {
+    	$class = get_called_class();
+    	BaseEntityAbstract::$_entityCache[$class][$key] = $data;
+    	return BaseEntityAbstract::$_entityCache[$class][$key];
+    }
+    /**
+     * Check whether the key exsits in the runtime cache
+     *
+     * @param string $key The key of the cache
+     *
+     * @return boolean
+     */
+    protected static function cacheExsits($key)
+    {
+    	$class = get_called_class();
+    	return isset(BaseEntityAbstract::$_entityCache[$class]) && isset(BaseEntityAbstract::$_entityCache[$class][$key]);
+    }
+    /**
+     * remove the cache from runtime cache
+     *
+     * @param string $key The key of the cache
+     *
+     * @return boolean
+     */
+    protected static function removeCache($key)
+    {
+    	if(!self::cacheExsits($key))
+    		return false;
+    	$class = get_called_class();
+    	unset(BaseEntityAbstract::$_entityCache[$class][$key]);
+    	return true;
     }
 }
 
