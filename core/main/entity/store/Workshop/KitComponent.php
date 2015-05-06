@@ -24,13 +24,13 @@ class KitComponent extends BaseEntityAbstract
 	 *
 	 * @var double
 	 */
-	protected $unitCost;
+	protected $unitCost = 0;
 	/**
 	 * The unit Price of the component
 	 *
 	 * @var double
 	 */
-	protected $unitPrice;
+	protected $unitPrice = 0;
 	/**
 	 * Getter for kit
 	 *
@@ -52,6 +52,120 @@ class KitComponent extends BaseEntityAbstract
 	{
 	    $this->kit = $value;
 	    return $this;
+	}
+	/**
+	 * Getter for component
+	 *
+	 * @return Product
+	 */
+	public function getComponent()
+	{
+		$this->loadManyToOne('component');
+	    return $this->component;
+	}
+	/**
+	 * Setter for component
+	 *
+	 * @param Product $value The component
+	 *
+	 * @return KitComponent
+	 */
+	public function setComponent(Product $value)
+	{
+	    $this->component = $value;
+	    return $this;
+	}
+	/**
+	 * Getter for qty
+	 *
+	 * @return int
+	 */
+	public function getQty()
+	{
+	    return $this->qty;
+	}
+	/**
+	 * Setter for qty
+	 *
+	 * @param int $value The qty
+	 *
+	 * @return KitComponent
+	 */
+	public function setQty($value)
+	{
+	    $this->qty = $value;
+	    return $this;
+	}
+	/**
+	 * Getter for unitCost
+	 *
+	 * @return double
+	 */
+	public function getUnitCost()
+	{
+	    return $this->unitCost;
+	}
+	/**
+	 * Setter for unitCost
+	 *
+	 * @param double $value The unitCost
+	 *
+	 * @return KitComponent
+	 */
+	public function setUnitCost($value)
+	{
+	    $this->unitCost = $value;
+	    return $this;
+	}
+	/**
+	 * Getter for unitPrice
+	 *
+	 * @return Double
+	 */
+	public function getUnitPrice()
+	{
+	    return $this->unitPrice;
+	}
+	/**
+	 * Setter for unitPrice
+	 *
+	 * @param unkown $value The unitPrice
+	 *
+	 * @return KitComponent
+	 */
+	public function setUnitPrice($value)
+	{
+	    $this->unitPrice = $value;
+	    return $this;
+	}
+	/**
+	 * (non-PHPdoc)
+	 * @see BaseEntityAbstract::preSave()
+	 */
+	public function preSave()
+	{
+		if(!$this->getComponent() instanceof Product)
+			throw new EntityException('You have to provide a product to install into a kit');
+		if($this->getComponent()->getIsKit() ===  true)
+			throw new EntityException('You can NOT install a kit into another kit, please use the move kit function instead.');
+	}
+	/**
+	 * (non-PHPdoc)
+	 * @see BaseEntity::__loadDaoMap()
+	 */
+	public function __loadDaoMap()
+	{
+		DaoMap::begin($this, 'kcom');
+
+		DaoMap::setManyToOne('kit', 'Kit', 'kcom_kit');
+		DaoMap::setManyToOne('component', 'Product', 'kcom_com');
+		DaoMap::setIntType('qty');
+		DaoMap::setIntType('unitCost', 'double', '10,4');
+		DaoMap::setIntType('unitPrice', 'double', '10,4');
+
+		parent::__loadDaoMap();
+
+		DaoMap::commit();
 	}
 
 }
