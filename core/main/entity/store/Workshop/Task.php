@@ -1,6 +1,7 @@
 <?php
 class Task extends BaseEntityAbstract
 {
+	const DUE_DATE_PERIOD = '+4 day';
 	/**
 	 * The entity name of the task is created from
 	 *
@@ -166,13 +167,28 @@ class Task extends BaseEntityAbstract
 	    return $this;
 	}
 	/**
+	 * Getting the from entity
+	 *
+	 * @return BaseEntityAbstract
+	 */
+	public function getFromEntity()
+	{
+		if(($entityClass = trim($this->getFromEntityName())) === '')
+			return null;
+		return $entityClass::get(trim($this->getFromEntityId()));
+	}
+	/**
 	 * (non-PHPdoc)
 	 * @see BaseEntityAbstract::preSave()
 	 */
 	public function preSave()
 	{
-		if(trim($this->getId()) === '' && (!$this->getStatus() instanceof TaskStatus))
-			$this->setStatus(TaskStatus::get(TaskStatus::ID_NEW));
+		if(trim($this->getId()) === '') {
+			if(!$this->getStatus() instanceof TaskStatus)
+				$this->setStatus(TaskStatus::get(TaskStatus::ID_NEW));
+			if(trim($this->getDueDate()) === trim(UDate::zeroDate()))
+				$this->setDueDate(UDate::now()->modify(self::DUE_DATE_PERIOD));
+		}
 	}
 	/**
 	 * (non-PHPdoc)
@@ -195,5 +211,23 @@ class Task extends BaseEntityAbstract
 		DaoMap::createIndex('fromEntityId');
 		DaoMap::createIndex('dueDate');
 		DaoMap::commit();
+	}
+	/**
+	 * creating a task
+	 *
+	 * @param UDate       $dueDate
+	 * @param string      $instructions
+	 * @param UserAccount $tech
+	 *
+	 * @return Task
+	 */
+	public function create(UDate $dueDate = null, $instructions = '', UserAccount $tech = null)
+	{
+		$task = new Task();
+		return $task->setDueDate($dueDate)
+			->setInstruction($instructions = trim($instructions))
+			->setTechnician($tech)
+			->save()
+			->addComment('Task created with(DueDate:' . $dueDate . ', ' . ($instructions === '' ? 'no insturctions' : ' some instructions ') . ', tech ' . ($tech instanceof UserAccount ? $tech->getPerson() : ''));
 	}
 }
