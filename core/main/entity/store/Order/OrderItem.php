@@ -412,6 +412,19 @@ class OrderItem extends BaseEntityAbstract
 	    return $this;
 	}
 	/**
+	 * The cal margin from product
+	 *
+	 * @return OrderItem
+	 */
+	public function reCalMarginFromProduct()
+	{
+		if(!$this->getProduct() instanceof Product)
+			return $this;
+		$this->setUnitCost($this->getProduct()->getUnitCost())
+			->setMargin(StringUtilsAbstract::getValueFromCurrency($this->getTotalPrice()) - StringUtilsAbstract::getValueFromCurrency($this->getUnitCost()) * 1.1 * intval($this->getQtyOrdered()));
+		return $this;
+	}
+	/**
 	 * (non-PHPdoc)
 	 * @see BaseEntityAbstract::preSave()
 	 */
@@ -421,9 +434,9 @@ class OrderItem extends BaseEntityAbstract
 			$this->setMageOrderId('0');
 
 		//when brandnew, calculate margin
-		if(trim($this->getUnitCost()) === '' || (($this->getOrder() instanceof Order) && in_array($this->getOrder()->getType(), array(Order::TYPE_ORDER, Order::TYPE_QUOTE))))
-			$this->setUnitCost($this->getProduct()->getUnitCost());
-		$this->setMargin(StringUtilsAbstract::getValueFromCurrency($this->getTotalPrice()) - StringUtilsAbstract::getValueFromCurrency($this->getUnitCost()) * 1.1 * intval($this->getQtyOrdered()));
+		if(trim($this->getUnitCost()) === '') {
+			$this->reCalMarginFromProduct();
+		}
 
 		if(trim($this->getId()) === '') {
 			if(trim($this->getItemDescription()) === '')

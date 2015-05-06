@@ -591,7 +591,6 @@ class Order extends InfoEntityAbstract
 			$this->setInvDate(Udate::zeroDate());
 		if(trim($this->getId()) !== '')
 		{
-			$this->setMargin($this->getCalculatedTotalMargin());
 			//status changed
 			$originalOrder = self::get($this->getId());
 			if($originalOrder instanceof Order && $originalOrder->getStatus()->getId() !== $this->getStatus()->getId())
@@ -650,7 +649,14 @@ class Order extends InfoEntityAbstract
 	{
 		if(trim($this->getInvNo()) !== "")
 			return $this;
+		//update all the order item's margin and unitcost
+		$totalMargin = 0;
+		foreach($this->getOrderItems() as $item) {
+			$item->reCalMarginFromProduct()->save();
+			$totalMargin += $item->getMargin();
+		}
 		return $this->setType(Order::TYPE_INVOICE)
+			->setMargin($totalMargin)
 			->setInvNo('BPCINV' .str_pad($this->getId(), 8, '0', STR_PAD_LEFT))
 			->setInvDate(new UDate())
 			->save()
