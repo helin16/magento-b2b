@@ -59,6 +59,9 @@
 			<!-- FrontEnd:: system settings page -->
 			<url ServiceParameter="System.Settings.List.ListController" pattern="systemsettings.html" parameters.id="me"/>
 
+			<!-- FrontEnd:: Tasks page -->
+			<url ServiceParameter="Task.List.Controller" pattern="tasks.html"/>
+
 			<!-- FrontEnd:: Price Match page -->
 			<url ServiceParameter="PriceMatch.PriceMatchController" pattern="pricematch.html" />
 			<!-- FrontEnd:: Price Match Companypage -->

@@ -1,0 +1,60 @@
+<com:TContent ID="MainContent">
+	<com:Application.controls.fancybox.FancyBox />
+	<com:Application.controls.bootstrapDateTimePicker.bootstrapDateTimePicker />
+	<com:Application.controls.select2.select2 />
+	<div class="pagewrapper item-list-wrapper">
+		<div class="panel panel-default" id="searchPanel">
+			<div class="panel-heading">
+				<label for="showSearch">Show Search Criteria?</label>
+				<input id="showSearch" type="checkbox" onclick="$(this).up('#searchPanel').down('.panel-body').toggle();">
+				<span class="pull-right">
+			   		<span id="searchBtn" class="btn btn-primary form-control input-sm" data-loading-text="searching ..." >Search</span>
+				</span>
+			</div>
+			<div class="panel-body search-panel" id="searchDiv" style="display: none;">
+				<div class="row">
+					<div class="col-sm-4">
+						<div class="form-group form-group-sm input-group">
+                           <label class="input-group-addon">Order:</label>
+                           <input type="text" search_field="ord.id" placeholder="The order that the task is created from" class="form-control input-sm">
+                       </div>
+					</div>
+					<div class="col-sm-3">
+						<div class="form-group form-group-sm input-group">
+                           <label class="input-group-addon">Tech:</label>
+                           <input type="text" search_field="techId" placeholder="The technician of the task" class="form-control input-sm">
+                       </div>
+					</div>
+					<div class="col-sm-2">
+						<div class="form-group form-group-sm input-group">
+                           <label class="input-group-addon">Status:</label>
+                           <input type="text" search_field="statusId" placeholder="The Status of the task" class="form-control input-sm">
+                       </div>
+					</div>
+					<div class="col-sm-3">
+						<div class="form-group form-group-sm input-group">
+                           <label class="input-group-addon">DueDate:</label>
+                           <div class="form-control input-sm" style="padding:0px;">
+								<div class="col-xs-6"  style="padding:0px;">
+									<input class="form-control input-sm datepicker" search_field="dueDate_from" placeholder="FROM:"/>
+								</div>
+								<span class="input-group-btn" style="width:0px;"></span>
+								<div class="col-xs-6"  style="padding:0px;">
+									<input class="form-control input-sm datepicker" search_field="dueDate_to" placeholder="TO:"/>
+								</div>
+							</div>
+                       </div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="panel panel-default">
+			<div class="panel-heading">
+				Found <label id="total-found-count">0</label> <%= $this->getFocusEntity() %>:
+			</div>
+			<div class="table-responsive">
+                <table class="table table-hover" id="item-list"></table>
+            </div>
+		</div>
+	</div>
+</com:TContent>

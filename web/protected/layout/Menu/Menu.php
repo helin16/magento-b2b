@@ -70,7 +70,7 @@ class Menu extends TTemplateControl
 					'CreditNote' => array('url' => '/creditnote.html', 'name' => 'Credit Note', 'icon'=> '<span class=""></span>'),
 					'RMA' => array('url' => '/rma.html', 'name' => 'RMA', 'icon'=> '<span class=""></span>')
 			);
-		if(AccessControl::canAccessLogisticsPage(Core::getRole()) )
+		if(AccessControl::canAccessWorkShopPage(Core::getRole()) )
 			$array['Logistics'] = array(
 					'icon' => '<span class="fa fa-arrows"></span>',
 					'PurchaseOrder' =>array('url' => '/purchase.html', 'name' => 'Purchase Orders', 'icon' => '<span class="glyphicon glyphicon-shopping-cart"></span>'),
@@ -81,6 +81,13 @@ class Menu extends TTemplateControl
 					'stockadjustment' => array('url' => '/stockadjustment.html', 'name' => 'Stock Adjustment', 'icon'=> '<span class=""></span>'),
 					'courier' => array('url' => '/courier.html', 'name' => 'Courier', 'icon'=> '<span class=""></span>'),
 					'Bill' =>array('url' => '/bills.html', 'name' => 'Supplier Invoices', 'icon' => '<span class="glyphicon glyphicon-usd"></span>')
+			);
+		if(AccessControl::canAccessWorkShopPage(Core::getRole()) )
+			$array['Workshop'] = array(
+					'icon' => '<span class="glyphicon glyphicon-wrench"></span>',
+					'tasks' =>array('url' => '/tasks.html', 'name' => 'Tasks', 'icon' => '<span class="glyphicon glyphicon-align-left"></span>'),
+					'newKit' =>array('url' => '/kits/new.html', 'name' => 'Build a Kit', 'icon' => '<span class="fa fa-gavel"></span>'),
+					'kits' => array('url' => '/kits.html', 'name' => 'Kits', 'icon' => '<span class="glyphicon glyphicon-search"></span>')
 			);
 		if(AccessControl::canAccessUsersPage(Core::getRole()) )
 		{

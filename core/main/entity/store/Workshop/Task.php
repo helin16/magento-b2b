@@ -179,6 +179,22 @@ class Task extends BaseEntityAbstract
 	}
 	/**
 	 * (non-PHPdoc)
+	 * @see BaseEntityAbstract::getJson()
+	 */
+	public function getJson($extra = array(), $reset = false)
+	{
+		$array = $extra;
+		if(!$this->isJsonLoaded($reset))
+		{
+			$array['fromEntity'] = $this->getFromEntity() instanceof BaseEntityAbstract ? $this->getFromEntity()->getJson() : array();
+			$array['technician'] = $this->getTechnician() instanceof UserAccount ? $this->getTechnician()->getJson() : array();
+			$array['status'] = $this->getStatus() instanceof TaskStatus ? $this->getStatus()->getJson() : array();
+			$array['createdBy'] = $this->getCreatedBy() instanceof UserAccount ? $this->getCreatedBy()->getJson() : array();
+		}
+		return parent::getJson($array, $reset);
+	}
+	/**
+	 * (non-PHPdoc)
 	 * @see BaseEntityAbstract::preSave()
 	 */
 	public function preSave()
@@ -221,13 +237,18 @@ class Task extends BaseEntityAbstract
 	 *
 	 * @return Task
 	 */
-	public function create(UDate $dueDate = null, $instructions = '', UserAccount $tech = null)
+	public function create(UDate $dueDate = null, $instructions = '', UserAccount $tech = null, BaseEntityAbstract $fromEntity = null)
 	{
 		$task = new Task();
-		return $task->setDueDate($dueDate)
+		$task->setDueDate($dueDate)
 			->setInstruction($instructions = trim($instructions))
-			->setTechnician($tech)
-			->save()
+			->setTechnician($tech);
+		if($fromEntity instanceof BaseEntityAbstract) {
+			$task->setFromEntityId($fromEntity->getId())
+				->getFromEntityName(get_class($fromEntity));
+		}
+		$task->save()
 			->addComment('Task created with(DueDate:' . $dueDate . ', ' . ($instructions === '' ? 'no insturctions' : ' some instructions ') . ', tech ' . ($tech instanceof UserAccount ? $tech->getPerson() : ''));
+		return $task;
 	}
 }
