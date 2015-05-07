@@ -18,7 +18,7 @@ class KitComponent extends BaseEntityAbstract
 	 *
 	 * @var int
 	 */
-	protected $qty;
+	protected $qty = 0;
 	/**
 	 * The unit cost of the component
 	 *
@@ -148,6 +148,19 @@ class KitComponent extends BaseEntityAbstract
 			throw new EntityException('You have to provide a product to install into a kit');
 		if($this->getComponent()->getIsKit() ===  true)
 			throw new EntityException('You can NOT install a kit into another kit, please use the move kit function instead.');
+		if(intval($this->getQty()) === 0)
+			throw new EntityException('You can NOT install a component into a kit with quantity: 0');
+		if(ceil($this->getUnitCost()) === 0 || ceil($this->getUnitPrice()) === 0) {
+			$this->setUnitCost($this->getComponent()->getUnitCost())
+				->setUnitPrice($this->getComponent()->getUnitPrice());
+		}
+		if(trim($this->getId()) === '') { //when we are creating a new one
+			$this->getComponent()->installedIntoKit($this->getUnitCost(), $this->getQty(), $this);
+		} else {
+			if(intval($this->getActive()) === 0 && Self::countByCriteria('id = ? and active = 1') > 0) { //trying to deactivate the kitcomponent
+				$this->getComponent()->installedIntoKit($this->getUnitCost(), 0 - $this->getQty(), $this);
+			}
+		}
 	}
 	/**
 	 * (non-PHPdoc)
@@ -166,6 +179,27 @@ class KitComponent extends BaseEntityAbstract
 		parent::__loadDaoMap();
 
 		DaoMap::commit();
+	}
+	/**
+	 * Creating a kitcomponent
+	 *
+	 * @param Kit     $kit
+	 * @param Product $component
+	 * @param number  $qty
+	 *
+	 * @return KitComponent
+	 */
+	public static function create(Kit &$kit, Product $component, $qty)
+	{
+		$kitComponent = new KitComponent();
+		$kitComponent->setKit($kit)
+			->setComponent($component)
+			->setQty(intval($qty))
+			->save()
+			->getKit()
+				->reCalPriceNCost()
+				->addComment($qty . ' Component(SKU=' . $component->getSku() . ') has been added into this kit (' . $kit->getBarcode() . ')', Comments::TYPE_WORKSHOP);
+		return $kitComponent;
 	}
 
 }

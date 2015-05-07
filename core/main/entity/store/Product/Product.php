@@ -1130,6 +1130,31 @@ class Product extends InfoEntityAbstract
 					__CLASS__ . '::' . __FUNCTION__);
 	}
 	/**
+	 * a product is installed into a kit
+	 *
+	 * @param unknown            $qty
+	 * @param dobuble            $unitCost
+	 * @param string             $comments
+	 * @param BaseEntityAbstract $entity
+	 */
+	public function installedIntoKit($qty, $unitCost, $comments, BaseEntityAbstract $entity = null)
+	{
+		$kitComponent = $entity instanceof KitComponent ? $entity : null;
+		$kit = ($kitComponent instanceof KitComponent ? $kitComponent->getKit() : null);
+		$task = ($kit instanceof Kit ? $kit->getTask() : null);
+		return $this->setStockOnHand(($originalStockOnHand = $this->getStockOnHand()) - $qty)
+			->setTotalOnHandValue(($originalTotalOnHandValue = $this->getTotalOnHandValue()) - ($qty * $unitCost))
+			->setStockInParts(($originalStockInParts = $this->getStockInParts()) + $qty)
+			->setTotalInPartsValue(($originalTotalInPartValue = $this->getTotalInPartsValue()) + ($qty * $unitCost))
+			->snapshotQty($entity instanceof BaseEntityAbstract ? $entity : $this, ProductQtyLog::TYPE_WORKSHOP,
+					'Stock ' . (intval(Installed) <= 0 ? 'uninstalled' : 'installed') . ($kit instanceof Kit ? ' into Kit[' . $kit->getBarcode() . ']' : '') . ($task instanceof Task ? ' generated from Task[' . $task->getTask() . ']' : '') . (trim($comments) === '' ? '.' : ': ' . $comments))
+			->save()
+			->addLog('StockOnHand(' . $originalStockOnHand . ' => ' . $this->getStockOnHand() . '), TotalOnHandValue(' . $originalTotalOnHandValue . ' => ' . $this->getTotalOnHandValue() . '), StockInParts(' . $originalStockInParts . ' => ' . $this->getStockInParts() . '), TotalInPartsValue(' . $originalTotalInPartValue . ' => ' . $this->getTotalInPartsValue() . ')' . (trim($comments) === '' ? '.' : ': ' . $comments),
+					Log::TYPE_SYSTEM,
+					'STOCK_QTY_CHG',
+					__CLASS__ . '::' . __FUNCTION__);
+	}
+	/**
 	 * a product is returned for into stock on hand
 	 *
 	 * @param unknown            $qty

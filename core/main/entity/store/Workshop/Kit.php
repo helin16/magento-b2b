@@ -1,6 +1,7 @@
 <?php
 class Kit extends TreeEntityAbstract
 {
+	const BARCODE_PREFIX = 'BPCB';
 	/**
 	 * Task of the kit
 	 *
@@ -249,13 +250,46 @@ class Kit extends TreeEntityAbstract
 	    return $this;
 	}
 	/**
+	 * Adding a component to the kit
+	 *
+	 * @param Product      $component
+	 * @param int          $qty
+	 * @param KitComponent $newKitComponent
+	 *
+	 * @return Kit
+	 */
+	public function addComponent(Product $component, $qty, KitComponent &$newKitComponent = null)
+	{
+		$newKitComponent = KitComponent::create(this, $component, $qty);
+		return $this;
+	}
+	/**
+	 * recalculate the price and cost
+	 *
+	 * @return Kit
+	 */
+	public function reCalPriceNCost()
+	{
+		$price = $cost = 0;
+		$components = KitComponent::getAllByCriteria('kitId = ?', array($this->getId()));
+		if(count($components) > 0) {
+			foreach($components as $component) {
+				$price += $component->getUnitPrice() * $component->getQty();
+				$cost += $component->getUnitCost() * $component->getQty();
+			}
+		}
+		return $this->setPrice($price)
+			->setCost($cost)
+			->save();
+	}
+	/**
 	 * (non-PHPdoc)
 	 * @see TreeEntityAbstract::postSave()
 	 */
 	public function postSave()
 	{
 		if(trim($this->getBarcode()) === '') {
-			$this->setBarcode('BPCB' .str_pad($this->getId(), 8, '0', STR_PAD_LEFT))
+			$this->setBarcode(self::BARCODE_PREFIX .str_pad($this->getId(), 8, '0', STR_PAD_LEFT))
 				->save();
 		}
 	}
@@ -282,5 +316,23 @@ class Kit extends TreeEntityAbstract
 		DaoMap::createUniqueIndex('barcode');
 		DaoMap::createIndex('soldDate');
 		DaoMap::commit();
+	}
+	/**
+	 * Created a kit
+	 *
+	 * @param Product $product
+	 * @param Task    $task
+	 * @param string  $comments
+	 *
+	 * @return Kit
+	 */
+	public static function create(Product $product, Task $task = null, $comments = '')
+	{
+		$comments = trim($comments);
+		$kit = new Kit();
+		return $kit->setProduct($product)
+			->setTask($task)
+			->save()
+			->addComment('A kit(' . $kit->getBarcode() . ') created' . ($task instanceof Task ? ' from Task(ID=' . $task->getId() . ')' : '') . ($comments === '' ? '.' : ': ' . $comments));
 	}
 }

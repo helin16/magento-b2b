@@ -14,6 +14,7 @@ class Comments extends BaseEntityAbstract
 	const TYPE_ACCOUNTING = 'ACCOUNTING';
 	const TYPE_CUSTOMER = 'CUSTOMER';
 	const TYPE_SALES = 'SALES';
+	const TYPE_WORKSHOP = 'WORKSHOP';
 	const TYPE_MEMO = 'MEMO';
 	/**
 	 * The id of the entity

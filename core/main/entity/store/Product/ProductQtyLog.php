@@ -13,6 +13,7 @@ class ProductQtyLog extends InfoEntityAbstract
 	const TYPE_STOCK_ADJ = 'AD';
 	const TYPE_STOCK_MOVE_INTERNAL = 'SI';
 	const TYPE_RMA = 'RMA';
+	const TYPE_WORKSHOP = 'WKSHP';
 	/**
 	 * Product
 	 * @var Product

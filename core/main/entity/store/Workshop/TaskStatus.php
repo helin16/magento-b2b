@@ -4,7 +4,7 @@ class TaskStatus extends BaseEntityAbstract
 	const ID_NEW = 1;
 	const ID_IN_PROGRESS = 2;
 	const ID_FINISHED = 3;
-	const ID_CLOSED = 4;
+	const ID_ON_HOLD = 4;
 	const ID_CANCELED = 5;
 	/**
 	 * The name of the status;
