@@ -97,3 +97,6 @@ insert into `taskstatus` values
 (3, 'FINISHED', 'FINISHED', 1, NOW(), 10, NOW(), 10),
 (4, 'ON_HOLD', 'ON_HOLD', 1, NOW(), 10, NOW(), 10),
 (5, 'CANCELED', 'CANCELED', 1, NOW(), 10, NOW(), 10);
+
+insert into `role` values
+(7, 'Workshop', 1, NOW(), 10, NOW(), 10);

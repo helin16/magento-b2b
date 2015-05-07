@@ -11,40 +11,46 @@ class Role extends BaseEntityAbstract
 	private static $_cache;
     /**
      * ID the Logistics role
-     * 
+     *
      * @var int
      */
     const ID_WAREHOUSE= 1;
     /**
      * ID the Purchasing role
-     * 
+     *
      * @var int
      */
     const ID_PURCHASING = 2;
     /**
      * ID the Accounting role
-     * 
+     *
      * @var int
      */
     const ID_ACCOUNTING = 3;
     /**
      * ID the Accounting role
-     * 
+     *
      * @var int
      */
     const ID_STORE_MANAGER = 4;
     /**
      * ID the SYSTEM ADMIN role
-     * 
+     *
      * @var int
      */
     const ID_SYSTEM_ADMIN = 5;
     /**
-     * ID the SYSTEM ADMIN role
-     * 
+     * ID the SALES role
+     *
      * @var int
      */
     const ID_SALES = 6;
+    /**
+     * ID the WORKSHOP role
+     *
+     * @var int
+     */
+    const ID_WORKSHOP = 7;
     /**
      * The name of the role
      * @var string
