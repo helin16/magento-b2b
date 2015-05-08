@@ -30,9 +30,7 @@ class Controller extends CRUDPageAbstract
 	protected function _getEndJs()
 	{
 		$js = parent::_getEndJs();
-		$js .= 'pageJs';
-		$js .= ".init()";
-		$js .= ".getResults(true, " . $this->pageSize . ");";
+		$js .= "$('searchBtn').click();";
 		return $js;
 	}
 	/**
@@ -61,11 +59,32 @@ class Controller extends CRUDPageAbstract
 
 			$where = array(1);
 			$params = array();
-// 			if(isset($serachCriteria['man.name']) && ($name = trim($serachCriteria['man.name'])) !== '')
-// 			{
-// 				$where[] = 'name like ?';
-// 				$params[] = '%' . $name . '%';
-// 			}
+			if(isset($serachCriteria['ord.id']) && ($orderId = trim($serachCriteria['ord.id'])) !== '')
+			{
+				$where[] = 'fromEntityName = :entityName and fromEntityId = :entityId';
+				$params['entityName'] = 'Order';
+				$params['entityId'] = $orderId;
+			}
+			if(isset($serachCriteria['techId']) && ($techId = trim($serachCriteria['techId'])) !== '')
+			{
+				$where[] = 'technicianId = :techId';
+				$params['techId'] = $techId;
+			}
+			if(isset($serachCriteria['statusId']) && ($statusId = trim($serachCriteria['statusId'])) !== '')
+			{
+				$where[] = 'statusId = :statusId';
+				$params['statusId'] = $statusId;
+			}
+			if(isset($serachCriteria['dueDate_from']) && ($dueDate_from = new UDate($serachCriteria['dueDate_from'])) !== false)
+			{
+				$where[] = 'dueDate >= :dueDateFrom';
+				$params['dueDateFrom'] = $dueDate_from->format('Y-m-d') . ' 00:00:00';
+			}
+			if(isset($serachCriteria['dueDate_to']) && ($dueDate_to = new UDate($serachCriteria['dueDate_to'])) !== false)
+			{
+				$where[] = 'dueDate <= :dueDateTo';
+				$params['dueDateTo'] = $dueDate_from->format('Y-m-d') . ' 23:59:59';
+			}
 			$stats = array();
 			$objects = $class::getAllByCriteria(implode(' AND ', $where), $params, false, $pageNo, $pageSize, array('dueDate' => 'asc'), $stats);
 			$results['pageStats'] = $stats;

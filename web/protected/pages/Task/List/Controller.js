@@ -6,6 +6,27 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 	_getTitleRowData: function() {
 		return {};
 	}
+	,getSearchCriteria: function() {
+		var tmp = {};
+		tmp.me = this;
+		if(tmp.me._searchCriteria === null)
+			tmp.me._searchCriteria = {};
+		tmp.nothingTosearch = true;
+		$(tmp.me.searchDivId).getElementsBySelector('[search_field]').each(function(item) {
+			if(item.hasClassName('datepicker')) {
+				tmp.me._signRandID(item);
+				tmp.date = jQuery('#' + item.id).data('DateTimePicker').date();
+				tmp.me._searchCriteria[item.readAttribute('search_field')] = tmp.date;
+			}
+			else
+				tmp.me._searchCriteria[item.readAttribute('search_field')] = $F(item);
+			if(($F(item) instanceof Array && $F(item).size() > 0) || (typeof $F(item) === 'string' && !$F(item).blank()))
+				tmp.nothingTosearch = false;
+		});
+		if(tmp.nothingTosearch === true)
+			tmp.me._searchCriteria = null;
+		return this;
+	}
 	,_getResultRow: function(row, isTitle) {
 		var tmp = {};
 		tmp.me = this;
@@ -123,19 +144,19 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 								'pageNo': 1
 							};
 						}
-		,results: function(data, page, query) {
-			tmp.result = [];
-			if(data.resultData && data.resultData.items) {
-				data.resultData.items.each(function(item){
-					tmp.result.push({'id': item.id, 'text': item.name, 'data': item});
-				});
+				,results: function(data, page, query) {
+					tmp.result = [];
+					if(data.resultData && data.resultData.items) {
+						data.resultData.items.each(function(item){
+							tmp.result.push({'id': item.id, 'text': item.name, 'data': item});
+						});
+					}
+					return { 'results' : tmp.result };
+				}
 			}
-			return { 'results' : tmp.result };
-		}
-			}
-		,cache: true
-		,escapeMarkup: function (markup) { return markup; } // let our custom formatter work
-		,minimumInputLength: 1
+			,cache: true
+			,escapeMarkup: function (markup) { return markup; } // let our custom formatter work
+			,minimumInputLength: 1
 		});
 		return tmp.me;
 	}
@@ -149,6 +170,9 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		tmp.me._initOrderSearchBox()
 			._initTechSearchBox()
 			._initStatusSearchBox();
+		$('searchBtn').observe('click', function() {
+			tmp.me.getSearchCriteria().getResults(true, 30);
+		});
 		return tmp.me;
 	}
 });
