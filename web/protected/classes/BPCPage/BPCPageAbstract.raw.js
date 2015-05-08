@@ -39,6 +39,15 @@ BPCPageJs.prototype = {
 		return tmp.me._htmlIDs[$key];
 	}
 
+	,getFormGroup: function(label, input) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.newDiv = new Element('div', {'class': 'form-group'})
+			.insert({'bottom': label.addClassName('control-label')})
+			.insert({'bottom': input.addClassName('form-control') });
+		return tmp.newDiv;
+	}
+
 	//posting an ajax request
 	,postAjax: function(callbackId, data, requestProperty, timeout) {
 		var tmp = {};

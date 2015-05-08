@@ -87,7 +87,7 @@ class Task extends BaseEntityAbstract
 	 */
 	public function getStatus()
 	{
-		$this->loadManyToOne(status);
+		$this->loadManyToOne('status');
 	    return $this->status;
 	}
 	/**
