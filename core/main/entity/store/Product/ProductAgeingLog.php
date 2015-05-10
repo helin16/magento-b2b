@@ -24,6 +24,11 @@ class ProductAgeingLog extends InfoEntityAbstract
 	 */
 	protected $receivingItem = null;
 	/**
+	 * ProductQtyLog
+	 * @var ProductQtyLog
+	 */
+	protected $productQtyLog;
+	/**
 	 * comments
 	 * @var string
 	 */
@@ -90,6 +95,26 @@ class ProductAgeingLog extends InfoEntityAbstract
 		return $this;
 	}
 	/**
+	 * getter for productQtyLog
+	 *
+	 * @return ProductQtyLog
+	 */
+	public function getProductQtyLog()
+	{
+		$this->loadManyToOne('productQtyLog');
+		return $this->productQtyLog;
+	}
+	/**
+	 * Setter for productQtyLog
+	 *
+	 * @return ProductAgeingLog
+	 */
+	public function setProductQtyLog($productQtyLog)
+	{
+		$this->productQtyLog = $productQtyLog;
+		return $this;
+	}
+	/**
 	 * Getter for comments
 	 *
 	 * @return string
@@ -126,6 +151,7 @@ class ProductAgeingLog extends InfoEntityAbstract
 		if(!$this->isJsonLoaded($reset))
 		{
 			$array['receivingItem'] = $this->getReceivingItem() instanceof ReceivingItem ? $this->getReceivingItem()->getJson() : '';
+			$array['productQtyLog'] = $this->getProductQtyLog() instanceof ProductQtyLog ? $this->getProductQtyLog()->getJson() : '';
 		}
 		return parent::getJson($array, $reset);
 	}
@@ -139,6 +165,7 @@ class ProductAgeingLog extends InfoEntityAbstract
 		DaoMap::setManyToOne('product', 'Product', 'pal_pro');
 		DaoMap::setDateType('lastPurchaseTime');
 		DaoMap::setManyToOne('receivingItem', 'ReceivingItem', 'pal_pro', true);
+		DaoMap::setManyToOne('productQtyLog', 'ProductQtyLog', 'pal_pql');
 		DaoMap::setStringType('comments', 'varchar', 255);
 		parent::__loadDaoMap();
 
@@ -148,16 +175,18 @@ class ProductAgeingLog extends InfoEntityAbstract
 	 *
 	 * @param Product				$product
 	 * @param UDate					$lastPurchaseTime
-	 * @param PurchaseOrderItem		$receivingItem
+	 * @param ReceivingItem			$receivingItem
+	 * @param ProductQtyLog			$productQtyLog
 	 * @param string				$comments
 	 * @return Ambigous <BaseEntityAbstract, GenericDAO>
 	 */
-	public static function create(Product $product, UDate $lastPurchaseTime, $comments = '', ReceivingItem $receivingItem = null)
+	public static function create(ProductQtyLog $productQtyLog, $comments = '')
 	{
 		$log = new ProductAgeingLog();
 		$log->setProduct($product)
 			->setLastPurchaseTime($lastPurchaseTime)
 			->setReceivingItem($receivingItem)
+			->setProductQtyLog($productQtyLog)
 			->setComments($comments);
 		return $log->save();
 	}
