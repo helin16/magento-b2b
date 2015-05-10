@@ -169,7 +169,7 @@ class ProductQtyLog extends InfoEntityAbstract
 	/**
 	 * Getter for product
 	 *
-	 * @return product
+	 * @return Product
 	 */
 	public function getproduct()
 	{

@@ -13,12 +13,15 @@ abstract class ProductAgeingReport
 			$start = self::_logMsg("== START: processing Product Ageing ==", __CLASS__, __FUNCTION__);
 			
 			self::_emptyProductAgeingLog();
+			$productCount = 0;
 			
 			$products = self::_getProducts();
 			if(self::DEBUG === true)
 				self::_logMsg('ProductCount: ' . count($products), __CLASS__, __FUNCTION__);
+			
 			foreach ($products as $product)
 			{
+				$productCount ++;
 				if(self::DEBUG === true)
 					self::_logMsg('ProductId: ' . $product->getId(), __CLASS__, __FUNCTION__);
 				$lastPurchase = self::_getLastPurchase($product);
@@ -27,7 +30,7 @@ abstract class ProductAgeingReport
 			}
 			
 			$end = new UDate();
-			self::_logMsg("== FINISHED: process product ageing", __CLASS__, __FUNCTION__);
+			self::_logMsg("== FINISHED: process product ageing, (productCount: " . $productCount . ", ProductAgeingLogCount: " . ProductAgeingLog::countByCriteria('active = 1') . ")", __CLASS__, __FUNCTION__);
 			
 			Dao::commitTransaction();
 		} catch (Exception $e) {
@@ -39,7 +42,7 @@ abstract class ProductAgeingReport
 	private static function _emptyProductAgeingLog()
 	{
 		if(self::DEBUG === true)
-			self::_logMsg('emptyProductAgeingLog', __CLASS__, __FUNCTION__);
+			self::_logMsg('Empty ALL content in ProductAgeingLog', __CLASS__, __FUNCTION__);
 		ProductAgeingLog::deleteByCriteria('active = 1');
 		return true;
 	}
