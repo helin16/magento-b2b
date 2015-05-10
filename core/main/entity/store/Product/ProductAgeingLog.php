@@ -225,11 +225,12 @@ class ProductAgeingLog extends InfoEntityAbstract
 		$array = $extra;
 		if(!$this->isJsonLoaded($reset))
 		{
+			$array['product'] = $this->getproduct()->getJson();
+			$array['productQtyLog'] = $this->getProductQtyLog()->getJson();
 			$array['receivingItem'] = ($receivingItem = $this->getReceivingItem()) instanceof ReceivingItem ? $receivingItem->getJson() : '';
 			$array['purchaseOrderItem'] = ($purchaseOrderItem = $this->getPurchaseOrderItem()) instanceof PurchaseOrderItem ? $purchaseOrderItem->getJson() : '';
 			$array['orderItem'] = ($orderItem = $this->getOrderItem()) instanceof OrderItem ? $orderItem->getJson() : '';
 			$array['creditNoteItem'] = ($creditNoteItem = $this->getCreditNoteItem()) instanceof CreditNoteItem ? $creditNoteItem->getJson() : '';
-			$array['productQtyLog'] = $this->getProductQtyLog();
 		}
 		return parent::getJson($array, $reset);
 	}
