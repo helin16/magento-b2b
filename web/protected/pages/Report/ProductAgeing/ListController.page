@@ -1,0 +1,50 @@
+<com:TContent ID="MainContent">
+<com:Application.controls.fancybox.FancyBox />
+<com:Application.controls.select2.select2 />
+<com:Application.controls.bootstrapDateTimePicker.bootstrapDateTimePicker />
+<com:TCallback ID="deactivateItemBtn" OnCallback = 'Page.deactivateItems' />
+	<div class="pagewrapper item-list-wrapper">
+		<div class="panel panel-default" id="searchPanel">
+			<div class="panel-heading">
+				<label for="showSearch">Show Search Criteria?</label>
+				<input id="showSearch" type="checkbox" checked onclick="$(this).up('#searchPanel').down('.panel-body').toggle();">
+				<span class="pull-right">
+					<span id="searchBtn" class="btn btn-primary btn-sm" data-loading-text="searching ..." >Search</span>
+				</span>
+			</div>
+			<div class="panel-body search-panel" id="searchDiv" style="overflow: visible;">
+				<div class="row">
+					<div class="col-sm-4">
+						<div class="form-group form-group-sm input-group">
+                           <label class="input-group-addon">Product:</label>
+                           <input type="text" search_field="pro.id" placeholder="the SKU or Name of Product" class="form-control input-sm">
+                    	</div>
+					</div>
+					<div class="col-sm-4">
+						<div class="form-group form-group-sm input-group">
+                           <label class="input-group-addon">PO:</label>
+                           <input disabled type="text" search_field="po.id" placeholder="the PO number" class="form-control input-sm">
+                    	</div>
+					</div>
+					<div class="col-md-4">
+						<div class="form-group form-group-sm input-group">
+                           <label class="input-group-addon">Last Purchase Date:</label>
+                           <div class="form-control" style="padding: 1px;">
+	                           <input disabled type="datetime" search_field="pal.lastPurchaseDate_from" placeholder="Last Purchase Date - from" class="datepicker" style="float:left; width: 49%;">
+	                           <input disabled type="datetime" search_field="pal.lastPurchaseDate_to" placeholder="Last Purchase Date - to" class="datepicker" style="float:left; width: 49%;">
+	                       </div>
+                       </div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="panel panel-default list-panel">
+			<div class="panel-heading">
+				Found <label id="total-found-count">0</label> <%= $this->getFocusEntity() %>:
+			</div>
+			<small class="table-responsive">
+                <table class="table table-hover table-striped" id="item-list"></table>
+            </small>
+		</div> 
+	</div>
+</com:TContent>
