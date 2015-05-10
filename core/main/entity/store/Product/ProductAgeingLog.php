@@ -116,6 +116,7 @@ class ProductAgeingLog extends InfoEntityAbstract
 	 */
 	public function getPurchaseOrderItem()
 	{
+		$this->loadManyToOne('purchaseOrderItem');
 		return $this->purchaseOrderItem;
 	}
 	/**
@@ -135,6 +136,7 @@ class ProductAgeingLog extends InfoEntityAbstract
 	 */
 	public function getOrderItem()
 	{
+		$this->loadManyToOne('orderItem');
 		return $this->orderItem;
 	}
 	/**
@@ -154,6 +156,7 @@ class ProductAgeingLog extends InfoEntityAbstract
 	 */
 	public function getCreditNoteItem()
 	{
+		$this->loadManyToOne('creditNoteItem');
 		return $this->creditNoteItem;
 	}
 	/**
