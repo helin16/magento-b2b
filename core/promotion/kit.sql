@@ -56,6 +56,7 @@ CREATE TABLE `task` (
 	`fromEntityName` varchar(50) NOT NULL DEFAULT '',
 	`fromEntityId` int(10) unsigned NOT NULL DEFAULT 0,
 	`statusId` int(10) unsigned NOT NULL DEFAULT 0,
+	`customerId` int(10) unsigned NOT NULL DEFAULT 0,
 	`technicianId` int(10) unsigned NULL DEFAULT NULL,
 	`dueDate` datetime NOT NULL DEFAULT '0001-01-01 00:00:00',
 	`instructions` text NOT NULL ,
@@ -66,6 +67,7 @@ CREATE TABLE `task` (
 	`updatedById` int(10) unsigned NOT NULL DEFAULT 0,
 	PRIMARY KEY (`id`)
 	,INDEX (`statusId`)
+	,INDEX (`customerId`)
 	,INDEX (`technicianId`)
 	,INDEX (`createdById`)
 	,INDEX (`updatedById`)

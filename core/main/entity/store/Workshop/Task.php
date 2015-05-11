@@ -39,6 +39,12 @@ class Task extends BaseEntityAbstract
 	 */
 	private $instruction;
 	/**
+	 * The customer of the task
+	 *
+	 * @var Customer
+	 */
+	protected $customer;
+	/**
 	 * Getter for fromEntityName
 	 *
 	 * @return string
@@ -167,6 +173,28 @@ class Task extends BaseEntityAbstract
 	    return $this;
 	}
 	/**
+	 * Getter for customer
+	 *
+	 * @return Customer
+	 */
+	public function getCustomer()
+	{
+		$this->loadManyToOne('customer');
+	    return $this->customer;
+	}
+	/**
+	 * Setter for customer
+	 *
+	 * @param Customer $value The customer
+	 *
+	 * @return Task
+	 */
+	public function setCustomer($value)
+	{
+	    $this->customer = $value;
+	    return $this;
+	}
+	/**
 	 * Getting the from entity
 	 *
 	 * @return BaseEntityAbstract
@@ -217,6 +245,7 @@ class Task extends BaseEntityAbstract
 		DaoMap::setStringType('fromEntityName','varchar', 50);
 		DaoMap::setIntType('fromEntityId');
 		DaoMap::setManyToOne('status', 'TaskStatus', 't_st');
+		DaoMap::setManyToOne('customer', 'Customer', 't_cust');
 		DaoMap::setManyToOne('technician', 'UserAccount', 't_tech', true);
 		DaoMap::setDateType('dueDate');
 		DaoMap::setStringType('instructions', 'text');
