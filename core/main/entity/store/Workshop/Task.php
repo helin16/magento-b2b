@@ -266,10 +266,11 @@ class Task extends BaseEntityAbstract
 	 *
 	 * @return Task
 	 */
-	public function create(UDate $dueDate = null, $instructions = '', UserAccount $tech = null, BaseEntityAbstract $fromEntity = null)
+	public function create(Customer $customer, UDate $dueDate = null, $instructions = '', UserAccount $tech = null, BaseEntityAbstract $fromEntity = null)
 	{
 		$task = new Task();
 		$task->setDueDate($dueDate)
+			->setCustomer($customer)
 			->setInstruction($instructions = trim($instructions))
 			->setTechnician($tech);
 		if($fromEntity instanceof BaseEntityAbstract) {
@@ -277,7 +278,7 @@ class Task extends BaseEntityAbstract
 				->getFromEntityName(get_class($fromEntity));
 		}
 		$task->save()
-			->addComment('Task created with(DueDate:' . $dueDate . ', ' . ($instructions === '' ? 'no insturctions' : ' some instructions ') . ', tech ' . ($tech instanceof UserAccount ? $tech->getPerson() : ''));
+			->addComment('Task created with(Customer: ' . $customer->getName() . ', DueDate:' . $dueDate . ', ' . ($instructions === '' ? 'no insturctions' : ' some instructions ') . ', tech ' . ($tech instanceof UserAccount ? $tech->getPerson() : ''));
 		return $task;
 	}
 }
