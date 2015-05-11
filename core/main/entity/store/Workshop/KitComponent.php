@@ -146,8 +146,6 @@ class KitComponent extends BaseEntityAbstract
 	{
 		if(!$this->getComponent() instanceof Product)
 			throw new EntityException('You have to provide a product to install into a kit');
-		if($this->getComponent()->getIsKit() ===  true)
-			throw new EntityException('You can NOT install a kit into another kit, please use the move kit function instead.');
 		if(intval($this->getQty()) === 0)
 			throw new EntityException('You can NOT install a component into a kit with quantity: 0');
 		if(ceil($this->getUnitCost()) === 0 || ceil($this->getUnitPrice()) === 0) {
