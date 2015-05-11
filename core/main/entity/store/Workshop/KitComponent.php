@@ -30,7 +30,7 @@ class KitComponent extends BaseEntityAbstract
 	 *
 	 * @var double
 	 */
-	protected $unitPrice = 0;
+	protected $unitPrice;
 	/**
 	 * Getter for kit
 	 *
@@ -148,10 +148,11 @@ class KitComponent extends BaseEntityAbstract
 			throw new EntityException('You have to provide a product to install into a kit');
 		if(intval($this->getQty()) === 0)
 			throw new EntityException('You can NOT install a component into a kit with quantity: 0');
-		if(ceil($this->getUnitCost()) === 0 || ceil($this->getUnitPrice()) === 0) {
-			$this->setUnitCost($this->getComponent()->getUnitCost())
-				->setUnitPrice($this->getComponent()->getUnitPrice());
-		}
+		if(ceil($this->getUnitCost()) === 0)
+			$this->setUnitCost($this->getComponent()->getUnitCost());
+		if(trim($this->getUnitPrice()) === '')
+			$this->setUnitPrice($this->getComponent()->getUnitPrice());
+		
 		if(trim($this->getId()) === '') { //when we are creating a new one
 			$this->getComponent()->installedIntoKit($this->getUnitCost(), $this->getQty(), $this);
 		} else {
@@ -187,12 +188,13 @@ class KitComponent extends BaseEntityAbstract
 	 *
 	 * @return KitComponent
 	 */
-	public static function create(Kit &$kit, Product $component, $qty)
+	public static function create(Kit &$kit, Product $component, $qty, $unitPrice = '')
 	{
 		$kitComponent = new KitComponent();
 		$kitComponent->setKit($kit)
 			->setComponent($component)
 			->setQty(intval($qty))
+			->setUnitPrice($unitPrice)
 			->save()
 			->getKit()
 				->reCalPriceNCost()
