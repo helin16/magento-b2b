@@ -91,8 +91,6 @@ CREATE TABLE `taskstatus` (
 	,UNIQUE INDEX (`name`)
 ) ENGINE=innodb DEFAULT CHARSET=utf8;
 
-ALTER TABLE `product` ADD `isKit` TINYINT(1) NOT NULL DEFAULT '0' AFTER `fullDescAssetId`, ADD INDEX (`isKit`) ;
-
 insert into `taskstatus` values
 (1, 'NEW', 'NEW', 1, NOW(), 10, NOW(), 10),
 (2, 'WIP', 'Work In Progress', 1, NOW(), 10, NOW(), 10),
