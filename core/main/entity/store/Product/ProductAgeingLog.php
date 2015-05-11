@@ -53,7 +53,7 @@ class ProductAgeingLog extends InfoEntityAbstract
 	 *
 	 * @return product
 	 */
-	public function getproduct()
+	public function getProduct()
 	{
 		$this->loadManyToOne('product');
 		return $this->product;
@@ -215,6 +215,30 @@ class ProductAgeingLog extends InfoEntityAbstract
 	 */
 	public function preSave()
 	{
+		$this->setProduct($productQtyLog->getproduct())
+			->setLastPurchaseTime($productQtyLog->getCreated());
+		switch($productQtyLog->getEntityName()) {
+			case 'ReceivingItem': {
+				if(($receivingItem = ReceivingItem::get($productQtyLog->getEntityId()))  instanceof ReceivingItem)
+					$this->setReceivingItem($receivingItem);
+				break;
+			}
+			case 'PurchaseOrderItem': {
+				if(($purchaseOrderItem = PurchaseOrderItem::get($productQtyLog->getEntityId()))  instanceof PurchaseOrderItem)
+					$this->setPurchaseOrderItem($purchaseOrderItem);
+				break;
+			}
+			case 'OrderItem': {
+				if(($orderItem = OrderItem::get($productQtyLog->getEntityId()))  instanceof OrderItem)
+					$this->setOrderItem($orderItem);
+				break;
+			}
+			case 'CreditNoteItem': {
+				if(($creditNoteItem = CreditNoteItem::get($productQtyLog->getEntityId()))  instanceof CreditNoteItem)
+					$this->setCreditNoteItem($creditNoteItem);
+				break;
+			}
+		}
 	}
 	/**
 	 * (non-PHPdoc)
@@ -225,7 +249,7 @@ class ProductAgeingLog extends InfoEntityAbstract
 		$array = $extra;
 		if(!$this->isJsonLoaded($reset))
 		{
-			$array['product'] = $this->getproduct()->getJson();
+			$array['product'] = $this->getProduct()->getJson();
 			$array['productQtyLog'] = $this->getProductQtyLog()->getJson();
 			$array['receivingItem'] = ($receivingItem = $this->getReceivingItem()) instanceof ReceivingItem ? $receivingItem->getJson() : '';
 			$array['purchaseOrderItem'] = ($purchaseOrderItem = $this->getPurchaseOrderItem()) instanceof PurchaseOrderItem ? $purchaseOrderItem->getJson() : '';
@@ -262,13 +286,7 @@ class ProductAgeingLog extends InfoEntityAbstract
 	public static function create(ProductQtyLog $productQtyLog, $comments = '')
 	{
 		$log = new ProductAgeingLog();
-		$log->setProduct($productQtyLog->getproduct())
-			->setLastPurchaseTime($productQtyLog->getCreated())
-			->setReceivingItem(($productQtyLog->getEntityName() === 'ReceivingItem' && ($receivingItem = ReceivingItem::get($productQtyLog->getEntityId()))  instanceof ReceivingItem) ? $receivingItem : null)
-			->setPurchaseOrderItem(($productQtyLog->getEntityName() === 'PurchaseOrderItem' && ($purchaseOrderItem = PurchaseOrderItem::get($productQtyLog->getEntityId()))  instanceof PurchaseOrderItem) ? $purchaseOrderItem : null)
-			->setOrderItem(($productQtyLog->getEntityName() === 'OrderItem' && ($orderItem = OrderItem::get($productQtyLog->getEntityId()))  instanceof OrderItem) ? $orderItem : null)
-			->setCreditNoteItem(($productQtyLog->getEntityName() === 'CreditNoteItem' && ($creditNoteItem = CreditNoteItem::get($productQtyLog->getEntityId()))  instanceof CreditNoteItem) ? $creditNoteItem : null)
-			->setProductQtyLog($productQtyLog)
+		$log->setProductQtyLog($productQtyLog)
 			->setComments($comments);
 		return $log->save();
 	}

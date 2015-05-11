@@ -1,7 +1,7 @@
 <?php
 /**
  * This is the listing page for customer
- * 
+ *
  * @package    Web
  * @subpackage Controller
  * @author     lhe<helin16@gmail.com>
@@ -31,7 +31,7 @@ class ListController extends CRUDPageAbstract
 	{
 		$js = parent::_getEndJs();
 		$js .= "pageJs._bindSearchKey()";
-// 		$js .= "._loadDataPicker()";
+		$js .= "._loadDataPicker()";
 		$js .= ".setCallbackId('deactivateItems', '" . $this->deactivateItemBtn->getUniqueID() . "')";
 		$js .= ".getResults(true, " . $this->pageSize . ");";
 		return $js;
@@ -52,57 +52,49 @@ class ListController extends CRUDPageAbstract
             $class = trim($this->_focusEntity);
             $pageNo = 1;
             $pageSize = DaoQuery::DEFAUTL_PAGE_SIZE;
-            
+
             if(isset($param->CallbackParameter->pagination))
             {
                 $pageNo = $param->CallbackParameter->pagination->pageNo;
                 $pageSize = $param->CallbackParameter->pagination->pageSize * 3;
             }
-            
+
             $serachCriteria = isset($param->CallbackParameter->searchCriteria) ? json_decode(json_encode($param->CallbackParameter->searchCriteria), true) : array();
 
             $where = array(1);
             $params = array();
-            
+
             foreach($serachCriteria as $field => $value)
             {
             	if((is_array($value) && count($value) === 0) || (is_string($value) && ($value = trim($value)) === ''))
             		continue;
-            	
+
             	$query = $class::getQuery();
             	switch ($field)
             	{
-            		case 'pro.id': 
+            		case 'pro.id':
 					{
 						$where[] = 'pal.productId = ?';
             			$params[] = $value;
 						break;
 					}
-					case 'po.id': 
+					case 'po.id':
 					{
 						ProductAgeingLog::getQuery()->eagerLoad('ProductAgeingLog.purchaseOrderItem', 'inner join', 'pal_po');
 						$where[] = '(pal_po.id = ? )';
 						$params[] = $value;
 						break;
 					}
-					case 'pal.lastPurchaseDate_from':
+					case 'aged-days':
 					{
-						$where[] = 'pal.lastPurchaseTime >= ?';
-						$params[] = $value;
-						break;
-					}
-					case 'pal.lastPurchaseDate_to':
-					{
-						$where[] = 'pal.lastPurchaseTime <= ?';
-						$params[] = str_replace(' 00:00:00', ' 23:59:59', $value);
+						$where[] = 'date_add(pal.lastPurchaseTime, INTERVAL ' . intval($value) . ' DAY) < NOW()';
 						break;
 					}
             	}
             }
 
             $stats = array();
-
-            $objects = $class::getAllByCriteria(implode(' AND ', $where), $params, false, $pageNo, $pageSize, array('pal.lastPurchaseTime' => 'desc'), $stats);
+            $objects = $class::getAllByCriteria(implode(' AND ', $where), $params, false, $pageNo, $pageSize, array('pal.lastPurchaseTime' => 'asc'), $stats);
 
             $results['pageStats'] = $stats;
             $results['items'] = array();
