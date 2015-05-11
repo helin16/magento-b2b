@@ -33,6 +33,7 @@
 			<!-- FrontEnd:: Courier list page -->
 			<url ServiceParameter="Courier.List.ListController" pattern="courier.html" />
 
+
 			<!-- FrontEnd:: order list page -->
 			<url ServiceParameter="Order.List.OrderController" pattern="order.html" />
 			<!-- FrontEnd:: order new page -->
@@ -81,6 +82,9 @@
 
 			<!-- FrontEnd:: product category list page -->
 			<url ServiceParameter="ProductCategory.List.ListController" pattern="productcategories.html" />
+
+			<!-- FrontEnd:: product qty log list page -->
+			<url ServiceParameter="ProductQtyLog.List.ListController" pattern="productqtylog.html" />
 
 			<!-- FrontEnd:: product qty log list page -->
 			<url ServiceParameter="ProductQtyLog.List.ListController" pattern="productqtylog.html" />
@@ -149,6 +153,9 @@
 
 			<!-- FrontEnd:: Report page -->
 			<url ServiceParameter="Report.List.ListController" pattern="report.html" />
+
+			<!-- FrontEnd:: Product Ageing Report page -->
+			<url ServiceParameter="Report.ProductAgeing.ListController" pattern="productageing.html" />
 
 			<!-- asset service -->
 			<url ServiceId="asset" ServiceParameter="" pattern="asset/{method}" parameters.method="get" />

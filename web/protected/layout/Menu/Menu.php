@@ -46,7 +46,8 @@ class Menu extends TTemplateControl
 				'stockadjustment' => array('url' => '/stockadjustment.html', 'name' => 'Stock Adjustment', 'icon'=> '<span class=""></span>'),
 				'productquantitylog' => array('url' => '/productqtylog.html', 'name' => 'Qty Log', 'icon'=> '<span class=""></span>'),
 				'accounting' => array('url' => '/accounting.html', 'name' => 'Accounting Info', 'icon'=> '<span class=""></span>'),
-				'importer' => array('url' => '/importer/new.html', 'name' => 'Importer', 'icon'=> '<span class="fa fa-bars"></span>')
+				'importer' => array('url' => '/importer/new.html', 'name' => 'Importer', 'icon'=> '<span class="fa fa-bars"></span>'),
+				'ageingreport' => array('url' => '/productageing.html', 'name' => 'Ageing Report (beta)', 'icon'=> '<span class="glyphicon glyphicon-eye-open"></span>')
 			);
 		if(AccessControl::canAccessPurcahseOrdersPage(Core::getRole()) )
 			$array['Purchase'] = array(
