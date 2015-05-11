@@ -1130,6 +1130,24 @@ class Product extends InfoEntityAbstract
 					__CLASS__ . '::' . __FUNCTION__);
 	}
 	/**
+	 * a product is created as a kit
+	 *
+	 * @param string             $comments
+	 * @param BaseEntityAbstract $entity
+	 */
+	public function createAsAKit($comments, Kit $entity)
+	{
+		$task = ($kit instanceof Kit ? $kit->getTask() : null);
+		return $this->setStockOnHand(($originalStockOnHand = $this->getStockOnHand()) + 1)
+			->snapshotQty($entity instanceof BaseEntityAbstract ? $entity : $this, ProductQtyLog::TYPE_WORKSHOP,
+					'Created a Kit[' . $kit->getBarcode() . ']' . ($task instanceof Task ? ' generated from Task[' . $task->getTask() . ']' : '') . (trim($comments) === '' ? '.' : ': ' . $comments))
+			->save()
+			->addLog('StockOnHand(' . $originalStockOnHand . ' => ' . $this->getStockOnHand() . ')' . (trim($comments) === '' ? '.' : ': ' . $comments),
+					Log::TYPE_SYSTEM, 
+					'STOCK_QTY_CHG',
+					__CLASS__ . '::' . __FUNCTION__);
+	}
+	/**
 	 * a product is installed into a kit
 	 *
 	 * @param unknown            $qty

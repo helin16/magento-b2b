@@ -19,7 +19,7 @@ class Kit extends TreeEntityAbstract
 	 *
 	 * @var string
 	 */
-	private $barcode;
+	private $barcode = '';
 	/**
 	 * The customer that this kit is sold to
 	 *
@@ -291,6 +291,7 @@ class Kit extends TreeEntityAbstract
 		if(trim($this->getBarcode()) === '') {
 			$this->setBarcode(self::BARCODE_PREFIX .str_pad($this->getId(), 8, '0', STR_PAD_LEFT))
 				->save();
+			$this->getProduct()->createAsAKit('', $this);
 		}
 	}
 	/**
