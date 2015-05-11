@@ -85,10 +85,9 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 			,formatResult : function(result) {
 				 if(!result)
 					 return '';
-				 return '<div class="row order_item"><div class="col-xs-3">' + result.data.orderNo + '</div><div class="col-xs-3" order_status="' + result.data.status.name + '">' + result.data.status.name + '</div><div class="col-xs-6"><small>' + result.data.customer.name + '</small></div></div >';
+				 return '<div class="row order_item"><div class="col-xs-3">' + result.data.orderNo + '</div><div class="col-xs-3" order_status="' + result.data.status.name + '">' + result.data.status.name + '</div><div class="col-xs-6"><small>' + ((result.data.customer && result.data.customer.name) ? result.data.customer.name : '') + '</small></div></div >';
 			 }
 			 ,escapeMarkup: function (markup) { return markup; } // let our custom formatter work
-			 ,minimumInputLength: 1
 		});
 		return tmp.me;
 	}
@@ -122,7 +121,6 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 			}
 			,cache: true
 			,escapeMarkup: function (markup) { return markup; } // let our custom formatter work
-			,minimumInputLength: 1
 		});
 		return tmp.me;
 	}
@@ -130,8 +128,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		var tmp = {};
 		tmp.me = this;
 		jQuery('[search_field="statusId"]').select2({
-			minimumInputLength: 3
-			,multiple: true
+			multiple: true
 			,ajax: {
 				delay: 250
 				,url: '/ajax/getAll'
