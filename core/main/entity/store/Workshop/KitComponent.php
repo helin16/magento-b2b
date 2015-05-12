@@ -163,6 +163,16 @@ class KitComponent extends BaseEntityAbstract
 	}
 	/**
 	 * (non-PHPdoc)
+	 * @see BaseEntityAbstract::postSave()
+	 */
+	public function postSave()
+	{
+		$this->getKit()
+			->reCalPriceNCost()
+			->addComment($qty . ' Component(SKU=' . $component->getSku() . ') has been added into this kit (' . $kit->getBarcode() . ')', Comments::TYPE_WORKSHOP)
+	}
+	/**
+	 * (non-PHPdoc)
 	 * @see BaseEntity::__loadDaoMap()
 	 */
 	public function __loadDaoMap()
@@ -191,15 +201,11 @@ class KitComponent extends BaseEntityAbstract
 	public static function create(Kit &$kit, Product $component, $qty, $unitPrice = '')
 	{
 		$kitComponent = new KitComponent();
-		$kitComponent->setKit($kit)
+		return $kitComponent->setKit($kit)
 			->setComponent($component)
 			->setQty(intval($qty))
 			->setUnitPrice($unitPrice)
-			->save()
-			->getKit()
-				->reCalPriceNCost()
-				->addComment($qty . ' Component(SKU=' . $component->getSku() . ') has been added into this kit (' . $kit->getBarcode() . ')', Comments::TYPE_WORKSHOP);
-		return $kitComponent;
+			->save();
 	}
 
 }

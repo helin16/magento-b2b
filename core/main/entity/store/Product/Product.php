@@ -961,6 +961,28 @@ class Product extends InfoEntityAbstract
 	    return $this;
 	}
 	/**
+	 * recalculating the stockOnHand and stockOnHandValue of this product, if it's a kit
+	 */
+	public function reCalKitsValue()
+	{
+		if($this->getIsKit() !== true || trim($this->getId()) === '')
+			return $this;
+		$sql = 'select sum(kit.cost) `totalValue`, count(distinct kit.id) `totalCount` from kit kit where kit.active = 1 and kit.soldDate = ? and kit.productId = ?';
+		$result = Dao::getResultsNative($sql, array(trim(UDate::zeroDate()), $this->getId()));
+		if(count($result) > 0) {
+			$totalValue = (trim($result[0]['totalValue']) === '' ? '0.0000' : trim($result[0]['totalValue']));
+			$totalCount = (trim($result[0]['totalCount']) === '' ? '0' : trim($result[0]['totalCount']));
+			if(($originalTotalOnHandValue = trim($this->getTotalInPartsValue())) !== $totalValue || ($originalStockOnHand = trim($this->getStockOnHand())) !== $totalCount) { //if not matched, then we need to adjust the qty
+				$this->setStockOnHand($totalCount)
+					->setTotalOnHandValue($totalValue)
+					->snapshotQty($this, ProductQtyLog::TYPE_STOCK_ADJ, 'Realigning the TotalInPartsValue to ' . StringUtilsAbstract::getCurrency($totalValue) . ' and StockOnHand to ' . $totalCount)
+					->save()
+					->addLog('StockOnHand(' . $originalStockOnHand . ' => ' . $this->getStockOnHand() . ')', Log::TYPE_SYSTEM, 'STOCK_QTY_CHG', __CLASS__ . '::' . __FUNCTION__)
+					->addLog('TotalOnHandValue(' . $originalTotalOnHandValue . ' => ' .$this->getTotalOnHandValue() . ')', Log::TYPE_SYSTEM, 'STOCK_VALUE_CHG', __CLASS__ . '::' . __FUNCTION__);
+			}
+		}
+	}
+	/**
 	 * (non-PHPdoc)
 	 * @see BaseEntityAbstract::getJson()
 	 */
@@ -1139,10 +1161,11 @@ class Product extends InfoEntityAbstract
 	{
 		$task = ($kit instanceof Kit ? $kit->getTask() : null);
 		return $this->setStockOnHand(($originalStockOnHand = $this->getStockOnHand()) + 1)
+			->setTotalOnHandValue(($originalTotalOnHandValue = $this->getTotalOnHandValue()) + $entity->getCost())
 			->snapshotQty($entity instanceof BaseEntityAbstract ? $entity : $this, ProductQtyLog::TYPE_WORKSHOP,
-					'Created a Kit[' . $kit->getBarcode() . ']' . ($task instanceof Task ? ' generated from Task[' . $task->getTask() . ']' : '') . (trim($comments) === '' ? '.' : ': ' . $comments))
+					'Created a Kit[' . $kit->getBarcode() . '] with value(cost=' . StringUtilsAbstract::getCurrency($entity->getCost())  . ')' . ($task instanceof Task ? ' generated from Task[' . $task->getTask() . ']' : '') . (trim($comments) === '' ? '.' : ': ' . $comments))
 			->save()
-			->addLog('StockOnHand(' . $originalStockOnHand . ' => ' . $this->getStockOnHand() . ')' . (trim($comments) === '' ? '.' : ': ' . $comments),
+			->addLog('StockOnHand(' . $originalStockOnHand . ' => ' . $this->getStockOnHand() . '), StockOnHandValue(' . $originalTotalOnHandValue . ' => ' . $this->getTotalOnHandValue() . ')' . (trim($comments) === '' ? '.' : ': ' . $comments),
 					Log::TYPE_SYSTEM, 
 					'STOCK_QTY_CHG',
 					__CLASS__ . '::' . __FUNCTION__);

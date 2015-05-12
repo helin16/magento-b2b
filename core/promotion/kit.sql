@@ -22,13 +22,15 @@ CREATE TABLE `kit` (
 	,INDEX (`taskId`)
 	,INDEX (`productId`)
 	,INDEX (`soldToCustomerId`)
+	,INDEX (`soldDate`)
 	,INDEX (`soldOnOrderId`)
 	,INDEX (`shippmentId`)
 	,INDEX (`rootId`)
 	,INDEX (`parentId`)
 	,INDEX (`createdById`)
 	,INDEX (`updatedById`)
-	,INDEX (`soldDate`)
+	,INDEX (`created`)
+	,INDEX (`updated`)
 	,UNIQUE INDEX (`barcode`)
 ) ENGINE=innodb DEFAULT CHARSET=utf8;
 DROP TABLE IF EXISTS `kitcomponent`;
@@ -49,6 +51,8 @@ CREATE TABLE `kitcomponent` (
 	,INDEX (`componentId`)
 	,INDEX (`createdById`)
 	,INDEX (`updatedById`)
+	,INDEX (`created`)
+	,INDEX (`updated`)
 ) ENGINE=innodb DEFAULT CHARSET=utf8;
 DROP TABLE IF EXISTS `task`;
 CREATE TABLE `task` (
@@ -102,3 +106,5 @@ insert into `taskstatus` values
 
 insert into `role` values
 (7, 'Workshop', 1, NOW(), 10, NOW(), 10);
+
+a

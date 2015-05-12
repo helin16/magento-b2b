@@ -264,6 +264,16 @@ class Kit extends TreeEntityAbstract
 		return $this;
 	}
 	/**
+	 * finished adding all components to this kit
+	 * 
+	 * @return Kit
+	 */
+	public function finishedAddingComponents()
+	{
+		$this->getProduct()->$this->getProduct()->createAsAKit('', $this);
+		return $this;
+	}
+	/**
 	 * recalculate the price and cost
 	 *
 	 * @return Kit
@@ -283,6 +293,27 @@ class Kit extends TreeEntityAbstract
 			->save();
 	}
 	/**
+	 * recalulate the whole product with kits' value and qty
+	 * 
+	 * @return Kit
+	 */
+	public function reCalProductValue()
+	{
+		$this->getProduct()->reCalKitsValue();
+		return $this;
+	}
+	/**
+	 * (non-PHPdoc)
+	 * @see TreeEntityAbstract::preSave()
+	 */
+	public function preSave()
+	{
+		if(!$this->getProduct() instanceof Product) 
+			throw new EntityException('A product needed to create a kit!');
+		if($this->getProduct()->getIsKit() !== true)
+			throw new EntityException('The product of the kit needs to have the flag IsKit ticked.');
+	}
+	/**
 	 * (non-PHPdoc)
 	 * @see TreeEntityAbstract::postSave()
 	 */
@@ -291,7 +322,6 @@ class Kit extends TreeEntityAbstract
 		if(trim($this->getBarcode()) === '') {
 			$this->setBarcode(self::BARCODE_PREFIX .str_pad($this->getId(), 8, '0', STR_PAD_LEFT))
 				->save();
-			$this->getProduct()->createAsAKit('', $this);
 		}
 	}
 	/**
