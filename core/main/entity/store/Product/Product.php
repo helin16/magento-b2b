@@ -169,6 +169,12 @@ class Product extends InfoEntityAbstract
 	 */
 	private $costAccNo = '';
 	/**
+	 * whether this product is a kit
+	 *
+	 * @var bool
+	 */
+	private $isKit = false;
+	/**
 	 * Getter for categories
 	 *
 	 * @return array()
@@ -934,6 +940,27 @@ class Product extends InfoEntityAbstract
 		return $this;
 	}
 	/**
+	 * Getter for isKit
+	 *
+	 * @return bool
+	 */
+	public function getIsKit()
+	{
+	    return intval($this->isKit) === 1;
+	}
+	/**
+	 * Setter for isKit
+	 *
+	 * @param bool $value The isKit
+	 *
+	 * @return Product
+	 */
+	public function setIsKit($value)
+	{
+	    $this->isKit = $value;
+	    return $this;
+	}
+	/**
 	 * (non-PHPdoc)
 	 * @see BaseEntityAbstract::getJson()
 	 */
@@ -1264,6 +1291,7 @@ class Product extends InfoEntityAbstract
 		DaoMap::setOneToMany('supplierCodes', 'SupplierCode', 'pro_sup_code');
 		DaoMap::setOneToMany('categories', 'Product_Category', 'pro_cate');
 		DaoMap::setOneToMany('codes', 'ProductCode', 'pro_pro_code');
+		DaoMap::setBoolType('isKit');
 		parent::__loadDaoMap();
 
 		DaoMap::createUniqueIndex('sku');
@@ -1283,6 +1311,7 @@ class Product extends InfoEntityAbstract
 		DaoMap::createIndex('assetAccNo');
 		DaoMap::createIndex('revenueAccNo');
 		DaoMap::createIndex('costAccNo');
+		DaoMap::createIndex('isKit');
 		DaoMap::commit();
 	}
 	/**
