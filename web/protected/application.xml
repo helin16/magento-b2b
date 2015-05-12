@@ -65,6 +65,9 @@
 			<!-- FrontEnd:: Tasks Details page -->
 			<url ServiceParameter="Task.Details.Controller" pattern="task/{id}.html"  parameters.id="\d+|new"/>
 
+			<!-- FrontEnd:: Kit Details page -->
+			<url ServiceParameter="Kit.Details.Controller" pattern="kit/{id}.html"  parameters.id="\d+|new"/>
+
 			<!-- FrontEnd:: Price Match page -->
 			<url ServiceParameter="PriceMatch.PriceMatchController" pattern="pricematch.html" />
 			<!-- FrontEnd:: Price Match Companypage -->
