@@ -44,7 +44,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 			formatResult : function(result) {
 				if(!result)
 					return '';
-				return '<div class="row"><div class="col-xs-3" style="word-wrap: break-word;">' + result.data.sku + '</div><div class="col-xs-9">' + result.data.name + '</div></div>';
+				return '<div class="row"><div class="col-xs-3 select2-word-break" style="word-wrap: break-word;">' + result.data.sku + '</div><div class="col-xs-9">' + result.data.name + '</div></div>';
 			},
 			escapeMarkup: function (markup) { return markup; }, // let our custom formatter work
 			minimumInputLength: 3
@@ -68,7 +68,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 					 tmp.result = [];
 					 if(data.resultData && data.resultData.items) {
 						 data.resultData.items.each(function(item){
-							 tmp.result.push({'id': item.id, 'text': item.name, 'data': item});
+							 tmp.result.push({'id': item.id, 'text': item.namePath, 'data': item});
 						 });
 					 }
 		    		 return { 'results' : tmp.result };
@@ -78,7 +78,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 			,formatResult : function(result) {
 				 if(!result)
 					 return '';
-				 return '<div class="row order_item"><div class="col-xs-12">' + result.data.name + '</div></div >';
+				 return '<div class="row order_item"><div class="col-xs-12">' + result.data.namePath + '</div></div >';
 			 }
 			 ,escapeMarkup: function (markup) { return markup; } // let our custom formatter work
 		});

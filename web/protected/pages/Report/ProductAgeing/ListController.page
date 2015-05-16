@@ -14,16 +14,10 @@
 			</div>
 			<div class="panel-body search-panel" id="searchDiv" style="overflow: visible;">
 				<div class="row">
-					<div class="col-sm-4">
+					<div class="col-sm-6">
 						<div class="form-group form-group-sm input-group">
                            <label class="input-group-addon">Product:</label>
                            <input type="text" search_field="pro.ids" placeholder="the SKU or Name of Product" class="form-control input-sm select2">
-                    	</div>
-					</div>
-					<div class="col-sm-3">
-						<div class="form-group form-group-sm input-group">
-                           <label class="input-group-addon">Categories:</label>
-                           <input type="text" search_field="pro.categories" placeholder="the Name of Category" class="form-control input-sm select2">
                     	</div>
 					</div>
 					<div class="col-sm-3">
@@ -32,12 +26,18 @@
                            <input type="text" search_field="po.id" placeholder="the PO number" class="form-control input-sm select2">
                     	</div>
 					</div>
-					<div class="col-md-2">
+					<div class="col-md-3">
 						<div class="form-group form-group-sm input-group">
                            <label class="input-group-addon">Aged ></label>
                            <input type="text" search_field="aged-days" placeholder="No of Days" class="form-control input-sm">
                            <label class="input-group-addon">Days</label>
                        </div>
+					</div>
+					<div class="col-sm-12">
+						<div class="form-group form-group-sm input-group">
+                           <label class="input-group-addon">Categories:</label>
+                           <input type="text" search_field="pro.categories" placeholder="the Name of Category" class="form-control input-sm select2">
+                    	</div>
 					</div>
 				</div>
 			</div>
