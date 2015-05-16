@@ -64,6 +64,8 @@ class ListController extends CRUDPageAbstract
             $where = array(1);
             $params = array();
 
+            var_dump($serachCriteria);
+            
             foreach($serachCriteria as $field => $value)
             {
             	if((is_array($value) && count($value) === 0) || (is_string($value) && ($value = trim($value)) === ''))
@@ -72,12 +74,30 @@ class ListController extends CRUDPageAbstract
             	$query = $class::getQuery();
             	switch ($field)
             	{
-            		case 'pro.id':
+            		case 'pro.ids':
 					{
-						$where[] = 'pal.productId = ?';
-            			$params[] = $value;
+						$value = explode(',', $value);
+						$where[] = 'pal.productId in ('.implode(", ", array_fill(0, count($value), "?")).')';
+            			$params = array_merge($params, $value);
 						break;
 					}
+					case 'pro.categories':
+					{
+						$value = explode(',', $value);
+						$query->eagerLoad("ProductAgeingLog.product", 'inner join', 'pro', 'pro.active = 1')
+							->eagerLoad("Product.categories", 'inner join', 'pro_cate', 'pro_cate.active = 1');
+						$where[] = 'pro_cate.id in ('.implode(", ", array_fill(0, count($value), "?")).')';
+						$params = array_merge($params, $value);
+						break;
+					}
+// 					case 'pro.ids':
+// 						{
+// 							$value = explode(',', $value);
+// 							$query->eagerLoad("PurchaseOrder.items", 'inner join', 'po_item', 'po_item.purchaseOrderId = po.id and po_item.active = 1');
+// 							$where[] = 'po_item.productId in ('.implode(", ", array_fill(0, count($value), "?")).')';
+// 							$params = array_merge($params, $value);
+// 							break;
+// 						}
 					case 'po.id':
 					{
 						ProductAgeingLog::getQuery()->eagerLoad('ProductAgeingLog.purchaseOrderItem', 'inner join', 'pal_po');
@@ -90,6 +110,7 @@ class ListController extends CRUDPageAbstract
 						$where[] = 'date_add(pal.lastPurchaseTime, INTERVAL ' . intval($value) . ' DAY) < NOW()';
 						break;
 					}
+					
             	}
             }
 
