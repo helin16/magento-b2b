@@ -27,7 +27,7 @@ class PaymentExport_Xero extends ExportAbstract
 					,'Payment Date' => $item->getPaymentDate()->setTimeZone('Australia/Melbourne')->format('Y-m-d')
 					,'Customer Name' => $item->getOrder() instanceof Order ? ($item->getOrder()->getCustomer() instanceof Customer ? $item->getOrder()->getCustomer()->getName() : '') : ''
 					,'Order No.' => $item->getOrder() instanceof Order  ? $item->getOrder()->getOrderNo() : ''
-					,'CreditNote No' => $item->getCreditNote() instanceof CreditNote ? (trim($item->getCreditNote()->getCreditNoteNo()) === '' ? '' : $item->getOrder()->getCreditNoteNo()) : ''
+					,'CreditNote No' => $item->getCreditNote() instanceof CreditNote ? $item->getCreditNote()->getCreditNoteNo() : ''
 					,'Processed Date'=> trim($item->getCreated()->setTimeZone('Australia/Melbourne'))
 					,'Processed By' => $item->getCreatedBy() instanceof UserAccount ? $item->getCreatedBy()->getPerson()->getFullName() : ''
 					,'Method'=> ($item->getMethod() instanceof PaymentMethod ? trim($item->getMethod()->getName()) : '')
