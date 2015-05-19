@@ -54,30 +54,32 @@ class Controller extends DetailsPageAbstract
 		try
 		{
 			Dao::beginTransaction();
-			$perchaseorder = !isset($param->CallbackParameter->id) ? new PurchaseOrder() : PurchaseOrder::get(trim($param->CallbackParameter->id));
-			if(!$perchaseorder instanceof PurchaseOrder)
-				throw new Exception('Invalid Purchase Order passed in!');
-			$purchaseOrderNo = trim($param->CallbackParameter->purchaseOrderNo);
-			$supplierId = trim($param->CallbackParameter->supplierId);
-			$supplier = Supplier::get($supplierId);
-			$orderDate = trim($param->CallbackParameter->orderDate);
-			$totalAmount = trim($param->CallbackParameter->totalAmount);
-			$totalPaid = trim($param->CallbackParameter->totalPaid);
+			$task = null;
+			if(isset($param->CallbackParameter->id) && !($task = Task::get(trim($param->CallbackParameter->id))) instanceof Task)
+				throw new Exception('Invalid Task passed in!');
+			if(!isset($param->CallbackParameter->instructions) || ($instructions = trim($param->CallbackParameter->instructions)) === '')
+				throw new Exception('Instructions are required!');
+			if(!isset($param->CallbackParameter->customerId) || !($customer = Customer::get(trim($param->CallbackParameter->customerId))) instanceof Customer)
+				throw new Exception('Invalid Customer Passed in!');
+			$tech = isset($param->CallbackParameter->techId) ? UserAccount::get(trim($param->CallbackParameter->techId)) : null;
+			$order = isset($param->CallbackParameter->orderId) ? Order::get(trim($param->CallbackParameter->orderId)) : null;
+			$dueDate = new UDate(trim($param->CallbackParameter->dueDate));
+			$status = isset($param->CallbackParameter->statusId) ? TaskStatus::get(trim($param->CallbackParameter->statusId)) : null;
 
-			if(isset($param->CallbackParameter->id)) {
-				$perchaseorder->setPurchaseOrderNo($purchaseOrderNo)
-					->setSupplier($supplier)
-					->setSupplierRefNo($supplierId)
-					->setOrderDate($orderDate)
-					->setTotalAmount($totalAmount)
-					->setTotalPaid($totalPaid)
-					->save();
+			if(!$task instanceof Task) {
+				$task = Task::create($customer, $dueDate, $instructions, $tech, $order);
 			} else {
-// 				PurchaseOrder::
+				$task->setCustomer($customer)
+					->setDueDate($dueDate)
+					->setInstruction($instructions)
+					->setTechnician($tech)
+					->setFromEntityId($order instanceof Order ? $order->getId() : '')
+					->setFromEntityName($order instanceof Order ? get_class($order) : '')
+					->setStatus($status)
+					->save();
 			}
-
-			$results['url'] = '/purchase/' . $perchaseorder->getId() . '.html';
-			$results['item'] = $perchaseorder->getJson();
+			$results['url'] = '/task/' . $task->getId() . '.html';
+			$results['item'] = $task->getJson();
 
 			Dao::commitTransaction();
 		}

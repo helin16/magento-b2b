@@ -65,7 +65,7 @@ html, body {
 .order_item [order_status="INSUFFICIENT STOCK"],
 .po_item [order_status="RECEIVING"],
 .po_item [order_status="RECEIVING"] {
-	background-color: yellow;
+	background-color: yellow !important;
 	color: black;
 }
 .order_item [order_status="ETA"],
@@ -75,7 +75,7 @@ html, body {
 .po_item [order_status="ORDERED"],
 .po_item [order_status="ORDERED"]
 {
-	background-color: orange;
+	background-color: orange !important;
 	color: white;
 }
 .order_item [order_status="PICKED"],
@@ -85,7 +85,7 @@ html, body {
 .po_item [order_status="CLOSED"],
 .po_item [order_status="CLOSED"]
 {
-	background-color: green;
+	background-color: green !important;
 	color: white;
 }
 .po_item [order_status="RECEIVED"],
@@ -103,7 +103,7 @@ html, body {
 .order_item:hover .tr-red a
 .po_item [order_status="CANCELED"],
 .po_item [order_status="CANCELED"] {
-	background-color: red;
+	background-color: red !important;
 	color: white;
 }
 

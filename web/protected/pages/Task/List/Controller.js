@@ -32,15 +32,15 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		tmp.me = this;
 		tmp.tag = (tmp.isTitle === true ? 'th' : 'td');
 		tmp.isTitle = (isTitle || false);
-		tmp.row = new Element('tr', {'class': (tmp.isTitle === true ? '' : 'btn-hide-row')})
+		tmp.row = new Element('tr', {'class': 'order_item ' + (tmp.isTitle === true ? '' : 'btn-hide-row')})
 			.store('data', row)
 			.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-1'})
 				.insert({'bottom': tmp.isTitle === true ? 'Task No.' : new Element('a').update(row.id) })
 			})
 			.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-1'})
-				.insert({'bottom': tmp.isTitle === true ? 'Due Date' : new Element('span').update( moment(tmp.me.loadUTCTime(row.dueDate)).format('lll') ) })
+				.insert({'bottom': tmp.isTitle === true ? 'Due Date' : new Element('span').update( moment(tmp.me.loadUTCTime(row.dueDate)).format('DD/MMM/YYYY hh:mm A') ) })
 			})
-			.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-1'})
+			.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-1', 'order_status' : tmp.isTitle === true ? '' : row.status.name})
 				.insert({'bottom': tmp.isTitle === true ? 'Status' : new Element('span').update( row.status.name ) })
 			})
 			.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-1'})
@@ -50,9 +50,9 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 				.insert({'bottom': tmp.isTitle === true ? 'Created From' : new Element('a').update( row.fromEntityId ) })
 			})
 			.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-4'})
-				.insert({'bottom': tmp.isTitle === true ? 'Created By' : new Element('div', {'class': 'row'})
-					.insert({'bottom': new Elmenet('div', {'class': 'col-xs-6'}).update(row.createdBy.fullName) })
-					.insert({'bottom': new Elmenet('div', {'class': 'col-xs-6'}).update(  moment(tmp.me.loadUTCTime(row.created)).format('lll') ) })
+				.insert({'bottom': tmp.isTitle === true ? 'Created By' : new Element('div')
+					.insert({'bottom': new Element('div', {'class': 'col-xs-4'}).update(row.createdBy.person.fullname) })
+					.insert({'bottom': new Element('div', {'class': 'col-xs-8'}).update(  moment(tmp.me.loadUTCTime(row.created)).format('DD/MMM/YYYY hh:mm A') ) })
 				})
 			});
 		return tmp.row;
