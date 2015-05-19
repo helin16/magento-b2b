@@ -59,6 +59,12 @@ class DetailsController extends DetailsPageAbstract
 		$poitems = $receivingItems = array();
 		$js = parent::_getEndJs();
 		$js .= "pageJs.setPreData(" . json_encode($purchaseOrder->getJson()) . ")";
+		$js .= ".setHTMLID('paymentPanel', 'payment_panel')";
+		$js .= ".setHTMLID('totalPriceExcludeGST', 'total_price_exclude_gst')";
+		$js .= ".setHTMLID('totalPriceGST', 'total_price_gst')";
+		$js .= ".setHTMLID('totalPriceIncludeGST', 'total_price_include_gst')";
+		$js .= ".setHTMLID('totalPaidAmount', 'total-paid-amount')";
+		$js .= ".setHTMLID('totalShippingCost', 'total-shipping-cost')";
 		$js .= ".setComment(" . json_encode($comments) . ")";
 		$js .= ".setStatusOptions(" . json_encode($statusOptions) . ")";
 		$js .= ".setCallbackId('searchProduct', '" . $this->searchProductBtn->getUniqueID() . "')";

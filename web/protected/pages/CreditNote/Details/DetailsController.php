@@ -62,7 +62,8 @@ class DetailsController extends BPCPageAbstract
 		$applyToOptions = CreditNote::getApplyToTypes();
 		$js .= "pageJs._applyToOptions=" . json_encode($applyToOptions) . ";";
 		$js .= "pageJs";
-			$js .= ".setHTMLIDs('detailswrapper')";
+			$js .= ".setHTMLID('itemDiv', 'detailswrapper')";
+			$js .= ".setHTMLID('searchPanel', 'search_panel')";
 			$js .= ".setCallbackId('searchCustomer', '" . $this->searchCustomerBtn->getUniqueID() . "')";
 			$js .= ".setCallbackId('searchProduct', '" . $this->searchProductBtn->getUniqueID() . "')";
 			$js .= ".setCallbackId('saveOrder', '" . $this->saveOrderBtn->getUniqueID() . "')";
@@ -289,7 +290,7 @@ class DetailsController extends BPCPageAbstract
 			$creditNote->setTotalValue($totalPaymentDue)
 				->setApplyTo($applyTo)
 				->save();
-			
+
 			//if need to check half credited orders
 			if($creditNote->getOrder() instanceof Order && $hasShipped === false) {
 				$orderItemMap = array();
@@ -329,12 +330,12 @@ class DetailsController extends BPCPageAbstract
 						$orderItems = OrderItem::getAllByCriteria('productId = ? and orderId = ?', array($productId, $creditNote->getOrder()->getId()), true, 1, 1);
 						if(count($orderItems) >0)
 							$totalAmount += $orderItems[0]->getUnitPrice() * $qty;
-							$newOrder->addItem($orderItems[0]->getProduct(), 
-									$orderItems[0]->getUnitPrice(), 
-									$qty, 
-									$orderItems[0]->getTotalPrice(), 
-									$orderItems[0]->getMageOrderId(), 
-									$orderItems[0]->getEta(), 
+							$newOrder->addItem($orderItems[0]->getProduct(),
+									$orderItems[0]->getUnitPrice(),
+									$qty,
+									$orderItems[0]->getTotalPrice(),
+									$orderItems[0]->getMageOrderId(),
+									$orderItems[0]->getEta(),
 									$orderItems[0]->getItemDescription()
 							);
 					}
@@ -342,7 +343,7 @@ class DetailsController extends BPCPageAbstract
 						$newOrder->addInfo(OrderInfoType::ID_MAGE_ORDER_SHIPPING_METHOD, $shippingMethods[0], true);
 					if(count($shippingCost = $creditNote->getOrder()->getInfo(OrderInfoType::ID_MAGE_ORDER_SHIPPING_COST)) > 0) {
 						$newOrder->addInfo(OrderInfoType::ID_MAGE_ORDER_SHIPPING_COST, $shippingCost[0], true);
-						$totalAmount +=	StringUtilsAbstract::getValueFromCurrency($shippingCost[0]);			
+						$totalAmount +=	StringUtilsAbstract::getValueFromCurrency($shippingCost[0]);
 					}
 					$results['newOrder'] = $newOrder->setTotalAmount($totalAmount)
 						->save()

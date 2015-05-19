@@ -3,18 +3,11 @@
  */
 var PageJs = new Class.create();
 PageJs.prototype = Object.extend(new BPCPageJs(), {
-	_htmlIds: {'itemDiv': '', 'searchPanel': 'search_panel'}
-	,_customer: null
+	//_htmlIds: {'itemDiv': '', 'searchPanel': 'search_panel'}
+	_customer: null
 	,_item: null
 	,_searchTxtBox: null
 	,_applyToOptions: null
-	/**
-	 * Setting the HTMLIDS
-	 */
-	,setHTMLIDs: function(itemDivId) {
-		this._htmlIds.itemDiv = itemDivId;
-		return this;
-	}
 	/**
 	 * submitting order to php
 	 */
@@ -284,7 +277,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 	,_preConfirmSubmit: function(btn, printit) {
 		var tmp = {};
 		tmp.me = this;
-		tmp.data = tmp.me._collectFormData($(tmp.me._htmlIds.itemDiv),'save-order');
+		tmp.data = tmp.me._collectFormData($(tmp.me.getHTMLID('itemDiv')),'save-order');
 		tmp.data.totalPaidAmount = tmp.me.getValueFromCurrency(tmp.data.totalPaidAmount);
 		if(tmp.data === null)
 			return null;
@@ -1072,7 +1065,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.me._customer = customer;
 		if($$('.CustomerInfoPanel').size() > 0)
 			jQuery('.CustomerInfoPanel').replaceWith(tmp.me.getCustomerInfoPanel());
-		$(tmp.me._htmlIds.itemDiv).update(tmp.me.getViewOfCreditNote());
+		$(tmp.me.getHTMLID('itemDiv')).update(tmp.me.getViewOfCreditNote());
 		if($$('.init-focus').size() > 0)
 			$$('.init-focus').first().focus();
 		return tmp.me;
@@ -1129,7 +1122,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		var tmp = {};
 		tmp.me = this;
 		tmp.searchTxt = $F(txtbox).strip();
-		tmp.searchPanel = $(txtbox).up('#' + tmp.me._htmlIds.searchPanel);
+		tmp.searchPanel = $(txtbox).up('#' + tmp.me.getHTMLID('searchPanel'));
 		tmp.me.postAjax(tmp.me.getCallbackId('searchCustomer'), {'searchTxt': tmp.searchTxt}, {
 			'onLoading': function() {
 				if($(tmp.searchPanel).down('.list-div'))
@@ -1169,7 +1162,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 	,_getCustomerListPanel: function () {
 		var tmp = {};
 		tmp.me = this;
-		tmp.newDiv = new Element('div', {'id': tmp.me._htmlIds.searchPanel, 'class': 'panel panel-danger search-panel'})
+		tmp.newDiv = new Element('div', {'id': tmp.me.getHTMLID('searchPanel'), 'class': 'panel panel-danger search-panel'})
 			.insert({'bottom': new Element('div', {'class': 'panel-heading form-inline'})
 				.insert({'bottom': new Element('strong').update('Creating a new Credit Note for: ') })
 				.insert({'bottom': new Element('span', {'class': 'input-group col-sm-6'})
@@ -1180,13 +1173,13 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 								if(tmp.txtBox.up('#'+pageJs._htmlIds.searchPanel).down('.item_row')!=undefined && tmp.txtBox.up('#'+pageJs._htmlIds.searchPanel).down('tbody').getElementsBySelector('.item_row').length===1) {
 									tmp.txtBox.up('#'+pageJs._htmlIds.searchPanel).down('tbody .item_row .btn').click();
 								}
-								else $(tmp.me._htmlIds.searchPanel).down('.search-btn').click();
+								else $(tmp.me.getHTMLID('searchPanel')).down('.search-btn').click();
 							});
 							tmp.me.keydown(event, function() {
 								if(tmp.txtBox.up('#'+pageJs._htmlIds.searchPanel).down('.item_row')!=undefined && tmp.txtBox.up('#'+pageJs._htmlIds.searchPanel).down('tbody').getElementsBySelector('.item_row').length===1) {
 									tmp.txtBox.up('#'+pageJs._htmlIds.searchPanel).down('tbody .item_row .btn').click();
 								}
-								else $(tmp.me._htmlIds.searchPanel).down('.search-btn').click();
+								else $(tmp.me.getHTMLID('searchPanel')).down('.search-btn').click();
 							}, function(){}, Event.KEY_TAB);
 							return false;
 						})
@@ -1197,12 +1190,12 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 						})
 						.observe('click', function(){
 							tmp.btn = this;
-							tmp.txtBox = $(tmp.me._htmlIds.searchPanel).down('.search-txt');
+							tmp.txtBox = $(tmp.me.getHTMLID('searchPanel')).down('.search-txt');
 							if(!$F(tmp.txtBox).blank())
 								tmp.me._searchCustomer(tmp.txtBox);
 							else {
-								if($(tmp.me._htmlIds.searchPanel).down('.table tbody'))
-									$(tmp.me._htmlIds.searchPanel).down('.table tbody').innerHTML = null;
+								if($(tmp.me.getHTMLID('searchPanel')).down('.table tbody'))
+									$(tmp.me.getHTMLID('searchPanel')).down('.table tbody').innerHTML = null;
 							}
 						})
 					})
@@ -1210,8 +1203,8 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				.insert({'bottom': new Element('span', {'class': 'btn btn-success pull-right btn-sm btn-danger'})
 					.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-remove'}) })
 					.observe('click', function(){
-						$(tmp.me._htmlIds.searchPanel).down('.search-txt').clear().focus();
-						$(tmp.me._htmlIds.searchPanel).down('.table tbody').innerHTML = null;
+						$(tmp.me.getHTMLID('searchPanel')).down('.search-txt').clear().focus();
+						$(tmp.me.getHTMLID('searchPanel')).down('.table tbody').innerHTML = null;
 					})
 				})
 			})
@@ -1231,7 +1224,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			jQuery('.new-order-item-input').remove();
 			jQuery('.btn').remove();
 			tmp.me.disableAll();
-			tmp.commentsDivWrapper = $(tmp.me._htmlIds.itemDiv).down('.comments-div');
+			tmp.commentsDivWrapper = $(tmp.me.getHTMLID('itemDiv')).down('.comments-div');
 			if(tmp.commentsDivWrapper && tmp.me._creditNote.id) {
 				tmp.me._signRandID(tmp.commentsDivWrapper);
 				tmp.commentsDivWrapper.store('commentsDivJs', tmp.commentsDivJs = new CommentsDivJs(tmp.me, 'CreditNote', tmp.me._creditNote.id, 10, tmp.commentsDivWrapper.id));
@@ -1244,7 +1237,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			});
 		} else if(tmp.me._customer)
 			tmp.me._selectCustomer(tmp.me._customer);
-		else $(tmp.me._htmlIds.itemDiv).update(tmp.me._getCustomerListPanel());
+		else $(tmp.me.getHTMLID('itemDiv')).update(tmp.me._getCustomerListPanel());
 
 		if($$('.init-focus').size() > 0)
 			$$('.init-focus').first().focus();

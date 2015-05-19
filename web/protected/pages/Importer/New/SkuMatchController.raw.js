@@ -8,33 +8,21 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 	,csvFileLineFormat: []
 	,_fileReader: null
 	,_uploadedData: {}
-	,_htmlIds: {}
 	,_importDataTypes: {}
 	,_rowNo: null
 	,_selectTypeTxt: 'Select a Import Type'
 
-	,setHTMLIDs: function(importerDivId, importDataTypesDropdownId) {
-		var tmp = {};
-		tmp.me = this;
-		
-		tmp.me._htmlIds.importerDiv = importerDivId;
-		tmp.me._htmlIds.importDataTypesDropdown = importDataTypesDropdownId;
-		
-		tmp.me.id_wrapper = tmp.me._htmlIds.importerDiv;
-		
-		return this;
-	}
 	,load: function(importDataTypes) {
 		var tmp = {}
 		tmp.me = this;
 		tmp.me._rowNo = 1;
 		tmp.me._importDataTypes = importDataTypes;
-		
-		$(tmp.me._htmlIds.importerDiv).update('test');
-		
+
+		$(tmp.me.getHTMLID('importerDiv')).update('test');
+
 		if (window.File && window.FileReader && window.FileList && window.Blob) { //the browser supports file reading api
 			tmp.me._fileReader = new FileReader();
-			$(tmp.me._htmlIds.importerDiv).update( tmp.me._getFileUploadDiv() );
+			$(tmp.me.getHTMLID('importerDiv')).update( tmp.me._getFileUploadDiv() );
 			tmp.me._loadChosen();
 		} else {
 			$(tmp.me.id_wrapper).update(tmp.me.getAlertBox('Warning:', 'Your browser does NOT support this feature. pls change and try again').addClassName('alert-warning') );
@@ -73,7 +61,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.newDiv =  new Element('div',  {'class': 'panel panel-default drop_file_div', 'title': 'You can drag multiple files here!'})
 			.insert({'bottom': new Element('div', {'class': 'panel-body'})
 				.insert({'bottom': new Element('div', {'class': 'pull-right'})
-					.insert({'bottom': tmp.dropdown = new Element('select', {'class': 'chosen', 'data-placeholder': 'Code Type: ' ,'id': tmp.me._htmlIds.importDataTypesDropdown}) 
+					.insert({'bottom': tmp.dropdown = new Element('select', {'class': 'chosen', 'data-placeholder': 'Code Type: ' ,'id': tmp.me.getHTMLID('importDataTypesDropdownId')})
 						.insert({'bottom': new Element('option', {'value': tmp.me._selectTypeTxt}).update(tmp.me._selectTypeTxt) })
 					})
 					.insert({'bottom': new Element('span', {'class': 'btn btn-default btn-xs', 'title': 'Download Template'})
@@ -85,7 +73,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				})
 				.insert({'bottom': new Element('div', {'class': 'form-group center-block text-left', 'style': 'width: 50%'})
 					.insert({'bottom': new Element('label').update('Drop you files here or select your file below:') })
-					.insert({'bottom': tmp.inputFile = new Element('input', {'type': 'file', 'style': 'display: none;'}) 
+					.insert({'bottom': tmp.inputFile = new Element('input', {'type': 'file', 'style': 'display: none;'})
 						.observe('change', function(event) {
 							tmp.me._readFiles(event.target.files);
 						})
@@ -122,18 +110,18 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				.update(item.value)
 			});
 		});
-		
+
 		return tmp.newDiv;
 	}
-	
+
 	,_getUploadType: function() {
 		var tmp = {};
 		tmp.me = this;
-		tmp.me.dropdown = $(tmp.me._htmlIds.importDataTypesDropdown);
+		tmp.me.dropdown = $(tmp.me.getHTMLID('importDataTypesDropdownId'));
 		tmp.me._importDataTypes = $F(tmp.me.dropdown);
-		
+
 		if(tmp.me._importDataTypes === tmp.me._selectTypeTxt) {
-			tmp.me.showModalBox('Please select a import type first', 'Invalid inport type'); 
+			tmp.me.showModalBox('Please select a import type first', 'Invalid inport type');
 			return false;
 		}
 		switch(tmp.me._importDataTypes) {
@@ -155,7 +143,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		}
 		return tmp.me._importDataTypes;
 	}
-	
+
 	,_readFiles: function(files) {
 		var tmp = {};
 		tmp.me = this;
@@ -222,35 +210,35 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		);
 		return tmp.me;
 	}
-	
+
 	,genCSV: function(btn) {
 		var tmp = {};
 		tmp.me = this;
-		
+
 		//collect data
 		tmp.data = [];
 		tmp.originalDataRows = $(btn).up('.panel').getElementsBySelector('.result_row.result-done');
 		if(tmp.originalDataRows.length < 1)
 			return;
-		
+
 		tmp.headerRow = '';
 		$H(tmp.originalDataRows[0].retrieve('data')).each(function(item){
 			tmp.headerRow = tmp.headerRow + item.key + ', ';
 		});
 		tmp.data.push(tmp.headerRow + '\n');
-		
+
 		$(btn).up('.panel').getElementsBySelector('.result_row.result-done').each(function(row){
 			tmp.csvRow = '';
-			
+
 			$H(row.retrieve('data')).each(function(item){
 				tmp.csvRow = tmp.csvRow + item.value + ', ';
 			});
-			
+
 			tmp.csvRow = tmp.csvRow + '\n';
 			tmp.data.push(tmp.csvRow);
 			tmp.i = tmp.i * 1 + 1;
 		});
-		
+
 		tmp.now = new Date();
 		tmp.fileName = tmp.me._importDataTypes + '_match_' + tmp.now.getFullYear() + '_' + tmp.now.getMonth() + '_' + tmp.now.getDate() + '_' + tmp.now.getHours() + '_' + tmp.now.getMinutes() + '_' + tmp.now.getSeconds() + '.csv';
 		tmp.blob = new Blob(tmp.data, {type: "text/csv;charset=utf-8"});
@@ -274,7 +262,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		var tmp = {};
 		tmp.me = this;
 		tmp.data = tmp.me._uploadedData[dataKeys[dataKeyIndex]];
-		
+
 		tmp.newRow = new Element('tr', {'class': 'result_row info'});
 		tmp.me.csvFileLineFormat.each(function(name){
 			$H(tmp.data).each(function(item){
@@ -284,7 +272,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			});
 		});
 		tmp.data.importDataTypes = tmp.me._importDataTypes;
-		
+
 		tmp.me.postAjax(tmp.me.getCallbackId('getAllCodeForProduct'), tmp.data, {
 			'onLoading': function(sender, param) {
 				listGroupDiv.insert({'bottom': tmp.newRow });
@@ -347,7 +335,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		});
 		return tmp.me;
 	}
-	
+
 	/**
 	 * Getting the result list table
 	 */
@@ -358,17 +346,17 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		$H(tmp.me._uploadedData).each(function(data){
 			tmp.keys.push(data.key);
 		});
-		
+
 		//get header row
 		tmp.theadRow = new Element('tr');
 		tmp.me.csvFileLineFormat.each(function(item){
 			tmp.theadRow.insert({'bottom': new Element('th').update(item) })
 		});
-		
+
 		$(tmp.me.id_wrapper).update(
 			new Element('div', {'class': 'price_search_result panel panel-danger table-responsive'})
 			.insert({'bottom': new Element('div', {'class': 'panel-heading'})
-				.update('Total of <strong>' + tmp.keys.size() + '</strong> unique row(s) received:') 
+				.update('Total of <strong>' + tmp.keys.size() + '</strong> unique row(s) received:')
 				.insert({'bottom': new Element('strong',{'class': 'pull-right'}).update('please waiting for it to finish') })
 			})
 			.insert({'bottom': new Element('table', {'class': 'table table-striped'})

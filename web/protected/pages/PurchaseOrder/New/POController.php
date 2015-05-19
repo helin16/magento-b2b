@@ -45,12 +45,13 @@ class POController extends BPCPageAbstract
 		$class = get_called_class();
 		$js = $this->_getJSPrefix();
 		$js .= parent::_getEndJs();
-		
+
 		$paymentMethods =  array_map(create_function('$a', 'return $a->getJson();'), PaymentMethod::getAll());
 		$shippingMethods =  array_map(create_function('$a', 'return $a->getJson();'), Courier::getAll());
 		$supplier = (isset($_REQUEST['supplierid']) && ($supplier = Supplier::get(trim($_REQUEST['supplierid']))) instanceof Supplier) ? $supplier->getJson() : null;
 		$js .= "pageJs";
-			$js .= ".setHTMLIDs('detailswrapper')";
+			$js .= ".setHTMLID('itemDiv', 'detailswrapper')";
+			$js .= ".setHTMLID('searchPanel', 'search_panel')";
 			$js .= ".setCallbackId('searchSupplier', '" . $this->searchSupplierBtn->getUniqueID() . "')";
 			$js .= ".setCallbackId('searchProduct', '" . $this->searchProductBtn->getUniqueID() . "')";
 			$js .= ".setCallbackId('saveOrder', '" . $this->saveOrderBtn->getUniqueID() . "')";
@@ -182,7 +183,6 @@ class POController extends BPCPageAbstract
 		$daoStart = false;
 		try
 		{
-			var_dump($param->CallbackParameter);
 			Dao::beginTransaction();
 			$daoStart = true;
 			$supplier = Supplier::get(trim($param->CallbackParameter->supplier->id));

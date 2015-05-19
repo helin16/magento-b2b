@@ -49,7 +49,8 @@ class OrderController extends BPCPageAbstract
 		$shippingMethods =  array_map(create_function('$a', 'return $a->getJson();'), Courier::getAll(true, null, DaoQuery::DEFAUTL_PAGE_SIZE, array('name' => 'asc')));
 		$customer = (isset($_REQUEST['customerid']) && ($customer = Customer::get(trim($_REQUEST['customerid']))) instanceof Customer) ? $customer->getJson() : null;
 		$js .= "pageJs";
-			$js .= ".setHTMLIDs('detailswrapper')";
+			$js .= ".setHTMLID('itemDiv', 'detailswrapper')";
+			$js .= ".setHTMLID('searchPanel', 'search_panel')";
 			$js .= ".setCallbackId('searchCustomer', '" . $this->searchCustomerBtn->getUniqueID() . "')";
 			$js .= ".setCallbackId('searchProduct', '" . $this->searchProductBtn->getUniqueID() . "')";
 			$js .= ".setCallbackId('saveOrder', '" . $this->saveOrderBtn->getUniqueID() . "')";

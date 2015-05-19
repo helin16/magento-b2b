@@ -30,7 +30,10 @@ class ListController extends BPCPageAbstract
 	{
 		$js = parent::_getEndJs();
 		$js .= "pageJs";
-			$js .= ".setHTMLIDs('detailswrapper','search_panel','products_table','barcode_input')";
+			$js .= ".setHTMLID('itemDiv', 'detailswrapper')";
+			$js .= ".setHTMLID('searchPanel', 'search_panel')";
+			$js .= ".setHTMLID('productsTable', 'products_table')";
+			$js .= ".setHTMLID('barcodeInput', 'barcode_input')";
 			$js .= ".setCallbackId('searchProduct', '" . $this->searchProductBtn->getUniqueID() . "')";
 			$js .= ".setCallbackId('saveQuantities', '" . $this->saveQuantitiesBtn->getUniqueID() . "')";
 			$js .= ".init();";

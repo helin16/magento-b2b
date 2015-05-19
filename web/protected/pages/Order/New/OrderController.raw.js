@@ -3,18 +3,10 @@
  */
 var PageJs = new Class.create();
 PageJs.prototype = Object.extend(new BPCPageJs(), {
-	_htmlIds: {'itemDiv': '', 'searchPanel': 'search_panel'}
-	,_customer: null
+	_customer: null
 	,_order: null
 	,setOrder: function(_order) {
 		this._order = _order;
-		return this;
-	}
-	/**
-	 * Setting the HTMLIDS
-	 */
-	,setHTMLIDs: function(itemDivId) {
-		this._htmlIds.itemDiv = itemDivId;
 		return this;
 	}
 	/**
@@ -66,7 +58,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		if(!tmp.paidAmountBox || tmp.selectedType === 'INVOICE')
 			return tmp.me._confirmSubmit(printit);
 
-		tmp.data = tmp.me._collectFormData($(tmp.me._htmlIds.itemDiv),'save-order');
+		tmp.data = tmp.me._collectFormData($(tmp.me.getHTMLID('itemDiv')),'save-order');
 		if(tmp.data === null)
 			return tmp.me;
 
@@ -99,7 +91,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.me = this;
 		tmp.printIt = (printit === true ? true : false);
 		tmp.confirmDiv = (confirmDiv || null);
-		tmp.data = tmp.me._collectFormData($(tmp.me._htmlIds.itemDiv),'save-order');
+		tmp.data = tmp.me._collectFormData($(tmp.me.getHTMLID('itemDiv')),'save-order');
 		if(tmp.data === null)
 			return tmp.me;
 		tmp.data.printIt = tmp.printIt;
@@ -188,7 +180,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		}
 		if(!tmp.me._order || !tmp.me._order.id) {
 			//check new memo
-			tmp.newMemoDivBox = $(tmp.me._htmlIds.itemDiv).down('.memo-panel .new-memo-div [new-memo="comments"]');
+			tmp.newMemoDivBox = $(tmp.me.getHTMLID('itemDiv')).down('.memo-panel .new-memo-div [new-memo="comments"]');
 			if(tmp.newMemoDivBox) {
 				tmp.newMemo = $F(tmp.newMemoDivBox);
 				if( !tmp.newMemo.blank()) {
@@ -977,7 +969,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		}
 
 		tmp.rowData = tmp.row.retrieve('data');
-		
+
 		tmp.rowData.unitPrice = tmp.unitPrice;
 		tmp.rowData.discount = tmp.discount;
 		tmp.rowData.qtyOrdered = tmp.qty;
@@ -985,7 +977,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		if(tmp.margin)
 			tmp.rowData.margin = tmp.margin;
 		tmp.row.store('data', tmp.rowData);
-			
+
 		return tmp.me;
 	}
 	/**
@@ -1242,7 +1234,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 	,selectCustomer: function(customer) {
 		var tmp = {};
 		tmp.me = this;
-		tmp.resultDiv = $(tmp.me._htmlIds.itemDiv);
+		tmp.resultDiv = $(tmp.me.getHTMLID('itemDiv'));
 		tmp.me._customer = customer;
 		tmp.resultListDiv = tmp.resultDiv.down('.order_item_list_table');
 		if(tmp.resultListDiv && tmp.resultListDiv.getElementsBySelector('.item_row.order-item-row').size() > 0) { //editing
@@ -1288,7 +1280,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		var tmp = {};
 		tmp.me = this;
 		tmp.pageNo = (pageNo || 1);
-		tmp.searchPanel = $(btn).up('#' + tmp.me._htmlIds.searchPanel);
+		tmp.searchPanel = $(btn).up('#' + tmp.me.getHTMLID('searchPanel'));
 		tmp.searchTxt = $F(tmp.searchPanel.down('.search-txt')).strip();
 		tmp.me.postAjax(tmp.me.getCallbackId('searchCustomer'), {'searchTxt': tmp.searchTxt, 'pageNo': tmp.pageNo}, {
 			'onLoading': function() {
@@ -1356,13 +1348,13 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 	,_getCustomerListPanel: function () {
 		var tmp = {};
 		tmp.me = this;
-		tmp.newDiv = new Element('div', {'id': tmp.me._htmlIds.searchPanel, 'class': 'panel panel-default search-panel'})
+		tmp.newDiv = new Element('div', {'id': tmp.me.getHTMLID('searchPanel'), 'class': 'panel panel-default search-panel'})
 			.insert({'bottom': new Element('div', {'class': 'panel-heading form-inline'})
 				.insert({'bottom': new Element('strong').update('Creating a new order for: ') })
 				.insert({'bottom': new Element('span', {'class': 'input-group col-sm-6'})
 					.insert({'bottom': new Element('input', {'class': 'form-control search-txt init-focus', 'placeholder': 'customer name or email'})
 						.observe('keyup', function(event){
-							$(tmp.me._htmlIds.searchPanel).down('.search-btn').click();
+							$(tmp.me.getHTMLID('searchPanel')).down('.search-btn').click();
 						})
 					})
 					.insert({'bottom': new Element('span', {'class': 'input-group-btn search-btn'})
@@ -1427,7 +1419,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		var tmp = {};
 		tmp.me = this;
 		if(items.size() > 0) {
-			tmp.productListDiv = $(tmp.me._htmlIds.itemDiv).down('.order_item_list_table');
+			tmp.productListDiv = $(tmp.me.getHTMLID('itemDiv')).down('.order_item_list_table');
 			items.each(function(item) {
 				item.sellingitems = [];
 				tmp.unitPriceValue = tmp.me.getValueFromCurrency(item.unitPrice);
@@ -1468,7 +1460,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				tmp.className = tmp.me._originalOrder.type === 'QUOTE' ? 'warning' : (tmp.me._originalOrder.type === 'ORDER' ? 'success' : 'default');
 
 			}else {
-				$(tmp.me._htmlIds.itemDiv).update(tmp.me._getCustomerListPanel());
+				$(tmp.me.getHTMLID('itemDiv')).update(tmp.me._getCustomerListPanel());
 			}
 		}
 		tmp.panels = jQuery('.panel').removeClass('panel-success').removeClass('panel-warning').removeClass('panel-default').addClass('panel-' + tmp.className);

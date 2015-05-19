@@ -3,19 +3,11 @@
  */
 var PageJs = new Class.create();
 PageJs.prototype = Object.extend(new BPCPageJs(), {
-	_htmlIds: {'itemDiv': '', 'searchPanel': 'search_panel'}
-	,_customer: null
+	_customer: null
 	,_item: null
 	,_searchTxtBox: null
 	,_statusOptions: null
 	,_commentsDiv: {'pagination': {'pageSize': 5, 'pageNo': 1}, 'resultDivId': 'comments_result_div', 'types': {'purchasing': '', 'warehouse': ''}} //the pagination for the comments
-	/**
-	 * Setting the HTMLIDS
-	 */
-	,setHTMLIDs: function(itemDivId) {
-		this._htmlIds.itemDiv = itemDivId;
-		return this;
-	}
 	/**
 	 * Getting the comments row
 	 */
@@ -217,9 +209,9 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		var tmp = {};
 		tmp.me = this;
 		tmp.data = null;
-		
+
 		tmp.printIt = (printit === true ? true : false);
-		tmp.data = tmp.me._collectFormData($(tmp.me._htmlIds.itemDiv),'save-order');
+		tmp.data = tmp.me._collectFormData($(tmp.me.getHTMLID('itemDiv')),'save-order');
 		if(tmp.data === null)
 			return null;
 		if(tmp.data.status.blank()) {
@@ -232,7 +224,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.data.customer.id = tmp.me._customer.id;
 		tmp.data.RMA = tmp.me._RMA;
 		tmp.data.order = tmp.me._order;
-		
+
 		tmp.shippAddrPanel = $$('.shipping-address.address-div').first();
 		if(tmp.shippAddrPanel) {
 			tmp.shippAddr = tmp.me._collectFormData(tmp.shippAddrPanel,'address-editable-field');
@@ -262,7 +254,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			item.totalPrice = tmp.me.getValueFromCurrency(item.totalPrice);
 			item.unitPrice = tmp.me.getValueFromCurrency(item.unitPrice);
 		});
-		
+
 		tmp.newDiv = new Element('div', {'class': 'confirm-div'})
 			.insert({'bottom': new Element('div')
 				.insert({'bottom': tmp.me._getFormGroup('Do you want to send an email to this address:',
@@ -298,7 +290,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				})
 			});
 		tmp.me.showModalBox("You're about to save creadit note for : " + tmp.me._customer.name, tmp.newDiv);
-		
+
 		return tmp.me;
 	}
 	/**
@@ -576,7 +568,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			'totalPrice': tmp.me.getCurrency(RMAItem.unitPrice * (RMAItem.qty ? RMAItem.qty : RMAItem.qtyOrdered))
 		};
 		$$('.order_change_details_table').first().insert({'bottom': tmp.newDiv = tmp.me._getProductRow(tmp.data) });
-		
+
 		tmp.me._recalculateSummary();
 		return tmp.newDiv;
 	}
@@ -1011,7 +1003,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.me._customer = customer;
 		if($$('.CustomerInfoPanel').size() > 0)
 			jQuery('.CustomerInfoPanel').replaceWith(tmp.me.getCustomerInfoPanel());
-		$(tmp.me._htmlIds.itemDiv).update(tmp.me.getViewOfRMA());
+		$(tmp.me.getHTMLID('itemDiv')).update(tmp.me.getViewOfRMA());
 		if($$('.init-focus').size() > 0)
 			$$('.init-focus').first().focus();
 		return tmp.me;
@@ -1027,7 +1019,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.newDiv = new Element('tr', {'class': (tmp.isTitle === true ? 'item_top_row' : 'btn-hide-row item_row') + (row.active == 0 ? ' danger' : ''), 'item_id': (tmp.isTitle === true ? '' : row.id)}).store('data', row)
 			.insert({'bottom': new Element(tmp.tag, {'class': 'name col-xs-1'})
 				.insert({'bottom': (tmp.isTitle === true ? '&nbsp;':
-					new Element('span', {'class': 'btn btn-primary btn-xs'}).update('select')	
+					new Element('span', {'class': 'btn btn-primary btn-xs'}).update('select')
 					.observe('click', function(){
 						tmp.me._selectCustomer(row);
 					})
@@ -1068,7 +1060,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		var tmp = {};
 		tmp.me = this;
 		tmp.searchTxt = $F(txtbox).strip();
-		tmp.searchPanel = $(txtbox).up('#' + tmp.me._htmlIds.searchPanel);
+		tmp.searchPanel = $(txtbox).up('#' + tmp.me.getHTMLID('searchPanel'));
 		tmp.me.postAjax(tmp.me.getCallbackId('searchCustomer'), {'searchTxt': tmp.searchTxt}, {
 			'onLoading': function() {
 				if($(tmp.searchPanel).down('.list-div'))
@@ -1083,7 +1075,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 						return;
 					$(tmp.searchPanel).insert({'bottom': new Element('small', {'class': 'table-responsive list-div'})
 						.insert({'bottom': new Element('table', {'class': 'table table-hover table-condensed'})
-							.insert({'bottom': new Element('thead') 
+							.insert({'bottom': new Element('thead')
 								.insert({'bottom': tmp.me._getCustomerRow({'email': "Email", 'name': 'Name', 'contactNo': 'Contact Num', 'description': 'Description', 'addresses': 'Addresses',
 																			'address': {'billing': {'full': 'Billing Address'}, 'shipping': {'full': 'Shipping Address'} },
 																			'mageId': "Mage Id", 'active': "Active?"
@@ -1108,24 +1100,24 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 	,_getCustomerListPanel: function () {
 		var tmp = {};
 		tmp.me = this;
-		tmp.newDiv = new Element('div', {'id': tmp.me._htmlIds.searchPanel, 'class': 'panel panel-info search-panel'})
+		tmp.newDiv = new Element('div', {'id': tmp.me.getHTMLID('searchPanel'), 'class': 'panel panel-info search-panel'})
 			.insert({'bottom': new Element('div', {'class': 'panel-heading form-inline'})
 				.insert({'bottom': new Element('strong').update('Creating a new order for: ') })
 				.insert({'bottom': new Element('span', {'class': 'input-group col-sm-6'})
-					.insert({'bottom': new Element('input', {'class': 'form-control search-txt init-focus', 'placeholder': 'Customer name'}) 
+					.insert({'bottom': new Element('input', {'class': 'form-control search-txt init-focus', 'placeholder': 'Customer name'})
 						.observe('keydown', function(event){
 							tmp.txtBox = this;
 							tmp.me.keydown(event, function() {
 								if(tmp.txtBox.up('#'+pageJs._htmlIds.searchPanel).down('.item_row')!=undefined && tmp.txtBox.up('#'+pageJs._htmlIds.searchPanel).down('tbody').getElementsBySelector('.item_row').length===1) {
 									tmp.txtBox.up('#'+pageJs._htmlIds.searchPanel).down('tbody .item_row .btn').click();
 								}
-								else $(tmp.me._htmlIds.searchPanel).down('.search-btn').click();
+								else $(tmp.me.getHTMLID('searchPanel')).down('.search-btn').click();
 							}, function(){}, Event.KEY_TAB);
 							tmp.me.keydown(event, function() {
 								if(tmp.txtBox.up('#'+pageJs._htmlIds.searchPanel).down('.item_row')!=undefined && tmp.txtBox.up('#'+pageJs._htmlIds.searchPanel).down('tbody').getElementsBySelector('.item_row').length===1) {
 									tmp.txtBox.up('#'+pageJs._htmlIds.searchPanel).down('tbody .item_row .btn').click();
 								}
-								else $(tmp.me._htmlIds.searchPanel).down('.search-btn').click();
+								else $(tmp.me.getHTMLID('searchPanel')).down('.search-btn').click();
 							}, function(){});
 							return false;
 						})
@@ -1136,12 +1128,12 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 						})
 						.observe('click', function(){
 							tmp.btn = this;
-							tmp.txtBox = $(tmp.me._htmlIds.searchPanel).down('.search-txt');
+							tmp.txtBox = $(tmp.me.getHTMLID('searchPanel')).down('.search-txt');
 							if(!$F(tmp.txtBox).blank())
 								tmp.me._searchCustomer(tmp.txtBox);
 							else {
-								if($(tmp.me._htmlIds.searchPanel).down('.table tbody'))
-									$(tmp.me._htmlIds.searchPanel).down('.table tbody').innerHTML = null;
+								if($(tmp.me.getHTMLID('searchPanel')).down('.table tbody'))
+									$(tmp.me.getHTMLID('searchPanel')).down('.table tbody').innerHTML = null;
 							}
 						})
 					})
@@ -1149,8 +1141,8 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				.insert({'bottom': new Element('span', {'class': 'btn btn-success pull-right btn-sm btn-danger'})
 					.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-remove'}) })
 					.observe('click', function(){
-						$(tmp.me._htmlIds.searchPanel).down('.search-txt').clear().focus();
-						$(tmp.me._htmlIds.searchPanel).down('.table tbody').innerHTML = null;
+						$(tmp.me.getHTMLID('searchPanel')).down('.search-txt').clear().focus();
+						$(tmp.me.getHTMLID('searchPanel')).down('.table tbody').innerHTML = null;
 					})
 				})
 			})
@@ -1168,12 +1160,12 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			tmp.me._selectCustomer(tmp.me._customer);
 		else if(tmp.me._order)
 			tmp.me._selectCustomer(tmp.me._order.customer);
-		else $(tmp.me._htmlIds.itemDiv).update(tmp.me._getCustomerListPanel());
-		
+		else $(tmp.me.getHTMLID('itemDiv')).update(tmp.me._getCustomerListPanel());
+
 		if($$('.init-focus').size() > 0)
 			$$('.init-focus').first().focus();
 		jQuery('.select2').select2({});
-		
+
 		if(tmp.me._RMA) {
 			tmp.me._RMA.items.each(function(item){
 				tmp.me._selectProduct(item).writeAttribute('RMAItemId', item.id);
@@ -1267,7 +1259,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 
 		//calculate the total price with GST
 		jQuery('[order-price-summary="totalPriceIncludeGST"]').val(tmp.me.getCurrency(tmp.totalPriceIncGSTWithDiscount)).html(tmp.me.getCurrency(tmp.totalPriceIncGSTWithDiscount));
-		
+
 		//calculate the total Qty
 		jQuery('[order-price-summary="totalQty"]').val(tmp.totalQty).html(tmp.totalQty);
 

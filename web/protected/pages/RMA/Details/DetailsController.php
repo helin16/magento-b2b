@@ -1,7 +1,7 @@
 <?php
 /**
  * This is the OrderController
- * 
+ *
  * @package    Web
  * @subpackage Controller
  * @author     lhe<helin16@gmail.com>
@@ -32,16 +32,16 @@ class DetailsController extends BPCPageAbstract
 			die('System ERR: no param passed in!');
 		if(!($rma = RMA::get($this->Request['id'])) instanceof RMA && trim($this->Request['id']) !== 'new')
 			die('Invalid $rma passed in!');
-		
+
 		$js = parent::_getEndJs();
-		
+
 		$customer = (isset($_REQUEST['customerid']) && ($customer = Customer::get(trim($_REQUEST['customerid']))) instanceof Customer) ? $customer->getJson() : null;
 		if(isset($_REQUEST['orderid']) && !($order = Order::get(trim($_REQUEST['orderid']))) instanceof Order)
 			die('Invalid Order passed in!');
 		if(isset($_REQUEST['orderid']) && ($order = Order::get(trim($_REQUEST['orderid']))) instanceof Order && $rma instanceof RMA)
 			die('You can ONLY create NEW Credit Note from an existing ORDER');
 		$statusOptions = RMA::getAllStatuses();
-		
+
 		if(isset($_REQUEST['orderid']) && ($order = Order::get(trim($_REQUEST['orderid']))) instanceof Order)
 			$js .= "pageJs._order=" . json_encode($order->getJson(array('customer'=> $order->getCustomer()->getJson(), 'items'=> array_map(create_function('$a', 'return $a->getJson(array("product"=>$a->getProduct()->getJson()));'), $order->getOrderItems())))) . ";";
 		else $js .= "pageJs._customer=" . json_encode($customer) . ";";
@@ -49,7 +49,8 @@ class DetailsController extends BPCPageAbstract
 			$js .= "pageJs._RMA=" . json_encode($rma->getJson(array('customer'=> $rma->getCustomer()->getJson(), 'items'=> array_map(create_function('$a', 'return $a->getJson(array("product"=>$a->getProduct()->getJson()));'), $rma->getRMAItems())))) . ";";
 		$js .= "pageJs._statusOptions=" . json_encode($statusOptions) . ";";
 		$js .= "pageJs";
-			$js .= ".setHTMLIDs('detailswrapper')";
+			$js .= ".setHTMLID('itemDiv', 'detailswrapper')";
+			$js .= ".setHTMLID('searchPanel', 'search_panel')";
 			$js .= ".setCallbackId('searchCustomer', '" . $this->searchCustomerBtn->getUniqueID() . "')";
 			$js .= ".setCallbackId('searchProduct', '" . $this->searchProductBtn->getUniqueID() . "')";
 			$js .= ".setCallbackId('saveOrder', '" . $this->saveOrderBtn->getUniqueID() . "')";
@@ -62,7 +63,7 @@ class DetailsController extends BPCPageAbstract
 	 *
 	 * @param unknown $sender
 	 * @param unknown $param
-	 * 
+	 *
 	 * @throws Exception
 	 *
 	 */
@@ -90,7 +91,7 @@ class DetailsController extends BPCPageAbstract
 	 *
 	 * @param unknown $sender
 	 * @param unknown $param
-	 * 
+	 *
 	 * @throws Exception
 	 *
 	 */
@@ -104,7 +105,7 @@ class DetailsController extends BPCPageAbstract
 			$pageNo = isset($param->CallbackParameter->pageNo) ? trim($param->CallbackParameter->pageNo) : '1';
 			$where = 'pro_pro_code.code = :searchExact or pro.name like :searchTxt OR sku like :searchTxt';
 			$params = array('searchExact' => $searchTxt , 'searchTxt' => '%' . $searchTxt . '%');
-			
+
 			$searchTxtArray = StringUtilsAbstract::getAllPossibleCombo(StringUtilsAbstract::tokenize($searchTxt));
 			if(count($searchTxtArray) > 1)
 			{
@@ -122,34 +123,34 @@ class DetailsController extends BPCPageAbstract
 			foreach($products as $product)
 			{
 				$array = $product->getJson();
-				
+
 				$array['minProductPrice'] = 0;
 				$array['lastSupplierPrice'] = 0;
 				$array['minSupplierPrice'] = 0;
-				
+
 				$minProductPriceProduct = PurchaseOrderItem::getAllByCriteria('productId = ?', array($product->getId()), true, 1, 1, array('unitPrice'=> 'asc'));
 				$minProductPrice = sizeof($minProductPriceProduct) ? $minProductPriceProduct[0]->getUnitPrice() : 0;
 				$minProductPriceId = sizeof($minProductPriceProduct) ? $minProductPriceProduct[0]->getPurchaseOrder()->getId() : '';
-				
+
 				PurchaseOrderItem::getQuery()->eagerLoad('PurchaseOrderItem.purchaseOrder');
 				$lastSupplierPriceProduct = PurchaseOrderItem::getAllByCriteria('po_item.productId = ? and po_item_po.supplierId = ?', array($product->getId(), $supplierID), true, 1, 1, array('po_item.id'=> 'desc'));
 				$lastSupplierPrice = sizeof($lastSupplierPriceProduct) ? $lastSupplierPriceProduct[0]->getUnitPrice() : 0;
 				$lastSupplierPriceId = sizeof($lastSupplierPriceProduct) ? $lastSupplierPriceProduct[0]->getPurchaseOrder()->getId() : '';
-				
+
 				PurchaseOrderItem::getQuery()->eagerLoad('PurchaseOrderItem.purchaseOrder');
 				$minSupplierPriceProduct = PurchaseOrderItem::getAllByCriteria('po_item.productId = ? and po_item_po.supplierId = ?', array($product->getId(), $supplierID), true, 1, 1, array('po_item.unitPrice'=> 'asc'));
 				$minSupplierPrice = sizeof($minSupplierPriceProduct) ? $minSupplierPriceProduct[0]->getUnitPrice() : 0;
 				$minSupplierPriceId = sizeof($minSupplierPriceProduct) ? $minSupplierPriceProduct[0]->getPurchaseOrder()->getId() : '';
-				
+
 				$array['minProductPrice'] = $minProductPrice;
 				$array['minProductPriceId'] = $minProductPriceId;
-				
+
 				$array['lastSupplierPrice'] = $lastSupplierPrice;
 				$array['lastSupplierPriceId'] = $lastSupplierPriceId;
-				
+
 				$array['minSupplierPrice'] = $minSupplierPrice;
 				$array['minSupplierPriceId'] = $minSupplierPriceId;
-				
+
 				$items[] = $array;
 			}
 			$results['items'] = $items;
@@ -166,7 +167,7 @@ class DetailsController extends BPCPageAbstract
 	 *
 	 * @param unknown $sender
 	 * @param unknown $param
-	 * 
+	 *
 	 * @throws Exception
 	 *
 	 */
@@ -174,7 +175,7 @@ public function saveOrder($sender, $param)
 	{
 		$results = $errors = array();
 		try
-		{	
+		{
 			Dao::beginTransaction();
 			$customer = Customer::get(trim($param->CallbackParameter->customer->id));
 			if(!$customer instanceof Customer)
@@ -186,7 +187,7 @@ public function saveOrder($sender, $param)
 			$RMA = (isset($param->CallbackParameter->RMA) && ($RMA = RMA::get(trim($param->CallbackParameter->RMA->id))->setDescription(trim($param->CallbackParameter->description))) instanceof RMA) ? $RMA : RMA::create($customer, trim($param->CallbackParameter->description));
 			if(isset($param->CallbackParameter->order) && ($order = Order::get(trim($param->CallbackParameter->order->id))) instanceof Order)
 				$RMA->setOrder($order);
-			
+
 			if(isset($param->CallbackParameter->shippingAddr))
 			{
 				$shippAddress = Address::create(
@@ -200,17 +201,17 @@ public function saveOrder($sender, $param)
 				);
 				$customer->setShippingAddress($shippAddress);
 			}
-			
+
 			$printItAfterSave = false;
 			if(isset($param->CallbackParameter->printIt))
 				$printItAfterSave = (intval($param->CallbackParameter->printIt) === 1 ? true : false);
-			
+
 			if(isset($param->CallbackParameter->comments))
 			{
 				$comments = trim($param->CallbackParameter->comments);
 				$RMA->addComment($comments, Comments::TYPE_SALES);
 			}
-			
+
 			$totalPaymentDue = 0;
 			foreach ($param->CallbackParameter->items as $item)
 			{
@@ -222,13 +223,13 @@ public function saveOrder($sender, $param)
 				$totalPrice = trim($item->totalPrice);
 				$itemDescription = trim($item->itemDescription);
 				$active = trim($item->valid);
-				
+
 				$totalPaymentDue += $totalPrice;
 				if(is_numeric($item->RMAItemId) && !RMAItem::get(trim($item->RMAItemId)) instanceof RMAItem)
 					throw new Exception('Invalid RMA Item passed in');
-				$RMAItem = is_numeric($item->RMAItemId) ? 
+				$RMAItem = is_numeric($item->RMAItemId) ?
 					RMAItem::get(trim($item->RMAItemId))->setActive($active)->setProduct($product)->setQty($qtyOrdered)->setItemDescription($itemDescription)
-					: 
+					:
 					RMAItem::create($RMA, $product, $qtyOrdered, $itemDescription);
 				if(isset($item->orderItemId) && ($orderItem = OrderItem::get(trim($item->orderItemId))) instanceof OrderItem)
 					$RMAItem->setOrderItem($orderItem)->setUnitCost($orderItem->getUnitCost());
