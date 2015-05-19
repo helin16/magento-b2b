@@ -56,14 +56,11 @@ class ListController extends CRUDPageAbstract
             if(isset($param->CallbackParameter->pagination))
             {
                 $pageNo = $param->CallbackParameter->pagination->pageNo;
-                $pageSize = $param->CallbackParameter->pagination->pageSize * 3;
+                $pageSize = $param->CallbackParameter->pagination->pageSize;
             }
-
             $serachCriteria = isset($param->CallbackParameter->searchCriteria) ? json_decode(json_encode($param->CallbackParameter->searchCriteria), true) : array();
-
             $where = array(1);
             $params = array();
-
             foreach($serachCriteria as $field => $value)
             {
             	if((is_array($value) && count($value) === 0) || (is_string($value) && ($value = trim($value)) === ''))
@@ -72,10 +69,19 @@ class ListController extends CRUDPageAbstract
             	$query = $class::getQuery();
             	switch ($field)
             	{
-            		case 'pro.id':
+            		case 'pro.ids':
 					{
-						$where[] = 'pal.productId = ?';
-            			$params[] = $value;
+						$value = explode(',', $value);
+						$where[] = 'pal.productId in ('.implode(", ", array_fill(0, count($value), "?")).')';
+            			$params = array_merge($params, $value);
+						break;
+					}
+					case 'pro.categories':
+					{
+						$value = array_map(create_function('$a', 'return trim($a);'), explode(',', $value));
+						$query->eagerLoad("ProductAgeingLog.product", 'inner join', 'pro', 'pro.id = pal.productId and pro.active = 1')
+							->eagerLoad('Product.categories', 'inner join', 'pro_cate', 'pro_cate.active = 1 and pro.id = pro_cate.productId and pro_cate.categoryId in (' . implode(", ", array_fill(0, count($value), "?")) .')'); 
+						$params = array_merge($value, $params);
 						break;
 					}
 					case 'po.id':
@@ -90,6 +96,7 @@ class ListController extends CRUDPageAbstract
 						$where[] = 'date_add(pal.lastPurchaseTime, INTERVAL ' . intval($value) . ' DAY) < NOW()';
 						break;
 					}
+					
             	}
             }
 
