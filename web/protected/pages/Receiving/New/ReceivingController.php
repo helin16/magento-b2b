@@ -30,7 +30,12 @@ class ReceivingController extends BPCPageAbstract
 	{
 		$js = parent::_getEndJs();
 		$js .= "pageJs";
-			$js .= ".setHTMLIDs('detailswrapper','search_panel','payment_panel','supplier_info_panel','order_change_details_table','barcode_input')";
+			$js .= ".setHTMLID('itemDiv', 'detailswrapper')";
+			$js .= ".setHTMLID('searchPanel', 'search_panel')";
+			$js .= ".setHTMLID('paymentPanel', 'payment_panel')";
+			$js .= ".setHTMLID('supplierInfoPanel', 'supplier_info_panel')";
+			$js .= ".setHTMLID('partsTable', 'order_change_details_table')";
+			$js .= ".setHTMLID('barcodeInput', 'barcode_input')";
 			$js .= ".setCallbackId('searchPO', '" . $this->searchPOBtn->getUniqueID() . "')";
 			$js .= ".setCallbackId('searchProduct', '" . $this->searchProductBtn->getUniqueID() . "')";
 			$js .= ".setCallbackId('saveOrder', '" . $this->saveOrderBtn->getUniqueID() . "')";

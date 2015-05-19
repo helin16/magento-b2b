@@ -3,28 +3,15 @@
  */
 var PageJs = new Class.create();
 PageJs.prototype = Object.extend(new BPCPageJs(), {
-	_htmlIds: {itemDiv: '',searchPanel: '',paymentPanel: '',supplierInfoPanel: '',partsTable:'',barcodeInput:''}
-	,_forceInvNo: true
+	_forceInvNo: true
 	,_purchaseOrder: null
-	/**
-	 * Setting the HTMLIDS
-	 */
-	,setHTMLIDs: function(itemDivId,searchPanelDivId,paymentPanelDivId,supplierInfoPanelDivId,partsTableDivId,barcodeInputDivId) {
-		this._htmlIds.itemDiv = itemDivId;
-		this._htmlIds.searchPanel = searchPanelDivId;
-		this._htmlIds.paymentPanel = paymentPanelDivId;
-		this._htmlIds.supplierInfoPanel = supplierInfoPanelDivId;
-		this._htmlIds.partsTable = partsTableDivId;
-		this._htmlIds.barcodeInput = barcodeInputDivId;
-		return this;
-	}
 	/**
 	 * Getting the customer list panel
 	 */
 	,_getPOListPanel: function () {
 		var tmp = {};
 		tmp.me = this;
-		tmp.newDiv = new Element('div', {'id': tmp.me._htmlIds.searchPanel, 'class': 'panel panel-warning search-panel'})
+		tmp.newDiv = new Element('div', {'id': tmp.me.getHTMLID('searchPanel'), 'class': 'panel panel-warning search-panel'})
 			.insert({'bottom': new Element('div', {'class': 'panel-heading form-inline'})
 				.insert({'bottom': new Element('strong').update('Searching for PO: ') })
 				.insert({'bottom': new Element('span', {'class': 'input-group col-sm-6'})
@@ -35,7 +22,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 								if(tmp.txtBox.hasClassName('search-finished') && $(pageJs._htmlIds.searchPanel).getElementsBySelector('.item_row .btn').size() === 1) {
 									$(pageJs._htmlIds.searchPanel).down('.item_row .btn').click();
 								} else {
-									$(tmp.me._htmlIds.searchPanel).down('.search-btn').click();
+									$(tmp.me.getHTMLID('searchPanel')).down('.search-btn').click();
 									tmp.txtBox.addClassName('search-finished');
 								}
 							}, function() {
@@ -50,16 +37,16 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 						})
 						.observe('click', function(){
 							tmp.btn = this;
-							if($(tmp.me._htmlIds.searchPanel).down('.search-txt').value!=='')
-								tmp.me._searchPO($(tmp.me._htmlIds.searchPanel).down('.search-txt'));
+							if($(tmp.me.getHTMLID('searchPanel')).down('.search-txt').value!=='')
+								tmp.me._searchPO($(tmp.me.getHTMLID('searchPanel')).down('.search-txt'));
 						})
 					})
 				})
 				.insert({'bottom': new Element('span', {'class': 'btn btn-success pull-right btn-sm btn-danger'})
 					.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-remove'}) })
 					.observe('click', function(){
-						$(tmp.me._htmlIds.searchPanel).down('.search-txt').clear();
-						tmp.me._searchPO($(tmp.me._htmlIds.searchPanel).down('.search-txt'));
+						$(tmp.me.getHTMLID('searchPanel')).down('.search-txt').clear();
+						tmp.me._searchPO($(tmp.me.getHTMLID('searchPanel')).down('.search-txt'));
 					})
 				})
 			})
@@ -73,7 +60,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		var tmp = {};
 		tmp.me = this;
 		tmp.searchTxt = $F(txtbox).strip();
-		tmp.searchPanel = $(txtbox).up('#' + tmp.me._htmlIds.searchPanel);
+		tmp.searchPanel = $(txtbox).up('#' + tmp.me.getHTMLID('searchPanel'));
 		tmp.me.postAjax(tmp.me.getCallbackId('searchPO'), {'searchTxt': tmp.searchTxt}, {
 			'onLoading': function() {
 				if($(tmp.searchPanel).down('.list-div'))
@@ -144,7 +131,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.me = this;
 		tmp.me._purchaseOrder = po;
 		tmp.newDiv = tmp.me._getViewOfPurchaseOrder();
-		$(tmp.me._htmlIds.itemDiv).update(tmp.newDiv).down('[new-order-item=product]').focus();
+		$(tmp.me.getHTMLID('itemDiv')).update(tmp.newDiv).down('[new-order-item=product]').focus();
 
 		tmp.me._purchaseOrder.purchaseOrderItem.each(function(item) {
 			tmp.currentRow = $$('.new-order-item-input').first();
@@ -227,7 +214,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.me = this;
 		tmp.purchaseOrder = tmp.me._purchaseOrder;
 		tmp.supplier = tmp.purchaseOrder.supplier;
-		tmp.newDiv = new Element('div', {'class': 'panel panel-warning', 'id': tmp.me._htmlIds.supplierInfoPanel})
+		tmp.newDiv = new Element('div', {'class': 'panel panel-warning', 'id': tmp.me.getHTMLID('supplierInfoPanel')})
 			.insert({'bottom': new Element('div', {'class': 'panel-heading'})
 				.insert({'bottom': new Element('div', {'class': 'row'})
 					.insert({'bottom': new Element('div', {'class': 'col-xs-8'})
@@ -295,7 +282,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.totalPaid = (tmp.purchaseOrder.totalPaid ? tmp.purchaseOrder.totalPaid : 0) ;
 		tmp.totalDue = tmp.totalAmount * 1 - tmp.totalPaid * 1;
 
-		tmp.newDiv = new Element('div', {'class': 'panel panel-warning', 'id': tmp.me._htmlIds.paymentPanel})
+		tmp.newDiv = new Element('div', {'class': 'panel panel-warning', 'id': tmp.me.getHTMLID('paymentPanel')})
 			.insert({'bottom': new Element('div', {'class':'panel-heading text-right'})
 				.insert({'bottom': new Element('div')
 					.insert({'bottom': new Element('strong').update('Payment Due: ') })
@@ -325,7 +312,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		var tmp = {};
 		tmp.me = this;
 		//header row
-		tmp.productListDiv = new Element('div', {'class': 'list-group', 'id': tmp.me._htmlIds.partsTable})
+		tmp.productListDiv = new Element('div', {'class': 'list-group', 'id': tmp.me.getHTMLID('partsTable')})
 			.insert({'bottom': tmp.newDiv = tmp.me._getProductRow({'product': {'sku': 'SKU', 'name': 'Product Name', 'qty': 'Qty', 'EANcode': 'EAN code', 'UPCcode': 'UPC code', 'wareLocation': 'Warehouse Location'} }, true) });
 		tmp.newDiv.setStyle({cursor:'pointer'});
 		tmp.newDiv.observe('dblclick', function(event){
@@ -504,7 +491,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		var tmp = {};
 		tmp.me = this;
 		tmp.skuAutoComplete = tmp.me._getFormGroup( null, new Element('div', {'class': 'input-group input-group-sm product-autocomplete'})
-			.insert({'bottom': new Element('input', {'id': tmp.me._htmlIds.barcodeInput, 'class': 'form-control search-txt visible-xs visible-sm visible-md visible-lg', 'new-order-item': 'product', 'required': 'Required!', 'placeholder': 'Enter BARCODE for products'})
+			.insert({'bottom': new Element('input', {'id': tmp.me.getHTMLID('barcodeInput'), 'class': 'form-control search-txt visible-xs visible-sm visible-md visible-lg', 'new-order-item': 'product', 'required': 'Required!', 'placeholder': 'Enter BARCODE for products'})
 				.observe('keydown', function(event){
 					tmp.txtBox = this;
 					tmp.me.keydown(event, function() {
@@ -569,26 +556,26 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					if($(this).up('.bulkSerialPanel').retrieve('data') && $(this).up('.bulkSerialPanel').retrieve('data').length !== null)
 						jQuery('#' + tmp.me.modalId).modal('hide');
 				});
-				
+
 				jQuery('#' + tmp.me.modalId).on('hide.bs.modal', function(e){
 						tmp.serials = $(this).down('.bulkSerialPanel').retrieve('data');
 						if(tmp.serials && tmp.serials.length > 0) {
 							tmp.serials.each(function(item){
 								tmp.scanTableRow = $$('.item_row[productid="' + product.id + '"]').first();
-								
+
 								tmp.scanTableRow.down('[scanned-item="qty"]').setValue(item.qty);
 								tmp.scanTableRow.down('[scanned-item="unitPrice"]').setValue(item.unitPrice);
 								tmp.scanTableRow.down('[scanned-item="serialNo"]').setValue(item.serialNo);
 								tmp.scanTableRow.down('[scanned-item="invoiceNo"]').setValue(item.invoiceNo);
 								tmp.scanTableRow.down('[scanned-item="comments"]').setValue(item.comments);
-								
+
 								tmp.scanTableRow.down('.scanned-item-save-btn').click();
 							});
 						}
 					});
 			});
 		tmp.me.scanTableSerialNoTitle = new Element('span', {'class': 'scanTableSerialNoTitle'}).update('Serial No.').insert({'bottom': tmp.bulkSerialInputBtn});
-		
+
 		tmp.table = new Element('table', {'class': 'table scanTable'})
 			.insert({'bottom': new Element('thead').update(tmp.me._getScanTableROW({'qty': 'Qty', 'serialNo': tmp.me.scanTableSerialNoTitle, 'unitPrice': 'Unit Price (Ex)', 'invoiceNo': 'Inv. No.', 'comments': 'Comments', 'btns': ''}, true)) })
 			.insert({'bottom': new Element('tbody')
@@ -670,20 +657,20 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 	,_saveScanTableRow: function(btn, product, data) {
 		var tmp = {};
 		tmp.me = this;
-		
+
 		tmp.data = (data || false);
-		
+
 		tmp.btn = (btn || false);
 		if(tmp.btn === false)
 			tmp.me.showModalBox('<p class="text-danger">Error</p>', 'SerialBulkUploader (control), function _saveScanTableRow must have a btn as input');
-		
+
 		tmp.product = (product || tmp.btn.up('.item_row').retrieve('data'));
 		if(tmp.product === null || tmp.product === false || jQuery.isNumeric(tmp.product.id) === false || !tmp.product.sku)
 			tmp.me.showModalBox('<p class="text-danger">Error</p>', 'Invalid Product passed in');
-		
+
 		tmp.currentRow = tmp.btn.up('.scanned-item-row');
 		tmp.data = tmp.data !== false ? tmp.data : tmp.me._collectFormData(tmp.currentRow, 'scanned-item');
-		
+
 		if(tmp.data !== null) {
 			tmp.newRow = tmp.currentRow.clone(true);
 			tmp.newDeleteBtn = new Element('td')
@@ -731,7 +718,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				tmp.btn.up('.item_row').down('.product-head-row .scannedQty').setStyle({color: 'inherit'});
 			tmp.me._updatetotalReceivedValue();
 		}
-		
+
 		tmp.btn.up('.scanTable').down('[scanned-item="serialNo"]').focus();
 		tmp.btn.up('.scanTable').down('[scanned-item="serialNo"]').select();
 		return tmp.me;
@@ -774,11 +761,11 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.currentRow.replace(tmp.newRow);
 		tmp.newRow.down('[new-order-item=product]').focus();
 
-		tmp.inputBox = jQuery('#' + tmp.me._htmlIds.barcodeInput);
+		tmp.inputBox = jQuery('#' + tmp.me.getHTMLID('barcodeInput'));
 
 		tmp.me.postAjax(tmp.me.getCallbackId('searchProduct'), {'searchTxt': tmp.searchTxt}, {
 			'onLoading': function() {
-				jQuery('#' + tmp.me._htmlIds.barcodeInput).button('loading');
+				jQuery('#' + tmp.me.getHTMLID('barcodeInput')).button('loading');
 			}
 			,'onSuccess': function(sender, param) {
 				tmp.resultList = new Element('div', {'style': 'overflow: auto; max-height: 400px;'});
@@ -806,7 +793,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				}
 			}
 			,'onComplete': function(sender, param) {
-				jQuery('#' + tmp.me._htmlIds.barcodeInput).button('reset');
+				jQuery('#' + tmp.me.getHTMLID('barcodeInput')).button('reset');
 			}
 		});
 		return tmp.me;
@@ -1020,12 +1007,12 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		var tmp = {};
 		tmp.me = this;
 		tmp.btn = btn;
-		tmp.data = tmp.me._collectFormData($(tmp.me._htmlIds.itemDiv),'save-order');
+		tmp.data = tmp.me._collectFormData($(tmp.me.getHTMLID('itemDiv')),'save-order');
 		tmp.data.purchaseOrder = tmp.me._purchaseOrder;
 		tmp.data.products = {};
 		tmp.data.products.matched = [];
 		tmp.data.products.notMatched = [];
-		$(tmp.me._htmlIds.partsTable).getElementsBySelector('div.item_row').each(function(item) {
+		$(tmp.me.getHTMLID('partsTable')).getElementsBySelector('div.item_row').each(function(item) {
 			if(!item.hasClassName('new-order-item-input')) {
 				if(item.retrieve('data').id !== '') {
 					tmp.scanData = [];
@@ -1137,7 +1124,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		if(selectedPO) {
 			tmp.me.selectPO(selectedPO);
 		} else {
-			$(tmp.me._htmlIds.itemDiv).update(tmp.me._getPOListPanel()).down('.init-focus').focus();
+			$(tmp.me.getHTMLID('itemDiv')).update(tmp.me._getPOListPanel()).down('.init-focus').focus();
 		}
 	}
 });
