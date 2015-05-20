@@ -71,14 +71,14 @@ class Controller extends DetailsPageAbstract
 			} else {
 				$task->setCustomer($customer)
 					->setDueDate($dueDate)
-					->setInstruction($instructions)
+					->setInstructions($instructions)
 					->setTechnician($tech)
 					->setFromEntityId($order instanceof Order ? $order->getId() : '')
 					->setFromEntityName($order instanceof Order ? get_class($order) : '')
 					->setStatus($status)
 					->save();
 			}
-			$results['url'] = '/task/' . $task->getId() . '.html';
+			$results['url'] = '/task/' . $task->getId() . '.html?' . $_SERVER['QUERY_STRING'];
 			$results['item'] = $task->getJson();
 
 			Dao::commitTransaction();

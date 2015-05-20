@@ -63,8 +63,10 @@ html, body {
 }
 .order_item:hover [order_status="INSUFFICIENT STOCK"],
 .order_item [order_status="INSUFFICIENT STOCK"],
+.po_item:hover [order_status="RECEIVING"],
 .po_item [order_status="RECEIVING"],
-.po_item [order_status="RECEIVING"] {
+.item_row [order_status="OPEN"],
+.item_row:hover [order_status="OPEN"] {
 	background-color: yellow !important;
 	color: black;
 }
@@ -73,7 +75,11 @@ html, body {
 .order_item [order_status="STOCK CHECKED"],
 .order_item:hover [order_status="STOCK CHECKED"],
 .po_item [order_status="ORDERED"],
-.po_item [order_status="ORDERED"]
+.po_item:hover [order_status="ORDERED"]
+.po_item [order_status="ORDERED"],
+.po_item:hover [order_status="ORDERED"],
+.item_row [order_status="WIP"],
+.item_row:hover [order_status="WIP"]
 {
 	background-color: orange !important;
 	color: white;
@@ -83,13 +89,15 @@ html, body {
 .order_item [order_status="SHIPPED"],
 .order_item:hover [order_status="SHIPPED"],
 .po_item [order_status="CLOSED"],
-.po_item [order_status="CLOSED"]
+.po_item:hover [order_status="CLOSED"],
+.item_row [order_status="FINISHED"],
+.item_row:hover [order_status="FINISHED"]
 {
 	background-color: green !important;
 	color: white;
 }
 .po_item [order_status="RECEIVED"],
-.po_item [order_status="RECEIVED"] {
+.po_item:hover [order_status="RECEIVED"] {
 	background-color: blue;
 	color: white;
 }
@@ -102,7 +110,7 @@ html, body {
 .order_item .tr-red a,
 .order_item:hover .tr-red a
 .po_item [order_status="CANCELED"],
-.po_item [order_status="CANCELED"] {
+.po_item:hover [order_status="CANCELED"] {
 	background-color: red !important;
 	color: white;
 }

@@ -3,9 +3,15 @@
  */
 var PageJs = new Class.create();
 PageJs.prototype = Object.extend(new CRUDPageJs(), {
+	/**
+	 * Getting the title row data
+	 */
 	_getTitleRowData: function() {
 		return {};
 	}
+	/**
+	 * Gathering the search criteria
+	 */
 	,getSearchCriteria: function() {
 		var tmp = {};
 		tmp.me = this;
@@ -27,6 +33,40 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 			tmp.me._searchCriteria = null;
 		return this;
 	}
+	,refreshResultRow: function(row) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.tbody = $(tmp.me.resultDivId).down('tbody');
+		if(!tmp.tbody)
+			tmp.tbody = $(tmp.me.resultDivId);
+		tmp.row = tmp.tbody.down('.item_row[item_id=' + row.id + ']');
+		if(tmp.row)
+			tmp.row.replace(tmp.me._getResultRow(row, false).addClassName('item_row'));
+		else
+			tmp.tbody.insert({'top': tmp.me._getResultRow(row, false).addClassName('item_row')});
+		return tmp.me;
+	}
+	/**
+	 * show the task details Page
+	 */
+	,showTaskPage: function(row) {
+		var tmp = {};
+		tmp.me = this;
+		jQuery.fancybox({
+			'width'			: '95%',
+			'height'		: '95%',
+			'autoScale'     : false,
+			'autoDimensions': false,
+			'fitToView'     : false,
+			'autoSize'      : false,
+			'type'			: 'iframe',
+			'href'			: '/task/' + ((row && row.id) ? row.id : 'new') + '.html?blanklayout=1'
+ 		});
+		return tmp.me;
+	}
+	/**
+	 * Getting the result row for the table
+	 */
 	,_getResultRow: function(row, isTitle) {
 		var tmp = {};
 		tmp.me = this;
@@ -35,19 +75,24 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		tmp.row = new Element('tr', {'class': 'order_item ' + (tmp.isTitle === true ? '' : 'btn-hide-row')})
 			.store('data', row)
 			.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-1'})
-				.insert({'bottom': tmp.isTitle === true ? 'Task No.' : new Element('a').update(row.id) })
+				.insert({'bottom': tmp.isTitle === true ? 'Task No.' : new Element('a', {'href': 'javascript: void(0);', 'title': 'view details'})
+					.update(row.id)
+					.observe('click', function() {
+						tmp.me.showTaskPage(row);
+					})
+				})
 			})
 			.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-1'})
 				.insert({'bottom': tmp.isTitle === true ? 'Due Date' : new Element('span').update( moment(tmp.me.loadUTCTime(row.dueDate)).format('DD/MMM/YYYY hh:mm A') ) })
 			})
-			.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-1', 'order_status' : tmp.isTitle === true ? '' : row.status.name})
+			.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-1', 'order_status' : tmp.isTitle === true ? '' : row.status.name, 'title': tmp.isTitle === true ? '' : row.status.description})
 				.insert({'bottom': tmp.isTitle === true ? 'Status' : new Element('span').update( row.status.name ) })
 			})
 			.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-1'})
-				.insert({'bottom': tmp.isTitle === true ? 'Tech' : new Element('span').update( row.technician && row.technician.id ? row.technician.fullName : '' ) })
+				.insert({'bottom': tmp.isTitle === true ? 'Tech' : new Element('span').update( row.technician && row.technician.id ? row.technician.person.fullname : '' ) })
 			})
-			.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-2'})
-				.insert({'bottom': tmp.isTitle === true ? 'Created From' : new Element('a').update( row.fromEntityId ) })
+			.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-1'})
+				.insert({'bottom': tmp.isTitle === true ? 'Created From' : ((row.fromEntity && row.fromEntity.orderNo) ? new Element('a', {'href': '/orderdetails/' + row.fromEntity.id + '.html', 'target': '_BLANK'}).update('[' + row.fromEntityName + '] ' + row.fromEntity.orderNo) : '') })
 			})
 			.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-4'})
 				.insert({'bottom': tmp.isTitle === true ? 'Created By' : new Element('div')
@@ -157,7 +202,6 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		});
 		return tmp.me;
 	}
-
 	,init: function () {
 		var tmp = {};
 		tmp.me = this;

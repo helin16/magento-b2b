@@ -15,14 +15,12 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 						new Element('input', {'class': 'form-control select2 input-sm product-search', 'save-panel': 'kit-product-id'})
 					)
 				) })
+				.insert({'bottom':  new Element('div', {'class': 'kit-details-wrapper'})})
 			});
 		tmp.newDiv.getElementsBySelector('.rm-form-control').each(function(item) {
 			item.removeClassName('form-control').removeClassName('rm-form-control');
 		});
 		return tmp.newDiv;
-	}
-	,selectKitProduct: function(product) {
-		console.debug(product);
 	}
 	,_getProductSearchRow: function(product) {
 		var tmp = {};
@@ -111,15 +109,11 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 					 return '';
 				 return tmp.me._getProductSearchRow(result.data);
 			 },
-//			 formatSelection: repoFormatSelection, // omitted for brevity, see the source of this page
+			 formatSelection: function(result){
+				 return tmp.me._getProductSearchRow(result.data);
+			 },
 			 escapeMarkup: function (markup) { return markup; } // let our custom formatter work
-		}).data('select2');
-		tmp.select2.onSelect = (function(fn) {
-			return function(selectedData, options) {
-				fn.apply(this, arguments);
-				tmp.me.selectKitProduct(selectedData.data);
-			}
-		})(tmp.select2.onSelect);
+		});
 		return tmp.me;
 	}
 	,_init: function(){

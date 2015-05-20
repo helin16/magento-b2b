@@ -7,13 +7,13 @@ class Task extends BaseEntityAbstract
 	 *
 	 * @var string
 	 */
-	private $fromEntityName;
+	private $fromEntityName = '';
 	/**
 	 * The id of the entity of the task is created from
 	 *
 	 * @var int
 	 */
-	private $fromEntityId;
+	private $fromEntityId = 0;
 	/**
 	 * Task status
 	 *
@@ -37,7 +37,7 @@ class Task extends BaseEntityAbstract
 	 *
 	 * @var string
 	 */
-	private $instruction;
+	private $instructions;
 	/**
 	 * The customer of the task
 	 *
@@ -156,9 +156,9 @@ class Task extends BaseEntityAbstract
 	 *
 	 * @return string
 	 */
-	public function getInstruction()
+	public function getInstructions()
 	{
-	    return $this->instruction;
+	    return $this->instructions;
 	}
 	/**
 	 * Setter for instruction
@@ -167,9 +167,9 @@ class Task extends BaseEntityAbstract
 	 *
 	 * @return Task
 	 */
-	public function setInstruction($value)
+	public function setInstructions($value)
 	{
-	    $this->instruction = $value;
+	    $this->instructions = $value;
 	    return $this;
 	}
 	/**
@@ -214,6 +214,7 @@ class Task extends BaseEntityAbstract
 		$array = $extra;
 		if(!$this->isJsonLoaded($reset))
 		{
+			$array['customer'] = $this->getCustomer()->getJson();
 			$array['fromEntity'] = $this->getFromEntity() instanceof BaseEntityAbstract ? $this->getFromEntity()->getJson() : array();
 			$array['technician'] = $this->getTechnician() instanceof UserAccount ? $this->getTechnician()->getJson() : array();
 			$array['status'] = $this->getStatus() instanceof TaskStatus ? $this->getStatus()->getJson() : array();
@@ -228,7 +229,7 @@ class Task extends BaseEntityAbstract
 	public function preSave()
 	{
 		if(trim($this->getId()) === '') {
-			if(!$this->getStatus() instanceof TaskStatus)
+			if(!$this->status instanceof TaskStatus)
 				$this->setStatus(TaskStatus::get(TaskStatus::ID_NEW));
 			if(trim($this->getDueDate()) === trim(UDate::zeroDate()))
 				$this->setDueDate(UDate::now()->modify(self::DUE_DATE_PERIOD));
@@ -266,19 +267,19 @@ class Task extends BaseEntityAbstract
 	 *
 	 * @return Task
 	 */
-	public function create(Customer $customer, UDate $dueDate = null, $instructions = '', UserAccount $tech = null, BaseEntityAbstract $fromEntity = null)
+	public static function create(Customer $customer, UDate $dueDate = null, $instructions = '', UserAccount $tech = null, BaseEntityAbstract $fromEntity = null)
 	{
 		$task = new Task();
 		$task->setDueDate($dueDate)
 			->setCustomer($customer)
-			->setInstruction($instructions = trim($instructions))
+			->setInstructions($instructions = trim($instructions))
 			->setTechnician($tech);
 		if($fromEntity instanceof BaseEntityAbstract) {
 			$task->setFromEntityId($fromEntity->getId())
-				->getFromEntityName(get_class($fromEntity));
+				->setFromEntityName(get_class($fromEntity));
 		}
 		$task->save()
-			->addComment('Task created with(Customer: ' . $customer->getName() . ', DueDate:' . $dueDate . ', ' . ($instructions === '' ? 'no insturctions' : ' some instructions ') . ', tech ' . ($tech instanceof UserAccount ? $tech->getPerson() : ''));
+			->addComment('Task created with(Customer: ' . $customer->getName() . ', DueDate:' . $dueDate . '(UTC), ' . ($instructions === '' ? 'no insturctions' : ' some instructions ') . ', tech ' . ($tech instanceof UserAccount ? $tech->getPerson() : ''));
 		return $task;
 	}
 }

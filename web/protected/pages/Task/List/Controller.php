@@ -30,6 +30,10 @@ class Controller extends CRUDPageAbstract
 	protected function _getEndJs()
 	{
 		$js = parent::_getEndJs();
+		$preSetData = array();
+		$js = "pageJs";
+			$js = ".setPreSetData()";
+		$js .= ";";
 		$js .= "$('searchBtn').click();";
 		return $js;
 	}
@@ -91,36 +95,6 @@ class Controller extends CRUDPageAbstract
 			$results['items'] = array();
 			foreach($objects as $obj)
 				$results['items'][] = $obj->getJson();
-		}
-		catch(Exception $ex)
-		{
-			$errors[] = $ex->getMessage();
-		}
-		$param->ResponseData = StringUtilsAbstract::getJson($results, $errors);
-	}
-	/**
-	 * save the items
-	 *
-	 * @param unknown $sender
-	 * @param unknown $param
-	 * @throws Exception
-	 *
-	 */
-	public function saveItem($sender, $param)
-	{
-		$results = $errors = array();
-		try
-		{
-			$class = trim($this->_focusEntity);
-			if(!isset($param->CallbackParameter->item))
-				throw new Exception("System Error: no item information passed in!");
-			$item = (isset($param->CallbackParameter->item->id) && ($item = $class::get($param->CallbackParameter->item->id)) instanceof $class) ? $item : null;
-			$value = trim($param->CallbackParameter->item->value);
-			if(!$item instanceof $class)
-				throw new Exception("System Error: Invalid id passed in");
-			$item->setValue($value)
-				->save();
-			$results['item'] = $item->getJson();
 		}
 		catch(Exception $ex)
 		{

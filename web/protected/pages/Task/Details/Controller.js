@@ -12,10 +12,24 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		tmp.me._statuses = _statuses;
 		return tmp.me;
 	}
-
+	/**
+	 * refresh the parent's window's result
+	 */
+	,refreshParentWindow: function(row) {
+		var tmp = {};
+		tmp.me = this;
+		if(!window.parent)
+			return;
+		tmp.parentWindow = window.parent;
+		if(tmp.parentWindow.pageJs.refreshResultRow) {
+			tmp.parentWindow.pageJs.refreshResultRow(row);
+		}
+	}
 	,_preSubmit: function (btn) {
 		var tmp = {};
 		tmp.me = this;
+		if(!$(btn) || !$(btn).hasClassName('save-btn'))
+			return tmp.me;
 		tmp.data = {};
 		if(tmp.me._item.id)
 			tmp.data.id = tmp.me._item.id;
@@ -33,8 +47,11 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 			}
 			tmp.data[tmp.field] = tmp.value;
 		});
-		console.debug(tmp.data);
-		tmp.me.saveItem(btn, tmp.data);
+		tmp.me.saveItem(btn, tmp.data, function(data) {
+			tmp.me.refreshParentWindow(data.item);
+			tmp.me.showModalBox('<strong class="text-success">Saved</strong>', '<h4 class="text-success">Task (' + data.item.id + ') has been saved successfully</h4>');
+			window.location = data.url;
+		});
 		return tmp.me;
 	}
 	/**
@@ -48,19 +65,14 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 				.insert({'bottom': new Element('h3').update(!tmp.me._item.id ? 'Creating a new Task' : 'Editing Task :' + tmp.me._item.id) })
 			})
 			.insert({'bottom': new Element('div', {'class': 'row'})
-				.insert({'bottom': !tmp.me._item.id ? '' :  new Element('div', {'class': 'col-sm-1'})
-					.insert({'bottom': tmp.me.getFormGroup(new Element('label').update('Task No: '),
-							tmp.me._item.id ? new Element('h4').update(tmp.me._item.id) : new Element('small').update('Will Auto Generate after save')
-					) })
-				})
 				.insert({'bottom': new Element('div', {'class': 'col-sm-3'})
 					.insert({'bottom': tmp.me.getFormGroup(new Element('label').update('Customer: '),
-							new Element('input', {'class': 'form-control select2', 'save-panel': 'customerId', 'name': 'customer'})
+							new Element('input', {'class': 'form-control select2', 'save-panel': 'customerId', 'name': 'customer', 'placeholder': 'search a customer name here'})
 					) })
 				})
 				.insert({'bottom': new Element('div', {'class': 'col-sm-2'})
 					.insert({'bottom': tmp.me.getFormGroup(new Element('label').update('Due Date: '),
-						new Element('input', {'class': 'form-control datepicker', 'save-panel': 'dueDate', 'name': 'dueDate', 'value': tmp.me._item.id ? moment(tmp.me._item.dueDate).toDate().format('DD/MM/YYYY') : ''})
+						new Element('input', {'class': 'form-control datepicker', 'save-panel': 'dueDate', 'name': 'dueDate', 'value': tmp.me._item.id ? moment(tmp.me.loadUTCTime(tmp.me._item.dueDate)).format('DD/MM/YYYY hh:mm A') : ''})
 					) })
 				})
 				.insert({'bottom': !tmp.me._item.id ? '' :  new Element('div', {'class': 'col-sm-1'})
@@ -70,19 +82,19 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 				})
 				.insert({'bottom': new Element('div', {'class': 'col-sm-2'})
 					.insert({'bottom': tmp.me.getFormGroup(new Element('label').update('Technician: '),
-						new Element('input', {'class': 'form-control select2', 'save-panel': 'techId'})
+						new Element('input', {'class': 'form-control select2', 'save-panel': 'techId', 'placeholder': 'search a tech name here'})
 					) })
 				})
-				.insert({'bottom': new Element('div', {'class': !tmp.me._item.id ? 'col-sm-5' : 'col-sm-3'})
+				.insert({'bottom': new Element('div', {'class': !tmp.me._item.id ? 'col-sm-5' : 'col-sm-4'})
 					.insert({'bottom': tmp.me.getFormGroup(new Element('label').update('From Order: '),
-						(tmp.me._item.order && tmp.me._item.order.id ? new Element('a').update(tmp.me._item.order.orderNo) : new Element('input', {'class': 'form-control select2', 'save-panel': 'orderId'}))
+						(tmp.me._item.order && tmp.me._item.order.id ? new Element('a').update(tmp.me._item.order.orderNo) : new Element('input', {'class': 'form-control select2', 'save-panel': 'orderId', 'placeholder': 'search a Order here'}))
 					) })
 				})
 			})
 			.insert({'bottom': new Element('div', {'class': 'row'})
 				.insert({'bottom': new Element('div', {'class': 'col-sm-12'})
 					.insert({'bottom': tmp.me.getFormGroup(new Element('label').update('Instructions: '),
-						new Element('textarea', {'class': 'form-control rich-text', 'save-panel': 'instructions', 'rows': 10, 'name': 'instructions'})
+						new Element('textarea', {'class': 'form-control rich-text', 'save-panel': 'instructions', 'rows': 10, 'name': 'instructions'}).update(!tmp.me._item.id ? '' : tmp.me._item.instructions)
 					) })
 				})
 			})
@@ -92,7 +104,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 				})
 			})
 			.insert({'bottom': new Element('div')
-				.insert({'bottom': tmp.submitBtn = new Element('button', {'type': 'submit', 'class': 'btn btn-primary col-sm-3 col-sm-offset-9'})
+				.insert({'bottom': tmp.submitBtn = new Element('button', {'type': 'submit', 'class': 'btn btn-primary col-sm-3 col-sm-offset-9 save-btn'})
 					.update('save')
 				})
 			});
@@ -100,7 +112,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		if(tmp.statusList) {
 			tmp.me._statuses.each(function(status){
 				tmp.option = new Element('option', {'value': status.id}).update(status.name);
-				if(tmp.me._item.id && tatus.id === tmp.me._item.status.id)
+				if(tmp.me._item.id && status.id === tmp.me._item.status.id)
 					tmp.option.writeAttribute('selected', true);
 				tmp.statusList.insert({'bottom': tmp.option});
 
@@ -145,6 +157,9 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 	,_formatOrderSelection: function(order) {
 		return '<div class="row order_item"><div class="col-xs-3">' + order.orderNo + '</div><div class="col-xs-3" order_status="' + order.status.name + '">' + order.status.name + '</div><div class="col-xs-6"><small>' + ((order.customer && order.customer.name) ? order.customer.name : '') + '</small></div></div >';
 	}
+	/**
+	 * init the customer search box
+	 */
 	,_initCustomerSearchBox: function() {
 		var tmp = {};
 		tmp.me = this;
@@ -171,15 +186,22 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 			,cache: true
 			,escapeMarkup: function (markup) { return markup; } // let our custom formatter work
 		});
+		if(tmp.me._item.id && tmp.me._item.customer && tmp.me._item.customer.id) {
+			jQuery('[save-panel="customerId"]').select2('data', {'id': tmp.me._item.customer.id, 'text': tmp.me._item.customer.name, 'data': tmp.me._item.customer});
+		}
 		return tmp.me;
 	}
+	/**
+	 * init order search box
+	 */
 	,_initOrderSearchBox: function() {
 		var tmp = {};
 		tmp.me = this;
 		jQuery('[save-panel="orderId"]').select2({
-			 minimumInputLength: 3,
-			 multiple: false,
-			 ajax: {
+			 minimumInputLength: 3
+			 ,multiple: false
+			 ,allowClear: true
+			 ,ajax: {
 				 delay: 250
 				 ,url: '/ajax/getAll'
 		         ,type: 'POST'
@@ -205,6 +227,9 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 			 }
 			 ,escapeMarkup: function (markup) { return markup; } // let our custom formatter work
 		});
+		if(tmp.me._item.id && tmp.me._item.fromEntity && tmp.me._item.fromEntity.id && tmp.me._item.fromEntityName === 'Order') {
+			jQuery('[save-panel="orderId"]').select2('data', {'id': tmp.me._item.fromEntity.id, 'text': tmp.me._item.fromEntity.orderNo, 'data': tmp.me._item.fromEntity});
+		}
 		return tmp.me;
 	}
 	,_initTechSearchBox: function() {
@@ -213,6 +238,8 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		jQuery('[save-panel="techId"]').select2({
 			minimumInputLength: 3
 			,multiple: false
+			,allowClear: true
+			,hidden: true
 			,ajax: {
 				delay: 250
 				,url: '/ajax/getAll'
@@ -238,6 +265,9 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 			,cache: true
 			,escapeMarkup: function (markup) { return markup; } // let our custom formatter work
 		});
+		if(tmp.me._item.id && tmp.me._item.technician && tmp.me._item.technician.id) {
+			jQuery('[save-panel="techId"]').select2('data', {'id': tmp.me._item.technician.id, 'text': tmp.me._item.technician.person.fullname, 'data': tmp.me._item.technician});
+		}
 		return tmp.me;
 	}
 	,_initFormValdation: function(btn, type) {
@@ -299,7 +329,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		tmp.me = this;
 		$(tmp.me.getHTMLID('itemDiv')).update(tmp.div = tmp.me._getItemDiv());
 		jQuery('.datepicker').datetimepicker({
-			format: 'DD/MM/YYYY HH:mm'
+			format: 'DD/MM/YYYY hh:mm A'
 		});
 		tmp.me._loadRichTextEditor(tmp.div.down('[save-panel="instructions"]'))
 			._initTechSearchBox()

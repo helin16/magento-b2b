@@ -98,11 +98,12 @@ CREATE TABLE `taskstatus` (
 ALTER TABLE `product` ADD `isKit` TINYINT(1) NOT NULL DEFAULT '0' AFTER `fullDescAssetId`, ADD INDEX (`isKit`) ;
 
 insert into `taskstatus` values
-(1, 'NEW', 'NEW', 1, NOW(), 10, NOW(), 10),
-(2, 'WIP', 'Work In Progress', 1, NOW(), 10, NOW(), 10),
-(3, 'FINISHED', 'FINISHED', 1, NOW(), 10, NOW(), 10),
-(4, 'ON_HOLD', 'ON_HOLD', 1, NOW(), 10, NOW(), 10),
-(5, 'CANCELED', 'CANCELED', 1, NOW(), 10, NOW(), 10);
+(1, 'NEW', 'Task is NEW', 1, NOW(), 10, NOW(), 10),
+(2, 'OPEN', 'Task is open', 1, NOW(), 10, NOW(), 10),
+(3, 'WIP', 'Work In Progress', 1, NOW(), 10, NOW(), 10),
+(4, 'FINISHED', 'Task is FINISHED', 1, NOW(), 10, NOW(), 10),
+(5, 'ON HOLD', 'Task is ON HOLD', 1, NOW(), 10, NOW(), 10),
+(6, 'CANCELLED', 'Task is CANCELLED', 1, NOW(), 10, NOW(), 10);
 
 insert into `role` values
 (7, 'Workshop', 1, NOW(), 10, NOW(), 10);
