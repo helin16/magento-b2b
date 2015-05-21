@@ -49,6 +49,8 @@ class Controller extends CRUDPageAbstract
 			die('Invalide Order provided!');
 		if(isset($_REQUEST['techId']) && !($tech = UserAccount::get(trim($_REQUEST['techId']))) instanceof UserAccount)
 			die('Invalide Technician provided!');
+
+		$allstatuses = isset($_REQUEST['allstatuses']) && (intval(trim($_REQUEST['allstatuses'])) === 1);
 		$preSetData = array('statuses' => array(),
 				'order' => ($order instanceof Order ? $order->getJson() : array()),
 				'technician' => ($tech instanceof UserAccount ? $tech->getJson() : array()),
@@ -57,7 +59,7 @@ class Controller extends CRUDPageAbstract
 		$statuses = array();
 		foreach(TaskStatus::getAll() as $status) {
 			$statuses[] = ($statusJson = $status->getJson());
-			if(!in_array(intval($status->getId()), array(TaskStatus::ID_CANCELED, TaskStatus::ID_FINISHED)))
+			if($allstatuses === false && !in_array(intval($status->getId()), array(TaskStatus::ID_CANCELED, TaskStatus::ID_FINISHED)))
 				$preSetData['statuses'][] = $statusJson;
 		}
 		$js = "pageJs";
