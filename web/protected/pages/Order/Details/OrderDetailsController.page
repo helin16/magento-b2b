@@ -4,6 +4,7 @@
 	<com:Application.controls.CommentsDiv.CommentsDiv />
 	<com:Application.controls.PaymentListPanel.PaymentListPanel />
 	<com:Application.controls.LastMemoPanel.LastMemoPanel />
+	<com:Application.controls.TaskStatusListPanel.TaskStatusListPanel />
 	<com:TDatePicker Style="display:none;"/>
 	<com:TCallback ID="updateOrderBtn" OnCallback="updateOrder" />
 	<com:TCallback ID="changeOrderStatusBtn" OnCallback="changeOrderStatus" />

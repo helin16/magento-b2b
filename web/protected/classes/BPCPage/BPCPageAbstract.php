@@ -57,9 +57,20 @@ abstract class BPCPageAbstract extends TPage
 	protected function _getEndJs()
 	{
 	    $js = 'if(typeof(PageJs) !== "undefined"){';
-	    	$js .= 'var pageJs = new PageJs(); pageJs.setHTMLID("main-form", "' . $this->getPage()->getForm()->getClientID() . '") ';
+	    	$js .= 'var pageJs = new PageJs();';
+	    	$js .= 'pageJs.setHTMLID("main-form", "' . $this->getPage()->getForm()->getClientID() . '"); ';
+	    	$js .= $this->_preGetEndJs();
 		$js .= '}';
 		return $js;
+	}
+	/**
+	 * implode some js code right after the constructor
+	 *
+	 * @return string
+	 */
+	protected function _preGetEndJs()
+	{
+		return '';
 	}
 	/**
 	 * (non-PHPdoc)

@@ -14,25 +14,19 @@
 			</div>
 			<div class="panel-body search-panel" id="searchDiv" style="display: none;">
 				<div class="row">
+					<div class="col-sm-5">
+						<div class="form-group form-group-sm input-group">
+                           <label class="input-group-addon">Customer:</label>
+                           <input type="text" search_field="customer.id" placeholder="The customer of the task" class="form-control input-sm">
+                       </div>
+					</div>
+					<div class="col-sm-3">
+						<div class="form-group form-group-sm input-group">
+                           <label class="input-group-addon">Task No.:</label>
+                           <input type="text" search_field="taskId" placeholder="The task no" class="form-control input-sm">
+                       </div>
+					</div>
 					<div class="col-sm-4">
-						<div class="form-group form-group-sm input-group">
-                           <label class="input-group-addon">Order:</label>
-                           <input type="text" search_field="ord.id" placeholder="The order that the task is created from" class="form-control input-sm">
-                       </div>
-					</div>
-					<div class="col-sm-3">
-						<div class="form-group form-group-sm input-group">
-                           <label class="input-group-addon">Tech:</label>
-                           <input type="text" search_field="techId" placeholder="The technician of the task" class="form-control input-sm">
-                       </div>
-					</div>
-					<div class="col-sm-2">
-						<div class="form-group form-group-sm input-group">
-                           <label class="input-group-addon">Status:</label>
-                           <input type="text" search_field="statusId" placeholder="The Status of the task" class="form-control input-sm">
-                       </div>
-					</div>
-					<div class="col-sm-3">
 						<div class="form-group form-group-sm input-group">
                            <label class="input-group-addon">DueDate:</label>
                            <div class="form-control input-sm" style="padding:0px;">
@@ -44,6 +38,26 @@
 									<input class="form-control input-sm datepicker" search_field="dueDate_to" placeholder="TO:"/>
 								</div>
 							</div>
+                       </div>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-sm-5">
+						<div class="form-group form-group-sm input-group">
+                           <label class="input-group-addon">Order:</label>
+                           <input type="text" search_field="ord.id" placeholder="The order that the task is created from" class="form-control input-sm">
+                       </div>
+					</div>
+					<div class="col-sm-3">
+						<div class="form-group form-group-sm input-group">
+                           <label class="input-group-addon">Tech:</label>
+                           <input type="text" search_field="techId" placeholder="The technician of the task" class="form-control input-sm">
+                       </div>
+					</div>
+					<div class="col-sm-4">
+						<div class="form-group form-group-sm input-group">
+                           <label class="input-group-addon">Status:</label>
+                           <select type="text" search_field="statusId" placeholder="The Status of the task" class="form-control input-sm" multiple></select>
                        </div>
 					</div>
 				</div>

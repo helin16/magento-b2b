@@ -30,11 +30,40 @@ class Controller extends CRUDPageAbstract
 	protected function _getEndJs()
 	{
 		$js = parent::_getEndJs();
-		$preSetData = array();
-		$js = "pageJs";
-			$js = ".setPreSetData()";
-		$js .= ";";
+		$js .= "pageJs.setHTMLID('searchPanel', 'searchPanel');";
 		$js .= "$('searchBtn').click();";
+		if(isset($_REQUEST['nosearch']) && intval($_REQUEST['nosearch']) === 1)
+			$js .= "$(pageJs.getHTMLID('searchPanel')).hide();";
+		return $js;
+	}
+	/**
+	 * (non-PHPdoc)
+	 * @see BPCPageAbstract::_preGetEndJs()
+	 */
+	protected function _preGetEndJs()
+	{
+		$order = $tech = $customer =null;
+		if(isset($_REQUEST['customerId']) && !($customer = Customer::get(trim($_REQUEST['customerId']))) instanceof Customer)
+			die('Invalide Customer provided!');
+		if(isset($_REQUEST['orderId']) && !($order = Order::get(trim($_REQUEST['orderId']))) instanceof Order)
+			die('Invalide Order provided!');
+		if(isset($_REQUEST['techId']) && !($tech = UserAccount::get(trim($_REQUEST['techId']))) instanceof UserAccount)
+			die('Invalide Technician provided!');
+		$preSetData = array('statuses' => array(),
+				'order' => ($order instanceof Order ? $order->getJson() : array()),
+				'technician' => ($tech instanceof UserAccount ? $tech->getJson() : array()),
+				'customer' => ($customer instanceof Customer ? $customer->getJson() : array())
+		);
+		$statuses = array();
+		foreach(TaskStatus::getAll() as $status) {
+			$statuses[] = ($statusJson = $status->getJson());
+			if(!in_array(intval($status->getId()), array(TaskStatus::ID_CANCELED, TaskStatus::ID_FINISHED)))
+				$preSetData['statuses'][] = $statusJson;
+		}
+		$js = "pageJs";
+			$js .= ".setStatuses(" . json_encode($statuses) . ")";
+			$js .= ".setPreSetData(" . json_encode($preSetData) . ")";
+		$js .= ";";
 		return $js;
 	}
 	/**
@@ -60,32 +89,54 @@ class Controller extends CRUDPageAbstract
 			}
 
 			$serachCriteria = isset($param->CallbackParameter->searchCriteria) ? json_decode(json_encode($param->CallbackParameter->searchCriteria), true) : array();
-
 			$where = array(1);
 			$params = array();
-			if(isset($serachCriteria['ord.id']) && ($orderId = trim($serachCriteria['ord.id'])) !== '')
-			{
-				$where[] = 'fromEntityName = :entityName and fromEntityId = :entityId';
+			if(isset($serachCriteria['taskId']) && trim($taskId = $serachCriteria['taskId']) !== '') {
+				$where[] = 'id like :taskId';
+				$params['taskId'] = '%' . $taskId . '%';
+			}
+			if(isset($serachCriteria['ord.id']) && trim($orderIds = $serachCriteria['ord.id']) !== '' && count($orderIds = explode(',', $orderIds)) > 0) {
 				$params['entityName'] = 'Order';
-				$params['entityId'] = $orderId;
+				$keys = array();
+				foreach($orderIds as $index => $orderId)
+				{
+					$keys[] = ":" . ($key = "entityId" . $index);
+					$params[$key] = $orderId;
+				}
+				$where[] = 'fromEntityName = :entityName and fromEntityId in (' . implode(', ', $keys) . ')';
 			}
-			if(isset($serachCriteria['techId']) && ($techId = trim($serachCriteria['techId'])) !== '')
-			{
-				$where[] = 'technicianId = :techId';
-				$params['techId'] = $techId;
+			if(isset($serachCriteria['techId']) && trim($techIds = $serachCriteria['techId']) !== '' && count($techIds = explode(',', $techIds)) > 0) {
+				$keys = array();
+				foreach($techIds as $index => $techId)
+				{
+					$keys[] = ":" . ($key = "techId" . $index);
+					$params[$key] = $techId;
+				}
+				$where[] = 'technicianId in (' . implode(', ', $keys) . ')';
 			}
-			if(isset($serachCriteria['statusId']) && ($statusId = trim($serachCriteria['statusId'])) !== '')
-			{
-				$where[] = 'statusId = :statusId';
-				$params['statusId'] = $statusId;
+			if(isset($serachCriteria['customer.id']) && trim($customerIds = $serachCriteria['customer.id']) !== '' && count($customerIds = explode(',', $customerIds)) > 0) {
+				$keys = array();
+				foreach($customerIds as $index => $customerId)
+				{
+					$keys[] = ":" . ($key = "customerId" . $index);
+					$params[$key] = $customerId;
+				}
+				$where[] = 'customerId in (' . implode(', ', $keys) . ')';
 			}
-			if(isset($serachCriteria['dueDate_from']) && ($dueDate_from = new UDate($serachCriteria['dueDate_from'])) !== false)
-			{
+			if(isset($serachCriteria['statusId']) && count($statusIds = $serachCriteria['statusId']) > 0) {
+				$keys = array();
+				foreach($statusIds as $index => $statusId)
+				{
+					$keys[] = ":" . ($key = "statusId" . $index);
+					$params[$key] = $statusId;
+				}
+				$where[] = 'statusId in (' . implode(', ', $keys) . ')';
+			}
+			if(isset($serachCriteria['dueDate_from']) && ($dueDate_from = new UDate($serachCriteria['dueDate_from'])) !== false) {
 				$where[] = 'dueDate >= :dueDateFrom';
 				$params['dueDateFrom'] = $dueDate_from->format('Y-m-d') . ' 00:00:00';
 			}
-			if(isset($serachCriteria['dueDate_to']) && ($dueDate_to = new UDate($serachCriteria['dueDate_to'])) !== false)
-			{
+			if(isset($serachCriteria['dueDate_to']) && ($dueDate_to = new UDate($serachCriteria['dueDate_to'])) !== false) {
 				$where[] = 'dueDate <= :dueDateTo';
 				$params['dueDateTo'] = $dueDate_from->format('Y-m-d') . ' 23:59:59';
 			}

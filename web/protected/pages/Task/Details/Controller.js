@@ -50,7 +50,10 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		tmp.me.saveItem(btn, tmp.data, function(data) {
 			tmp.me.refreshParentWindow(data.item);
 			tmp.me.showModalBox('<strong class="text-success">Saved</strong>', '<h4 class="text-success">Task (' + data.item.id + ') has been saved successfully</h4>');
-			window.location = data.url;
+			if(data.url)
+				window.location = data.url;
+			else if(window.parent && window.parent.jQuery.fancybox && window.parent.jQuery.fancybox.close)
+				window.parent.jQuery.fancybox.close();
 		});
 		return tmp.me;
 	}
@@ -61,10 +64,10 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		var tmp = {};
 		tmp.me = this;
 		tmp.newDiv = new Element('div', {'class': 'task-details-wrapper'})
-			.insert({'bottom': new Element('div', {'class': 'row text-center'})
+			.insert({'bottom': new Element('div', {'class': 'text-center'})
 				.insert({'bottom': new Element('h3').update(!tmp.me._item.id ? 'Creating a new Task' : 'Editing Task :' + tmp.me._item.id) })
 			})
-			.insert({'bottom': new Element('div', {'class': 'row'})
+			.insert({'bottom': new Element('div')
 				.insert({'bottom': new Element('div', {'class': 'col-sm-3'})
 					.insert({'bottom': tmp.me.getFormGroup(new Element('label').update('Customer: '),
 							new Element('input', {'class': 'form-control select2', 'save-panel': 'customerId', 'name': 'customer', 'placeholder': 'search a customer name here'})
@@ -91,14 +94,14 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 					) })
 				})
 			})
-			.insert({'bottom': new Element('div', {'class': 'row'})
+			.insert({'bottom': new Element('div')
 				.insert({'bottom': new Element('div', {'class': 'col-sm-12'})
 					.insert({'bottom': tmp.me.getFormGroup(new Element('label').update('Instructions: '),
 						new Element('textarea', {'class': 'form-control rich-text', 'save-panel': 'instructions', 'rows': 10, 'name': 'instructions'}).update(!tmp.me._item.id ? '' : tmp.me._item.instructions)
 					) })
 				})
 			})
-			.insert({'bottom': new Element('div', {'class': 'row'})
+			.insert({'bottom': new Element('div')
 				.insert({'bottom': new Element('div', {'class': 'col-sm-12'})
 					.insert({'bottom': tmp.me._item.id ? new Element('div', {'class': 'comments-div'}) : '' })
 				})
