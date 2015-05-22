@@ -36,9 +36,20 @@ class Controller extends DetailsPageAbstract
 	{
 		$class = $this->_focusEntity;
 		$js = parent::_getEndJs();
+		$js .= "pageJs";
+		if(trim($this->Request['id']) === 'new') {
+			$order = $customer =null;
+			if(isset($_REQUEST['customerId']) && !($customer = Customer::get(trim($_REQUEST['customerId']))) instanceof Customer)
+				die('Invalid Customer provided!');
+			if(isset($_REQUEST['orderId']) && !($order = Order::get(trim($_REQUEST['orderId']))) instanceof Order)
+				die('Invalid Order provided!');
+			$preSetData = array('order' => ($order instanceof Order ? $order->getJson() : array()),
+				'customer' => ($customer instanceof Customer ? $customer->getJson() : ($order instanceof Order ? $order->getCustomer()->getJson() : array()))
+			);
+			$js .= ".setPreSetData(" . json_encode($preSetData) . ")";
+		}
 
 		$statusArray = array_map(create_function('$a', 'return $a->getJson();'), TaskStatus::getAll());
-		$js .= "pageJs";
 		$js .= ".setTaskStatuses(" . json_encode($statusArray) . ")";
 		$js .= ".load()";
 		$js .= ";";
@@ -69,15 +80,6 @@ class Controller extends DetailsPageAbstract
 			if(!$task instanceof Task) {
 				$task = Task::create($customer, $dueDate, $instructions, $tech, $order);
 			} else {
-				$changed = array();
-				if(($customer instanceof Customer && !($origCustomer = $task->getCustomer()) instanceof Customer) || (!$customer instanceof Customer && $origCustomer instanceof Customer) || ($customer instanceof Customer && $origCustomer instanceof Customer && $customer->getId() !== $origCustomer->getId()))
-					$changed[] = 'Customer Changed["' . ($origCustomer instanceof Customer ? $origCustomer->getName() : '')  . '" => "' .  ($customer instanceof Customer ? $customer->getName() : '') . '"]';
-				if(($tech instanceof UserAccount && !($origTech = $task->getTechnician()) instanceof UserAccount) || (!$tech instanceof UserAccount && $origTech instanceof UserAccount) || ($tech instanceof UserAccount && $origTech instanceof UserAccount && $tech->getId() !== $origTech->getId()))
-					$changed[] = 'Technician Changed["' . ($origTech instanceof UserAccount ? $origTech->getPerson()->getFullName() : '')  . '" => "' .  ($tech instanceof UserAccount ? $tech->getPerson()->getFullName() : '') . '"]';
-				if(($order instanceof Order && !($origOrder = $task->getFromEntity()) instanceof Order) || (!$order instanceof Order && $origOrder instanceof Order) || ($order instanceof Order && $origOrder instanceof Order && $order->getId() !== $origOrder->getId()))
-					$changed[] = 'Order Changed["' . ($origOrder instanceof Order ? $origOrder->getOrderNo() : '')  . '" => "' .  ($order instanceof Order ? $order->getOrderNo() : '') . '"]';
-				if(($status instanceof TaskStatus && !($origStatus = $task->getStatus()) instanceof TaskStatus) || (!$status instanceof TaskStatus && $origStatus instanceof TaskStatus) || ($status instanceof TaskStatus && $origStatus instanceof TaskStatus && $status->getId() !== $origStatus->getId()))
-					$changed[] = 'Status Changed["' . ($origStatus instanceof TaskStatus ? $status->getName() : '')  . '" => "' .  ($status instanceof TaskStatus ? $status->getName() : '') . '"]';
 				$task->setCustomer($customer)
 					->setDueDate($dueDate)
 					->setInstructions($instructions)
@@ -86,9 +88,6 @@ class Controller extends DetailsPageAbstract
 					->setFromEntityName($order instanceof Order ? get_class($order) : '')
 					->setStatus($status)
 					->save();
-				if(count($changed) > 0)	{
-					$task->addComment(implode(', ', $changed), Comments::TYPE_WORKSHOP);
-				}
 			}
 // 			$results['url'] = '/task/' . $task->getId() . '.html?' . $_SERVER['QUERY_STRING'];
 			$results['item'] = $task->getJson();
@@ -98,7 +97,7 @@ class Controller extends DetailsPageAbstract
 		catch(Exception $ex)
 		{
 			Dao::rollbackTransaction();
-			$errors[] = $ex->getMessage() . $ex->getTraceAsString();
+			$errors[] = $ex->getMessage();
 		}
 		$param->ResponseData = StringUtilsAbstract::getJson($results, $errors);
 	}

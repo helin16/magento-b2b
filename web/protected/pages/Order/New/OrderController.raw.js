@@ -240,19 +240,6 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					})
 				})
 			})
-			.insert({'bottom': new Element('div', {'class': 'btn btn-default'})
-				.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-remove-sign'}) })
-				.insert({'bottom': new Element('span').update(' cancel ') })
-				.observe('click', function(){
-					tmp.me.showModalBox('<strong class="text-danger">Cancelling the current order</strong>',
-							'<div>You are about to cancel this new order, all input data will be lost.</div><br /><div>Continue?</div>'
-							+ '<div>'
-								+ '<span class="btn btn-primary" onclick="window.location = document.URL;"><span class="glyphicon glyphicon-ok"></span> YES</span>'
-								+ '<span class="btn btn-default pull-right" data-dismiss="modal"><span aria-hidden="true"><span class="glyphicon glyphicon-remove-sign"></span> NO</span></span>'
-							+ '</div>',
-					true);
-				})
-			})
 		;
 		return tmp.newDiv;
 	}
@@ -1214,10 +1201,11 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				.insert({'bottom': new Element('div', {'class': 'col-sm-12'}).update(tmp.me._getCustomerInfoPanel(tmp.me._customer)) })
 			})
 			.insert({'bottom': new Element('div', {'class': 'row'})
-				.insert({'bottom': new Element('div', {'class': 'col-sm-12 memo-panel'})
+				.insert({'bottom': new Element('div', {'class': 'col-sm-8 memo-panel'})
 					.store('lastMemoJs', (tmp.lastMemoJs = new LastMemoPanelJs(tmp.me, 'Order', tmp.me._order && tmp.me._order.id ? tmp.me._order.id : '', true)))
 					.update(tmp.lastMemoJs ? tmp.lastMemoJs._getPanel() : '')
 				})
+				.insert({'bottom': new Element('div', {'class': 'col-sm-4 taskListPanel'}) })
 			})
 			.insert({'bottom': new Element('div', {'class': 'row'})
 				.insert({'bottom': new Element('div', {'class': 'col-sm-12'})
@@ -1451,6 +1439,12 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			tmp.me.selectCustomer(tmp.me._order.customer)
 				._populateOrderItems(tmp.me._order.items);
 			tmp.className = tmp.me._order.type === 'QUOTE' ? 'warning' : (tmp.me._order.type === 'ORDER' ? 'success' : 'default');
+			tmp.taskListPanel = $(tmp.me.getHTMLID('itemDiv')).down('.taskListPanel');
+			if(tmp.taskListPanel) {
+				tmp.taskListPanel.store('taskListPanelJs', tmp.taskStatusListPanelJs = new TaskStatusListPanelJs(tmp.me))
+					.update(tmp.taskStatusListPanelJs.getDiv('Order', tmp.me._order))
+				tmp.taskStatusListPanelJs.setOpenInFancyBox(tmp.me.getUrlParam('blanklayout') !== '1').render();
+			}
 		} else { // new order
 			if(customer) {
 				tmp.me.selectCustomer(customer);
@@ -1465,7 +1459,6 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		}
 		tmp.panels = jQuery('.panel').removeClass('panel-success').removeClass('panel-warning').removeClass('panel-default').addClass('panel-' + tmp.className);
 		tmp.inputs = jQuery('.item_row_header').removeClass('list-group-item-success').removeClass('list-group-item-warning').addClass('list-group-item-' + tmp.className);
-
 		if($$('.init-focus').size() > 0)
 			$$('.init-focus').first().focus();
 		return tmp.me;

@@ -271,6 +271,9 @@ BPCPageJs.prototype = {
 		tmp.timeStrings = tmp.strings[1].split(':');
 		return new Date(Date.UTC(tmp.dateStrings[0], (tmp.dateStrings[1] * 1 - 1), tmp.dateStrings[2], tmp.timeStrings[0], tmp.timeStrings[1], tmp.timeStrings[2]));
 	}
+	/**
+	 * double click n dblclick
+	 */
 	,observeClickNDbClick: function(element, clickFunc, dblClickFunc) {
 		var tmp = {};
 		tmp.me = this;
@@ -294,5 +297,16 @@ BPCPageJs.prototype = {
 			}
 		});
 		return tmp.me;
+	}
+	/**
+	 * geting
+	 */
+	,getUrlParam: function (name) {
+		var tmp = {};
+		tmp.me = this;
+	    name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+	    var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+	        results = regex.exec(location.search);
+	    return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
 	}
 };

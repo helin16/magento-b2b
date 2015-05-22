@@ -79,6 +79,7 @@ CREATE TABLE `task` (
 	,INDEX (`fromEntityId`)
 	,INDEX (`dueDate`)
 ) ENGINE=innodb DEFAULT CHARSET=utf8;
+ALTER TABLE `task` AUTO_INCREMENT=800001;
 DROP TABLE IF EXISTS `taskstatus`;
 CREATE TABLE `taskstatus` (
 	`id` int(10) unsigned NOT NULL AUTO_INCREMENT,

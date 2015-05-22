@@ -2,6 +2,7 @@
 	<com:Application.controls.fancybox.FancyBox />
 	<com:Application.controls.bootstrapDateTimePicker.bootstrapDateTimePicker />
 	<com:Application.controls.select2.select2 />
+	<com:TCallback ID="actionTaskBtn" OnCallback="Page.actionTask" />
 	<div class="pagewrapper item-list-wrapper">
 		<div class="panel panel-default" id="searchPanel">
 			<div class="panel-heading">

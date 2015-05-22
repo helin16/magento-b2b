@@ -118,7 +118,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		var tmp = {};
 		tmp.me = this;
 		tmp.elementId = (elementId || false);
-		
+
 		tmp.me.postAjax(tmp.me.getCallbackId('updateSerials'), {'orderItemId': orderItemId, 'serials': serials}, {
 			'onLoading': function() {
 				if(tmp.elementId !== false)
@@ -522,7 +522,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			) })
 			.insert({'bottom': new Element(tmp.tag, {'class': 'purchasing'}).update(tmp.isTitle === true ? 'Purchasing' : tmp.me._getPurchasingCell(orderItem)) })
 			.insert({'bottom': new Element(tmp.tag, {'class': 'warehouse'}).update(tmp.isTitle === true ? 'Warehouse' : tmp.me._getWarehouseCell(orderItem)) });
-		
+
 		if(tmp.itemDescriptionEl) {
 			tmp.itemDescriptionEl.insert({'bottom': new Element('div', {'class': 'row product-content-row'})
 				.insert({'bottom': new Element('span', {'class': 'col-sm-12 show-tools'})
@@ -554,7 +554,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			}
 		}
 
-		
+
 		return tmp.newDiv;
 	}
 	/**
@@ -944,7 +944,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		});
 		return tmp.me;
 	}
-	
+
 	/**
 	 * Getting the address panel
 	 */
@@ -966,7 +966,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				.insert({'bottom': new Element('strong').update(tmp.me._order.orderNo) })
 				.insert({'bottom': new Element('span').update('&nbsp;') })
 				.insert({'bottom': new Element('span').update('PO No.:') })
-				.insert({'bottom': new Element('input', {'placeholder': 'Optional - PO No. From Customer', 'value': (tmp.me._order.pONo ? tmp.me._order.pONo : '')}) 
+				.insert({'bottom': new Element('input', {'placeholder': 'Optional - PO No. From Customer', 'value': (tmp.me._order.pONo ? tmp.me._order.pONo : '')})
 					.observe('change', function() {
 						tmp.me._updatePONo(this);
 					})
@@ -1210,6 +1210,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 						.insert({'bottom': tmp.me._getAddressPanel() }) 	//getting the address row
 						.insert({'bottom': tmp.me._getChildrenOrderListPanel() }) 	//getting children list
 						.insert({'bottom': tmp.me._getCreditNoteListPanel() }) 	//getting creditNote list
+						.insert({'bottom': new Element('div', {'class': 'taskListPanel'}) })	//task listing panel
 					})
 					.insert({'bottom': new Element('div', {'class': 'col-sm-4'})
 						.insert({'bottom': tmp.me._getInfoPanel() })    	//getting the order info row
@@ -1236,6 +1237,12 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			.setAfterAddFunc(function() { window.location = document.URL; })
 			.setAfterDeleteFunc(function() { window.location = document.URL; })
 			.load();
+		tmp.taskListPanel = $(tmp.me._resultDivId).down('.taskListPanel');
+		if(tmp.taskListPanel) {
+			tmp.taskListPanel.store('taskListPanelJs', tmp.taskStatusListPanelJs = new TaskStatusListPanelJs(tmp.me))
+				.update(tmp.taskStatusListPanelJs.getDiv('Order', tmp.me._order))
+			tmp.taskStatusListPanelJs.setOpenInFancyBox(tmp.me.getUrlParam('blanklayout') !== '1').render();
+		}
 		return this;
 	}
 	/**

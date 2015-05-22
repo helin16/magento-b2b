@@ -30,7 +30,7 @@ class Controller extends CRUDPageAbstract
 	protected function _getEndJs()
 	{
 		$js = parent::_getEndJs();
-		$js .= "pageJs.setHTMLID('searchPanel', 'searchPanel');";
+		$js .= "pageJs.setHTMLID('searchPanel', 'searchPanel').setCallbackId('actionTask', '" . $this->actionTaskBtn->getUniqueID() . "');";
 		$js .= "$('searchBtn').click();";
 		if(isset($_REQUEST['nosearch']) && intval($_REQUEST['nosearch']) === 1)
 			$js .= "$(pageJs.getHTMLID('searchPanel')).hide();";
@@ -42,27 +42,41 @@ class Controller extends CRUDPageAbstract
 	 */
 	protected function _preGetEndJs()
 	{
+		parent::_preGetEndJs();
 		$order = $tech = $customer =null;
 		if(isset($_REQUEST['customerId']) && !($customer = Customer::get(trim($_REQUEST['customerId']))) instanceof Customer)
-			die('Invalide Customer provided!');
+			die('Invalid Customer provided!');
 		if(isset($_REQUEST['orderId']) && !($order = Order::get(trim($_REQUEST['orderId']))) instanceof Order)
-			die('Invalide Order provided!');
+			die('Invalid Order provided!');
 		if(isset($_REQUEST['techId']) && !($tech = UserAccount::get(trim($_REQUEST['techId']))) instanceof UserAccount)
-			die('Invalide Technician provided!');
-
+			die('Invalid Technician provided!');
+		$statusIds = array();
+		if(isset($_REQUEST['statusIds']) && ($statusIds = trim($_REQUEST['statusIds'])) !== '')
+			$statusIds = array_map(create_function('$a', 'return intval(trim($a));'), explode(',', $statusIds));
 		$allstatuses = isset($_REQUEST['allstatuses']) && (intval(trim($_REQUEST['allstatuses'])) === 1);
 		$preSetData = array('statuses' => array(),
 				'order' => ($order instanceof Order ? $order->getJson() : array()),
 				'technician' => ($tech instanceof UserAccount ? $tech->getJson() : array()),
-				'customer' => ($customer instanceof Customer ? $customer->getJson() : array())
+				'customer' => ($customer instanceof Customer ? $customer->getJson() : array()),
+				'meId' => Core::getUser()->getId(),
+				'noDueDateStatusIds' => array()
 		);
 		$statuses = array();
 		foreach(TaskStatus::getAll() as $status) {
 			$statuses[] = ($statusJson = $status->getJson());
-			if($allstatuses === false && !in_array(intval($status->getId()), array(TaskStatus::ID_CANCELED, TaskStatus::ID_FINISHED)))
+			if(($noDueDateChecking = in_array(intval($status->getId()), TaskStatus::getClosedStatusIds())) === true)
+				$preSetData['noDueDateStatusIds'][] = $status->getId();
+			if(count($statusIds) > 0) {
+				if(in_array(intval($status->getId()), $statusIds))
+					$preSetData['statuses'][] = $statusJson;
+			}
+			else if($allstatuses === false && !$noDueDateChecking)
 				$preSetData['statuses'][] = $statusJson;
 		}
+		if(count($statusIds) > 0 && count($preSetData['statuses']) === 0)
+			die('Invalide Task Status provided.');
 		$js = "pageJs";
+			$js .= ".setOpenInFancyBox(" . ((isset($_REQUEST['blanklayout']) && (intval(trim($_REQUEST['blanklayout'])) === 1) && (isset($_REQUEST['nosearch']) && intval($_REQUEST['nosearch']) === 1)) ? 'false' : 'true') . ")";
 			$js .= ".setStatuses(" . json_encode($statuses) . ")";
 			$js .= ".setPreSetData(" . json_encode($preSetData) . ")";
 		$js .= ";";
@@ -151,6 +165,35 @@ class Controller extends CRUDPageAbstract
 		}
 		catch(Exception $ex)
 		{
+			$errors[] = $ex->getMessage();
+		}
+		$param->ResponseData = StringUtilsAbstract::getJson($results, $errors);
+	}
+	/**
+	 * Getting the items
+	 *
+	 * @param unknown $sender
+	 * @param unknown $param
+	 * @throws Exception
+	 *
+	 */
+	public function actionTask($sender, $param)
+	{
+		$results = $errors = array();
+		try
+		{
+			Dao::beginTransaction();
+			if(!isset($param->CallbackParameter->taskId) || !($task = Task::get(trim($param->CallbackParameter->taskId))) instanceof Task)
+				throw new Exception('Invalid Task provided!');
+			if(!isset($param->CallbackParameter->method) || ($method = trim(trim($param->CallbackParameter->method))) === '' || !method_exists($task, $method))
+				throw new Exception('Invalid Action Method!');
+			$comments = (isset($param->CallbackParameter->comments) ? trim($param->CallbackParameter->comments) : '');
+			$results['item'] = $task->$method(Core::getUser(), $comments)->getJson();
+			Dao::commitTransaction();
+		}
+		catch(Exception $ex)
+		{
+			Dao::rollbackTransaction();
 			$errors[] = $ex->getMessage();
 		}
 		$param->ResponseData = StringUtilsAbstract::getJson($results, $errors);

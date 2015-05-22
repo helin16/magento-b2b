@@ -6,7 +6,7 @@
  * @subpackage Controller
  * @author     lhe<helin16@gmail.com>
  */
-class TaskStatusListPanel extends TClientScript
+class TaskStatusListPanel extends TTemplateControl
 {
 	/**
 	 * (non-PHPdoc)

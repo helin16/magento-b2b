@@ -93,4 +93,13 @@ class TaskStatus extends BaseEntityAbstract
 		self::addCache($id, $taskStatus);
 		return $taskStatus;
 	}
+	/**
+	 * Getting the CLOSED status ids
+	 *
+	 * @return multitype:int
+	 */
+	public static function getClosedStatusIds()
+	{
+		return array(self::ID_CANCELED, self::ID_FINISHED);
+	}
 }

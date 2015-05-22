@@ -206,6 +206,109 @@ class Task extends BaseEntityAbstract
 		return $entityClass::get(trim($this->getFromEntityId()));
 	}
 	/**
+	 * checking whether we can do the action
+	 *
+	 * @param UserAccount $user
+	 *
+	 * @throws EntityException
+	 * @return Task
+	 */
+	private function _preActionCheck(UserAccount $user)
+	{
+		if(trim($this->getId()) === '')
+			throw new EntityException('Please save the task before you do any actions to the task');
+		if(!($status = $this->getStatus()) instanceof TaskStatus || in_array(intval($this->getStatus()->getId()), TaskStatus::getClosedStatusIds()))
+			throw new EntityException('Can NOT Take Task(' . $this->getId() . ') is at status:' . ($status instanceof TaskStatus ? $this->getStatus()->getName() : ''));
+		if($this->getTechnician() instanceof UserAccount) {
+			if($user->getId() === $this->getTechnician()->getId())
+				return $this;
+			throw new EntityException('Can NOT Action on a Task(' . $this->getId() . ') owned by tech:' . $this->getTechnician()->getPerson()->getFullName());
+		}
+		return $this;
+	}
+	/**
+	 * Take this task into a tech
+	 *
+	 * @param UserAccount $user
+	 *
+	 * @throws EntityException
+	 */
+	public function take(UserAccount $user, $comments = '')
+	{
+		$this->_preActionCheck($user)
+			->setTechnician($user)
+			->setStatus(TaskStatus::get(TaskStatus::ID_OPEN))
+			->save();
+		if(trim($comments) !== '')
+			$this->addComment($comments, Comments::TYPE_WORKSHOP);
+		return $this;
+	}
+	/**
+	 * start this task into a tech
+	 *
+	 * @param UserAccount $user
+	 *
+	 * @throws EntityException
+	 */
+	public function start(UserAccount $user, $comments = '')
+	{
+		$this->_preActionCheck($user)
+			->setStatus(TaskStatus::get(TaskStatus::ID_IN_PROGRESS))
+			->save();
+		if(trim($comments) !== '')
+			$this->addComment($comments, Comments::TYPE_WORKSHOP);
+		return $this;
+	}
+	/**
+	 * release this task into a tech
+	 *
+	 * @param UserAccount $user
+	 *
+	 * @throws EntityException
+	 */
+	public function release(UserAccount $user, $comments = '')
+	{
+		$this->_preActionCheck($user)
+			->setTechnician(null)
+			->setStatus(TaskStatus::get(TaskStatus::ID_OPEN))
+			->save();
+		if(trim($comments) !== '')
+			$this->addComment($comments, Comments::TYPE_WORKSHOP);
+		return $this;
+	}
+	/**
+	 * finish this task into a tech
+	 *
+	 * @param UserAccount $user
+	 *
+	 * @throws EntityException
+	 */
+	public function finish(UserAccount $user, $comments = '')
+	{
+		$this->_preActionCheck($user)
+			->setStatus(TaskStatus::get(TaskStatus::ID_FINISHED))
+			->save();
+		if(trim($comments) !== '')
+			$this->addComment($comments, Comments::TYPE_WORKSHOP);
+		return $this;
+	}
+	/**
+	 * finish this task into a tech
+	 *
+	 * @param UserAccount $user
+	 *
+	 * @throws EntityException
+	 */
+	public function onHold(UserAccount $user, $comments = '')
+	{
+		$this->_preActionCheck($user)
+			->setStatus(TaskStatus::get(TaskStatus::ID_ON_HOLD))
+			->save();
+		if(trim($comments) !== '')
+			$this->addComment($comments, Comments::TYPE_WORKSHOP);
+		return $this;
+	}
+	/**
 	 * (non-PHPdoc)
 	 * @see BaseEntityAbstract::getJson()
 	 */
@@ -233,6 +336,21 @@ class Task extends BaseEntityAbstract
 				$this->setStatus(TaskStatus::get(TaskStatus::ID_NEW));
 			if(trim($this->getDueDate()) === trim(UDate::zeroDate()))
 				$this->setDueDate(UDate::now()->modify(self::DUE_DATE_PERIOD));
+		} else {
+			$changed = array();
+			$origTech = $origCustomer = $origOrder = $origStatus = null;
+			$origTask = Task::get($this->getId());
+			if((($customer = $this->getCustomer()) instanceof Customer && !($origCustomer = $origTask->getCustomer()) instanceof Customer) || (!$customer instanceof Customer && $origCustomer instanceof Customer) || ($customer instanceof Customer && $origCustomer instanceof Customer && $customer->getId() !== $origCustomer->getId()))
+				$changed[] = 'Customer Changed["' . ($origCustomer instanceof Customer ? $origCustomer->getName() : '')  . '" => "' .  ($customer instanceof Customer ? $customer->getName() : '') . '"]';
+			if((($tech = $this->getTechnician()) instanceof UserAccount && !($origTech = $origTask->getTechnician()) instanceof UserAccount) || (!$tech instanceof UserAccount && $origTech instanceof UserAccount) || ($tech instanceof UserAccount && $origTech instanceof UserAccount && $tech->getId() !== $origTech->getId()))
+				$changed[] = 'Technician Changed["' . ($origTech instanceof UserAccount ? $origTech->getPerson()->getFullName() : '')  . '" => "' .  ($tech instanceof UserAccount ? $tech->getPerson()->getFullName() : '') . '"]';
+			if((($order = $this->getFromEntity()) instanceof Order && !($origOrder = $origTask->getFromEntity()) instanceof Order) || (!$order instanceof Order && $origOrder instanceof Order) || ($order instanceof Order && $origOrder instanceof Order && $order->getId() !== $origOrder->getId()))
+				$changed[] = 'Order Changed["' . ($origOrder instanceof Order ? $origOrder->getOrderNo() : '')  . '" => "' .  ($order instanceof Order ? $order->getOrderNo() : '') . '"]';
+			if((($status = $this->getStatus()) instanceof TaskStatus && !($origStatus = $origTask->getStatus()) instanceof TaskStatus) || (!$status instanceof TaskStatus && $origStatus instanceof TaskStatus) || ($status instanceof TaskStatus && $origStatus instanceof TaskStatus && $status->getId() !== $origStatus->getId()))
+				$changed[] = 'Status Changed["' . ($origStatus instanceof TaskStatus ? $origStatus->getName() : '')  . '" => "' .  ($status instanceof TaskStatus ? $status->getName() : '') . '"]';
+			if(count($changed) > 0)	{
+				$this->addComment(implode(', ', $changed), Comments::TYPE_SYSTEM);
+			}
 		}
 	}
 	/**
