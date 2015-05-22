@@ -293,19 +293,37 @@ class Task extends BaseEntityAbstract
 		return $this;
 	}
 	/**
-	 * finish this task into a tech
+	 * onHold this task into a tech
 	 *
 	 * @param UserAccount $user
 	 *
 	 * @throws EntityException
 	 */
-	public function onHold(UserAccount $user, $comments = '')
+	public function onHold(UserAccount $user, $comments)
 	{
+		if(($comments = trim($comments)) === '')
+			throw new Exception('Some reason needed for action: ON HOLD');
 		$this->_preActionCheck($user)
 			->setStatus(TaskStatus::get(TaskStatus::ID_ON_HOLD))
-			->save();
-		if(trim($comments) !== '')
-			$this->addComment($comments, Comments::TYPE_WORKSHOP);
+			->save()
+			->addComment('REASON FOR ON_HOLD: ' . $comments, Comments::TYPE_WORKSHOP);
+		return $this;
+	}
+	/**
+	 * cancel this task into a tech
+	 *
+	 * @param UserAccount $user
+	 *
+	 * @throws EntityException
+	 */
+	public function cancel(UserAccount $user, $comments)
+	{
+		if(($comments = trim($comments)) === '')
+			throw new Exception('Some reason needed for action: CANCEL');
+		$this->_preActionCheck($user)
+			->setStatus(TaskStatus::get(TaskStatus::ID_CANCELED))
+			->save()
+			->addComment('REASON FOR CANCEL: ' . $comments, Comments::TYPE_WORKSHOP);
 		return $this;
 	}
 	/**

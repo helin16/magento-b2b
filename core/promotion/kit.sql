@@ -106,7 +106,4 @@ insert into `taskstatus` values
 (5, 'ON HOLD', 'Task is ON HOLD', 1, NOW(), 10, NOW(), 10),
 (6, 'CANCELLED', 'Task is CANCELLED', 1, NOW(), 10, NOW(), 10);
 
-insert into `role` values
-(7, 'Workshop', 1, NOW(), 10, NOW(), 10);
-
-a
+insert into `role` values (7, 'Workshop', 1, NOW(), 10, NOW(), 10);

@@ -20,7 +20,7 @@ TaskStatusListPanelJs.prototype = Object.extend(new BPCPageJs(), {
 	,_getTaskListPage: function(statusId) {
 		var tmp = {};
 		tmp.me = this;
-		tmp.url ='/tasks.html?blanklayout=' + (tmp.me._openinFB === true ? '1' : '0') + '&nosearch=1&statusIds=' + statusId + ((tmp.me.entityName === 'Order' && tmp.me.entity && tmp.me.entity.id) ? ('&orderId=' + tmp.me.entity.id) : '');
+		tmp.url ='/tasks.html?blanklayout=1&nosearch=1&statusIds=' + statusId + ((tmp.me.entityName === 'Order' && tmp.me.entity && tmp.me.entity.id) ? ('&orderId=' + tmp.me.entity.id) : '');
 		if(tmp.me._openinFB !== true) {
 			window.location =tmp.url;
 			return tmp.me;
@@ -47,7 +47,7 @@ TaskStatusListPanelJs.prototype = Object.extend(new BPCPageJs(), {
 		var tmp = {};
 		tmp.me = this;
 		tmp.rowId = ((row && row.id) ? row.id : 'new');
-		tmp.url ='/task/' + tmp.rowId + '.html?blanklayout=' + (tmp.me._openinFB === true ? '1' : '0');
+		tmp.url ='/task/' + tmp.rowId + '.html?blanklayout=1';
 		if(tmp.rowId === 'new') {
 			tmp.url = tmp.url + ((tmp.me.entity && tmp.me.entity.customer && tmp.me.entity.customer.id) ? ('&customerId=' + tmp.me.entity.customer.id) : '');
 			if(tmp.me.entityName === 'Order' && tmp.me.entity && tmp.me.entity.id) {

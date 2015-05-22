@@ -161,6 +161,129 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		return tmp.me;
 	}
 	/**
+	 * Ajax: Action of a Task
+	 */
+	,_actionTask: function (data, succFunc) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.me.postAjax(tmp.me.getCallbackId('actionTask'), data, {
+			'onSuccess': function(sender, param) {
+				try {
+					tmp.result = tmp.me.getResp(param, false, true);
+					if(!tmp.result || !tmp.result.item || !tmp.result.item.id)
+						return;
+					tmp.me.refreshResultRow(tmp.result.item);
+					if(typeof(succFunc) === 'function')
+						succFunc(tmp.result);
+				} catch(e) {
+					tmp.me.hideModalBox();
+					tmp.me.showModalBox('<strong class="text-danger">Error</strong>', e);
+				}
+			}
+		})
+		return tmp.me;
+	}
+	,_preActionTask: function(data) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.newDiv = new Element('div', {'class': 'confirm-div'})
+			.insert({'bottom': new Element('div', {'class': 'msg-div'}) })
+			.insert({'bottom': new Element('div', {'class': 'form-group'})
+				.insert({'bottom': new Element('label', {'class': 'control-label'}).update(tmp.msg = 'Reason for action: ' + data.method) })
+				.insert({'bottom': new Element('textarea', {'class': 'form-control', 'confirm-div': 'comments', 'placeholder': tmp.msg }) })
+			})
+			.insert({'bottom': new Element('div')
+				.insert({'bottom': new Element('div', {'class': 'btn btn-default'})
+					.update('Cancel')
+					.observe('click', function() {
+						tmp.me.hideModalBox();
+					})
+				})
+				.insert({'bottom': new Element('div', {'class': 'btn btn-danger pull-right'})
+					.update('Comfirm')
+					.observe('click', function() {
+						tmp.confirmDiv = $(this).up('.confirm-div');
+						tmp.confirmDiv.down('.msg-div').update('');
+						tmp.comments = $F(tmp.confirmDiv.down('[confirm-div="comments"]'));
+						if(tmp.comments.blank()) {
+							tmp.confirmDiv.down('.msg-div').update(tmp.me.getAlertBox('', 'Please provide some reason.').addClassName('alert-danger'));
+							return;
+						}
+						data.comments = tmp.comments ;
+						tmp.me._actionTask(data, function(){
+							tmp.me.hideModalBox();
+						});
+					})
+				})
+			})
+		tmp.me.hideModalBox();
+		tmp.me.showModalBox('<strong class="text-danger">Please Confirm</strong>', tmp.newDiv);
+		return tmp.me;
+	}
+	/**
+	 * getting the technician cell
+	 */
+	,_getTechCell: function(row){
+		var tmp = {};
+		tmp.me = this;
+		tmp.techName = (row.technician && row.technician.id ? row.technician.person.fullname : '')
+		tmp.newDiv = new Element('div', {'class': 'row'})
+			.update(tmp.nameCell = new Element('span', {'class': 'col-xs-10 truncate'}).update(tmp.techName))
+			.insert({'bottom': new Element('div', {'class': 'pull-right'}).setStyle('margin: 0 5px 0 0;').update( tmp.btns = new Element('div', {'class': 'btn-group btn-group-xs visible-xs visible-sm visible-md visible-lg'}) ) });
+		if(tmp.me._preSetData && tmp.me._preSetData.noDueDateStatusIds && tmp.me._preSetData.noDueDateStatusIds.indexOf(row.status.id) < 0) {
+			if(tmp.techName.blank()) {
+				tmp.btns.insert({'bottom': new Element('span', {'class': 'btn btn-primary', 'title': 'Take this Task'})
+					.update('Take')
+					.observe('click', function() {
+						tmp.me._actionTask({'taskId': row.id, 'method': 'take'});
+					})
+				});
+			} else if(tmp.me._preSetData && tmp.me._preSetData.meId && tmp.me._preSetData.meId === row.technician.id) {
+				tmp.btns.insert({'bottom': new Element('span', {'class': 'btn btn-success dropdown-toggle', 'data-toggle': "dropdown",'aria-expanded': "false"})
+					.update(new Element('span', {'class': 'caret'}) )
+				})
+				.insert({'bottom': new Element('ul', {'class': 'dropdown-menu'})
+					.insert({'bottom': row.status.id !== '3' ? new Element('li').update( new Element('a', {'href': 'javascript:void(0);'})
+								.update('Start')
+								.observe('click', function() {
+									tmp.me._actionTask({'taskId': row.id, 'method': 'start'});
+								})
+							)
+						:
+						new Element('li').update( new Element('a', {'href': 'javascript:void(0);'})
+							.update('Finish')
+							.observe('click', function() {
+								tmp.me._actionTask({'taskId': row.id, 'method': 'finish'});
+							})
+						)
+					})
+					.insert({'bottom': new Element('li').update( new Element('a', {'href': 'javascript:void(0);'})
+						.update('Release')
+						.observe('click', function() {
+							tmp.me._actionTask({'taskId': row.id, 'method': 'release'});
+						})
+					) })
+					.insert({'bottom': new Element('li', {'class': 'divider'}) })
+					.insert({'bottom': new Element('li').update( new Element('a', {'href': 'javascript:void(0);'})
+						.update('<strong class="text-danger">ON HOLD</strong>')
+						.observe('click', function(){
+							tmp.me._preActionTask({'taskId': row.id, 'method': 'onHold'});
+						})
+					) })
+					.insert({'bottom': new Element('li').update( new Element('a', {'href': 'javascript:void(0);'})
+						.update('<strong class="text-danger">CANCEL</strong>') 
+						.observe('click', function(){
+							tmp.me._preActionTask({'taskId': row.id, 'method': 'cancel'});
+						})
+					) })
+				});
+			}
+		}
+		if(!tmp.techName.blank())
+			tmp.nameCell.writeAttribute('title', tmp.techName);
+		return tmp.newDiv;
+	}
+	/**
 	 * Getting the result row for the table
 	 */
 	,_getResultRow: function(row, isTitle) {
@@ -178,8 +301,8 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 					})
 				})
 			})
-			.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-2'})
-				.insert({'bottom': tmp.isTitle === true ? 'Customer' : new Element('a', {'href': 'javascript: void(0);'})
+			.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-1'})
+				.insert({'bottom': tmp.isTitle === true ? 'Customer' : new Element('a', {'href': 'javascript: void(0);', "class": 'truncate', 'title': row.customer.name})
 					.update( row.customer.name )
 					.observe('click', function(){
 						tmp.me.showCustomerDetailsPage(row.customer);
@@ -196,7 +319,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 				.insert({'bottom': tmp.isTitle === true ? 'Status' : new Element('span').update( row.status.name ) })
 			})
 			.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-1'})
-				.insert({'bottom': tmp.isTitle === true ? 'Tech' : new Element('span').update( row.technician && row.technician.id ? row.technician.person.fullname : '' ) })
+				.insert({'bottom': tmp.isTitle === true ? 'Tech' :  tmp.me._getTechCell(row) })
 			})
 			.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-2'})
 				.insert({'bottom': tmp.isTitle === true ? 'Created From' : ((!row.fromEntity || !row.fromEntity.orderNo) ? '' :
@@ -210,10 +333,19 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 							 })
 				) })
 			})
+			.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-2'})
+				.insert({'bottom': tmp.isTitle === true ? 'Instructions' : new Element('a', {'href': 'javascript: void(0);', 'class': ' truncate', 'title': 'click to view all'})
+					.update(row.instructions.stripTags())
+					.observe('click', function() {
+						tmp.me.hideModalBox();
+						tmp.me.showModalBox('<strong>Instructions for Task: ' + row.id + '</strong>', row.instructions);
+					})
+				})
+			})
 			.insert({'bottom': new Element(tmp.tag)
 				.insert({'bottom': tmp.isTitle === true ? 'Created By' : new Element('div')
 					.insert({'bottom': new Element('div', {'class': 'col-xs-4'}).update(row.createdBy.person.fullname) })
-					.insert({'bottom': new Element('div', {'class': 'col-xs-8'}).update(  moment(tmp.me.loadUTCTime(row.created)).format('DD/MMM/YYYY hh:mm A') ) })
+					.insert({'bottom': new Element('small', {'class': 'col-xs-8'}).update(  moment(tmp.me.loadUTCTime(row.created)).format('DD/MMM/YYYY hh:mm A') ) })
 				})
 			});
 		if(tmp.dueDateCell) {
