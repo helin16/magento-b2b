@@ -604,7 +604,7 @@ class Order extends InfoEntityAbstract
 			
 			//get the required kits qty
 			if(in_array(intval($this->getStatus()->getId()), array(OrderStatus::ID_STOCK_CHECKED_BY_PURCHASING, OrderStatus::ID_PICKED, OrderStatus::ID_SHIPPED))) {
-				$sql = "select sum(ord_item.qtyOrdered) `requiredQty`, ord_item.productId `productId`, pro.sku `sku` from orderItem ord_item inner join product pro on (pro.id = ord_item.productId and pro.isKit = 1) where ord_item.orderId = ? group by pro.id";
+				$sql = "select sum(ord_item.qtyOrdered) `requiredQty`, ord_item.productId `productId`, pro.sku `sku` from orderitem ord_item inner join product pro on (pro.id = ord_item.productId and pro.isKit = 1) where ord_item.orderId = ? group by pro.id";
 				$result = Dao::getResultsNative($sql, array($this->getId()), PDO::FETCH_ASSOC);
 				if(count($result) > 0) {
 					$errMsg = array();
