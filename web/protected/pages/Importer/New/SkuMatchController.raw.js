@@ -25,7 +25,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			$(tmp.me.getHTMLID('importerDiv')).update( tmp.me._getFileUploadDiv() );
 			tmp.me._loadChosen();
 		} else {
-			$(tmp.me.id_wrapper).update(tmp.me.getAlertBox('Warning:', 'Your browser does NOT support this feature. pls change and try again').addClassName('alert-warning') );
+			$(tmp.me.getHTMLID('importerDiv')).update(tmp.me.getAlertBox('Warning:', 'Your browser does NOT support this feature. pls change and try again').addClassName('alert-warning') );
 		}
 		return tmp.me;
 	}
@@ -51,7 +51,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				search_contains: true,
 				inherit_select_classes: true,
 				no_results_text: "No code type found!",
-				width: "250px",
+				width: "250px"
 		});
 		return this;
 	}
@@ -185,7 +185,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				.insert({'bottom': tmp.fileRow })
 			});
 		}
-		$(tmp.me.id_wrapper).update(
+		$(tmp.me.getHTMLID('importerDiv')).update(
 			new Element('div', {'class': 'panel panel-default'})
 			.insert({'bottom': new Element('div', {'class': 'panel-heading'})
 				.update('Files Selected:')
@@ -305,7 +305,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				try {
 					tmp.nextDataKeyIndex = dataKeyIndex * 1 + 1;
 					if(tmp.nextDataKeyIndex >= dataKeys.size()) { //this is the last row
-						tmp.errRows = $(tmp.me.id_wrapper).getElementsBySelector('.result_row.danger');
+						tmp.errRows = $(tmp.me.getHTMLID('importerDiv')).getElementsBySelector('.result_row.danger');
 						listGroupDiv.up('.panel').removeClassName('panel-danger').addClassName(tmp.errRows.size() > 0 ? 'panel-warning' : 'panel-success').down('.panel-heading').update('')
 							.insert({'bottom': new Element('panel-title').update((tmp.errRows.size() > 0 ? 'All provided rows have been proccessed, but with ' + tmp.errRows.size() + ' error(s)' : 'All provided rows have been proccessed successfully') ) })
 							.insert({'bottom': new Element('span',{'class': 'btn-group btn-group-sm pull-right'})
@@ -353,7 +353,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			tmp.theadRow.insert({'bottom': new Element('th').update(item) })
 		});
 
-		$(tmp.me.id_wrapper).update(
+		$(tmp.me.getHTMLID('importerDiv')).update(
 			new Element('div', {'class': 'price_search_result panel panel-danger table-responsive'})
 			.insert({'bottom': new Element('div', {'class': 'panel-heading'})
 				.update('Total of <strong>' + tmp.keys.size() + '</strong> unique row(s) received:')
