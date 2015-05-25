@@ -173,6 +173,20 @@ class KitComponent extends BaseEntityAbstract
 	}
 	/**
 	 * (non-PHPdoc)
+	 * @see BaseEntityAbstract::getJson()
+	 */
+	public function getJson($extra = array(), $reset = false)
+	{
+		$array = $extra;
+		if(!$this->isJsonLoaded($reset))
+		{
+			$array['component'] = $this->getComponent() instanceof Product ? $this->getComponent()->getJson() : null;
+			$array['product'] = $array['component'];
+		}
+		return parent::getJson($array, $reset);
+	}
+	/**
+	 * (non-PHPdoc)
 	 * @see BaseEntity::__loadDaoMap()
 	 */
 	public function __loadDaoMap()

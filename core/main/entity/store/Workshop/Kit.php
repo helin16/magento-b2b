@@ -171,6 +171,7 @@ class Kit extends BaseEntityAbstract
 	 */
 	public function getSoldOnOrder()
 	{
+		$this->loadManyToOne('soldOnOrder');
 	    return $this->soldOnOrder;
 	}
 	/**
@@ -310,8 +311,10 @@ class Kit extends BaseEntityAbstract
 	{
 		if(!$this->getProduct() instanceof Product) 
 			throw new EntityException('A product needed to create a kit!');
-// 		if($this->getProduct()->getIsKit() !== true)
-// 			throw new EntityException('The product of the kit needs to have the flag IsKit ticked.');
+		if(trim($this->soldDate) === '')
+			$this->setSoldDate(UDate::zeroDate());
+		if($this->getProduct()->getIsKit() !== true)
+			throw new EntityException('The product of the kit needs to have the flag IsKit ticked.');
 	}
 	/**
 	 * (non-PHPdoc)
@@ -324,6 +327,23 @@ class Kit extends BaseEntityAbstract
 				->save()
 				->addComment('A Kit [' . $this->getBarcode() . '] created.' . ($this->getTask() instanceof Task ? ' from Task(ID=' . $this->getTask()->getId() . ')' : ''));
 		}
+	}
+	/**
+	 * (non-PHPdoc)
+	 * @see BaseEntityAbstract::getJson()
+	 */
+	public function getJson($extra = array(), $reset = false)
+	{
+		$array = $extra;
+		if(!$this->isJsonLoaded($reset))
+		{
+			$array['product'] = $this->getProduct() instanceof Product ? $this->getProduct()->getJson() : null;
+			$array['soldToCustomer'] = $this->getSoldToCustomer() instanceof Customer ? $this->getSoldToCustomer()->getJson() : null;
+			$array['soldOnOrder'] = $this->getSoldOnOrder() instanceof Order ? $this->getSoldOnOrder()->getJson() : null;
+			$array['shippment'] = $this->getShippment() instanceof Shippment ? $this->getShippment()->getJson() : null;
+			$array['components'] = array_map(create_function('$a', 'return $a->getJson();'), KitComponent::getAllByCriteria('kitId = ?', array($this->getId())));
+		}
+		return parent::getJson($array, $reset);
 	}
 	/**
 	 * (non-PHPdoc)

@@ -22,11 +22,13 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		tmp.totalIncGst = 0;
 		tmp.rowData = [];
 		$$('.item_data_row').each(function(row){
-			tmp.unitPrice = tmp.me.getValueFromCurrency($F(row.down('[row-field="unit-price"]')));
-			tmp.qty = $F(row.down('[row-field="qty"]'));
-			tmp.totalIncGst = tmp.totalIncGst + (tmp.unitPrice  * tmp.qty);
+			if(!row.hasClassName('deactivated')) {
+				tmp.unitPrice = tmp.me.getValueFromCurrency($F(row.down('[row-field="unit-price"]')));
+				tmp.qty = $F(row.down('[row-field="qty"]'));
+				tmp.totalIncGst = tmp.totalIncGst + (tmp.unitPrice  * tmp.qty);
+			}
 			tmp.rowOriginData = row.retrieve('data');
-			tmp.rowData.push({'productId': tmp.rowOriginData.product.id, 'unitPrice': tmp.unitPrice, 'qty': tmp.qty, 'id': (tmp.rowOriginData.id ? tmp.rowOriginData.id : ''), 'active': !row.hasClassName('deactived')});
+			tmp.rowData.push({'productId': tmp.rowOriginData.product.id, 'unitPrice': tmp.unitPrice, 'qty': tmp.qty, 'id': (tmp.rowOriginData.id ? tmp.rowOriginData.id : ''), 'active': !row.hasClassName('deactivated')});
 		});
 		tmp.totalExclGst = (tmp.totalIncGst / 1.1);
 		tmp.totalGST = tmp.totalIncGst * 1 - tmp.totalExclGst * 1;
@@ -70,7 +72,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 					.update('Yes. Delete it.')
 					.observe('click', function() {
 						if(tmp.rowData.id) {
-							tmp.row.addClassName('deactived').hide();
+							tmp.row.addClassName('deactivated').hide();
 						} else {
 							tmp.row.remove();
 						}
@@ -297,7 +299,14 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 			return tmp.me;
 		}
 		tmp.summary = tmp.me._getSummary();
-		if(!tmp.summary.rowData || tmp.summary.rowData.size() === 0) {
+		tmp.hasItems = false;
+		if(tmp.summary.rowData) {
+			tmp.summary.rowData.each(function(rowData){
+				if(rowData.active === true)
+					tmp.hasItems = true;
+			});
+		}
+		if(tmp.hasItems !== true) {
 			tmp.me.showModalBox('<strong class="text-danger">Error:</strong>', new Element('div')
 				.update( tmp.me.getAlertBox('', 'Required at least one component to build a kit.').addClassName('alert-danger') )
 				.insert({'bottom': new Element('div', {'class': 'row'}).update(new Element('span', {'class': 'btn btn-primary col-xs-4 col-xs-offset-4'})
@@ -343,7 +352,6 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 				.insert({'bottom': new Element('div', {'class': 'col-xs-2 text-right', 'summary': 'total-inc-gst'}).update(tmp.me.getCurrency(0)) }) 
 			})
 		);
-		
 		tmp.detailsDiv.update(new Element('h4').update('List of Parts Inside This Kit:'))
 			.insert({'bottom': tmp.newTable})
 			.insert({'bottom': new Element('div')
@@ -354,6 +362,11 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 					}) 
 				})
 			});
+		if(tmp.me._item.components && tmp.me._item.components.size() > 0) {
+			tmp.me._item.components.each(function(component){
+				tmp.me._addNewRow(component, tmp.newTable);
+			});
+		}
 		tmp.me._initProductSearch()
 			._initInputRowValidation( tmp.inputRow.down('.row-field-save-btn') );
 		return tmp.me;
@@ -465,11 +478,11 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 	/**
 	 * initProduct search
 	 */
-	,_initProductSearch: function() {
+	,_initProductSearch: function(preSelectedProduct) {
 		var tmp = {};
 		tmp.me = this;
 		tmp.pageSize = 10;
-		tmp.select2 = jQuery('.select2.product-search:not(.loaded)');
+		tmp.select2 = jQuery('.select2.product-search:not(.loaded)').addClass('loaded');
 		tmp.select2.select2({
 			 placeholder: "Search a product",
 			 minimumInputLength: 3,
@@ -505,7 +518,10 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 			 },
 			 escapeMarkup: function (markup) { return markup; } // let our custom formatter work
 		});
-		tmp.select2.addClass('loaded');
+		if(preSelectedProduct && preSelectedProduct.id){
+			tmp.select2.select2('data', {"id": preSelectedProduct.id, 'text': '[' + preSelectedProduct.sku + '] ' + preSelectedProduct.name, 'data': preSelectedProduct});
+			tmp.me._selectKitProduct(preSelectedProduct);
+		}
 		tmp.select2.on("select2-selecting", function(event) {
 			tmp.txtBox = $(event.target);
 			tmp.onSelectFunc = tmp.txtBox.readAttribute('onSelectFunc');
@@ -558,7 +574,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		tmp.me = this;
 		tmp.me._init();
 		$(tmp.me.getHTMLID('itemDiv')).update(tmp.div = tmp.me._getItemDiv());
-		tmp.me._initProductSearch()
+		tmp.me._initProductSearch(tmp.me._item.product ? tmp.me._item.product : undefined)
 			._initFormValidation();
 		return tmp.me;
 	}
