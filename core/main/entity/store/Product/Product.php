@@ -1159,11 +1159,11 @@ class Product extends InfoEntityAbstract
 	 */
 	public function createAsAKit($comments, Kit $entity)
 	{
-		$task = ($kit instanceof Kit ? $kit->getTask() : null);
+		$task = ($entity instanceof Kit ? $entity->getTask() : null);
 		return $this->setStockOnHand(($originalStockOnHand = $this->getStockOnHand()) + 1)
 			->setTotalOnHandValue(($originalTotalOnHandValue = $this->getTotalOnHandValue()) + $entity->getCost())
 			->snapshotQty($entity instanceof BaseEntityAbstract ? $entity : $this, ProductQtyLog::TYPE_WORKSHOP,
-					'Created a Kit[' . $kit->getBarcode() . '] with value(cost=' . StringUtilsAbstract::getCurrency($entity->getCost())  . ')' . ($task instanceof Task ? ' generated from Task[' . $task->getTask() . ']' : '') . (trim($comments) === '' ? '.' : ': ' . $comments))
+					'Created a Kit[' . $entity->getBarcode() . '] with value(cost=' . StringUtilsAbstract::getCurrency($entity->getCost())  . ')' . ($task instanceof Task ? ' generated from Task[' . $task->getTask() . ']' : '') . (trim($comments) === '' ? '.' : ': ' . $comments))
 			->save()
 			->addLog('StockOnHand(' . $originalStockOnHand . ' => ' . $this->getStockOnHand() . '), StockOnHandValue(' . $originalTotalOnHandValue . ' => ' . $this->getTotalOnHandValue() . ')' . (trim($comments) === '' ? '.' : ': ' . $comments),
 					Log::TYPE_SYSTEM, 
@@ -1188,7 +1188,7 @@ class Product extends InfoEntityAbstract
 			->setStockInParts(($originalStockInParts = $this->getStockInParts()) + $qty)
 			->setTotalInPartsValue(($originalTotalInPartValue = $this->getTotalInPartsValue()) + ($qty * $unitCost))
 			->snapshotQty($entity instanceof BaseEntityAbstract ? $entity : $this, ProductQtyLog::TYPE_WORKSHOP,
-					'Stock ' . (intval(Installed) <= 0 ? 'uninstalled' : 'installed') . ($kit instanceof Kit ? ' into Kit[' . $kit->getBarcode() . ']' : '') . ($task instanceof Task ? ' generated from Task[' . $task->getTask() . ']' : '') . (trim($comments) === '' ? '.' : ': ' . $comments))
+					'Stock ' . (intval($qty) <= 0 ? 'uninstalled' : 'installed') . ($kit instanceof Kit ? ' into Kit[' . $kit->getBarcode() . ']' : '') . ($task instanceof Task ? ' generated from Task[' . $task->getTask() . ']' : '') . (trim($comments) === '' ? '.' : ': ' . $comments))
 			->save()
 			->addLog('StockOnHand(' . $originalStockOnHand . ' => ' . $this->getStockOnHand() . '), TotalOnHandValue(' . $originalTotalOnHandValue . ' => ' . $this->getTotalOnHandValue() . '), StockInParts(' . $originalStockInParts . ' => ' . $this->getStockInParts() . '), TotalInPartsValue(' . $originalTotalInPartValue . ' => ' . $this->getTotalInPartsValue() . ')' . (trim($comments) === '' ? '.' : ': ' . $comments),
 					Log::TYPE_SYSTEM,

@@ -16,6 +16,22 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		}
 		return tmp.unitPrice;
 	}
+	,_getSummary: function() {
+		var tmp = {};
+		tmp.me = this;
+		tmp.totalIncGst = 0;
+		tmp.rowData = [];
+		$$('.item_data_row').each(function(row){
+			tmp.unitPrice = tmp.me.getValueFromCurrency($F(row.down('[row-field="unit-price"]')));
+			tmp.qty = $F(row.down('[row-field="qty"]'));
+			tmp.totalIncGst = tmp.totalIncGst + (tmp.unitPrice  * tmp.qty);
+			tmp.rowOriginData = row.retrieve('data');
+			tmp.rowData.push({'productId': tmp.rowOriginData.product.id, 'unitPrice': tmp.unitPrice, 'qty': tmp.qty, 'id': (tmp.rowOriginData.id ? tmp.rowOriginData.id : ''), 'active': !row.hasClassName('deactived')});
+		});
+		tmp.totalExclGst = (tmp.totalIncGst / 1.1);
+		tmp.totalGST = tmp.totalIncGst * 1 - tmp.totalExclGst * 1;
+		return {'totalIncGst': tmp.totalIncGst, 'totalGST': tmp.totalGST, 'totalExclGst': tmp.totalExclGst, 'rowData': tmp.rowData};
+	}
 	/**
 	 * confirmDeleting the row
 	 */
@@ -23,45 +39,109 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		var tmp = {};
 		tmp.me = this;
 		tmp.row = $(btn).up('.item_row');
-		if(!tmp.row || tmp.row.hasAttribute('item_id'))
+		if(!tmp.row)
 			return tmp.me;
 
 		tmp.rowData = tmp.row.retrieve('data');
-		tmp.productData = tmp.row.retrieve('product');
+		tmp.unitPrice = $F(tmp.row.down('[row-field="unit-price"]'));
+		tmp.qty = $F(tmp.row.down('[row-field="qty"]'));
 		tmp.newDiv = new Element('div')
 			.insert({"bottom": new Element('div')
 				.insert({"bottom": new Element('strong').update('You are about to delete this selected row, with information:') })
 				.insert({"bottom": new Element('ul')
-					.insert({"bottom": new Element('li').update('<strong>Product SKU: </strong>' + tmp.rowData.productData.sku) })
-					.insert({"bottom": new Element('li').update('<strong>Product Name: </strong>' + tmp.rowData.productData.name) })
-					.insert({"bottom": new Element('li').update('<strong>Unit Price: </strong>' + tmp.me.getCurrency(tmp.me.getValueFromCurrency($F(tmp.row.down('[row-field="unit-price"]'))))) })
-					.insert({"bottom": new Element('li').update('<strong>Qty: </strong>' +  $F(tmp.row.down('[row-field="qty"]'))) })
-					.insert({"bottom": new Element('li').update('<strong>Total Price: </strong>' + $F(tmp.row.down('[row-field="total-price"]'))) })
+					.insert({"bottom": new Element('li').update('<strong>Product SKU: </strong>' + tmp.rowData.product.sku) })
+					.insert({"bottom": new Element('li').update('<strong>Product Name: </strong>' + tmp.rowData.product.name) })
+					.insert({"bottom": new Element('li').update('<strong>Unit Price: </strong>' + tmp.me.getCurrency(tmp.me.getValueFromCurrency(tmp.unitPrice)) ) })
+					.insert({"bottom": new Element('li').update('<strong>Qty: </strong>' +  tmp.qty) })
+					.insert({"bottom": new Element('li').update('<strong>Total Price: </strong>' + tmp.me.getCurrency(tmp.qty * tmp.unitPrice)) })
 				})
 			})
 			.insert({"bottom": new Element('div')
 				.insert({"bottom": new Element('strong').update('Are you sure to continue?') })
 			})
-			.insert({"bottom": new Element('div')
+			.insert({"bottom": new Element('div', {'class': 'row'})
 				.insert({"bottom": new Element('div', {'class': 'col-xs-6'}).update(new Element('div', {'class': 'btn btn-default'})
 					.update('No. Cancel')
 					.observe('click', function() {
 						tmp.me.hideModalBox();
 					})
 				) })
-				.insert({"bottom": new Element('div', {'class': 'col-xs-6 text-right'}).update(new Element('div', {'class': 'btn btn-default'})
+				.insert({"bottom": new Element('div', {'class': 'col-xs-6 text-right'}).update(new Element('div', {'class': 'btn btn-danger'})
 					.update('Yes. Delete it.')
 					.observe('click', function() {
 						if(tmp.rowData.id) {
-							tmp.row.writeAttribute('deactived', '1').hide();
+							tmp.row.addClassName('deactived').hide();
 						} else {
 							tmp.row.remove();
 						}
+						tmp.me._recalculateSummary()
+							.hideModalBox();
 					})
 				) })
 			});
-		tmp.me.showModalBox('<strong>Confirm</strong>', tmp.newDiv);
+		tmp.me.showModalBox('<strong>Confirm Deletion</strong>', tmp.newDiv);
 		return tmp.me;
+	}
+	,_recalculateSummary: function() {
+		var tmp = {};
+		tmp.me = this;
+		tmp.summary = tmp.me._getSummary();
+		jQuery('[summary="total-excl-gst"]').html(tmp.me.getCurrency(tmp.summary.totalExclGst)).val(tmp.me.getCurrency(tmp.summary.totalExclGst));
+		jQuery('[summary="total-gst"]').html(tmp.me.getCurrency(tmp.summary.totalGST)).val(tmp.me.getCurrency(tmp.summary.totalGST));
+		jQuery('[summary="total-inc-gst"]').html(tmp.me.getCurrency(tmp.summary.totalIncGst)).val(tmp.me.getCurrency(tmp.summary.totalIncGst));
+		return tmp.me;
+	}
+	,_getUnitPriceCell: function(unitPrice) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.unitPrice = (unitPrice || 0);
+		return tmp.me.getFormGroup('',
+			new Element('div', {'class': 'input-group'})
+				.insert({'bottom': new Element('span', {'class': 'input-group-addon'}).update('$')})
+				.insert({'bottom': new Element('input', {'class': 'form-control input-sm input-row-field', 'row-field': 'unit-price', 'name': 'rowField[unitPrice]', 'placeholder': 'Unit price inc. GST', 'value': tmp.me.getCurrency(tmp.unitPrice, '')})
+					.observe('change', function(){
+						tmp.unitPriceBox = this;
+						tmp.newRow = $(tmp.unitPriceBox).up('.item_row');
+						tmp.unitPrice = tmp.me.getValueFromCurrency($F(tmp.unitPriceBox));
+						if (tmp.unitPrice.match(/^\d+(\.\d{1,4})?$/) !== null)
+							$(tmp.unitPriceBox).setValue(tmp.me.getCurrency(tmp.unitPrice, ''));
+						tmp.newRow.down('.totalPrice').update(tmp.me.getCurrency(tmp.unitPrice * $F(tmp.newRow.down('[row-field="qty"]'))));
+						tmp.me._recalculateSummary();
+					})
+					.observe('keydown', function(event){
+						tmp.btn = $(this);
+						tmp.me.keydown(event, function(){
+							tmp.saveBtn = tmp.btn.up('.item_row').down('.row-field-save-btn');
+							if(tmp.saveBtn)
+								tmp.saveBtn.click();
+						});
+					})
+				})
+		);
+	}
+	,_getQtyCell: function(qty) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.qty = (qty || 1);
+		return tmp.me.getFormGroup('',
+			new Element('input', {'class': 'form-control input-sm input-row-field', 'row-field': 'qty', 'name': 'rowField[qty]', 'placeholder': 'Quanity', 'value': tmp.qty, 'type': 'number'})
+				.observe('change', function(){
+					tmp.qtyBox = this;
+					tmp.newRow = $(tmp.qtyBox).up('.item_row');
+					tmp.qty = $F(this);
+					$(tmp.qtyBox).setValue(parseInt(tmp.qty));
+					tmp.newRow.down('.totalPrice').update(tmp.me.getCurrency(tmp.qty * $F(tmp.newRow.down('[row-field="unit-price"]'))));
+					tmp.me._recalculateSummary();
+				})
+				.observe('keydown', function(event){
+					tmp.btn = $(this);
+					tmp.me.keydown(event, function(){
+						tmp.saveBtn = tmp.btn.up('.item_row').down('.row-field-save-btn');
+						if(tmp.saveBtn)
+							tmp.saveBtn.click();
+					});
+				})
+		)
 	}
 	/**
 	 * Gettig the product Row for the result table
@@ -75,21 +155,23 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 			.insert({'bottom': new Element('div', {'class': 'row'})
 				.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-8 product'}).update(tmp.isTitle === true ? new Element('strong').update('Product') : tmp.me._getProductDetailsDiv(row.product, true) )})
 				.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-4 row-details'})
-					.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-4 unitPrice   text-right'}).update(tmp.isTitle === true ? new Element('strong').update('Unit Price (inc. GST)') : tmp.me.getCurrency(row.unitPrice) )})
-					.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-3 qty'}).update(tmp.isTitle === true ? new Element('strong').update('Qty') : row.qty )})
+					.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-4 unitPrice   text-right'}).update(tmp.isTitle === true ? new Element('strong').update('Unit Price (inc. GST)') : tmp.me._getUnitPriceCell(row.unitPrice) )})
+					.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-2 qty'}).update(tmp.isTitle === true ? new Element('strong').update('Qty') :  tmp.me._getQtyCell(row.qty) )})
 					.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-4 totalPrice  text-right'}).update(tmp.isTitle === true ? new Element('strong').update('Total Price (inc. GST)') : tmp.me.getCurrency(row.unitPrice * row.qty) )})
-					.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-1 btns text-right'}).update(tmp.isTitle === true ? new Element('strong').update('&nbsp;') : ((!row || !row.id) ? '' :
+					.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-2 btns text-right'}).update(tmp.isTitle === true ? new Element('strong').update('&nbsp;') : ((!row) ? '' :
 						new Element('span', {'class': 'btn btn-danger btn-xs'})
 							.update( new Element('span', {'class': 'glyphicon glyphicon-trash'}) )
 							.observe('click', function (){
-								if(row && row.id)
-									tmp.me._confirmDelRow(this);
+								if(row)
+									try {tmp.me._confirmDelRow(this);} catch(e) {console.error(e)}
 							})
 					) ) })
 				})
 			});
-		if(row && row.id) {
-			tmp.newDiv.store(row).writeAttribute('item_id', row.id);
+		if(row) {
+			tmp.newDiv.store('data', row);
+			if(row.id)
+				tmp.newDiv.writeAttribute('item_id', row.id);
 		}
 		return tmp.newDiv;
 	}
@@ -103,34 +185,25 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		tmp.newRow.down('.product').update(tmp.me.getFormGroup('',
 			new Element('input', {'class': 'form-control select2 input-sm product-search input-row-field', 'name': 'rowField[productId]', 'row-field': 'product-id', 'isKit': '0', 'placeholder': 'Search a product', 'onSelectFunc': '_selectRowProduct'})
 		));
-		tmp.newRow.down('.unitPrice').update(tmp.me.getFormGroup('',
-			new Element('div', {'class': 'input-group'})
-				.insert({'bottom': new Element('span', {'class': 'input-group-addon'}).update('$')})
-				.insert({'bottom': new Element('input', {'class': 'form-control input-sm input-row-field', 'row-field': 'unit-price', 'name': 'rowField[unitPrice]', 'placeholder': 'Unit price inc. GST'})
-					.observe('change', function(){
-
-					})
-				})
-		));
-		tmp.newRow.down('.qty').update(tmp.me.getFormGroup('',
-			new Element('input', {'class': 'form-control input-sm input-row-field', 'row-field': 'qty', 'name': 'rowField[qty]', 'placeholder': 'Quanity'})
-				.observe('change', function(){
-
-				})
-		));
+		tmp.newRow.down('.unitPrice').update(tmp.me._getUnitPriceCell());
+		tmp.newRow.down('.qty').update(tmp.me._getQtyCell());
 		tmp.newRow.down('.totalPrice').update(tmp.me.getCurrency(0));
 		tmp.newRow.down('.btns').update(new Element('span', {'class': 'btn btn-primary btn-sm row-field-save-btn', 'valid-target': 'input-row-field'})
 			.update(new Element('i', {'class': 'glyphicon glyphicon-floppy-saved'}))
 		);
 		return tmp.newRow;
 	}
+	/**
+	 * adding a new component row
+	 */
 	,_addNewRow: function(data) {
 		var tmp = {};
 		tmp.me = this;
-		tmp.list = $$('.kit-components-list').first();
+		tmp.list = $$('.kit-components-list').first().down('.item_row_footer');
 		if(!tmp.list)
 			return tmp.me;
-		tmp.list.insert({'bottom': tmp.me._getProductRow(false, data)});
+		tmp.list.insert({'before': tmp.me._getProductRow(false, data).addClassName('item_data_row')});
+		tmp.me._recalculateSummary();
 		return tmp.me;
 	}
 	/**
@@ -186,7 +259,6 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 			tmp.jQueryForm.formValidation('addField', fieldName, options);
 		});
 		tmp.jQueryForm.on('click', '#' + $(btn).id, function(e) {
-			console.debug('test');
             jQuery.each(jQuery('.form-control'), function(index, element){
             	jQuery(tmp.me.jQueryFormSelector).bootstrapValidator('enableFieldValidators', jQuery(element).attr('name'), jQuery(element).hasClass($(btn).readAttribute('valid-target')));
             });
@@ -208,6 +280,41 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
         });
 		return tmp.me;
 	}
+	,_preSave: function(btn) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.productId = $F($$('[save-panel="kit-product-id"]').first());
+		if(tmp.productId.blank()) {
+			tmp.me.showModalBox('<strong class="text-danger">Error:</strong>', new Element('div')
+				.update(tmp.me.getAlertBox('', 'You need to provide a product for the kit.').addClassName('alert-danger'))
+				.insert({'bottom': new Element('div', {'class': 'row'}).update(new Element('span', {'class': 'btn btn-primary col-xs-4 col-xs-offset-4'})
+					.update('OK')
+					.observe('click', function(){
+						tmp.me.hideModalBox();
+					}) 
+				) })
+			);
+			return tmp.me;
+		}
+		tmp.summary = tmp.me._getSummary();
+		if(!tmp.summary.rowData || tmp.summary.rowData.size() === 0) {
+			tmp.me.showModalBox('<strong class="text-danger">Error:</strong>', new Element('div')
+				.update( tmp.me.getAlertBox('', 'Required at least one component to build a kit.').addClassName('alert-danger') )
+				.insert({'bottom': new Element('div', {'class': 'row'}).update(new Element('span', {'class': 'btn btn-primary col-xs-4 col-xs-offset-4'})
+					.update('OK')
+					.observe('click', function(){
+						tmp.me.hideModalBox();
+					}) 
+				) })
+			);
+			return tmp.me;
+		}
+		tmp.data = {'items': tmp.summary.rowData, 'productId': tmp.productId}
+		tmp.me.saveItem(btn, tmp.data, function(data){
+			console.debug(data);
+		});
+		return tmp.me;
+	}
 	/**
 	 * show KitDetails
 	 */
@@ -220,8 +327,33 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		tmp.newTable = new Element('div', {'class': 'list-group kit-components-list'})
 			.insert({'bottom': tmp.me._getProductRow(true).addClassName('item_row_header list-group-item-success') })
 			.insert({'bottom': tmp.inputRow = tmp.me._inputRow() })
+			.insert({'bottom': tmp.summaryRow = tmp.me._getProductRow(true).addClassName('item_row_footer list-group-item-success') });
+		tmp.summaryRow.down('.product').update('');
+		tmp.summaryRow.down('.row-details').update(new Element('div')
+			.insert({'bottom': new Element('div', {'class': 'row'}) 
+				.insert({'bottom': new Element('div', {'class': 'col-xs-8 text-right'}).update('<strong>Total Price(Exc. GST):</strong>') }) 
+				.insert({'bottom': new Element('div', {'class': 'col-xs-2 text-right', 'summary': 'total-excl-gst'}).update(tmp.me.getCurrency(0)) }) 
+			})
+			.insert({'bottom': new Element('div', {'class': 'row'}) 
+				.insert({'bottom': new Element('div', {'class': 'col-xs-8 text-right'}).update('<strong>Total GST:</strong>') }) 
+				.insert({'bottom': new Element('div', {'class': 'col-xs-2 text-right', 'summary': 'total-gst'}).update(tmp.me.getCurrency(0)) }) 
+			})
+			.insert({'bottom': new Element('div', {'class': 'row'}) 
+				.insert({'bottom': new Element('div', {'class': 'col-xs-8 text-right'}).update('<strong>Total Price(Inc. GST):</strong>') }) 
+				.insert({'bottom': new Element('div', {'class': 'col-xs-2 text-right', 'summary': 'total-inc-gst'}).update(tmp.me.getCurrency(0)) }) 
+			})
+		);
+		
 		tmp.detailsDiv.update(new Element('h4').update('List of Parts Inside This Kit:'))
-			.insert({'bottom': tmp.newTable});
+			.insert({'bottom': tmp.newTable})
+			.insert({'bottom': new Element('div')
+				.insert({'bottom': new Element('span', {'class': 'btn btn-primary col-xs-4 pull-right'})
+					.update('Save') 
+					.observe('click', function(){
+						tmp.me._preSave(this);
+					}) 
+				})
+			});
 		tmp.me._initProductSearch()
 			._initInputRowValidation( tmp.inputRow.down('.row-field-save-btn') );
 		return tmp.me;
@@ -233,9 +365,12 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		var tmp = {};
 		tmp.me = this;
 		tmp.newDiv = new Element('div', {'class': 'save-panel'})
-			.insert({'bottom': new Element('h3', {'class': 'text-center'}).update(tmp.me._item.id ? 'Editing KIT: ' + tmp.me._item.barcode : 'Building New Kit') })
+			.insert({'bottom': new Element('h3', {'class': 'text-center'}).update((tmp.me._item.barcode && !tmp.me._item.barcode.blank()) ? 
+					'Editing KIT: <img src="/asset/renderBarcode?text=' + tmp.me._item.barcode + '" alt="' + tmp.me._item.barcode + '" title="' + tmp.me._item.barcode + '"/>'
+					: 'Building New Kit'
+			) })
 			.insert({'bottom': new Element('div', {'class': 'form-horizontal'})
-				.insert({'bottom':  tmp.me.getFormGroup(new Element('label').update('You are trying to build a kit as: ').addClassName('col-sm-2'),
+				.insert({'bottom':  tmp.me.getFormGroup(new Element('label').update(tmp.me._item.id ? 'Kit Product: ' : 'You are trying to build a kit as: ').addClassName('col-sm-2'),
 					new Element('div', {'class': 'col-xs-10 rm-form-control kit-product-div'}).update(
 						new Element('input', {'class': 'form-control select2 input-sm product-search', 'save-panel': 'kit-product-id', 'isKit': '0', 'onSelectFunc': '_selectKitProduct'})
 					)
@@ -262,10 +397,10 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		tmp.newDiv.store('data', product)
 			.insert({'bottom': new Element('div', {'class': 'col-xs-1'}).update(tmp.defaultImg) })
 			.insert({'bottom': new Element('div', {'class': 'col-xs-11'})
-				.insert({'bottom': new Element('div', {'class': 'row'})
+				.insert({'bottom': new Element('div')
 					.insert({'bottom': new Element('div', {'class': 'col-xs-8'}).update(product.name)			})
 					.insert({'bottom': new Element('div', {'class': 'col-xs-2'})
-						.insert({'bottom': new Element('div', {'class': 'col-xs-4 text-right'}).update('<strong>Brand:</strong>:')})
+						.insert({'bottom': new Element('div', {'class': 'col-xs-4 text-right'}).update('<strong>Brand</strong>:')})
 						.insert({'bottom': new Element('div', {'class': 'col-xs-8 '}).update(product.manufacturer ? product.manufacturer.name : '')})
 					})
 					.insert({'bottom': new Element('div', {'class': 'col-xs-2'})
@@ -307,8 +442,10 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 			tmp.rowDiv.down('.product').insert({'bottom': tmp.productDetailsDiv = new Element('div', {'class': 'product-details'})});
 		}
 		tmp.productDetailsDiv.update(tmp.me._getProductDetailsDiv(product, true));
+		tmp.unitPrice = tmp.me.getValueFromCurrency(tmp.me._getUnitPrice(product));
 		tmp.rowDiv.down('[row-field="qty"]').setValue(1);
-		tmp.rowDiv.down('[row-field="unit-price"]').setValue(tmp.me.getCurrency(tmp.me.getValueFromCurrency(tmp.me._getUnitPrice(product)), ''));
+		tmp.rowDiv.down('.totalPrice').update(tmp.me.getCurrency(tmp.unitPrice));
+		tmp.rowDiv.down('[row-field="unit-price"]').setValue(tmp.me.getCurrency(tmp.unitPrice, ''));
 		return tmp.me;
 	}
 	/**

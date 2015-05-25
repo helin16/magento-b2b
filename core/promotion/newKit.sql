@@ -1,0 +1,1 @@
+ALTER TABLE `kit` DROP `rootId`, DROP `parentId`, DROP `path`;

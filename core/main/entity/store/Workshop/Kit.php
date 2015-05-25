@@ -1,5 +1,5 @@
 <?php
-class Kit extends TreeEntityAbstract
+class Kit extends BaseEntityAbstract
 {
 	const BARCODE_PREFIX = 'BPCB';
 	/**
@@ -150,7 +150,7 @@ class Kit extends TreeEntityAbstract
 	 */
 	public function getSoldDate()
 	{
-	    return UDate(trim($this->soldDate));
+	    return new UDate(trim($this->soldDate));
 	}
 	/**
 	 * Setter for soldDate
@@ -258,9 +258,9 @@ class Kit extends TreeEntityAbstract
 	 *
 	 * @return Kit
 	 */
-	public function addComponent(Product $component, $qty, KitComponent &$newKitComponent = null)
+	public function addComponent(Product $component, $qty, $unitPrice = '', KitComponent &$newKitComponent = null)
 	{
-		$newKitComponent = KitComponent::create(this, $component, $qty);
+		$newKitComponent = KitComponent::create($this, $component, $qty, $unitPrice);
 		return $this;
 	}
 	/**
@@ -270,7 +270,7 @@ class Kit extends TreeEntityAbstract
 	 */
 	public function finishedAddingComponents()
 	{
-		$this->getProduct()->$this->getProduct()->createAsAKit('', $this);
+		$this->getProduct()->createAsAKit('', $this);
 		return $this;
 	}
 	/**
@@ -310,8 +310,8 @@ class Kit extends TreeEntityAbstract
 	{
 		if(!$this->getProduct() instanceof Product) 
 			throw new EntityException('A product needed to create a kit!');
-		if($this->getProduct()->getIsKit() !== true)
-			throw new EntityException('The product of the kit needs to have the flag IsKit ticked.');
+// 		if($this->getProduct()->getIsKit() !== true)
+// 			throw new EntityException('The product of the kit needs to have the flag IsKit ticked.');
 	}
 	/**
 	 * (non-PHPdoc)
@@ -321,7 +321,8 @@ class Kit extends TreeEntityAbstract
 	{
 		if(trim($this->getBarcode()) === '') {
 			$this->setBarcode(self::BARCODE_PREFIX .str_pad($this->getId(), 8, '0', STR_PAD_LEFT))
-				->save();
+				->save()
+				->addComment('A Kit [' . $this->getBarcode() . '] created.' . ($this->getTask() instanceof Task ? ' from Task(ID=' . $this->getTask()->getId() . ')' : ''));
 		}
 	}
 	/**
@@ -359,11 +360,12 @@ class Kit extends TreeEntityAbstract
 	 */
 	public static function create(Product $product, Task $task = null, $comments = '')
 	{
-		$comments = trim($comments);
 		$kit = new Kit();
-		return $kit->setProduct($product)
+		$kit->setProduct($product)
 			->setTask($task)
-			->save()
-			->addComment('A kit(' . $kit->getBarcode() . ') created' . ($task instanceof Task ? ' from Task(ID=' . $task->getId() . ')' : '') . ($comments === '' ? '.' : ': ' . $comments));
+			->save();
+		if(($comments = trim($comments)) === '')
+			$kit->addComment($comments);
+		return $kit;
 	}
 }

@@ -62,4 +62,19 @@ class AssetController extends TService
 	        throw new Exception('invalid id(' . $assetId . ') to get!');
     	$this->getResponse()->writeFile($asset->getFileName(), file_get_contents($asset->getPath()), $asset->getMimeType(), null, false);
     }
+    /**
+     * Getting the Barcode
+     * 
+     * @param unknown $params
+     * 
+     * @throws Exception
+     */
+    private function _renderBarcode($params)
+    {
+    	if(!isset($params['text']) || ($text = trim($params['text'])) === '')
+    		throw new Exception('Nothing to draw!');
+    	$noText = (isset($params['noText']) && trim($params['noText']) === '1');
+    	$result = PhpBarcode::drawBarcode($text, $noText);
+    	$this->getResponse()->writeFile($result['filename'], $result['content'], $result['mimeType'], null, false);
+    }
 }

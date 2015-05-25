@@ -55,31 +55,43 @@ class Controller extends DetailsPageAbstract
 		try
 		{
 			Dao::beginTransaction();
-			$perchaseorder = !isset($param->CallbackParameter->id) ? new PurchaseOrder() : PurchaseOrder::get(trim($param->CallbackParameter->id));
-			if(!$perchaseorder instanceof PurchaseOrder)
-				throw new Exception('Invalid Purchase Order passed in!');
-			$purchaseOrderNo = trim($param->CallbackParameter->purchaseOrderNo);
-			$supplierId = trim($param->CallbackParameter->supplierId);
-			$supplier = Supplier::get($supplierId);
-			$orderDate = trim($param->CallbackParameter->orderDate);
-			$totalAmount = trim($param->CallbackParameter->totalAmount);
-			$totalPaid = trim($param->CallbackParameter->totalPaid);
+			$kit = !isset($param->CallbackParameter->id) ? new Kit() : Kit::get(trim($param->CallbackParameter->id));
+			if(!$kit instanceof Kit)
+				throw new Exception('Invalid Kit passed in!');
+			if(!isset($param->CallbackParameter->productId) || !($product = Product::get(trim($param->CallbackParameter->productId))) instanceof Product)
+				throw new Exception('Invalid Kit Product passed in!');
+			if(!isset($param->CallbackParameter->items) || count($items = $param->CallbackParameter->items) === 0)
+				throw new Exception('No Kit Components passed in!');
+			$task = null;
+			if(isset($param->CallbackParameter->taskId) && !($task = Task::get(trim($param->CallbackParameter->taskId))) instanceof Task)
+				throw new Exception('Invalid Task passed in!');
 
-			if(isset($param->CallbackParameter->id)) {
-				$perchaseorder->setPurchaseOrderNo($purchaseOrderNo)
-					->setSupplier($supplier)
-					->setSupplierRefNo($supplierId)
-					->setOrderDate($orderDate)
-					->setTotalAmount($totalAmount)
-					->setTotalPaid($totalPaid)
-					->save();
-			} else {
-// 				PurchaseOrder::
+			$isNewKit = false;
+			if(trim($kit->getId()) === '') {
+				$kit = Kit::create($product, $task);
+				$isNewKit = true;
 			}
-
-			$results['url'] = '/purchase/' . $perchaseorder->getId() . '.html';
-			$results['item'] = $perchaseorder->getJson();
-
+			//add all the components
+			foreach($items as $item) {
+				if(!($componentProduct = Product::get(trim($item->productId))) instanceof Product)
+					continue;
+				if(($componentId = trim($item->id)) === '' && intval($item->active) === 1) {
+					$kit->addComponent($componentProduct, intval($item->qty), StringUtilsAbstract::getValueFromCurrency(trim($item->unitPrice)));
+				} else if(($kitComponent = KitComponent::get($componentId)) instanceof KitComponent) {
+					if($kitComponent->getKit()->getId() !== $kit->getId())
+						continue;
+					if(intval($item->active) === 0) { //deactivation
+						$kitComponent->setActive(false)
+							->save();
+					}
+				}
+			}
+			if($isNewKit === true){
+				$kit->finishedAddingComponents();
+			}
+			
+			$results['url'] = '/kit/' . $kit->getId() . '.html';
+			$results['item'] = $kit->getJson();
 			Dao::commitTransaction();
 		}
 		catch(Exception $ex)

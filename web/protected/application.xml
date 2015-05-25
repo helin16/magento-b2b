@@ -161,7 +161,7 @@
 			<url ServiceParameter="Report.ProductAgeing.ListController" pattern="productageing.html" />
 
 			<!-- asset service -->
-			<url ServiceId="asset" ServiceParameter="" pattern="asset/{method}" parameters.method="get" />
+			<url ServiceId="asset" ServiceParameter="" pattern="asset/{method}" parameters.method="\w+" />
 
 			<!-- ajax service -->
 			<url ServiceId='ajax' ServiceParameter="" pattern="ajax/{method}" parameters.method="\w+"  />
