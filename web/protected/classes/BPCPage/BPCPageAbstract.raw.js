@@ -39,12 +39,18 @@ BPCPageJs.prototype = {
 		return tmp.me._htmlIDs[$key];
 	}
 
-	,getFormGroup: function(label, input) {
+	,getFormGroup: function(label, input, _wantInpuClass) {
 		var tmp = {};
 		tmp.me = this;
-		tmp.newDiv = new Element('div', {'class': 'form-group'})
-			.insert({'bottom': label.addClassName('control-label')})
-			.insert({'bottom': input.addClassName('form-control') });
+		tmp.withFormControlClass = (_wantInpuClass || false);
+		tmp.newDiv = new Element('div', {'class': 'form-group'});
+		if(label)
+			tmp.newDiv.insert({'bottom': label.addClassName('control-label')});
+		if(input) {
+			if(tmp.withFormControlClass === true)
+				input.addClassName('form-control')
+			tmp.newDiv.insert({'bottom':  input});
+		}
 		return tmp.newDiv;
 	}
 

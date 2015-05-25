@@ -12,12 +12,12 @@ class Controller extends DetailsPageAbstract
 	 * (non-PHPdoc)
 	 * @see BPCPageAbstract::$menuItem
 	 */
-	public $menuItem = 'tasks.details';
+	public $menuItem = 'kits.details';
 	/**
 	 * (non-PHPdoc)
 	 * @see BPCPageAbstract::$_focusEntityName
 	 */
-	protected $_focusEntity = 'Task';
+	protected $_focusEntity = 'Kit';
 	/**
 	 * constructor
 	 */
@@ -39,6 +39,8 @@ class Controller extends DetailsPageAbstract
 
 		$statusArray = array_map(create_function('$a', 'return $a->getJson();'), TaskStatus::getAll());
 		$js .= "pageJs";
+		$js .= ".setHTMLID('kitsDetailsDiv', 'kits-details-wrapper')";
+		$js .= ".setHTMLID('partsTable', 'parts-result-table')";
 		$js .= ".load()";
 		$js .= ";";
 		return $js;
