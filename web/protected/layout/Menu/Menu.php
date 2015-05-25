@@ -72,7 +72,7 @@ class Menu extends TTemplateControl
 					'RMA' => array('url' => '/rma.html', 'name' => 'RMA', 'icon'=> '<span class=""></span>'),
 					'importer' => array('url' => '/importer/new.html', 'name' => 'Importer', 'icon'=> '<span class="fa fa-bars"></span>'),
 			);
-		if(AccessControl::canAccessWorkShopPage(Core::getRole()) )
+		if(AccessControl::canAccessLogisticsPage(Core::getRole()) )
 			$array['Logistics'] = array(
 					'icon' => '<span class="fa fa-arrows"></span>',
 					'PurchaseOrder' =>array('url' => '/purchase.html', 'name' => 'Purchase Orders', 'icon' => '<span class="glyphicon glyphicon-shopping-cart"></span>'),
