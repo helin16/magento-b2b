@@ -333,8 +333,8 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 							 })
 				) })
 			})
-			.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-2'})
-				.insert({'bottom': tmp.isTitle === true ? 'Instructions' : new Element('a', {'href': 'javascript: void(0);', 'class': ' truncate', 'title': 'click to view all'})
+			.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-2 truncate'})
+				.insert({'bottom': tmp.isTitle === true ? 'Instructions' : new Element('a', {'href': 'javascript: void(0);', 'title': 'click to view all'})
 					.update(row.instructions.stripTags())
 					.observe('click', function() {
 						tmp.me.hideModalBox();
