@@ -65,6 +65,8 @@
 			<!-- FrontEnd:: Tasks Details page -->
 			<url ServiceParameter="Task.Details.Controller" pattern="task/{id}.html"  parameters.id="\d+|new"/>
 
+			<!-- FrontEnd:: Tasks Listing page -->
+			<url ServiceParameter="Kit.List.Controller" pattern="kits.html"/>
 			<!-- FrontEnd:: Kit Details page -->
 			<url ServiceParameter="Kit.Details.Controller" pattern="kit/{id}.html"  parameters.id="\d+|new"/>
 
