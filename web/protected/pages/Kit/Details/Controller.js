@@ -3,7 +3,17 @@
  */
 var PageJs = new Class.create();
 PageJs.prototype = Object.extend(new DetailsPageJs(), {
-	_getUnitPrice: function(product) {
+	_openinFB: true
+	/**
+	 * whether to open in fancybox for details page
+	 */
+	,setOpenInFancyBox: function(_openinFB) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.me._openinFB = _openinFB;
+		return tmp.me;
+	}
+	,_getUnitPrice: function(product) {
 		var tmp = {};
 		tmp.me = this;
 		tmp.unitPrice = 0;
@@ -15,6 +25,26 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 			})
 		}
 		return tmp.unitPrice;
+	}
+	,_openURL: function(url) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.url = url;
+		if(tmp.me._openinFB !== true) {
+			window.location = tmp.url;
+			return tmp.me;
+		}
+		jQuery.fancybox({
+			'width'			: '95%',
+			'height'		: '95%',
+			'autoScale'     : false,
+			'autoDimensions': false,
+			'fitToView'     : false,
+			'autoSize'      : false,
+			'type'			: 'iframe',
+			'href'			: tmp.url
+			});
+		return tmp.me;
 	}
 	/**
 	 * refresh the parent's window's result
@@ -174,8 +204,8 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 				.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-8 product'}).update(tmp.isTitle === true ? new Element('strong').update('Product') : tmp.me._getProductDetailsDiv(row.product, true) )})
 				.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-4 row-details'})
 					.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-4 unitPrice   text-right'}).update(tmp.isTitle === true ? new Element('strong').update('Unit Price (inc. GST)') : tmp.me._getUnitPriceCell(row.unitPrice) )})
-					.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-2 qty'}).update(tmp.isTitle === true ? new Element('strong').update('Qty') :  tmp.me._getQtyCell(row.qty) )})
-					.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-4 totalPrice  text-right'}).update(tmp.isTitle === true ? new Element('strong').update('Total Price (inc. GST)') : tmp.me.getCurrency(row.unitPrice * row.qty) )})
+					.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-3 qty'}).update(tmp.isTitle === true ? new Element('strong').update('Qty') :  tmp.me._getQtyCell(row.qty) )})
+					.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-3 totalPrice  text-right'}).update(tmp.isTitle === true ? new Element('strong').update('Total Price (inc. GST)') : tmp.me.getCurrency(row.unitPrice * row.qty) )})
 					.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-2 btns text-right'}).update(tmp.isTitle === true ? new Element('strong').update('&nbsp;') : ((!row) ? '' :
 						new Element('span', {'class': 'btn btn-danger btn-xs'})
 							.update( new Element('span', {'class': 'glyphicon glyphicon-trash'}) )
@@ -237,7 +267,11 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 					validators: {
 						notEmpty: {
 			                message: 'Please select a product'
-			            }
+			            },
+			            regexp: {
+	                        regexp: /^\d+$/,
+	                        message: 'Please select a product'
+	                    }
 					}
 				},
 				'rowField[unitPrice]': {
@@ -270,38 +304,50 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 					}
 				}
 		};
-		tmp.jQueryForm.find('[row-field="product-id"]').on('change', function(){
-			tmp.jQueryForm.formValidation('revalidateField', 'rowField[productId]');
-		});
 		jQuery.each(tmp.fields, function(fieldName, options) {
 			tmp.jQueryForm.formValidation('addField', fieldName, options);
 		});
-		tmp.jQueryForm.on('click', '#' + $(btn).id, function(e) {
-            jQuery.each(jQuery('.form-control'), function(index, element){
-            	jQuery(tmp.me.jQueryFormSelector).bootstrapValidator('enableFieldValidators', jQuery(element).attr('name'), jQuery(element).hasClass($(btn).readAttribute('valid-target')));
-            });
-            if(tmp.jQueryForm.bootstrapValidator('validate').data('bootstrapValidator').isValid() === true) {
-            	tmp.me._addNewRow({
-            		'product': tmp.jQueryForm.find('[row-field="product-id"]').select2('data').data,
-            		'unitPrice': tmp.me.getValueFromCurrency(tmp.jQueryForm.find('[row-field="unit-price"]').val()),
-            		'qty':tmp.jQueryForm.find('[row-field="qty"]').val()
-            	});
-            	jQuery.each(tmp.fields, function(fieldName, options) {
-        			tmp.jQueryForm.formValidation('removeField', fieldName, options);
-        		});
-            	tmp.newRow = tmp.me._inputRow();
-            	$(btn).up('.item_row_new').replace(tmp.newRow);
-            	tmp.me._initProductSearch()
-    				._initInputRowValidation( tmp.newRow.down('.row-field-save-btn') );
-            	tmp.jQueryForm.bootstrapValidator('resetForm');
-            }
-        });
+		tmp.jQueryForm.find('[row-field="product-id"]').on('change', function(){
+			tmp.jQueryForm.formValidation('revalidateField', 'rowField[productId]');
+		});
+		if(!jQuery('#' + $(btn).id).hasClass('loaded')) {
+			tmp.jQueryForm.on('click', '#' + $(btn).id, function(e) {
+				tmp.inputRow = $(btn).up('.item_row_new');
+				tmp.formValidator = tmp.jQueryForm.data('formValidation');
+	            jQuery.each(jQuery('.form-control'), function(index, element){
+	            	tmp.fieldName = jQuery(element).attr('name');
+	            	if(tmp.formValidator.getFieldElements(tmp.fieldName).length > 0) {
+	            		tmp.formValidator.enableFieldValidators(tmp.fieldName, jQuery(element).hasClass($(btn).readAttribute('valid-target')) );
+	            		console.debug(jQuery(element));
+	            		console.debug(jQuery(element).hasClass($(btn).readAttribute('valid-target')));
+	            	}
+	            });
+	            tmp.formValidator.validate();
+	            if(tmp.formValidator.isValid() === true) {
+	            	tmp.productSelectBox = tmp.inputRow.down('[row-field="product-id"]');
+	            	tmp.me._signRandID(tmp.productSelectBox);
+	            	tmp.unitPriceBox = tmp.inputRow.down('[row-field="unit-price"]');
+	            	tmp.qtyBox = tmp.inputRow.down('[row-field="qty"]');
+	            	tmp.me._addNewRow({
+	            		'product': jQuery('#' + tmp.productSelectBox.id).select2('data').data,
+	            		'unitPrice': tmp.me.getValueFromCurrency($F(tmp.unitPriceBox)),
+	            		'qty': $F(tmp.qtyBox)
+	            	});
+	            	tmp.jQueryForm.bootstrapValidator('resetForm');
+	            	jQuery('#' + tmp.productSelectBox.id).select2('val', '');
+	            	tmp.unitPriceBox.setValue(tmp.me.getCurrency(0, ''));
+	            	tmp.qtyBox.setValue(1);
+	            	tmp.productSelectBox.up('.product').down('.product-details').remove();
+	            }
+	        });
+			jQuery('#' + $(btn).id).addClass('loaded');
+		}
 		return tmp.me;
 	}
 	,_preSave: function(btn) {
 		var tmp = {};
 		tmp.me = this;
-		tmp.productId = $F($$('[save-panel="kit-product-id"]').first());
+		tmp.productId = ((tmp.me._item.product && tmp.me._item.product.id ) ? tmp.me._item.product.id : $F($$('[save-panel="kit-product-id"]').first()));
 		if(tmp.productId.blank()) {
 			tmp.me.showModalBox('<strong class="text-danger">Error:</strong>', new Element('div')
 				.update(tmp.me.getAlertBox('', 'You need to provide a product for the kit.').addClassName('alert-danger'))
@@ -334,7 +380,11 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 			);
 			return tmp.me;
 		}
-		tmp.data = {'items': tmp.summary.rowData, 'productId': tmp.productId}
+		tmp.data = {'items': tmp.summary.rowData, 'productId': tmp.productId};
+		tmp.taskIdBox = $$('[save-panel="task-id"]').first();
+		if(tmp.taskIdBox && !$F(tmp.taskIdBox).blank()) {
+			tmp.data.taskId = $F(tmp.taskIdBox);
+		}
 		tmp.me.saveItem(btn, tmp.data, function(data){
 			tmp.me.refreshParentWindow(data.item);
 			tmp.me._item = data.item;
@@ -375,22 +425,73 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		);
 		tmp.detailsDiv.update(new Element('h4').update('List of Parts Inside This Kit:'))
 			.insert({'bottom': tmp.newTable})
-			.insert({'bottom': new Element('div')
-				.insert({'bottom': new Element('span', {'class': 'btn btn-primary col-xs-4 pull-right'})
+			.insert({'bottom': new Element('div', {'class': 'row'})
+				.insert({'bottom': new Element('span', {'class': 'btn btn-primary col-md-4 col-md-push-8'})
 					.update('Save')
 					.observe('click', function(){
 						tmp.me._preSave(this);
 					})
 				})
+				.insert({'bottom': new Element('span', {'class': 'col-md-8 col-md-pull-4'})
+				.	insert({'bottom': tmp.me._item.id ? new Element('div', {'class': 'comments-div'}) : '' })
+				})
 			});
-		if(tmp.me._item.components && tmp.me._item.components.size() > 0) {
-			tmp.me._item.components.each(function(component){
-				tmp.me._addNewRow(component, tmp.newTable);
-			});
-		}
 		tmp.me._initProductSearch()
 			._initInputRowValidation( tmp.inputRow.down('.row-field-save-btn') );
 		return tmp.me;
+	}
+	,_getExtraInfoDiv: function() {
+		var tmp = {};
+		tmp.me = this;
+		if(!tmp.me._item.id)
+			return '';
+		tmp.newDiv = new Element('div', {'class': 'row'})
+			.insert({'bottom': !(tmp.me._item.soldToCustomer && tmp.me._item.soldToCustomer.id) ? '' : new Element('div', {'class': 'col-md-3'})
+				.insert({'bottom': tmp.me.getFormGroup(new Element('label').update('Sold to Customer: '), 
+						new Element('div', {'class': 'form-control input-sm'}).update(
+							new Element('a', {'href': 'javascript:void(0);'}).update(tmp.me._item.soldToCustomer.name)
+								.observe('click', function(){
+									tmp.me._openURL('/customer/' + tmp.me._item.soldToCustomer.id + '.html?blanklayout=1');
+								})
+						)
+				) })
+			})
+			.insert({'bottom': !tmp.me._item.soldDate ? '' : new Element('div', {'class': 'col-md-2'})
+				.insert({'bottom': tmp.me.getFormGroup(new Element('label').update('Sold Time: '), 
+						new Element('div', {'class': 'form-control input-sm'}).update(
+							moment(tmp.me.loadUTCTime(tmp.me._item.soldDate)).format('lll')
+						)
+				) })
+			})
+			.insert({'bottom': !tmp.me._item.soldOnOrder ? '' : new Element('div', {'class': 'col-md-4'})
+				.insert({'bottom': tmp.me.getFormGroup(new Element('label').update('Sold on Order: '), 
+					new Element('div', {'class': 'form-control input-sm order_item'})
+						.insert({'bottom': new Element('div', {'class': 'col-md-3'})
+							.insert({'bottom': new Element('a', {'href': 'javascript:void(0);'}).update(tmp.me._item.soldOnOrder.orderNo)
+								.observe('click', function(){
+									tmp.me._openURL('/orderdetails/' + tmp.me._item.soldOnOrder.id + '.html?blanklayout=1');
+								})
+							})
+						})
+						.insert({'bottom': new Element('div', {'class': 'col-md-3', 'order_status': tmp.me._item.soldOnOrder.status.name}).update(tmp.me._item.soldOnOrder.status.name) })
+						.insert({'bottom': new Element('div', {'class': 'col-md-6 truncate', 'title': tmp.me._item.soldOnOrder.customer.name}).update(
+							new Element('a', {'href': 'javascript:void(0);'}).update(tmp.me._item.soldOnOrder.customer.name)
+								.observe('click', function(){
+									tmp.me._openURL('/customer/' + tmp.me._item.soldOnOrder.customer.id + '.html?blanklayout=1');
+								})
+						) })
+				) })
+			})
+			.insert({'bottom': !(tmp.me._item.shippment && tmp.me._item.shippment.id) ? '' : new Element('div', {'class': 'col-md-3'})
+				.insert({'bottom': tmp.me.getFormGroup(new Element('label').update('Shipped Via: '), 
+					new Element('div', {'class': 'form-control input-sm'})
+						.insert({'bottom': new Element('div', {'class': 'col-md-3 truncate', 'title': tmp.me._item.shippment.courier.name}).update(tmp.me._item.shippment.courier.name) })
+						.insert({'bottom': new Element('div', {'class': 'col-md-3 truncate', 'title': 'Con. No.:' + tmp.me._item.shippment.conNoteNo}).update(tmp.me._item.shippment.conNoteNo) })
+						.insert({'bottom': new Element('div', {'class': 'col-md-6', 'title': 'shipped on date'}).update( moment(tmp.me.loadUTCTime(tmp.me._item.shippment.shippingDate)).format('lll') ) })
+				) })
+			})
+			;
+		return tmp.newDiv;
 	}
 	/**
 	 * Getting the item div row
@@ -399,18 +500,30 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		var tmp = {};
 		tmp.me = this;
 		tmp.newDiv = new Element('div', {'class': 'save-panel'})
-			.insert({'bottom': new Element('h3', {'class': 'text-center'}).update((tmp.me._item.barcode && !tmp.me._item.barcode.blank()) ?
-					'Editing KIT: <img src="/asset/renderBarcode?text=' + tmp.me._item.barcode + '" alt="' + tmp.me._item.barcode + '" title="' + tmp.me._item.barcode + '"/>'
-					: 'Building New Kit'
-			) })
-			.insert({'bottom': new Element('div', {'class': 'form-horizontal'})
-				.insert({'bottom':  tmp.me.getFormGroup(new Element('label').update(tmp.me._item.id ? 'Kit Product: ' : 'You are trying to build a kit as: ').addClassName('col-sm-2'),
-					new Element('div', {'class': 'col-xs-10 rm-form-control kit-product-div'}).update(
-						new Element('input', {'class': 'form-control select2 input-sm product-search', 'save-panel': 'kit-product-id', 'isKit': '1', 'onSelectFunc': '_selectKitProduct'})
-					)
-				) })
-				.insert({'bottom':  new Element('div', {'id': tmp.me.getHTMLID('kitsDetailsDiv')})})
-			});
+			.insert({'bottom': new Element('div', {'class': 'row'})
+				.insert({'bottom': new Element('div', {'class': 'col-md-4 col-md-offset-4'})
+					.insert({'bottom': new Element('h3', {'class': 'text-center'}).update((tmp.me._item.barcode && !tmp.me._item.barcode.blank()) ?
+							'Editing KIT: <img src="/asset/renderBarcode?text=' + tmp.me._item.barcode + '" alt="' + tmp.me._item.barcode + '" title="' + tmp.me._item.barcode + '"/>'
+							: 'Building New Kit'
+					) })
+				})
+				.insert({'bottom': new Element('div', {'class': 'col-md-2 col-md-offset-2'})
+					.insert({'bottom': tmp.me.getFormGroup(new Element('label').update('For Task: '),
+							new Element('input', {'class': 'form-control select2 input-sm task-search', 'save-panel': 'task-id', 'placeholder': 'For Task.'})
+					) })
+				})
+			})
+			.insert({'bottom': new Element('div', {'class': 'row'})
+				.insert({'bottom': new Element('div', {'class': 'form-horizontal'})
+					.insert({'bottom':  tmp.me.getFormGroup(new Element('label').update(tmp.me._item.id ? 'Kit Product: ' : 'Building a kit as: ').addClassName('col-md-1 col-sm-2'),
+						new Element('div', {'class': 'col-md-11 col-sm-10 rm-form-control kit-product-div'}).update(tmp.me._item.id ? '' : 
+							new Element('input', {'class': 'form-control select2 input-sm product-search', 'save-panel': 'kit-product-id', 'isKit': '1', 'onSelectFunc': '_selectKitProduct'})
+						)
+					) })
+				})
+			})
+			.insert({'bottom':  tmp.me._getExtraInfoDiv() })
+			.insert({'bottom':  new Element('div', {'id': tmp.me.getHTMLID('kitsDetailsDiv')})})
 		tmp.newDiv.getElementsBySelector('.rm-form-control').each(function(item) {
 			item.removeClassName('form-control').removeClassName('rm-form-control');
 		});
@@ -439,7 +552,14 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 					})
 					.insert({'bottom': new Element('div', {'class': 'col-xs-2'})
 						.insert({'bottom': new Element('div', {'class': 'col-xs-4 text-right'}).update('<strong>sku</strong>:')})
-						.insert({'bottom': new Element('div', {'class': 'col-xs-8 '}).update(product.sku)})
+						.insert({'bottom': new Element('div', {'class': 'col-xs-8 truncate'})
+							.setStyle('max-width:none;')
+							.insert({'bottom': new Element('a', {'href': 'javascript: void(0);', 'title': product.sku}).update(product.sku) 
+								.observe('click', function(){
+									tmp.me._openURL('/product/' + product.id + '.html?blanklayout=1');
+								})
+							})
+						})
 					})
 				})
 				.insert({'bottom': new Element('div', {'class': 'row'})
@@ -499,7 +619,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 	/**
 	 * initProduct search
 	 */
-	,_initProductSearch: function(preSelectedProduct) {
+	,_initProductSearch: function() {
 		var tmp = {};
 		tmp.me = this;
 		tmp.pageSize = 10;
@@ -539,10 +659,6 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 			 },
 			 escapeMarkup: function (markup) { return markup; } // let our custom formatter work
 		});
-		if(preSelectedProduct && preSelectedProduct.id){
-			tmp.select2.select2('data', {"id": preSelectedProduct.id, 'text': '[' + preSelectedProduct.sku + '] ' + preSelectedProduct.name, 'data': preSelectedProduct});
-			tmp.me._selectKitProduct(preSelectedProduct);
-		}
 		tmp.select2.on("select2-selecting", function(event) {
 			tmp.txtBox = $(event.target);
 			tmp.onSelectFunc = tmp.txtBox.readAttribute('onSelectFunc');
@@ -587,6 +703,45 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		tmp.me = this;
 		return tmp.me;
 	}
+	,_initTaskSearch: function() {
+		var tmp = {};
+		tmp.me = this;
+		tmp.pageSize = 10;
+		tmp.select2 = jQuery('.select2.task-search:not(.loaded)').addClass('loaded');
+		tmp.select2.select2({
+			 minimumInputLength: 1,
+			 allowClear: true,
+			 data: [],
+			 ajax: {
+				 url: "/ajax/getAll",
+				 dataType: 'json',
+				 quietMillis: 250,
+				 data: function (term, page) { // page is the one-based page number tracked by Select2
+					 return {
+						 'entityName': 'Task',
+						 'searchTxt': '(id like :searchTxt)', //search term
+						 'searchParams': {'searchTxt': '%' + term + '%'},
+						 'pageNo': page, // page number
+						 'pageSize': tmp.pageSize
+					 };
+				 },
+				 results: function (data, page) {
+					tmp.result = [];
+					data.resultData.items.each(function(item){
+						tmp.result.push({"id": item.id, 'text': item.id + ' [' + item.status.name + ']', 'data': item});
+					})
+					return {
+						results:  tmp.result,
+						more: (page * tmp.pageSize) < data.resultData.pagination.totalRows
+					};
+				}
+			 }
+		});
+		if(tmp.me._item.task && tmp.me._item.task.id){
+			tmp.select2.select2('data', {"id": tmp.me._item.task.id, 'text': tmp.me._item.task.id + ' [' + tmp.me._item.task.status.name + ']', 'data': tmp.me._item.task});
+		}
+		return tmp.me;
+	}
 	/**
 	 * load
 	 */
@@ -595,8 +750,26 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		tmp.me = this;
 		tmp.me._init();
 		$(tmp.me.getHTMLID('itemDiv')).update(tmp.div = tmp.me._getItemDiv());
-		tmp.me._initProductSearch(tmp.me._item.product ? tmp.me._item.product : undefined)
+		if(tmp.me._item.product && tmp.me._item.product.id){
+			tmp.me._selectKitProduct(tmp.me._item.product);
+			if(tmp.me._item.components && tmp.me._item.components.size() > 0) {
+				tmp.me._item.components.each(function(component){
+					tmp.me._addNewRow(component, tmp.newTable);
+				});
+			}
+		} else {
+			tmp.me._initProductSearch();
+		}
+		tmp.me._initTaskSearch()
 			._initFormValidation();
+		
+		if(tmp.div.down('.comments-div')) {
+			tmp.div.down('.comments-div')
+				.store('CommentsDivJs', new CommentsDivJs(tmp.me, 'Kit', tmp.me._item.id)
+					._setDisplayDivId(tmp.div.down('.comments-div'))
+					.render()
+				);
+		}
 		return tmp.me;
 	}
 });
