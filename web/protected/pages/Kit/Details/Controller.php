@@ -89,7 +89,7 @@ class Controller extends DetailsPageAbstract
 			if($isNewKit === true){
 				$kit->finishedAddingComponents();
 			}
-			
+
 			$results['url'] = '/kit/' . $kit->getId() . '.html';
 			$results['item'] = $kit->getJson();
 			Dao::commitTransaction();

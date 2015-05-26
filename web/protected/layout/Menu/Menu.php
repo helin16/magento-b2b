@@ -87,8 +87,9 @@ class Menu extends TTemplateControl
 		if(AccessControl::canAccessWorkShopPage(Core::getRole()) )
 			$array['Workshop'] = array(
 					'icon' => '<span class="glyphicon glyphicon-wrench"></span>',
+					'newTask' =>array('url' => '/task/new.html', 'name' => 'New Task', 'icon' => '<span class="glyphicon glyphicon-plus"></span>'),
 					'tasks' =>array('url' => '/tasks.html', 'name' => 'Tasks', 'icon' => '<span class="glyphicon glyphicon-align-left"></span>'),
-					'newKit' =>array('url' => '/kits/new.html', 'name' => 'Build a Kit', 'icon' => '<span class="fa fa-gavel"></span>'),
+					'newKit' =>array('url' => '/kit/new.html', 'name' => 'Build a Kit', 'icon' => '<span class="fa fa-gavel"></span>'),
 					'kits' => array('url' => '/kits.html', 'name' => 'Kits', 'icon' => '<span class="glyphicon glyphicon-search"></span>')
 			);
 		if(AccessControl::canAccessUsersPage(Core::getRole()) )

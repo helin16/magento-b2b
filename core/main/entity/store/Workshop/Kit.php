@@ -266,7 +266,7 @@ class Kit extends BaseEntityAbstract
 	}
 	/**
 	 * finished adding all components to this kit
-	 * 
+	 *
 	 * @return Kit
 	 */
 	public function finishedAddingComponents()
@@ -295,7 +295,7 @@ class Kit extends BaseEntityAbstract
 	}
 	/**
 	 * recalulate the whole product with kits' value and qty
-	 * 
+	 *
 	 * @return Kit
 	 */
 	public function reCalProductValue()
@@ -309,7 +309,7 @@ class Kit extends BaseEntityAbstract
 	 */
 	public function preSave()
 	{
-		if(!$this->getProduct() instanceof Product) 
+		if(!$this->getProduct() instanceof Product)
 			throw new EntityException('A product needed to create a kit!');
 		if(trim($this->soldDate) === '')
 			$this->setSoldDate(UDate::zeroDate());
@@ -337,6 +337,7 @@ class Kit extends BaseEntityAbstract
 		$array = $extra;
 		if(!$this->isJsonLoaded($reset))
 		{
+			$array['task'] = $this->getTask() instanceof Task ? $this->getTask()->getJson() : null;
 			$array['product'] = $this->getProduct() instanceof Product ? $this->getProduct()->getJson() : null;
 			$array['soldToCustomer'] = $this->getSoldToCustomer() instanceof Customer ? $this->getSoldToCustomer()->getJson() : null;
 			$array['soldOnOrder'] = $this->getSoldOnOrder() instanceof Order ? $this->getSoldOnOrder()->getJson() : null;
