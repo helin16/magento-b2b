@@ -32,17 +32,12 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 			tmp.tbody.insert({'top': tmp.me._getResultRow(row, false).addClassName('item_row')});
 		return tmp.me;
 	}
-	/**
-	 * show the task details Page
-	 */
-	,showTaskPage: function(task) {
+	,_openURL: function(url) {
 		var tmp = {};
 		tmp.me = this;
-		if(!task || !task.id)
-			return tmp.me;
-		tmp.url = '/task/' + task.id + '.html?blanklayout=1';
+		tmp.url = url;
 		if(tmp.me._openinFB !== true) {
-			window.location =tmp.url;
+			window.location = tmp.url;
 			return tmp.me;
 		}
 		jQuery.fancybox({
@@ -58,27 +53,35 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		return tmp.me;
 	}
 	/**
+	 * show the task details Page
+	 */
+	,showTaskPage: function(task) {
+		var tmp = {};
+		tmp.me = this;
+		if(!task || !task.id)
+			return tmp.me;
+		tmp.url = '/task/' + task.id + '.html?blanklayout=1';
+		return tmp.me._openURL(tmp.url)
+	}
+	/**
+	 * show the product details Page
+	 */
+	,showProductPage: function(product) {
+		var tmp = {};
+		tmp.me = this;
+		if(!product || !product.id)
+			return tmp.me;
+		tmp.url = '/product/' + product.id + '.html?blanklayout=1';
+		return tmp.me._openURL(tmp.url);
+	}
+	/**
 	 * show the kit details Page
 	 */
 	,showKitDetailsPage: function(kit) {
 		var tmp = {};
 		tmp.me = this;
 		tmp.url = '/kit/' + ((!kit || !kit.id) ? 'new' : kit.id) + '.html?blanklayout=1';
-		if(tmp.me._openinFB !== true) {
-			window.location =tmp.url;
-			return tmp.me;
-		}
-		jQuery.fancybox({
-			'width'			: '95%',
-			'height'		: '95%',
-			'autoScale'     : false,
-			'autoDimensions': false,
-			'fitToView'     : false,
-			'autoSize'      : false,
-			'type'			: 'iframe',
-			'href'			: tmp.url
-		});
-		return tmp.me;
+		return tmp.me._openURL(tmp.url);
 	}
 	/**
 	 * show the order details Page
@@ -88,17 +91,8 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		tmp.me = this;
 		if(!order || !order.id)
 			return tmp.me;
-		jQuery.fancybox({
-			'width'			: '95%',
-			'height'		: '95%',
-			'autoScale'     : false,
-			'autoDimensions': false,
-			'fitToView'     : false,
-			'autoSize'      : false,
-			'type'			: 'iframe',
-			'href'			: '/orderdetails/' + order.id + '.html?blanklayout=1'
-		});
-		return tmp.me;
+		tmp.url = '/orderdtails/' + order.id + '.html?blanklayout=1';
+		return tmp.me._openURL(tmp.url);
 	}
 	/**
 	 * show the customer details Page
@@ -108,17 +102,8 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		tmp.me = this;
 		if(!customer || !customer.id)
 			return tmp.me;
-		jQuery.fancybox({
-			'width'			: '95%',
-			'height'		: '95%',
-			'autoScale'     : false,
-			'autoDimensions': false,
-			'fitToView'     : false,
-			'autoSize'      : false,
-			'type'			: 'iframe',
-			'href'			: '/customer/' + customer.id + '.html?blanklayout=1'
-		});
-		return tmp.me;
+		tmp.url = '/customer/' + customer.id + '.html?blanklayout=1';
+		return tmp.me._openURL(tmp.url);
 	}
 	/**
 	 * Getting the result row for the table
@@ -139,16 +124,16 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 				})
 			})
 			.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-5'})
-				.insert({'bottom': tmp.isTitle === true ? 'Product' :  new Element('div', {'class': 'row'})
-					.insert({'bottom': new Element('div', {"class": 'col-md-2'})
+				.insert({'bottom': tmp.isTitle === true ? 'Product' :  new Element('div')
+					.insert({'bottom': new Element('div', {"class": 'col-md-12'})
 						.insert({'bottom': new Element('a', {'href': 'javascript: void(0);', 'title': row.product.sku})
 							.update( row.product.sku )
 							.observe('click', function(){
-	//							tmp.me.showCustomerDetailsPage(row.customer);
+								tmp.me.showProductPage(row.product);
 							})
 						})
 					})
-					.insert({'bottom': new Element('div', {"class": 'col-md-10'}).setStyle('padding: 0px;').update( '<small>' + row.product.name + '</small>' )	})
+					.insert({'bottom': new Element('div', {"class": 'col-md-12'}).setStyle('padding: 0px;').update( '<small>' + row.product.name + '</small>' )	})
 				})
 			})
 			.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-2'})

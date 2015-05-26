@@ -16,6 +16,22 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		}
 		return tmp.unitPrice;
 	}
+	/**
+	 * refresh the parent's window's result
+	 */
+	,refreshParentWindow: function(row) {
+		var tmp = {};
+		tmp.me = this;
+		if(!window.parent)
+			return;
+		tmp.parentWindow = window.parent;
+		if(tmp.parentWindow.pageJs.refreshResultRow) {
+			tmp.parentWindow.pageJs.refreshResultRow(row);
+		}
+	}
+	/**
+	 * Getting the summary
+	 */
 	,_getSummary: function() {
 		var tmp = {};
 		tmp.me = this;
@@ -165,7 +181,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 							.update( new Element('span', {'class': 'glyphicon glyphicon-trash'}) )
 							.observe('click', function (){
 								if(row)
-									try {tmp.me._confirmDelRow(this);} catch(e) {console.error(e)}
+									tmp.me._confirmDelRow(this);
 							})
 					) ) })
 				})
@@ -320,7 +336,12 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		}
 		tmp.data = {'items': tmp.summary.rowData, 'productId': tmp.productId}
 		tmp.me.saveItem(btn, tmp.data, function(data){
-			console.debug(data);
+			tmp.me.refreshParentWindow(data.item);
+			tmp.me._item = data.item;
+			if(data.url && !data.url.blank()) {
+				window.location = data.url;
+				return;
+			}
 		});
 		return tmp.me;
 	}
