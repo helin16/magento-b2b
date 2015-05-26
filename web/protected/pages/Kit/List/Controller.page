@@ -18,19 +18,19 @@
 					<div class="col-sm-4">
 						<div class="form-group form-group-sm input-group">
                            <label class="input-group-addon">Barcode:</label>
-                           <input type="text" search_field="barcode" placeholder="The barcode of the kit" class="form-control input-sm">
+                           <input type="text" search_field="barcode" placeholder="The barcode of the kit" class="form-control input-sm" />
                         </div>
 					</div>
 					<div class="col-sm-5">
 						<div class="form-group form-group-sm input-group">
                            <label class="input-group-addon">Customer:</label>
-                           <input type="text" search_field="customer.id" placeholder="The customer of the task" class="form-control input-sm">
+                           <input type="text" search_field="customer.id" placeholder="The customer of the task" class="form-control input-sm" />
                        </div>
 					</div>
 					<div class="col-sm-3">
 						<div class="form-group form-group-sm input-group">
                            <label class="input-group-addon">Task:</label>
-                           <input type="text" search_field="taskId" placeholder="The task no" class="form-control input-sm">
+                           <input type="text" search_field="taskIds" placeholder="The task no" class="form-control input-sm" />
                        </div>
 					</div>
 				</div>
@@ -38,19 +38,19 @@
 					<div class="col-sm-4">
 						<div class="form-group form-group-sm input-group">
                            <label class="input-group-addon">Kit Product:</label>
-                           <input type="text" search_field="kitProductId" placeholder="The product of the Kit" class="form-control input-sm">
+                           <input type="text" search_field="kitProductIds" placeholder="The product of the Kit" class="form-control input-sm search-product select2" isKit='1' />
                        </div>
 					</div>
 					<div class="col-sm-5">
 						<div class="form-group form-group-sm input-group">
                            <label class="input-group-addon">Order:</label>
-                           <input type="text" search_field="ord.id" placeholder="The order that the task is created from" class="form-control input-sm">
+                           <input type="text" search_field="ord.id" placeholder="The order that the task is created from" class="form-control input-sm" />
                        </div>
 					</div>
 					<div class="col-sm-3">
 						<div class="form-group form-group-sm input-group">
                            <label class="input-group-addon">Component:</label>
-                           <input type="text" search_field="componentProductId" placeholder="The product used in the kit" class="form-control input-sm">
+                           <input type="text" search_field="componentProductIds" placeholder="The product used in the kit" class="form-control input-sm search-product select2"  isKit='0' />
                         </div>
 					</div>
 				</div>

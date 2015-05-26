@@ -108,9 +108,18 @@ class Controller extends CRUDPageAbstract
 			$serachCriteria = isset($param->CallbackParameter->searchCriteria) ? json_decode(json_encode($param->CallbackParameter->searchCriteria), true) : array();
 			$where = array(1);
 			$params = array();
-			if(isset($serachCriteria['taskId']) && trim($taskId = $serachCriteria['taskId']) !== '') {
-				$where[] = 'taskId like :taskId';
-				$params['taskId'] = '%' . $taskId . '%';
+			if(isset($serachCriteria['barcode']) && trim($barcode = $serachCriteria['barcode']) !== '') {
+				$where[] = 'barcode like :barcode';
+				$params['barcode'] = '%' . $barcode . '%';
+			}
+			if(isset($serachCriteria['taskIds']) && trim($taskIds= $serachCriteria['taskIds']) !== '' && count($taskIds = explode(',', $taskIds)) > 0) {
+				$keys = array();
+				foreach($taskIds as $index => $taskId)
+				{
+					$keys[] = ":" . ($key = "taskId" . $index);
+					$params[$key] = $taskId;
+				}
+				$where[] = 'taskId in (' . implode(', ', $keys) . ')';
 			}
 			if(isset($serachCriteria['ord.id']) && trim($orderIds = $serachCriteria['ord.id']) !== '' && count($orderIds = explode(',', $orderIds)) > 0) {
 				$keys = array();
@@ -120,6 +129,24 @@ class Controller extends CRUDPageAbstract
 					$params[$key] = $orderId;
 				}
 				$where[] = 'soldOnOrderId in (' . implode(', ', $keys) . ')';
+			}
+			if(isset($serachCriteria['kitProductIds']) && trim($kitProductIds = $serachCriteria['kitProductIds']) !== '' && count($kitProductIds = explode(',', $kitProductIds)) > 0) {
+				$keys = array();
+				foreach($kitProductIds as $index => $kitProductId)
+				{
+					$keys[] = ":" . ($key = "kitProductId" . $index);
+					$params[$key] = $kitProductId;
+				}
+				$where[] = 'productId in (' . implode(', ', $keys) . ')';
+			}
+			if(isset($serachCriteria['componentProductIds']) && trim($componentProductIds = $serachCriteria['componentProductIds']) !== '' && count($componentProductIds = explode(',', $componentProductIds)) > 0) {
+				$keys = array();
+				foreach($componentProductIds as $index => $componentProductId)
+				{
+					$keys[] = ":" . ($key = "componentProductId" . $index);
+					$params[$key] = $componentProductId;
+				}
+				$where[] = 'id in (select kitcom.kitId from kitcomponent kitcom where kitcom.componentId in (' . implode(', ', $keys) . '))';
 			}
 			if(isset($serachCriteria['customer.id']) && trim($customerIds = $serachCriteria['customer.id']) !== '' && count($customerIds = explode(',', $customerIds)) > 0) {
 				$keys = array();

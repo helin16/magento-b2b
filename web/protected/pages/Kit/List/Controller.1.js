@@ -253,6 +253,99 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		}
 		return tmp.me;
 	}
+	,_initTaskSearchBox: function() {
+		var tmp = {};
+		tmp.me = this;
+		tmp.selectBox = jQuery('[search_field="taskIds"]').select2({
+			minimumInputLength: 3
+			,multiple: true
+			,ajax: {
+				delay: 250
+				,url: '/ajax/getAll'
+					,type: 'POST'
+						,data: function (params) {
+							return {
+								'searchTxt': 'id like ?',
+								'searchParams': ['%' + params + '%'],
+								'entityName': 'Task',
+								'pageNo': 1
+							};
+						}
+			,results: function(data, page, query) {
+				tmp.result = [];
+				if(data.resultData && data.resultData.items) {
+					data.resultData.items.each(function(item){
+						tmp.result.push({'id': item.id, 'text': item.id, 'data': item});
+					});
+				}
+				return { 'results' : tmp.result };
+			}
+			}
+			,cache: true
+			,escapeMarkup: function (markup) { return markup; } // let our custom formatter work
+		});
+		if(tmp.me._preSetData && tmp.me._preSetData.task && tmp.me._preSetData.task.id) {
+			tmp.selectBox.select2('data', [{'id': tmp.me._preSetData.task.id, 'text': tmp.me._preSetData.task.name, 'data': tmp.me._preSetData.task}]);
+		}
+		return tmp.me;
+	}
+	,_formatProductRow: function(result) {
+		var tmp = {};
+		tmp.me = this;
+		 if(!result)
+			 return '';
+		 tmp.newDiv = new Element('div', {'class': 'row'})
+		 	.insert({'bottom': new Element('div', {'class': 'col-xs-5 truncate', 'title': 'SKU:' + result.data.sku}).setStyle('max-width: none;').update(result.data.sku)})
+		 	.insert({'bottom': new Element('div', {'class': 'col-xs-7 truncate', 'title': result.data.name}).setStyle('max-width: none;').update(result.data.name)});
+		 return tmp.newDiv;
+	}
+	/**
+	 * initProduct search
+	 */
+	,_initProductSearch: function() {
+		var tmp = {};
+		tmp.me = this;
+		tmp.pageSize = 10;
+		$$('.select2.search-product').each(function(element){
+			if(element.hasClassName('loaded'))
+				return;
+			tmp.me._signRandID(element);
+			jQuery('#' + element.id).select2({
+				 placeholder: "Search a product",
+				 minimumInputLength: 3,
+				 allowClear: true,
+				 multiple: true,
+				 ajax: {
+					 url: "/ajax/getAll",
+					 dataType: 'json',
+					 quietMillis: 250,
+					 data: function (term, page) { // page is the one-based page number tracked by Select2
+						 return {
+							 'entityName': 'Product',
+							 'searchTxt': '(name like :searchTxt or mageId = :searchTxtExact or sku = :searchTxtExact) and isKit = ' + element.readAttribute('isKit'), //search term
+							 'searchParams': {'searchTxt': '%' + term + '%', 'searchTxtExact': term},
+							 'pageNo': page, // page number
+							 'pageSize': tmp.pageSize
+						 };
+					 },
+					 results: function (data, page) {
+						tmp.result = [];
+						data.resultData.items.each(function(item){
+							tmp.result.push({"id": item.id, 'text': '[' + item.sku + '] ' + item.name, 'data': item});
+						})
+						return {
+							results:  tmp.result,
+							more: (page * tmp.pageSize) < data.resultData.pagination.totalRows
+						};
+					}
+				 },
+				 formatResult : function(result) { return tmp.me._formatProductRow(result);},
+				 formatSelection: function(result) { return tmp.me._formatProductRow(result);},
+				 escapeMarkup: function (markup) { return markup; } // let our custom formatter work
+			});
+		})
+		return tmp.me;
+	}
 	,init: function () {
 		var tmp = {};
 		tmp.me = this;
@@ -260,6 +353,8 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 			format: 'DD/MM/YYYY'
 		});
 		tmp.me._initCustomerSearchBox()
+			._initProductSearch()
+			._initTaskSearchBox()
 			._initOrderSearchBox();
 		$('searchBtn').observe('click', function() {
 			tmp.me.getSearchCriteria().getResults(true, 30);
