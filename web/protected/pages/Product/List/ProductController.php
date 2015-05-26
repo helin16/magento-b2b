@@ -56,6 +56,7 @@ class ProductController extends CRUDPageAbstract
 		$js .= ".setCallbackId('toggleActive', '" . $this->toggleActiveBtn->getUniqueID() . "')";
 		$js .= ".setCallbackId('updatePrice', '" . $this->updatePriceBtn->getUniqueID() . "')";
 		$js .= ".setCallbackId('updateStockLevel', '" . $this->updateStockLevelBtn->getUniqueID() . "')";
+		$js .= ".setCallbackId('toggleIsKit', '" . $this->toggleIsKitBtn->getUniqueID() . "')";
 		$js .= ".getResults(true, " . $this->pageSize . ");";
 		return $js;
 	}
@@ -181,6 +182,33 @@ class ProductController extends CRUDPageAbstract
     		if(!($product = Product::get($id)) instanceof Product)
     			throw new Exception('Invalid product!');
     		$product->setActive(intval($param->CallbackParameter->active))
+    			->save();
+    		$results['item'] = $product->getJson();
+    		Dao::commitTransaction();
+    	}
+    	catch(Exception $ex)
+    	{
+    		Dao::rollbackTransaction();
+    		$errors[] = $ex->getMessage();
+    	}
+    	$param->ResponseData = StringUtilsAbstract::getJson($results, $errors);
+    }
+    /**
+     * toggleIsKit
+     *
+     * @param unknown $sender
+     * @param unknown $param
+     */
+    public function toggleIsKit($sender, $param)
+    {
+    	$results = $errors = array();
+    	try
+    	{
+    		Dao::beginTransaction();
+    		$id = isset($param->CallbackParameter->productId) ? $param->CallbackParameter->productId : '';
+    		if(!($product = Product::get($id)) instanceof Product)
+    			throw new Exception('Invalid product!');
+    		$product->setIsKit(intval($param->CallbackParameter->isKit))
     			->save();
     		$results['item'] = $product->getJson();
     		Dao::commitTransaction();

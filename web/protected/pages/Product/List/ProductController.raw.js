@@ -9,7 +9,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 	,productStatuses: []
 	,_showRightPanel: false
 	,_nextPageColSpan: 9
-	
+
 	,_getTitleRowData: function() {
 		return {'sku': 'SKU', 'name': 'Product Name','locations': 'Locations', 'invenAccNo': 'AccNo.', 'manufacturer' : {'name': 'Brand'}, 'supplierCodes': [{'supplier': {'name': 'Supplier'}, 'code': ''}],  'active': 'act?', 'stockOnOrder': 'OnOrder', 'stockOnHand': 'OnHand', 'stockOnPO': 'OnPO'};
 	}
@@ -356,6 +356,25 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		})
 		return tmp.me;
 	}
+	,toggleIsKit: function(isKit, product) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.me.postAjax(tmp.me.getCallbackId('toggleIsKit'), {'productId': product.id, 'isKit': isKit}, {
+			'onSuccess': function(sender, param) {
+				try{
+					tmp.result = tmp.me.getResp(param, false, true);
+					if(!tmp.result || !tmp.result.item)
+						return;
+					if($$('.product_item[product_id=' + product.id +']').size() >0) {
+						$$('.product_item[product_id=' + product.id +']').first().replace(tmp.me._getResultRow(tmp.result.item, false));
+					}
+				} catch (e) {
+					tmp.me.showModalBox('ERROR', e, true);
+				}
+			}
+		})
+		return tmp.me;
+	}
 	,_updatePrice: function(productId, newPrice, originalPrice) {
 		var tmp = {};
 		tmp.me = this;
@@ -487,7 +506,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		}
 		tmp.row = new Element('tr', {'class': 'visible-xs visible-md visible-lg visible-sm ' + (tmp.isTitle === true ? '' : 'product_item ' + (row.stockOnHand <= row.stockMinLevel ? 'danger': (row.stockOnHand <= row.stockReorderLevel ? 'warning' : '' ))), 'product_id' : row.id})
 			.store('data', row)
-			.insert({'bottom': new Element(tmp.tag, {'class': 'sku', 'title': row.name}).addClassName('col-xs-2')
+			.insert({'bottom': new Element(tmp.tag, {'class': 'sku', 'title': row.name}).addClassName('col-xs-1')
 				.insert({'bottom': new Element('span').setStyle('margin: 0 5px 0 0')
 					.insert({'bottom': new Element('input', {'type': 'checkbox', 'class': 'product-selected'})
 						.observe('click', function(){
@@ -500,15 +519,33 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 						})
 					})
 				})
-				.insert({'bottom':tmp.isTitle === true ? row.sku : new Element('a', {'href': 'javascript: void(0);', 'class': 'sku-link'})
+				.insert({'bottom':tmp.isTitle === true ? row.sku : new Element('a', {'href': 'javascript: void(0);', 'class': 'sku-link truncate'})
 					.observe('click', function(e){
 						tmp.me._displaySelectedProduct(row);
 					})
 					.update(row.sku)
 				})
 			})
-			.insert({'bottom': new Element(tmp.tag, {'class': 'product_name hidden-xs hide-when-info hidden-sm'}).addClassName('col-xs-2').setStyle(tmp.me._showRightPanel ? 'display: none' : '').update(row.name) })
-			.insert({'bottom': new Element(tmp.tag, {'class': 'hidden-xs hide-when-info hidden-sm'}).addClassName('col-xs-2').setStyle(tmp.me._showRightPanel ? 'display: none' : '')
+			.insert({'bottom': new Element(tmp.tag, {'class': 'product_name hidden-xs hide-when-info hidden-sm'})
+				.addClassName('col-xs-3')
+				.setStyle(tmp.me._showRightPanel ? 'display: none' : '')
+				.update(tmp.isTitle === true ? new Element('div', {'class': 'row'})
+						.insert({'bottom': new Element('div', {'class': 'col-sm-10'}).update('Product Name')})
+						.insert({'bottom': new Element('div', {'class': 'col-sm-2'}).update('IsKit?')})
+					:
+					new Element('div', {'class': 'row'})
+						.insert({'bottom': new Element('div', {'class': 'col-sm-10'}).update(row.name)})
+						.insert({'bottom': new Element('div', {'class': 'col-sm-2'}).update(new Element('input', {'type': 'checkbox', 'checked': row.isKit})
+							.observe('click', function(event) {
+								tmp.btn = this;
+								tmp.checked = $(tmp.btn).checked;
+								if(confirm(tmp.checked === true ? 'You are about to set this product to a KIT, which you can NOT PICK or SHIP without providing a KIT barcode.\n Continue?' : 'You are about to set this product to NOT a KIT, which you can PICK or SHIP without providing a KIT barcode\n Continue?'))
+									tmp.me.toggleIsKit(tmp.checked, row);
+							})
+						)})
+				)
+			})
+			.insert({'bottom': new Element(tmp.tag, {'class': 'hidden-xs hide-when-info hidden-sm row'}).addClassName('col-xs-2').setStyle(tmp.me._showRightPanel ? 'display: none' : '')
 				.insert({'bottom': new Element('div', {'class': 'col-sm-4'}).update(tmp.isTitle === true ? 'Price' : new Element('input', {'class': "click-to-edit price-input", 'value': tmp.me.getCurrency(tmp.price), 'product-id': row.id}).setStyle('width: 100%') ) })
 				.insert({'bottom': new Element('div', {'class': 'col-sm-4'}).update(tmp.isTitle === true ? 'Min St' : new Element('input', {'class': "click-to-edit stockMinLevel-input", 'value': row.stockMinLevel, 'product-id': row.id}).setStyle('width: 100%') ) })
 				.insert({'bottom': new Element('div', {'class': 'col-sm-4'}).update(tmp.isTitle === true ? 'Re St' : new Element('input', {'class': "click-to-edit stockReorderLevel-input", 'value': row.stockReorderLevel, 'product-id': row.id}).setStyle('width: 100%') ) })
@@ -524,13 +561,13 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 			.insert({'bottom': new Element(tmp.tag, {'class': 'qty hidden-sm'}).addClassName('col-xs-1').update(
 					tmp.isTitle === true ?
 							new Element('div', {'class': 'row'})
-								.insert({'bottom': new Element('div', {'class': 'col-xs-4 hide-when-info', 'title': 'Stock on Hand'}).update('SH') })
+								.insert({'bottom': new Element('div', {'class': 'col-xs-4', 'title': 'Stock on Hand'}).update('SH') })
 								.insert({'bottom': new Element('div', {'class': 'col-xs-4', 'title': 'Average Cost'}).update('Cost') })
 								.insert({'bottom': new Element('div', {'class': 'col-xs-4 hide-when-info', 'title': 'Stock On PO'}).update('SP') })
 							:
 							new Element('div', {'class': 'row'})
 								.update(new Element('a', {'href': '/productqtylog.html?productid=' + row.id, 'target': '_BLANK'})
-									.insert({'bottom': new Element('div', {'class': 'col-xs-4 hide-when-info', 'title': 'Stock on Hand'}).update(row.stockOnHand) })
+									.insert({'bottom': new Element('div', {'class': 'col-xs-4', 'title': 'Stock on Hand'}).update(row.stockOnHand) })
 									.insert({'bottom': new Element('div', {'class': 'col-xs-4', 'title': 'Average Cost'}).update((row.totalOnHandValue != 0 && row.stockOnHand != 0) ? tmp.me.getCurrency(row.totalOnHandValue/row.stockOnHand) : 'N/A') })
 									.insert({'bottom': new Element('div', {'class': 'col-xs-4 hide-when-info', 'title': 'Stock On PO'}).update(row.stockOnPO) })
 								)
@@ -539,36 +576,26 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 			.insert({'bottom': new Element(tmp.tag, {'class': 'product_active hide-when-info hidden-sm'}).addClassName('col-xs-1')
 				.insert({'bottom': (
 					new Element('div', {'class': 'row'})
-						.insert({'bottom': new Element('div', {'class': 'col-xs-5 text-right'})
-							.insert({'bottom': tmp.isTitle === true ? 'Act?' : new Element('input', {'type': 'checkbox', 'disabled': true, 'checked': row.active}) })
+						.insert({'bottom': new Element('div', {'class': 'col-xs-4 text-right'})
+							.insert({'bottom': tmp.isTitle === true ? 'Act?' : new Element('input', {'type': 'checkbox', 'checked': row.active})
+								.observe('click', function(event) {
+									tmp.btn = this;
+									tmp.checked = $(tmp.btn).checked;
+									if(confirm(tmp.checked === true ? 'You are about to ReACTIVATE this product.\n Continue?' : 'You are about to deactivate this product.\n Continue?'))
+										tmp.me.toggleActive(tmp.checked, row);
+								})
+							})
 						})
-						.insert({'bottom': new Element('div', {'class': 'col-xs-3'})
+						.insert({'bottom': new Element('div', {'class': 'col-xs-4'})
+							.setStyle('padding: 0px;')
 							.insert({'bottom': tmp.isTitle === true ? '' : new Element('a', {'href': '/serialnumbers.html?productid=' + row.id, 'target': '_BLANK', 'title': 'Serial Numbers.'}).update('SN') })
 						})
 						.insert({'bottom': new Element('div', {'class': 'col-xs-4'})
+							.setStyle('padding: 0px;')
 							.insert({'bottom': tmp.isTitle === true ? '' : new Element('div', {'class': ''})
 								.insert({'bottom': new Element('a', {'class': 'btn btn-primary btn-xs', 'href': '/product/' + row.id + '.html', 'target': '_BLANK'})
 									.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-pencil'}) })
 								})
-								.insert({'bottom': (row.active === true ?
-									new Element('span', {'class': 'btn btn-danger btn-xs'})
-										.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-trash'}) })
-										.observe('click', function(event) {
-											Event.stop(event);
-											tmp.btn = this;
-											if(confirm('You are about to deactivate this product.\n Continue?'))
-												tmp.me.toggleActive(false, row);
-										})
-									:
-									new Element('span', {'class': 'btn btn-success btn-xs'})
-										.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-repeat'}) })
-										.observe('click', function(event) {
-											Event.stop(event);
-											tmp.btn = this;
-											if(confirm('You are about to ReACTIVATE this product.\n Continue?'))
-												tmp.me.toggleActive(true, row);
-										})
-								) })
 							})
 						})
 				) })

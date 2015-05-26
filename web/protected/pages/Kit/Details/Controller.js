@@ -293,7 +293,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 					.update('OK')
 					.observe('click', function(){
 						tmp.me.hideModalBox();
-					}) 
+					})
 				) })
 			);
 			return tmp.me;
@@ -313,7 +313,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 					.update('OK')
 					.observe('click', function(){
 						tmp.me.hideModalBox();
-					}) 
+					})
 				) })
 			);
 			return tmp.me;
@@ -339,27 +339,27 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 			.insert({'bottom': tmp.summaryRow = tmp.me._getProductRow(true).addClassName('item_row_footer list-group-item-success') });
 		tmp.summaryRow.down('.product').update('');
 		tmp.summaryRow.down('.row-details').update(new Element('div')
-			.insert({'bottom': new Element('div', {'class': 'row'}) 
-				.insert({'bottom': new Element('div', {'class': 'col-xs-8 text-right'}).update('<strong>Total Price(Exc. GST):</strong>') }) 
-				.insert({'bottom': new Element('div', {'class': 'col-xs-2 text-right', 'summary': 'total-excl-gst'}).update(tmp.me.getCurrency(0)) }) 
+			.insert({'bottom': new Element('div', {'class': 'row'})
+				.insert({'bottom': new Element('div', {'class': 'col-xs-8 text-right'}).update('<strong>Total Price(Exc. GST):</strong>') })
+				.insert({'bottom': new Element('div', {'class': 'col-xs-2 text-right', 'summary': 'total-excl-gst'}).update(tmp.me.getCurrency(0)) })
 			})
-			.insert({'bottom': new Element('div', {'class': 'row'}) 
-				.insert({'bottom': new Element('div', {'class': 'col-xs-8 text-right'}).update('<strong>Total GST:</strong>') }) 
-				.insert({'bottom': new Element('div', {'class': 'col-xs-2 text-right', 'summary': 'total-gst'}).update(tmp.me.getCurrency(0)) }) 
+			.insert({'bottom': new Element('div', {'class': 'row'})
+				.insert({'bottom': new Element('div', {'class': 'col-xs-8 text-right'}).update('<strong>Total GST:</strong>') })
+				.insert({'bottom': new Element('div', {'class': 'col-xs-2 text-right', 'summary': 'total-gst'}).update(tmp.me.getCurrency(0)) })
 			})
-			.insert({'bottom': new Element('div', {'class': 'row'}) 
-				.insert({'bottom': new Element('div', {'class': 'col-xs-8 text-right'}).update('<strong>Total Price(Inc. GST):</strong>') }) 
-				.insert({'bottom': new Element('div', {'class': 'col-xs-2 text-right', 'summary': 'total-inc-gst'}).update(tmp.me.getCurrency(0)) }) 
+			.insert({'bottom': new Element('div', {'class': 'row'})
+				.insert({'bottom': new Element('div', {'class': 'col-xs-8 text-right'}).update('<strong>Total Price(Inc. GST):</strong>') })
+				.insert({'bottom': new Element('div', {'class': 'col-xs-2 text-right', 'summary': 'total-inc-gst'}).update(tmp.me.getCurrency(0)) })
 			})
 		);
 		tmp.detailsDiv.update(new Element('h4').update('List of Parts Inside This Kit:'))
 			.insert({'bottom': tmp.newTable})
 			.insert({'bottom': new Element('div')
 				.insert({'bottom': new Element('span', {'class': 'btn btn-primary col-xs-4 pull-right'})
-					.update('Save') 
+					.update('Save')
 					.observe('click', function(){
 						tmp.me._preSave(this);
-					}) 
+					})
 				})
 			});
 		if(tmp.me._item.components && tmp.me._item.components.size() > 0) {
@@ -378,14 +378,14 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		var tmp = {};
 		tmp.me = this;
 		tmp.newDiv = new Element('div', {'class': 'save-panel'})
-			.insert({'bottom': new Element('h3', {'class': 'text-center'}).update((tmp.me._item.barcode && !tmp.me._item.barcode.blank()) ? 
+			.insert({'bottom': new Element('h3', {'class': 'text-center'}).update((tmp.me._item.barcode && !tmp.me._item.barcode.blank()) ?
 					'Editing KIT: <img src="/asset/renderBarcode?text=' + tmp.me._item.barcode + '" alt="' + tmp.me._item.barcode + '" title="' + tmp.me._item.barcode + '"/>'
 					: 'Building New Kit'
 			) })
 			.insert({'bottom': new Element('div', {'class': 'form-horizontal'})
 				.insert({'bottom':  tmp.me.getFormGroup(new Element('label').update(tmp.me._item.id ? 'Kit Product: ' : 'You are trying to build a kit as: ').addClassName('col-sm-2'),
 					new Element('div', {'class': 'col-xs-10 rm-form-control kit-product-div'}).update(
-						new Element('input', {'class': 'form-control select2 input-sm product-search', 'save-panel': 'kit-product-id', 'isKit': '0', 'onSelectFunc': '_selectKitProduct'})
+						new Element('input', {'class': 'form-control select2 input-sm product-search', 'save-panel': 'kit-product-id', 'isKit': '1', 'onSelectFunc': '_selectKitProduct'})
 					)
 				) })
 				.insert({'bottom':  new Element('div', {'id': tmp.me.getHTMLID('kitsDetailsDiv')})})
