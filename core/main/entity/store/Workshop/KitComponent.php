@@ -152,10 +152,10 @@ class KitComponent extends BaseEntityAbstract
 			$this->setUnitCost($this->getComponent()->getUnitCost());
 		if(trim($this->getUnitPrice()) === '')
 			$this->setUnitPrice($this->getComponent()->getUnitPrice());
-		
+
 		if(trim($this->getId()) === '') { //when we are creating a new one
 			$this->getComponent()->installedIntoKit($this->getUnitCost(), $this->getQty(), $this);
-		} else if(intval($this->getActive()) === 0 && Self::countByCriteria('id = ? and active = 1') > 0) { //trying to deactivate the kitcomponent
+		} else if(intval($this->getActive()) === 0 && Self::countByCriteria('id = ? and active = 1', array($this->getId())) > 0) { //trying to deactivate the kitcomponent
 				$this->getComponent()->installedIntoKit($this->getUnitCost(), 0 - $this->getQty(), $this);
 		} else {
 			throw new EntityException('CANT update KitComponents once created.');

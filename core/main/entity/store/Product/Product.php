@@ -1163,10 +1163,10 @@ class Product extends InfoEntityAbstract
 		return $this->setStockOnHand(($originalStockOnHand = $this->getStockOnHand()) + 1)
 			->setTotalOnHandValue(($originalTotalOnHandValue = $this->getTotalOnHandValue()) + $entity->getCost())
 			->snapshotQty($entity instanceof BaseEntityAbstract ? $entity : $this, ProductQtyLog::TYPE_WORKSHOP,
-					'Created a Kit[' . $entity->getBarcode() . '] with value(cost=' . StringUtilsAbstract::getCurrency($entity->getCost())  . ')' . ($task instanceof Task ? ' generated from Task[' . $task->getTask() . ']' : '') . (trim($comments) === '' ? '.' : ': ' . $comments))
+					'Created a Kit[' . $entity->getBarcode() . '] with value(cost=' . StringUtilsAbstract::getCurrency($entity->getCost())  . ')' . ($task instanceof Task ? ' generated from Task[' . $task->getId() . ']' : '') . (trim($comments) === '' ? '.' : ': ' . $comments))
 			->save()
 			->addLog('StockOnHand(' . $originalStockOnHand . ' => ' . $this->getStockOnHand() . '), StockOnHandValue(' . $originalTotalOnHandValue . ' => ' . $this->getTotalOnHandValue() . ')' . (trim($comments) === '' ? '.' : ': ' . $comments),
-					Log::TYPE_SYSTEM, 
+					Log::TYPE_SYSTEM,
 					'STOCK_QTY_CHG',
 					__CLASS__ . '::' . __FUNCTION__);
 	}
@@ -1463,7 +1463,7 @@ class Product extends InfoEntityAbstract
 		}
 		if(count($categoryIds) > 0)
 		{
-			self::getQuery()->eagerLoad('Product.categories', 'inner join', 'pro_cate', 'pro.id = pro_cate.productId and pro_cate.categoryId in (' . implode(',', array_fill(0, count($categoryIds), '?')) . ')'); 
+			self::getQuery()->eagerLoad('Product.categories', 'inner join', 'pro_cate', 'pro.id = pro_cate.productId and pro_cate.categoryId in (' . implode(',', array_fill(0, count($categoryIds), '?')) . ')');
 			if(is_array($sumValues)) {
 				$innerJoins[] = 'inner join product_category pro_cate on (pro.id = pro_cate.productId and pro_cate.categoryId in (' . implode(',', array_fill(0, count($categoryIds), '?')) . '))';
 			}

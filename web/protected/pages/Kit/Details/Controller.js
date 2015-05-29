@@ -4,6 +4,63 @@
 var PageJs = new Class.create();
 PageJs.prototype = Object.extend(new DetailsPageJs(), {
 	_openinFB: true
+	,_preSetData: {}
+	/**
+	 * Setting the preSetData
+	 */
+	,setPreSetData: function(_preSetData) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.me._preSetData = _preSetData;
+		return tmp.me;
+	}
+	,_getValidatingDataFields: function() {
+		var tmp = {};
+		tmp.me = this;
+		tmp.fields = {
+			'rowField[productId]': {
+				validators: {
+					notEmpty: {
+		                message: 'Please select a product'
+		            },
+		            regexp: {
+                        regexp: /^\d+$/,
+                        message: 'Please select a product'
+                    }
+				}
+			},
+			'rowField[unitPrice]': {
+				validators: {
+					notEmpty: {
+						message: 'Unit Price is required'
+					},
+					callback: {
+						message: 'Invalid unit price provided.',
+						callback: function(value, validator, $field) {
+							if (tmp.me.getValueFromCurrency(value).match(/^\d+(\.\d{1,4})?$/) === null) {
+								return {
+		                            valid: false,
+		                            message: 'Invalid unit price provided.'
+		                        }
+							}
+							return true;
+						}
+					}
+				}
+			},
+			'rowField[qty]': {
+				validators: {
+					 notEmpty: {
+		                 message: 'Quantity is required'
+		             },
+		             integer: {
+		 				 message: 'Quantity is not an integer'
+		 			}
+				}
+			}
+		};
+		return tmp.fields;
+	}
 	/**
 	 * whether to open in fancybox for details page
 	 */
@@ -117,6 +174,18 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 				.insert({"bottom": new Element('div', {'class': 'col-xs-6 text-right'}).update(new Element('div', {'class': 'btn btn-danger'})
 					.update('Yes. Delete it.')
 					.observe('click', function() {
+						tmp.jQueryForm = jQuery('#' + tmp.me.getHTMLID('main-form'));
+						tmp.jQueryFV = tmp.jQueryForm.data('formValidation');
+						tmp.fieldOptions = tmp.me._getValidatingDataFields();
+						if(tmp.jQueryFV && tmp.jQueryFV.addField) {
+							tmp.row.getElementsBySelector('.need-validate').each(function(item) {
+								tmp.mapKey = item.readAttribute('form-option');
+								if(tmp.mapKey && !tmp.mapKey.blank() && tmp.fieldOptions[tmp.mapKey]) {
+									tmp.jQueryFV.removeField(item.name);
+								}
+							});
+							tmp.jQueryFV.resetForm();
+						}
 						if(tmp.rowData.id) {
 							tmp.row.addClassName('deactivated').hide();
 						} else {
@@ -139,14 +208,16 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		jQuery('[summary="total-inc-gst"]').html(tmp.me.getCurrency(tmp.summary.totalIncGst)).val(tmp.me.getCurrency(tmp.summary.totalIncGst));
 		return tmp.me;
 	}
-	,_getUnitPriceCell: function(unitPrice) {
+	,_getUnitPriceCell: function(unitPrice, rowIndex) {
 		var tmp = {};
 		tmp.me = this;
 		tmp.unitPrice = (unitPrice || 0);
+		tmp.rowIndex = (rowIndex === undefined ? '' :  rowIndex);
+		tmp.formOptionName = 'rowField[unitPrice]';
 		return tmp.me.getFormGroup('',
 			new Element('div', {'class': 'input-group'})
 				.insert({'bottom': new Element('span', {'class': 'input-group-addon'}).update('$')})
-				.insert({'bottom': new Element('input', {'class': 'form-control input-sm input-row-field', 'row-field': 'unit-price', 'name': 'rowField[unitPrice]', 'placeholder': 'Unit price inc. GST', 'value': tmp.me.getCurrency(tmp.unitPrice, '')})
+				.insert({'bottom': new Element('input', {'class': 'form-control input-sm input-row-field need-validate', 'row-field': 'unit-price', 'form-option': tmp.formOptionName, 'name': (tmp.formOptionName + tmp.rowIndex), 'placeholder': 'Unit price inc. GST', 'value': tmp.me.getCurrency(tmp.unitPrice, '')})
 					.observe('change', function(){
 						tmp.unitPriceBox = this;
 						tmp.newRow = $(tmp.unitPriceBox).up('.item_row');
@@ -167,17 +238,22 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 				})
 		);
 	}
-	,_getQtyCell: function(qty) {
+	,_getQtyCell: function(qty, rowIndex) {
 		var tmp = {};
 		tmp.me = this;
 		tmp.qty = (qty || 1);
-		return tmp.me.getFormGroup('',
-			new Element('input', {'class': 'form-control input-sm input-row-field', 'row-field': 'qty', 'name': 'rowField[qty]', 'placeholder': 'Quanity', 'value': tmp.qty, 'type': 'number'})
+		tmp.rowIndex = (rowIndex === undefined ? '' :  rowIndex);
+		tmp.formOptionName = 'rowField[qty]';
+		tmp.cell = tmp.me.getFormGroup('',
+			new Element('input', {'class': 'form-control input-sm input-row-field need-validate', 'row-field': 'qty', 'form-option': tmp.formOptionName, 'name': (tmp.formOptionName + tmp.rowIndex), 'placeholder': 'Quanity', 'value': tmp.qty})
 				.observe('change', function(){
 					tmp.qtyBox = this;
 					tmp.newRow = $(tmp.qtyBox).up('.item_row');
-					tmp.qty = $F(this);
-					$(tmp.qtyBox).setValue(parseInt(tmp.qty));
+					tmp.qty = $F(this).replace(/\s*/g, '');
+					if (tmp.qty.match(/^\d+?$/) !== null) {
+						$(tmp.qtyBox).setValue(parseInt(tmp.qty));
+						jQuery('#' + tmp.me.getHTMLID('main-form')).formValidation('revalidateField', tmp.qtyBox.name);
+					}
 					tmp.newRow.down('.totalPrice').update(tmp.me.getCurrency(tmp.qty * $F(tmp.newRow.down('[row-field="unit-price"]'))));
 					tmp.me._recalculateSummary();
 				})
@@ -189,22 +265,24 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 							tmp.saveBtn.click();
 					});
 				})
-		)
+		);
+		return tmp.cell;
 	}
 	/**
 	 * Gettig the product Row for the result table
 	 */
-	,_getProductRow: function(isTitle, row) {
+	,_getProductRow: function(isTitle, row, rowIndex) {
 		var tmp = {};
 		tmp.me = this;
 		tmp.isTitle = (isTitle === true) ? true : false;
 		tmp.tag = 'div';
+		tmp.rowIndex = (rowIndex === undefined ? '' : rowIndex);
 		tmp.newDiv = new Element('div', {'class': 'list-group-item item_row'})
 			.insert({'bottom': new Element('div', {'class': 'row'})
 				.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-8 product'}).update(tmp.isTitle === true ? new Element('strong').update('Product') : tmp.me._getProductDetailsDiv(row.product, true) )})
 				.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-4 row-details'})
-					.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-4 unitPrice   text-right'}).update(tmp.isTitle === true ? new Element('strong').update('Unit Price (inc. GST)') : tmp.me._getUnitPriceCell(row.unitPrice) )})
-					.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-3 qty'}).update(tmp.isTitle === true ? new Element('strong').update('Qty') :  tmp.me._getQtyCell(row.qty) )})
+					.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-4 unitPrice   text-right'}).update(tmp.isTitle === true ? new Element('strong').update('Unit Price (inc. GST)') : tmp.me._getUnitPriceCell(row.unitPrice, tmp.rowIndex) )})
+					.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-3 qty'}).update(tmp.isTitle === true ? new Element('strong').update('Qty') :  tmp.me._getQtyCell(row.qty, tmp.rowIndex) )})
 					.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-3 totalPrice  text-right'}).update(tmp.isTitle === true ? new Element('strong').update('Total Price (inc. GST)') : tmp.me.getCurrency(row.unitPrice * row.qty) )})
 					.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-2 btns text-right'}).update(tmp.isTitle === true ? new Element('strong').update('&nbsp;') : ((!row) ? '' :
 						new Element('span', {'class': 'btn btn-danger btn-xs'})
@@ -223,6 +301,38 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		}
 		return tmp.newDiv;
 	}
+	,_checkAddNewRow: function(btn) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.inputRow = $(btn).up('.item_row_new');
+		tmp.jQueryForm = jQuery('#' + tmp.me.getHTMLID('main-form'));
+		tmp.formValidator = tmp.jQueryForm.data('formValidation');
+
+		tmp.validClassName = $(btn).readAttribute('valid-target');
+        jQuery.each(jQuery('.need-validate'), function(index, element){
+        	tmp.fieldName = jQuery(element).attr('name');
+        	if(tmp.formValidator.getFieldElements(tmp.fieldName).length > 0) {
+        		tmp.formValidator.enableFieldValidators(tmp.fieldName, jQuery(element).hasClass(tmp.validClassName) );
+        	}
+        });
+        tmp.formValidator.validate();
+        if(tmp.formValidator.isValid() === true) {
+        	tmp.productSelectBox = tmp.inputRow.down('[row-field="product-id"]');
+        	tmp.me._signRandID(tmp.productSelectBox);
+        	tmp.unitPriceBox = tmp.inputRow.down('[row-field="unit-price"]');
+        	tmp.qtyBox = tmp.inputRow.down('[row-field="qty"]');
+        	tmp.me._addNewRow({
+        		'product': jQuery('#' + tmp.productSelectBox.id).select2('data').data,
+        		'unitPrice': tmp.me.getValueFromCurrency($F(tmp.unitPriceBox)),
+        		'qty': $F(tmp.qtyBox)
+        	});
+        	tmp.formValidator.resetForm();
+        	jQuery('#' + tmp.productSelectBox.id).select2('val', '');
+        	tmp.unitPriceBox.setValue(tmp.me.getCurrency(0, ''));
+        	tmp.qtyBox.setValue(1);
+        	tmp.productSelectBox.up('.product').down('.product-details').remove();
+        }
+	}
 	/**
 	 * Getting the new product row
 	 */
@@ -230,14 +340,18 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		var tmp = {};
 		tmp.me = this;
 		tmp.newRow = tmp.me._getProductRow(true).addClassName('list-group-item-info item_row_new');
+		tmp.formOptionName = 'rowField[productId]';
 		tmp.newRow.down('.product').update(tmp.me.getFormGroup('',
-			new Element('input', {'class': 'form-control select2 input-sm product-search input-row-field', 'name': 'rowField[productId]', 'row-field': 'product-id', 'isKit': '0', 'placeholder': 'Search a product', 'onSelectFunc': '_selectRowProduct'})
+			new Element('input', {'class': 'form-control select2 input-sm product-search input-row-field need-validate', 'form-option': tmp.formOptionName, 'name': tmp.formOptionName, 'row-field': 'product-id', 'isKit': '0', 'placeholder': 'Search a product', 'onSelectFunc': '_selectRowProduct'})
 		));
 		tmp.newRow.down('.unitPrice').update(tmp.me._getUnitPriceCell());
 		tmp.newRow.down('.qty').update(tmp.me._getQtyCell());
 		tmp.newRow.down('.totalPrice').update(tmp.me.getCurrency(0));
 		tmp.newRow.down('.btns').update(new Element('span', {'class': 'btn btn-primary btn-sm row-field-save-btn', 'valid-target': 'input-row-field'})
 			.update(new Element('i', {'class': 'glyphicon glyphicon-floppy-saved'}))
+			.observe('click', function(){
+				tmp.me._checkAddNewRow(this);
+			})
 		);
 		return tmp.newRow;
 	}
@@ -250,103 +364,40 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		tmp.list = $$('.kit-components-list').first().down('.item_row_footer');
 		if(!tmp.list)
 			return tmp.me;
-		tmp.list.insert({'before': tmp.me._getProductRow(false, data).addClassName('item_data_row')});
+		tmp.list.insert({'before': tmp.newRow = tmp.me._getProductRow(false, data, $$('.item_data_row').size()).addClassName('item_data_row')});
 		tmp.me._recalculateSummary();
-		return tmp.me;
-	}
-	/**
-	 * init input row form validation
-	 */
-	,_initInputRowValidation: function(btn) {
-		var tmp = {};
-		tmp.me = this;
-		tmp.me._signRandID(btn);
+		//remove class: tmp.newRow for validation only
+		tmp.newRow.getElementsBySelector('.input-row-field').each(function(item) { item.removeClassName('input-row-field').addClassName('row-field'); });
 		tmp.jQueryForm = jQuery('#' + tmp.me.getHTMLID('main-form'));
-		tmp.fields = {
-				'rowField[productId]': {
-					validators: {
-						notEmpty: {
-			                message: 'Please select a product'
-			            },
-			            regexp: {
-	                        regexp: /^\d+$/,
-	                        message: 'Please select a product'
-	                    }
-					}
-				},
-				'rowField[unitPrice]': {
-					validators: {
-						notEmpty: {
-							message: 'Unit Price is required'
-						},
-						callback: {
-							message: 'Invalid unit price provided.',
-							callback: function(value, validator, $field) {
-								if (tmp.me.getValueFromCurrency(value).match(/^\d+(\.\d{1,4})?$/) === null) {
-									return {
-			                            valid: false,
-			                            message: 'Invalid unit price provided.'
-			                        }
-								}
-								return true;
-							}
-						}
-					}
-				},
-				'rowField[qty]': {
-					validators: {
-						 notEmpty: {
-			                 message: 'Quantity is required'
-			             },
-			             integer: {
-			 				 message: 'Quantity is not an integer'
-			 			}
-					}
+		tmp.jQueryFV = tmp.jQueryForm.data('formValidation');
+		tmp.fieldOptions = tmp.me._getValidatingDataFields();
+		if(tmp.jQueryFV && tmp.jQueryFV.addField) {
+			tmp.newRow.getElementsBySelector('.need-validate').each(function(item) {
+				tmp.mapKey = item.readAttribute('form-option');
+				if(tmp.mapKey && !tmp.mapKey.blank() && tmp.fieldOptions[tmp.mapKey]) {
+					tmp.jQueryFV.addField(item.name, tmp.fieldOptions[tmp.mapKey]);
 				}
-		};
-		jQuery.each(tmp.fields, function(fieldName, options) {
-			tmp.jQueryForm.formValidation('addField', fieldName, options);
-		});
-		tmp.jQueryForm.find('[row-field="product-id"]').on('change', function(){
-			tmp.jQueryForm.formValidation('revalidateField', 'rowField[productId]');
-		});
-		if(!jQuery('#' + $(btn).id).hasClass('loaded')) {
-			tmp.jQueryForm.on('click', '#' + $(btn).id, function(e) {
-				tmp.inputRow = $(btn).up('.item_row_new');
-				tmp.formValidator = tmp.jQueryForm.data('formValidation');
-	            jQuery.each(jQuery('.form-control'), function(index, element){
-	            	tmp.fieldName = jQuery(element).attr('name');
-	            	if(tmp.formValidator.getFieldElements(tmp.fieldName).length > 0) {
-	            		tmp.formValidator.enableFieldValidators(tmp.fieldName, jQuery(element).hasClass($(btn).readAttribute('valid-target')) );
-	            		console.debug(jQuery(element));
-	            		console.debug(jQuery(element).hasClass($(btn).readAttribute('valid-target')));
-	            	}
-	            });
-	            tmp.formValidator.validate();
-	            if(tmp.formValidator.isValid() === true) {
-	            	tmp.productSelectBox = tmp.inputRow.down('[row-field="product-id"]');
-	            	tmp.me._signRandID(tmp.productSelectBox);
-	            	tmp.unitPriceBox = tmp.inputRow.down('[row-field="unit-price"]');
-	            	tmp.qtyBox = tmp.inputRow.down('[row-field="qty"]');
-	            	tmp.me._addNewRow({
-	            		'product': jQuery('#' + tmp.productSelectBox.id).select2('data').data,
-	            		'unitPrice': tmp.me.getValueFromCurrency($F(tmp.unitPriceBox)),
-	            		'qty': $F(tmp.qtyBox)
-	            	});
-	            	tmp.jQueryForm.bootstrapValidator('resetForm');
-	            	jQuery('#' + tmp.productSelectBox.id).select2('val', '');
-	            	tmp.unitPriceBox.setValue(tmp.me.getCurrency(0, ''));
-	            	tmp.qtyBox.setValue(1);
-	            	tmp.productSelectBox.up('.product').down('.product-details').remove();
-	            }
-	        });
-			jQuery('#' + $(btn).id).addClass('loaded');
+			});
 		}
 		return tmp.me;
 	}
 	,_preSave: function(btn) {
 		var tmp = {};
 		tmp.me = this;
+		tmp.jQueryForm = jQuery('#' + tmp.me.getHTMLID('main-form'));
+		tmp.formValidator = tmp.jQueryForm.data('formValidation');
+
+		tmp.validClassName = $(btn).readAttribute('valid-target');
+        jQuery.each(jQuery('.need-validate'), function(index, element){
+        	tmp.fieldName = jQuery(element).attr('name');
+        	if(tmp.formValidator.getFieldElements(tmp.fieldName).length > 0) {
+        		tmp.formValidator.enableFieldValidators(tmp.fieldName, jQuery(element).hasClass(tmp.validClassName) );
+        	}
+        });
+        tmp.formValidator.validate();
+        if(tmp.formValidator.isValid() !== true)
+        	return tmp.me;
+
 		tmp.productId = ((tmp.me._item.product && tmp.me._item.product.id ) ? tmp.me._item.product.id : $F($$('[save-panel="kit-product-id"]').first()));
 		if(tmp.productId.blank()) {
 			tmp.me.showModalBox('<strong class="text-danger">Error:</strong>', new Element('div')
@@ -385,7 +436,11 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		if(tmp.taskIdBox && !$F(tmp.taskIdBox).blank()) {
 			tmp.data.taskId = $F(tmp.taskIdBox);
 		}
+		if(tmp.me._item && tmp.me._item.id) {
+			tmp.data['id'] = tmp.me._item.id;
+		}
 		tmp.me.saveItem(btn, tmp.data, function(data){
+			tmp.me.showModalBox('<strong class="text-success">', '<h4 class="text-success">Kit has been saved successfully!</h4>');
 			tmp.me.refreshParentWindow(data.item);
 			tmp.me._item = data.item;
 			if(data.url && !data.url.blank()) {
@@ -426,7 +481,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		tmp.detailsDiv.update(new Element('h4').update('List of Parts Inside This Kit:'))
 			.insert({'bottom': tmp.newTable})
 			.insert({'bottom': new Element('div', {'class': 'row'})
-				.insert({'bottom': new Element('span', {'class': 'btn btn-primary col-md-4 col-md-push-8'})
+				.insert({'bottom': new Element('span', {'class': 'btn btn-primary col-md-4 col-md-push-8', 'valid-target': 'row-field'})
 					.update('Save')
 					.observe('click', function(){
 						tmp.me._preSave(this);
@@ -436,8 +491,21 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 				.	insert({'bottom': tmp.me._item.id ? new Element('div', {'class': 'comments-div'}) : '' })
 				})
 			});
-		tmp.me._initProductSearch()
-			._initInputRowValidation( tmp.inputRow.down('.row-field-save-btn') );
+		tmp.me._initProductSearch();
+		if(!tmp.inputRow.hasClassName('form-v-loaded')) {
+			tmp.jQueryForm = jQuery('#' + tmp.me.getHTMLID('main-form'));
+			tmp.jQueryFV = tmp.jQueryForm.data('formValidation');
+			tmp.fieldOptions = tmp.me._getValidatingDataFields();
+			if(tmp.jQueryFV && tmp.jQueryFV.addField) {
+				tmp.inputRow.getElementsBySelector('.need-validate').each(function(item) {
+					tmp.mapKey = item.readAttribute('form-option');
+					if(tmp.mapKey && !tmp.mapKey.blank() && tmp.fieldOptions[tmp.mapKey]) {
+						tmp.jQueryFV.addField(item.name, tmp.fieldOptions[tmp.mapKey]);
+					}
+				});
+			}
+			tmp.inputRow.addClassName('form-v-loaded');
+		}
 		return tmp.me;
 	}
 	,_getExtraInfoDiv: function() {
@@ -446,9 +514,9 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		if(!tmp.me._item.id)
 			return '';
 		tmp.newDiv = new Element('div', {'class': 'row'})
-			.insert({'bottom': !(tmp.me._item.soldToCustomer && tmp.me._item.soldToCustomer.id) ? '' : new Element('div', {'class': 'col-md-3'})
-				.insert({'bottom': tmp.me.getFormGroup(new Element('label').update('Sold to Customer: '), 
-						new Element('div', {'class': 'form-control input-sm'}).update(
+			.insert({'bottom': new Element('div', {'class': 'col-md-3'})
+				.insert({'bottom': tmp.me.getFormGroup(new Element('label').update('Sold to Customer: '),
+						new Element('div', {'class': 'form-control input-sm'}).update(!(tmp.me._item.soldToCustomer && tmp.me._item.soldToCustomer.id) ? '' :
 							new Element('a', {'href': 'javascript:void(0);'}).update(tmp.me._item.soldToCustomer.name)
 								.observe('click', function(){
 									tmp.me._openURL('/customer/' + tmp.me._item.soldToCustomer.id + '.html?blanklayout=1');
@@ -457,37 +525,41 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 				) })
 			})
 			.insert({'bottom': !tmp.me._item.soldDate ? '' : new Element('div', {'class': 'col-md-2'})
-				.insert({'bottom': tmp.me.getFormGroup(new Element('label').update('Sold Time: '), 
+				.insert({'bottom': tmp.me.getFormGroup(new Element('label').update('Sold Time: '),
 						new Element('div', {'class': 'form-control input-sm'}).update(
-							moment(tmp.me.loadUTCTime(tmp.me._item.soldDate)).format('lll')
+							tmp.me._item.soldDate === '0001-01-01 00:00:00' ? '' : new Element('div').update(	moment(tmp.me.loadUTCTime(tmp.me._item.soldDate)).format('lll')	)
 						)
 				) })
 			})
-			.insert({'bottom': !tmp.me._item.soldOnOrder ? '' : new Element('div', {'class': 'col-md-4'})
-				.insert({'bottom': tmp.me.getFormGroup(new Element('label').update('Sold on Order: '), 
+			.insert({'bottom': new Element('div', {'class': 'col-md-4'})
+				.insert({'bottom': tmp.me.getFormGroup(new Element('label').update('Sold on Order: '),
 					new Element('div', {'class': 'form-control input-sm order_item'})
-						.insert({'bottom': new Element('div', {'class': 'col-md-3'})
-							.insert({'bottom': new Element('a', {'href': 'javascript:void(0);'}).update(tmp.me._item.soldOnOrder.orderNo)
-								.observe('click', function(){
-									tmp.me._openURL('/orderdetails/' + tmp.me._item.soldOnOrder.id + '.html?blanklayout=1');
+						.insert({'bottom': !tmp.me._item.soldOnOrder ? '' : new Element('div', {'class': 'row'})
+							.insert({'bottom': new Element('div', {'class': 'col-md-3'})
+								.insert({'bottom': new Element('a', {'href': 'javascript:void(0);'}).update(tmp.me._item.soldOnOrder.orderNo)
+									.observe('click', function(){
+										tmp.me._openURL('/orderdetails/' + tmp.me._item.soldOnOrder.id + '.html?blanklayout=1');
+									})
 								})
 							})
+							.insert({'bottom': new Element('div', {'class': 'col-md-3', 'order_status': tmp.me._item.soldOnOrder.status.name}).update(tmp.me._item.soldOnOrder.status.name) })
+							.insert({'bottom': new Element('div', {'class': 'col-md-6 truncate', 'title': tmp.me._item.soldOnOrder.customer.name}).update(
+								new Element('a', {'href': 'javascript:void(0);'}).update(tmp.me._item.soldOnOrder.customer.name)
+									.observe('click', function(){
+										tmp.me._openURL('/customer/' + tmp.me._item.soldOnOrder.customer.id + '.html?blanklayout=1');
+									})
+							) })
 						})
-						.insert({'bottom': new Element('div', {'class': 'col-md-3', 'order_status': tmp.me._item.soldOnOrder.status.name}).update(tmp.me._item.soldOnOrder.status.name) })
-						.insert({'bottom': new Element('div', {'class': 'col-md-6 truncate', 'title': tmp.me._item.soldOnOrder.customer.name}).update(
-							new Element('a', {'href': 'javascript:void(0);'}).update(tmp.me._item.soldOnOrder.customer.name)
-								.observe('click', function(){
-									tmp.me._openURL('/customer/' + tmp.me._item.soldOnOrder.customer.id + '.html?blanklayout=1');
-								})
-						) })
 				) })
 			})
-			.insert({'bottom': !(tmp.me._item.shippment && tmp.me._item.shippment.id) ? '' : new Element('div', {'class': 'col-md-3'})
-				.insert({'bottom': tmp.me.getFormGroup(new Element('label').update('Shipped Via: '), 
+			.insert({'bottom': new Element('div', {'class': 'col-md-3'})
+				.insert({'bottom': tmp.me.getFormGroup(new Element('label').update('Shipped Via: '),
 					new Element('div', {'class': 'form-control input-sm'})
-						.insert({'bottom': new Element('div', {'class': 'col-md-3 truncate', 'title': tmp.me._item.shippment.courier.name}).update(tmp.me._item.shippment.courier.name) })
-						.insert({'bottom': new Element('div', {'class': 'col-md-3 truncate', 'title': 'Con. No.:' + tmp.me._item.shippment.conNoteNo}).update(tmp.me._item.shippment.conNoteNo) })
-						.insert({'bottom': new Element('div', {'class': 'col-md-6', 'title': 'shipped on date'}).update( moment(tmp.me.loadUTCTime(tmp.me._item.shippment.shippingDate)).format('lll') ) })
+						.insert({'bottom': !(tmp.me._item.shippment && tmp.me._item.shippment.id) ? '' : new Element('div', {'class': 'row'})
+							.insert({'bottom': new Element('div', {'class': 'col-md-3 truncate', 'title': tmp.me._item.shippment.courier.name}).update(tmp.me._item.shippment.courier.name) })
+							.insert({'bottom': new Element('div', {'class': 'col-md-3 truncate', 'title': 'Con. No.:' + tmp.me._item.shippment.conNoteNo}).update(tmp.me._item.shippment.conNoteNo) })
+							.insert({'bottom': new Element('div', {'class': 'col-md-6', 'title': 'shipped on date'}).update( moment(tmp.me.loadUTCTime(tmp.me._item.shippment.shippingDate)).format('lll') ) })
+						})
 				) })
 			})
 			;
@@ -516,7 +588,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 			.insert({'bottom': new Element('div', {'class': 'row'})
 				.insert({'bottom': new Element('div', {'class': 'form-horizontal'})
 					.insert({'bottom':  tmp.me.getFormGroup(new Element('label').update(tmp.me._item.id ? 'Kit Product: ' : 'Building a kit as: ').addClassName('col-md-1 col-sm-2'),
-						new Element('div', {'class': 'col-md-11 col-sm-10 rm-form-control kit-product-div'}).update(tmp.me._item.id ? '' : 
+						new Element('div', {'class': 'col-md-11 col-sm-10 rm-form-control kit-product-div'}).update(tmp.me._item.id ? '' :
 							new Element('input', {'class': 'form-control select2 input-sm product-search', 'save-panel': 'kit-product-id', 'isKit': '1', 'onSelectFunc': '_selectKitProduct'})
 						)
 					) })
@@ -554,7 +626,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 						.insert({'bottom': new Element('div', {'class': 'col-xs-4 text-right'}).update('<strong>sku</strong>:')})
 						.insert({'bottom': new Element('div', {'class': 'col-xs-8 truncate'})
 							.setStyle('max-width:none;')
-							.insert({'bottom': new Element('a', {'href': 'javascript: void(0);', 'title': product.sku}).update(product.sku) 
+							.insert({'bottom': new Element('a', {'href': 'javascript: void(0);', 'title': product.sku}).update(product.sku)
 								.observe('click', function(){
 									tmp.me._openURL('/product/' + product.id + '.html?blanklayout=1');
 								})
@@ -665,34 +737,10 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 			if(typeof(tmp.me[tmp.onSelectFunc]) === 'function')
 				tmp.me[tmp.onSelectFunc](event.object.data);
 		});
-		return tmp.me;
-	}
-	/**
-	 * init form validataion
-	 */
-	,_initFormValidation: function() {
-		var tmp = {};
-		tmp.me = this;
-		jQuery('#' + tmp.me.getHTMLID('main-form')).bootstrapValidator({
-	        message: 'This value is not valid',
-	        excluded: ':disabled',
-	        feedbackIcons: {
-	            valid: 'glyphicon glyphicon-ok',
-	            invalid: 'glyphicon glyphicon-remove',
-	            validating: 'glyphicon glyphicon-refresh'
-	        },
-	        fields: {}
-		})
-		.on('success.form.bv', function(e) {
-            // Prevent form submission
-            e.preventDefault();
-        })
-        .on('error.field.bv', function(e, data) {
-        	data.bv.disableSubmitButtons(false);
-        })
-        .on('success.field.bv', function(e, data) {
-        	data.bv.disableSubmitButtons(false);
-        });
+		tmp.select2.on('change', function(event) {
+			if(jQuery(event.target).hasClass('need-validate'))
+				jQuery('#' + tmp.me.getHTMLID('main-form')).formValidation('revalidateField', jQuery(event.target).attr('form-option'));
+		});
 		return tmp.me;
 	}
 	/**
@@ -703,6 +751,17 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		tmp.me = this;
 		return tmp.me;
 	}
+	/**
+	 * format task selection
+	 */
+	,_formatTaskSelection : function(result) {
+		if(!result || !result.data)
+			return '';
+		return '<div class="row order_item item_row"><div class="col-xs-8">' + result.data.id + '</div><div class="col-xs-4" order_status="' + result.data.status.name + '">' + result.data.status.name + '</div></div>';
+	}
+	/**
+	 * init select2 for task search
+	 */
 	,_initTaskSearch: function() {
 		var tmp = {};
 		tmp.me = this;
@@ -735,10 +794,46 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 						more: (page * tmp.pageSize) < data.resultData.pagination.totalRows
 					};
 				}
-			 }
+			 },
+			 formatResult: function(result) { return tmp.me._formatTaskSelection(result);},
+			 formatSelection: function(result) { return tmp.me._formatTaskSelection(result);},
 		});
 		if(tmp.me._item.task && tmp.me._item.task.id){
 			tmp.select2.select2('data', {"id": tmp.me._item.task.id, 'text': tmp.me._item.task.id + ' [' + tmp.me._item.task.status.name + ']', 'data': tmp.me._item.task});
+		} else if (tmp.me._preSetData.task && tmp.me._preSetData.task.id){
+			tmp.select2.select2('data', {"id": tmp.me._preSetData.task.id, 'text': tmp.me._preSetData.task.id + ' [' + tmp.me._preSetData.task.status.name + ']', 'data': tmp.me._preSetData.task});
+		}
+		return tmp.me;
+	}
+	/**
+	 * init form validataion
+	 */
+	,_initFormValidation: function() {
+		var tmp = {};
+		tmp.me = this;
+		tmp.jQueryForm = jQuery('#' + tmp.me.getHTMLID('main-form'));
+		if(!tmp.jQueryForm.hasClass('form-v-loaded')) {
+			tmp.jQueryForm.bootstrapValidator({
+		        message: 'This value is not valid',
+		        excluded: ':disabled',
+		        feedbackIcons: {
+		            valid: 'glyphicon glyphicon-ok',
+		            invalid: 'glyphicon glyphicon-remove',
+		            validating: 'glyphicon glyphicon-refresh'
+		        },
+		        fields: {}
+			})
+			.on('success.form.bv', function(e) {
+	            // Prevent form submission
+	            e.preventDefault();
+	        })
+	        .on('error.field.bv', function(e, data) {
+	        	data.bv.disableSubmitButtons(false);
+	        })
+	        .on('success.field.bv', function(e, data) {
+	        	data.bv.disableSubmitButtons(false);
+	        });
+			tmp.jQueryForm.addClass('form-v-loaded');
 		}
 		return tmp.me;
 	}
@@ -750,6 +845,9 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		tmp.me = this;
 		tmp.me._init();
 		$(tmp.me.getHTMLID('itemDiv')).update(tmp.div = tmp.me._getItemDiv());
+		tmp.me._initTaskSearch()
+			._initProductSearch()
+			._initFormValidation();
 		if(tmp.me._item.product && tmp.me._item.product.id){
 			tmp.me._selectKitProduct(tmp.me._item.product);
 			if(tmp.me._item.components && tmp.me._item.components.size() > 0) {
@@ -757,12 +855,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 					tmp.me._addNewRow(component, tmp.newTable);
 				});
 			}
-		} else {
-			tmp.me._initProductSearch();
 		}
-		tmp.me._initTaskSearch()
-			._initFormValidation();
-		
 		if(tmp.div.down('.comments-div')) {
 			tmp.div.down('.comments-div')
 				.store('CommentsDivJs', new CommentsDivJs(tmp.me, 'Kit', tmp.me._item.id)

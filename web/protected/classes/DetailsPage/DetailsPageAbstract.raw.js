@@ -27,7 +27,7 @@ DetailsPageJs.prototype = Object.extend(new BPCPageJs(), {
 					if(typeof(onSuccFunc) === 'function')
 						onSuccFunc(tmp.result);
 				} catch (e) {
-					tmp.me.showModalBox('<strong class="text-danger">ERROR:</strong>', e, true);
+					tmp.me.showModalBox('<strong class="text-danger">ERROR:</strong>', e);
 				}
 			}
 			, 'onComplete': function() {

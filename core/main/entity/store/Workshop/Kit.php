@@ -315,6 +315,12 @@ class Kit extends BaseEntityAbstract
 			$this->setSoldDate(UDate::zeroDate());
 		if($this->getProduct()->getIsKit() !== true)
 			throw new EntityException('The product of the kit needs to have the flag IsKit ticked.');
+		$taskIdWhere = ($this->getTask() instanceof Task ? ' = ' . $this->getTask()->getId() : ' is null');
+		if(trim($this->getId()) !== '' && intval(self::countByCriteria('id = ? and taskId ' . $taskIdWhere, array($this->getId()))) === 0){ //changed Task
+			var_dump('erer');
+			$originalTask = self::get($this->getId())->getTask();
+			$this->addComment('The Task for Kit [' . $this->getBarcode() . '] changed from ( ' . ($originalTask instanceof Task ? $originalTask->getId() : '') . ' ) to ( ' . ($this->getTask() instanceof Task ? $this->getTask()->getId() : '') . ' ).', Comments::TYPE_SYSTEM);
+		}
 	}
 	/**
 	 * (non-PHPdoc)

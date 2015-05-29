@@ -36,9 +36,14 @@ class Controller extends DetailsPageAbstract
 	{
 		$class = $this->_focusEntity;
 		$js = parent::_getEndJs();
-
-		$statusArray = array_map(create_function('$a', 'return $a->getJson();'), TaskStatus::getAll());
 		$js .= "pageJs";
+		if(trim($this->Request['id']) === 'new') {
+			$task = null;
+			if(isset($_REQUEST['taskid']) && !($task = Task::get(trim($_REQUEST['taskid']))) instanceof Task)
+				die('Invalid Task provided!');
+			$preSetData = array('task' => ($task instanceof Task ? $task->getJson() : array()) );
+			$js .= ".setPreSetData(" . json_encode($preSetData) . ")";
+		}
 		$js .= ".setHTMLID('kitsDetailsDiv', 'kits-details-wrapper')";
 		$js .= ".setHTMLID('partsTable', 'parts-result-table')";
 		$js .= ".load()";
@@ -70,6 +75,9 @@ class Controller extends DetailsPageAbstract
 			if(trim($kit->getId()) === '') {
 				$kit = Kit::create($product, $task);
 				$isNewKit = true;
+			} else {
+				$kit->setTask($task)
+					->save();
 			}
 			//add all the components
 			foreach($items as $item) {
