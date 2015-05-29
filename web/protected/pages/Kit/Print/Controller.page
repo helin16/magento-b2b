@@ -1,0 +1,40 @@
+<%@MasterClass="Application.layout.BlankLayout"%>
+<com:TContent ID="MainContent">
+	<div class="pagewrapper orderprint container">
+		<div class="orderViewWrapper inlineblock">
+            <table class='orderview table' cellspacing="0" cellpadding="0">
+                <thead>
+                    <tr class="title_row">
+                        <td colspan=6>
+                            <div class="col-xs-8">
+                                 <img src="/themes/default/images/logo.png" style="padding: 0px; margin: 0px;display: block;"/>
+                            </div>
+                            <div class="col-xs-4">
+                            	<div class="text-center"><strong>KIT: </strong></div>
+                            	<div class="text-right">
+                            		<img src="/asset/renderBarcode?text=<%= $this->kit->getBarcode() %>" alt="<%= $this->kit->getBarcode() %>" title="<%= $this->kit->getBarcode() %>"/>'
+                            	</div>
+                            </div>
+                            <div class="sep"></div>
+                        </td>
+                    </tr>
+                    <tr class="addr_info">
+                        <td colspan=6 style="padding-bottom: 35px">
+                        	<%= $this->getKitProductInfo() %>
+                        </td>
+                    </tr>
+                    <%= $this->getRow('QTY', 'SKU', 'NAME', true); %>
+                </thead>
+                <tbody class="">
+                    <%= $this->showComponents() %>
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan=6>
+                        </td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+	</div>
+</com:TContent>

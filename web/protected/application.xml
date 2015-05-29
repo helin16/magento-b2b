@@ -69,6 +69,8 @@
 			<url ServiceParameter="Kit.List.Controller" pattern="kits.html"/>
 			<!-- FrontEnd:: Kit Details page -->
 			<url ServiceParameter="Kit.Details.Controller" pattern="kit/{id}.html"  parameters.id="\d+|new"/>
+			<!-- FrontEnd:: Kit Details page -->
+			<url ServiceParameter="Kit.Print.Controller" pattern="print/kit/{kitId}.html"  parameters.kitId="\d+"/>
 
 			<!-- FrontEnd:: Price Match page -->
 			<url ServiceParameter="PriceMatch.PriceMatchController" pattern="pricematch.html" />
