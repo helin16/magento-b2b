@@ -1018,9 +1018,15 @@ class Product extends InfoEntityAbstract
 				$where[] = 'id != ?';
 				$params[] = $id;
 			}
-			$exsitingSKU = Product::countByCriteria(implode(' AND ', $where), $params);
+			$exsitingSKU = self::countByCriteria(implode(' AND ', $where), $params);
 			if($exsitingSKU > 0)
 				throw new EntityException('The SKU(=' . $sku . ') is already exists!' );
+		}
+		if(($id = trim($this->getId())) !== '') {
+			if(self::countByCriteria('id = ? and isKit = 1 and isKit != ?', array($id, $this->getIsKit())) > 0) {//changing isKit flag to be not a KIT
+				if(count($kits = kit::getAllByCriteria('productId = ?', array($id), true, 1, 1)) > 0 )
+					throw new EntityException('Can NOT change the flag IsKit, as there are kits like [' . $kits[0]->getBarcode() . '] for this product: ' . $this->getSku());
+			}
 		}
 	}
 	/**

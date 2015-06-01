@@ -98,7 +98,7 @@ class Controller extends DetailsPageAbstract
 				$kit->finishedAddingComponents();
 			}
 
-			$results['url'] = '/kit/' . $kit->getId() . '.html';
+			$results['url'] = '/kit/' . $kit->getId() . '.html?' . $_SERVER['QUERY_STRING'];
 			$results['printUrl'] = '/print/kit/' . $kit->getId() . '.html';
 			$results['item'] = $kit->getJson();
 			Dao::commitTransaction();

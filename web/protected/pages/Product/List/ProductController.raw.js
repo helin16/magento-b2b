@@ -349,6 +349,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 					if($$('.product_item[product_id=' + product.id +']').size() >0) {
 						$$('.product_item[product_id=' + product.id +']').first().replace(tmp.me._getResultRow(tmp.result.item, false));
 					}
+					tmp.me._bindPriceInput();
 				} catch (e) {
 					tmp.me.showModalBox('ERROR', e, true);
 				}
@@ -361,16 +362,19 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		tmp.me = this;
 		tmp.me.postAjax(tmp.me.getCallbackId('toggleIsKit'), {'productId': product.id, 'isKit': isKit}, {
 			'onSuccess': function(sender, param) {
+				tmp.newProduct = product;
 				try{
 					tmp.result = tmp.me.getResp(param, false, true);
 					if(!tmp.result || !tmp.result.item)
 						return;
-					if($$('.product_item[product_id=' + product.id +']').size() >0) {
-						$$('.product_item[product_id=' + product.id +']').first().replace(tmp.me._getResultRow(tmp.result.item, false));
-					}
+					tmp.newProduct = tmp.result.item;
 				} catch (e) {
 					tmp.me.showModalBox('ERROR', e, true);
 				}
+				if($$('.product_item[product_id=' + product.id +']').size() >0) {
+					$$('.product_item[product_id=' + product.id +']').first().replace(tmp.me._getResultRow(tmp.newProduct, false));
+				}
+				tmp.me._bindPriceInput();
 			}
 		})
 		return tmp.me;
@@ -426,7 +430,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 	,_bindPriceInput: function() {
 		var tmp = {};
 		tmp.me = this;
-		jQuery('.price-input[product-id]').not('.price-input-binded')
+		jQuery('.price-input[product-id]:not(".price-input-binded")')
 			.click(function (){
 				jQuery(this)
 					.attr('original-price', tmp.me.getValueFromCurrency(jQuery(this).val()))

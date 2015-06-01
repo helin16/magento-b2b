@@ -10,7 +10,9 @@
 </com:THead>
 <body>
     <com:TForm>
-        <com:TContentPlaceHolder ID="MainContent" />
+    	<div class="container-fluid">
+        	<com:TContentPlaceHolder ID="MainContent" />
+    	</div>
     </com:TForm>
 </body>
 </html>

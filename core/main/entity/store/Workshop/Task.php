@@ -340,6 +340,7 @@ class Task extends BaseEntityAbstract
 			$array['technician'] = $this->getTechnician() instanceof UserAccount ? $this->getTechnician()->getJson() : array();
 			$array['status'] = $this->getStatus() instanceof TaskStatus ? $this->getStatus()->getJson() : array();
 			$array['createdBy'] = $this->getCreatedBy() instanceof UserAccount ? $this->getCreatedBy()->getJson() : array();
+			$array['noOfKits'] = Kit::countByCriteria('taskId = ?', array($this->getId()));
 		}
 		return parent::getJson($array, $reset);
 	}

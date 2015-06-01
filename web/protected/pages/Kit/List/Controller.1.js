@@ -4,6 +4,16 @@
 var PageJs = new Class.create();
 PageJs.prototype = Object.extend(new CRUDPageJs(), {
 	_openinFB: true
+	,_preSetData: {}
+	/**
+	 * Setting the preSetData
+	 */
+	,setPreSetData: function(_preSetData) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.me._preSetData = _preSetData;
+		return tmp.me;
+	}
 	/**
 	 * Getting the title row data
 	 */

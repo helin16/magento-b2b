@@ -106,14 +106,20 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 	/**
 	 * refresh the parent's window's result
 	 */
-	,refreshParentWindow: function(row) {
+	,refreshParentWindow: function(data) {
 		var tmp = {};
 		tmp.me = this;
 		if(!window.parent)
 			return;
 		tmp.parentWindow = window.parent;
-		if(tmp.parentWindow.pageJs.refreshResultRow) {
-			tmp.parentWindow.pageJs.refreshResultRow(row);
+		if(tmp.parentWindow && tmp.parentWindow.pageJs) {
+			if(tmp.parentWindow.pageJs.refreshTaskRow && data.task) {
+				tmp.parentWindow.pageJs.refreshTaskRow(data.task)
+			}
+			else if(tmp.parentWindow.pageJs.refreshResultRow) {
+				tmp.parentWindow.pageJs.refreshResultRow(data);
+			}
+
 		}
 	}
 	/**
@@ -444,7 +450,11 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 			tmp.me.refreshParentWindow(data.item);
 			tmp.me._item = data.item;
 			if(data.printUrl && !data.printUrl.blank()) {
-				tmp.printWind = window.open(printUrl);
+				tmp.printWind = window.open(data.printUrl, '_BLANK', 'width=800');
+				if(tmp.printWind) {
+					tmp.printWind.focus();
+					tmp.printWind.print();
+				}
 			}
 			if(data.url && !data.url.blank()) {
 				window.location = data.url;

@@ -61,6 +61,11 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 			tmp.me._searchCriteria = null;
 		return this;
 	}
+	,refreshTaskRow: function(row) {
+		var tmp = {};
+		tmp.me = this;
+		return tmp.me.refreshResultRow(row);
+	}
 	,refreshResultRow: function(row) {
 		var tmp = {};
 		tmp.me = this;
@@ -74,13 +79,10 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 			tmp.tbody.insert({'top': tmp.me._getResultRow(row, false).addClassName('item_row')});
 		return tmp.me;
 	}
-	/**
-	 * show the task details Page
-	 */
-	,showTaskPage: function(row) {
+	,_openURL: function(url) {
 		var tmp = {};
 		tmp.me = this;
-		tmp.url = '/task/' + ((row && row.id) ? row.id : 'new') + '.html?blanklayout=1';
+		tmp.url = url;
 		if(tmp.me._openinFB !== true) {
 			window.location =tmp.url;
 			return tmp.me;
@@ -98,6 +100,15 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		return tmp.me;
 	}
 	/**
+	 * show the task details Page
+	 */
+	,showTaskPage: function(row) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.url = '/task/' + ((row && row.id) ? row.id : 'new') + '.html?blanklayout=1';
+		return tmp.me._openURL(tmp.url);
+	}
+	/**
 	 * show the order details Page
 	 */
 	,showOrderDetailsPage: function(order) {
@@ -105,17 +116,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		tmp.me = this;
 		if(!order || !order.id)
 			return tmp.me;
-		jQuery.fancybox({
-			'width'			: '95%',
-			'height'		: '95%',
-			'autoScale'     : false,
-			'autoDimensions': false,
-			'fitToView'     : false,
-			'autoSize'      : false,
-			'type'			: 'iframe',
-			'href'			: '/orderdetails/' + order.id + '.html?blanklayout=1'
-		});
-		return tmp.me;
+		return tmp.me._openURL('/orderdetails/' + order.id + '.html?blanklayout=1');
 	}
 	/**
 	 * show the customer details Page
@@ -125,17 +126,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		tmp.me = this;
 		if(!customer || !customer.id)
 			return tmp.me;
-		jQuery.fancybox({
-			'width'			: '95%',
-			'height'		: '95%',
-			'autoScale'     : false,
-			'autoDimensions': false,
-			'fitToView'     : false,
-			'autoSize'      : false,
-			'type'			: 'iframe',
-			'href'			: '/customer/' + customer.id + '.html?blanklayout=1'
-		});
-		return tmp.me;
+		return tmp.me._openURL('/customer/' + customer.id + '.html?blanklayout=1');
 	}
 	,_updateDueDateCell: function(row, dueDateCell) {
 		var tmp = {};
@@ -242,7 +233,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 				tmp.btns.insert({'bottom': new Element('span', {'class': 'btn btn-success dropdown-toggle', 'data-toggle': "dropdown",'aria-expanded': "false"})
 					.update(new Element('span', {'class': 'caret'}) )
 				})
-				.insert({'bottom': new Element('ul', {'class': 'dropdown-menu'})
+				.insert({'bottom': tmp.menu = new Element('ul', {'class': 'dropdown-menu'})
 					.insert({'bottom': row.status.id !== '3' ? new Element('li').update( new Element('a', {'href': 'javascript:void(0);'})
 								.update('Start')
 								.observe('click', function() {
@@ -271,12 +262,21 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 						})
 					) })
 					.insert({'bottom': new Element('li').update( new Element('a', {'href': 'javascript:void(0);'})
-						.update('<strong class="text-danger">CANCEL</strong>') 
+						.update('<strong class="text-danger">CANCEL</strong>')
 						.observe('click', function(){
 							tmp.me._preActionTask({'taskId': row.id, 'method': 'cancel'});
 						})
 					) })
 				});
+				if(tmp.menu && row.status.id === '3') {
+					tmp.menu.insert({'top': new Element('li', {'class': 'divider'}) })
+					tmp.menu.insert({'top': new Element('li').update( new Element('a', {'href': 'javascript:void(0);'})
+						.update('Build a Kit')
+						.observe('click', function() {
+							tmp.me._openURL('/kit/new.html?taskid=' + row.id + '&blanklayout=1')
+						})
+					) });
+				}
 			}
 		}
 		if(!tmp.techName.blank())
@@ -321,6 +321,31 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 			.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-1'})
 				.insert({'bottom': tmp.isTitle === true ? 'Tech' :  tmp.me._getTechCell(row) })
 			})
+			.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-2 truncate'})
+				.insert({'bottom': tmp.isTitle === true ? 'Instructions' : new Element('a', {'href': 'javascript: void(0);', 'title': 'click to view all'})
+					.update(row.instructions.stripTags())
+					.observe('click', function() {
+						tmp.me.hideModalBox();
+						tmp.me.showModalBox('<strong>Instructions for Task: ' + row.id + '</strong>', row.instructions);
+					})
+				})
+			})
+			.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-1'})
+				.insert({'bottom': tmp.isTitle === true ? 'No. Of Kits' : new Element('div')
+					.insert({'bottom': new Element('div', {'class': 'col-xs-8'}).update(!(row.noOfKits && row.noOfKits > 0) ? '' : new Element('a', {'href': 'javascript: void(0);'})
+							.update(row.noOfKits)
+							.observe('click', function(){
+								tmp.me._openURL('/kits.html?nosearch=1&blanklayout=1&taskId=' + row.id);
+							})
+					) })
+					.insert({'bottom': new Element('div', {'class': 'col-xs-4'}).update( !(tmp.me._preSetData && tmp.me._preSetData.meId && tmp.me._preSetData.meId === row.technician.id && row.status && row.status.id === '3') ? '' : new Element('span', {'class': 'btn btn-xs btn-success'})
+						.insert({'bottom': new Element('i', {'class': 'fa fa-plus'})})
+						.observe('click', function(){
+							tmp.me._openURL('/kit/new.html?blanklayout=1&taskid=' + row.id);
+						})
+					) })
+				})
+			})
 			.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-2'})
 				.insert({'bottom': tmp.isTitle === true ? 'Created From' : ((!row.fromEntity || !row.fromEntity.orderNo) ? '' :
 						new Element('div', {'class': 'row'})
@@ -333,19 +358,9 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 							 })
 				) })
 			})
-			.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-2 truncate'})
-				.insert({'bottom': tmp.isTitle === true ? 'Instructions' : new Element('a', {'href': 'javascript: void(0);', 'title': 'click to view all'})
-					.update(row.instructions.stripTags())
-					.observe('click', function() {
-						tmp.me.hideModalBox();
-						tmp.me.showModalBox('<strong>Instructions for Task: ' + row.id + '</strong>', row.instructions);
-					})
-				})
-			})
-			.insert({'bottom': new Element(tmp.tag)
-				.insert({'bottom': tmp.isTitle === true ? 'Created By' : new Element('div')
-					.insert({'bottom': new Element('div', {'class': 'col-xs-4'}).update(row.createdBy.person.fullname) })
-					.insert({'bottom': new Element('small', {'class': 'col-xs-8'}).update(  moment(tmp.me.loadUTCTime(row.created)).format('DD/MMM/YYYY hh:mm A') ) })
+			.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-1 truncate'})
+				.insert({'bottom': tmp.isTitle === true ? 'Created By' : new Element('div', {'title': 'By: ' + row.createdBy.person.fullname + ' @ ' + moment(tmp.me.loadUTCTime(row.created)).format('DD/MMM/YYYY hh:mm A')})
+					.insert({'bottom': new Element('div', {'class': 'col-xs-12'}).update(row.createdBy.person.fullname) })
 				})
 			});
 		if(tmp.dueDateCell) {

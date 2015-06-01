@@ -44,42 +44,21 @@ class Controller extends CRUDPageAbstract
 	protected function _preGetEndJs()
 	{
 // 		parent::_preGetEndJs();
-// 		$order = $tech = $customer =null;
-// 		if(isset($_REQUEST['customerId']) && !($customer = Customer::get(trim($_REQUEST['customerId']))) instanceof Customer)
-// 			die('Invalid Customer provided!');
-// 		if(isset($_REQUEST['orderId']) && !($order = Order::get(trim($_REQUEST['orderId']))) instanceof Order)
-// 			die('Invalid Order provided!');
-// 		if(isset($_REQUEST['techId']) && !($tech = UserAccount::get(trim($_REQUEST['techId']))) instanceof UserAccount)
-// 			die('Invalid Technician provided!');
-// 		$statusIds = array();
-// 		if(isset($_REQUEST['statusIds']) && ($statusIds = trim($_REQUEST['statusIds'])) !== '')
-// 			$statusIds = array_map(create_function('$a', 'return intval(trim($a));'), explode(',', $statusIds));
-// 		$allstatuses = isset($_REQUEST['allstatuses']) && (intval(trim($_REQUEST['allstatuses'])) === 1);
-// 		$preSetData = array('statuses' => array(),
-// 				'order' => ($order instanceof Order ? $order->getJson() : array()),
-// 				'technician' => ($tech instanceof UserAccount ? $tech->getJson() : array()),
-// 				'customer' => ($customer instanceof Customer ? $customer->getJson() : array()),
-// 				'meId' => Core::getUser()->getId(),
-// 				'noDueDateStatusIds' => array()
-// 		);
-// 		$statuses = array();
-// 		foreach(TaskStatus::getAll() as $status) {
-// 			$statuses[] = ($statusJson = $status->getJson());
-// 			if(($noDueDateChecking = in_array(intval($status->getId()), TaskStatus::getClosedStatusIds())) === true)
-// 				$preSetData['noDueDateStatusIds'][] = $status->getId();
-// 			if(count($statusIds) > 0) {
-// 				if(in_array(intval($status->getId()), $statusIds))
-// 					$preSetData['statuses'][] = $statusJson;
-// 			}
-// 			else if($allstatuses === false && !$noDueDateChecking)
-// 				$preSetData['statuses'][] = $statusJson;
-// 		}
-// 		if(count($statusIds) > 0 && count($preSetData['statuses']) === 0)
-// 			die('Invalide Task Status provided.');
+		$order = $task = $customer =null;
+		if(isset($_REQUEST['customerId']) && !($customer = Customer::get(trim($_REQUEST['customerId']))) instanceof Customer)
+			die('Invalid Customer provided!');
+		if(isset($_REQUEST['taskId']) && !($task = Task::get(trim($_REQUEST['taskId']))) instanceof Task)
+			die('Invalid Order provided!');
+		if(isset($_REQUEST['orderId']) && !($order = Order::get(trim($_REQUEST['orderId']))) instanceof Order)
+			die('Invalid Order provided!');
+		$preSetData = array(
+				'task' => ($task instanceof Task ? $task->getJson() : array()),
+				'order' => ($order instanceof Order ? $order->getJson() : array()),
+				'customer' => ($customer instanceof Customer ? $customer->getJson() : array())
+		);
 		$js = "pageJs";
-// 			$js .= ".setOpenInFancyBox(" . ((isset($_REQUEST['blanklayout']) && (intval(trim($_REQUEST['blanklayout'])) === 1) && (isset($_REQUEST['nosearch']) && intval($_REQUEST['nosearch']) === 1)) ? 'false' : 'true') . ")";
-// 			$js .= ".setStatuses(" . json_encode($statuses) . ")";
-// 			$js .= ".setPreSetData(" . json_encode($preSetData) . ")";
+			$js .= ".setOpenInFancyBox(" . ((isset($_REQUEST['blanklayout']) && (intval(trim($_REQUEST['blanklayout'])) === 1) && (isset($_REQUEST['nosearch']) && intval($_REQUEST['nosearch']) === 1)) ? 'false' : 'true') . ")";
+			$js .= ".setPreSetData(" . json_encode($preSetData) . ")";
 		$js .= ";";
 		return $js;
 	}
