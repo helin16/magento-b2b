@@ -99,6 +99,7 @@ class Controller extends DetailsPageAbstract
 			}
 
 			$results['url'] = '/kit/' . $kit->getId() . '.html';
+			$results['printUrl'] = '/print/kit/' . $kit->getId() . '.html';
 			$results['item'] = $kit->getJson();
 			Dao::commitTransaction();
 		}

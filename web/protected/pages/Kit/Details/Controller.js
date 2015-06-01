@@ -443,6 +443,9 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 			tmp.me.showModalBox('<strong class="text-success">', '<h4 class="text-success">Kit has been saved successfully!</h4>');
 			tmp.me.refreshParentWindow(data.item);
 			tmp.me._item = data.item;
+			if(data.printUrl && !data.printUrl.blank()) {
+				tmp.printWind = window.open(printUrl);
+			}
 			if(data.url && !data.url.blank()) {
 				window.location = data.url;
 				return;
@@ -573,16 +576,28 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		tmp.me = this;
 		tmp.newDiv = new Element('div', {'class': 'save-panel'})
 			.insert({'bottom': new Element('div', {'class': 'row'})
-				.insert({'bottom': new Element('div', {'class': 'col-md-4 col-md-offset-4'})
+				.insert({'bottom': new Element('div', {'class': 'col-md-2'})
+					.insert({'bottom': tmp.me.getFormGroup(new Element('label').update('For Task: '),
+							new Element('input', {'class': 'form-control select2 input-sm task-search', 'save-panel': 'task-id', 'placeholder': 'For Task.'})
+					) })
+				})
+				.insert({'bottom': new Element('div', {'class': 'col-md-4 col-md-offset-2'})
 					.insert({'bottom': new Element('h3', {'class': 'text-center'}).update((tmp.me._item.barcode && !tmp.me._item.barcode.blank()) ?
 							'Editing KIT: <img src="/asset/renderBarcode?text=' + tmp.me._item.barcode + '" alt="' + tmp.me._item.barcode + '" title="' + tmp.me._item.barcode + '"/>'
 							: 'Building New Kit'
 					) })
 				})
-				.insert({'bottom': new Element('div', {'class': 'col-md-2 col-md-offset-2'})
-					.insert({'bottom': tmp.me.getFormGroup(new Element('label').update('For Task: '),
-							new Element('input', {'class': 'form-control select2 input-sm task-search', 'save-panel': 'task-id', 'placeholder': 'For Task.'})
-					) })
+				.insert({'bottom': new Element('div', {'class': 'col-md-2 col-md-offset-2 text-right'})
+					.insert({'bottom': (!tmp.me._item || !tmp.me._item.id) ? '' : new Element('a', {'class': 'btn btn-sm btn-primary', 'href': 'javascript:void(0)'})
+						.insert({'bottom': new Element('i', {'class': 'glyphicon glyphicon-print'})	})
+						.observe('click', function() {
+							tmp.printWind = window.open('/print/kit/' + tmp.me._item.id + '.html', '_blank', 'width=800');
+							if(tmp.printWind) {
+								tmp.printWind.focus();
+								tmp.printWind.print();
+							}
+						})
+					})
 				})
 			})
 			.insert({'bottom': new Element('div', {'class': 'row'})
