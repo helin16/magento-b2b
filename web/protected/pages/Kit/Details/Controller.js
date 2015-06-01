@@ -291,7 +291,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 					.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-3 qty'}).update(tmp.isTitle === true ? new Element('strong').update('Qty') :  tmp.me._getQtyCell(row.qty, tmp.rowIndex) )})
 					.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-3 totalPrice  text-right'}).update(tmp.isTitle === true ? new Element('strong').update('Total Price (inc. GST)') : tmp.me.getCurrency(row.unitPrice * row.qty) )})
 					.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-2 btns text-right'}).update(tmp.isTitle === true ? new Element('strong').update('&nbsp;') : ((!row) ? '' :
-						new Element('span', {'class': 'btn btn-danger btn-xs'})
+						new Element('span', {'class': 'btn btn-danger btn-xs row-del-btn'})
 							.update( new Element('span', {'class': 'glyphicon glyphicon-trash'}) )
 							.observe('click', function (){
 								if(row)
@@ -494,10 +494,12 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		tmp.detailsDiv.update(new Element('h4').update('List of Parts Inside This Kit:'))
 			.insert({'bottom': tmp.newTable})
 			.insert({'bottom': new Element('div', {'class': 'row'})
-				.insert({'bottom': new Element('span', {'class': 'btn btn-primary col-md-4 col-md-push-8', 'valid-target': 'row-field'})
-					.update('Save')
-					.observe('click', function(){
-						tmp.me._preSave(this);
+				.insert({'bottom': new Element('span', {'class': 'col-md-4 col-md-push-8'})
+					.insert({'bottom': new Element('span', {'class': 'btn btn-primary main-save-btn', 'valid-target': 'row-field'})
+						.update('Save')
+						.observe('click', function(){
+							tmp.me._preSave(this);
+						})
 					})
 				})
 				.insert({'bottom': new Element('span', {'class': 'col-md-8 col-md-pull-4'})
@@ -862,6 +864,15 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		}
 		return tmp.me;
 	}
+	,disableAll: function(){
+		var tmp = {};
+		tmp.me = this;
+		jQuery('.form-control').attr('disabled', true);
+		jQuery('.item_row_new').remove();
+		jQuery('.row-del-btn').remove();
+		jQuery('.main-save-btn').remove();
+		return tmp.me;
+	}
 	/**
 	 * load
 	 */
@@ -880,6 +891,9 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 					tmp.me._addNewRow(component, tmp.newTable);
 				});
 			}
+		}
+		if(tmp.me._item && tmp.me._item.id && tmp.me._item.shippment && tmp.me._item.shippment.id) {
+			tmp.me.disableAll();
 		}
 		if(tmp.div.down('.comments-div')) {
 			tmp.div.down('.comments-div')

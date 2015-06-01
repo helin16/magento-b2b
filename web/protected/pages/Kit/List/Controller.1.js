@@ -115,6 +115,39 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		tmp.url = '/customer/' + customer.id + '.html?blanklayout=1';
 		return tmp.me._openURL(tmp.url);
 	}
+	,_showShippmentDetailsPage(row){
+		var tmp = {};
+		tmp.me = this;
+		tmp.shippment = row.shippment;
+		tmp.shippmentDiv = new Element('div', {'class': 'panel-body'})
+			.insert({'bottom': new Element('div')
+				.insert({'bottom': new Element('div', {'class': 'col-md-2 text-right'}).update('<strong>Courier Name:</strong>') })
+				.insert({'bottom': new Element('div', {'class': 'col-md-10'}).update(tmp.shippment.courier.name) })
+			})
+			.insert({'bottom': new Element('div')
+				.insert({'bottom': new Element('div', {'class': 'col-md-2 text-right'}).update('<strong>Date:</strong>') })
+				.insert({'bottom': new Element('div', {'class': 'col-md-10'}).update(moment(tmp.me.loadUTCTime(tmp.shippment.shippingDate)).format('lll') ) })
+			})
+			.insert({'bottom': new Element('div')
+				.insert({'bottom': new Element('div', {'class': 'col-md-2 text-right'}).update('<strong>Con. Note No.:</strong>') })
+				.insert({'bottom': new Element('div', {'class': 'col-md-10'}).update(tmp.shippment.conNoteNo) })
+			})
+			.insert({'bottom': new Element('div')
+				.insert({'bottom': new Element('div', {'class': 'col-md-2 text-right'}).update('<strong>No. Of Cartons:</strong>') })
+				.insert({'bottom': new Element('div', {'class': 'col-md-10'}).update(tmp.shippment.noOfCartons) })
+			})
+			.insert({'bottom': new Element('div')
+				.insert({'bottom': new Element('div', {'class': 'col-md-2 text-right'}).update('<strong>Address:</strong>') })
+				.insert({'bottom': new Element('div', {'class': 'col-md-10'}).update(tmp.shippment.address.full) })
+			})
+			.insert({'bottom': new Element('div')
+				.insert({'bottom': new Element('div', {'class': 'col-md-2 text-right'}).update('<strong>Instructions:</strong>') })
+				.insert({'bottom': new Element('div', {'class': 'col-md-10'}).update(tmp.shippment.deliveryInstructions) })
+			})
+		;
+		tmp.me.showModalBox('<strong>Shippment Details for ' + row.barcode + ':</strong>', tmp.shippmentDiv);
+		return tmp.me;
+	}
 	/**
 	 * Getting the result row for the table
 	 */
@@ -186,6 +219,9 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 			.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-1'})
 				.insert({'bottom': tmp.isTitle === true ? 'Shipped Via' :  ((!row.shippment || !row.shippment.id) ? '' : new Element('a', {'href': 'javascript: void(0);', "class": 'truncate', 'title': row.shippment.courier.name})
 					.update( row.shippment.courier.name )
+					.observe('click', function(){
+						tmp.me._showShippmentDetailsPage(row);
+					})
 				) })
 			});
 		return tmp.row;
