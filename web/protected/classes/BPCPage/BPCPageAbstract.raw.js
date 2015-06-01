@@ -226,33 +226,46 @@ BPCPageJs.prototype = {
 		var tmp = {};
 		tmp.me = this;
 		tmp.isSM = (isSM === true ? true : false);
-		tmp.footer = (footer ? footer : null);
-		tmp.newBox = new Element('div', {'class': 'modal', 'tabindex': '-1', 'role': 'dialog', 'aria-hidden': 'true', 'aria-labelledby': 'page-modal-box'})
-			.insert({'bottom': new Element('div', {'class': 'modal-dialog ' + (tmp.isSM === true ? 'modal-sm' : 'modal-lg') })
-				.insert({'bottom': new Element('div', {'class': 'modal-content' })
-					.insert({'bottom': new Element('div', {'class': 'modal-header' })
-						.insert({'bottom': new Element('div', {'class': 'close', 'type': 'button', 'data-dismiss': 'modal'})
-							.insert({'bottom':new Element('span', {'aria-hidden': 'true'}).update('&times;') })
+		tmp.footer = (footer || null);
+		if(!$(tmp.me.modalId)) {
+			tmp.newBox = new Element('div', {'id': tmp.me.modalId, 'class': 'modal', 'tabindex': '-1', 'role': 'dialog', 'aria-hidden': 'true', 'aria-labelledby': 'page-modal-box'})
+				.insert({'bottom': new Element('div', {'class': 'modal-dialog ' + (tmp.isSM === true ? 'modal-sm' : 'modal-lg') })
+					.insert({'bottom': new Element('div', {'class': 'modal-content' })
+						.insert({'bottom': new Element('div', {'class': 'modal-header' })
+							.insert({'bottom': new Element('div', {'class': 'close', 'type': 'button', 'data-dismiss': 'modal'})
+								.insert({'bottom':new Element('span', {'aria-hidden': 'true'}).update('&times;') })
+							})
+							.insert({'bottom': new Element('strong', {'class': 'modal-title'}).update(title) })
 						})
-						.insert({'bottom': new Element('strong', {'class': 'modal-title', 'id': 'page-modal-box'}).update(title) })
+						.insert({'bottom': new Element('div', {'class': 'modal-body' }).update(content) })
+						.insert({'bottom': tmp.footer === null ? '' : new Element('div', {'class': 'modal-footer' }).update(tmp.footer) })
 					})
-					.insert({'bottom': new Element('div', {'class': 'modal-body' }).update(content) })
-					.insert({'bottom': tmp.footer === null ? '' : new Element('div', {'class': 'modal-footer' }).update(tmp.footer) })
-				})
-			});
-
-		if($(tmp.me.modalId)) {
-			$(tmp.me.modalId).remove();
+				});
+			$$('body')[0].insert({'bottom': tmp.newBox});
+			tmp.modal = jQuery('#' + tmp.me.modalId);
+			if(eventFuncs && typeof(eventFuncs) === 'object') {
+				$H(eventFuncs).each(function(eventFunc){
+					tmp.modal.on(eventFunc.key, eventFunc.value);
+				});
+			}
+		} else {
+			tmp.modal = jQuery('#' + tmp.me.modalId);
+			tmp.dialogDiv = tmp.modal.find('.modal-dialog').removeClass('modal-sm').removeClass('modal-lg').addClass(tmp.isSM === true ? 'modal-sm' : 'modal-lg');
+			tmp.modal.find('.modal-title').html(title);
+			tmp.modal.find('.modal-body').html(content);
+			if(tmp.modal.find('.modal-footer').length > 0) {
+				if(tmp.footer !== null)
+					tmp.modal.find('.modal-footer').html(tmp.footer);
+				else
+					tmp.modal.find('.modal-footer').remove();
+			} else {
+				if(tmp.footer !== null)
+					jQuery('<div class="modal-footer"></div>').html(tmp.footer).appendTo(tmp.dialogDiv.find('.modal-content'));
+			}
 		}
 
-		$$('body')[0].insert({'bottom': tmp.newBox.writeAttribute('id',  tmp.me.modalId)});
-		tmp.modal = jQuery('#' + tmp.me.modalId);
-		if(eventFuncs && typeof(eventFuncs) === 'object') {
-			$H(eventFuncs).each(function(eventFunc){
-				tmp.modal.on(eventFunc.key, eventFunc.value);
-			});
-		}
-		tmp.modal.modal({'show': true, 'target': '#' + tmp.me.modalId});
+		if(!tmp.modal.hasClass('in'))
+			tmp.modal.modal().show();
 		return tmp.me;
 	}
 	,hideModalBox: function() {
