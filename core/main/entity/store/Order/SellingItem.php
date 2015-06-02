@@ -188,6 +188,38 @@ class SellingItem extends BaseEntityAbstract
 			if(($kit = Kit::getByBarcode(trim($this->getSerialNo()))) instanceof Kit)
 				$this->setKit($kit);
 		}
+
+		if($this->getProduct() instanceof Product && intval($this->getProduct()->getIsKit()) === 1 && !$this->getKit() instanceof Kit)
+			throw new Exception('The Product(SKU: ' . $this->getProduct()->getSku() . ') is a KIT, but no valid Kit barcode provided(Provided: ' . $this->getSerialNo() . ').');
+
+		if($this->getKit() instanceof Kit) {
+			$kitProduct = $this->getKit()->getProduct();
+			$orderItemProduct = ($this->getOrderItem() instanceof OrderItem ? $this->getOrderItem()->getProduct() : null);
+			if (
+				(!$kitProduct instanceof Product && $orderItemProduct instanceof Product )
+				|| ($kitProduct instanceof Product && !$orderItemProduct instanceof Product )
+				|| ($kitProduct instanceof Product && $orderItemProduct instanceof Product && $kitProduct->getId() !== $orderItemProduct->getId())
+			)
+			throw new Exception('The Kit [' . $this->getKit()->getBarcode() . ', SKU: ' . ($kitProduct instanceof Product ? $kitProduct->getSku() : '') . '] is not the same product on this OrderItem[SKU:' . ($orderItemProduct instanceof Product ? $orderItemProduct->getSku() : '') . '].');
+		}
+	}
+	/**
+	 * (non-PHPdoc)
+	 * @see BaseEntityAbstract::postSave()
+	 */
+	public function postSave()
+	{
+		if($this->getOrderItem() instanceof OrderItem) {
+			if(count($serialItems = self::getAllByCriteria('orderItemId = ?', array($this->getOrderItem()->getId()))) > 0) {
+				$totalUnitCostForOrderItem = 0;
+				foreach($serialItems as $serialItem) {
+					if($serialItem->getKit() instanceof Kit)
+						$totalUnitCostForOrderItem  = $totalUnitCostForOrderItem + $serialItem->getKit()->getCost();
+				}
+				$this->getOrderItem()->setUnitCost($totalUnitCostForOrderItem / (count($serialItems)))
+					->reCalMargin();
+			}
+		}
 	}
 	/**
 	 * (non-PHPdoc)
@@ -219,7 +251,7 @@ class SellingItem extends BaseEntityAbstract
 	 *
 	 * @return Ambigous <SellingItem, SellingItem>
 	 */
-	public static function create(OrderItem $orderItem, $serialNo, $description = '', Kit $kit = null)
+	public static function create(OrderItem &$orderItem, $serialNo, $description = '', Kit $kit = null)
 	{
 		$sellingItem = new SellingItem();
 		return $sellingItem->setOrderItem($orderItem)

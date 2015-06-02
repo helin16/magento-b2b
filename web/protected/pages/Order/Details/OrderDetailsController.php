@@ -74,8 +74,16 @@ class OrderDetailsController extends BPCPageAbstract
 			$js .= '.load();';
 		return $js;
 	}
+	/**
+	 * Update serial numbers
+	 *
+	 * @param unknown $sender
+	 * @param unknown $params
+	 *
+	 * @throws Exception
+	 */
 	public function updateSerials($sender, $params)
-{
+	{
 		$results = $errors = array();
 		try
 		{

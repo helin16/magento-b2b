@@ -364,15 +364,16 @@ class OrderItem extends BaseEntityAbstract
 	/**
 	 * Add a selling item
 	 *
-	 * @param string $serialNo
-	 * @param string $description
+	 * @param string      $serialNo
+	 * @param string      $description
+	 * @param SellingItem $newSellingItem
 	 *
 	 * @return OrderItem
 	 */
-	public function addSellingItem($serialNo, $description = '')
+	public function addSellingItem($serialNo, $description = '', SellingItem &$newSellingItem = null)
 	{
-		SellingItem::create($this, $serialNo, $description);
-		return $this;
+		$newSellingItem = SellingItem::create($this, $serialNo, $description);
+		return self::get($this->getId());
 	}
 	/**
 	 * Getting the selling items
@@ -412,6 +413,16 @@ class OrderItem extends BaseEntityAbstract
 	    return $this;
 	}
 	/**
+	 * ReCalMargin
+	 *
+	 * @return OrderItem
+	 */
+	public function reCalMargin()
+	{
+		$this->setMargin(StringUtilsAbstract::getValueFromCurrency($this->getTotalPrice()) - StringUtilsAbstract::getValueFromCurrency($this->getUnitCost()) * 1.1 * intval($this->getQtyOrdered()));
+		return $this;
+	}
+	/**
 	 * The cal margin from product
 	 *
 	 * @return OrderItem
@@ -421,7 +432,7 @@ class OrderItem extends BaseEntityAbstract
 		if(!$this->getProduct() instanceof Product)
 			return $this;
 		$this->setUnitCost($this->getProduct()->getUnitCost())
-			->setMargin(StringUtilsAbstract::getValueFromCurrency($this->getTotalPrice()) - StringUtilsAbstract::getValueFromCurrency($this->getUnitCost()) * 1.1 * intval($this->getQtyOrdered()));
+			->reCalMargin();
 		return $this;
 	}
 	/**
