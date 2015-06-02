@@ -351,7 +351,23 @@ class Shippment extends BaseEntityAbstract
 
 		return parent::getJson($array, $reset);
 	}
+	/**
+	 * (non-PHPdoc)
+	 * @see BaseEntityAbstract::postSave()
+	 */
+	public function postSave()
+	{
+		if($this->getOrder() instanceof Order) {
+			if(count($kits = Kit::getAllByCriteria('soldOnOrderId = ? and shippmentId is null'), array($this->getOrder()->getId())) > 0) {
+				foreach($kits as $kit) {
+					if(!$kit->getShippment() instanceof Shippment)
+						$kit->setShippment($this)
+							->save();
+				}
+			}
 
+		}
+	}
 	/**
 	 * (non-PHPdoc)
 	 * @see BaseEntity::__loadDaoMap()

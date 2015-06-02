@@ -304,6 +304,37 @@ class Kit extends BaseEntityAbstract
 		return $this;
 	}
 	/**
+	 * Log the changes for the kit
+	 *
+	 * @param unknown $field
+	 * @param unknown $fieldEntity
+	 *
+	 * @return Kit
+	 */
+	private function _changeLog($field, $toStringFunc, $origKit)
+	{
+		$getter = 'get'. ucfirst($field);
+		$fieldEntityClass = isset(DaoMap::$map[strtolower($this)][$field]['class']) ? trim(DaoMap::$map[strtolower($this)][$field]['class']) : '';
+		$orginalValue = $origKit->$getter();
+		$newValue = $this->$getter();
+		$comments = '';
+		if($fieldEntityClass !== '') {
+			if (($orginalValue instanceof $fieldEntityClass && !$newValue instanceof $fieldEntityClass) || (!$orginalValue instanceof $fieldEntityClass && $newValue instanceof $fieldEntityClass) || (($orginalValue instanceof $fieldEntityClass && $newValue instanceof $fieldEntityClass && $orginalValue->getId() !== $newValue)))
+				$comments = 'The ' . $field . ' for Kit [' . $this->getBarcode() . '] changed from ( ' . ($orginalValue instanceof $fieldEntityClass ? $orginalValue->$toStringFunc() : '') . ' ) to ( ' . ($newValue instanceof $fieldEntityClass ? $newValue->$toStringFunc() : '') . ' ).';
+		} else if (trim($orginalValue) !== trim($newValue)) {
+			$comments = 'The ' . $field . ' for Kit [' . $this->getBarcode() . '] changed from ( ' . trim($orginalValue) . ' ) to ( ' . trim($newValue) . ' ).';
+		}
+		//something changed.
+		if(trim($comments) !== '') {
+			$this->addComment($comments, Comments::TYPE_SYSTEM);
+			if($orginalValue instanceof BaseEntityAbstract)
+				$orginalValue->addComment($comments, Comments::TYPE_SYSTEM);
+			if($newValue instanceof BaseEntityAbstract)
+				$newValue->addComment($comments, Comments::TYPE_SYSTEM);
+		}
+		return $this;
+	}
+	/**
 	 * (non-PHPdoc)
 	 * @see TreeEntityAbstract::preSave()
 	 */
@@ -315,10 +346,14 @@ class Kit extends BaseEntityAbstract
 			$this->setSoldDate(UDate::zeroDate());
 		if($this->getProduct()->getIsKit() !== true)
 			throw new EntityException('The product of the kit needs to have the flag IsKit ticked.');
-		$taskIdWhere = ($this->getTask() instanceof Task ? ' = ' . $this->getTask()->getId() : ' is null');
-		if(trim($this->getId()) !== '' && intval(self::countByCriteria('id = ? and taskId ' . $taskIdWhere, array($this->getId()))) === 0){ //changed Task
-			$originalTask = self::get($this->getId())->getTask();
-			$this->addComment('The Task for Kit [' . $this->getBarcode() . '] changed from ( ' . ($originalTask instanceof Task ? $originalTask->getId() : '') . ' ) to ( ' . ($this->getTask() instanceof Task ? $this->getTask()->getId() : '') . ' ).', Comments::TYPE_SYSTEM);
+		if(trim($this->getId()) !== '') {
+			if(self::countByCriteria('id = ? and productId != ?', array($this->getId(), $this->getProduct()->getId())) > 0 )
+				throw new EntityException('You can NOT change the product of the KIT[' . $this->getBarcode() . '] once it is created.');
+			$origKit = self::get($this->getId());
+			$this->_changeLog('soldToCustomer', 'getName', $origKit)
+				->_changeLog('soldDate', '__toString', $origKit)
+				->_changeLog('soldOnOrder', 'getOrderNo', $origKit)
+				->_changeLog('shippment', 'getId', $origKit);
 		}
 	}
 	/**

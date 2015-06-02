@@ -601,9 +601,9 @@ class Order extends InfoEntityAbstract
 				OrderInfo::create($this, $infoType, $originalOrder->getStatus()->getId(), $orderInfo);
 				$this->addLog('Changed Status from [' . $originalOrder->getStatus()->getName() . '] to [' . $this->getStatus() .']', Log::TYPE_SYSTEM, 'Auto Log', get_class($this) . '::' . __FUNCTION__);
 			}
-			
+
 			//get the required kits qty
-			if(in_array(intval($this->getStatus()->getId()), array(OrderStatus::ID_STOCK_CHECKED_BY_PURCHASING, OrderStatus::ID_PICKED, OrderStatus::ID_SHIPPED))) {
+			if(in_array(intval($this->getStatus()->getId()), array(OrderStatus::ID_PICKED, OrderStatus::ID_SHIPPED))) {
 				$sql = "select sum(ord_item.qtyOrdered) `requiredQty`, ord_item.productId `productId`, pro.sku `sku` from orderitem ord_item inner join product pro on (pro.id = ord_item.productId and pro.isKit = 1) where ord_item.orderId = ? group by pro.id";
 				$result = Dao::getResultsNative($sql, array($this->getId()), PDO::FETCH_ASSOC);
 				if(count($result) > 0) {

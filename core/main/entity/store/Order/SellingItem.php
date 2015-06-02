@@ -213,8 +213,18 @@ class SellingItem extends BaseEntityAbstract
 			if(count($serialItems = self::getAllByCriteria('orderItemId = ?', array($this->getOrderItem()->getId()))) > 0) {
 				$totalUnitCostForOrderItem = 0;
 				foreach($serialItems as $serialItem) {
-					if($serialItem->getKit() instanceof Kit)
-						$totalUnitCostForOrderItem  = $totalUnitCostForOrderItem + $serialItem->getKit()->getCost();
+					if(($kit = $serialItem->getKit()) instanceof Kit) {
+						$totalUnitCostForOrderItem  = $totalUnitCostForOrderItem + $kit->getCost();
+						if(!$kit->getSoldOnOrder() instanceof Order)
+							$kit->setSoldOnOrder($this->getOrderItem()->getOrder());
+						if(!$kit->getSoldToCustomer() instanceof Customer)
+							$kit->setSoldToCustomer($this->getOrderItem()->getOrder()->getCustomer());
+						if(trim($kit->getSoldDate()) === trim(UDate::zeroDate()))
+							$kit->setSoldDate(new UDate());
+						if(!$kit->getShippment() instanceof Shippment && count($shippments = $this->getOrderItem()->getOrder()->getShippments()) > 0)
+							$kit->setShippment($shippments[0]);
+						$kit->save();
+					}
 				}
 				$this->getOrderItem()->setUnitCost($totalUnitCostForOrderItem / (count($serialItems)))
 					->reCalMargin();
