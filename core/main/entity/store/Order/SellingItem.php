@@ -189,8 +189,20 @@ class SellingItem extends BaseEntityAbstract
 				$this->setKit($kit);
 		}
 
-		if($this->getProduct() instanceof Product && intval($this->getProduct()->getIsKit()) === 1 && !$this->getKit() instanceof Kit)
-			throw new Exception('The Product(SKU: ' . $this->getProduct()->getSku() . ') is a KIT, but no valid Kit barcode provided(Provided: ' . $this->getSerialNo() . ').');
+		if($this->getProduct() instanceof Product && intval($this->getProduct()->getIsKit()) === 1 ) {
+			if(!$this->getKit() instanceof Kit)
+				throw new Exception('The Product(SKU: ' . $this->getProduct()->getSku() . ') is a KIT, but no valid Kit barcode provided(Provided: ' . $this->getSerialNo() . ').');
+			if($this->getOrderItem()->getOrder() instanceof Order) {
+				$where = array('kitId = :kitId and orderId = :orderId');
+				$params = array('kitId' => $this->getKit()->getId(), 'orderId' => $this->getOrderItem()->getOrder()->getId());
+				if(($id = trim($this->getId())) !== '') {
+					$where[] = 'id != :id';
+					$params['id'] = $id;
+				}
+				if(self::countByCriteria(implode(' AND ', $where), $params) > 0)
+					throw new Exception('The KIT[' .$this->getKit()->getBarcode() . '] has been scanned onto this Order(' . $this->getOrderItem()->getOrder()->getOrderNo() . ') already!');
+			}
+		}
 
 		if($this->getKit() instanceof Kit) {
 			$kitProduct = $this->getKit()->getProduct();
@@ -201,6 +213,15 @@ class SellingItem extends BaseEntityAbstract
 				|| ($kitProduct instanceof Product && $orderItemProduct instanceof Product && $kitProduct->getId() !== $orderItemProduct->getId())
 			)
 			throw new Exception('The Kit [' . $this->getKit()->getBarcode() . ', SKU: ' . ($kitProduct instanceof Product ? $kitProduct->getSku() : '') . '] is not the same product on this OrderItem[SKU:' . ($orderItemProduct instanceof Product ? $orderItemProduct->getSku() : '') . '].');
+		}
+
+		if(intval($this->getActive()) === 0 && self::countByCriteria('id = ? and active != ?', array($this->getId(), $this->getActive())) > 0) { //trying to deactivated
+			if($this->getKit() instanceof Kit)
+				$this->getKit()->setSoldDate(UDate::zeroDate())
+					->setSoldToCustomer(null)
+					->setSoldOnOrder(null)
+					->setShippment(null)
+					->save();
 		}
 	}
 	/**

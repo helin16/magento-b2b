@@ -611,7 +611,7 @@ class Order extends InfoEntityAbstract
 					foreach($result as $row) {
 						$requiredQty = $row['requiredQty'];
 						$sku = $row['sku'];
-						if(($kitsCount = count($kits = Kit::getAllByCriteria('soldToOrderId = ? and productId =? ', array($this->getId(), $row['productId'])))) < $requiredQty) {
+						if(($kitsCount = count($kits = Kit::getAllByCriteria('soldOnOrderId = ? and productId =? ', array($this->getId(), $row['productId'])))) < $requiredQty) {
 							$errMsg[] = 'Product (SKU=' . $sku . ') needs to be sold as a kit(req Qty=' . $requiredQty . ', providedQty=' . $kitsCount . ': ' . implode(', ', array_map(create_function('$a', 'return $a->getBarcode();'), $kits) . ')');
 						}
 					}

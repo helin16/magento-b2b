@@ -101,7 +101,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		tmp.me = this;
 		if(!order || !order.id)
 			return tmp.me;
-		tmp.url = '/orderdtails/' + order.id + '.html?blanklayout=1';
+		tmp.url = '/orderdetails/' + order.id + '.html?blanklayout=1';
 		return tmp.me._openURL(tmp.url);
 	}
 	/**

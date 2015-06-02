@@ -93,7 +93,10 @@ class OrderDetailsController extends BPCPageAbstract
 			if(!isset($params->CallbackParameter->serials))
 				throw new Exception('System Error: invalid serials passed in!');
 			else $serials = $params->CallbackParameter->serials;
-			SellingItem::deleteByCriteria('orderItemId = ?', array($orderItem->getId())); //DELETING ALL SERIAL NUMBER BEFORE ADDING
+			foreach(SellingItem::getAllByCriteria('orderItemId = ?', array($orderItem->getId())) as $sellingItem) {
+				$sellingItem->setActive(false)
+					->save();
+			}
 			foreach($serials as $serialNo)
 				$orderItem->addSellingItem($serialNo)
 				->save();
