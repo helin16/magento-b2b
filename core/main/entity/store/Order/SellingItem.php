@@ -28,16 +28,22 @@ class SellingItem extends BaseEntityAbstract
 	protected $orderItem = null;
 	/**
 	 * The serial number
-	 * 
+	 *
 	 * @var string
 	 */
 	private $serialNo;
 	/**
 	 * The description
-	 * 
+	 *
 	 * @var string
 	 */
 	private $description;
+	/**
+	 * The kit that we sold
+	 *
+	 * @var Kit
+	 */
+	protected $kit = null;
 	/**
 	 * Getter for product
 	 *
@@ -109,7 +115,7 @@ class SellingItem extends BaseEntityAbstract
 	 *
 	 * @return string
 	 */
-	public function getSerialNo() 
+	public function getSerialNo()
 	{
 	    return $this->serialNo;
 	}
@@ -120,7 +126,7 @@ class SellingItem extends BaseEntityAbstract
 	 *
 	 * @return SellingItem
 	 */
-	public function setSerialNo($value) 
+	public function setSerialNo($value)
 	{
 	    $this->serialNo = $value;
 	    return $this;
@@ -130,7 +136,7 @@ class SellingItem extends BaseEntityAbstract
 	 *
 	 * @return string
 	 */
-	public function getDescription() 
+	public function getDescription()
 	{
 	    return $this->description;
 	}
@@ -141,9 +147,31 @@ class SellingItem extends BaseEntityAbstract
 	 *
 	 * @return SellingItem
 	 */
-	public function setDescription($value) 
+	public function setDescription($value)
 	{
 	    $this->description = $value;
+	    return $this;
+	}
+	/**
+	 * Getter for kit
+	 *
+	 * @return Kit
+	 */
+	public function getKit()
+	{
+		$this->loadManyToOne('kit');
+	    return $this->kit;
+	}
+	/**
+	 * Setter for kit
+	 *
+	 * @param Kit $value The kit
+	 *
+	 * @return SellingItem
+	 */
+	public function setKit(Kit $value = null)
+	{
+	    $this->kit = $value;
 	    return $this;
 	}
 	/**
@@ -156,6 +184,10 @@ class SellingItem extends BaseEntityAbstract
 			$this->setProduct($this->getOrderItem()->getProduct())
 				->setOrder($this->getOrderItem()->getOrder());
 		}
+		if(!$this->getKit() instanceof Kit && strpos(trim($this->getSerialNo()), Kit::BARCODE_PREFIX) === 0) {
+			if(($kit = Kit::getByBarcode(trim($this->getSerialNo()))) instanceof Kit)
+				$this->setKit($kit);
+		}
 	}
 	/**
 	 * (non-PHPdoc)
@@ -164,13 +196,14 @@ class SellingItem extends BaseEntityAbstract
 	public function __loadDaoMap()
 	{
 		DaoMap::begin($this, 'sell_item');
-	
+
 		DaoMap::setManyToOne('orderItem', 'OrderItem', 'rec_item_oi');
 		DaoMap::setManyToOne('order', 'Order', 'sell_item_or');
 		DaoMap::setManyToOne('product', 'Product', 'rec_item_pro');
+		DaoMap::setManyToOne('kit', 'Kit', 'sell_item_kit', true);
 		DaoMap::setStringType('serialNo', 'varchar', '100');
 		DaoMap::setStringType('description', 'varchar', '255');
-		
+
 		parent::__loadDaoMap();
 		DaoMap::createIndex('serialNo');
 		DaoMap::createIndex('description');
@@ -178,24 +211,26 @@ class SellingItem extends BaseEntityAbstract
 	}
 	/**
 	 * creating a orderitem
-	 * 
+	 *
 	 * @param OrderItem $orderItem
 	 * @param string    $serialNo
 	 * @param string    $description
-	 * 
+	 * @param Kit       $kit
+	 *
 	 * @return Ambigous <SellingItem, SellingItem>
 	 */
-	public static function create(OrderItem $orderItem, $serialNo, $description = '')
+	public static function create(OrderItem $orderItem, $serialNo, $description = '', Kit $kit = null)
 	{
 		$sellingItem = new SellingItem();
 		return $sellingItem->setOrderItem($orderItem)
 			->setSerialNo(trim($serialNo))
 			->setDescription(trim($description))
+			->setKit($kit)
 			->save();
 	}
 	/**
 	 * Getting the selling item
-	 * 
+	 *
 	 * @param OrderItem $orderItem
 	 * @param string    $serialNo
 	 * @param string    $description

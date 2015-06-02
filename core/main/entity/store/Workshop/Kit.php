@@ -317,7 +317,6 @@ class Kit extends BaseEntityAbstract
 			throw new EntityException('The product of the kit needs to have the flag IsKit ticked.');
 		$taskIdWhere = ($this->getTask() instanceof Task ? ' = ' . $this->getTask()->getId() : ' is null');
 		if(trim($this->getId()) !== '' && intval(self::countByCriteria('id = ? and taskId ' . $taskIdWhere, array($this->getId()))) === 0){ //changed Task
-			var_dump('erer');
 			$originalTask = self::get($this->getId())->getTask();
 			$this->addComment('The Task for Kit [' . $this->getBarcode() . '] changed from ( ' . ($originalTask instanceof Task ? $originalTask->getId() : '') . ' ) to ( ' . ($this->getTask() instanceof Task ? $this->getTask()->getId() : '') . ' ).', Comments::TYPE_SYSTEM);
 		}
@@ -394,5 +393,17 @@ class Kit extends BaseEntityAbstract
 		if(($comments = trim($comments)) === '')
 			$kit->addComment($comments);
 		return $kit;
+	}
+	/**
+	 * getting the kits by barcode
+	 *
+	 * @param string $barcode The barcode fo the kits
+	 *
+	 * @return Ambigous <NULL, BaseEntityAbstract>
+	 */
+	public static function getByBarcode($barcode)
+	{
+		$kits = self::getAllByCriteria('barcode = ?', array($barcode), false, 1, 1);
+		return count($kits) === 0 ? null : $kits[0];
 	}
 }
