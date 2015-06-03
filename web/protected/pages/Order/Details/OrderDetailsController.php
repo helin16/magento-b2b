@@ -90,16 +90,27 @@ class OrderDetailsController extends BPCPageAbstract
 			Dao::beginTransaction();
 			if(!isset($params->CallbackParameter->orderItemId) || !($orderItem = OrderItem::get($params->CallbackParameter->orderItemId)) instanceof OrderItem)
 				throw new Exception('System Error: invalid order item passed in!');
-			if(!isset($params->CallbackParameter->serials))
-				throw new Exception('System Error: invalid serials passed in!');
-			else $serials = $params->CallbackParameter->serials;
-			foreach(SellingItem::getAllByCriteria('orderItemId = ?', array($orderItem->getId())) as $sellingItem) {
-				$sellingItem->setActive(false)
-					->save();
+			if(!isset($params->CallbackParameter->sellingitem))
+				throw new Exception('System Error: invalid sellingitem passed in!');
+
+			$sellingItemObj = $params->CallbackParameter->sellingitem;
+			$sellingItem = null;
+			if(isset($sellingItemObj->id) && !($sellingItem = SellingItem::get(trim($sellingItemObj->id))) instanceof SellingItem)
+				throw new Exception('System Error: invalid selling item id passed in!');
+			$serialNo = (isset($sellingItemObj->serialNo) ? trim($sellingItemObj->serialNo) : '');
+			if($sellingItem instanceof SellingItem) {
+				if($serialNo === '' || (isset($sellingItemObj->active) && intval($sellingItemObj->active) !== 1)) {
+					$sellingItem->setActive(false)
+						->save();
+				} else {
+					$sellingItem->setSerialNo($serialNo)
+						->save();
+				}
+			} else {
+				if(!isset($sellingItemObj->active) || (isset($sellingItemObj->active) && intval($sellingItemObj->active) === 1))
+					$sellingItem = SellingItem::create($orderItem, $serialNo);
 			}
-			foreach($serials as $serialNo)
-				$orderItem->addSellingItem($serialNo)
-				->save();
+			$results['orderItem'] = OrderItem::get($orderItem->getId())->getJson();
 			Dao::commitTransaction();
 		}
 		catch(Exception $ex)

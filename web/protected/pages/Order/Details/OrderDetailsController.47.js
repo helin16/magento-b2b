@@ -87,57 +87,63 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.item = item;
 		tmp.newDiv = new Element('div', {'class': 'scanTable'});
 		for(tmp.i = 0; tmp.i < item.qtyOrdered; tmp.i++) {
-			tmp.sellingitem = (tmp.item.sellingitems && tmp.item.sellingitems[tmp.i] && jQuery.isNumeric(tmp.item.sellingitems[tmp.i].id)) ? tmp.item.sellingitems[tmp.i] : false;
-			tmp.newDiv.insert({'bottom': new Element('div', {'class': 'col-sm-12'}).update(new Element('div', {'class': 'form-group'}).update( tmp.me._getScanTableRow(tmp.sellingitem) ) ) });
+			tmp.sellingitem = (tmp.item.sellingitems && tmp.item.sellingitems[tmp.i] && jQuery.isNumeric(tmp.item.sellingitems[tmp.i].id)) ? tmp.item.sellingitems[tmp.i] : {};
+			tmp.newDiv.insert({'bottom': new Element('div', {'class': 'col-sm-12'}).update(new Element('div', {'class': 'form-group'}).update( tmp.me._getScanTableRow(tmp.sellingitem, item) ) ) });
 		}
 		return tmp.newDiv;
 	}
-	,_getScanTableRow: function(sellingitem) {
+	,_getScanTableRow: function(sellingitem, orderItem) {
 		var tmp = {};
 		tmp.me = this;
-		tmp.newDiv = new Element('input', {'class': 'form-control', 'scanned-item': 'serialNo', 'type': 'text', 'placeholder': 'Serial Number:', 'value': ((sellingitem.serialNo && sellingitem.serialNo !== '') ? sellingitem.serialNo : '')})
-			.observe('change', function() {
-				tmp.emptyIput = null;
-				tmp.serials = [];
-				$(this).up('.scanTable').getElementsBySelector('input[scanned-item="serialNo"]').each(function(input){
-					if(!$F(input).blank())
-						tmp.serials.push($F(input));
-					if(tmp.emptyIput === null && $F(input).blank())
-						tmp.emptyIput = input;
-				});
-				$(this).up('.productRow').store('serials', tmp.serials);
-				tmp.orderItemId = $(this).up('.productRow').readAttribute('order_item_id');
-				tmp.me._signRandID($(this));
-				tmp.me._updateSerialNumber(tmp.orderItemId, tmp.serials, $(this).id);
-				if(tmp.emptyIput !== null)
-					tmp.emptyIput.select();
+		tmp.newDiv = new Element('div', {'class': 'serial-no-input-wrapper'}).update(
+			tmp.txtBox = new Element('input', {'class': 'form-control input-sm', 'scanned-item': 'serialNo', 'type': 'text', 'placeholder': 'Serial Number:', 'value': ((sellingitem.serialNo) ? sellingitem.serialNo : '')})
+				.store('data', sellingitem)
+				.store('orderItem', orderItem)
+				.observe('change', function() {
+					tmp.txtBox = $(this);
+					tmp.sellingItemData = tmp.txtBox.retrieve('data');
+					tmp.sellingItemData.serialNo = $F(tmp.txtBox);
+					if($F(tmp.txtBox).blank()) {
+						tmp.sellingItemData.active = false;
+					}
+					tmp.txtBox.store('data', tmp.sellingItemData);
+					tmp.me._updateSerialNumber(tmp.txtBox);
+				})
+		);
+		if(sellingitem && sellingitem.kit && sellingitem.kit.id) {
+			tmp.newDiv.addClassName('input-group input-group-sm').insert({'bottom': new Element('a', {'class': 'input-group-addon btn btn-primary', 'href': '/kit/' + sellingitem.kit.id + '.html', 'target': '_BLANK'})
+				.insert({'bottom': new Element('i', {'class': 'glyphicon glyphicon-link'}) })
 			});
+		}
 		return tmp.newDiv;
 	}
-	,_updateSerialNumber: function(orderItemId, serials, elementId) {
+	,_updateSerialNumber: function(txtBox) {
 		var tmp = {};
 		tmp.me = this;
-		tmp.elementId = (elementId || false);
-
-		tmp.me.postAjax(tmp.me.getCallbackId('updateSerials'), {'orderItemId': orderItemId, 'serials': serials}, {
+		tmp.formGroupDiv = $(txtBox).up('.form-group');
+		tmp.orderItem = $(txtBox).retrieve('orderItem');
+		tmp.sellingitem = $(txtBox).retrieve('data');
+		if(!tmp.orderItem || !tmp.orderItem.id)
+			return tmp.me;
+		tmp.me.postAjax(tmp.me.getCallbackId('updateSerials'), {'orderItemId': tmp.orderItem.id, 'sellingitem': tmp.sellingitem}, {
 			'onLoading': function() {
-				if(tmp.elementId !== false)
-					jQuery('#' + tmp.elementId).prop( "disabled", true ).prop('title', '').parents('.form-group').removeClass('has-error');
+				$(txtBox).writeAttribute('disabled', true).writeAttribute('title', '');
+				tmp.formGroupDiv.removeClassName('has-error');
 			}
 			,'onSuccess': function(sender, param) {
 				try {
 					tmp.result = tmp.me.getResp(param, false, true);
-					if(!tmp.result)
+					if(!tmp.result || !tmp.result.orderItem)
 						return;
+					$(txtBox).up('.scanTable').replace(tmp.me._getScanTable(tmp.result.orderItem));
 				} catch (e) {
-					if(tmp.elementId !== false)
-						jQuery('#' + tmp.elementId).prop('title', 'ERROR: ' + e).parents('.form-group').addClass('has-error');
-					tmp.me.showModalBox('<strong class="text-danger">Error Record The Serial Number</strong>', e);
+					$(txtBox).writeAttribute('title', 'ERROR: ' + e);
+					tmp.formGroupDiv.addClassName('has-error');
+					tmp.me.showModalBox('<strong class="text-danger">Error Occurred When Recording The Serial Number: ' + tmp.sellingitem.serialNo + '</strong>', e);
 				}
 			}
 			,'onComplete': function() {
-				if(tmp.elementId !== false)
-					jQuery('#' + tmp.elementId).prop( "disabled", false );
+				$(txtBox).writeAttribute('disabled', false);
 			}
 		})
 		return tmp.me;
@@ -307,10 +313,10 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					tmp.result = tmp.me.getResp(param, false, true);
 					if(!tmp.result)
 						return;
-					alert('ETA cleared Successfully!');
+					tmp.me.showModalBox('<strong class="text-success">Success</strong>', '<h4>ETA cleared Successfully!</h4>');
 					window.location = document.URL;
 				} catch (e) {
-					alert(e);
+					tmp.me.showModalBox('<strong class="text-danger">Error</strong>', e);
 				}
 			}
 			,'onComplete': function(sender, param) {}
@@ -396,10 +402,10 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					tmp.result = tmp.me.getResp(param, false, true);
 					if(!tmp.result)
 						return;
-					alert('IsOrdered flag changed Successfully!');
+					tmp.me.showModalBox('<strong class="text-success">Success</strong>', '<h4>IsOrdered flag changed Successfully!</h4>');
 					window.location = document.URL;
 				} catch (e) {
-					alert(e);
+					tmp.me.showModalBox('<strong class="text-danger">Error</strong>', e);
 				}
 			}
 			,'onComplete': function(sender, param) {}
@@ -579,10 +585,10 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					tmp.result = tmp.me.getResp(param, false, true);
 					if(!tmp.result)
 						return;
-					alert('Saved Successfully!');
+					tmp.me.showModalBox('<strong class="text-success">Success</strong>', '<h4>Saved Successfully!</h4>');
 					window.location = document.URL;
 				} catch (e) {
-					alert(e);
+					tmp.me.showModalBox('<strong class="text-danger">Error</strong>', e);
 				}
 			},
 			'onComplete': function(sender, param) {
@@ -861,25 +867,36 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.shipmentDiv.down('.panel-heading').insert({'after': tmp.shipmentDivBody});
 		return tmp.shipmentDiv;
 	}
-	,_submitOrderStatusChange: function(orderStatusId, comments) {
+	,_submitOrderStatusChange: function(orderStatusId, comments, succFunc, failedFunc, loadingFunc, completeFunc) {
 		var tmp = {};
 		tmp.me = this;
+		tmp.succFunc = (typeof(succFunc) === 'function' ? succFunc : function() {
+			tmp.me.showModalBox('<strong class="text-success">Saved Successfully</strong>', '<h3 class="text-success">Saved Successfully!</h3>');
+			window.location = document.URL;
+		});
+		tmp.failedFunc = (typeof(failedFunc) === 'function' ? failedFunc : function(error) {
+			tmp.me.showModalbox('<strong class="text-danger">Error</strong>', error);
+		});
 		tmp.me.postAjax(tmp.me.getCallbackId('changeOrderStatus'), {'order': tmp.me._order, 'orderStatusId': orderStatusId, 'comments': comments}, {
 			'onLoading': function (sender, param) {
-				$(selBox).disabled = true;
+				if(typeof(loadingFunc) === 'function')
+					loadingFunc();
 			}
 			,'onSuccess': function (sender, param) {
 				try {
 					tmp.result = tmp.me.getResp(param, false, true);
-					alert('Saved Successfully!');
-					window.location = document.URL;
+					if(!tmp.result)
+						return;
+					if(typeof(tmp.succFunc) === 'function')
+						tmp.succFunc(tmp.result);
 				} catch (e) {
-					alert(e);
-					$(selBox).disabled = false;
-					$(selBox).replace(tmp.me._getOrderStatus());
+					if(typeof(tmp.succFunc) === 'function')
+						tmp.failedFunc(e);
 				}
 			}
 			,'onComplete': function(sender, param) {
+				if(typeof(completeFunc) === 'function')
+					completeFunc();
 			}
 		});
 	}
@@ -889,22 +906,53 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 	,_changeOrderStatus: function(selBox) {
 		var tmp = {};
 		tmp.me = this;
-		tmp.msg = 'About to change the status of this order?\n Continue?';
-		if(confirm(tmp.msg)) {
-			tmp.comments = '';
-			while(tmp.comments !== null && tmp.comments.blank()) {
-				tmp.comments = window.prompt("Please Type in the reason for changing:");
-			}
-			//user has cancelled the input
-			if(tmp.comments === null) {
-				$(selBox).replace(tmp.me._getOrderStatus());
-				return this;
-			}
-			tmp.me._submitOrderStatusChange($F(selBox), tmp.comments);
-
-			return this;
-		}
-		$(selBox).replace(tmp.me._getOrderStatus());
+		tmp.newStatusId = $F(selBox);
+		tmp.selectedOptText = selBox.options[selBox.selectedIndex].text;
+		tmp.newDiv = new Element('div', {'class': 'panel-body'})
+			.insert({'bottom': new Element('div', {'class': 'confirm-div'})
+				.insert({'bottom': new Element('div', {'class': 'row msg-div'}) })
+				.insert({'bottom': new Element('div', {'class': 'row'})
+					.insert({'bottom': new Element('div', {'class': 'form-group'})
+						.insert({'bottom': new Element('label', {'class': 'control-label'}).update('Some Reason:') })
+						.insert({'bottom': new Element('textarea', {'class': 'form-control', 'confirm-div': 'reason', 'placeholder': 'Some reason please'}) })
+					})
+				})
+				.insert({'bottom': new Element('div', {'class': 'row'})
+					.insert({'bottom': new Element('div', {'class': 'col-xs-6'})
+						.insert({'bottom': new Element('div', {'class': 'btn btn-default'})
+							.update('Cancel')
+							.observe('click', function(){
+								$(selBox).replace(tmp.me._getOrderStatus());
+								tmp.me.hideModalBox();
+							})
+						})
+					})
+					.insert({'bottom': new Element('div', {'class': 'col-xs-6 text-right'})
+						.insert({'bottom': new Element('div', {'class': 'btn btn-danger'})
+							.update('Update It')
+							.observe('click', function(){
+								tmp.loadingDiv = new Element('div', {'class': 'loading-div'}).update(tmp.me.getLoadingImg());
+								tmp.confirmDiv = $(this).up('.confirm-div');
+								tmp.confirmDiv.down('.msg-div').update('');
+								tmp.comments = $F(tmp.confirmDiv.down('[confirm-div="reason"]'));
+								if(tmp.comments.blank()) {
+									tmp.confirmDiv.down('.msg-div').update(tmp.me.getAlertBox('Error: ', 'Some reason is required!').addClassName('alert-danger'));
+									return;
+								}
+								tmp.me._submitOrderStatusChange(tmp.newStatusId, tmp.comments, null, function(e){
+									tmp.confirmDiv.down('.msg-div').update(tmp.me.getAlertBox('Error: ', e).addClassName('alert-danger'));
+								}, function() {
+									tmp.confirmDiv.insert({'after': tmp.loadingDiv}).hide();
+								}, function() {
+									tmp.loadingDiv.remove();
+									tmp.confirmDiv.show();
+								});
+							})
+						})
+					})
+				 })
+			});
+		tmp.me.showModalBox('<strong>Please provide some reason for changing this Order to: ' + tmp.selectedOptText + '</strong>', tmp.newDiv);
 		return this;
 	}
 	/**

@@ -175,11 +175,40 @@ class SellingItem extends BaseEntityAbstract
 	    return $this;
 	}
 	/**
+	 * clear the kit
+	 *
+	 * @param string $kit The Kit that cleared
+	 *
+	 * @return SellingItem
+	 */
+	private function _clearKit(&$kit = null)
+	{
+		if(!$this->getKit() instanceof Kit)
+			return $this;
+		if($this->getKit()->getShippment() instanceof Shippment)
+			throw new EntityException('You can NOT clear/change this KIT[' . $this->getKit()->getBarcode() . '], as it has been shipped by:' . $this->getKit()->getShippment()->getCourier()->getName() . ( $this->getKit()->getSoldOnOrder() instanceof Order ? ' On order(' . $this->getKit()->getSoldOnOrder()->getOrderNo() . ')' : ''));
+		$kit = $this->getKit()->setSoldDate(UDate::zeroDate())
+			->setSoldToCustomer(null)
+			->setSoldOnOrder(null)
+			->setShippment(null)
+			->save();
+		return $this;
+	}
+	/**
 	 * (non-PHPdoc)
 	 * @see BaseEntityAbstract::preSave()
 	 */
 	public function preSave()
 	{
+		if(trim($this->getSerialNo()) === '')
+			throw new Exception('You can NOT save a selling Item without a serial number.');
+		if(trim($this->getId()) !== '') {
+			if(intval($this->getActive()) === 0 && self::countByCriteria('id = ? and active != ?', array($this->getId(), $this->getActive())) > 0) { //trying to deactivated
+				$this->_clearKit();
+			} else if(intval($this->getActive()) === 1 && self::countByCriteria('id = ? and serialNo != ?', array($this->getId(), trim($this->getSerialNo()))) > 0) { //trying to changed serialno
+				$this->_clearKit()->setKit(null);
+			}
+		}
 		if($this->getOrderItem() instanceof OrderItem) {
 			$this->setProduct($this->getOrderItem()->getProduct())
 				->setOrder($this->getOrderItem()->getOrder());
@@ -188,7 +217,16 @@ class SellingItem extends BaseEntityAbstract
 			if(($kit = Kit::getByBarcode(trim($this->getSerialNo()))) instanceof Kit)
 				$this->setKit($kit);
 		}
-
+		if($this->getKit() instanceof Kit) {
+			$kitProduct = $this->getKit()->getProduct();
+			$orderItemProduct = ($this->getOrderItem() instanceof OrderItem ? $this->getOrderItem()->getProduct() : null);
+			if (
+					(!$kitProduct instanceof Product && $orderItemProduct instanceof Product )
+					|| ($kitProduct instanceof Product && !$orderItemProduct instanceof Product )
+					|| ($kitProduct instanceof Product && $orderItemProduct instanceof Product && $kitProduct->getId() !== $orderItemProduct->getId())
+			)
+				throw new Exception('The Kit [' . $this->getKit()->getBarcode() . ', SKU: ' . ($kitProduct instanceof Product ? $kitProduct->getSku() : '') . '] is not the same product on this OrderItem[SKU:' . ($orderItemProduct instanceof Product ? $orderItemProduct->getSku() : '') . '].');
+		}
 		if($this->getProduct() instanceof Product && intval($this->getProduct()->getIsKit()) === 1 ) {
 			if(!$this->getKit() instanceof Kit)
 				throw new Exception('The Product(SKU: ' . $this->getProduct()->getSku() . ') is a KIT, but no valid Kit barcode provided(Provided: ' . $this->getSerialNo() . ').');
@@ -202,26 +240,6 @@ class SellingItem extends BaseEntityAbstract
 				if(self::countByCriteria(implode(' AND ', $where), $params) > 0)
 					throw new Exception('The KIT[' .$this->getKit()->getBarcode() . '] has been scanned onto this Order(' . $this->getOrderItem()->getOrder()->getOrderNo() . ') already!');
 			}
-		}
-
-		if($this->getKit() instanceof Kit) {
-			$kitProduct = $this->getKit()->getProduct();
-			$orderItemProduct = ($this->getOrderItem() instanceof OrderItem ? $this->getOrderItem()->getProduct() : null);
-			if (
-				(!$kitProduct instanceof Product && $orderItemProduct instanceof Product )
-				|| ($kitProduct instanceof Product && !$orderItemProduct instanceof Product )
-				|| ($kitProduct instanceof Product && $orderItemProduct instanceof Product && $kitProduct->getId() !== $orderItemProduct->getId())
-			)
-			throw new Exception('The Kit [' . $this->getKit()->getBarcode() . ', SKU: ' . ($kitProduct instanceof Product ? $kitProduct->getSku() : '') . '] is not the same product on this OrderItem[SKU:' . ($orderItemProduct instanceof Product ? $orderItemProduct->getSku() : '') . '].');
-		}
-
-		if(intval($this->getActive()) === 0 && self::countByCriteria('id = ? and active != ?', array($this->getId(), $this->getActive())) > 0) { //trying to deactivated
-			if($this->getKit() instanceof Kit)
-				$this->getKit()->setSoldDate(UDate::zeroDate())
-					->setSoldToCustomer(null)
-					->setSoldOnOrder(null)
-					->setShippment(null)
-					->save();
 		}
 	}
 	/**
@@ -251,6 +269,19 @@ class SellingItem extends BaseEntityAbstract
 					->reCalMargin();
 			}
 		}
+	}
+	/**
+	 * (non-PHPdoc)
+	 * @see BaseEntityAbstract::getJson()
+	 */
+	public function getJson($extra = array(), $reset = false)
+	{
+		$array = $extra;
+		if(!$this->isJsonLoaded($reset))
+		{
+			$array['kit'] = $this->getKit() instanceof Kit ? $this->getKit()->getJson() : array();
+		}
+		return parent::getJson($array, $reset);
 	}
 	/**
 	 * (non-PHPdoc)

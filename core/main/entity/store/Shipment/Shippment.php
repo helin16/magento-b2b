@@ -358,7 +358,7 @@ class Shippment extends BaseEntityAbstract
 	public function postSave()
 	{
 		if($this->getOrder() instanceof Order) {
-			if(count($kits = Kit::getAllByCriteria('soldOnOrderId = ? and shippmentId is null'), array($this->getOrder()->getId())) > 0) {
+			if(count($kits = Kit::getAllByCriteria('soldOnOrderId = ? and shippmentId is null', array($this->getOrder()->getId()))) > 0) {
 				foreach($kits as $kit) {
 					if(!$kit->getShippment() instanceof Shippment)
 						$kit->setShippment($this)

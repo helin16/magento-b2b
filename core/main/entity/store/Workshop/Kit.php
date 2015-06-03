@@ -311,10 +311,9 @@ class Kit extends BaseEntityAbstract
 	 *
 	 * @return Kit
 	 */
-	private function _changeLog($field, $toStringFunc, $origKit)
+	private function _changeLog($field, $toStringFunc, $origKit, $fieldEntityClass)
 	{
 		$getter = 'get'. ucfirst($field);
-		$fieldEntityClass = isset(DaoMap::$map[strtolower($this)][$field]['class']) ? trim(DaoMap::$map[strtolower($this)][$field]['class']) : '';
 		$orginalValue = $origKit->$getter();
 		$newValue = $this->$getter();
 		$comments = '';
@@ -350,10 +349,10 @@ class Kit extends BaseEntityAbstract
 			if(self::countByCriteria('id = ? and productId != ?', array($this->getId(), $this->getProduct()->getId())) > 0 )
 				throw new EntityException('You can NOT change the product of the KIT[' . $this->getBarcode() . '] once it is created.');
 			$origKit = self::get($this->getId());
-			$this->_changeLog('soldToCustomer', 'getName', $origKit)
-				->_changeLog('soldDate', '__toString', $origKit)
-				->_changeLog('soldOnOrder', 'getOrderNo', $origKit)
-				->_changeLog('shippment', 'getId', $origKit);
+			$this->_changeLog('soldToCustomer', 'getName', $origKit, 'Customer')
+				->_changeLog('soldDate', '__toString', $origKit, '')
+				->_changeLog('soldOnOrder', 'getOrderNo', $origKit, 'Order')
+				->_changeLog('shippment', 'getId', $origKit, 'Shippment');
 		}
 	}
 	/**
