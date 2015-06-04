@@ -241,6 +241,59 @@ class OrderController extends BPCPageAbstract
 				$totalPaidAmount = 0;
 			}
 
+			foreach ($param->CallbackParameter->items as $item)
+			{
+				$product = Product::get(trim($item->product->id));
+				if(!$product instanceof Product)
+					throw new Exception('Invalid Product passed in!');
+				if(isset($item->active) && intval($item->active) === 1 && intval($product->getActive()) !== 1 && $type === Order::TYPE_INVOICE)
+					throw new Exception('Product(SKU:' . $product->getSku() . ') is DEACTIVATED, please change it to be proper product before converting it to a ' . $type . '!');
+
+				$unitPrice = trim($item->unitPrice);
+				$qtyOrdered = trim($item->qtyOrdered);
+				$totalPrice = trim($item->totalPrice);
+				$itemDescription = trim($item->itemDescription);
+
+				if(intval($item->active) === 1)
+				{
+					$totalPaymentDue += $totalPrice;
+					if($orderCloneFrom instanceof Order || !($orderItem = OrderItem::get($item->id)) instanceof OrderItem)
+					{
+						$orderItem = OrderItem::create($order, $product, $unitPrice, $qtyOrdered, $totalPrice, 0, null, $itemDescription);
+					}
+					else {
+						$orderItem->setActive(intval($item->active))
+						->setProduct($product)
+						->setUnitPrice($unitPrice)
+						->setQtyOrdered($qtyOrdered)
+						->setTotalPrice($totalPrice)
+						->setItemDescription($itemDescription)
+						->save();
+						foreach(SellingItem::getAllByCriteria('orderItemId = ?', array($orderItem->getId())) as $sellingItem) { //DELETING ALL SERIAL NUMBER BEFORE ADDING
+							$sellingItem->setActive(false)
+							->save();
+						}
+					}
+				} else {
+					if($orderCloneFrom instanceof Order)
+					{
+						continue;
+					}
+					elseif(($orderItem = OrderItem::get($item->id)) instanceof OrderItem) {
+						$orderItem->setActive(false)->save();
+					}
+				}
+				if(isset($item->serials) && count($item->serials) > 0){
+					foreach($item->serials as $serialNo)
+						$orderItem->addSellingItem($serialNo)
+						->save();
+				}
+				if($shipped === true) {
+					$orderItem->setIsPicked(true)
+						->save();
+				}
+			}
+
 			if(isset($param->CallbackParameter->courierId))
 			{
 				$totalShippingCost = 0;
@@ -273,55 +326,6 @@ class OrderController extends BPCPageAbstract
 			$order = $order->addComment($comments, Comments::TYPE_SALES)
 				->setTotalPaid($totalPaidAmount);
 
-			foreach ($param->CallbackParameter->items as $item)
-			{
-				$product = Product::get(trim($item->product->id));
-				if(!$product instanceof Product)
-					throw new Exception('Invalid Product passed in!');
-				if(isset($item->active) && intval($item->active) === 1 && intval($product->getActive()) !== 1 && $type === Order::TYPE_INVOICE)
-					throw new Exception('Product(SKU:' . $product->getSku() . ') is DEACTIVATED, please change it to be proper product before converting it to a ' . $type . '!');
-
-				$unitPrice = trim($item->unitPrice);
-				$qtyOrdered = trim($item->qtyOrdered);
-				$totalPrice = trim($item->totalPrice);
-				$itemDescription = trim($item->itemDescription);
-
-				if(intval($item->active) === 1)
-				{
-					$totalPaymentDue += $totalPrice;
-					if($orderCloneFrom instanceof Order || !($orderItem = OrderItem::get($item->id)) instanceof OrderItem)
-					{
-						$orderItem = OrderItem::create($order, $product, $unitPrice, $qtyOrdered, $totalPrice, 0, null, $itemDescription);
-					}
-					else {
-						$orderItem->setActive(intval($item->active))
-							->setProduct($product)
-							->setUnitPrice($unitPrice)
-							->setQtyOrdered($qtyOrdered)
-							->setTotalPrice($totalPrice)
-							->setItemDescription($itemDescription)
-							->save();
-						SellingItem::deleteByCriteria('orderItemId = ?', array($orderItem->getId())); //DELETING ALL SERIAL NUMBER BEFORE ADDING
-					}
-				} else {
-					if($orderCloneFrom instanceof Order)
-					{
-						continue;
-					}
-					elseif(($orderItem = OrderItem::get($item->id)) instanceof OrderItem) {
-						$orderItem->setActive(false)->save();
-					}
-				}
-				if(isset($item->serials) && count($item->serials) > 0){
-					foreach($item->serials as $serialNo)
-						$orderItem->addSellingItem($serialNo)
-							->save();
-				}
-				if($shipped === true) {
-					$orderItem->setIsPicked(true)
-						->save();
-				}
-			}
 			if($shipped === true) {
 				$order->setStatus(OrderStatus::get(OrderStatus::ID_SHIPPED));
 			}

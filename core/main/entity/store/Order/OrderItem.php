@@ -355,8 +355,8 @@ class OrderItem extends BaseEntityAbstract
 		$array = $extra;
 	    if(!$this->isJsonLoaded($reset))
 	    {
-	    	$array['product'] = $this->getProduct()->getJson();
-	    	$array['order'] = $this->getOrder()->getJson();
+	    	$array['product'] = $this->getProduct() instanceof Product ? $this->getProduct()->getJson() : null;
+	    	$array['order'] = $this->getOrder() instanceof Order ? $this->getOrder()->getJson() : null;
 	    	$array['sellingitems'] = array_map(create_function('$a', 'return $a->getJson();'), $this->getSellingItems());
 	    }
 	    return parent::getJson($array, $reset);
@@ -389,7 +389,7 @@ class OrderItem extends BaseEntityAbstract
 	 */
 	public function getSellingItems($serialNo = '', $description = '', $activeOnly = true, $pageNo = null, $pageSize = DaoQuery::DEFAUTL_PAGE_SIZE, $orderBy = array(), &$stats = array())
 	{
-		return SellingItem::getSellingItems($this, $serialNo, $description, $this->getOrder(), $this->getProduct(), $activeOnly, $pageNo, $pageSize, $orderBy, $stats);
+		return SellingItem::getSellingItems($this, $serialNo, $description, null, null, $activeOnly, $pageNo, $pageSize, $orderBy, $stats);
 	}
 	/**
 	 * Getter for unitCost
@@ -459,7 +459,7 @@ class OrderItem extends BaseEntityAbstract
 			if(self::countByCriteria('id = ? and isPicked != ?', array($this->getId(), $this->getIsPicked())) > 0) {
 				$kitCount = ($kitCount === 0 ? SellingItem::countByCriteria('orderItemId = ? and kitId is not null', array($this->getId())) : $kitCount);
 				if(intval($product->getIsKit()) === 1 && intval($kitCount) !== intval($this->getQtyOrdered()))
-					throw new EntityException($this->getQtyOrdered() . ' Kit(s) needs to be scanned to this OrderItem(ID=' . $this->getId() . ') before it can be marked as PICKED, but got:' . $kitCount);
+					throw new EntityException($this->getQtyOrdered() . ' Kit(s) needs to be scanned to this OrderItem(SKU=' . $this->getProduct()->getSku() . ', unitPrice=' . StringUtilsAbstract::getCurrency($this->getUnitPrice()) . ', qty=' . $this->getQtyOrdered() . ') before it can be marked as PICKED, but got:' . $kitCount);
 				//we are picking this product
 				if(intval($this->getIsPicked()) === 1) {
 					$product->picked($this->getQtyOrdered(), '', $this);

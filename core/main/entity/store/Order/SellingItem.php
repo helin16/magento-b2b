@@ -362,6 +362,7 @@ class SellingItem extends BaseEntityAbstract
 		}
 		if(count($where) === 0)
 			return SellingItem::getAll($activeOnly, $pageNo, $pageSize, $orderBy, $stats);
-		return $results =  SellingItem::getAllByCriteria(implode(' AND ', $where), $params, $activeOnly, $pageNo, $pageSize, $orderBy, $stats);
+		$results =  SellingItem::getAllByCriteria(implode(' AND ', $where), $params, $activeOnly, $pageNo, $pageSize, $orderBy, $stats);
+		return $results;
 	}
 }
