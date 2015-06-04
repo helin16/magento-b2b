@@ -416,7 +416,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					})
 				});
 		}
-		tmp.address = (tmp.me._order && tmp.me._order.address ? tmp.me._order.address : ttmp.customer.address);
+		tmp.address = (tmp.me._order && tmp.me._order.address ? tmp.me._order.address : tmp.customer.address);
 		tmp.newDiv = new Element('div', {'class': 'panel customer-info-div'})
 			.insert({'bottom': new Element('div', {'class': 'panel-heading'})
 				.insert({'bottom': new Element('div', {'class': 'row'})
