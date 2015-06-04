@@ -102,6 +102,7 @@ Abstract class AccessControl
 			case Role::ID_PURCHASING:
 			case Role::ID_WAREHOUSE:
 			case Role::ID_WORKSHOP:
+			case Role::ID_ACCOUNTING:
 				{
 					return true;
 				}
