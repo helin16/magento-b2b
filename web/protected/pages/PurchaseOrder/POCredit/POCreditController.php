@@ -55,7 +55,7 @@ class POCreditController extends POController
 			$supplier = Supplier::get(trim($param->CallbackParameter->supplier->id));
 			if(!$supplier instanceof Supplier)
 				throw new Exception('Invalid Supplier passed in!');
-	
+
 			$supplierContactName = trim($param->CallbackParameter->supplier->contactName);
 			$supplierContactNo = trim($param->CallbackParameter->supplier->contactNo);
 			$supplierEmail = trim($param->CallbackParameter->supplier->email);
@@ -66,7 +66,7 @@ class POCreditController extends POController
 			if(!empty($supplierEmail) && $supplierEmail !== $supplier->getEmail())
 				$supplier->setEmail($supplierEmail);
 			$supplier->save();
-	
+
 			$purchaseOrder = PurchaseOrder::create(
 					$supplier,
 					trim($param->CallbackParameter->supplierRefNum),
@@ -83,7 +83,7 @@ class POCreditController extends POController
 			foreach ($param->CallbackParameter->items as $item) {
 				if(!($product = Product::get(trim($item->productId))) instanceof Product)
 					throw new Exception('Invalid Product passed in!');
-				$purchaseOrder->addItem($product, StringUtilsAbstract::getValueFromCurrency(trim($item->unitPrice)), intval(trim($item->qtyOrdered)));
+				$purchaseOrder->addItem($product, StringUtilsAbstract::getValueFromCurrency(trim($item->unitPrice)), 0 - abs(intval(trim($item->qtyOrdered))));
 			};
 			if($param->CallbackParameter->submitToSupplier === true) {
 				$purchaseOrder->setStatus( PurchaseOrder::STATUS_ORDERED );

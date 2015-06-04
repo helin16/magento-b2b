@@ -546,7 +546,7 @@ class PurchaseOrder extends BaseEntityAbstract
 			}
 		}
 		if($this->getFromPO() instanceof PurchaseOrder && intval($this->getIsCredit()) !== 1)
-			throw new Exception('You can onlye set the From PO field, when this purchase order is for a credit');
+			throw new Exception('You can only set the From PO field, when this purchase order is for a credit');
 	}
 	/**
 	 * (non-PHPdoc)
