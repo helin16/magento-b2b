@@ -231,7 +231,7 @@ class SellingItem extends BaseEntityAbstract
 			if(!$this->getKit() instanceof Kit)
 				throw new Exception('The Product(SKU: ' . $this->getProduct()->getSku() . ') is a KIT, but no valid Kit barcode provided(Provided: ' . $this->getSerialNo() . ').');
 			if($this->getOrderItem()->getOrder() instanceof Order) {
-				$where = array('kitId = :kitId and orderId = :orderId');
+				$where = array('kitId = :kitId and orderId = :orderId and active = 1');
 				$params = array('kitId' => $this->getKit()->getId(), 'orderId' => $this->getOrderItem()->getOrder()->getId());
 				if(($id = trim($this->getId())) !== '') {
 					$where[] = 'id != :id';

@@ -263,26 +263,27 @@ class OrderController extends BPCPageAbstract
 					}
 					else {
 						$orderItem->setActive(intval($item->active))
-						->setProduct($product)
-						->setUnitPrice($unitPrice)
-						->setQtyOrdered($qtyOrdered)
-						->setTotalPrice($totalPrice)
-						->setItemDescription($itemDescription)
-						->save();
-						foreach(SellingItem::getAllByCriteria('orderItemId = ?', array($orderItem->getId())) as $sellingItem) { //DELETING ALL SERIAL NUMBER BEFORE ADDING
-							$sellingItem->setActive(false)
+							->setProduct($product)
+							->setUnitPrice($unitPrice)
+							->setQtyOrdered($qtyOrdered)
+							->setTotalPrice($totalPrice)
+							->setItemDescription($itemDescription)
 							->save();
+						$existingSellingItems = SellingItem::getAllByCriteria('orderItemId = ?', array($orderItem->getId()));
+						foreach($existingSellingItems as $sellingItem) { //DELETING ALL SERIAL NUMBER BEFORE ADDING
+							$sellingItem->setActive(false)
+								->save();
 						}
 					}
 				} else {
-					if($orderCloneFrom instanceof Order)
-					{
+					if($orderCloneFrom instanceof Order) {
 						continue;
 					}
 					elseif(($orderItem = OrderItem::get($item->id)) instanceof OrderItem) {
 						$orderItem->setActive(false)->save();
 					}
 				}
+
 				if(isset($item->serials) && count($item->serials) > 0){
 					foreach($item->serials as $serialNo)
 						$orderItem->addSellingItem($serialNo)
@@ -338,13 +339,13 @@ class OrderController extends BPCPageAbstract
 			$results['item'] = $order->getJson();
 			if($printItAfterSave === true)
 				$results['printURL'] = '/print/order/' . $order->getId() . '.html?pdf=1';
-			$results['redirectURL'] = '/order/'. $order->getId() . '.html?' . $_SERVER['QUERY_STRING'];
+			$results['redirectURL'] = '/order/'. $order->getId() . '.html' . (trim($_SERVER['QUERY_STRING']) === '' ? '' : '?' . $_SERVER['QUERY_STRING']);
 			Dao::commitTransaction();
 		}
 		catch(Exception $ex)
 		{
 			Dao::rollbackTransaction();
-			$errors[] = $ex->getMessage();
+			$errors[] = $ex->getMessage() . '<pre>' . $ex->getTraceAsString() . '</pre>';
 		}
 		$param->ResponseData = StringUtilsAbstract::getJson($results, $errors);
 	}

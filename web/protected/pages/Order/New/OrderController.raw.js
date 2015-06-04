@@ -548,6 +548,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				.removeClassName('col-xs-6')
 				.addClassName('col-xs-4')
 				.insert({'before': new Element(tmp.tag, {'class': 'productSku col-xs-2'})
+					.insert({'bottom': !(orderItem.product && orderItem.product.isKit && orderItem.product.isKit === true) ? '' : new Element('abbr', {'class': 'text-danger initialism', 'title': 'This product a kit'}).setStyle('margin-right: 4px;').update( new Element('i', {'class': 'glyphicon glyphicon-wrench'}) ) })
 					.insert({'bottom': new Element(orderItem.product.id ? 'a' : 'span', {'href': 'javascript: void(0);'})
 						.update(orderItem.product.sku)
 						.observe('click', function(event){
@@ -661,7 +662,8 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					.writeAttribute('colspan', false)
 					.update(
 						new Element('a', {'href': 'javascript: void(0);'})
-							.update(product.sku)
+							.insert({'bottom': !(product.isKit && product.isKit === true) ? '' : new Element('abbr', {'class': 'text-danger initialism', 'title': 'This product a kit'}).setStyle('margin-right: 4px;').update( new Element('i', {'class': 'glyphicon glyphicon-wrench'}) ) })
+							.insert({'bottom': new Element('span').update(product.sku) })
 							.observe('click', function(event){
 								Event.stop(event);
 								$productId = product.id;

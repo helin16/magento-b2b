@@ -518,9 +518,12 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			.insert({'bottom': new Element(tmp.tag, {'class': 'productName'})
 				.insert({'bottom': (tmp.isTitle === true ? orderItem.product.name :
 						new Element('div')
-							.insert({'bottom': new Element('div').update(new Element('a', {'href': '/product/' + orderItem.product.id + '.html', 'target': '_BLANK'}).update(
-									new Element('strong', {'class': 'text-info'}).update('SKU: ' + orderItem.product.sku)
-							)) })
+							.insert({'bottom': new Element('div')
+								.insert({'bottom': !(orderItem.product && orderItem.product.isKit && orderItem.product.isKit === true) ? '' : new Element('abbr', {'class': 'text-danger initialism', 'title': 'This product a kit'}).setStyle('margin-right: 4px;').update( new Element('i', {'class': 'glyphicon glyphicon-wrench'}) ) })
+								.insert({'bottom': new Element('a', {'href': '/product/' + orderItem.product.id + '.html', 'target': '_BLANK'}).update(
+									new Element('strong', {'class': 'text-info'}).update(orderItem.product.sku)
+								) })
+							})
 							.insert({'bottom': tmp.itemDescriptionEl = new Element('em').update(new Element('small').update(orderItem.itemDescription)) })
 				) })
 			})
