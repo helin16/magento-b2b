@@ -148,15 +148,25 @@ class KitComponent extends BaseEntityAbstract
 			throw new EntityException('You have to provide a product to install into a kit');
 		if(intval($this->getQty()) === 0)
 			throw new EntityException('You can NOT install a component into a kit with quantity: 0');
-		if(ceil($this->getUnitCost()) === 0)
+		if(intval(ceil($this->getUnitCost())) === 0)
 			$this->setUnitCost($this->getComponent()->getUnitCost());
-		if(trim($this->getUnitPrice()) === '')
-			$this->setUnitPrice($this->getComponent()->getUnitPrice());
+		if(trim($this->getUnitPrice()) === '') {
+			$unitPrices = $this->getComponent()->getPrices();
+			$this->setUnitPrice(count($unitPrices) === 0 ? 0 : $unitPrices[0]->getPrice());
+		}
 
 		if(trim($this->getId()) === '') { //when we are creating a new one
-			$this->getComponent()->installedIntoKit($this->getUnitCost(), $this->getQty(), $this);
+			$this->getComponent()->installedIntoKit($this->getUnitCost(), $this->getQty(), 'KITCOMPONENT CREATED', $this->getKit());
+			$this->getKit()->addComment('A KitComponent(SKU=' . $this->getComponent()->getSku() . ', UnitPrice=' . StringUtilsAbstract::getCurrency($this->getUnitPrice()) . ', qty=' . $this->getQty() . ', UnitCost=' . StringUtilsAbstract::getCurrency($this->getUnitCost()) . ') has been ADDED INTO  this kit (' . $this->getKit()->getBarcode() . ')', Comments::TYPE_WORKSHOP);
 		} else if(intval($this->getActive()) === 0 && Self::countByCriteria('id = ? and active = 1', array($this->getId())) > 0) { //trying to deactivate the kitcomponent
-				$this->getComponent()->installedIntoKit($this->getUnitCost(), 0 - $this->getQty(), $this);
+				$this->getComponent()->installedIntoKit(0 - $this->getQty(), $this->getUnitCost(), 'DEACTIVATED KITCOMPONENT',  $this);
+				$this->getKit()->addComment('A KitComponent(SKU=' . $this->getComponent()->getSku() . ', UnitPrice=' . StringUtilsAbstract::getCurrency($this->getUnitPrice()) . ', qty=' . $this->getQty() . ', UnitCost=' . StringUtilsAbstract::getCurrency($this->getUnitCost()) . ') has been REMOVED FROM this kit (' . $this->getKit()->getBarcode() . ')', Comments::TYPE_WORKSHOP);
+		} else if(intval($this->getActive()) === 1) {
+			$orignal = self::get($this->getId());
+			if(intval($orignal->getQty()) !== intval($this->getQty())) {
+				$this->getComponent()->installedIntoKit(($this->getQty() - $orignal->getQty()), $this->getUnitCost(), 'KITCOMPONENT CHANGED QTY', $this);
+				$this->getKit()->addComment('A KitComponent(SKU=' . $this->getComponent()->getSku() . ', UnitPrice=' . StringUtilsAbstract::getCurrency($this->getUnitPrice()) . ', qty=' . $this->getQty() . ', UnitCost=' . StringUtilsAbstract::getCurrency($this->getUnitCost()) . ') has been QTY CHANGED( ' . $orignal->getQty() . ' => ' . $this->getQty() .' ) in kit (' . $this->getKit()->getBarcode() . ')', Comments::TYPE_WORKSHOP);
+			}
 		} else {
 			throw new EntityException('CANT update KitComponents once created.');
 		}
@@ -168,8 +178,7 @@ class KitComponent extends BaseEntityAbstract
 	public function postSave()
 	{
 		$this->getKit()
-			->reCalPriceNCost()
-			->addComment('A KitComponent(SKU=' . $this->getComponent()->getSku() . ', UnitPrice=' . StringUtilsAbstract::getCurrency($this->getUnitPrice()) . ', qty=' . $this->getQty() . ', UnitCost=' . StringUtilsAbstract::getCurrency($this->getUnitCost()) . ') has been ' . (intval($this->getActive()) === 1 ? 'ADDED INTO' : 'REMOVED FROM') . ' this kit (' . $this->getKit()->getBarcode() . ')', Comments::TYPE_WORKSHOP);
+			->reCalPriceNCost();
 	}
 	/**
 	 * (non-PHPdoc)

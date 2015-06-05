@@ -1202,14 +1202,14 @@ class Product extends InfoEntityAbstract
 	public function installedIntoKit($qty, $unitCost, $comments, BaseEntityAbstract $entity = null)
 	{
 		$kitComponent = $entity instanceof KitComponent ? $entity : null;
-		$kit = ($kitComponent instanceof KitComponent ? $kitComponent->getKit() : null);
+		$kit = ($kitComponent instanceof KitComponent ? $kitComponent->getKit() : ($entity instanceof Kit ? $entity : null));
 		$task = ($kit instanceof Kit ? $kit->getTask() : null);
 		return $this->setStockOnHand(($originalStockOnHand = $this->getStockOnHand()) - $qty)
 			->setTotalOnHandValue(($originalTotalOnHandValue = $this->getTotalOnHandValue()) - ($qty * $unitCost))
 			->setStockInParts(($originalStockInParts = $this->getStockInParts()) + $qty)
 			->setTotalInPartsValue(($originalTotalInPartValue = $this->getTotalInPartsValue()) + ($qty * $unitCost))
 			->snapshotQty($entity instanceof BaseEntityAbstract ? $entity : $this, ProductQtyLog::TYPE_WORKSHOP,
-					'Stock ' . (intval($qty) <= 0 ? 'uninstalled' : 'installed') . ($kit instanceof Kit ? ' into Kit[' . $kit->getBarcode() . ']' : '') . ($task instanceof Task ? ' generated from Task[' . $task->getTask() . ']' : '') . (trim($comments) === '' ? '.' : ': ' . $comments))
+					'Stock ' . (intval($qty) <= 0 ? 'uninstalled' : 'installed') . ($kit instanceof Kit ? ' into Kit [' . $kit->getBarcode() . ']' : '') . ($task instanceof Task ? ' generated from Task [' . $task->getTask() . ']' : '') . (trim($comments) === '' ? '.' : ': ' . $comments))
 			->save()
 			->addLog('StockOnHand(' . $originalStockOnHand . ' => ' . $this->getStockOnHand() . '), TotalOnHandValue(' . $originalTotalOnHandValue . ' => ' . $this->getTotalOnHandValue() . '), StockInParts(' . $originalStockInParts . ' => ' . $this->getStockInParts() . '), TotalInPartsValue(' . $originalTotalInPartValue . ' => ' . $this->getTotalInPartsValue() . ')' . (trim($comments) === '' ? '.' : ': ' . $comments),
 					Log::TYPE_SYSTEM,
