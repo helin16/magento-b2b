@@ -65,11 +65,12 @@ class ListController extends BPCPageAbstract
 					break;
 				}
 				case 'payments_daily': {
-					ItemExport_Magento::setStartNEndDate(new UDate(trim($param->CallbackParameter->date_from)), new UDate(trim($param->CallbackParameter->date_to)));
+					PaymentExport_Xero::setStartNEndDate(new UDate(trim($param->CallbackParameter->date_from)), new UDate(trim($param->CallbackParameter->date_to)));
 					$asset = PaymentExport_Xero::run(false, false);
 					break;
 				}
 				case 'inventory_list': {
+					ItemExport_Xero::setStartNEndDate(new UDate(trim($param->CallbackParameter->date_from)), new UDate(trim($param->CallbackParameter->date_to)));
 					$asset = ItemExport_Xero::run(false, true);
 					break;
 				}

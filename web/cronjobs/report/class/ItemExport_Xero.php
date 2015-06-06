@@ -16,7 +16,7 @@ class ItemExport_Xero extends ExportAbstract
 		foreach(Product::getAll(true) as $product)
 		{
 			$logs = ProductQtyLog::getAllByCriteria('productId = ? and created <= ?', array($product->getId(), trim($toDate)), true, 1, 1, array('id' => 'desc'));
-			$log = count($logs) === 0 ? null : $logs[0];
+			$log = count($logs) > 0 ? $logs[0] : null;
 			$myobCodes = ProductCode::getCodes($product, $myobCodeType, true, 1, 1);
 			$return[] = array(
 				'sku' => $product->getSku()
