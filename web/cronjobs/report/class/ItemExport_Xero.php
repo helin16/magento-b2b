@@ -4,11 +4,19 @@ class ItemExport_Xero extends ExportAbstract
 {
 	protected static function _getData()
 	{
+		if(count(self::$_dateRange) === 0) {
+			$toDate = UDate::maxDate();
+		} else {
+			$toDate = self::$_dateRange['end'];
+		}
+		
+		
 		$return = array();
 		$myobCodeType = ProductCodeType::get(ProductCodeType::ID_MYOB);
-		foreach(Product::getAll(false) as $product)
+		foreach(Product::getAll(true) as $product)
 		{
-//			$product = new Product();
+			$logs = ProductQtyLog::getAllByCriteria('productId = ? and created <= ?', array($product->getId(), trim($toDate)), true, 1, 1, array('id' => 'desc'));
+			$log = count($logs) === 0 ? null : $logs[0];
 			$myobCodes = ProductCode::getCodes($product, $myobCodeType, true, 1, 1);
 			$return[] = array(
 				'sku' => $product->getSku()
@@ -16,14 +24,14 @@ class ItemExport_Xero extends ExportAbstract
 				,'assetAccNo'=> $product->getAssetAccNo()
 				,'revenueAccNo'=> $product->getRevenueAccNo()
 				,'costAccNo'=> $product->getCostAccNo()
-				,'Stock On PO' => $product->getStockOnPO()
-				,'Stock On Order' => $product->getStockOnOrder()
-				,'Stock On Hand' => $product->getStockOnHand()
-				,'Total On Hand Value' => $product->getTotalOnHandValue()
-				,'Stock In Parts' => $product->getStockInParts()
-				,'Total In Parts Value' => $product->getTotalInPartsValue()
-				,'Stock In RMA' => $product->getStockInRMA()
-				,'Total RMA Value' => $product->getTotalRMAValue()
+				,'Stock On PO' => $log instanceof ProductQtyLog ? $log->getStockOnPO() : $product->getStockOnPO()
+				,'Stock On Order' =>  $log instanceof ProductQtyLog ? $log->getStockOnOrder() : $product->getStockOnOrder()
+				,'Stock On Hand' => $log instanceof ProductQtyLog ? $log->getStockOnHand() : $product->getStockOnHand()
+				,'Total On Hand Value' => $log instanceof ProductQtyLog ? $log->getTotalOnHandValue() : $product->getTotalOnHandValue()
+				,'Stock In Parts' =>  $log instanceof ProductQtyLog ? $log->getStockInParts() : $product->getStockInParts()
+				,'Total In Parts Value' => $log instanceof ProductQtyLog ? $log->getTotalInPartsValue() : $product->getTotalInPartsValue()
+				,'Stock In RMA' => $log instanceof ProductQtyLog ? $log->getStockInRMA() : $product->getStockInRMA()
+				,'Total RMA Value' => $log instanceof ProductQtyLog ? $log->getTotalRMAValue() : $product->getTotalRMAValue()
 				,'active' => intval($product->getActive()) === 1 ? 'Y' : 'N'
 				,'MYOB' => count($myobCodes) > 0 ? $myobCodes[0]->getCode() : ''
 			);
