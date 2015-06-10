@@ -76,6 +76,7 @@ class OpenInvoiceExport extends ExportAbstract
 				,'Invoice Date' => $order->getInvDate()->setTimeZone('Australia/Melbourne')->__toString()
 				,'Order No.'=> $order->getOrderNo()
 				,'Order Date'=> $order->getOrderDate()->setTimeZone('Australia/Melbourne')->__toString()
+				,'PO No.' => $order->getPONo()
 				,'Customer Name' => $customer->getName()
 				,'Customer Ph.'=> $customer->getContactNo()
 				,'Customer Email'=> $customer->getEmail()
