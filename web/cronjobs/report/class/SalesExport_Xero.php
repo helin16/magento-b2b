@@ -78,7 +78,7 @@ class SalesExport_Xero extends ExportAbstract
 				,'POPostalCode'=> ''
 				,'POCountry'=> ''
 				,'InvoiceNumber' => $order->getInvNo()
-				,'Reference'=> $order->getOrderNo()
+				,'Reference'=> (intval($order->getIsFromB2B()) === 1 ? $order->getOrderNo() :  $order->getPONo()) //changed for XiXi, she need the customer PO for any instore orders
 				,'InvoiceDate' => $order->getInvDate()->setTimeZone('Australia/Melbourne')->__toString()
 				,'DueDate' => $order->getInvDate()->modify('+' . self::getTerms($customer) . ' day')->setTimeZone('Australia/Melbourne')->__toString()
 			);
