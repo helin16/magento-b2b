@@ -350,32 +350,40 @@ POCreateJs.prototype = Object.extend(new BPCPageJs(), {
 						})
 					})
 					.insert({'bottom': new Element('div', {'class': 'row', 'style': (product.minProductPrice || product.lastSupplierPrice || product.minSupplierPrice) ? 'height: 2px; background-color: brown;' : 'display:none'}).update('&nbsp;') })
-					.insert({'bottom': new Element('div', {'class': 'row small'})
-						.insert({'bottom': new Element('span', {'class': 'col-xs-4 btn btn-link btn-xs', 'style': product.minProductPrice ? 'text-align: left': 'display:none'}).update('Minimum product price: ')
+					.insert({'bottom': new Element('div', {'class': 'row'})
+						.insert({'bottom': new Element('span', {'class': 'btn btn-link btn-xs', 'style': product.minProductPrice ? 'text-align: left': 'display:none'}).update('Product Min: ')
 							.insert({'bottom': new Element('strong').update(tmp.me.getCurrency(product.minProductPrice)) })
-						})
-						.observe('click', function(event) {
-							Event.stop(event);
-							tmp.me._openPOPage(product.minProductPriceId);
-						})
-
-						.insert({'bottom': new Element('span', {'class': 'col-xs-4 btn btn-link btn-xs', 'style': product.lastSupplierPrice ? 'text-align: left': 'display:none'}).update('Last supplier price: ')
-							.insert({'bottom': new Element('strong').update(tmp.me.getCurrency(product.lastSupplierPrice)) })
-						})
-						.observe('click', function(event) {
-							Event.stop(event);
-							tmp.me._openPOPage(product.lastSupplierPriceId);
+							.observe('click', function(event) {
+								Event.stop(event);
+								tmp.me._openPOPage(product.minProductPriceId);
+							})
 						})
 
-						.insert({'bottom': new Element('span', {'class': 'col-xs-4 btn btn-link btn-xs', 'style': product.minSupplierPrice ? 'text-align: left': 'display:none'}).update('Minimum supplier price: ')
+						.insert({'bottom': new Element('span', {'class': 'btn btn-link btn-xs', 'style': product.minSupplierPrice ? 'text-align: left': 'display:none'}).update('Supplier Min: ')
 							.insert({'bottom': new Element('strong').update(tmp.me.getCurrency(product.minSupplierPrice)) })
+							.observe('click', function(event) {
+								Event.stop(event);
+								tmp.me._openPOPage(product.minSupplierPriceId);
+							})
 						})
-						.observe('click', function(event) {
-							Event.stop(event);
-							tmp.me._openPOPage(product.minSupplierPriceId);
+						
+						.insert({'bottom': new Element('span', {'class': 'btn btn-link btn-xs', 'style': product.lastSupplierPrice ? 'text-align: left': 'display:none'}).update('Supplier Last: ')
+							.insert({'bottom': new Element('strong').update(tmp.me.getCurrency(product.lastSupplierPrice)) })
+							.observe('click', function(event) {
+								Event.stop(event);
+								tmp.me._openPOPage(product.lastSupplierPriceId);
+							})
 						})
-					})
+						
+						.insert({'bottom': new Element('span', {'class': 'btn btn-xs pull-right', 'title': 'Stock on Hand'}).setStyle('text-align: left;').update('SoH: ')
+							.insert({'bottom': new Element('strong').update(product.stockOnHand) })
+						})
+						
+						.insert({'bottom': new Element('span', {'class': 'btn btn-xs pull-right', 'title': 'Stock on PO'}).setStyle('text-align: left;').update('SoPO: ')
+							.insert({'bottom': new Element('strong').update(product.stockOnPO) })
+						})
 
+					})
 				})
 			})
 			.observe('click', function(){
