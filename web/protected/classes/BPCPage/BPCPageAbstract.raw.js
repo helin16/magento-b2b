@@ -299,6 +299,16 @@ BPCPageJs.prototype = {
 		return tmp.me;
 	}
 	/**
+	 * open url in new tab
+	 */
+	,openInNewTab: function(url) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.win = window.open(url, '_blank');
+		tmp.win.focus();
+		return tmp.me;
+	}
+	/**
 	 * geting
 	 */
 	,getUrlParam: function (name) {
