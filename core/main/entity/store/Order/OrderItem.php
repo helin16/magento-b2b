@@ -436,6 +436,27 @@ class OrderItem extends BaseEntityAbstract
 		return $this;
 	}
 	/**
+	 * Reset the CostNMargin from all the Kits in Selling Items
+	 * 
+	 * @return OrderItem
+	 */
+	public function resetCostNMarginFromKits()
+	{
+		if(!$this->getProduct() instanceof Product || intval($this->getProduct()->getIsKit()) !== 1)
+			return $this;
+		$totalKitsCost = 0;
+		$totalNoOfKits = 0;
+		foreach(SellingItem::getAllByCriteria('orderItemId = ?', array($this->getId())) as $sellingItem) {
+			if(!($kit = $this->getKit()) instanceof Kit)
+				continue;
+			$totalKitsCost = $totalKitsCost + $kit->getCost();
+			$totalNoOfKits++;
+		}
+		$this->setUnitCost(intval($totalNoOfKits) === 0 ? 0 : ($this->getProduct()->getUnitCost()) / $totalNoOfKits )
+			->reCalMargin();
+		return $this;
+	}
+	/**
 	 * (non-PHPdoc)
 	 * @see BaseEntityAbstract::preSave()
 	 */

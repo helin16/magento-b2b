@@ -251,9 +251,11 @@ class SellingItem extends BaseEntityAbstract
 		if($this->getOrderItem() instanceof OrderItem) {
 			if(count($serialItems = self::getAllByCriteria('orderItemId = ?', array($this->getOrderItem()->getId()))) > 0) {
 				$totalUnitCostForOrderItem = 0;
+				$totalNoOfKits = 0;
 				foreach($serialItems as $serialItem) {
 					if(($kit = $serialItem->getKit()) instanceof Kit) {
 						$totalUnitCostForOrderItem  = $totalUnitCostForOrderItem + $kit->getCost();
+						$totalNoOfKits = $totalNoOfKits + 1;
 						if(!$kit->getSoldOnOrder() instanceof Order)
 							$kit->setSoldOnOrder($this->getOrderItem()->getOrder());
 						if(!$kit->getSoldToCustomer() instanceof Customer)
@@ -265,7 +267,7 @@ class SellingItem extends BaseEntityAbstract
 						$kit->save();
 					}
 				}
-				$this->getOrderItem()->setUnitCost($totalUnitCostForOrderItem / (count($serialItems)))
+				$this->getOrderItem()->setUnitCost(intval($totalNoOfKits) === 0 ? 0 : ($totalUnitCostForOrderItem / $totalNoOfKits))
 					->reCalMargin();
 			}
 		}
