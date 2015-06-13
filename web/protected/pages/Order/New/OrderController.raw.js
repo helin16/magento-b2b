@@ -199,6 +199,8 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					if(!tmp.result || !tmp.result.item)
 						return;
 					tmp.me._order = tmp.me._item = tmp.result.item;
+					console.log(data);
+					console.log(tmp.result);
 					tmp.redirectURL = tmp.result.redirectURL;
 					tmp.modalBoxPanel.insert({'bottom': new Element('input', {'window': 'redirec-url', 'type': 'hidden', 'value': tmp.redirectURL}) });
 					$extraMsg = '';
@@ -209,7 +211,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					}
 					tmp.modalBoxTitlePanel.update('<strong class="text-success">Success!</strong>');
 					tmp.modalBoxBodyPanel.update('<h4 class="text-success">Saved Successfully for ' + tmp.result.item.type + ': ' + tmp.result.item.orderNo + '</h4><div><a class="btn btn-primary" href="javascript: void(0)" onclick="pageJs.hideModalBox();"> click here to view it</a></div>');
-					if(!data.orderId && tmp.me._order.id)
+					if(tmp.redirectURL || (!data.orderId && tmp.me._order.id) )
 						tmp.me._redirectOrder();
 				} catch(e) {
 					tmp.modalBoxTitlePanel.update('<h4 class="text-danger">Error:</h4>');
