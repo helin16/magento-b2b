@@ -328,4 +328,15 @@ BPCPageJs.prototype = {
 	        results = regex.exec(location.search);
 	    return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
 	}
+	/**
+	 * open url in new tab
+	 */
+	,openInNewTab: function(url) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.win = window.open(url, '_blank');
+		tmp.win.focus();
+		
+		return this;
+	}
 };
