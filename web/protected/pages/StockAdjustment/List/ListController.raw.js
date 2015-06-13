@@ -50,7 +50,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				$(this).down('input').select();
 			})
 			.observe('change', function(event){
-				$(this).down('input').value = tmp.me.getCurrency($(this).down('input').value);
+				$(this).down('input').value = tmp.me.getCurrency(tmp.me.getValueFromCurrency($(this).down('input').value));
 			});
 		tmp.stockOnOrderEl = new Element('div', {'class': 'form-group'} )
 			.insert({'bottom': new Element('input', {'class': 'form-control', 'name': 'Stock on Order', 'save-item': 'stockOnOrder', 'placeholder': 'Stock On Order', 'type': 'number', 'value': orderItem.product.stockOnOrder ? orderItem.product.stockOnOrder : 0}) })
@@ -103,7 +103,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				$(this).down('input').select();
 			})
 			.observe('change', function(event){
-				$(this).down('input').value = tmp.me.getCurrency($(this).down('input').value);
+				$(this).down('input').value = tmp.me.getCurrency(tmp.me.getValueFromCurrency($(this).down('input').value));
 			});
 		tmp.row = new Element((tmp.isTitle === true ? 'strong' : 'div'), {'class': 'item_row list-group-item'})
 			.store('data', orderItem.product)
