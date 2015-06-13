@@ -719,7 +719,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 						.insert({'bottom': new Element('span', {'class': 'pull-right'}).update('Average Cost Ex GST: ' + ((tmp.item.totalOnHandValue != 0 && tmp.item.stockOnHand != 0) ? tmp.me.getCurrency(tmp.item.totalOnHandValue / tmp.item.stockOnHand) : 'N/A'))})
 					})
 					.observe('click', function() {
-						$(this).up('.panel').down('.panel-body').toggle();
+						tmp.me.openInNewTab('/productqtylog.html?productid=' + product.id);
 					})
 				})
 				.insert({'bottom': tmp.uploadDiv = new Element('span', {'class': 'pull-right new-btn-panel'}) })
