@@ -275,6 +275,7 @@ class OrderController extends BPCPageAbstract
 								->save();
 						}
 					}
+					$orderItem = OrderItem::get($orderItem->getId())->reCalMarginFromProduct()->resetCostNMarginFromKits()->save();
 				} else {
 					if($orderCloneFrom instanceof Order) {
 						continue;
@@ -287,7 +288,7 @@ class OrderController extends BPCPageAbstract
 				if(isset($item->serials) && count($item->serials) > 0){
 					foreach($item->serials as $serialNo)
 						$orderItem->addSellingItem($serialNo)
-						->save();
+							->save();
 				}
 				if($shipped === true) {
 					$orderItem->setIsPicked(true)
