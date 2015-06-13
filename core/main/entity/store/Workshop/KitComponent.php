@@ -156,7 +156,7 @@ class KitComponent extends BaseEntityAbstract
 		}
 
 		if(trim($this->getId()) === '') { //when we are creating a new one
-			$this->getComponent()->installedIntoKit($this->getUnitCost(), $this->getQty(), 'KITCOMPONENT CREATED', $this->getKit());
+			$this->getComponent()->installedIntoKit($this->getQty(), $this->getUnitCost(), 'KITCOMPONENT CREATED', $this->getKit());
 			$this->getKit()->addComment('A KitComponent(SKU=' . $this->getComponent()->getSku() . ', UnitPrice=' . StringUtilsAbstract::getCurrency($this->getUnitPrice()) . ', qty=' . $this->getQty() . ', UnitCost=' . StringUtilsAbstract::getCurrency($this->getUnitCost()) . ') has been ADDED INTO  this kit (' . $this->getKit()->getBarcode() . ')', Comments::TYPE_WORKSHOP);
 		} else if(intval($this->getActive()) === 0 && self::countByCriteria('id = ? and active = 1', array($this->getId())) > 0) { //trying to deactivate the kitcomponent
 				$this->getComponent()->installedIntoKit(0 - $this->getQty(), $this->getUnitCost(), 'DEACTIVATED KITCOMPONENT',  $this);
