@@ -275,7 +275,7 @@ class OrderController extends BPCPageAbstract
 								->save();
 						}
 					}
-					$orderItem = OrderItem::get($orderItem->getId())->reCalMarginFromProduct()->resetCostNMarginFromKits();
+					$orderItem = OrderItem::get($orderItem->getId())->reCalMarginFromProduct()->resetCostNMarginFromKits()->save();
 				} else {
 					if($orderCloneFrom instanceof Order) {
 						continue;

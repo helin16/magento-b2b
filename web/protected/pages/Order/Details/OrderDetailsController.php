@@ -194,6 +194,7 @@ class OrderDetailsController extends BPCPageAbstract
 						$orderItem->setEta('');
 						$allPicked = false;
 					}
+					$orderItem = OrderItem::get($orderItem->getId())->reCalMarginFromProduct()->resetCostNMarginFromKits();
 				}
 				$emailBody['productUpdate'] .= '</table>';
 				$commentString .= ($notifyCustomer === true ? ' [NOTIFICATION SENT TO CUSTOMER]' : '');
