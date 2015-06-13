@@ -360,7 +360,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 							tmp.me.hideModalBox();
 						})
 					})
-					.insert({'bottom': new Element('a', {'class': 'btn btn-primary pull-right', 'href': '/kit/new.html?clonekitid=' + tmp.me._item.id}).update('Yes. Create Another One') })
+					.insert({'bottom': new Element('a', {'class': 'btn btn-primary pull-right', 'href': '/kit/new.html?clonekitid=' + tmp.me._item.id + (tmp.me.getUrlParam('blanklayout') === '1' ? '&blanklayout=1' : '')}).update('Yes. Create Another One') })
 				});
 			}
 			tmp.me.showModalBox('<strong class="text-success">Success</strong>', tmp.newDiv, false, null, {
@@ -635,7 +635,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 				.insert({'bottom': new Element('div', {'class': 'col-md-2 col-md-offset-2'})
 					.insert({'bottom': (!tmp.me._item || !tmp.me._item.id) ? '' : new Element('div', {'class': 'row'})
 						.insert({'bottom': new Element('div', {'class': 'col-xs-6  text-right'})
-							.insert({'bottom': new Element('a', {'class': 'btn btn-sm btn-warning', 'href': '/kit/new.html?clonekitid=' + tmp.me._item.id})
+							.insert({'bottom': new Element('a', {'class': 'btn btn-sm btn-warning', 'href': '/kit/new.html?clonekitid=' + tmp.me._item.id + (tmp.me.getUrlParam('blanklayout') === '1' ? '&blanklayout=1' : '')})
 								.insert({'bottom': new Element('span').update('Clone me')	})
 							})
 						})
