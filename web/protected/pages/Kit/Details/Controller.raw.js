@@ -346,18 +346,36 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		tmp.me.saveItem(btn, tmp.data, function(data){
 			if(!data)
 				return;
-			tmp.me.showModalBox('<strong class="text-success">', '<h4 class="text-success">Kit has been saved successfully!</h4>');
-			tmp.me.refreshParentWindow(data.item);
 			tmp.me._item = data.item;
+			tmp.newDiv = new Element('div')
+				.insert({'bottom': new Element('h4').update('Kit has been ' + (data.createdFromNew ? 'created' : 'updated') + ' successfully!') });
+			if(data.createdFromNew === true) {
+				tmp.newDiv.insert({'bottom': new Element('div')
+					.insert({'bottom': new Element('strong').update('Do you want to create/clone another kit with same specs?') })
+				})
+				.insert({'bottom': new Element('div')
+					.insert({'bottom': new Element('div', {'class': 'btn btn-default'})
+						.update('No')
+						.observe('click', function(){
+							tmp.me.hideModalBox();
+						})
+					})
+					.insert({'bottom': new Element('a', {'class': 'btn btn-primary pull-right', 'href': '/kit/new.html?clonekitid=' + tmp.me._item.id}).update('Yes. Create Another One') })
+				});
+			}
+			tmp.me.showModalBox('<strong class="text-success">Success</strong>', tmp.newDiv, false, null, {
+				'hide.bs.modal': function() {
+					if(data.url && !data.url.blank()) {
+						window.location = data.url;
+					}
+				}
+			});
+			tmp.me.refreshParentWindow(data.item);
 			if(data.printUrl && !data.printUrl.blank()) {
 				tmp.printWind = window.open(data.printUrl, '_BLANK', 'width=800');
 				if(tmp.printWind) {
 					tmp.printWind.focus();
 				}
-			}
-			if(data.url && !data.url.blank()) {
-				window.location = data.url;
-				return;
 			}
 		});
 		return tmp.me;
@@ -382,7 +400,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
         if(tmp.formValidator.isValid() !== true)
         	return tmp.me;
 
-		tmp.productId = ((tmp.me._item.product && tmp.me._item.product.id ) ? tmp.me._item.product.id : $F($$('[save-panel="kit-product-id"]').first()));
+		tmp.productId = ((tmp.me._item.product && tmp.me._item.product.id ) ? tmp.me._item.product.id : (tmp.me._preSetData.cloneFromKit && tmp.me._preSetData.cloneFromKit.id ? tmp.me._preSetData.cloneFromKit.product.id : $F($$('[save-panel="kit-product-id"]').first())) );
 		if(tmp.productId.blank()) {
 			tmp.me.showModalBox('<strong class="text-danger">Error:</strong>', new Element('div')
 				.update(tmp.me.getAlertBox('', 'You need to provide a product for the kit.').addClassName('alert-danger'))
@@ -614,15 +632,23 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 							: 'Building New Kit'
 					) })
 				})
-				.insert({'bottom': new Element('div', {'class': 'col-md-2 col-md-offset-2 text-right'})
-					.insert({'bottom': (!tmp.me._item || !tmp.me._item.id) ? '' : new Element('a', {'class': 'btn btn-sm btn-primary', 'href': 'javascript:void(0)'})
-						.insert({'bottom': new Element('i', {'class': 'glyphicon glyphicon-print'})	})
-						.observe('click', function() {
-							tmp.printWind = window.open('/print/kit/' + tmp.me._item.id + '.html', '_blank', 'width=800');
-							if(tmp.printWind) {
-								tmp.printWind.focus();
-								tmp.printWind.print();
-							}
+				.insert({'bottom': new Element('div', {'class': 'col-md-2 col-md-offset-2'})
+					.insert({'bottom': (!tmp.me._item || !tmp.me._item.id) ? '' : new Element('div', {'class': 'row'})
+						.insert({'bottom': new Element('div', {'class': 'col-xs-6  text-right'})
+							.insert({'bottom': new Element('a', {'class': 'btn btn-sm btn-warning', 'href': '/kit/new.html?clonekitid=' + tmp.me._item.id})
+								.insert({'bottom': new Element('span').update('Clone me')	})
+							})
+						})
+						.insert({'bottom': new Element('div', {'class': 'col-xs-4'})
+							.insert({'bottom': new Element('a', {'class': 'btn btn-sm btn-primary'})
+								.insert({'bottom': new Element('i', {'class': 'glyphicon glyphicon-print'})	})
+								.observe('click', function() {
+									tmp.printWind = window.open('/print/kit/' + tmp.me._item.id + '.html?printlater=1', '_blank', 'width=800');
+									if(tmp.printWind) {
+										tmp.printWind.focus();
+									}
+								})
+							})
 						})
 					})
 				})
@@ -630,7 +656,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 			.insert({'bottom': new Element('div', {'class': 'row'})
 				.insert({'bottom': new Element('div', {'class': 'form-horizontal'})
 					.insert({'bottom':  tmp.me.getFormGroup(new Element('label').update(tmp.me._item.id ? 'Kit Product: ' : 'Building a kit as: ').addClassName('col-md-1 col-sm-2'),
-						new Element('div', {'class': 'col-md-11 col-sm-10 rm-form-control kit-product-div'}).update(tmp.me._item.id ? '' :
+						new Element('div', {'class': 'col-md-11 col-sm-10 rm-form-control kit-product-div'}).update((tmp.me._item.id || (tmp.me._preSetData && tmp.me._preSetData.cloneFromKit && tmp.me._preSetData.cloneFromKit.id) ) ? '' :
 							new Element('input', {'class': 'form-control select2 input-sm product-search', 'save-panel': 'kit-product-id', 'isKit': '1', 'onSelectFunc': '_selectKitProduct'})
 						)
 					) })
@@ -897,6 +923,14 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 			tmp.me._selectKitProduct(tmp.me._item.product);
 			if(tmp.me._item.components && tmp.me._item.components.size() > 0) {
 				tmp.me._item.components.each(function(component){
+					tmp.me._addNewRow(component, tmp.newTable);
+				});
+			}
+		} else if (tmp.me._preSetData.cloneFromKit && tmp.me._preSetData.cloneFromKit.id) {
+			tmp.me._selectKitProduct(tmp.me._preSetData.cloneFromKit.product);
+			if(tmp.me._preSetData.cloneFromKit.components && tmp.me._preSetData.cloneFromKit.components.size() > 0) {
+				tmp.me._preSetData.cloneFromKit.components.each(function(component){
+					delete component['id'];
 					tmp.me._addNewRow(component, tmp.newTable);
 				});
 			}

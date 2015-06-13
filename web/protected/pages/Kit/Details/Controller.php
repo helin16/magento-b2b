@@ -38,10 +38,12 @@ class Controller extends DetailsPageAbstract
 		$js = parent::_getEndJs();
 		$js .= "pageJs";
 		if(trim($this->Request['id']) === 'new') {
-			$task = null;
+			$task = $cloneKit =  null;
+			if(isset($_REQUEST['clonekitid']) && !($cloneKit = Kit::get(trim($_REQUEST['clonekitid']))) instanceof Kit)
+				die('Invalid Kit provided!');
 			if(isset($_REQUEST['taskid']) && !($task = Task::get(trim($_REQUEST['taskid']))) instanceof Task)
 				die('Invalid Task provided!');
-			$preSetData = array('task' => ($task instanceof Task ? $task->getJson() : array()) );
+			$preSetData = array('task' => ($task instanceof Task ? $task->getJson() : ($cloneKit instanceof Kit && $cloneKit->getTask() instanceof Task ? $cloneKit->getTask()->getJson() : array())), 'cloneFromKit' => ($cloneKit instanceof Kit ? $cloneKit->getJson() : array()) );
 			$js .= ".setPreSetData(" . json_encode($preSetData) . ")";
 		}
 		$js .= ".setHTMLID('kitsDetailsDiv', 'kits-details-wrapper')";
@@ -108,7 +110,9 @@ class Controller extends DetailsPageAbstract
 			}
 
 			$results['url'] = '/kit/' . $kit->getId() . '.html' . (trim($_SERVER['QUERY_STRING']) === '' ? '' : '?' . $_SERVER['QUERY_STRING']);
-			$results['printUrl'] = '/print/kit/' . $kit->getId() . '.html';
+			if($isNewKit === true)
+				$results['printUrl'] = '/print/kit/' . $kit->getId() . '.html?printlater=1';
+			$results['createdFromNew'] = $isNewKit;
 			$results['item'] = $kit->getJson();
 			Dao::commitTransaction();
 		}
