@@ -39,6 +39,10 @@ class Controller extends BPCPageAbstract
 				readfile($file);
 				die;
 			}
+			if(isset($_REQUEST['printlater']) && intval($_REQUEST['printlater']) === 1)
+			{
+				$this->getClientScript()->registerEndScript('printlater', 'document.observe("dom:loaded", function(){window.print();}');
+			}
 		}
 	}
 	public function getKitProductInfo()
