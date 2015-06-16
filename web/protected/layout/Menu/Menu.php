@@ -102,6 +102,13 @@ class Menu extends TTemplateControl
 					'systemsettings' => array('url' => '/systemsettings.html', 'name' => 'Settings', 'icon' => '<span class="glyphicon glyphicon-cog"></span>')
 			);
 		}
+		if(AccessControl::canAccessUsersPage(Core::getRole()) )
+		{
+			$array['Testing'] = array(
+					'icon' => '<span class="fa fa-connectdevelop"></span>',
+					'csvdecoder' => array('url' => '/datafeed/csvdecoder.html', 'name' => 'CSV Decoder', 'icon' => '<span class=""></span>')
+			);
+		}
 		$html = "<ul class='nav navbar-nav'>";
 			foreach($array as $key => $item)
 			{
