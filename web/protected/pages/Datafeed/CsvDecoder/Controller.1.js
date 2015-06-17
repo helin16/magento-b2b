@@ -120,10 +120,11 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.me.dropdown = $(tmp.me.getHTMLID('importDataTypesDropdownId'));
 		tmp.me._importDataTypes = $F(tmp.me.dropdown);
 
-		if(tmp.me._importDataTypes === tmp.me._selectTypeTxt) {
-			tmp.me.showModalBox('Please select a import type first', 'Invalid inport type');
-			return false;
-		}
+		// check import type
+//		if(tmp.me._importDataTypes === tmp.me._selectTypeTxt) {
+//			tmp.me.showModalBox('Please select a import type first', 'Invalid inport type');
+//			return false;
+//		}
 		switch(tmp.me._importDataTypes) {
 			case 'myob_ean':
 			case 'myob_upc':
@@ -150,64 +151,37 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.me._uploadedData = {};
 		tmp.fileLists = new Element('div', {'class': 'list-group'});
 		for(tmp.i = 0, tmp.file; tmp.file = files[tmp.i]; tmp.i++) {
-			tmp.fileRow = new Element('div', {'class': 'row'}).update( new Element('div', {'class': 'col-lg-6 col-md-6'}).update(tmp.file.name) );
-			if((tmp.extension = tmp.file.name.split('.').pop()) !== '' && tmp.me._acceptableTypes.indexOf(tmp.extension.toLowerCase()) > -1) {
-				tmp.me._fileReader = new FileReader();
-				tmp.me._fileReader.onload = function(event) {
-					tmp.me._rowNo = 1; // reset rowNo for each file
-					event.target.result.split(/\r\n|\n|\r/).each(function(line) {
-						if(line !== null && !line.blank()) {
-							tmp.cols = [];
-							line.split(',').each(function(col) {
-								if(col !== null) {
-									tmp.cols.push(col.strip());
-								}
+			Papa.parse(tmp.file, {
+				skipEmptyLines: true,
+				complete: function(results) {
+					tmp.me._uploadedData = results.data;
+					$(tmp.me.getHTMLID('importerDiv')).update(
+						new Element('div', {'class': 'panel panel-default'})
+						.insert({'bottom': new Element('div', {'class': 'panel-heading'})
+							.update('Total Rows:' + tmp.me._uploadedData.length)
+							.insert({'bottom': new Element('small', {'class': 'pull-right'}).update('ONLY ACCEPT file formats: ' + tmp.me._acceptableTypes.join(', ')) })
+						})
+						.insert({'bottom': tmp.fileLists })
+						.insert({'bottom': new Element('div', {'class': 'panel-footer'})
+							.insert({'bottom': new Element('span', {'class': 'btn btn-success'})
+								.update('Start')
+								.observe('click', function() {
+									tmp.me._loadProductLineItems();
+								})
 							})
-							tmp.key = tmp.cols.join(',');
-							if(tmp.key !== tmp.me.csvFileLineFormat.join(',')) { //this is not the header line
-								tmp.colArray = {};
-								for(tmp.j = 0; tmp.j < tmp.me.csvFileLineFormat.size(); tmp.j++) {
-									tmp.colArray[tmp.me.csvFileLineFormat[tmp.j]] = tmp.cols[tmp.j];
-								}
-								tmp.colArray['index'] = tmp.me._rowNo++; // tmp.me._rowNo starts at 1
-								tmp.me._uploadedData[tmp.key] = tmp.colArray;
-							}
-						}
-					})
+							.insert({'bottom': new Element('span', {'class': 'btn btn-warning pull-right'})
+								.update('Cancel')
+								.observe('click', function(){
+									jQuery('.btn').attr('disabled','disabled');
+									window.location = document.URL;
+								})
+							})
+						})
+					);
+					return tmp.me;
 				}
-				tmp.me._fileReader.readAsText(tmp.file);
-				tmp.supported = true;
-			} else {
-				tmp.fileRow.insert({'bottom': new Element('div', {'class': 'col-lg-6 col-md-6'}).update(new Element('small').update('Not supported file extension: ' + tmp.extension) )})
-				tmp.supported = false;
-			}
-			tmp.fileLists.insert({'bottom': new Element('div', {'class': 'list-group-item ' + (tmp.supported === true ? 'list-group-item-success' : 'list-group-item-danger')})
-				.insert({'bottom': tmp.fileRow })
 			});
 		}
-		$(tmp.me.getHTMLID('importerDiv')).update(
-			new Element('div', {'class': 'panel panel-default'})
-			.insert({'bottom': new Element('div', {'class': 'panel-heading'})
-				.update('Files Selected:')
-				.insert({'bottom': new Element('small', {'class': 'pull-right'}).update('ONLY ACCEPT file formats: ' + tmp.me._acceptableTypes.join(', ')) })
-			})
-			.insert({'bottom': tmp.fileLists })
-			.insert({'bottom': new Element('div', {'class': 'panel-footer'})
-				.insert({'bottom': new Element('span', {'class': 'btn btn-success'})
-					.update('Start')
-					.observe('click', function() {
-						tmp.me._loadProductLineItems();
-					})
-				})
-				.insert({'bottom': new Element('span', {'class': 'btn btn-warning pull-right'})
-					.update('Cancel')
-					.observe('click', function(){
-						jQuery('.btn').attr('disabled','disabled');
-						window.location = document.URL;
-					})
-				})
-			})
-		);
 		return tmp.me;
 	}
 
@@ -343,28 +317,36 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		var tmp = {};
 		tmp.me = this;
 		tmp.keys = [];
-		$H(tmp.me._uploadedData).each(function(data){
-			tmp.keys.push(data.key);
-		});
 
 		//get header row
-		tmp.theadRow = new Element('tr');
-		tmp.me.csvFileLineFormat.each(function(item){
-			tmp.theadRow.insert({'bottom': new Element('th').update(item) })
+		
+		tmp.headerData = tmp.me._uploadedData.slice(0,1);
+		tmp.bodyData = tmp.me._uploadedData.slice(1);
+		
+		tmp.bodyData.each(function(item){
+			$(tmp.me.getHTMLID('importerDiv')).down('.list-group').addClassName('panel-body')
+				.insert({'bottom': tmp.newRow = new Element('div', {'class': 'raw'}) });
+			tmp.colCount = 0;
+			item.each(function(item2){
+				if(tmp.colCount < 12) {
+					tmp.newRow.insert({'bottom': new Element('div', {'class': 'col-md-1 truncate'}).update(item2) });
+					tmp.colCount += 1;
+				}
+			});
 		});
 
-		$(tmp.me.getHTMLID('importerDiv')).update(
-			new Element('div', {'class': 'price_search_result panel panel-danger table-responsive'})
-			.insert({'bottom': new Element('div', {'class': 'panel-heading'})
-				.update('Total of <strong>' + tmp.keys.size() + '</strong> unique row(s) received:')
-				.insert({'bottom': new Element('strong',{'class': 'pull-right'}).update('please waiting for it to finish') })
-			})
-			.insert({'bottom': new Element('table', {'class': 'table table-striped'})
-				.insert({'bottom': new Element('thead').update(tmp.theadRow) })
-				.insert({'bottom': tmp.resultList = new Element('tbody') })
-			})
-		);
-		tmp.me._getProductLineItem(tmp.resultList, 0, tmp.keys);
+//		$(tmp.me.getHTMLID('importerDiv')).update(
+//			new Element('div', {'class': 'price_search_result panel panel-danger table-responsive'})
+//			.insert({'bottom': new Element('div', {'class': 'panel-heading'})
+//				.update('Total of <strong>' + tmp.keys.size() + '</strong> unique row(s) received:')
+//				.insert({'bottom': new Element('strong',{'class': 'pull-right'}).update('please waiting for it to finish') })
+//			})
+//			.insert({'bottom': new Element('table', {'class': 'table table-striped'})
+//				.insert({'bottom': new Element('thead').update(tmp.theadRow) })
+//				.insert({'bottom': tmp.resultList = new Element('tbody') })
+//			})
+//		);
+//		tmp.me._getProductLineItem(tmp.resultList, 0, tmp.keys);
 		return tmp.me;
 	}
 

@@ -2,6 +2,7 @@
 	<com:Application.controls.fancybox.FancyBox />
 	<com:Application.controls.chosen.Chosen />
 	<com:Application.controls.jsSaveAs.jsSaveAs />
+	<com:Application.controls.PapaParse.papaparse />
 	<com:TCallback ID="getAllCodeForProductBtn" OnCallback="getAllCodeForProduct" />
 	<div class="pagewrapper">
 		<div id="importer_div" class="contentDiv"></div>
