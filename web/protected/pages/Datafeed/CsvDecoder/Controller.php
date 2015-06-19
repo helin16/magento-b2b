@@ -31,84 +31,31 @@ class Controller extends BPCPageAbstract
 	 */
 	protected function _getEndJs()
 	{
-		$importDataTypes = array('myob_ean'=> 'MYOB EAN', 'myob_upc'=> 'MYOB UPC', 'stockAdjustment' => 'Stock Adjustment', 'accounting' => 'Accounting Code for Products', 'accountingCode' => 'Accounting Code for Categories');
+		$predata = array('suppliers'=> array_map(create_function('$a', 'return $a->getJson();'), Supplier::getAll()));
 
 		$js = parent::_getEndJs();
 		$js .= 'pageJs';
 		$js .= ".setHTMLID('importerDiv', 'importer_div')";
 		$js .= ".setHTMLID('importDataTypesDropdownId', 'import_type_dropdown')";
-		$js .= '.setCallbackId("getAllCodeForProduct", "' . $this->getAllCodeForProductBtn->getUniqueID() . '")';
-		$js .= '.load(' . json_encode($importDataTypes) . ');';
+		$js .= '.setCallbackId("processDatafeed", "' . $this->processDatafeedBtn->getUniqueID() . '")';
+		$js .= '.load(' . json_encode($predata) . ');';
 		return $js;
 	}
-	public function getAllCodeForProduct($sender, $param)
+	public function processDatafeed($sender, $param)
 	{
 		$result = $errors = $item = array();
 		try
 		{
-			if(!isset($param->CallbackParameter->importDataTypes) || ($type = trim($param->CallbackParameter->importDataTypes)) === '' || ($type = trim($param->CallbackParameter->importDataTypes)) === 'Select a Import Type')
-				throw new Exception('Invalid upload type passed in!');
+			if(!isset($param->CallbackParameter->config->supplier) || !($supplier = Supplier::get(trim($param->CallbackParameter->config->supplier))) instanceof Supplier )
+				throw new Exception('Invalid Supplier passed in!');
+			var_dump($supplier->getId());
 
-			switch ($type)
+			switch ($supplier->getId())
 			{
-				case 'myob_ean':
-					$index = $param->CallbackParameter->index;
-					if(!isset($param->CallbackParameter->sku) || ($sku = trim($param->CallbackParameter->sku)) === '' || !($product = Product::getBySku($sku)) instanceof Product)
-						throw new Exception('Invalid sku passed in! (line ' . $index .')');
-					if(!isset($param->CallbackParameter->itemNo) || ($itemNo = trim($param->CallbackParameter->itemNo)) === '')
-						throw new Exception('Invalid itemNo passed in! (line ' . $index .')');
-					$result['path'] = 'product';
-					$productType = ProductCodeType::get(ProductCodeType::ID_EAN);
-					$item = $this->updateProductCode($product, $itemNo, $productType);
-					$result['item'] = $item->getJson();
+				case '2':
 					break;
-				case 'myob_upc':
-					$index = $param->CallbackParameter->index;
-					if(!isset($param->CallbackParameter->sku) || ($sku = trim($param->CallbackParameter->sku)) === '' || !($product = Product::getBySku($sku)) instanceof Product)
-						throw new Exception('Invalid sku passed in! (line ' . $index .')');
-					if(!isset($param->CallbackParameter->itemNo) || ($itemNo = trim($param->CallbackParameter->itemNo)) === '')
-						throw new Exception('Invalid itemNo passed in! (line ' . $index .')');
-					$result['path'] = 'product';
-					$productType = ProductCodeType::get(ProductCodeType::ID_UPC);
-					$item = $this->updateProductCode($product, $itemNo, $productType);
-					$result['item'] = $item->getJson();
-					break;
-				case 'stockAdjustment':
-					$index = $param->CallbackParameter->index;
-					if(!isset($param->CallbackParameter->sku) || ($sku = trim($param->CallbackParameter->sku)) === '' || !($product = Product::getBySku($sku)) instanceof Product)
-						throw new Exception('Invalid sku passed in! (line ' . $index .')');
-					$result['path'] = 'product';
-					$item = $this->updateStocktack($product
-							, trim($param->CallbackParameter->stockOnPO), trim($param->CallbackParameter->stockOnHand), trim($param->CallbackParameter->stockInRMA), trim($param->CallbackParameter->stockInParts)
-							, trim($param->CallbackParameter->totalInPartsValue), trim($param->CallbackParameter->totalOnHandValue), $param->CallbackParameter->active, trim($param->CallbackParameter->comment));
-
-					$result['item'] = $item->getJson();
-					break;
-				case 'accounting':
-					$index = $param->CallbackParameter->index;
-					if(!isset($param->CallbackParameter->sku) || ($sku = trim($param->CallbackParameter->sku)) === '')
-						throw new Exception('Invalid sku passed in! (line ' . $index .')');
-					if(!($product = Product::getBySku($sku)) instanceof Product)
-						$product = Product::create($sku, $sku);
-					$result['path'] = 'product';
-					$item = $this->updateAccountingInfo($product
-							, trim($param->CallbackParameter->assetAccNo), trim($param->CallbackParameter->costAccNo), trim($param->CallbackParameter->revenueAccNo));
-
-					$result['item'] = $item->getJson();
-					break;
-				case 'accountingCode':
-					$index = $param->CallbackParameter->index;
-					if(!isset($param->CallbackParameter->description) || ($description = trim($param->CallbackParameter->description)) === '')
-						throw new Exception('Invalid description passed in! (line ' . $index .')');
-					if(!isset($param->CallbackParameter->code) || ($code = trim($param->CallbackParameter->code)) === '' || !is_numeric($code))
-						throw new Exception('Invalid Code passed in! (line ' . $index .')');
-					$result['path'] = '';
-					$item = $this->updateAccountingCode($description, $code);
-
-					$result['item'] = $item->getJson();
-					break;
-				default:
-					throw new Exception('Invalid upload type passed in!');
+// 				default:
+// 					throw new Exception('Invalid upload type passed in!');
 			}
 		}
 		catch(Exception $ex)

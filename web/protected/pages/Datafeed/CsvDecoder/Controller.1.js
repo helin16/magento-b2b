@@ -5,72 +5,72 @@ var PageJs = new Class.create();
 PageJs.prototype = Object.extend(new BPCPageJs(), {
 	id_wrapper: '' //the html id of the wrapper
 	,_acceptableTypes: ['csv']
-	,csvFileLineFormat: []
+//	,csvFileLineFormat: []
 	,_fileReader: null
 	,_uploadedData: {}
-	,_importDataTypes: {}
-	,_rowNo: null
-	,_selectTypeTxt: 'Select a Import Type'
+	,_config: {ifHeader: true, supplier: null}
+	,config_div: null
+	,file_upload_div: null
+	,listing_div: null
 
-	,load: function(importDataTypes) {
+	,load: function(predata) {
 		var tmp = {}
 		tmp.me = this;
 		tmp.me._rowNo = 1;
-		tmp.me._importDataTypes = importDataTypes;
-
-		$(tmp.me.getHTMLID('importerDiv')).update('test');
+		tmp.me.predata = predata;
 
 		if (window.File && window.FileReader && window.FileList && window.Blob) { //the browser supports file reading api
 			tmp.me._fileReader = new FileReader();
-			$(tmp.me.getHTMLID('importerDiv')).update( tmp.me._getFileUploadDiv() );
-			tmp.me._loadChosen();
+			$(tmp.me.getHTMLID('importerDiv')).update('')
+				.insert({'bottom': tmp.me.config_div = tmp.me._getConifgDiv() })
+				.insert({'bottom': tmp.me.file_upload_div = tmp.me._getFileUploadDiv() })
+				.insert({'bottom': tmp.me.listing_div = tmp.me._getListingDiv().hide() });
 		} else {
 			$(tmp.me.getHTMLID('importerDiv')).update(tmp.me.getAlertBox('Warning:', 'Your browser does NOT support this feature. pls change and try again').addClassName('alert-warning') );
 		}
+		
+		tmp.me._loadSelect2();
+		tmp.me._loadBootstrapSwitch();
 		return tmp.me;
 	}
 
-	,_genTemplate: function() {
+//	,_genTemplate: function() {
+//		var tmp = {};
+//		tmp.me = this;
+//		if(tmp.me.type = tmp.me._getUploadType()) {
+//			tmp.data = [];
+//			tmp.data.push(tmp.me.csvFileLineFormat.join(', ') + "\n");
+//			tmp.now = new Date();
+//			tmp.fileName = tmp.me.type + '_' + tmp.now.getFullYear() + '_' + tmp.now.getMonth() + '_' + tmp.now.getDate() + '_' + tmp.now.getHours() + '_' + tmp.now.getMinutes() + '_' + tmp.now.getSeconds() + '.csv';
+//			tmp.blob = new Blob(tmp.data, {type: "text/csv;charset=utf-8"});
+//			saveAs(tmp.blob, tmp.fileName);
+//		}
+//		return tmp.me;
+//	}
+	,_getConifgDiv: function() {
 		var tmp = {};
 		tmp.me = this;
-		if(tmp.me.type = tmp.me._getUploadType()) {
-			tmp.data = [];
-			tmp.data.push(tmp.me.csvFileLineFormat.join(', ') + "\n");
-			tmp.now = new Date();
-			tmp.fileName = tmp.me.type + '_' + tmp.now.getFullYear() + '_' + tmp.now.getMonth() + '_' + tmp.now.getDate() + '_' + tmp.now.getHours() + '_' + tmp.now.getMinutes() + '_' + tmp.now.getSeconds() + '.csv';
-			tmp.blob = new Blob(tmp.data, {type: "text/csv;charset=utf-8"});
-			saveAs(tmp.blob, tmp.fileName);
-		}
-		return tmp.me;
-	}
-	/**
-	 * initiating the chosen input
-	 */
-	,_loadChosen: function () {
-		jQuery(".chosen").chosen({
-				search_contains: true,
-				inherit_select_classes: true,
-				no_results_text: "No code type found!",
-				width: "250px"
-		});
-		return this;
+		tmp.newDiv = new Element('div')  
+			.insert({'bottom': new Element('div',  {'class': 'row pre-config'})
+				.insert({'bottom': new Element('div', {'class': 'col-xs-3'})
+					.insert({'bottom': tmp.me.getFormGroup(new Element('label').update('Supplier: '),
+							new Element('input', {'class': 'form-control select2', 'config': 'supplierId', 'name': 'supplier', 'placeholder': 'search a supplier name here'}) )
+					})
+				})
+				.insert({'bottom': new Element('div', {'class': 'col-xs-1'})
+					.insert({'bottom': tmp.me.getFormGroup(new Element('label').update('Header? '),
+							new Element('input', {'type': 'checkbox', 'data-off-text': 'No', 'data-on-text': 'Yes', 'class': 'form-control bootstrap-switch', 'config': 'ifHeader', 'name': 'ifHeader', 'title': 'does the csv include header?'}) )
+					})
+				})
+			});
+		
+		return tmp.newDiv;
 	}
 	,_getFileUploadDiv: function() {
 		var tmp = {};
 		tmp.me = this;
 		tmp.newDiv =  new Element('div',  {'class': 'panel panel-default drop_file_div', 'title': 'You can drag multiple files here!'})
 			.insert({'bottom': new Element('div', {'class': 'panel-body'})
-				.insert({'bottom': new Element('div', {'class': 'pull-right'})
-					.insert({'bottom': tmp.dropdown = new Element('select', {'class': 'chosen', 'data-placeholder': 'Code Type: ' ,'id': tmp.me.getHTMLID('importDataTypesDropdownId')})
-						.insert({'bottom': new Element('option', {'value': tmp.me._selectTypeTxt}).update(tmp.me._selectTypeTxt) })
-					})
-					.insert({'bottom': new Element('span', {'class': 'btn btn-default btn-xs', 'title': 'Download Template'})
-						.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-download-alt'}) })
-						.observe('click', function() {
-							tmp.me._genTemplate();
-						})
-					})
-				})
 				.insert({'bottom': new Element('div', {'class': 'form-group center-block text-left', 'style': 'width: 50%'})
 					.insert({'bottom': new Element('label').update('Drop you files here or select your file below:') })
 					.insert({'bottom': tmp.inputFile = new Element('input', {'type': 'file', 'style': 'display: none;'})
@@ -82,8 +82,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					.insert({'bottom': new Element('span', {'class': 'btn btn-success clearfix'})
 						.update('Click to select your file')
 						.observe('click', function(event) {
-							if(tmp.me._getUploadType())
-								tmp.inputFile.click();
+							tmp.inputFile.click();
 						})
 					})
 					.insert({'bottom': new Element('div', {'class': 'clearfix'}) })
@@ -96,87 +95,59 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				evt.dataTransfer.dropEffect = 'copy';
 			})
 			.observe('drop', function(evt) {
-				if(tmp.me._getUploadType()) {
-					evt.stopPropagation();
-					evt.preventDefault();
-					tmp.me._readFiles(evt.dataTransfer.files);
-				}
-			})
-		;
-
-		$H(tmp.me._importDataTypes).each(function(item){
-			tmp.dropdown.insert({'bottom': new Element('option', {'value': item.key})
-				.store('data', item.key)
-				.update(item.value)
+				evt.stopPropagation();
+				evt.preventDefault();
+				tmp.me._readFiles(evt.dataTransfer.files);
 			});
-		});
 
 		return tmp.newDiv;
 	}
-
-	,_getUploadType: function() {
+	,_getListingDiv: function() {
 		var tmp = {};
 		tmp.me = this;
-		tmp.me.dropdown = $(tmp.me.getHTMLID('importDataTypesDropdownId'));
-		tmp.me._importDataTypes = $F(tmp.me.dropdown);
-
-		// check import type
-//		if(tmp.me._importDataTypes === tmp.me._selectTypeTxt) {
-//			tmp.me.showModalBox('Please select a import type first', 'Invalid inport type');
-//			return false;
-//		}
-		switch(tmp.me._importDataTypes) {
-			case 'myob_ean':
-			case 'myob_upc':
-				tmp.me.csvFileLineFormat = ['sku', 'itemNo'];
-				break;
-			case 'stockAdjustment':
-				tmp.me.csvFileLineFormat = ['sku', 'stockOnPO', 'stockOnHand', 'stockOnOrder', 'stockInRMA', 'stockInParts' , 'totalInPartsValue', 'totalOnHandValue', 'active', 'comment'];
-				break;
-			case 'accounting':
-				tmp.me.csvFileLineFormat = ['sku', 'assetAccNo', 'costAccNo', 'revenueAccNo'];
-				break;
-			case 'accountingCode':
-				tmp.me.csvFileLineFormat = ['description', 'code'];
-				break;
-			default:
-				tmp.me.csvFileLineFormat = [];
-		}
-		return tmp.me._importDataTypes;
+		
+		tmp.newDiv = new Element('table', {'class': 'table table-xs table-hover table-striped table-condensed'})
+			.insert({'bottom': new Element('thead')
+				.insert({'bottom': new Element('tr', {'class': 'visible-xs visible-md visible-lg visible-sm'}) }) // class b/c boostrap bug
+			})
+			.insert({'bottom': new Element('tbody')
+			});
+		
+		return tmp.newDiv;
 	}
 
 	,_readFiles: function(files) {
 		var tmp = {};
 		tmp.me = this;
-		tmp.me._uploadedData = {};
-		tmp.fileLists = new Element('div', {'class': 'list-group'});
 		for(tmp.i = 0, tmp.file; tmp.file = files[tmp.i]; tmp.i++) {
+			tmp.fileName = tmp.file.name; // because tmp.file is soon been override
 			Papa.parse(tmp.file, {
 				skipEmptyLines: true,
+				header: tmp.me._config.ifHeader,
 				complete: function(results) {
-					tmp.me._uploadedData = results.data;
-					$(tmp.me.getHTMLID('importerDiv')).update(
+					tmp.me._uploadedData = results;
+					tmp.me.file_upload_div.removeClassName('drop_file_div').writeAttribute('title', false).removeClassName('panel').update(
 						new Element('div', {'class': 'panel panel-default'})
-						.insert({'bottom': new Element('div', {'class': 'panel-heading'})
-							.update('Total Rows:' + tmp.me._uploadedData.length)
-							.insert({'bottom': new Element('small', {'class': 'pull-right'}).update('ONLY ACCEPT file formats: ' + tmp.me._acceptableTypes.join(', ')) })
-						})
-						.insert({'bottom': tmp.fileLists })
-						.insert({'bottom': new Element('div', {'class': 'panel-footer'})
-							.insert({'bottom': new Element('span', {'class': 'btn btn-success'})
-								.update('Start')
-								.observe('click', function() {
-									tmp.me._loadProductLineItems();
+							.insert({'bottom': new Element('div', {'class': 'panel-heading clearfix'})
+								.update('Total Rows:' + tmp.me._uploadedData.data.length)
+								.insert({'bottom': new Element('small', {'class': 'pull-right'}).update(tmp.fileName) })
+							})
+							.insert({'bottom': tmp.me.listing_div = tmp.me._getListingDiv().hide() })
+							.insert({'bottom': new Element('div', {'class': 'panel-footer'})
+								.insert({'bottom': new Element('span', {'class': 'btn btn-success'})
+									.update('Start')
+									.observe('click', function() {
+										tmp.me.displayLineItems(results);
+									})
+								})
+								.insert({'bottom': new Element('span', {'class': 'btn btn-warning pull-right'})
+									.update('Cancel')
+									.observe('click', function(){
+										jQuery('.btn').attr('disabled','disabled');
+										window.location = document.URL;
+									})
 								})
 							})
-							.insert({'bottom': new Element('span', {'class': 'btn btn-warning pull-right'})
-								.update('Cancel')
-								.observe('click', function(){
-									jQuery('.btn').attr('disabled','disabled');
-									window.location = document.URL;
-								})
-							})
-						})
 					);
 					return tmp.me;
 				}
@@ -184,41 +155,105 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		}
 		return tmp.me;
 	}
-
-	,genCSV: function(btn) {
+	,displayLineItems: function(data) {
 		var tmp = {};
 		tmp.me = this;
-
-		//collect data
-		tmp.data = [];
-		tmp.originalDataRows = $(btn).up('.panel').getElementsBySelector('.result_row.result-done');
-		if(tmp.originalDataRows.length < 1)
-			return;
-
-		tmp.headerRow = '';
-		$H(tmp.originalDataRows[0].retrieve('data')).each(function(item){
-			tmp.headerRow = tmp.headerRow + item.key + ', ';
+		tmp.data = data;
+		
+		tmp.data.meta.fields.each(function(field){
+			tmp.me.listing_div.show().down('thead tr').insert({'bottom': new Element('td').update(field) });
 		});
-		tmp.data.push(tmp.headerRow + '\n');
-
-		$(btn).up('.panel').getElementsBySelector('.result_row.result-done').each(function(row){
-			tmp.csvRow = '';
-
-			$H(row.retrieve('data')).each(function(item){
-				tmp.csvRow = tmp.csvRow + item.value + ', ';
+		
+		tmp.data.data.each(function(row){
+			tmp.me.listing_div.show().down('tbody').insert({'bottom': tmp.tr = new Element('tr') });
+			$H(row).each(function(column){
+				tmp.tr.insert({'bottom': tmp.td = new Element('td', {'class': 'truncate', 'title': column.value}).update(column.value) });
+				tmp.me.observeClickNDbClick(tmp.td, null, function(){tmp.me.showModalBox('<b>'+column.key+'</b>', column.value)});
 			});
-
-			tmp.csvRow = tmp.csvRow + '\n';
-			tmp.data.push(tmp.csvRow);
-			tmp.i = tmp.i * 1 + 1;
 		});
-
-		tmp.now = new Date();
-		tmp.fileName = tmp.me._importDataTypes + '_match_' + tmp.now.getFullYear() + '_' + tmp.now.getMonth() + '_' + tmp.now.getDate() + '_' + tmp.now.getHours() + '_' + tmp.now.getMinutes() + '_' + tmp.now.getSeconds() + '.csv';
-		tmp.blob = new Blob(tmp.data, {type: "text/csv;charset=utf-8"});
-		saveAs(tmp.blob, tmp.fileName);
+		
+		// deal with buttons
+		tmp.me.file_upload_div.down('.panel-footer').update('');
+		tmp.me.file_upload_div.down('.panel-heading .pull-right').update('')
+			.insert({'bottom': new Element('button', {'class': 'btn btn-success btn-sm'})
+				.update('Proceed')
+				.observe('click', function() {
+					tmp.me._processDatafeed(tmp.data,$(this));
+				})
+			});
+		
 		return tmp.me;
 	}
+	,_processDatafeed: function(data, btn) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.data = data;
+		tmp.btn = btn;
+		tmp.me._signRandID(tmp.btn);
+		
+		// validate data
+		if(!jQuery.isNumeric(tmp.me._config.supplier)) {
+			tmp.me.showModalBox('<b>Error: </b>','<p class="text-danger">You must choose a <b>Supplier</b> fist</p>');
+			return tmp.me;
+		}
+		
+		tmp.me.postAjax(tmp.me.getCallbackId('processDatafeed'), {'data': tmp.data, 'config': tmp.me._config}, {
+			'onLoading': function(sender, param) {
+				jQuery('#' + tmp.btn.id).button('loading');
+			}
+			,'onSuccess': function (sender, param) {
+				try {
+					tmp.result = tmp.me.getResp(param, false, true);
+					console.debug(tmp.result);
+				}  catch (e) {
+					alert(e);
+				}
+			}
+			,'onComplete': function(sender, param) {
+				try {
+					jQuery('#' + tmp.btn.id).button('reset');
+				} catch (e) {
+					alert(e);
+				}
+			}
+		});
+		
+		return tmp.me;
+	}
+//	,genCSV: function(btn) {
+//		var tmp = {};
+//		tmp.me = this;
+//
+//		//collect data
+//		tmp.data = [];
+//		tmp.originalDataRows = $(btn).up('.panel').getElementsBySelector('.result_row.result-done');
+//		if(tmp.originalDataRows.length < 1)
+//			return;
+//
+//		tmp.headerRow = '';
+//		$H(tmp.originalDataRows[0].retrieve('data')).each(function(item){
+//			tmp.headerRow = tmp.headerRow + item.key + ', ';
+//		});
+//		tmp.data.push(tmp.headerRow + '\n');
+//
+//		$(btn).up('.panel').getElementsBySelector('.result_row.result-done').each(function(row){
+//			tmp.csvRow = '';
+//
+//			$H(row.retrieve('data')).each(function(item){
+//				tmp.csvRow = tmp.csvRow + item.value + ', ';
+//			});
+//
+//			tmp.csvRow = tmp.csvRow + '\n';
+//			tmp.data.push(tmp.csvRow);
+//			tmp.i = tmp.i * 1 + 1;
+//		});
+//
+//		tmp.now = new Date();
+//		tmp.fileName = tmp.me._importDataTypes + '_match_' + tmp.now.getFullYear() + '_' + tmp.now.getMonth() + '_' + tmp.now.getDate() + '_' + tmp.now.getHours() + '_' + tmp.now.getMinutes() + '_' + tmp.now.getSeconds() + '.csv';
+//		tmp.blob = new Blob(tmp.data, {type: "text/csv;charset=utf-8"});
+//		saveAs(tmp.blob, tmp.fileName);
+//		return tmp.me;
+//	}
 	/**
 	 * Open detail page
 	 */
@@ -323,31 +358,63 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.headerData = tmp.me._uploadedData.slice(0,1);
 		tmp.bodyData = tmp.me._uploadedData.slice(1);
 		
-		tmp.bodyData.each(function(item){
-			$(tmp.me.getHTMLID('importerDiv')).down('.list-group').addClassName('panel-body')
-				.insert({'bottom': tmp.newRow = new Element('div', {'class': 'raw'}) });
+		$(tmp.me.getHTMLID('importerDiv')).down('.list-group').removeClassName('list-group').addClassName('panel-body').insert({'bottom': tmp.table = new Element('table') });
+		tmp.table.addClassName('table table-striped');
+		
+		
+		tmp.bodyData.each(function(items){
+			tmp.table.insert({'bottom': tmp.newRow = new Element('tr', {'class': ''}) });
 			tmp.colCount = 0;
-			item.each(function(item2){
+			items.each(function(item){
 				if(tmp.colCount < 12) {
-					tmp.newRow.insert({'bottom': new Element('div', {'class': 'col-md-1 truncate'}).update(item2) });
+					tmp.newRow.insert({'bottom': new Element('td').update(item) });
 					tmp.colCount += 1;
 				}
 			});
 		});
 
-//		$(tmp.me.getHTMLID('importerDiv')).update(
-//			new Element('div', {'class': 'price_search_result panel panel-danger table-responsive'})
-//			.insert({'bottom': new Element('div', {'class': 'panel-heading'})
-//				.update('Total of <strong>' + tmp.keys.size() + '</strong> unique row(s) received:')
-//				.insert({'bottom': new Element('strong',{'class': 'pull-right'}).update('please waiting for it to finish') })
-//			})
-//			.insert({'bottom': new Element('table', {'class': 'table table-striped'})
-//				.insert({'bottom': new Element('thead').update(tmp.theadRow) })
-//				.insert({'bottom': tmp.resultList = new Element('tbody') })
-//			})
-//		);
-//		tmp.me._getProductLineItem(tmp.resultList, 0, tmp.keys);
 		return tmp.me;
 	}
-
+	,_loadSelect2: function() {
+		var tmp = {};
+		tmp.me = this;
+		tmp.selectBox = jQuery('[config="supplierId"]').select2({
+			minimumInputLength: 1,
+			multiple: false,
+			ajax: {
+				delay: 250
+				,url: '/ajax/getAll'
+				,type: 'POST'
+				,data: function (params) {
+					return {"searchTxt": 'name like ?', 'searchParams': ['%' + params + '%'], 'entityName': 'Supplier', 'pageNo': 1};
+				}
+				,results: function(data, page, query) {
+					tmp.result = [];
+					if(data.resultData && data.resultData.items) {
+						data.resultData.items.each(function(item){
+							tmp.result.push({'id': item.id, 'text': item.name, 'data': item});
+						});
+					}
+					return { 'results' : tmp.result };
+				}
+			}
+			,cache: true
+			,escapeMarkup: function (markup) { return markup; } // let our custom formatter work
+		})
+		.on('change', function(){
+			tmp.me._config.supplier = $(this).value;
+		});
+		
+		return tmp.me;
+	}
+	,_loadBootstrapSwitch: function() {
+		var tmp = {};
+		tmp.me = this;
+		tmp.checkBox = jQuery('[config="ifHeader"]').bootstrapSwitch('state', tmp.me._config.ifHeader === true, true)
+			.on('switchChange.bootstrapSwitch',function(e,state){
+				tmp.me._config.ifHeader = state
+			});
+		
+		return tmp.me;
+	}
 });
