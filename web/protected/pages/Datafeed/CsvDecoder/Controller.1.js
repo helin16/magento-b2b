@@ -8,7 +8,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 //	,csvFileLineFormat: []
 	,_fileReader: null
 	,_uploadedData: {}
-	,_config: {ifHeader: true, supplier: null}
+	,_config: {ifHeader: true, ifShowTableContent: true, supplier: null}
 	,config_div: null
 	,file_upload_div: null
 	,listing_div: null
@@ -60,6 +60,11 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				.insert({'bottom': new Element('div', {'class': 'col-xs-1'})
 					.insert({'bottom': tmp.me.getFormGroup(new Element('label').update('Header? '),
 							new Element('input', {'type': 'checkbox', 'data-off-text': 'No', 'data-on-text': 'Yes', 'class': 'form-control bootstrap-switch', 'config': 'ifHeader', 'name': 'ifHeader', 'title': 'does the csv include header?'}) )
+					})
+				})
+				.insert({'bottom': new Element('div', {'class': 'col-xs-1'})
+					.insert({'bottom': tmp.me.getFormGroup(new Element('label').update('Limit Table Rows? '),
+							new Element('input', {'type': 'checkbox', 'data-off-text': 'No', 'data-on-text': 'Yes', 'class': 'form-control bootstrap-switch', 'config': 'ifShowTableContent', 'name': 'ifHeader', 'title': 'To speed up javascript'}) )
 					})
 				})
 			});
@@ -159,12 +164,15 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		var tmp = {};
 		tmp.me = this;
 		tmp.data = data;
+		tmp.displayData = data;
 		
 		tmp.data.meta.fields.each(function(field){
 			tmp.me.listing_div.show().down('thead tr').insert({'bottom': new Element('td').update(field) });
 		});
 		
-		tmp.data.data.each(function(row){
+		if(tmp.me._config.ifShowTableContent === true)
+			tmp.displayData = tmp.data.data.slice(0,20);
+		tmp.displayData.each(function(row){
 			tmp.me.listing_div.show().down('tbody').insert({'bottom': tmp.tr = new Element('tr') });
 			$H(row).each(function(column){
 				tmp.tr.insert({'bottom': tmp.td = new Element('td', {'class': 'truncate', 'title': column.value}).update(column.value) });
@@ -414,6 +422,10 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			.on('switchChange.bootstrapSwitch',function(e,state){
 				tmp.me._config.ifHeader = state
 			});
+		tmp.checkBox = jQuery('[config="ifShowTableContent"]').bootstrapSwitch('state', tmp.me._config.ifShowTableContent === true, true)
+		.on('switchChange.bootstrapSwitch',function(e,state){
+			tmp.me._config.ifShowTableContent = state
+		});
 		
 		return tmp.me;
 	}

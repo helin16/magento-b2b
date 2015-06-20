@@ -48,7 +48,7 @@ class Controller extends BPCPageAbstract
 		{
 			if(!isset($param->CallbackParameter->config->supplier) || !($supplier = Supplier::get(trim($param->CallbackParameter->config->supplier))) instanceof Supplier )
 				throw new Exception('Invalid Supplier passed in!');
-			var_dump($supplier->getId());
+			$result = $param->CallbackParameter->data;
 
 			switch ($supplier->getId())
 			{
