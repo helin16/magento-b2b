@@ -346,7 +346,7 @@ class OrderController extends BPCPageAbstract
 		catch(Exception $ex)
 		{
 			Dao::rollbackTransaction();
-			$errors[] = $ex->getMessage() . '<pre>' . $ex->getTraceAsString() . '</pre>';
+			$errors[] = $ex->getMessage();
 		}
 		$param->ResponseData = StringUtilsAbstract::getJson($results, $errors);
 	}
