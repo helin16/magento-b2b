@@ -20,6 +20,7 @@ class ItemExport_Xero extends ExportAbstract
 			$myobCodes = ProductCode::getCodes($product, $myobCodeType, true, 1, 1);
 			$return[] = array(
 				'sku' => $product->getSku()
+				,'name' => $product->getName()
 				,'short description'=> $product->getShortDescription()
 				,'assetAccNo'=> $product->getAssetAccNo()
 				,'revenueAccNo'=> $product->getRevenueAccNo()
