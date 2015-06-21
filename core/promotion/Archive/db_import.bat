@@ -1,14 +1,43 @@
 @echo off
-:: Remove Existing databases
-c:\wamp\bin\mysql\mysql5.6.17\bin\mysql.exe -u root -proot -e "DROP DATABASE IF EXISTS bpcinternal;"
 
-:: Create new databases
-c:\wamp\bin\mysql\mysql5.6.17\bin\mysql.exe -u root -proot -e "CREATE DATABASE `bpcinternal` DEFAULT CHARACTER SET utf8 DEFAULT COLLATE utf8_general_ci;"
+:: setting params
+set db_name=bpcinternal
 
+for /f %%x in ('wmic path win32_localtime get /format:list ^| findstr "="') do set %%x
+if %Month% LSS 10 set Month=0%Month%
+set today=%Day%_%Month%_%Year%
+set dump_file_name=%today%.7z
+
+echo.
+echo database name = %db_name%
+echo dump file name = %dump_file_name%
+
+echo.
+echo is this right? 
 Pause
 
+:: Remove Existing databases
+echo.
+echo droping database %db_name% ...
+mysql -u root -proot -e "DROP DATABASE IF EXISTS %db_name%;"
+echo done.
+
+:: Create new databases
+echo.
+echo creating database %db_name% ...
+mysql -u root -proot -e "CREATE DATABASE %db_name% DEFAULT CHARACTER SET utf8 DEFAULT COLLATE utf8_general_ci;"
+echo done.
+
 :: Import sql files
-"C:\Program Files\7-Zip\7z.exe" x -so 25_04_2015.7z | c:\wamp\bin\mysql\mysql5.6.17\bin\mysql.exe -u root -proot bpcinternal
-c:\wamp\bin\mysql\mysql5.6.17\bin\mysql.exe -u root -proot bpcinternal < ..\wamp.sql
-c:\wamp\bin\mysql\mysql5.6.17\bin\mysql.exe -u root -proot bpcinternal < ..\debugMode.sql
+echo.
+echo importing database from %dump_file_name%
+7z x -so %dump_file_name% | mysql -u root -proot %db_name%
+echo done
+echo importing wamp.sql
+mysql -u root -proot bpcinternal < ..\wamp.sql
+echo importing debugMode.sql
+mysql -u root -proot bpcinternal < ..\debugMode.sql
+
+echo.
+echo all good. good bye
 Pause
