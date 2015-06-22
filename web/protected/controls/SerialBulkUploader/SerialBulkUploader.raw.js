@@ -45,7 +45,9 @@ SerialBulkUploaderJs.prototype = Object.extend(new BPCPageJs(), {
 							tmp.serials = tmp.me._expressionMatch($F(tmp.txtArea));
 							tmp.txtArea.up('.bulkSerialPanel').store('serials', tmp.serials);
 							tmp.txtArea.value = tmp.serials.join('\n');
-							tmp.txtArea.up('.bulkSerialPanel').down('.serials-bulk-qty').update('Qty: ' + tmp.serials.length);
+							tmp.txtArea.up('.bulkSerialPanel').getElementsBySelector('.serials-bulk-qty').each(function(item){
+								item.update('Qty: ' + tmp.serials.length);
+							});
 						})
 					})
 				})

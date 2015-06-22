@@ -552,9 +552,12 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			.observe('click', function(e){
 				tmp.me.serialUploader = new SerialBulkUploaderJs(tmp.me);
 				tmp.me.showModalBox('Bulk Import Serial Numbers', tmp.serialUploaderPanel = tmp.me.serialUploader.getInputPanel());
-				tmp.serialUploaderPanel.down('.confimBtn').observe('click', function(){
+				tmp.btn = tmp.serialUploaderPanel.down('.confimBtn');
+				tmp.btn.observe('click', function(){
+					jQuery('#' + tmp.btn.id).button('loading');
 					if($(this).up('.bulkSerialPanel').retrieve('data') && $(this).up('.bulkSerialPanel').retrieve('data').length !== null)
 						jQuery('#' + tmp.me.modalId).modal('hide');
+					jQuery('#' + tmp.btn.id).button('reset');
 				});
 
 				jQuery('#' + tmp.me.modalId).on('hide.bs.modal', function(e){
