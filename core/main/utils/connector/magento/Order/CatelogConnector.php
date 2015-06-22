@@ -1,9 +1,20 @@
 <?php
 class CatelogConnector extends B2BConnector
 {
-	public function getProductList()
+	public function getProductList($lastUpdatedTime)
 	{
-		return $this->_connect()->catalogProductList ($this->_session);
+		$params = array(
+				'complex_filter' => array(
+						array(
+								'key' => 'created_at',
+								'value' => array(
+										'key' => 'gt',
+										'value' => $lastUpdatedTime
+								),
+						),
+				)
+		);
+		return $this->_connect()->catalogProductList ($this->_session, $params);
 	}
 	/**
 	 * Getting the attribute information
@@ -162,70 +173,79 @@ class CatelogConnector extends B2BConnector
 	 *
 	 * @return CatelogConnector
 	 */
-	public function importProducts()
+	public function importProducts($lastCreatedTime, $overrideSystem = false)
 	{
-		$products = $this->getProductList();
-		foreach($products as $pro)
+		try
 		{
-			try
+			Dao::beginTransaction();
+			if(($lastCreatedTime = trim($lastCreatedTime)) === '')
 			{
-				$mageId = trim($pro->product_id);
-				$sku = trim($pro->sku);
-				$pro = $this->getProductInfo($sku, $this->getInfoAttributes());
-				if(is_null($pro) || !isset($pro->additional_attributes))
-					continue;
-
-				Dao::beginTransaction();
-
-				$additionAttrs = $this->_getAttributeFromAdditionAttr($pro->additional_attributes);
-				$name = trim($additionAttrs['name']);
-				$short_description = trim($additionAttrs['short_description']);
-				$description = trim($additionAttrs['description']);
-				$weight = trim($additionAttrs['weight']);
-				$statusId = trim($additionAttrs['status']);
-				$price = trim($additionAttrs['price']);
-				$specialPrice = isset($additionAttrs['special_price']) ? trim($additionAttrs['special_price']) : '';
-				$specialPrice_From = isset($additionAttrs['special_from_date']) ? trim($additionAttrs['special_from_date']) : null;
-				$specialPrice_To = isset($additionAttrs['special_to_date']) ? trim($additionAttrs['special_to_date']) : null;
-
-				if(!($product = Product::getBySku($sku)) instanceof Product)
-					$product = Product::create($sku, $name);
-				$asset = (($assetId = trim($product->getFullDescAssetId())) === '' || !($asset = Asset::getAsset($assetId)) instanceof Asset) ? Asset::registerAsset('full_desc_' . $sku, $description, Asset::TYPE_PRODUCT_DEC) : $asset;
-				$product->setName($name)
-					->setMageId($mageId)
-					->setShortDescription($short_description)
-					->setFullDescAssetId(trim($asset->getAssetId()))
-					->setIsFromB2B(true)
-					->setStatus(ProductStatus::get($statusId))
-					->setSellOnWeb(true)
-					->setManufacturer($this->getManufacturerName(trim($additionAttrs['manufacturer'])))
-					->save()
-					->clearAllPrice()
-					->addPrice(ProductPriceType::get(ProductPriceType::ID_RRP), $price)
-					->addInfo(ProductInfoType::ID_WEIGHT, $weight);
-
-				if($specialPrice !== '')
-					$product->addPrice(ProductPriceType::get(ProductPriceType::ID_CASUAL_SPECIAL), $specialPrice, $specialPrice_From, $specialPrice_To);
-
-				if(isset($additionAttrs['supplier']) && ($supplierName = trim($additionAttrs['supplier'])) !== '')
-					$product->addSupplier(Supplier::create($supplierName, $supplierName, true));
-
-				if(isset($pro->categories) && count($pro->categories) > 0)
-				{
-					$product->clearAllCategory();
-					foreach($pro->category_ids as $cateMageId)
+				$lastCreatedTime = trim(SystemSettings::getSettings(SystemSettings::TYPE_PRODUCT_LAST_UPDATED));
+			}
+			$products = $this->getProductList($lastCreatedTime);
+			foreach($products as $pro)
+			{
+					$mageId = trim($pro->product_id);
+					$sku = trim($pro->sku);
+					if(($product = Product::getBySku($sku)) instanceof Product && $overrideSystem === false)
+						continue;
+						
+					$pro = $this->getProductInfo($sku, $this->getInfoAttributes());
+					if(is_null($pro) || !isset($pro->additional_attributes))
+						continue;
+	
+					$additionAttrs = $this->_getAttributeFromAdditionAttr($pro->additional_attributes);
+					$name = trim($additionAttrs['name']);
+					$short_description = trim($additionAttrs['short_description']);
+					$description = trim($additionAttrs['description']);
+					$weight = trim($additionAttrs['weight']);
+					$statusId = trim($additionAttrs['status']);
+					$price = trim($additionAttrs['price']);
+					$specialPrice = isset($additionAttrs['special_price']) ? trim($additionAttrs['special_price']) : '';
+					$specialPrice_From = isset($additionAttrs['special_from_date']) ? trim($additionAttrs['special_from_date']) : null;
+					$specialPrice_To = isset($additionAttrs['special_to_date']) ? trim($additionAttrs['special_to_date']) : null;
+	
+					if(!$product instanceof Product)
+						$product = Product::create($sku, $name);
+					$asset = (($assetId = trim($product->getFullDescAssetId())) === '' || !($asset = Asset::getAsset($assetId)) instanceof Asset) ? Asset::registerAsset('full_desc_' . $sku, $description, Asset::TYPE_PRODUCT_DEC) : $asset;
+					$product->setName($name)
+						->setMageId($mageId)
+						->setShortDescription($short_description)
+						->setFullDescAssetId(trim($asset->getAssetId()))
+						->setIsFromB2B(true)
+						->setStatus(ProductStatus::get($statusId))
+						->setSellOnWeb(true)
+						->setManufacturer($this->getManufacturerName(trim($additionAttrs['manufacturer'])))
+						->save()
+						->clearAllPrice()
+						->addPrice(ProductPriceType::get(ProductPriceType::ID_RRP), $price)
+						->addInfo(ProductInfoType::ID_WEIGHT, $weight);
+	
+					if($specialPrice !== '')
+						$product->addPrice(ProductPriceType::get(ProductPriceType::ID_CASUAL_SPECIAL), $specialPrice, $specialPrice_From, $specialPrice_To);
+	
+					if(isset($additionAttrs['supplier']) && ($supplierName = trim($additionAttrs['supplier'])) !== '')
+						$product->addSupplier(Supplier::create($supplierName, $supplierName, true));
+	
+					if(isset($pro->categories) && count($pro->categories) > 0)
 					{
-						if(!($category = ProductCategory::getByMageId($cateMageId)) instanceof ProductCategory)
-							continue;
-						$product->addCategory($category);
+						$product->clearAllCategory();
+						foreach($pro->category_ids as $cateMageId)
+						{
+							if(!($category = ProductCategory::getByMageId($cateMageId)) instanceof ProductCategory)
+								continue;
+							$product->addCategory($category);
+						}
 					}
-				}
-				Dao::commitTransaction();
 			}
-			catch(Exception $ex)
-			{
-				Dao::rollbackTransaction();
-			}
+			//record the last imported time for this import process
+			SystemSettings::addSettings(SystemSettings::TYPE_PRODUCT_LAST_UPDATED, trim($pro->created_at));
+				
+			Dao::commitTransaction();
+		}
+		catch(Exception $ex)
+		{
+			Dao::rollbackTransaction();
 		}
 		return $this;
 	}
