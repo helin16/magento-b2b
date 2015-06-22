@@ -339,4 +339,17 @@ BPCPageJs.prototype = {
 		
 		return this;
 	}
+	/**
+	 * pause javascript for given time
+	 */
+	,sleep: function(milliseconds) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.start = new Date().getTime();
+		for (var i = 0; i < 1e7; i++) {
+			if ((new Date().getTime() - tmp.start) > milliseconds) {
+				break;
+			}
+		}
+	}
 };
