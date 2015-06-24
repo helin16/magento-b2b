@@ -185,6 +185,8 @@ class SalesExport_Xero extends ExportAbstract
 				,'BLUESHIELD TECHNOLOGIES PTY LTD' => 14
 				,'KS ENVIRONMENTAL' => 14
 				,'DANMAC PRODUCTS PTY LTD' => 14
+				,'Fisher & Paykel Healthcare' => 30
+				,'GP GRADERS PTY LTD' => 30
 				,'NAVTECH SECURITY' => 7);
 		foreach($terms as $name => $days) {
 			if(strtoupper($name) === strtoupper(trim($customer->getName()))) {
