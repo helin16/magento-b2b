@@ -447,7 +447,7 @@ class OrderItem extends BaseEntityAbstract
 		$totalKitsCost = 0;
 		$totalNoOfKits = 0;
 		foreach(SellingItem::getAllByCriteria('orderItemId = ?', array($this->getId())) as $sellingItem) {
-			if(!($kit = $this->getKit()) instanceof Kit)
+			if(!($kit = $sellingItem->getKit()) instanceof Kit)
 				continue;
 			$totalKitsCost = $totalKitsCost + $kit->getCost();
 			$totalNoOfKits++;
