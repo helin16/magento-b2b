@@ -246,7 +246,7 @@ class OrderItem extends BaseEntityAbstract
 	 */
 	public function getIsShipped()
 	{
-	    return trim($this->isPicked) === '1';
+	    return trim($this->isShipped) === '1';
 	}
 	/**
 	 * Setter for isShipped
