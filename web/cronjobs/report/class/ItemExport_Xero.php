@@ -1,5 +1,6 @@
 <?php
 ini_set('memory_limit','1024M');
+ini_set('max_execution_time', 300);
 class ItemExport_Xero extends ExportAbstract
 {
 	protected static function _getData()
@@ -18,7 +19,6 @@ class ItemExport_Xero extends ExportAbstract
 			$logs = ProductQtyLog::getAllByCriteria('productId = ? and created <= ?', array($product->getId(), trim($toDate)), true, 1, 1, array('id' => 'desc'));
 			$log = count($logs) > 0 ? $logs[0] : null;
 			$myobCodes = ProductCode::getCodes($product, $myobCodeType, true, 1, 1);
-// 			$product = new Product();
 			$return[] = array(
 				'sku' => $product->getSku()
 				,'name' => $product->getName()
