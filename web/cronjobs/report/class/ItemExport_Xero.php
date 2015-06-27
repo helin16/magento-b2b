@@ -18,11 +18,12 @@ class ItemExport_Xero extends ExportAbstract
 			$logs = ProductQtyLog::getAllByCriteria('productId = ? and created <= ?', array($product->getId(), trim($toDate)), true, 1, 1, array('id' => 'desc'));
 			$log = count($logs) > 0 ? $logs[0] : null;
 			$myobCodes = ProductCode::getCodes($product, $myobCodeType, true, 1, 1);
+// 			$product = new Product();
 			$return[] = array(
 				'sku' => $product->getSku()
 				,'name' => $product->getName()
 				,'short description'=> $product->getShortDescription()
-				,'category'=> join(', ', array_map(create_function('$a', 'return $a->getName();'), $product->getCategories()))
+				,'category'=> join(', ', array_map(create_function('$a', 'return $a->getCategory()->getName();'), $product->getCategories()))
 				,'assetAccNo'=> $product->getAssetAccNo()
 				,'revenueAccNo'=> $product->getRevenueAccNo()
 				,'costAccNo'=> $product->getCostAccNo()
