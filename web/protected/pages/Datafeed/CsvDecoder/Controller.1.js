@@ -4,11 +4,11 @@
 var PageJs = new Class.create();
 PageJs.prototype = Object.extend(new BPCPageJs(), {
 	id_wrapper: '' //the html id of the wrapper
-	,_acceptableTypes: ['csv']
+	,_acceptableTypes: ['csv', 'txt']
 //	,csvFileLineFormat: []
 	,_fileReader: null
 	,_uploadedData: {}
-	,_config: {ifHeader: true, ifShowTableContent: true, supplier: null}
+	,_config: {ifHeader: true, ifShowTableContent: true, supplier: null, delimiter: ""}
 	,config_div: null
 	,file_upload_div: null
 	,listing_div: null
@@ -33,20 +33,6 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.me._loadBootstrapSwitch();
 		return tmp.me;
 	}
-
-//	,_genTemplate: function() {
-//		var tmp = {};
-//		tmp.me = this;
-//		if(tmp.me.type = tmp.me._getUploadType()) {
-//			tmp.data = [];
-//			tmp.data.push(tmp.me.csvFileLineFormat.join(', ') + "\n");
-//			tmp.now = new Date();
-//			tmp.fileName = tmp.me.type + '_' + tmp.now.getFullYear() + '_' + tmp.now.getMonth() + '_' + tmp.now.getDate() + '_' + tmp.now.getHours() + '_' + tmp.now.getMinutes() + '_' + tmp.now.getSeconds() + '.csv';
-//			tmp.blob = new Blob(tmp.data, {type: "text/csv;charset=utf-8"});
-//			saveAs(tmp.blob, tmp.fileName);
-//		}
-//		return tmp.me;
-//	}
 	,_getConifgDiv: function() {
 		var tmp = {};
 		tmp.me = this;
@@ -74,37 +60,9 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 	,_getFileUploadDiv: function() {
 		var tmp = {};
 		tmp.me = this;
-		tmp.newDiv =  new Element('div',  {'class': 'panel panel-default drop_file_div', 'title': 'You can drag multiple files here!'})
-			.insert({'bottom': new Element('div', {'class': 'panel-body'})
-				.insert({'bottom': new Element('div', {'class': 'form-group center-block text-left', 'style': 'width: 50%'})
-					.insert({'bottom': new Element('label').update('Drop you files here or select your file below:') })
-					.insert({'bottom': tmp.inputFile = new Element('input', {'type': 'file', 'style': 'display: none;'})
-						.observe('change', function(event) {
-							tmp.me._readFiles(event.target.files);
-						})
-					})
-					.insert({'bottom': new Element('div', {'class': 'clearfix'}) })
-					.insert({'bottom': new Element('span', {'class': 'btn btn-success clearfix'})
-						.update('Click to select your file')
-						.observe('click', function(event) {
-							tmp.inputFile.click();
-						})
-					})
-					.insert({'bottom': new Element('div', {'class': 'clearfix'}) })
-					.insert({'bottom': new Element('small').update('ONLY ACCEPT file formats: ' + tmp.me._acceptableTypes.join(', ')) })
-				})
-			})
-			.observe('dragover', function(evt) {
-				evt.stopPropagation();
-				evt.preventDefault();
-				evt.dataTransfer.dropEffect = 'copy';
-			})
-			.observe('drop', function(evt) {
-				evt.stopPropagation();
-				evt.preventDefault();
-				tmp.me._readFiles(evt.dataTransfer.files);
-			});
-
+		tmp.me.FileUploader = new FileUploaderJs(tmp.me);
+		tmp.newDiv =  tmp.me.FileUploader._getFileUploadDiv(tmp.me._acceptableTypes, function(data){tmp.me.displayLineItems(data);}, tmp.me._config.ifHeader, tmp.me._config.delimiter);
+		
 		return tmp.newDiv;
 	}
 	,_getListingDiv: function() {
@@ -120,52 +78,13 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		
 		return tmp.newDiv;
 	}
-
-	,_readFiles: function(files) {
-		var tmp = {};
-		tmp.me = this;
-		for(tmp.i = 0, tmp.file; tmp.file = files[tmp.i]; tmp.i++) {
-			tmp.fileName = tmp.file.name; // because tmp.file is soon been override
-			Papa.parse(tmp.file, {
-				skipEmptyLines: true,
-				header: tmp.me._config.ifHeader,
-				complete: function(results) {
-					tmp.me._uploadedData = results;
-					tmp.me.file_upload_div.removeClassName('drop_file_div').writeAttribute('title', false).removeClassName('panel').update(
-						new Element('div', {'class': 'panel panel-default'})
-							.insert({'bottom': new Element('div', {'class': 'panel-heading clearfix'})
-								.update('Total Rows:' + tmp.me._uploadedData.data.length)
-								.insert({'bottom': new Element('small', {'class': 'pull-right'}).update(tmp.fileName) })
-							})
-							.insert({'bottom': tmp.me.listing_div = tmp.me._getListingDiv().hide() })
-							.insert({'bottom': new Element('div', {'class': 'panel-footer'})
-								.insert({'bottom': new Element('span', {'class': 'btn btn-success'})
-									.update('Start')
-									.observe('click', function() {
-										tmp.me.displayLineItems(results);
-									})
-								})
-								.insert({'bottom': new Element('span', {'class': 'btn btn-warning pull-right'})
-									.update('Cancel')
-									.observe('click', function(){
-										jQuery('.btn').attr('disabled','disabled');
-										window.location = document.URL;
-									})
-								})
-							})
-					);
-					return tmp.me;
-				}
-			});
-		}
-		return tmp.me;
-	}
 	,displayLineItems: function(data) {
 		var tmp = {};
 		tmp.me = this;
 		tmp.data = data;
 		tmp.displayData = data;
 		
+		console.debug(tmp.me.listing_div);
 		tmp.data.meta.fields.each(function(field){
 			tmp.me.listing_div.show().down('thead tr').insert({'bottom': new Element('td').update(field) });
 		});
@@ -179,16 +98,6 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				tmp.me.observeClickNDbClick(tmp.td, null, function(){tmp.me.showModalBox('<b>'+column.key+'</b>', column.value)});
 			});
 		});
-		
-		// deal with buttons
-		tmp.me.file_upload_div.down('.panel-footer').update('');
-		tmp.me.file_upload_div.down('.panel-heading .pull-right').update('')
-			.insert({'bottom': new Element('button', {'class': 'btn btn-success btn-sm'})
-				.update('Proceed')
-				.observe('click', function() {
-					tmp.me._processDatafeed(tmp.data,$(this));
-				})
-			});
 		
 		return tmp.me;
 	}
