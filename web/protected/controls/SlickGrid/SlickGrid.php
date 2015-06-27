@@ -21,6 +21,7 @@ class SlickGrid extends TClientScript
 			// Add jQuery library
 			// Add mousewheel plugin (this is optional)
 			$clientScript->registerHeadScriptFile('SlickGrid.jQuery.drag.js', $folder . '/lib/jquery.event.drag-2.2.js');
+			$clientScript->registerHeadScriptFile('SlickGrid.jQuery.drop.js', $folder . '/lib/jquery.event.drop-2.2.js');
 			$clientScript->registerHeadScriptFile('SlickGrid.core.js', $folder . '/slick.core.js');
 			$clientScript->registerHeadScriptFile('SlickGrid.js', $folder . '/slick.grid.js');
 			$clientScript->registerStyleSheetFile('SlickGrid.css', $folder . '/slick.grid.css', 'screen');

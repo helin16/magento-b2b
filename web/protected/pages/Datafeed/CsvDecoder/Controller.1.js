@@ -44,7 +44,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					})
 				})
 				.insert({'bottom': new Element('div', {'class': 'col-xs-1'})
-					.insert({'bottom': tmp.me.getFormGroup(new Element('label').update('Header? '),
+					.insert({'bottom': tmp.me.getFormGroup(new Element('label').update('Header? ').setStyle('display: block;'),
 							new Element('input', {'type': 'checkbox', 'data-off-text': 'No', 'data-on-text': 'Yes', 'class': 'form-control bootstrap-switch', 'config': 'ifHeader', 'name': 'ifHeader', 'title': 'does the csv include header?'}) )
 					})
 				})
@@ -76,6 +76,9 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			.insert({'bottom': new Element('tbody')
 			});
 		
+		tmp.newDiv = new Element('div', {'class': 'col-lg-12'});
+		tmp.newDiv.setStyle('width: ' + window.innerWidth*0.9 + 'px; height: ' + window.innerHeight*0.8 + 'px; overflow: hidden; outline: 0px none; position: relative;');
+		
 		return tmp.newDiv;
 	}
 	,displayLineItems: function(data) {
@@ -84,20 +87,33 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.data = data;
 		tmp.displayData = data;
 		
-		console.debug(tmp.me.listing_div);
+		console.debug(tmp.data);
+		//prepare data for SlickGrid
+		tmp.columns = [];
+		tmp.options = {
+			enableCellNavigation : true,
+			enableColumnReorder : false
+		};
+		tmp.me.listing_div.show();
+		tmp.me._signRandID(tmp.me.listing_div);
 		tmp.data.meta.fields.each(function(field){
-			tmp.me.listing_div.show().down('thead tr').insert({'bottom': new Element('td').update(field) });
+			tmp.columns.push({id: field, name: field, field: field});
+//			tmp.me.listing_div.show().down('thead tr').insert({'bottom': new Element('td').update(field) });
 		});
 		
-		if(tmp.me._config.ifShowTableContent === true)
-			tmp.displayData = tmp.data.data.slice(0,20);
-		tmp.displayData.each(function(row){
-			tmp.me.listing_div.show().down('tbody').insert({'bottom': tmp.tr = new Element('tr') });
-			$H(row).each(function(column){
-				tmp.tr.insert({'bottom': tmp.td = new Element('td', {'class': 'truncate', 'title': column.value}).update(column.value) });
-				tmp.me.observeClickNDbClick(tmp.td, null, function(){tmp.me.showModalBox('<b>'+column.key+'</b>', column.value)});
-			});
-		});
+		console.debug(tmp.data.data);
+		tmp.grid = new Slick.Grid(jQuery("#" + tmp.me.listing_div.id), tmp.data.data, tmp.columns, tmp.options);
+		jQuery("#" + tmp.me.listing_div.id).on('shown', tmp.grid.resizeCanvas)
+		
+//		if(tmp.me._config.ifShowTableContent === true)
+//			tmp.displayData = tmp.data.data.slice(0,20);
+//		tmp.displayData.each(function(row){
+//			tmp.me.listing_div.show().down('tbody').insert({'bottom': tmp.tr = new Element('tr') });
+//			$H(row).each(function(column){
+//				tmp.tr.insert({'bottom': tmp.td = new Element('td', {'class': 'truncate', 'title': column.value}).update(column.value) });
+//				tmp.me.observeClickNDbClick(tmp.td, null, function(){tmp.me.showModalBox('<b>'+column.key+'</b>', column.value)});
+//			});
+//		});
 		
 		return tmp.me;
 	}
