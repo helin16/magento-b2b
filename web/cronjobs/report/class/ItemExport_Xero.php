@@ -22,7 +22,7 @@ class ItemExport_Xero extends ExportAbstract
 				'sku' => $product->getSku()
 				,'name' => $product->getName()
 				,'short description'=> $product->getShortDescription()
-				,'category'=> array_map(create_function('$a', 'return $a->getName();'), $product->getCategories())
+				,'category'=> join(', ', array_map(create_function('$a', 'return $a->getName();'), $product->getCategories()))
 				,'assetAccNo'=> $product->getAssetAccNo()
 				,'revenueAccNo'=> $product->getRevenueAccNo()
 				,'costAccNo'=> $product->getCostAccNo()
