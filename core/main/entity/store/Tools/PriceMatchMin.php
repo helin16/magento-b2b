@@ -99,7 +99,8 @@ class PriceMatchMin extends BaseEntityAbstract
 	/**
 	 * get min record by sku
 	 * 
-	 * @param string $sku
+	 * @param unknown $sku
+	 * @param string $activeOnly
 	 * @throws Exception
 	 * @return Ambigous <string, Ambigous>
 	 */
@@ -120,7 +121,7 @@ class PriceMatchMin extends BaseEntityAbstract
 		$params = array();
 		foreach($searchCriteria as $field => $value)
 		{
-			if((is_array($value) && count($value) === 0) || (is_string($value) && ($value = trim($value)) === ''))
+			if((is_array($value) && count($value) === 0) || (is_string($value) && ($value = trim($value)) === '') || $value === null)
 				continue;
 
 			$query = PriceMatchRecord::getQuery();
@@ -150,11 +151,12 @@ class PriceMatchMin extends BaseEntityAbstract
 		if($noSearch === true)
 			throw new Exception("invalid paramiters");
 		$records = PriceMatchRecord::getAllByCriteria(implode(' AND ', $where), $params, true, 1, 1, array('price' => 'asc'), $stats);
+		
 		if(count($records) > 0)
 			$this->setRecord($records[0]);
 		else $this->setActive(false);
 		$this->save();
 		
-		return $this->record;
+		return $this;
 	}
 }

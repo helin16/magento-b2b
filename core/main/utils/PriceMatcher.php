@@ -19,9 +19,12 @@ abstract class PriceMatcher
 		{
 			$companyName = trim($pmc->getCompanyName());
 			if(!isset($outputArray[$companyName]))
+			{
 				$outputArray[$companyName] = array();
-	
+			}
+			
 			$outputArray[$companyName][] = trim($pmc->getCompanyAlias());
+			$outputArray[$companyName]['PriceMatchCompanyId'] = $pmc->getId(); // added b/c improvment of pricematch (Jun2015). it keeps PriceMatchCompany for further reference
 		}
 		return $outputArray;
 	}
@@ -45,7 +48,9 @@ abstract class PriceMatcher
 				,'companyPrices'  => array()
 		);
 		foreach($companyAliases as $key => $value)
-			$finalOutputArray['companyPrices'][$key] = array('price' => 0, 'priceURL' => '');
+		{
+			$finalOutputArray['companyPrices'][$key] = array('price' => 0, 'priceURL' => '', 'PriceMatchCompanyId' => $value['PriceMatchCompanyId']);
+		}
 		$url = 'http://www.staticice.com.au/cgi-bin/search.cgi';
 		//getting actual values
 		$productPriceArray = HTMLParser::getPriceListForProduct($url, $sku);
@@ -59,7 +64,7 @@ abstract class PriceMatcher
 		
 			foreach($companyAliases as $key => $value)
 			{
-				if(in_array(strtolower($companyURL), array_map(create_function('$a', 'return strtolower($a);'), $value)))
+				if(is_array($value) === true && in_array(strtolower($companyURL), array_map(create_function('$a', 'return strtolower($a);'), $value)))
 				{
 					$price = str_replace(' ', '', str_replace('$', '', str_replace(',', '', $productPriceInfo['price']) ) );
 					if($finalOutputArray['minPrice'] == 0 || $finalOutputArray['minPrice'] > $price)
@@ -67,6 +72,7 @@ abstract class PriceMatcher
 					$finalOutputArray['companyPrices'][$key] = array(
 							'price' => $price
 							,'priceURL' => HTMLParser::getHostUrl($url) . $productPriceInfo['priceLink']
+							,'PriceMatchCompanyId' => $value['PriceMatchCompanyId'] // added b/c improvment of pricematch (Jun2015). it keeps PriceMatchCompany for further reference
 					);
 					break;
 				}

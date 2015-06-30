@@ -166,7 +166,6 @@ class PriceMatchRecord extends BaseEntityAbstract
 	}
 	
 	/**
-	 * 
 	 * create for PriceMatchRecord
 	 * 
 	 * @param PriceMatchCompany $company
