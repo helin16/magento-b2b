@@ -147,7 +147,6 @@ class Product extends InfoEntityAbstract
 	 */
 	protected $categories = array();
 	/**
-	/**
 	 * The productCodes
 	 *
 	 * @var array
@@ -174,6 +173,12 @@ class Product extends InfoEntityAbstract
 	 * @var bool
 	 */
 	private $isKit = false;
+	/**
+	 * The product priceMatchRules
+	 *
+	 * @var array
+	 */
+	protected $priceMatchRules = array();
 	/**
 	 * Getter for categories
 	 *
@@ -961,6 +966,26 @@ class Product extends InfoEntityAbstract
 	    return $this;
 	}
 	/**
+	 * getter for priceMatchRules
+	 *
+	 * @return array
+	 */
+	public function getPriceMatchRules()
+	{
+		$this->loadOneToMany('priceMatchRules');
+	    return $this->priceMatchRules;
+	}
+	/**
+	 * Setter for priceMatchRules
+	 *
+	 * @return Product
+	 */
+	public function setpriceMatchRules($priceMatchRules)
+	{
+	    $this->priceMatchRules = $priceMatchRules;
+	    return $this;
+	}
+	/**
 	 * recalculating the stockOnHand and stockOnHandValue of this product, if it's a kit
 	 */
 	public function reCalKitsValue()
@@ -1341,6 +1366,7 @@ class Product extends InfoEntityAbstract
 		DaoMap::setOneToMany('supplierCodes', 'SupplierCode', 'pro_sup_code');
 		DaoMap::setOneToMany('categories', 'Product_Category', 'pro_cate');
 		DaoMap::setOneToMany('codes', 'ProductCode', 'pro_pro_code');
+		DaoMap::setOneToMany('priceMatchRules', 'ProductPriceMatchRule', 'pro_pro_price_rule');
 		DaoMap::setBoolType('isKit');
 		parent::__loadDaoMap();
 
