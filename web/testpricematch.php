@@ -3,6 +3,9 @@ require_once 'bootstrap.php';
 Core::setUser(UserAccount::get(UserAccount::ID_SYSTEM_ACCOUNT));
 // try {
 	
+	$product = Product::get(39739);
+	
+	//$companies
 	$where = array(1);
 	$params = array();
 	$value = array('MSY','CPL','Umart');
@@ -10,9 +13,17 @@ Core::setUser(UserAccount::get(UserAccount::ID_SYSTEM_ACCOUNT));
 	$params = array_merge($params, $value);
 	$companies = PriceMatchCompany::getAllByCriteria(implode(' AND ', $where), $params);
 	
-	echo 'Companies: ' . join(', ', array_map(create_function('$a', 'return $a->getCompanyName();'), $companies)) . "\n\n";
+	foreach ($companies as $company)
+	{
+		$rule = ProductPriceMatchRule::create($product, $company, '20', '100.56');
+		var_dump($rule);
+	}
+
+
 	
-	PriceMatchConnector::runAllProduct($companies,true,true);
+// 	echo 'Companies: ' . join(', ', array_map(create_function('$a', 'return $a->getCompanyName();'), $companies)) . "\n\n";
+	
+// 	PriceMatchConnector::runAllProduct($companies,true,true);
 	
 // 	echo "Hello<br/>";
 // 	Dao::beginTransaction();
