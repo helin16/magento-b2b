@@ -1,24 +1,38 @@
 <?php
 require_once 'bootstrap.php';
-try {
-	echo "Hello<br/>";
-	Core::setUser(UserAccount::get(UserAccount::ID_SYSTEM_ACCOUNT));
-	Dao::beginTransaction();
-	echo '<pre>';
-
-	$product = Product::get(39739);
-	$sku = $product->getSku();
+Core::setUser(UserAccount::get(UserAccount::ID_SYSTEM_ACCOUNT));
+// try {
+	
 	$where = array(1);
 	$params = array();
-	$value = array(1,3,8);
-	$where[] = 'id IN ('.implode(", ", array_fill(0, count($value), "?")).')';
+	$value = array('MSY','CPL','Umart');
+	$where[] = 'companyName IN ('.implode(", ", array_fill(0, count($value), "?")).')';
 	$params = array_merge($params, $value);
-// 	Dao::$debug = true;
 	$companies = PriceMatchCompany::getAllByCriteria(implode(' AND ', $where), $params);
-	$companies = PriceMatchCompany::getAll();
-// 	Dao::$debug = false;
-// 	var_dump(array_map(create_function('$a', 'return $a->getCompanyName();'), $companies));
-	echo "--------------------------------------<br/>";
+	
+	echo 'Companies: ' . join(', ', array_map(create_function('$a', 'return $a->getCompanyName();'), $companies)) . "\n\n";
+	
+	PriceMatchConnector::runAllProduct($companies,true,true);
+	
+// 	echo "Hello<br/>";
+// 	Dao::beginTransaction();
+// 	echo '<pre>';
+
+	
+	
+// 	$product = Product::get(39739);
+// 	$sku = $product->getSku();
+// 	$where = array(1);
+// 	$params = array();
+// 	$value = array(1,3,8);
+// 	$where[] = 'id IN ('.implode(", ", array_fill(0, count($value), "?")).')';
+// 	$params = array_merge($params, $value);
+// // 	Dao::$debug = true;
+// 	$companies = PriceMatchCompany::getAllByCriteria(implode(' AND ', $where), $params);
+// 	$companies = PriceMatchCompany::getAll();
+// // 	Dao::$debug = false;
+// // 	var_dump(array_map(create_function('$a', 'return $a->getCompanyName();'), $companies));
+// 	echo "--------------------------------------<br/>";
 	
 	
 	
@@ -35,13 +49,13 @@ try {
 	
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	
-	var_dump(PriceMatchConnector::run($product,$companies));
+// 	var_dump(PriceMatchConnector::run($product,$companies));
 	
-	echo '</pre>';
-	Dao::commitTransaction();
-} catch (Exception $e)
-{ 
-	Dao::rollbackTransaction();
-	throw $e;
-}
+// 	echo '</pre>';
+// 	Dao::commitTransaction();
+// } catch (Exception $e)
+// { 
+// // 	Dao::rollbackTransaction();
+// 	throw $e;
+// }
 ?>

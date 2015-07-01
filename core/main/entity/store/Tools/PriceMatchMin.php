@@ -119,23 +119,26 @@ class PriceMatchMin extends BaseEntityAbstract
 		$noSearch = true;
 		$where = array(1);
 		$params = array();
+		
+		$where[] =  "minId = ? ";
+		$params[] = intval($this->getId());
+		
 		foreach($searchCriteria as $field => $value)
 		{
 			if((is_array($value) && count($value) === 0) || (is_string($value) && ($value = trim($value)) === '') || $value === null)
 				continue;
 
-			$query = PriceMatchRecord::getQuery();
 			switch ($field)
 			{
 				case 'price_from':
 				{
-					$where[] =  "price >= ";
+					$where[] =  "price >= ? ";
 					$params[] = doubleval($value);
 					break;
 				}
 				case 'price_to':
 				{
-					$where[] =  "price <= ";
+					$where[] =  "price <= ? ";
 					$params[] = doubleval($value);
 					break;
 				}
@@ -154,7 +157,7 @@ class PriceMatchMin extends BaseEntityAbstract
 		
 		if(count($records) > 0)
 			$this->setRecord($records[0]);
-		else $this->setActive(false);
+		else $this->setRecord(null)->setActive(false);
 		$this->save();
 		
 		return $this;

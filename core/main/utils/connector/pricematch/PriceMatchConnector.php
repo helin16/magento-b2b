@@ -102,12 +102,46 @@ class PriceMatchConnector
 	    $this->price_to = $price_to;
 	    return $this;
 	}
-	
+	public static function runAllProduct(array $companies, $echo = false, $clearAll = false)
+	{
+		if(count($companies) === 0)
+			throw new Exception('must get at least one company to compare price');
+		
+		// clean up if requested
+		if($clearAll === true)
+		{
+			echo "clear all PriceMatchMin" . "\n";
+			PriceMatchMin::deleteByCriteria('id <> 0'); // this will delete all b/c id will never be 0
+			echo "clear all PriceMatchRecord" . "\n";
+			PriceMatchRecord::deleteByCriteria('id <> 0'); // this will delete all b/c id will never be 0
+		}
+		
+		foreach (Product::getAll() as $i)
+		{
+// 			$i = Product::get(2311);
+			try {
+				Dao::beginTransaction();
+				
+				$j = self::run($i, $companies);
+				if($echo === true)
+					echo 'Product (sku = ' . $j->getSku() . '), min price: ' . ($j->getRecord() instanceof PriceMatchRecord ? $j->getRecord()->getPrice() . '(' . $j->getRecord()->getCompany()->getCompanyName() . ')' : 'N/A') . ')' . "\n";
+				Dao::commitTransaction();
+			} catch (Exception $e)
+			{ 
+				Dao::rollbackTransaction();
+				echo "****ERROR****" . "\n" . $e->getMessage() . "\n" . $e->getTraceAsString() . "\n";
+			}
+// 			break;
+// 			sleep(3);
+		}
+		return '';
+	}
 	/**
 	 * runner for PriceMatchConnector
 	 * 
 	 * @param Product $product
 	 * @param array $companies
+	 * @return PriceMatchMin
 	 * @throws Exception
 	 */
 	public static function run(Product $product, array $companies, $price_from = '', $price_to = '')
