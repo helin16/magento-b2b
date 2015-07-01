@@ -126,8 +126,6 @@ class PriceMatchConnector
 				if($echo === true)
 					echo 'Product (sku = ' . $j->getSku() . '), min price: ' . ($j->getRecord() instanceof PriceMatchRecord ? $j->getRecord()->getPrice() . '(' . $j->getRecord()->getCompany()->getCompanyName() . ')' : 'N/A') . ')' . "\n";
 				Dao::commitTransaction();
-				unset($i);
-				unset($j); // free up memory
 			} catch (Exception $e)
 			{
 				Dao::rollbackTransaction();
