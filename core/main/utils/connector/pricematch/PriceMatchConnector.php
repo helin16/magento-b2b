@@ -102,6 +102,16 @@ class PriceMatchConnector
 	    $this->price_to = $price_to;
 	    return $this;
 	}
+	/**
+	 * 
+	 * not recomend use this b/c memory leak issue
+	 * 
+	 * @param array $companies
+	 * @param string $echo
+	 * @param string $clearAll
+	 * @throws Exception
+	 * @return string
+	 */
 	public static function runAllProduct(array $companies, $echo = false, $clearAll = false)
 	{
 		if(count($companies) === 0)
@@ -144,8 +154,14 @@ class PriceMatchConnector
 	 * @return PriceMatchMin
 	 * @throws Exception
 	 */
-	public static function run(Product $product, array $companies, $price_from = '', $price_to = '')
+	public static function run(Product $product, array $companies, $price_from = '', $price_to = '', $debug = false)
 	{
+gc_enable();
+gc_collect_cycles();
+		
+$usage = memory_get_usage();
+echo '-->Memory Usage Step 1: ' . memory_get_usage() / 1000000 . "\n";
+
 		if(count($companies) === 0)
 			throw new Exception('must get at least one company to compare price');
 		foreach ($companies as $company)
@@ -157,15 +173,22 @@ class PriceMatchConnector
 		$class = new self();
 		$class->setProduct($product)->setCompanies($companies);
 
-		$prices = $class->priceMatchProduct();
 		if(($i = $class->priceMatchProduct()) && isset($i['companyPrices']) && is_array($i['companyPrices']) && count($i['companyPrices'])) // get price for all companies for given sku
 		{
 			$class->recordResult($i['companyPrices']); // put price match result for all companies into PriceMatchRecard Table
 			$min = $class->getMinPrice(); // get the 'min' price under given limit (so far price range and conpany selections), such limit is in $this
+			unset($class);
+			unset($i);
+			
+echo '-->Memory Usage Step 2: ' . memory_get_usage()  / 1000000 . "\n";
+echo '-->Memory Usage: ' . (memory_get_usage() - $usage) / 1000000 . "\n";
+			
+			if($debug === true)
+				echo 'Product (sku = ' . $min->getSku() . '), min price: ' . ($min->getRecord() instanceof PriceMatchRecord ? $min->getRecord()->getPrice() . '(' . $min->getRecord()->getCompany()->getCompanyName() . ')' : 'N/A') . ')' . "\n";
 
 			return $min; // $min is an entry of PriceMatchMin, is nothing find $min->getRecord() will be null
 		}
-
+		$class = null;
 		throw new Exception('cannot get any price for product(id=' . $product->getId() . ', sku=' . $product->getSku() . ') and companiesIds="' . join(', ', array_map(create_function('$a', 'return $a->getId();'), $companies))) . '")';
 	}
 	/**
@@ -218,16 +241,12 @@ class PriceMatchConnector
 	 */
 	private function priceMatchProduct()
 	{
-		$product = $this->product;
-		$prices = ProductPrice::getPrices($product, ProductPriceType::get(ProductPriceType::ID_RRP));
+		$prices = ProductPrice::getPrices($this->product, ProductPriceType::get(ProductPriceType::ID_RRP));
 		$companies = PriceMatcher::getAllCompaniesForPriceMatching();
 
-		$prices = PriceMatcher::getPrices($companies, $product->getSku(), (count($prices)===0 ? 0 : $prices[0]->getPrice()) );
-
-		$myPrice = $prices['myPrice'];
-		$minPrice = $prices['minPrice'];
-		$msyPrice = $prices['companyPrices']['MSY'];
-		$prices['product'] = $product;
+		$prices = PriceMatcher::getPrices($companies, $this->product->getSku(), (count($prices)===0 ? 0 : $prices[0]->getPrice()) );
+		
+		unset($companies);
 
 		return $prices;
 	}

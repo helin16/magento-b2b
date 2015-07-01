@@ -78,6 +78,9 @@ abstract class PriceMatcher
 				}
 			}
 		}
+		$companyAliases = null;
+		$price = null;
+		$productPriceArray = null;
 			
 		//return the result
 		$finalOutputArray['priceDiff'] = ($finalOutputArray['myPrice'] - $finalOutputArray['minPrice']);

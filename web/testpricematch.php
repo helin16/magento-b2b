@@ -1,11 +1,13 @@
 <?php
+
+ini_set('memory_limit','64M');
+
 require_once 'bootstrap.php';
+
 Core::setUser(UserAccount::get(UserAccount::ID_SYSTEM_ACCOUNT));
-// try {
+try {
+	Dao::beginTransaction();
 	
-	$product = Product::get(39739);
-	
-	//$companies
 	$where = array(1);
 	$params = array();
 	$value = array('MSY','CPL','Umart');
@@ -13,17 +15,30 @@ Core::setUser(UserAccount::get(UserAccount::ID_SYSTEM_ACCOUNT));
 	$params = array_merge($params, $value);
 	$companies = PriceMatchCompany::getAllByCriteria(implode(' AND ', $where), $params);
 	
-	foreach ($companies as $company)
-	{
-		$rule = ProductPriceMatchRule::create($product, $company, '20', '100.56');
-		var_dump($rule);
-	}
+	
+// 	foreach ($companies as $company)
+// 	{
+// 		$rule = ProductPriceMatchRule::create($product, $company, '20', '100.56');
+// 		var_dump($rule);
+// 	}
 
 
 	
-// 	echo 'Companies: ' . join(', ', array_map(create_function('$a', 'return $a->getCompanyName();'), $companies)) . "\n\n";
+	echo 'Companies: ' . join(', ', array_unique(array_map(create_function('$a', 'return $a->getCompanyName();'), $companies))) . "\n";
+	echo 'Product: id=' . Product::get($argv[1])->getId() . ', sku="' . Product::get($argv[1])->getSku() . '"' . "\n\n";
 	
-// 	PriceMatchConnector::runAllProduct($companies,true,true);
+	PriceMatchConnector::run(Product::get($argv[1]), $companies, '', '', true);
+	Dao::commitTransaction();
+} catch (Exception $e)
+{
+	Dao::rollbackTransaction();
+	echo "****ERROR****" . "\n" . $e->getMessage() . "\n" . $e->getTraceAsString() . "\n";
+}
+// try {
+	
+// 	$product = Product::get(39739);
+	
+	//$companies
 	
 // 	echo "Hello<br/>";
 // 	Dao::beginTransaction();
