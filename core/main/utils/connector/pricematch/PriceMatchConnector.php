@@ -115,10 +115,10 @@ class PriceMatchConnector
 			echo "clear all PriceMatchRecord" . "\n";
 			PriceMatchRecord::deleteByCriteria('id <> 0'); // this will delete all b/c id will never be 0
 		}
-		
-		foreach (Product::getAll() as $i)
+		$productIds = array_map(create_function('$a', 'return $a->getId();'), Product::getAll());
+		foreach ($productIds as $productId)
 		{
-// 			$i = Product::get(2311);
+			$i = Product::get($productId);
 			try {
 				Dao::beginTransaction();
 				
@@ -126,6 +126,7 @@ class PriceMatchConnector
 				if($echo === true)
 					echo 'Product (sku = ' . $j->getSku() . '), min price: ' . ($j->getRecord() instanceof PriceMatchRecord ? $j->getRecord()->getPrice() . '(' . $j->getRecord()->getCompany()->getCompanyName() . ')' : 'N/A') . ')' . "\n";
 				Dao::commitTransaction();
+				unset($i);unset($j); // free up memory
 			} catch (Exception $e)
 			{ 
 				Dao::rollbackTransaction();
