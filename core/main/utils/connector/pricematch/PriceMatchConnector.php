@@ -115,7 +115,7 @@ class PriceMatchConnector
 			echo "clear all PriceMatchRecord" . "\n";
 			PriceMatchRecord::deleteByCriteria('id <> 0'); // this will delete all b/c id will never be 0
 		}
-		$sql = "select distinct p.id `pId` from product p where p.actie = 1";
+		$sql = "select distinct p.id `pId` from product p where p.active = 1";
 		$productIds = Dao::getResultsNative($sql, array(), PDO::FETCH_ASSOC);
 		foreach ($productIds as $row)
 		{
