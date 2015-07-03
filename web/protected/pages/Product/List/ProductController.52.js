@@ -149,7 +149,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 				tmp.btn
 				,function(){
 					tmp.selected = tmp.me._getSelection();
-					tmp.totalQty = $(tmp.me.totalQtyId).innerHTML;
+					tmp.totalQty = $('total-found-count').innerHTML;
 					
 					if(tmp.selected !== null && tmp.selected.length !== parseInt(tmp.totalQty)) {
 						tmp.warningMsg = new Element('div')
@@ -160,7 +160,6 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 							.insert({'bottom': new Element('i', {'class': 'btn btn-success btn-lg pull-right'}).update('Yes').setStyle(tmp.selected.length === 0 ? 'display: none;' : '') });
 						tmp.me.showModalBox('Warning', tmp.warningMsg);
 					}
-					console.debug(tmp.selected);
 				}
 				,null
 				);
@@ -566,7 +565,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 	,_getNextPageBtn: function() {
 		var tmp = {};
 		tmp.me = this;
-		tmp.totalQty = $(tmp.me.totalQtyId).innerHTML;
+		tmp.totalQty = $('total-found-count').innerHTML;
 		return new Element('tfoot')
 			.insert({'bottom': new Element('tr')
 				.insert({'bottom': new Element('td', {'colspan': tmp.me._nextPageColSpan, 'class': 'text-center'})
