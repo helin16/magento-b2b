@@ -8,7 +8,7 @@ try {
 
 	$page = HTMLParser::getWebsite($url);
 	
-	$image = $page->find('#image', 0);
+	$image = $page->find('.product-info a', 0);
 	var_dump($image);
 	
 	echo '</pre>';

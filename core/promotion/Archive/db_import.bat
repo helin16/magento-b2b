@@ -32,7 +32,7 @@ echo done.
 :: Import sql files
 echo.
 echo importing database from %dump_file_name%
-7z x -so %dump_file_name% | mysql -u root -proot %db_name%
+7z x -so -pbudget123pc %dump_file_name% | mysql -u root -proot %db_name%
 echo done
 echo importing priceMatch.sql
 mysql -u root -proot bpcinternal < ..\priceMatch.sql

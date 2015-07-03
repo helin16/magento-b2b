@@ -1,1 +1,720 @@
-var PageJs=new Class.create;PageJs.prototype=Object.extend(new CRUDPageJs,{manufactures:[],suppliers:[],productCategories:[],productStatuses:[],_showRightPanel:!1,_nextPageColSpan:9,_getTitleRowData:function(){return{sku:"SKU",name:"Product Name",locations:"Locations",invenAccNo:"AccNo.",manufacturer:{name:"Brand"},supplierCodes:[{supplier:{name:"Supplier"},code:""}],active:"act?",stockOnOrder:"OnOrder",stockOnHand:"OnHand",stockOnPO:"OnPO"}},toggleSearchPanel:function(e){var t={};return t.me=this,$(e).toggle(),t.me.deSelectProduct(),t.me},_loadManufactures:function(e){this.manufactures=e;var t={};return t.me=this,t.selectionBox=$(t.me.searchDivId).down('[search_field="pro.manufacturerIds"]'),t.me.manufactures.each(function(e){t.selectionBox.insert({bottom:new Element("option",{value:e.id}).update(e.name)})}),this},_loadProductStatuses:function(e){this.productStatuses=e;var t={};return t.me=this,t.selectionBox=$(t.me.searchDivId).down('[search_field="pro.productStatusIds"]'),t.me.productStatuses.each(function(e){t.selectionBox.insert({bottom:new Element("option",{value:e.id}).update(e.name)})}),this},_loadSuppliers:function(e){this.suppliers=e;var t={};return t.me=this,t.selectionBox=$(t.me.searchDivId).down('[search_field="pro.supplierIds"]'),t.me.suppliers.each(function(e){t.selectionBox.insert({bottom:new Element("option",{value:e.id}).update(e.name)})}),this},_loadCategories:function(e){this.categories=e;var t={};return t.me=this,t.selectionBox=$(t.me.searchDivId).down('[search_field="pro.productCategoryIds"]'),t.me.categories.sort(function(e,t){return e.namePath>t.namePath}).each(function(e){t.selectionBox.insert({bottom:new Element("option",{value:e.id}).update(e.namePath)})}),this},_loadChosen:function(){return jQuery(".chosen").select2(),this},_bindSearchKey:function(){var e={};return e.me=this,$$("#searchBtn").first().observe("click",function(t){$$("#showSearch").first().checked?(e.me.deSelectProduct(),e.me.getSearchCriteria().getResults(!0,e.me._pagination.pageSize)):$$("#showSearch").first().click()}),$("searchDiv").getElementsBySelector("[search_field]").each(function(t){t.observe("keydown",function(t){e.me.keydown(t,function(){$(e.me.searchDivId).down("#searchBtn").click()})})}),this},_getSupplierCodes:function(e,t){var n={};return n.me=this,n.supplierCodeString=[],e.each(function(e){n.supplierCodeString.push(t===!0?"Supplier":'<abbr title="Code: '+e.code+'">'+(e.supplier&&e.supplier.name?e.supplier.name:"")+"</abbr>")}),n.supplierCodeString.join(", ")},_getLocations:function(e,t){var n={};return n.me=this,t===!0?"Locations":(n.locationStrings=[],e.each(function(e){n.locationStrings.push('<div><small><strong class="hidden-xs hide-when-info hidden-sm">'+e.type.name+': </strong><abbr title="Type: '+e.type.name+'">'+e.value+"</abbr></small></div>")}),n.locationStrings.join(""))},_displayPriceMatchResult:function(e,t){var n={};return n.me=this,n.minPrice=0,n.tbody=new Element("tbody"),$H(e.companyPrices).each(function(e){0!==parseInt(e.value.price)&&(0===parseInt(n.minPrice)&&parseFloat(e.value.price)>0||parseFloat(e.value.price)<parseFloat(n.minPrice))&&(n.minPrice=e.value.price),n.tbody.insert({bottom:new Element("tr").insert({bottom:new Element("td",{colspan:3}).update(e.key)}).insert({bottom:new Element("td").update(e.value.priceURL&&!e.value.priceURL.blank()?new Element("a",{href:e.value.priceURL,target:"__blank"}).update(n.me.getCurrency(e.value.price)):n.me.getCurrency(e.value.price))})})}),n.priceDiff=parseFloat(e.myPrice)-parseFloat(n.minPrice),n.priceDiffClass="",0!==parseInt(n.minPrice)&&(parseInt(n.priceDiff)>0?n.priceDiffClass="label label-danger":parseInt(n.priceDiff)<0&&(n.priceDiffClass="label label-success")),n.newDiv=new Element("table",{"class":"table table-striped table-hover price-match-listing"}).insert({bottom:new Element("thead").insert({bottom:new Element("tr").insert({bottom:new Element("th").update("SKU")}).insert({bottom:new Element("th").update("My Price")}).insert({bottom:new Element("th",{"class":"price_diff"}).update("Price Diff.")}).insert({bottom:new Element("th").update("Min Price")})})}).insert({bottom:new Element("tbody").insert({bottom:new Element("tr").insert({bottom:new Element("td").update(e.sku)}).insert({bottom:new Element("td").update(n.priceInput=new Element("input",{"class":"click-to-edit price-input",value:n.me.getCurrency(e.myPrice),"product-id":t}))}).insert({bottom:new Element("td",{"class":"price_diff"}).update(new Element("span",{"class":""+n.priceDiffClass}).update(n.me.getCurrency(n.priceDiff)))}).insert({bottom:new Element("td",{"class":"price_min"}).update(n.me.getCurrency(n.minPrice))})})}).insert({bottom:new Element("thead").insert({bottom:new Element("tr").insert({bottom:new Element("th",{colspan:3}).update("Company")}).insert({bottom:new Element("th").update("Price")})})}).insert({bottom:n.tbody}),n.newDiv},_getInfoPanel:function(e){var t={};return t.me=this,new Element("div",{id:"info_panel_"+e.id}).insert({bottom:new Element("div",{"class":"col-md-6"}).insert({bottom:new Element("div",{"class":"panel panel-default price-match-div"}).insert({bottom:new Element("div",{"class":"panel-heading"}).update("<strong>Price Match</strong>")}).insert({bottom:new Element("div",{"class":"panel-body price-match-listing"}).update(t.me.getLoadingImg())})})}).insert({bottom:new Element("div",{"class":"col-md-6"}).insert({bottom:new Element("div",{"class":"panel panel-default price-trend-div"}).insert({bottom:new Element("div",{"class":"panel-body"}).insert({bottom:new Element("iframe",{frameborder:"0",scrolling:"auto",width:"100%",height:"400px"})})})})}).insert({bottom:new Element("div",{"class":"col-md-6"}).insert({bottom:new Element("div",{"class":"panel panel-default"}).insert({bottom:new Element("div",{"class":"panel-body"}).update("<h4>Reserved for Next Phase of Developing</h4>")})})}).insert({bottom:new Element("div",{"class":"col-md-6"}).insert({bottom:new Element("div",{"class":"panel panel-default"}).insert({bottom:new Element("div",{"class":"panel-body"}).update("<h4>Reserved for Next Phase of Developing</h4>")})})})},_showProductInfoOnRightPanel:function(e){var t={};return t.me=this,t.infoPanel=t.me._getInfoPanel(e),t.infoPanel.down(".price-trend-div iframe").writeAttribute("src","/statics/product/pricetrend.html?productid="+e.id),t.me.postAjax(t.me.getCallbackId("priceMatching"),{id:e.id},{onLoading:function(){t.infoPanel.down(".price-match-div .price-match-listing").replace(new Element("div",{"class":"panel-body price-match-listing"}).update(t.me.getLoadingImg()))},onSuccess:function(n,i){try{if(t.result=t.me.getResp(i,!1,!0),!t.result)return;$("info_panel_"+e.id)&&$("info_panel_"+e.id).down(".price-match-div .price-match-listing").replace(t.me._displayPriceMatchResult(t.result,e.id)),t.me._bindPriceInput()}catch(o){t.me.showModalBox("Error",o,!0)}}}),t.infoPanel},deSelectProduct:function(){var e={};return e.me=this,jQuery(".product_item.success",jQuery("#"+e.me.resultDivId)).removeClass("success").popover("hide"),$(e.me.resultDivId).up(".list-panel").removeClassName("col-xs-4").addClassName("col-xs-12"),jQuery(".hide-when-info",jQuery("#"+e.me.resultDivId)).show(),e.me._showRightPanel=!1,e.me},getResults:function(e,t){var n={};n.me=this,n.reset=e||!1,n.resultDiv=$(n.me.resultDivId),n.reset===!0&&(n.me._pagination.pageNo=1),n.me._pagination.pageSize=t||n.me._pagination.pageSize,n.me.postAjax(n.me.getCallbackId("getItems"),{pagination:n.me._pagination,searchCriteria:n.me._searchCriteria},{onLoading:function(){jQuery("#"+n.me.searchDivId+" #searchBtn").button("loading"),n.reset===!0&&n.resultDiv.update(new Element("tr").update(new Element("td").update(n.me.getLoadingImg()))),$(n.me.totalQtyId).update(0),$(n.me.totalValueId).update(n.me.getCurrency(0))},onSuccess:function(e,t){try{if(n.result=n.me.getResp(t,!1,!0),!n.result)return;$(n.me.totalNoOfItemsId).update(n.result.pageStats.totalRows),$(n.me.totalQtyId).update(n.result.totalStockOnHand),$(n.me.totalValueId).update(n.me.getCurrency(n.result.totalOnHandValue)),n.reset===!0&&n.resultDiv.update(n.me._getResultRow(n.me._getTitleRowData(),!0).wrap(new Element("thead"))),n.resultDiv.getElementsBySelector(".paginWrapper").each(function(e){e.remove()}),n.tbody=$(n.resultDiv).down("tbody"),n.tbody||$(n.resultDiv).insert({bottom:n.tbody=new Element("tbody")}),n.result.items.each(function(e){n.tbody.insert({bottom:n.me._getResultRow(e).addClassName("item_row").writeAttribute("item_id",e.id)})}),n.me._singleProduct!==!0?n.result.pageStats.pageNumber<n.result.pageStats.totalPages&&n.resultDiv.insert({bottom:n.me._getNextPageBtn().addClassName("paginWrapper")}):n.result.items.size()>0&&n.me._displaySelectedProduct(n.result.items[0]),n.me._bindPriceInput()}catch(i){n.resultDiv.insert({bottom:n.me.getAlertBox("Error",i).addClassName("alert-danger")})}},onComplete:function(){jQuery("#"+n.me.searchDivId+" #searchBtn").button("reset")}})},_displaySelectedProduct:function(e){var t={};return t.me=this,$(t.me.resultDivId).up(".list-panel").removeClassName("col-xs-12").addClassName("col-xs-4"),jQuery(".hide-when-info",jQuery("#"+t.me.resultDivId)).hide(),t.me._showRightPanel=!0,jQuery(".product_item.success",jQuery("#"+t.me.resultDivId)).removeClass("success").popover("hide"),t.selectedRow=jQuery('[product_id="'+e.id+'"]',jQuery("#"+t.me.resultDivId)).addClass("success"),t.selectedRow.hasClass("popover-loaded")||t.selectedRow.popover({title:'<div class="row"><div class="col-xs-10">Details for: '+e.sku+'</div><div class="col-xs-2"><div class="btn-group pull-right"><a class="btn btn-primary btn-sm" href="/product/'+e.id+'.html" target="_BLANK"><span class="glyphicon glyphicon-pencil"></span></a><span class="btn btn-danger btn-sm" onclick="pageJs.deSelectProduct();"><span class="glyphicon glyphicon-remove"></span></span></div></div></div>',html:!0,placement:"right",container:"body",trigger:"manual",viewport:{selector:".list-panel",padding:0},content:function(){return t.me._showProductInfoOnRightPanel(e).wrap(new Element("div")).innerHTML},template:'<div class="popover" role="tooltip" style="max-width: none; z-index: 0;"><div class="arrow"></div><h3 class="popover-title"></h3><div class="popover-content"></div></div>'}).addClass("popover-loaded"),t.selectedRow.popover("toggle"),t.me},toggleActive:function(e,t){var n={};return n.me=this,n.me.postAjax(n.me.getCallbackId("toggleActive"),{productId:t.id,active:e},{onSuccess:function(e,i){try{if(n.result=n.me.getResp(i,!1,!0),!n.result||!n.result.item)return;$$(".product_item[product_id="+t.id+"]").size()>0&&$$(".product_item[product_id="+t.id+"]").first().replace(n.me._getResultRow(n.result.item,!1)),n.me._bindPriceInput()}catch(o){n.me.showModalBox("ERROR",o,!0)}}}),n.me},toggleIsKit:function(e,t){var n={};return n.me=this,n.me.postAjax(n.me.getCallbackId("toggleIsKit"),{productId:t.id,isKit:e},{onSuccess:function(e,i){n.newProduct=t;try{if(n.result=n.me.getResp(i,!1,!0),!n.result||!n.result.item)return;n.newProduct=n.result.item}catch(o){n.me.showModalBox("ERROR",o,!0)}$$(".product_item[product_id="+t.id+"]").size()>0&&$$(".product_item[product_id="+t.id+"]").first().replace(n.me._getResultRow(n.newProduct,!1)),n.me._bindPriceInput()}}),n.me},_updatePrice:function(e,t,n){var i={};return i.me=this,i.me.postAjax(i.me.getCallbackId("updatePrice"),{productId:e,newPrice:i.me.getValueFromCurrency(t)},{onLoading:function(){},onSuccess:function(o,s){try{if(i.result=i.me.getResp(s,!1,!0),!i.result||!i.result.item||!i.result.item.id)return;jQuery(".price-input[product-id="+i.result.item.id+"]").attr("original-price",i.me.getValueFromCurrency(t))}catch(r){i.me.showModalBox('<strong class="text-danger">Error When Update Price:</strong>',"<strong>"+r+"</strong>"),jQuery(".price-input[product-id="+e+"]").val(i.me.getCurrency(n))}}}),i.me},_updateStockLevel:function(e,t,n,i){var o={};return o.me=this,"stockMinLevel"!==i&&"stockReorderLevel"!==i&&o.me.showModalBox("Error","Invalid type passin to tmp.me._updateStockLevel"),o.me.postAjax(o.me.getCallbackId("updateStockLevel"),{productId:e,newValue:t,type:i},{onLoading:function(){},onSuccess:function(s,r){try{if(o.result=o.me.getResp(r,!1,!0),!o.result||!o.result.item||!o.result.item.id)return;jQuery("."+i+"-input[product-id="+o.result.item.id+"]").attr("original-"+i,t),o.row=$(o.me.resultDivId).down(".product_item[product_id="+o.result.item.id+"]"),o.row&&(o.row.replace(o.me._getResultRow(o.result.item,!1)),o.me._bindPriceInput())}catch(a){o.me.showModalBox('<strong class="text-danger">Error When Update '+i+":</strong>","<strong>"+a+"</strong>"),jQuery("."+i+"-input[product-id="+e+"]").val(n)}}}),o.me},_bindPriceInput:function(){var e={};return e.me=this,jQuery('.price-input[product-id]:not(".price-input-binded")').click(function(){jQuery(this).attr("original-price",e.me.getValueFromCurrency(jQuery(this).val())).select()}).keydown(function(t){e.inputBox=jQuery(this),e.me.keydown(t,function(){e.inputBox.blur()})}).focusout(function(){e.value=e.me.getValueFromCurrency(jQuery(this).val()),jQuery(this).val(e.me.getCurrency(e.value))}).change(function(){e.me._updatePrice(jQuery(this).attr("product-id"),jQuery(this).val(),e.me.getValueFromCurrency(jQuery(this).attr("original-price")))}).addClass("price-input-binded"),jQuery(".stockMinLevel-input[product-id]").not(".stockMinLevel-input-binded").click(function(){jQuery(this).attr("original-stockMinLevel",jQuery(this).val()).select()}).keydown(function(t){e.inputBox=jQuery(this),e.me.keydown(t,function(){e.inputBox.blur()})}).focusout(function(){e.value=jQuery(this).val(),jQuery(this).val(e.value)}).change(function(){e.me._updateStockLevel(jQuery(this).attr("product-id"),jQuery(this).val(),jQuery(this).attr("original-stockMinLevel"),"stockMinLevel")}).addClass("stockMinLevel-input-binded"),jQuery(".stockReorderLevel-input[product-id]").not(".stockReorderLevel-input-binded").click(function(){jQuery(this).attr("original-stockReorderLevel",jQuery(this).val()).select()}).keydown(function(t){e.inputBox=jQuery(this),e.me.keydown(t,function(){e.inputBox.blur()})}).focusout(function(){e.value=jQuery(this).val(),jQuery(this).val(e.value)}).change(function(){e.me._updateStockLevel(jQuery(this).attr("product-id"),jQuery(this).val(),jQuery(this).attr("original-stockReorderLevel"),"stockReorderLevel")}).addClass("stockReorderLevel-input-binded"),e.me},_getResultRow:function(e,t){var n={};return n.me=this,n.tag=n.isTitle===!0?"th":"td",n.isTitle=t||!1,n.price="",e.prices&&e.prices.each(function(e){e.type&&1===parseInt(e.type.id)&&(n.price=e.price)}),n.row=new Element("tr",{"class":"visible-xs visible-md visible-lg visible-sm "+(n.isTitle===!0?"":"product_item "+(e.stockOnHand<=e.stockMinLevel?"danger":e.stockOnHand<=e.stockReorderLevel?"warning":"")),product_id:e.id}).store("data",e).insert({bottom:new Element(n.tag,{"class":"sku",title:e.name}).addClassName("col-xs-1").insert({bottom:new Element("span").setStyle("margin: 0 5px 0 0").insert({bottom:new Element("input",{type:"checkbox","class":"product-selected"}).observe("click",function(){n.checked=this.checked,n.isTitle===!0&&$(n.me.resultDivId).getElementsBySelector(".product_item .product-selected").each(function(e){e.checked=n.checked})})})}).insert({bottom:n.isTitle===!0?e.sku:new Element("a",{href:"javascript: void(0);","class":"sku-link truncate"}).observe("click",function(t){n.me._displaySelectedProduct(e)}).update(e.sku)})}).insert({bottom:new Element(n.tag,{"class":"product_name hidden-xs hide-when-info hidden-sm"}).addClassName("col-xs-3").setStyle(n.me._showRightPanel?"display: none":"").update(n.isTitle===!0?new Element("div",{"class":"row"}).insert({bottom:new Element("div",{"class":"col-sm-10"}).update("Product Name")}).insert({bottom:new Element("div",{"class":"col-sm-2"}).update("IsKit?")}):new Element("div",{"class":"row"}).insert({bottom:new Element("div",{"class":"col-sm-10"}).update(e.name)}).insert({bottom:new Element("div",{"class":"col-sm-2"}).update(new Element("input",{type:"checkbox",checked:e.isKit}).observe("click",function(t){n.btn=this,n.checked=$(n.btn).checked,confirm(n.checked===!0?"You are about to set this product to a KIT, which you can NOT PICK or SHIP without providing a KIT barcode.\n Continue?":"You are about to set this product to NOT a KIT, which you can PICK or SHIP without providing a KIT barcode\n Continue?")&&n.me.toggleIsKit(n.checked,e)}))}))}).insert({bottom:new Element(n.tag,{"class":"hidden-xs hide-when-info hidden-sm row"}).addClassName("col-xs-2").setStyle(n.me._showRightPanel?"display: none":"").insert({bottom:new Element("div",{"class":"col-sm-4"}).update(n.isTitle===!0?"Price":new Element("input",{"class":"click-to-edit price-input",value:n.me.getCurrency(n.price),"product-id":e.id}).setStyle("width: 100%"))}).insert({bottom:new Element("div",{"class":"col-sm-4"}).update(n.isTitle===!0?"Min St":new Element("input",{"class":"click-to-edit stockMinLevel-input",value:e.stockMinLevel,"product-id":e.id}).setStyle("width: 100%"))}).insert({bottom:new Element("div",{"class":"col-sm-4"}).update(n.isTitle===!0?"Re St":new Element("input",{"class":"click-to-edit stockReorderLevel-input",value:e.stockReorderLevel,"product-id":e.id}).setStyle("width: 100%"))})}).insert({bottom:new Element(n.tag,{"class":"locations hide-when-info hidden-sm"}).addClassName("col-xs-1").update(e.locations?n.me._getLocations(e.locations,t):"")}).insert({bottom:new Element(n.tag,{"class":"inventeryCode hide-when-info"}).addClassName("col-xs-1").update(e.invenAccNo?e.invenAccNo:"")}).insert({bottom:new Element(n.tag,{"class":"manufacturer hide-when-info"}).addClassName("col-xs-1").update(e.manufacturer?e.manufacturer.name:"")}).insert({bottom:new Element(n.tag,{"class":"supplier hide-when-info hidden-sm"}).addClassName("col-xs-1").update(e.supplierCodes?n.me._getSupplierCodes(e.supplierCodes,t):"")}).insert({bottom:new Element(n.tag,{"class":"qty hidden-sm"}).addClassName("col-xs-1").update(n.isTitle===!0?new Element("div",{"class":"row"}).insert({bottom:new Element("div",{"class":"col-xs-4",title:"Stock on Hand"}).update("SH")}).insert({bottom:new Element("div",{"class":"col-xs-4",title:"Average Cost"}).update("Cost")}).insert({bottom:new Element("div",{"class":"col-xs-4 hide-when-info",title:"Stock On PO"}).update("SP")}):new Element("div",{"class":"row"}).update(new Element("a",{href:"/productqtylog.html?productid="+e.id,target:"_BLANK"}).insert({bottom:new Element("div",{"class":"col-xs-4",title:"Stock on Hand"}).update(e.stockOnHand)}).insert({bottom:new Element("div",{"class":"col-xs-4",title:"Average Cost"}).update(0!=e.totalOnHandValue&&0!=e.stockOnHand?n.me.getCurrency(e.totalOnHandValue/e.stockOnHand):"N/A")}).insert({bottom:new Element("div",{"class":"col-xs-4 hide-when-info",title:"Stock On PO"}).update(e.stockOnPO)})))}).insert({bottom:new Element(n.tag,{"class":"product_active hide-when-info hidden-sm"}).addClassName("col-xs-1").insert({bottom:new Element("div",{"class":"row"}).insert({bottom:new Element("div",{"class":"col-xs-4 text-right"}).insert({bottom:n.isTitle===!0?"Act?":new Element("input",{type:"checkbox",checked:e.active}).observe("click",function(t){n.btn=this,n.checked=$(n.btn).checked,confirm(n.checked===!0?"You are about to ReACTIVATE this product.\n Continue?":"You are about to deactivate this product.\n Continue?")&&n.me.toggleActive(n.checked,e)})})}).insert({bottom:new Element("div",{"class":"col-xs-4"}).setStyle("padding: 0px;").insert({bottom:n.isTitle===!0?"":new Element("a",{href:"/serialnumbers.html?productid="+e.id,target:"_BLANK",title:"Serial Numbers."}).update("SN")})}).insert({bottom:new Element("div",{"class":"col-xs-4"}).setStyle("padding: 0px;").insert({bottom:n.isTitle===!0?"":new Element("div",{"class":""}).insert({bottom:new Element("a",{"class":"btn btn-primary btn-xs",href:"/product/"+e.id+".html",target:"_BLANK"}).insert({bottom:new Element("span",{"class":"glyphicon glyphicon-pencil"})})})})})})}),n.row}});
+/**
+ * The page Js file
+ */
+var PageJs = new Class.create();
+PageJs.prototype = Object.extend(new CRUDPageJs(), {
+	manufactures: []
+	,suppliers: []
+	,productCategories: []
+	,productStatuses: []
+	,_showRightPanel: false
+	,_nextPageColSpan: 9
+	,_autoLoading: false
+	
+	,_getTitleRowData: function() {
+		return {'sku': 'SKU', 'name': 'Product Name','locations': 'Locations', 'invenAccNo': 'AccNo.', 'manufacturer' : {'name': 'Brand'}, 'supplierCodes': [{'supplier': {'name': 'Supplier'}, 'code': ''}],  'active': 'act?', 'stockOnOrder': 'OnOrder', 'stockOnHand': 'OnHand', 'stockOnPO': 'OnPO'};
+	}
+	,toggleSearchPanel: function(panel) {
+		var tmp = {};
+		tmp.me = this;
+		$(panel).toggle();
+		tmp.me.deSelectProduct();
+		return tmp.me;
+	}
+	/**
+	 * Load the manufacturers
+	 */
+	,_loadManufactures: function(manufactures) {
+		this.manufactures = manufactures;
+		var tmp = {};
+		tmp.me = this;
+		tmp.selectionBox = $(tmp.me.searchDivId).down('[search_field="pro.manufacturerIds"]');
+		tmp.me.manufactures.each(function(option) {
+			tmp.selectionBox.insert({'bottom': new Element('option',{'value': option.id}).update(option.name) });
+		});
+		return this;
+	}
+	/**
+	 * Load the _loadProductStatuses
+	 */
+	,_loadProductStatuses: function(productStatuses) {
+		this.productStatuses = productStatuses;
+		var tmp = {};
+		tmp.me = this;
+		tmp.selectionBox = $(tmp.me.searchDivId).down('[search_field="pro.productStatusIds"]');
+		tmp.me.productStatuses.each(function(option) {
+			tmp.selectionBox.insert({'bottom': new Element('option',{'value': option.id}).update(option.name) });
+		});
+		return this;
+	}
+	/**
+	 * Load the suppliers
+	 */
+	,_loadSuppliers: function(suppliers) {
+		this.suppliers = suppliers;
+		var tmp = {};
+		tmp.me = this;
+		tmp.selectionBox = $(tmp.me.searchDivId).down('[search_field="pro.supplierIds"]');
+		tmp.me.suppliers.each(function(option) {
+			tmp.selectionBox.insert({'bottom': new Element('option',{'value': option.id}).update(option.name) });
+		});
+		return this;
+	}
+	/**
+	 * Load thecategories
+	 */
+	,_loadCategories: function(categories) {
+		this.categories = categories;
+		var tmp = {};
+		tmp.me = this;
+		tmp.selectionBox = $(tmp.me.searchDivId).down('[search_field="pro.productCategoryIds"]');
+		tmp.me.categories.sort(function(a, b){
+			return a.namePath > b.namePath;
+		}).each(function(option) {
+			tmp.selectionBox.insert({'bottom': new Element('option',{'value': option.id}).update(option.namePath) });
+		});
+		return this;
+	}
+	/**
+	 * initiating the chosen input
+	 */
+	,_loadChosen: function () {
+		jQuery(".chosen").select2({
+		    minimumResultsForSearch: Infinity
+		});
+		return this;
+	}
+	/**
+	 * get selected
+	 */
+	,_getSelection: function() {
+		var tmp = {}
+		tmp.me = this;
+		tmp.products = [];
+		
+		tmp.itemList = $('item-list');
+		tmp.itemList.getElementsBySelector('.product_item.item_row').each(function(row){
+			tmp.checked = row.down('input.product-selected[type="checkbox"]').checked;
+			tmp.productId = row.readAttribute('product_id');
+			if(tmp.checked === true && jQuery.isNumeric(tmp.productId) === true)
+				tmp.products.push(row.retrieve('data'));
+		});
+		
+		$('total-selected-count').update(tmp.products.length);
+		
+		return tmp.products;
+	}
+	/**
+	 * Binding the search key
+	 */
+	,_bindSearchKey: function() {
+		var tmp = {}
+		tmp.me = this;
+		$$('#searchBtn').first()
+			.observe('click', function(event) {
+				if(!$$('#showSearch').first().checked)
+					$$('#showSearch').first().click();
+				else {
+					tmp.me.deSelectProduct();
+					tmp.me.getSearchCriteria().getResults(true, tmp.me._pagination.pageSize);
+				}
+			});
+		$('searchDiv').getElementsBySelector('[search_field]').each(function(item) {
+			item.observe('keydown', function(event) {
+				tmp.me.keydown(event, function() {
+					$(tmp.me.searchDivId).down('#searchBtn').click();
+				});
+			})
+		});
+		return this;
+	}
+	/**
+	 * Getting the supplier codes for display result list per row
+	 */
+	,_getSupplierCodes: function(supplierCodes, isTitle) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.supplierCodeString = [];
+		supplierCodes.each(function(suppliercode) {
+			tmp.supplierCodeString.push(isTitle === true ? 'Supplier' : '<abbr title="Code: '  + suppliercode.code + '">' + (suppliercode.supplier && suppliercode.supplier.name ? suppliercode.supplier.name : '') + '</abbr>');
+		})
+		return tmp.supplierCodeString.join(', ');
+	}
+	,_bindNewRuleBtn: function() {
+		var tmp = {};
+		tmp.me = this;
+		tmp.btn = $('newPriceMatchRuleBtn');
+		
+		tmp.me.observeClickNDbClick(
+				tmp.btn
+				,function(){
+					tmp.selected = tmp.me._getSelection();
+					tmp.totalQty = $(tmp.me.totalQtyId).innerHTML;
+					
+					if(tmp.selected !== null && tmp.selected.length !== parseInt(tmp.totalQty)) {
+						tmp.warningMsg = new Element('div')
+							.insert({'bottom': new Element('h3', {'class': 'col-lg-12'}).update('only <b>' + tmp.selected.length + '</b> out of <b>' + tmp.totalQty + '</b> is selected, Contrinue?') })
+							.insert({'bottom': new Element('i', {'class': 'btn btn-danger btn-lg'}).update('No')
+								.observe('click', function(){tmp.me.hideModalBox();})
+							})
+							.insert({'bottom': new Element('i', {'class': 'btn btn-success btn-lg pull-right'}).update('Yes').setStyle(tmp.selected.length === 0 ? 'display: none;' : '') });
+						tmp.me.showModalBox('Warning', tmp.warningMsg);
+					}
+					console.debug(tmp.selected);
+				}
+				,null
+				);
+		return tmp.me;
+	}
+	/**
+	 * Getting the locations for a product
+	 */
+	,_getLocations: function (locations, isTitle) {
+		var tmp = {};
+		tmp.me = this;
+		if(isTitle === true)
+			return 'Locations';
+		tmp.locationStrings = [];
+		locations.each(function(location) {
+			tmp.locationStrings.push('<div><small><strong class="hidden-xs hide-when-info hidden-sm">' + location.type.name + ': </strong><abbr title="Type: '  + location.type.name + '">' + location.value + '</abbr></small></div>');
+		})
+		return tmp.locationStrings.join('');
+	}
+	/**
+	 * Displaying the price matching result
+	 */
+	,_displayPriceMatchResult: function(prices, productId) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.minPrice = 0;
+		tmp.tbody = new Element('tbody');
+		$H(prices["companyPrices"]).each(function(price){
+			if(parseInt(price.value.price) !== 0) {
+				if((parseInt(tmp.minPrice) === 0 && parseFloat(price.value.price) > 0) || parseFloat(price.value.price) < parseFloat(tmp.minPrice))
+					tmp.minPrice = price.value.price;
+			}
+			tmp.tbody.insert({'bottom': new Element('tr')
+				.insert({'bottom': new Element('td', {'colspan': 3}).update(price.key) })
+				.insert({'bottom': new Element('td').update(price.value.priceURL && !price.value.priceURL.blank() ? new Element('a', {'href': price.value.priceURL, 'target': '__blank'}).update(tmp.me.getCurrency(price.value.price)) : tmp.me.getCurrency(price.value.price)) })
+			})
+		});
+		tmp.priceDiff = parseFloat(prices.myPrice) - parseFloat(tmp.minPrice);
+		tmp.priceDiffClass = '';
+		if(parseInt(tmp.minPrice) !== 0) {
+			if(parseInt(tmp.priceDiff) > 0)
+				tmp.priceDiffClass = 'label label-danger';
+			else if (parseInt(tmp.priceDiff) < 0)
+				tmp.priceDiffClass = 'label label-success';
+		}
+		tmp.newDiv = new Element('table', {'class': 'table table-striped table-hover price-match-listing'})
+			.insert({'bottom': new Element('thead')
+				.insert({'bottom': new Element('tr')
+					.insert({'bottom': new Element('th').update('SKU') })
+					.insert({'bottom': new Element('th').update('My Price') })
+					.insert({'bottom': new Element('th', {'class': 'price_diff'}).update('Price Diff.') })
+					.insert({'bottom': new Element('th').update('Min Price') })
+				})
+			})
+			.insert({'bottom': new Element('tbody')
+				.insert({'bottom': new Element('tr')
+					.insert({'bottom': new Element('td').update(prices.sku) })
+					.insert({'bottom': new Element('td').update(tmp.priceInput = new Element('input', {'class': "click-to-edit price-input", 'value': tmp.me.getCurrency(prices.myPrice), 'product-id': productId}) ) })
+					.insert({'bottom': new Element('td', {'class': 'price_diff'}).update(new Element('span', {'class': '' + tmp.priceDiffClass}).update(tmp.me.getCurrency(tmp.priceDiff)) ) })
+					.insert({'bottom': new Element('td', {'class': 'price_min'}).update(tmp.me.getCurrency(tmp.minPrice) ) })
+				})
+			})
+			.insert({'bottom': new Element('thead')
+				.insert({'bottom': new Element('tr')
+					.insert({'bottom': new Element('th', {'colspan': 3}).update('Company') })
+					.insert({'bottom': new Element('th').update('Price') })
+				})
+			})
+			.insert({'bottom': tmp.tbody });
+		return tmp.newDiv;
+	}
+	,_getInfoPanel: function(product) {
+		var tmp = {};
+		tmp.me = this;
+		return new Element('div', {'id': 'info_panel_' + product.id})
+			.insert({'bottom': new Element('div', {'class': 'col-md-6'})
+				.insert({'bottom': new Element('div', {'class': 'panel panel-default price-match-div'})
+					.insert({'bottom': new Element('div', {'class': 'panel-heading'}).update('<strong>Price Match</strong>') })
+					.insert({'bottom': new Element('div', {'class': 'panel-body price-match-listing'}).update(tmp.me.getLoadingImg()) })
+				})
+			})
+			.insert({'bottom': new Element('div', {'class': 'col-md-6'})
+				.insert({'bottom': new Element('div', {'class': 'panel panel-default price-trend-div'})
+					.insert({'bottom': new Element('div', {'class': 'panel-body'})
+						.insert({'bottom': new Element('iframe', {'frameborder': '0', 'scrolling': 'auto', 'width': '100%', 'height': '400px'}) })
+					})
+				})
+			})
+			.insert({'bottom': new Element('div', {'class': 'col-md-6'})
+				.insert({'bottom': new Element('div', {'class': 'panel panel-default'})
+					.insert({'bottom': new Element('div', {'class': 'panel-body'}).update('<h4>Reserved for Next Phase of Developing</h4>')})
+				})
+			})
+			.insert({'bottom': new Element('div', {'class': 'col-md-6'})
+				.insert({'bottom': new Element('div', {'class': 'panel panel-default'})
+					.insert({'bottom': new Element('div', {'class': 'panel-body'}).update('<h4>Reserved for Next Phase of Developing</h4>')})
+				})
+			});
+	}
+	,_showProductInfoOnRightPanel: function(product) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.infoPanel = tmp.me._getInfoPanel(product);
+		tmp.infoPanel.down('.price-trend-div iframe').writeAttribute('src', '/statics/product/pricetrend.html?productid=' + product.id);
+		tmp.me.postAjax(tmp.me.getCallbackId('priceMatching'), {'id': product.id}, {
+			'onLoading': function() {
+				tmp.infoPanel.down('.price-match-div .price-match-listing').replace(new Element('div', {'class': 'panel-body price-match-listing'}).update(tmp.me.getLoadingImg()));
+			}
+			,'onSuccess': function(sender, param) {
+				try{
+					tmp.result = tmp.me.getResp(param, false, true);
+					if(!tmp.result)
+						return;
+					if($('info_panel_' + product.id))
+						$('info_panel_' + product.id).down('.price-match-div .price-match-listing').replace(tmp.me._displayPriceMatchResult(tmp.result, product.id));
+					tmp.me._bindPriceInput();
+				} catch (e) {
+					tmp.me.showModalBox('Error', e, true);
+				}
+			}
+		});
+		return tmp.infoPanel;
+	}
+	,deSelectProduct: function() {
+		var tmp = {};
+		tmp.me = this;
+		jQuery('.product_item.success', jQuery('#' + tmp.me.resultDivId)).removeClass('success').popover('hide');
+		$(tmp.me.resultDivId).up('.list-panel').removeClassName('col-xs-4').addClassName('col-xs-12');
+		jQuery('.hide-when-info', jQuery('#' + tmp.me.resultDivId)).show();
+		tmp.me._showRightPanel = false;
+		return tmp.me;
+	}
+	,getResults: function(reset, pageSize, auto, tickNew) {
+		var tmp = {};
+		tmp.me = this;
+		
+		tmp.reset = (reset || false);
+		tmp.auto = (auto || false);
+		tmp.tickNew = (tickNew || false);
+		tmp.resultDiv = $(tmp.me.resultDivId);
+
+		if(tmp.reset === true)
+			tmp.me._pagination.pageNo = 1;
+		
+		// auto load next page
+		if(tmp.auto === true && $$('.btn-show-more').length > 0) {
+			tmp.me._autoLoading = true;
+			tmp.me._pagination.pageNo = tmp.me._pagination.pageNo*1 + 1;
+		}
+		
+		tmp.me._pagination.pageSize = (pageSize || tmp.me._pagination.pageSize);
+		tmp.me.postAjax(tmp.me.getCallbackId('getItems'), {'pagination': tmp.me._pagination, 'searchCriteria': tmp.me._searchCriteria}, {
+			'onLoading': function () {
+				jQuery('#' + tmp.me.searchDivId + ' #searchBtn').button('loading');
+				//reset div
+				if(tmp.reset === true) {
+					tmp.resultDiv.update( new Element('tr').update( new Element('td').update( tmp.me.getLoadingImg() ) ) );
+				}
+				$(tmp.me.totalQtyId).update(0);
+				$(tmp.me.totalValueId).update(tmp.me.getCurrency(0));
+			}
+			,'onSuccess': function(sender, param) {
+				try{
+					tmp.result = tmp.me.getResp(param, false, true);
+					if(!tmp.result)
+						return;
+					$(tmp.me.totalNoOfItemsId).update(tmp.result.pageStats.totalRows);
+					$(tmp.me.totalQtyId).update(tmp.result.totalStockOnHand);
+					$(tmp.me.totalValueId).update(tmp.me.getCurrency(tmp.result.totalOnHandValue));
+
+					//reset div
+					if(tmp.reset === true) {
+						tmp.resultDiv.update(tmp.me._getResultRow(tmp.me._getTitleRowData(), true).wrap(new Element('thead')));
+					}
+					//remove next page button
+					tmp.resultDiv.getElementsBySelector('.paginWrapper').each(function(item){
+						item.remove();
+					});
+
+					//show all items
+					tmp.tbody = $(tmp.resultDiv).down('tbody');
+					if(!tmp.tbody)
+						$(tmp.resultDiv).insert({'bottom': tmp.tbody = new Element('tbody') });
+					tmp.result.items.each(function(item) {
+						tmp.tbody.insert({'bottom': tmp.newRow = tmp.me._getResultRow(item).addClassName('item_row').writeAttribute('item_id', item.id) });
+						if(tmp.auto === true || tmp.tickNew === true)
+							tmp.newRow.down('.product-selected').click();
+					});
+					if(tmp.me._singleProduct !== true) {
+						//show the next page button
+						if(tmp.result.pageStats.pageNumber < tmp.result.pageStats.totalPages)
+							tmp.resultDiv.insert({'bottom': tmp.me._getNextPageBtn().addClassName('paginWrapper') });
+					} else if(tmp.result.items.size() > 0) {
+						tmp.me._displaySelectedProduct(tmp.result.items[0]);
+					}
+					tmp.me._bindPriceInput();
+					// auto load next page
+					if(tmp.auto === true && $$('.btn-show-more').length > 0) {
+						tmp.me.getResults(false, tmp.me._pagination.pageSize, true);
+					}
+					else { // finished auto loading
+						tmp.me._autoLoading = false;
+						tmp.me.hideModalBox();
+					}
+					
+					tmp.me._getSelection();
+				} catch (e) {
+					tmp.resultDiv.insert({'bottom': tmp.me.getAlertBox('Error', e).addClassName('alert-danger') });
+				}
+			}
+			,'onComplete': function() {
+				jQuery('#' + tmp.me.searchDivId + ' #searchBtn').button('reset');
+			}
+		});
+	}
+	/**
+	 * Displaying the selected product
+	 */
+	,_displaySelectedProduct: function(item) {
+		var tmp = {};
+		tmp.me = this;
+		$(tmp.me.resultDivId).up('.list-panel').removeClassName('col-xs-12').addClassName('col-xs-4');
+		jQuery('.hide-when-info', jQuery('#' + tmp.me.resultDivId)).hide();
+		tmp.me._showRightPanel = true;
+
+		//remove all active class
+		jQuery('.product_item.success', jQuery('#' + tmp.me.resultDivId)).removeClass('success').popover('hide');
+		//mark this one as active
+		tmp.selectedRow = jQuery('[product_id="' + item.id + '"]', jQuery('#' + tmp.me.resultDivId))
+			.addClass('success');
+		if(!tmp.selectedRow.hasClass('popover-loaded')) {
+			tmp.selectedRow
+			.popover({
+				'title'    : '<div class="row"><div class="col-xs-10">Details for: ' + item.sku + '</div><div class="col-xs-2"><div class="btn-group pull-right"><a class="btn btn-primary btn-sm" href="/product/' + item.id + '.html" target="_BLANK"><span class="glyphicon glyphicon-pencil"></span></a><span class="btn btn-danger btn-sm" onclick="pageJs.deSelectProduct();"><span class="glyphicon glyphicon-remove"></span></span></div></div></div>',
+				'html'     : true,
+				'placement': 'right',
+				'container': 'body',
+				'trigger'  : 'manual',
+				'viewport' : {"selector": ".list-panel", "padding": 0 },
+				'content'  : function() { return tmp.me._showProductInfoOnRightPanel(item).wrap(new Element('div')).innerHTML; },
+				'template' : '<div class="popover" role="tooltip" style="max-width: none; z-index: 0;"><div class="arrow"></div><h3 class="popover-title"></h3><div class="popover-content"></div></div>'
+			})
+			.addClass('popover-loaded');
+		}
+		tmp.selectedRow.popover('toggle');
+		return tmp.me;
+	}
+	,toggleActive: function(active, product) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.me.postAjax(tmp.me.getCallbackId('toggleActive'), {'productId': product.id, 'active': active}, {
+			'onSuccess': function(sender, param) {
+				try{
+					tmp.result = tmp.me.getResp(param, false, true);
+					if(!tmp.result || !tmp.result.item)
+						return;
+					if($$('.product_item[product_id=' + product.id +']').size() >0) {
+						$$('.product_item[product_id=' + product.id +']').first().replace(tmp.me._getResultRow(tmp.result.item, false));
+					}
+					tmp.me._bindPriceInput();
+				} catch (e) {
+					tmp.me.showModalBox('ERROR', e, true);
+				}
+			}
+		})
+		return tmp.me;
+	}
+	,toggleIsKit: function(isKit, product) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.me.postAjax(tmp.me.getCallbackId('toggleIsKit'), {'productId': product.id, 'isKit': isKit}, {
+			'onSuccess': function(sender, param) {
+				tmp.newProduct = product;
+				try{
+					tmp.result = tmp.me.getResp(param, false, true);
+					if(!tmp.result || !tmp.result.item)
+						return;
+					tmp.newProduct = tmp.result.item;
+				} catch (e) {
+					tmp.me.showModalBox('ERROR', e, true);
+				}
+				if($$('.product_item[product_id=' + product.id +']').size() >0) {
+					$$('.product_item[product_id=' + product.id +']').first().replace(tmp.me._getResultRow(tmp.newProduct, false));
+				}
+				tmp.me._bindPriceInput();
+			}
+		})
+		return tmp.me;
+	}
+	,_updatePrice: function(productId, newPrice, originalPrice) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.me.postAjax(tmp.me.getCallbackId('updatePrice'), {'productId': productId, 'newPrice': tmp.me.getValueFromCurrency(newPrice)}, {
+			'onLoading': function() {}
+			,'onSuccess': function(sender, param) {
+				try {
+					tmp.result = tmp.me.getResp(param, false, true);
+					if(!tmp.result || !tmp.result.item || !tmp.result.item.id)
+						return;
+					jQuery('.price-input[product-id=' + tmp.result.item.id + ']').attr('original-price', tmp.me.getValueFromCurrency(newPrice));
+				} catch (e) {
+					tmp.me.showModalBox('<strong class="text-danger">Error When Update Price:</strong>', '<strong>' + e + '</strong>');
+					jQuery('.price-input[product-id=' + productId + ']').val(tmp.me.getCurrency(originalPrice));
+				}
+			}
+		})
+		return tmp.me;
+	}
+	,_updateStockLevel: function(productId, newValue, originalValue, type) {
+		var tmp = {};
+		tmp.me = this;
+		if(type !== 'stockMinLevel' && type !== 'stockReorderLevel')
+			tmp.me.showModalBox('Error', 'Invalid type passin to tmp.me._updateStockLevel');
+		tmp.me.postAjax(tmp.me.getCallbackId('updateStockLevel'), {'productId': productId, 'newValue': newValue, 'type': type}, {
+			'onLoading': function() {}
+		,'onSuccess': function(sender, param) {
+			try {
+				tmp.result = tmp.me.getResp(param, false, true);
+				if(!tmp.result || !tmp.result.item || !tmp.result.item.id)
+					return;
+				jQuery('.' + type + '-input[product-id=' + tmp.result.item.id + ']').attr('original-' + type, newValue);
+				tmp.row = $(tmp.me.resultDivId).down('.product_item[product_id=' + tmp.result.item.id + ']');
+				if(tmp.row) {
+					tmp.row.replace(tmp.me._getResultRow(tmp.result.item, false));
+					tmp.me._bindPriceInput();
+				}
+			} catch (e) {
+				tmp.me.showModalBox('<strong class="text-danger">Error When Update ' + type + ':</strong>', '<strong>' + e + '</strong>');
+				jQuery('.' + type + '-input[product-id=' + productId + ']').val(originalValue);
+			}
+		}
+		})
+		return tmp.me;
+	}
+	/**
+	 * binding the price input event
+	 */
+	,_bindPriceInput: function() {
+		var tmp = {};
+		tmp.me = this;
+		jQuery('.price-input[product-id]:not(".price-input-binded")')
+			.click(function (){
+				jQuery(this)
+					.attr('original-price', tmp.me.getValueFromCurrency(jQuery(this).val()))
+					.select();
+			})
+			.keydown(function(event) {
+				tmp.inputBox = jQuery(this);
+				tmp.me.keydown(event, function(){
+					tmp.inputBox.blur();
+				});
+			})
+			.focusout(function(){
+				tmp.value = tmp.me.getValueFromCurrency(jQuery(this).val());
+				jQuery(this).val(tmp.me.getCurrency(tmp.value));
+			})
+			.change(function() {
+				tmp.me._updatePrice(jQuery(this).attr('product-id'), jQuery(this).val(), tmp.me.getValueFromCurrency( jQuery(this).attr('original-price') ));
+			})
+			.addClass('price-input-binded');
+		jQuery('.stockMinLevel-input[product-id]').not('.stockMinLevel-input-binded')
+			.click(function (){
+				jQuery(this)
+				.attr('original-stockMinLevel', jQuery(this).val())
+				.select();
+			})
+			.keydown(function(event) {
+				tmp.inputBox = jQuery(this);
+				tmp.me.keydown(event, function(){
+					tmp.inputBox.blur();
+				});
+			})
+			.focusout(function(){
+				tmp.value = jQuery(this).val();
+				jQuery(this).val(tmp.value);
+			})
+			.change(function() {
+				tmp.me._updateStockLevel(jQuery(this).attr('product-id'), jQuery(this).val(), jQuery(this).attr('original-stockMinLevel'), 'stockMinLevel' );
+			})
+			.addClass('stockMinLevel-input-binded');
+		jQuery('.stockReorderLevel-input[product-id]').not('.stockReorderLevel-input-binded')
+			.click(function (){
+				jQuery(this)
+				.attr('original-stockReorderLevel', jQuery(this).val())
+				.select();
+			})
+			.keydown(function(event) {
+				tmp.inputBox = jQuery(this);
+				tmp.me.keydown(event, function(){
+					tmp.inputBox.blur();
+				});
+			})
+			.focusout(function(){
+				tmp.value = jQuery(this).val();
+				jQuery(this).val(tmp.value);
+			})
+			.change(function() {
+				tmp.me._updateStockLevel(jQuery(this).attr('product-id'), jQuery(this).val(), jQuery(this).attr('original-stockReorderLevel'), 'stockReorderLevel' );
+			})
+			.addClass('stockReorderLevel-input-binded');
+		return tmp.me;
+	}
+	,_getNextPageBtn: function() {
+		var tmp = {};
+		tmp.me = this;
+		tmp.totalQty = $(tmp.me.totalQtyId).innerHTML;
+		return new Element('tfoot')
+			.insert({'bottom': new Element('tr')
+				.insert({'bottom': new Element('td', {'colspan': tmp.me._nextPageColSpan, 'class': 'text-center'})
+					.insert({'bottom': new Element('span', {'class': 'btn btn-primary btn-show-more', 'data-loading-text':"Fetching more results ..."}).update('Next Page')
+						.observe('click', function() {
+							tmp.me._pagination.pageNo = tmp.me._pagination.pageNo*1 + 1;
+							jQuery(this).button('loading');
+							tmp.me.getResults(false, tmp.me._pagination.pageSize, false, true);
+						})
+					})
+					.insert({'bottom': new Element('span', {'class': 'btn btn-warning btn-show-more', 'data-loading-text':"Fetching more results ..."}).update('<b>Show ALL Pages</b>').setStyle('margin-left: 10px; color: black;')
+						.observe('click', function() {
+							if(tmp.totalQty > 1000)
+								tmp.me.showModalBox('Warning', '<h3>There are ' + tmp.totalQty + ' products. You must narrow down the search');
+							else
+								tmp.me.getResults(false, tmp.me._pagination.pageSize, true);
+						})
+					})
+				})
+			});
+	}
+	/**
+	 * Getting each row for displaying the result list
+	 */
+	,_getResultRow: function(row, isTitle) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.tag = (tmp.isTitle === true ? 'th' : 'td');
+		tmp.isTitle = (isTitle || false);
+		tmp.price = '';
+		if(row.prices) {
+			row.prices.each(function(price) {
+				if(price.type && parseInt(price.type.id) === 1) {
+					tmp.price = price.price;
+				}
+			});
+		}
+		tmp.row = new Element('tr', {'class': 'visible-xs visible-md visible-lg visible-sm ' + (tmp.isTitle === true ? '' : 'product_item ' + (row.stockOnHand <= row.stockMinLevel ? 'danger': (row.stockOnHand <= row.stockReorderLevel ? 'warning' : '' ))), 'product_id' : row.id})
+			.store('data', row)
+			.insert({'bottom': new Element(tmp.tag, {'class': 'sku', 'title': row.name}).addClassName('col-xs-1')
+				.observe('click', function(e){
+					tmp.me._signRandID($(this));
+					if (e.target.nodeName != "INPUT") {
+				        jQuery('#'+$(this).id).find(":checkbox").prop("checked", !jQuery('#'+$(this).id).find(":checkbox").prop("checked"));
+				        if(tmp.isTitle === true) {
+				        	tmp.checked = jQuery('#'+$(this).id).find(":checkbox").prop("checked");
+							$(tmp.me.resultDivId).getElementsBySelector('.product_item .product-selected').each(function(el){
+								el.checked = tmp.checked;
+							});
+						}
+				    }
+					tmp.me._getSelection();
+				})
+				.insert({'bottom': new Element('span').setStyle('margin: 0 5px 0 0')
+					.insert({'bottom': new Element('input', {'type': 'checkbox', 'class': 'product-selected'})
+						.observe('click', function(e){
+							tmp.checked = this.checked;
+							if(tmp.isTitle === true) {
+								$(tmp.me.resultDivId).getElementsBySelector('.product_item .product-selected').each(function(el){
+									el.checked = tmp.checked;
+								});
+							}
+							tmp.me._getSelection();
+						})
+					})
+				})
+				.insert({'bottom':tmp.isTitle === true ? row.sku : new Element('a', {'href': 'javascript: void(0);', 'class': 'sku-link truncate'})
+					.observe('click', function(e){
+						Event.stop(e);
+						tmp.me._displaySelectedProduct(row);
+					})
+					.update(row.sku)
+				})
+			})
+			.insert({'bottom': new Element(tmp.tag, {'class': 'product_name hidden-xs hide-when-info hidden-sm'})
+				.addClassName('col-xs-3')
+				.setStyle(tmp.me._showRightPanel ? 'display: none' : '')
+				.update(tmp.isTitle === true ? new Element('div', {'class': 'row'})
+						.insert({'bottom': new Element('div', {'class': 'col-sm-10'}).update('Product Name')})
+						.insert({'bottom': new Element('div', {'class': 'col-sm-2'}).update('IsKit?')})
+					:
+					new Element('div', {'class': 'row'})
+						.insert({'bottom': new Element('div', {'class': 'col-sm-10'}).update(row.name)})
+						.insert({'bottom': new Element('div', {'class': 'col-sm-2'}).update(new Element('input', {'type': 'checkbox', 'checked': row.isKit})
+							.observe('click', function(event) {
+								tmp.btn = this;
+								tmp.checked = $(tmp.btn).checked;
+								if(confirm(tmp.checked === true ? 'You are about to set this product to a KIT, which you can NOT PICK or SHIP without providing a KIT barcode.\n Continue?' : 'You are about to set this product to NOT a KIT, which you can PICK or SHIP without providing a KIT barcode\n Continue?'))
+									tmp.me.toggleIsKit(tmp.checked, row);
+							})
+						)})
+				)
+			})
+			.insert({'bottom': new Element(tmp.tag, {'class': 'hidden-xs hide-when-info hidden-sm row'}).addClassName('col-xs-2').setStyle(tmp.me._showRightPanel ? 'display: none' : '')
+				.insert({'bottom': new Element('div', {'class': 'col-sm-4'}).update(tmp.isTitle === true ? 'Price' : new Element('input', {'class': "click-to-edit price-input", 'value': tmp.me.getCurrency(tmp.price), 'product-id': row.id}).setStyle('width: 100%') ) })
+				.insert({'bottom': new Element('div', {'class': 'col-sm-4'}).update(tmp.isTitle === true ? 'Min St' : new Element('input', {'class': "click-to-edit stockMinLevel-input", 'value': row.stockMinLevel, 'product-id': row.id}).setStyle('width: 100%') ) })
+				.insert({'bottom': new Element('div', {'class': 'col-sm-4'}).update(tmp.isTitle === true ? 'Re St' : new Element('input', {'class': "click-to-edit stockReorderLevel-input", 'value': row.stockReorderLevel, 'product-id': row.id}).setStyle('width: 100%') ) })
+			})
+			.insert({'bottom': new Element(tmp.tag, {'class': 'locations hide-when-info hidden-sm'}).addClassName('col-xs-1').update(
+					row.locations ? tmp.me._getLocations(row.locations, isTitle) : ''
+			) })
+			.insert({'bottom': new Element(tmp.tag, {'class': 'inventeryCode hide-when-info'}).addClassName('col-xs-1').update(row.invenAccNo ? row.invenAccNo : '') })
+			.insert({'bottom': new Element(tmp.tag, {'class': 'manufacturer hide-when-info'}).addClassName('col-xs-1').update(row.manufacturer ? row.manufacturer.name : '') })
+			.insert({'bottom': new Element(tmp.tag, {'class': 'supplier hide-when-info hidden-sm'}).addClassName('col-xs-1').update(
+					row.supplierCodes ? tmp.me._getSupplierCodes(row.supplierCodes, isTitle) : ''
+			) })
+			.insert({'bottom': new Element(tmp.tag, {'class': 'qty hidden-sm'}).addClassName('col-xs-1').update(
+					tmp.isTitle === true ?
+							new Element('div', {'class': 'row'})
+								.insert({'bottom': new Element('div', {'class': 'col-xs-4', 'title': 'Stock on Hand'}).update('SH') })
+								.insert({'bottom': new Element('div', {'class': 'col-xs-4', 'title': 'Average Cost'}).update('Cost') })
+								.insert({'bottom': new Element('div', {'class': 'col-xs-4 hide-when-info', 'title': 'Stock On PO'}).update('SP') })
+							:
+							new Element('div', {'class': 'row'})
+								.update(new Element('a', {'href': '/productqtylog.html?productid=' + row.id, 'target': '_BLANK'})
+									.insert({'bottom': new Element('div', {'class': 'col-xs-4', 'title': 'Stock on Hand'}).update(row.stockOnHand) })
+									.insert({'bottom': new Element('div', {'class': 'col-xs-4', 'title': 'Average Cost'}).update((row.totalOnHandValue != 0 && row.stockOnHand != 0) ? tmp.me.getCurrency(row.totalOnHandValue/row.stockOnHand) : 'N/A') })
+									.insert({'bottom': new Element('div', {'class': 'col-xs-4 hide-when-info', 'title': 'Stock On PO'}).update(row.stockOnPO) })
+								)
+					)
+			})
+			.insert({'bottom': new Element(tmp.tag, {'class': 'product_active hide-when-info hidden-sm'}).addClassName('col-xs-1')
+				.insert({'bottom': (
+					new Element('div', {'class': 'row'})
+						.insert({'bottom': new Element('div', {'class': 'col-xs-4 text-right'})
+							.insert({'bottom': tmp.isTitle === true ? 'Act?' : new Element('input', {'type': 'checkbox', 'checked': row.active})
+								.observe('click', function(event) {
+									tmp.btn = this;
+									tmp.checked = $(tmp.btn).checked;
+									if(confirm(tmp.checked === true ? 'You are about to ReACTIVATE this product.\n Continue?' : 'You are about to deactivate this product.\n Continue?'))
+										tmp.me.toggleActive(tmp.checked, row);
+								})
+							})
+						})
+						.insert({'bottom': new Element('div', {'class': 'col-xs-4'})
+							.setStyle('padding: 0px;')
+							.insert({'bottom': tmp.isTitle === true ? '' : new Element('a', {'href': '/serialnumbers.html?productid=' + row.id, 'target': '_BLANK', 'title': 'Serial Numbers.'}).update('SN') })
+						})
+						.insert({'bottom': new Element('div', {'class': 'col-xs-4'})
+							.setStyle('padding: 0px;')
+							.insert({'bottom': tmp.isTitle === true ? '' : new Element('div', {'class': ''})
+								.insert({'bottom': new Element('a', {'class': 'btn btn-primary btn-xs', 'href': '/product/' + row.id + '.html', 'target': '_BLANK'})
+									.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-pencil'}) })
+								})
+							})
+						})
+				) })
+			});
+		return tmp.row;
+	}
+});

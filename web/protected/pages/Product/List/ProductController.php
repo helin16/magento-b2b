@@ -52,6 +52,7 @@ class ProductController extends CRUDPageAbstract
 		$js .= '._loadProductStatuses('.json_encode($statuses).')';
 		$js .= "._loadChosen()";
 		$js .= "._bindSearchKey()";
+		$js .= "._bindNewRuleBtn()";
 		$js .= ".setCallbackId('priceMatching', '" . $this->priceMatchingBtn->getUniqueID() . "')";
 		$js .= ".setCallbackId('toggleActive', '" . $this->toggleActiveBtn->getUniqueID() . "')";
 		$js .= ".setCallbackId('updatePrice', '" . $this->updatePriceBtn->getUniqueID() . "')";
@@ -111,19 +112,30 @@ class ProductController extends CRUDPageAbstract
 	            if(isset($param->CallbackParameter->pagination))
 	            {
 	                $pageNo = $param->CallbackParameter->pagination->pageNo;
-	                $pageSize = $param->CallbackParameter->pagination->pageSize * 3;
+	                $pageSize = $param->CallbackParameter->pagination->pageSize;
 	            }
 
 	            $stats = array();
-	            $categoryIds = (!isset($serachCriteria['pro.productCategoryIds']) || is_null($serachCriteria['pro.productCategoryIds'])) ? array() : $serachCriteria['pro.productCategoryIds'];
-	            $supplierIds = (!isset($serachCriteria['pro.supplierIds']) || is_null($serachCriteria['pro.supplierIds'])) ? array() : $serachCriteria['pro.supplierIds'];
-	            $manufacturerIds = (!isset($serachCriteria['pro.manufacturerIds']) || is_null($serachCriteria['pro.manufacturerIds'])) ? array() : $serachCriteria['pro.manufacturerIds'];
-	            $productStatusIds = (!isset($serachCriteria['pro.productStatusIds']) || is_null($serachCriteria['pro.productStatusIds'])) ? array() : $serachCriteria['pro.productStatusIds'];
-	            $sku = trim($serachCriteria['pro.sku']);
-	            if(strpos($sku, ',') !== false) {
-	            	$sku = array_map(create_function('$a', 'return trim($a);'), explode(',', $sku));
-	            }
-	            $objects = Product::getProducts($sku, trim($serachCriteria['pro.name']), $supplierIds, $manufacturerIds, $categoryIds, $productStatusIds, trim($serachCriteria['pro.active']), $pageNo, $pageSize, array('pro.name' => 'asc'), $stats, $serachCriteria['pro.stockLevel'], $sumArray);
+	            
+	            $serachCriteria = $this->getSearchCriteria($serachCriteria);
+	            
+	            $objects = Product::getProducts(
+	            		$serachCriteria->sku
+	            		,$serachCriteria->name
+	            		,$serachCriteria->supplierIds
+	            		,$serachCriteria->manufacturerIds
+	            		,$serachCriteria->categoryIds
+	            		,$serachCriteria->productStatusIds
+	            		,$serachCriteria->active
+	            		,$pageNo
+	            		,$pageSize
+	            		,array('pro.name' => 'asc')
+	            		,$stats
+	            		,$serachCriteria->stockLevel
+	            		,$sumArray
+	            		,$serachCriteria->sh_from
+	            		,$serachCriteria->sh_to
+	            		);
             }
             $results['pageStats'] = $stats;
             $results['items'] = array();
@@ -137,6 +149,49 @@ class ProductController extends CRUDPageAbstract
             $errors[] = $ex->getMessage() ;
         }
         $param->ResponseData = StringUtilsAbstract::getJson($results, $errors);
+    }
+    private function getSearchCriteria($serachCriteria)
+    {
+    	$result = new stdClass();
+    	//sku
+        $sku = trim($serachCriteria['pro.sku']);
+        if(strpos($sku, ',') !== false) {
+        	$sku = array_map(create_function('$a', 'return trim($a);'), explode(',', $sku));
+        }
+        $result->sku = $sku;
+        //name
+        $result->name = trim($serachCriteria['pro.name']);
+        //suppliers
+        if(!isset($serachCriteria['pro.supplierIds']) || is_null($serachCriteria['pro.supplierIds']))
+        	$result->supplierIds = array();
+        else $result->supplierIds = $serachCriteria['pro.supplierIds'];
+        //manufactures
+        if(!isset($serachCriteria['pro.manufacturerIds']) || is_null($serachCriteria['pro.manufacturerIds']))
+        	$result->manufacturerIds = array();
+        else $result->manufacturerIds = $serachCriteria['pro.manufacturerIds'];
+        //categories
+        if(!isset($serachCriteria['pro.productCategoryIds']) || is_null($serachCriteria['pro.productCategoryIds']))
+        	$result->categoryIds = array();
+        else $result->categoryIds = $serachCriteria['pro.productCategoryIds'];
+        //product statuses
+        if(!isset($serachCriteria['pro.productStatusIds']) || is_null($serachCriteria['pro.productStatusIds']))
+        	$result->productStatusIds = array();
+        else $result->productStatusIds = $serachCriteria['pro.productStatusIds'];
+        //product active
+        if(trim($serachCriteria['pro.active']) === "ALL")
+        	$result->active = " ";
+        else $result->active = trim($serachCriteria['pro.active']);
+        //stock on hand from
+        if(is_array(json_decode($serachCriteria['pro.sh'])) && count(json_decode($serachCriteria['pro.sh'])) === 2)
+        {
+        	$result->sh_from = json_decode($serachCriteria['pro.sh'])[0];
+        	$result->sh_to = json_decode($serachCriteria['pro.sh'])[1];
+        }
+        else throw new Exception('Invalid stock on hand range, "' . $serachCriteria['pro.sh'] . '" given');
+        //stock level
+        $result->stockLevel = $serachCriteria['pro.stockLevel'];
+        
+        return $result;
     }
     /**
      * Getting price matching information
