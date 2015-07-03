@@ -151,19 +151,82 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 					tmp.selected = tmp.me._getSelection();
 					tmp.totalQty = $('total-found-count').innerHTML;
 					
+					console.debug(tmp.selected.length);
+					console.debug(parseInt(tmp.totalQty));
+					
 					if(tmp.selected !== null && tmp.selected.length !== parseInt(tmp.totalQty)) {
 						tmp.warningMsg = new Element('div')
 							.insert({'bottom': new Element('h3', {'class': 'col-lg-12'}).update('only <b>' + tmp.selected.length + '</b> out of <b>' + tmp.totalQty + '</b> is selected, Contrinue?') })
 							.insert({'bottom': new Element('i', {'class': 'btn btn-danger btn-lg'}).update('No')
 								.observe('click', function(){tmp.me.hideModalBox();})
 							})
-							.insert({'bottom': new Element('i', {'class': 'btn btn-success btn-lg pull-right'}).update('Yes').setStyle(tmp.selected.length === 0 ? 'display: none;' : '') });
+							.insert({'bottom': new Element('i', {'class': 'btn btn-success btn-lg pull-right'}).update('Yes').setStyle(tmp.selected.length === 0 ? 'display: none;' : '') 
+								.observe('click', function(){
+									$(this).up('.modal-body').update(tmp.ruleContainer = new Element('div', {'class': 'row'})
+										.insert({'bottom': new Element('div', {'class': 'col-xs-12'})
+											.insert({'bottom': new Element('div', {'class': 'form-group form-group-sm input-group'})
+												.insert({'bottom': new Element('label', {'class': 'contorl-label input-group-addon'}).update('Price From') })
+												.insert({'bottom': new Element('input', {'type': 'text', 'class': 'form-control input-sm', 'match_rule': 'price_from'}) })
+											})
+										})
+										.insert({'bottom': new Element('div', {'class': 'col-xs-12'})
+											.insert({'bottom': new Element('div', {'class': 'form-group form-group-sm input-group'})
+												.insert({'bottom': new Element('label', {'class': 'contorl-label input-group-addon'}).update('Price To') })
+												.insert({'bottom': new Element('input', {'type': 'text', 'class': 'form-control input-sm', 'match_rule': 'price_to'}) })
+											})
+										})
+										.insert({'bottom': new Element('div', {'class': 'col-xs-12'})
+											.insert({'bottom': new Element('div', {'class': 'form-group form-group-sm input-group'})
+												.insert({'bottom': new Element('label', {'class': 'contorl-label input-group-addon'}).update('Companies') })
+												.insert({'bottom': new Element('input', {'type': 'text', 'class': 'form-control input-sm', 'match_rule': 'company_ids'}) })
+											})
+										})
+									);
+									tmp.selectBox = jQuery('[match_rule="company_ids"]').select2({
+										minimumInputLength: 1,
+										multiple: false,
+										ajax: {
+											delay: 250
+											,url: '/ajax/getAll'
+											,type: 'POST'
+											,data: function (params) {
+												return {"searchTxt": 'companyName like ?', 'searchParams': ['%' + params + '%'], 'entityName': 'PriceMatchCompany'};
+											}
+											,results: function(data, page, query) {
+												tmp.result = [];
+												if(data.resultData && data.resultData.items) {
+													data.resultData.items.each(function(item){
+														if(tmp.me._checkUniquePriceMatchCompanies(tmp.result, item) === false)
+															tmp.result.push({'id': item.id, 'text': item.companyName, 'data': item});
+													});
+												}
+												return { 'results' : tmp.result };
+											}
+										}
+										,cache: true
+										,escapeMarkup: function (markup) { return markup; } // let our custom formatter work
+									});
+									tmp.ruleContainer.down('input').focus();
+								})
+							});
 						tmp.me.showModalBox('Warning', tmp.warningMsg);
 					}
 				}
 				,null
 				);
 		return tmp.me;
+	}
+	,_checkUniquePriceMatchCompanies: function(existItems, newItem) {
+		var tmp = {};
+		tmp.me = this;
+		
+		tmp.found = false;
+		existItems.each(function(item){
+			if(tmp.found === false && item.text === newItem.companyName) {
+				tmp.found = true;
+			}
+		});
+		return tmp.found;
 	}
 	/**
 	 * Getting the locations for a product
