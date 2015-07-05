@@ -156,7 +156,7 @@ class PriceMatchRecord extends BaseEntityAbstract
 		DaoMap::begin($this, 'price_match_record');
 		DaoMap::setManyToOne('min', 'PriceMatchMin', 'price_match_record_min');
 		DaoMap::setManyToOne('company', 'PriceMatchCompany', 'price_match_record_company');
-		DaoMap::setStringType('url', 'varchar', 50);
+		DaoMap::setStringType('url', 'varchar', 255);
 		DaoMap::setIntType('price', 'double', '10,4');
 		DaoMap::setStringType('name', 'varchar', 100);
 		parent::__loadDaoMap();
@@ -181,7 +181,11 @@ class PriceMatchRecord extends BaseEntityAbstract
 			throw new Exception('price must be positive, "' . $price . '" given');
 		$price = doubleval($price);
 		
-		$entity = count($i = self::getAllByCriteria('companyId = ? and minId = ?', array($company->getId(), $min->getId()), true, 1, 1, array('id'=> 'desc'))) > 0 ? $i[0] : new self();
+		$from_date = UDate::now('Australia/Melbourne')->setTime(0, 0, 0)->setTimeZone('UTC');
+		$to_date = UDate::now('Australia/Melbourne')->setTime(23, 59, 59)->setTimeZone('UTC');
+		if(count($i = self::getAllByCriteria('companyId = ? and minId = ? and created >= ? and created <= ?', array($company->getId(), $min->getId(), $from_date, $to_date), true, 1, 1, array('id'=> 'desc'))) > 0)
+			$entity = $i[0];
+		else $entity = new self;
 		$entity->setCompany($company)->setMin($min)->setPrice($price)->setUrl(trim($url))->setName(trim($name))->save();
 		
 		return $entity;
