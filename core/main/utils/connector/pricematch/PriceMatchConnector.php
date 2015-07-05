@@ -1,151 +1,9 @@
 <?php
 class PriceMatchConnector
 {
-	/**
-	 * Product for PriceMatchConnector
-	 *
-	 * @var Product
-	 */
-	private $product;
-	/**
-	 * companies for PriceMatchConnector
-	 *
-	 * @var array
-	 */
-	private $companies;
-	/**
-	 * price_from for PriceMatchConnector
-	 *
-	 * @var double
-	 */
-	private $price_from;
-	/**
-	 * price_to for PriceMatchConnector
-	 *
-	 * @var double
-	 */
-	private $price_to;
-
-	/**
-	 * getter for product
-	 *
-	 * @return Product
-	 */
-	public function getProduct()
-	{
-	    return $this->product;
-	}
-	/**
-	 * Setter for product
-	 *
-	 * @return PriceMatchConnector
-	 */
-	public function setProduct($product)
-	{
-	    $this->product = $product;
-	    return $this;
-	}
-	/**
-	 * getter for companies
-	 *
-	 * @return array
-	 */
-	public function getCompanies()
-	{
-	    return $this->companies;
-	}
-	/**
-	 * Setter for companies
-	 *
-	 * @return PriceMatchConnector
-	 */
-	public function setCompanies($companies)
-	{
-	    $this->companies = $companies;
-	    return $this;
-	}
-	/**
-	 * getter for price_from
-	 *
-	 * @return double
-	 */
-	public function getPrice_from()
-	{
-	    return $this->price_from;
-	}
-	/**
-	 * Setter for price_from
-	 *
-	 * @return PriceMatchConnector
-	 */
-	public function setprice_from($price_from)
-	{
-	    $this->price_from = $price_from;
-	    return $this;
-	}
-	/**
-	 * getter for price_to
-	 *
-	 * @return double
-	 */
-	public function getPrice_to()
-	{
-	    return $this->price_to;
-	}
-	/**
-	 * Setter for price_to
-	 *
-	 * @return PriceMatchConnector
-	 */
-	public function setPrice_to($price_to)
-	{
-	    $this->price_to = $price_to;
-	    return $this;
-	}
-	/**
-	 * 
-	 * not recomend use this b/c memory leak issue
-	 * 
-	 * @param array $companies
-	 * @param string $echo
-	 * @param string $clearAll
-	 * @throws Exception
-	 * @return string
-	 */
-	public static function runAllProduct(array $companies, $echo = false, $clearAll = false)
-	{
-		if(count($companies) === 0)
-			throw new Exception('must get at least one company to compare price');
-
-		// clean up if requested
-		if($clearAll === true)
-		{
-			echo "clear all PriceMatchMin" . "\n";
-			PriceMatchMin::deleteByCriteria('id <> 0'); // this will delete all b/c id will never be 0
-			echo "clear all PriceMatchRecord" . "\n";
-			PriceMatchRecord::deleteByCriteria('id <> 0'); // this will delete all b/c id will never be 0
-		}
-		$sql = "select distinct p.id `pId` from product p where p.active = 1";
-		$productIds = Dao::getResultsNative($sql, array(), PDO::FETCH_ASSOC);
-		foreach ($productIds as $row)
-		{
-			$i = Product::get($row['pId']);
-			try {
-				Dao::beginTransaction();
-				$j = self::run($i, $companies);
-				if($echo === true)
-					echo 'Product (sku = ' . $j->getSku() . '), min price: ' . ($j->getRecord() instanceof PriceMatchRecord ? $j->getRecord()->getPrice() . '(' . $j->getRecord()->getCompany()->getCompanyName() . ')' : 'N/A') . ')' . "\n";
-				Dao::commitTransaction();
-			} catch (Exception $e)
-			{
-				Dao::rollbackTransaction();
-				echo "****ERROR****" . "\n" . $e->getMessage() . "\n" . $e->getTraceAsString() . "\n";
-			}
-// 			break;
-// 			sleep(3);
-		}
-		return '';
-	}
+	private $sku;
+	private $base_url = 'http://www.staticice.com.au/cgi-bin/search.cgi';
+	private $debug;
 	/**
 	 * runner for PriceMatchConnector
 	 *
@@ -154,42 +12,13 @@ class PriceMatchConnector
 	 * @return PriceMatchMin
 	 * @throws Exception
 	 */
-	public static function run(Product $product, array $companies, $price_from = '', $price_to = '', $debug = false)
+	public static function run($sku, $debug = false)
 	{
-gc_enable();
-gc_collect_cycles();
-		
-$usage = memory_get_usage();
-echo '-->Memory Usage Step 1: ' . memory_get_usage() / 1000000 . "\n";
-
-		if(count($companies) === 0)
-			throw new Exception('must get at least one company to compare price');
-		foreach ($companies as $company)
-		{
-			if(!$company instanceof PriceMatchCompany)
-				throw new Exception('must passin an array of PriceMatchCompany Object');
-		}
-
 		$class = new self();
-		$class->setProduct($product)->setCompanies($companies);
-
-		if(($i = $class->priceMatchProduct()) && isset($i['companyPrices']) && is_array($i['companyPrices']) && count($i['companyPrices'])) // get price for all companies for given sku
-		{
-			$class->recordResult($i['companyPrices']); // put price match result for all companies into PriceMatchRecard Table
-			$min = $class->getMinPrice(); // get the 'min' price under given limit (so far price range and conpany selections), such limit is in $this
-			unset($class);
-			unset($i);
-			
-echo '-->Memory Usage Step 2: ' . memory_get_usage()  / 1000000 . "\n";
-echo '-->Memory Usage: ' . (memory_get_usage() - $usage) / 1000000 . "\n";
-			
-			if($debug === true)
-				echo 'Product (sku = ' . $min->getSku() . '), min price: ' . ($min->getRecord() instanceof PriceMatchRecord ? $min->getRecord()->getPrice() . '(' . $min->getRecord()->getCompany()->getCompanyName() . ')' : 'N/A') . ')' . "\n";
-
-			return $min; // $min is an entry of PriceMatchMin, is nothing find $min->getRecord() will be null
-		}
-		$class = null;
-		throw new Exception('cannot get any price for product(id=' . $product->getId() . ', sku=' . $product->getSku() . ') and companiesIds="' . join(', ', array_map(create_function('$a', 'return $a->getId();'), $companies))) . '")';
+		$class->sku = trim($sku);
+		$class->debug = $debug === true ? true : false;
+		
+		$class->recordResult($class->getPrices());
 	}
 	/**
 	 * put given price match result for all companies into PriceMatchRecord table
@@ -197,16 +26,19 @@ echo '-->Memory Usage: ' . (memory_get_usage() - $usage) / 1000000 . "\n";
 	 * @param unknown $companyPrices
 	 * @return PriceMatchConnector
 	 */
-	private function recordResult($companyPrices)
+	private function recordResult($priceMatchResults)
 	{
-		foreach ($companyPrices as $companyPrice)
+		foreach ($priceMatchResults as $priceMatchResult)
 		{
-			$price = $companyPrice['price'];
-			$url = $companyPrice['priceURL'];
-			$company = PriceMatchCompany::get($companyPrice['PriceMatchCompanyId']);
-			$min = PriceMatchMin::create($this->getProduct()->getSku()); // to create PriceMatchRecord must have a PriceMatchMin, the record for PriceMatchMin will be null at this time instance
-
-			if(abs(doubleval($price)) !== 0.0 && doubleval($price) > 0.0 && trim($price) !== '') // price must be positive (non-zero), otherwise will be rejected by Core::PriceMatchRecord::create()
+			
+			$company = $priceMatchResult['PriceMatchCompany'];
+			$price = doubleval($priceMatchResult['price']);
+			$url = $priceMatchResult['url'];
+			$name = $priceMatchResult['name'];
+			
+			$min = PriceMatchMin::create($this->sku); // to create PriceMatchRecord must have a PriceMatchMin, the record for PriceMatchMin will be null at this time instance
+			
+			if(abs($price) !== doubleval(0) && $price > doubleval(0) && trim($price) !== '') // price must be positive (non-zero), otherwise will be rejected by Core::PriceMatchRecord::create()
 			{
 				PriceMatchRecord::create($company, $min, $price, $url);
 			}
@@ -214,40 +46,39 @@ echo '-->Memory Usage: ' . (memory_get_usage() - $usage) / 1000000 . "\n";
 		return $this;
 	}
 	/**
-	 * get the min price. this is a wrap up of PriceMatchMin->getMin()
-	 *
-	 * @throws Exception
-	 * @return PriceMatchMin
+	 * Getting the price match result
+	 * 
+	 * @return array
 	 */
-	private function getMinPrice()
+	private function getPrices()
 	{
-		$companyIds = array_map(create_function('$a', 'return $a->getId();'), $this->getCompanies());
-
-		// a PriceMatchMin for this->getProduct()->getSku() must exist
-		$min = PriceMatchMin::getAllByCriteria('sku = ?', array($this->product->getSku()), true, 1, 1, array('id'=>'desc'));
-		if(count($min) === 0)
-			throw new Exception('not able to find PriceMatchMin for sku ' . $this->getProduct()->getSku() . '. min should be created before record');
-		else $min = $min[0];
-
-		$min = $min->getMin(array('componieIds'=>$companyIds, 'price_from'=>$this->getPrice_from(), 'price_to'=>$this->getPrice_to()));
-
-		return $min;
-	}
-	/**
-	 * Getting price matching information, this a wrapper of old pricematch aka. PriceMatcher::getPrices()
-	 *
-	 * @param unknown $sender
-	 * @param unknown $param
-	 */
-	private function priceMatchProduct()
-	{
-		$prices = ProductPrice::getPrices($this->product, ProductPriceType::get(ProductPriceType::ID_RRP));
-		$companies = PriceMatcher::getAllCompaniesForPriceMatching();
-
-		$prices = PriceMatcher::getPrices($companies, $this->product->getSku(), (count($prices)===0 ? 0 : $prices[0]->getPrice()) );
+		$result = array();
+		$priceMatchResults = HTMLParser::getPriceListForProduct($this->base_url, $this->sku);
 		
-		unset($companies);
-
-		return $prices;
+		foreach($priceMatchResults as $priceMatchResult)
+		{
+			if(($companyDetails = trim($priceMatchResult['companyDetails'])) === '')
+				continue;
+		
+			$companyDetailsArray = explode('|', $companyDetails);
+			$companyURL = (isset($companyDetailsArray[count($companyDetailsArray) - 2])) ? trim($companyDetailsArray[count($companyDetailsArray) - 2]) : trim($companyDetails);
+			$companyURL = strtolower($companyURL);
+			$companyURL = str_replace('https://', '', $companyURL);
+			$companyURL = str_replace('http://', '', $companyURL);
+			$name = (isset($companyDetailsArray[count($companyDetailsArray) - 3])) ? trim($companyDetailsArray[count($companyDetailsArray) - 3]) : trim($companyDetails);
+			$price = str_replace(' ', '', str_replace('$', '', str_replace(',', '', $priceMatchResult['price']) ) );
+			$url = HTMLParser::getHostUrl($this->base_url) . $priceMatchResult['priceLink'];
+			
+			foreach (PriceMatchCompany::getAll() as $company)
+			{
+				if($companyURL === strtolower($company->getCompanyAlias()))
+				{
+					$result[] = array('PriceMatchCompany'=> $company, 'price'=> $price, 'name'=> $name, 'url'=> $url);
+					if($this->debug === true)
+						echo $company->getCompanyName() . '(id=' . $company->getId() . "), $" . $price . ", " . $name . ", " . $url . "\n";
+				}
+			}
+		}
+		return $result;
 	}
 }
