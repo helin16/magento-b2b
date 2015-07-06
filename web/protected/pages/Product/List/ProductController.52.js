@@ -10,6 +10,9 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 	,_showRightPanel: false
 	,_nextPageColSpan: 9
 	,_autoLoading: false
+	,_postIndex: null // for new rule post, start from 0
+	,_selected: null // for new rule post, selected products
+	,_priceMatchRule: null // for new rule post, the rule itself
 	
 	,_getTitleRowData: function() {
 		return {'sku': 'SKU', 'name': 'Product Name','locations': 'Locations', 'invenAccNo': 'AccNo.', 'manufacturer' : {'name': 'Brand'}, 'supplierCodes': [{'supplier': {'name': 'Supplier'}, 'code': ''}],  'active': 'act?', 'stockOnOrder': 'OnOrder', 'stockOnHand': 'OnHand', 'stockOnPO': 'OnPO'};
@@ -140,6 +143,32 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		})
 		return tmp.supplierCodeString.join(', ');
 	}
+	,postNewRule: function(btn) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.btn = (btn || null);
+		
+		if(tmp.me._selected[tmp.me._postIndex]) {
+			tmp.me.postAjax(tmp.me.getCallbackId('newRule'), {'productId': tmp.me._selected[tmp.me._postIndex]['id'], 'rule': tmp.me._priceMatchRule}, {
+				'onLoading': function () {
+				}
+				,'onSuccess': function(sender, param) {
+					try{
+						tmp.result = tmp.me.getResp(param, false, true);
+						if(!tmp.result)
+							return;
+						console.debug(tmp.result);
+						tmp.me._postIndex = tmp.me._postIndex + 1;
+						tmp.me.postNewRule();
+					} catch (e) {
+						tmp.resultDiv.insert({'bottom': tmp.me.getAlertBox('Error', e).addClassName('alert-danger') });
+					}
+				}
+				,'onComplete': function() {
+				}
+			});
+		}
+	}
 	,_bindNewRuleBtn: function() {
 		var tmp = {};
 		tmp.me = this;
@@ -199,7 +228,10 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 											.insert({'bottom': new Element('div', {'class': 'form-group form-group-sm'})
 												.insert({'bottom': new Element('i', {'class': 'btn btn-md btn-success'}).update('Confirm') 
 													.observe('click', function(){
-														
+														tmp.me._priceMatchRule = tmp.me._collectFormData($(this).up('.modal-body'), 'match_rule');
+														tmp.me._selected = tmp.selected;
+														tmp.me._postIndex = 0;
+														tmp.me.postNewRule();
 													})
 												})
 											})
