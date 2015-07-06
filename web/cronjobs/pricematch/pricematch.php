@@ -1,8 +1,8 @@
 <?php
 
-ini_set('memory_limit','64M');
+ini_set('memory_limit','1024M');
 
-require_once 'bootstrap.php';
+require_once dirname(__FILE__) . '\..\..\bootstrap.php';
 
 Core::setUser(UserAccount::get(UserAccount::ID_SYSTEM_ACCOUNT));
 try {
