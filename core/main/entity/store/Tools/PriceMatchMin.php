@@ -118,27 +118,21 @@ class PriceMatchMin extends BaseEntityAbstract
 		
 		if($product instanceof Product)
 		{
-			$rule = ProductPriceMatchRule::getByProduct($product);
-			if($rule instanceof ProductPriceMatchRule)
-			{
-				$company = $rule->getCompany();
-				
-				$where = array(1);
-				$params = array();
-				
-				$where[] = "minId = ? ";
-				$params[] = $this->getId();
-				
-				$companies = $company->getAllAlias();
-				$companyIds = array_map(create_function('$a', 'return $a->getId();'), $companies);
-				$where[] = 'companyId IN ('.implode(", ", array_fill(0, count($companyIds), "?")).')';
-				$params = array_merge($params, $companyIds);
-				
-				//calculate real price range
-				$records = PriceMatchRecord::getAllByCriteria(implode(' AND ', $where), $params, true, 1, 1, array('price'=>'asc'));
-				if(count($records) > 0)
-					$this->setRecord($records[0])->setActive(true)->save();
-			}
+			$where = array(1);
+			$params = array();
+			
+			$where[] = "minId = ? ";
+			$params[] = $this->getId();
+			
+			$companies = PriceMatchCompany::getAll();
+			$companyIds = array_map(create_function('$a', 'return $a->getId();'), $companies);
+			$where[] = 'companyId IN ('.implode(", ", array_fill(0, count($companyIds), "?")).')';
+			$params = array_merge($params, $companyIds);
+			
+			//calculate real price range
+			$records = PriceMatchRecord::getAllByCriteria(implode(' AND ', $where), $params, true, 1, 1, array('price'=>'asc'));
+			if(count($records) > 0)
+				$this->setRecord($records[0])->setActive(true)->save();
 		}
 		return $this->getRecord();
 	}

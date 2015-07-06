@@ -112,9 +112,11 @@ class PriceMatchConnector
 				if($this->debug === true)
 					echo "cannot find base price for PriceMatchCompany " . $company->getCompanyName() . ', ' . $product->getSku() . '(id=' . $product->getId() . ', min(id=' . $min->getId() . ', records found:' . count($records) . "\n";
 			}
+			if($this->debug === true)
+				echo 'new price= ' . ($result===null ? 'not found' : $result) . ', my price= ' . ($myPrice ? $myPrice : 'N/A') . ', ' . $company->getCompanyName() . ' price= ' . $base_price . ', matching range=[' . $price_from . ',' . $price_to . ']' . "\n";
 		}
-		if($this->debug === true)
-			echo 'new price= ' . ($result===null ? 'not found' : $result) . ', my price= ' . ($myPrice ? $myPrice : 'N/A') . ', ' . $company->getCompanyName() . ' price= ' . $base_price . ', matching range=[' . $price_from . ',' . $price_to . ']' . "\n"; 
+		elseif($this->debug === true)
+			echo ($min instanceof PriceMatchMin ? '' : 'Invalid PriceMatchMin passed in') . ($rule instanceof ProductPriceMatchRule ? '' : ('cannot find ProductPriceMatchRule for product ' . $product->getSku() . '(id=' . $product->getId() . ')')) . "\n";
 		return $result;
 	}
 	private function _getMinRecord()
