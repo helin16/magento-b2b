@@ -154,7 +154,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 					console.debug(tmp.selected.length);
 					console.debug(parseInt(tmp.totalQty));
 					
-					if(tmp.selected !== null && tmp.selected.length !== parseInt(tmp.totalQty)) {
+					if(tmp.selected !== null && tmp.selected.length > 0) {
 						tmp.warningMsg = new Element('div')
 							.insert({'bottom': new Element('h3', {'class': 'col-lg-12'}).update('only <b>' + tmp.selected.length + '</b> out of <b>' + tmp.totalQty + '</b> is selected, Contrinue?') })
 							.insert({'bottom': new Element('i', {'class': 'btn btn-danger btn-lg'}).update('No')
@@ -165,26 +165,47 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 									$(this).up('.modal-body').update(tmp.ruleContainer = new Element('div', {'class': 'row'})
 										.insert({'bottom': new Element('div', {'class': 'col-xs-12'})
 											.insert({'bottom': new Element('div', {'class': 'form-group form-group-sm input-group'})
-												.insert({'bottom': new Element('label', {'class': 'contorl-label input-group-addon'}).update('Price From') })
-												.insert({'bottom': new Element('input', {'type': 'text', 'class': 'form-control input-sm', 'match_rule': 'price_from'}) })
+												.insert({'bottom': new Element('label', {'class': 'contorl-label input-group-addon'}).update('Target Compatitor') })
+												.insert({'bottom': new Element('input', {'type': 'text', 'class': 'form-control input-sm', 'match_rule': 'company_id'}) })
 											})
 										})
-										.insert({'bottom': new Element('div', {'class': 'col-xs-12'})
+										.insert({'bottom': new Element('div', {'class': 'col-xs-6'})
 											.insert({'bottom': new Element('div', {'class': 'form-group form-group-sm input-group'})
-												.insert({'bottom': new Element('label', {'class': 'contorl-label input-group-addon'}).update('Price To') })
-												.insert({'bottom': new Element('input', {'type': 'text', 'class': 'form-control input-sm', 'match_rule': 'price_to'}) })
+												.insert({'bottom': new Element('label', {'class': 'contorl-label input-group-addon'}).update('Lower Limit') })
+												.insert({'bottom': new Element('input', {'type': 'text', 'class': 'form-control input-sm', 'match_rule': 'price_from'}) 
+													.observe('keyup', function(e){
+														$(this).up('.modal-body').down('[match_rule="price_to"]').value = $F($(this));
+													})
+												})
 											})
 										})
-										.insert({'bottom': new Element('div', {'class': 'col-xs-12'})
+										.insert({'bottom': new Element('div', {'class': 'col-xs-6'})
 											.insert({'bottom': new Element('div', {'class': 'form-group form-group-sm input-group'})
-												.insert({'bottom': new Element('label', {'class': 'contorl-label input-group-addon'}).update('Companies') })
-												.insert({'bottom': new Element('input', {'type': 'text', 'class': 'form-control input-sm', 'match_rule': 'company_ids'}) })
+												.insert({'bottom': new Element('label', {'class': 'contorl-label input-group-addon'}).update('Upper Limit') })
+												.insert({'bottom': new Element('input', {'type': 'text', 'class': 'form-control input-sm', 'match_rule': 'price_to'}) 
+													.observe('keyup', function(e){
+														$(this).up('.modal-body').down('[match_rule="price_from"]').value = $F($(this));
+													})
+												})
+											})
+										})
+										.insert({'bottom': new Element('div', {'class': 'col-xs-6'})
+											.insert({'bottom': new Element('div', {'class': 'form-group form-group-sm input-group'})
+												.insert({'bottom': new Element('label', {'class': 'contorl-label input-group-addon'}).update('Margin') })
+												.insert({'bottom': new Element('input', {'type': 'text', 'class': 'form-control input-sm', 'match_rule': 'offset'}) })
+											})
+										})
+										.insert({'bottom': new Element('div', {'class': 'col-xs-6 text-right'})
+											.insert({'bottom': new Element('div', {'class': 'form-group form-group-sm'})
+												.insert({'bottom': new Element('i', {'class': 'btn btn-md btn-success'}).update('Confirm') 
+													.observe('click', function(){
+														
+													})
+												})
 											})
 										})
 									);
-									tmp.selectBox = jQuery('[match_rule="company_ids"]').select2({
-										minimumInputLength: 1,
-										multiple: false,
+									tmp.selectBox = jQuery('[match_rule="company_id"]').select2({
 										ajax: {
 											delay: 250
 											,url: '/ajax/getAll'
@@ -642,7 +663,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 					.insert({'bottom': new Element('span', {'class': 'btn btn-warning btn-show-more', 'data-loading-text':"Fetching more results ..."}).update('<b>Show ALL Pages</b>').setStyle('margin-left: 10px; color: black;')
 						.observe('click', function() {
 							if(tmp.totalQty > 1000)
-								tmp.me.showModalBox('Warning', '<h3>There are ' + tmp.totalQty + ' products. You must narrow down the search');
+								tmp.me.showModalBox('Warning', '<h3>There are ' + tmp.totalQty + ' products for current search conditions. <br/>Please narrow down the search');
 							else
 								tmp.me.getResults(false, tmp.me._pagination.pageSize, true);
 						})
