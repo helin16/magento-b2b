@@ -27,6 +27,12 @@ class ProductPriceMatchRule extends BaseEntityAbstract
 	 */
 	private $price_to;
 	/**
+	 * The offset after match price
+	 * 
+	 * @var string
+	 */
+	private $offset;
+	/**
 	 * The PriceMatchCompany of price match limit
 	 * 
 	 * @var PriceMatchCompany
@@ -93,6 +99,25 @@ class ProductPriceMatchRule extends BaseEntityAbstract
 	    return $this;
 	}
 	/**
+	 * getter for offset
+	 *
+	 * @return string
+	 */
+	public function getOffset()
+	{
+	    return $this->offset;
+	}
+	/**
+	 * Setter for offset
+	 *
+	 * @return ProductPriceMatchRule
+	 */
+	public function setOffset($offset)
+	{
+	    $this->offset = $offset;
+	    return $this;
+	}
+	/**
 	 * getter for company
 	 *
 	 * @return PriceMatchCompany
@@ -123,18 +148,27 @@ class ProductPriceMatchRule extends BaseEntityAbstract
 		DaoMap::setManyToOne('product', 'Product', 'pro_rule_pro');
 		DaoMap::setStringType('price_from', 'varchar', '16', true, null);
 		DaoMap::setStringType('price_to', 'varchar', '16', true, null);
+		DaoMap::setStringType('offset', 'varchar', '16', true, null);
 		DaoMap::setManyToOne('company', 'PriceMatchCompany', 'pro_rule_company');
 		parent::__loadDaoMap();
 		
 		DaoMap::commit();
 	}
-	public static function create(Product $product, PriceMatchCompany $company, $price_from = null, $price_to = null)
+	public static function create(Product $product, PriceMatchCompany $company, $price_from = null, $price_to = null, $offset = null)
 	{
 		if(doubleval(str_replace('%', '', $price_from)) < doubleval(0) || doubleval(str_replace('%', '', $price_to)) < doubleval(0))
 			throw new Exception('price range limits must be greater or equal than 0, "' . $price_from . '" and "' . $price_to . '" given');
+		if(($price_from !== null && !is_numeric(trim(str_replace('%', '', $price_from)))) || ($price_to !== null && !is_numeric(trim(str_replace('%', '', $price_to)))) || ($offset !== null && !is_numeric(trim(str_replace('%', '', $offset)))))
+			throw new Exception('price range limits and offset must be percentage or number, "' . $price_from . '" and "' . $price_to . '" and "' . $offset . ' given');
 		
 		$obj = ($existObj = self::getByProduct($product)) instanceof self ? $existObj : new self();
-		$obj->setProduct($product)->setcompany($company)->setPrice_from($price_from === null ? null : trim($price_from))->setPrice_to($price_to === null ? null : trim($price_to))->setActive(true)->save();
+		$obj->setProduct($product)
+			->setcompany($company)
+			->setPrice_from($price_from === null ? null : trim($price_from))
+			->setPrice_to($price_to === null ? null : trim($price_to))
+			->setOffset($offset === null ? null : trim($offset))
+			->setActive(true)
+			->save();
 		
 		return $obj;
 	}

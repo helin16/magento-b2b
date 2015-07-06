@@ -43,11 +43,14 @@ class PriceMatchConnector
 			throw new Exception('Invalid sku passed in, "' . $sku . '" given');
 		$min = PriceMatchMin::getBySku($sku);
 		$rule = ProductPriceMatchRule::getByProduct($product);
+		$prices = ProductPrice::getPrices($product, ProductPriceType::get(ProductPriceType::ID_RRP));
+		$myPrice = count($prices)===0 ? 0 : $prices[0]->getPrice();
 		if($min instanceof PriceMatchMin && $rule instanceof ProductPriceMatchRule)
 		{
 			$company = $rule->getCompany();
 			$price_from = $rule->getPrice_from();
 			$price_to = $rule->getPrice_to();
+			$offset = $rule->getOffset();
 			
 			$where = array(1);
 			$params = array();
@@ -99,24 +102,31 @@ class PriceMatchConnector
 					else $price_to = $base_price + doubleval($price_to);
 				}
 				
-				// find and setRecord
-				$prices = ProductPrice::getPrices($product, ProductPriceType::get(ProductPriceType::ID_RRP));
-				$myPrice = count($prices)===0 ? 0 : $prices[0]->getPrice();
+				// check if in range
 				if($myPrice !== 0 && ($price_from === null || $myPrice >= $price_from) && ($price_to === null ||$myPrice <= $price_to))
 				{
 					$result = $base_price;
+				}
+				// apply offset
+				if($offset !== null)
+				{
+					if(strpos($offset, '%') !== false) // offset in the rule is a percentage
+					{
+						$result = $result + $result * doubleval(0.01 * doubleval(str_replace('%', '', $offset)));
+					}
+					else $result = $result + doubleval($offset);
 				}
 			}
 			else 
 			{
 				if($this->debug === true)
-					echo "cannot find base price for PriceMatchCompany " . $company->getCompanyName() . ', ' . $product->getSku() . '(id=' . $product->getId() . ', min(id=' . $min->getId() . ', records found:' . count($records) . "\n";
+					echo "cannot find price for PriceMatchCompany " . $company->getCompanyName() . ', ' . $product->getSku() . '(id=' . $product->getId() . ', min(id=' . $min->getId() . '), records found:' . count($records) . "\n";
 			}
 			if($this->debug === true)
-				echo 'new price= ' . ($result===null ? 'not found' : $result) . ', my price= ' . ($myPrice ? $myPrice : 'N/A') . ', ' . $company->getCompanyName() . ' price= ' . $base_price . ', matching range=[' . $price_from . ',' . $price_to . ']' . "\n";
+				echo 'new price= ' . ($result===null ? 'N/A' : $result) . ', my price= ' . (isset($myPrice) ? $myPrice : 'N/A') . ', ' . $company->getCompanyName() . ' price= ' . $base_price . ', matching range=[' . $price_from . ',' . $price_to . '], offset=' . ($offset===null ? 'null' : $offset) . "\n";
 		}
 		elseif($this->debug === true)
-			echo ($min instanceof PriceMatchMin ? '' : 'Invalid PriceMatchMin passed in') . ($rule instanceof ProductPriceMatchRule ? '' : ('cannot find ProductPriceMatchRule for product ' . $product->getSku() . '(id=' . $product->getId() . ')')) . "\n";
+			echo ($min instanceof PriceMatchMin ? '' : 'Cannot find result on StaticIce for all known PriceMatchCompanies') . ($rule instanceof ProductPriceMatchRule ? '' : ('cannot find ProductPriceMatchRule for product ' . $product->getSku() . '(id=' . $product->getId() . ')')) . "\n";
 		return $result;
 	}
 	private function _getMinRecord()
@@ -187,7 +197,7 @@ class PriceMatchConnector
 				{
 					$result[] = array('PriceMatchCompany'=> $company, 'price'=> $price, 'name'=> $name, 'url'=> $url);
 					if($this->debug === true)
-						echo $company->getCompanyName() . '(id=' . $company->getId() . "), $" . $price . ", " . $name . ", " . $url . "\n";
+						echo $company->getCompanyName() . '(id=' . $company->getId() . "), $" . $price . "\n";
 				}
 			}
 		}

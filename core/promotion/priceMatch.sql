@@ -41,6 +41,7 @@ CREATE TABLE `productpricematchrule` (
 	`productId` int(10) unsigned NOT NULL DEFAULT 0,
 	`price_from` varchar(16) NULL ,
 	`price_to` varchar(16) NULL ,
+	`offset` varchar(16) NULL ,
 	`companyId` int(10) unsigned NOT NULL DEFAULT 0,
 	`active` bool NOT NULL DEFAULT 1,
 	`created` datetime NOT NULL DEFAULT '0001-01-01 00:00:00',
