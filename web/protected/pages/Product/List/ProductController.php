@@ -70,6 +70,14 @@ class ProductController extends CRUDPageAbstract
 			Dao::beginTransaction();
 			
 			$results = $param->CallbackParameter;
+			if(!isset($param->CallbackParameter->productId) || !($product = Product::get(trim($param->CallbackParameter->productId))) instanceof Product)
+				throw new Exception('Invalid Product Id passed in' . $param->CallbackParameter->productId . 'given');
+			if(!isset($param->CallbackParameter->rule) || !isset($param->CallbackParameter->rule->company_id) || !($company = PriceMatchCompany::get(trim($param->CallbackParameter->rule->company_id))) instanceof PriceMatchCompany)
+				throw new Exception('Invalid PriceMatchCompany Id passed in ' . $param->CallbackParameter->rule->company_id . 'given');
+			
+			$rule = ProductPriceMatchRule::create($product, $company, trim($param->CallbackParameter->rule->price_from), trim($param->CallbackParameter->rule->price_to), trim($param->CallbackParameter->rule->offset));
+			
+			$results = $rule->getJson();
 			
 			Dao::commitTransaction();
 		}

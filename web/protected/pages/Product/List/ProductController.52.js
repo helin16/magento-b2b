@@ -148,7 +148,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		tmp.me = this;
 		tmp.btn = (btn || null);
 		
-		if(tmp.me._selected[tmp.me._postIndex]) {
+		if(tmp.me._selected[tmp.me._postIndex] && tmp.me._postIndex === 0) {
 			tmp.me.postAjax(tmp.me.getCallbackId('newRule'), {'productId': tmp.me._selected[tmp.me._postIndex]['id'], 'rule': tmp.me._priceMatchRule}, {
 				'onLoading': function () {
 				}

@@ -154,6 +154,19 @@ class ProductPriceMatchRule extends BaseEntityAbstract
 		
 		DaoMap::commit();
 	}
+	/**
+	 * (non-PHPdoc)
+	 * @see BaseEntityAbstract::getJson()
+	 */
+	public function getJson($extra = array(), $reset = false)
+	{
+		$array = $extra;
+		if(!$this->isJsonLoaded($reset))
+		{
+			$array['productId'] = $this->getProduct()->getId();
+		}
+		return parent::getJson($array, $reset);
+	}
 	public static function create(Product $product, PriceMatchCompany $company, $price_from = null, $price_to = null, $offset = null)
 	{
 		if(doubleval(str_replace('%', '', $price_from)) < doubleval(0) || doubleval(str_replace('%', '', $price_to)) < doubleval(0))
