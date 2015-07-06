@@ -20,6 +20,116 @@ class PriceMatchConnector
 		
 		$class->recordResult($class->getPrices());
 	}
+	public static function getMinRecord($sku, $debug = false)
+	{
+		$class = new self();
+		$class->sku = trim($sku);
+		$class->debug = $debug === true ? true : false;
+		return $class->_getMinRecord();
+	}
+	public static function getNewPrice($sku, $debug = false)
+	{
+		$class = new self();
+		$class->sku = trim($sku);
+		$class->debug = $debug === true ? true : false;
+		return $class->_getNewPrice();
+	}
+	private function _getNewPrice()
+	{
+		$result = null;
+		$sku = $this->sku;
+		$product = Product::getBySku($sku);
+		if(!$product instanceof Product)
+			throw new Exception('Invalid sku passed in, "' . $sku . '" given');
+		$min = PriceMatchMin::getBySku($sku);
+		$rule = ProductPriceMatchRule::getByProduct($product);
+		if($min instanceof PriceMatchMin && $rule instanceof ProductPriceMatchRule)
+		{
+			$company = $rule->getCompany();
+			$price_from = $rule->getPrice_from();
+			$price_to = $rule->getPrice_to();
+			
+			$where = array(1);
+			$params = array();
+			
+			$where[] = "minId = ? ";
+			$params[] = $min->getId();
+			
+			$from_date = UDate::now('Australia/Melbourne')->setTime(0, 0, 0)->setTimeZone('UTC');
+			$to_date = UDate::now('Australia/Melbourne')->setTime(23, 59, 59)->setTimeZone('UTC');
+			$where[] = "created >= ? ";
+			$params[] = $from_date;
+			$where[] = "created <= ? ";
+			$params[] = $to_date;
+			
+			$companies = $company->getAllAlias();
+			$companyIds = array_map(create_function('$a', 'return $a->getId();'), $companies);
+			$where[] = 'companyId IN ('.implode(", ", array_fill(0, count($companyIds), "?")).')';
+			$params = array_merge($params, $companyIds);
+			
+			//calculate target compatitor price
+			$records = PriceMatchRecord::getAllByCriteria(implode(' AND ', $where), $params, true, null, DaoQuery::DEFAUTL_PAGE_SIZE, array('price'=>'asc'));
+			$base_price = null;
+			foreach ($records as $record)
+			{
+				if($base_price === null || (doubleval($record->getPrice()) !== doubleval(0) && doubleval($record->getPrice()) < doubleval($base_price)))
+				{
+					$base_price = doubleval($record->getPrice());
+				}
+			}
+			if($base_price !== null)
+			{
+				if($price_from !== null)
+				{
+					if(strpos($price_from, '%') !== false) // price rule is a percentage
+					{
+						$price_from = $base_price - $base_price * doubleval(0.01 * doubleval(str_replace('%', '', $price_from)));
+					}
+					else $price_from = $base_price - doubleval($price_from);
+					if(doubleval($price_from) <= doubleval(0))
+						$price_from = doubleval(0);
+				}
+				
+				if($price_to !== null)
+				{
+					if(strpos($price_to, '%') !== false) // price rule is a percentage
+					{
+						$price_to = $base_price + $base_price * doubleval(0.01 * doubleval(str_replace('%', '', $price_to)));
+					}
+					else $price_to = $base_price + doubleval($price_to);
+				}
+				
+				// find and setRecord
+				$prices = ProductPrice::getPrices($product, ProductPriceType::get(ProductPriceType::ID_RRP));
+				$myPrice = count($prices)===0 ? 0 : $prices[0]->getPrice();
+				if($myPrice !== 0 && ($price_from === null || $myPrice >= $price_from) && ($price_to === null ||$myPrice <= $price_to))
+				{
+					$result = $base_price;
+				}
+			}
+			else 
+			{
+				if($this->debug === true)
+					echo "cannot find base price for PriceMatchCompany " . $company->getCompanyName() . ', ' . $product->getSku() . '(id=' . $product->getId() . ', min(id=' . $min->getId() . ', records found:' . count($records) . "\n";
+			}
+		}
+		if($this->debug === true)
+			echo 'new price= ' . ($result===null ? 'not found' : $result) . ', my price= ' . ($myPrice ? $myPrice : 'N/A') . ', ' . $company->getCompanyName() . ' price= ' . $base_price . ', matching range=[' . $price_from . ',' . $price_to . ']' . "\n"; 
+		return $result;
+	}
+	private function _getMinRecord()
+	{
+		$sku = $this->sku;
+		$min = PriceMatchMin::getBySku($sku);
+		if($min instanceof PriceMatchMin)
+		{
+			$record =  $min->getMin();
+			if($this->debug === true)
+				echo 'min found for ' . $sku . '(id=' . Product::getBySku($sku)->getId() . '), ' .$record->getCompany()->getCompanyName() . ': $' . $record->getPrice() . "\n";
+			return $record;
+		}
+		else return null;
+	}
 	/**
 	 * put given price match result for all companies into PriceMatchRecord table
 	 *

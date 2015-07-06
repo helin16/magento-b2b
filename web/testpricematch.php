@@ -12,6 +12,12 @@ try {
 	echo 'Product: id=' . Product::get($argv[1])->getId() . ', sku="' . Product::get($argv[1])->getSku() . '"' . "\n\n";
 	
 	PriceMatchConnector::run(Product::get($argv[1])->getSku(), true);
+	echo '============================================' ."\n";
+	$rule = ProductPriceMatchRule::create(Product::get($argv[1]), PriceMatchCompany::get(1), 10, 10);
+	echo '============================================' ."\n";
+	PriceMatchConnector::getMinRecord(Product::get($argv[1])->getSku(), true);
+	echo '============================================' ."\n";
+	PriceMatchConnector::getNewPrice(Product::get($argv[1])->getSku(), true);
 	Dao::commitTransaction();
 } catch (Exception $e)
 {

@@ -17,13 +17,13 @@ class ProductPriceMatchRule extends BaseEntityAbstract
 	/**
 	 * The lower limit of price match limit
 	 * 
-	 * @var double
+	 * @var string
 	 */
 	private $price_from;
 	/**
 	 * The upper limit of price match limit
 	 * 
-	 * @var double
+	 * @var string
 	 */
 	private $price_to;
 	/**
@@ -121,35 +121,28 @@ class ProductPriceMatchRule extends BaseEntityAbstract
 	{
 		DaoMap::begin($this, 'pro_price_rule');
 		DaoMap::setManyToOne('product', 'Product', 'pro_rule_pro');
-		DaoMap::setIntType('price_from', 'double', '10,4');
-		DaoMap::setIntType('price_to', 'double', '10,4');
+		DaoMap::setStringType('price_from', 'varchar', '16', true, null);
+		DaoMap::setStringType('price_to', 'varchar', '16', true, null);
 		DaoMap::setManyToOne('company', 'PriceMatchCompany', 'pro_rule_company');
 		parent::__loadDaoMap();
 		
 		DaoMap::commit();
 	}
-	public static function create(Product $product, PriceMatchCompany $company, $price_from = '', $price_to = '')
+	public static function create(Product $product, PriceMatchCompany $company, $price_from = null, $price_to = null)
 	{
-		if(doubleval(trim($price_from)) < doubleval(0) || doubleval(trim($price_to)) < doubleval(0))
+		if(doubleval(str_replace('%', '', $price_from)) < doubleval(0) || doubleval(str_replace('%', '', $price_to)) < doubleval(0))
 			throw new Exception('price range limits must be greater or equal than 0, "' . $price_from . '" and "' . $price_to . '" given');
 		
-		$obj = ($existObj = self::getByProductAndCompany($product, $company)) instanceof self ? $existObj : new self();
-		$obj->setProduct($product)->setcompany($company)->setPrice_from(doubleval(trim($price_from)))->setPrice_to(doubleval(trim($price_to)))->setActive(true)->save();
+		$obj = ($existObj = self::getByProduct($product)) instanceof self ? $existObj : new self();
+		$obj->setProduct($product)->setcompany($company)->setPrice_from($price_from === null ? null : trim($price_from))->setPrice_to($price_to === null ? null : trim($price_to))->setActive(true)->save();
 		
 		return $obj;
 	}
-	/**
-	 * get ProductPriceMatchRule by product and company
-	 * 
-	 * @param Product $product
-	 * @param PriceMatchCompany $company
-	 * @return Ambigous <ProductPriceMatchRule, Ambigous>
-	 */
-	public static function getByProductAndCompany(Product $product, PriceMatchCompany $company)
+	public static function getByProduct(Product $product)
 	{
-		$result = self::getAllByCriteria('productId = ? AND companyId = ?', array($product->getId(), $company->getId()), true, 1, 1, array('id'=>'desc'));
-		if(is_array($result) && count($result) > 0 && $result[0] instanceof self)
-			$result = $result[0];
-		return $result;
+		$rules = self::getAllByCriteria('productId = ?', array($product->getId()), false, 1, 1, array('id'=> 'desc'));
+		if(count($rules) > 0)
+			return $rules[0];
+		else return null;
 	}
 }

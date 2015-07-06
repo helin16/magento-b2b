@@ -39,8 +39,8 @@ DROP TABLE IF EXISTS `productpricematchrule`;
 CREATE TABLE `productpricematchrule` (
 	`id` int(10) unsigned NOT NULL AUTO_INCREMENT,
 	`productId` int(10) unsigned NOT NULL DEFAULT 0,
-	`price_from` double(10,4) unsigned NOT NULL DEFAULT 0,
-	`price_to` double(10,4) unsigned NOT NULL DEFAULT 0,
+	`price_from` varchar(16) NULL ,
+	`price_to` varchar(16) NULL ,
 	`companyId` int(10) unsigned NOT NULL DEFAULT 0,
 	`active` bool NOT NULL DEFAULT 1,
 	`created` datetime NOT NULL DEFAULT '0001-01-01 00:00:00',
@@ -53,4 +53,3 @@ CREATE TABLE `productpricematchrule` (
 	,INDEX (`createdById`)
 	,INDEX (`updatedById`)
 ) ENGINE=innodb DEFAULT CHARSET=utf8;
-
