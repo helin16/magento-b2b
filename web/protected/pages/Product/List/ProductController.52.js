@@ -156,6 +156,9 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		tmp.me._priceMatchRule.offset = tmp.me.getValueFromCurrency(tmp.me._priceMatchRule.offset);
 		
 		if(tmp.me._selected[tmp.me._postIndex]) {
+			window.onbeforeunload = function(){
+			   return "Don't leave me!";
+			};
 			tmp.me.postAjax(tmp.me.getCallbackId('newRule'), {'productId': tmp.me._selected[tmp.me._postIndex]['id'], 'rule': tmp.me._priceMatchRule}, {
 				'onLoading': function () {
 					if(tmp.btn !== null)
@@ -177,6 +180,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 					}
 				}
 				,'onComplete': function() {
+					window.onbeforeunload = null;
 					if(tmp.btn !== null)
 						jQuery('#'+tmp.btn.id).button('reset');
 					tmp.me._postIndex = tmp.me._postIndex + 1;
