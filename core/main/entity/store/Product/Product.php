@@ -1000,6 +1000,7 @@ class Product extends InfoEntityAbstract
 			$array['fullDescriptionAsset'] = (($asset = Asset::getAsset($this->getFullDescAssetId())) instanceof Asset ? $asset->getJson() : null) ;
 			$array['locations'] = array_map(create_function('$a', 'return $a->getJson();'), PreferredLocation::getPreferredLocations($this));
 			$array['unitCost'] = $this->getUnitCost();
+			$array['priceMatchRule'] = ($i=ProductPriceMatchRule::getByProduct($this)) instanceof ProductPriceMatchRule ? $i->getJson() : '';
 		}
 		return parent::getJson($array, $reset);
 	}

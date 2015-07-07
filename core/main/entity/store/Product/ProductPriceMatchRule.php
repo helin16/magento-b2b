@@ -164,11 +164,18 @@ class ProductPriceMatchRule extends BaseEntityAbstract
 		if(!$this->isJsonLoaded($reset))
 		{
 			$array['productId'] = $this->getProduct()->getId();
+			$array['priceMatchCompany'] = $this->getCompany()->getJson();
 		}
 		return parent::getJson($array, $reset);
 	}
 	public static function create(Product $product, PriceMatchCompany $company, $price_from = null, $price_to = null, $offset = null)
 	{
+		if(trim($price_from) === '')
+			$price_from = null;
+		if(trim($price_to) === '')
+			$price_to = null;
+		if(trim($offset) === '')
+			$offset = null;
 		if(doubleval(str_replace('%', '', $price_from)) < doubleval(0) || doubleval(str_replace('%', '', $price_to)) < doubleval(0))
 			throw new Exception('price range limits must be greater or equal than 0, "' . $price_from . '" and "' . $price_to . '" given');
 		if(($price_from !== null && !is_numeric(trim(str_replace('%', '', $price_from)))) || ($price_to !== null && !is_numeric(trim(str_replace('%', '', $price_to)))) || ($offset !== null && !is_numeric(trim(str_replace('%', '', $offset)))))
