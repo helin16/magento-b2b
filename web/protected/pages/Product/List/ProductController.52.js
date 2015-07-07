@@ -148,6 +148,8 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		var tmp = {};
 		tmp.me = this;
 		tmp.btn = (btn || null);
+		if(tmp.btn !== null)
+			tmp.me._signRandID(tmp.btn);
 		
 		tmp.me._priceMatchRule.price_from = tmp.me.getValueFromCurrency(tmp.me._priceMatchRule.price_from);
 		tmp.me._priceMatchRule.price_to = tmp.me.getValueFromCurrency(tmp.me._priceMatchRule.price_to);
@@ -156,6 +158,8 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		if(tmp.me._selected[tmp.me._postIndex]) {
 			tmp.me.postAjax(tmp.me.getCallbackId('newRule'), {'productId': tmp.me._selected[tmp.me._postIndex]['id'], 'rule': tmp.me._priceMatchRule}, {
 				'onLoading': function () {
+					if(tmp.btn !== null)
+						jQuery('#'+tmp.btn.id).button('loading');
 				}
 				,'onSuccess': function(sender, param) {
 					try{
@@ -173,8 +177,10 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 					}
 				}
 				,'onComplete': function() {
+					if(tmp.btn !== null)
+						jQuery('#'+tmp.btn.id).button('reset');
 					tmp.me._postIndex = tmp.me._postIndex + 1;
-					tmp.me.postNewRule();
+					tmp.me.postNewRule(tmp.btn);
 				}
 			});
 		}
@@ -206,29 +212,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 									$(this).up('.modal-body').update('')
 										.insert({'bottom': tmp.ruleContainer = tmp.me._getPriceMatchRuleEl(null, tmp.selected) })
 										.insert({'bottom': new Element('div', {'class': 'row', 'id': tmp.me.newRuleResultContainerId}) });
-									tmp.selectBox = jQuery('[match_rule="company_id"]').select2({
-										ajax: {
-											delay: 250
-											,url: '/ajax/getAll'
-											,type: 'POST'
-											,data: function (params) {
-												return {"searchTxt": 'companyName like ?', 'searchParams': ['%' + params + '%'], 'entityName': 'PriceMatchCompany'};
-											}
-											,results: function(data, page, query) {
-												tmp.result = [];
-												if(data.resultData && data.resultData.items) {
-													data.resultData.items.each(function(item){
-														if(tmp.me._checkUniquePriceMatchCompanies(tmp.result, item) === false)
-															tmp.result.push({'id': item.id, 'text': item.companyName, 'data': item});
-													});
-												}
-												return { 'results' : tmp.result };
-											}
-										}
-										,cache: true
-										,escapeMarkup: function (markup) { return markup; } // let our custom formatter work
-									});
-									jQuery('[match_rule="company_id"]').select2('open');
+									tmp.me._getPriceMatchCompanySelect2(jQuery('[match_rule="company_id"]'),true);
 								})
 							});
 						tmp.me.showModalBox('Warning', tmp.warningMsg);
@@ -240,6 +224,41 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 				,null
 				);
 		return tmp.me;
+	}
+	,_getPriceMatchCompanySelect2: function(el, open , product) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.open = (open || null);
+		tmp.product = (product || null);
+		
+		tmp.selectBox = jQuery(el).select2({
+			ajax: {
+				delay: 250
+				,url: '/ajax/getAll'
+				,type: 'POST'
+				,data: function (params) {
+					return {"searchTxt": 'companyName like ?', 'searchParams': ['%' + params + '%'], 'entityName': 'PriceMatchCompany'};
+				}
+				,results: function(data, page, query) {
+					tmp.result = [];
+					if(data.resultData && data.resultData.items) {
+						data.resultData.items.each(function(item){
+							if(tmp.me._checkUniquePriceMatchCompanies(tmp.result, item) === false)
+								tmp.result.push({'id': item.id, 'text': item.companyName, 'data': item});
+						});
+					}
+					return { 'results' : tmp.result };
+				}
+			}
+			,cache: true
+			,escapeMarkup: function (markup) { return markup; } // let our custom formatter work
+		});
+		if(tmp.open === true)
+			tmp.selectBox.select2('open');
+		if(tmp.product !== null && tmp.product.priceMatchRule && tmp.product.priceMatchRule.id && tmp.product.priceMatchRule.priceMatchCompany && tmp.product.priceMatchRule.priceMatchCompany.id) {
+			tmp.selectBox.select2('data', {'id': tmp.product.priceMatchRule.priceMatchCompany.id, 'text': tmp.product.priceMatchRule.priceMatchCompany.companyName, 'data': tmp.product.priceMatchRule.priceMatchCompany});
+		}
+		return tmp.selectBox;
 	}
 	,_checkUniquePriceMatchCompanies: function(existItems, newItem) {
 		var tmp = {};
@@ -346,7 +365,8 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 					.insert({'bottom': new Element('div', {'class': 'panel-heading'}).update('<strong>Price Match Rule</strong>')})
 					.insert({'bottom': new Element('div', {'class': 'panel-body'}).update(tmp.ProductRuleEl = tmp.me._getPriceMatchRuleEl(product))})
 				})
-			});
+			})
+			;
 		return tmp.newDiv;
 	}
 	,_getPriceMatchRuleEl: function(product, selected)
@@ -366,7 +386,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 			.insert({'bottom': new Element('div', {'class': 'col-xs-6'})
 				.insert({'bottom': new Element('div', {'class': 'form-group form-group-sm input-group'})
 					.insert({'bottom': new Element('label', {'class': 'contorl-label input-group-addon'}).update('Lower Safty Boundary') })
-					.insert({'bottom': new Element('input', {'type': 'text', 'class': 'form-control input-sm', 'match_rule': 'price_from'}) 
+					.insert({'bottom': new Element('input', {'type': 'text', 'class': 'form-control input-sm', 'match_rule': 'price_from', 'value': tmp.product ? tmp.product.priceMatchRule.price_from : ''})
 						.observe('keyup', function(e){
 							$(this).up('.modal-body').down('[match_rule="price_to"]').value = $F($(this));
 						})
@@ -384,7 +404,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 			.insert({'bottom': new Element('div', {'class': 'col-xs-6'})
 				.insert({'bottom': new Element('div', {'class': 'form-group form-group-sm input-group'})
 					.insert({'bottom': new Element('label', {'class': 'contorl-label input-group-addon'}).update('Upper Safty Boundary') })
-					.insert({'bottom': new Element('input', {'type': 'text', 'class': 'form-control input-sm', 'match_rule': 'price_to'}) 
+					.insert({'bottom': new Element('input', {'type': 'text', 'class': 'form-control input-sm', 'match_rule': 'price_to', 'value': tmp.product ? tmp.product.priceMatchRule.price_to : ''})
 						.observe('keyup', function(e){
 							$(this).up('.modal-body').down('[match_rule="price_from"]').value = $F($(this));
 						})
@@ -394,17 +414,17 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 			.insert({'bottom': new Element('div', {'class': 'col-xs-9'})
 				.insert({'bottom': new Element('div', {'class': 'form-group form-group-sm input-group'})
 					.insert({'bottom': new Element('label', {'class': 'contorl-label input-group-addon'}).update('Extra Margin After Price Match') })
-					.insert({'bottom': new Element('input', {'type': 'text', 'class': 'form-control input-sm', 'match_rule': 'offset'}) })
+					.insert({'bottom': new Element('input', {'type': 'text', 'class': 'form-control input-sm', 'match_rule': 'offset', 'value': tmp.product ? tmp.product.priceMatchRule.offset : ''}) })
 				})
 			})
 			.insert({'bottom': new Element('div', {'class': 'col-xs-3 text-right'})
 				.insert({'bottom': new Element('div', {'class': 'form-group form-group-sm'})
-					.insert({'bottom': new Element('i', {'class': 'btn btn-md btn-success'}).update('Confirm') 
-						.observe('click', function(){
+					.insert({'bottom': new Element('i', {'class': 'btn btn-md btn-success btn-new-rule right-panel'}).update('Confirm') 
+						.observe('click', function(e){
 							tmp.me._priceMatchRule = tmp.me._collectFormData($(this).up('.modal-body'), 'match_rule');
 							tmp.me._selected = tmp.product === null ? tmp.selected : tmp.product;
 							tmp.me._postIndex = 0;
-							tmp.me.postNewRule();
+							tmp.me.postNewRule($(this));
 						})
 					})
 				})
@@ -544,6 +564,29 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 			.addClass('success');
 		if(!tmp.selectedRow.hasClass('popover-loaded')) {
 			tmp.selectedRow
+			.on('shown.bs.popover', function (e) {
+				tmp.me._getPriceMatchCompanySelect2(jQuery('.rightPanel[match_rule="company_id"]'), null, item);
+				// somehow the key binding is lost by popover, redo the bindings
+				tmp.container = $$('.btn-new-rule.right-panel').first().up('.panel-body');
+				$$('.btn-new-rule.right-panel').first().observe('click', function(e){
+					tmp.me._priceMatchRule = tmp.me._collectFormData($(this).up('.panel-body'), 'match_rule');
+					tmp.me._selected = [item];
+					tmp.me._postIndex = 0;
+					tmp.me.postNewRule($(this));
+				});
+				tmp.container.down('[match_rule="price_from"]')
+					.observe('keyup', function(e){
+								$(this).up('.panel-body').down('[match_rule="price_to"]').value = $F($(this));
+							})
+					.observe('keydown', function(event){
+						tmp.txtBox = this;
+						tmp.me.keydown(event, function() {
+							Event.stop(event);
+							$(tmp.txtBox).up('.panel-body').down('[match_rule="offset"]').focus();
+							$(tmp.txtBox).up('.panel-body').down('[match_rule="offset"]').select();
+						}, function(){}, Event.KEY_TAB);
+					});
+			})
 			.popover({
 				'title'    : '<div class="row"><div class="col-xs-10">Details for: ' + item.sku + '</div><div class="col-xs-2"><div class="btn-group pull-right"><a class="btn btn-primary btn-sm" href="/product/' + item.id + '.html" target="_BLANK"><span class="glyphicon glyphicon-pencil"></span></a><span class="btn btn-danger btn-sm" onclick="pageJs.deSelectProduct();"><span class="glyphicon glyphicon-remove"></span></span></div></div></div>',
 				'html'     : true,
