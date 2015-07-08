@@ -157,8 +157,10 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		
 		if(tmp.me._selected[tmp.me._postIndex]) {
 			window.onbeforeunload = function(){
-			   return "Don't leave me!";
+			   return "Processing... Please Do not close";
 			};
+			tmp.ModalBox = $(tmp.me.modalId);
+			tmp.ModalBox.down('.modal-header').update('<h4 style="color:red;">Processing... Please Do NOT close</h4>');
 			tmp.me.postAjax(tmp.me.getCallbackId('newRule'), {'productId': tmp.me._selected[tmp.me._postIndex]['id'], 'rule': tmp.me._priceMatchRule}, {
 				'onLoading': function () {
 					if(tmp.btn !== null)
@@ -190,7 +192,8 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		}
 		else {
 			$(tmp.me.newRuleResultContainerId).insert({'top': new Element('div', {'class': 'col-xs-12'}).update('All Done!') });
-			location.reload();
+			tmp.me.hideModalBox();
+			$('searchBtn').click();
 		}
 	}
 	,_bindNewRuleBtn: function(btn,product) {
@@ -219,7 +222,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 									tmp.me._getPriceMatchCompanySelect2(jQuery('[match_rule="company_id"]'),true);
 								})
 							});
-						tmp.me.showModalBox('Warning', tmp.warningMsg);
+						tmp.me.showModalBox('Warning', tmp.warningMsg, false, null, null, true);
 					}
 					else if(tmp.product && jQuery.isNumeric(tmp.product.id)) {
 						
