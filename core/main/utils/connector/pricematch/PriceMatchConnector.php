@@ -106,15 +106,20 @@ class PriceMatchConnector
 				if($myPrice !== 0 && ($price_from === null || $myPrice >= $price_from) && ($price_to === null ||$myPrice <= $price_to))
 				{
 					$result = $base_price;
-				}
-				// apply offset
-				if($offset !== null)
-				{
-					if(strpos($offset, '%') !== false) // offset in the rule is a percentage
+					
+					// apply offset
+					if($offset !== null)
 					{
-						$result = $result + $result * doubleval(0.01 * doubleval(str_replace('%', '', $offset)));
+						if(strpos($offset, '%') !== false) // offset in the rule is a percentage
+						{
+							$result = $result + $result * doubleval(0.01 * doubleval(str_replace('%', '', $offset)));
+						}
+						else $result = $result + doubleval($offset);
 					}
-					else $result = $result + doubleval($offset);
+					
+					// set product price
+					if(isset($prices[0]) && $prices[0] instanceof ProductPrice);
+						$prices[0]->setPrice(doubleval($result))->save();
 				}
 			}
 			else 
