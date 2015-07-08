@@ -10,7 +10,7 @@ foreach ($productIds as $row)
 	try {
 		$output = '';
 		$cmd = 'php ' . dirname(__FILE__). '/pricematch.php ' . $row['id'];
-		$output = ExecWaitTimeout($cmd);
+		$output = ExecWaitTimeout($cmd, 10);
 	// 	exec($cmd, $output);
 		echo print_r($output, true) . "\n";
 	} catch (Exception $e)
