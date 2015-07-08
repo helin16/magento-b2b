@@ -478,7 +478,7 @@ class OrderItem extends BaseEntityAbstract
 			$kitCount = 0;
 			//for picked
 			if(self::countByCriteria('id = ? and isPicked != ?', array($this->getId(), $this->getIsPicked())) > 0) {
-				$kitCount = ($kitCount === 0 ? SellingItem::countByCriteria('orderItemId = ? and kitId is not null', array($this->getId())) : $kitCount);
+				$kitCount = ($kitCount === 0 ? SellingItem::countByCriteria('orderItemId = ? and kitId is not null and active = 1 ', array($this->getId())) : $kitCount);
 				if(intval($product->getIsKit()) === 1 && intval($kitCount) !== intval($this->getQtyOrdered()))
 					throw new EntityException($this->getQtyOrdered() . ' Kit(s) needs to be scanned to this OrderItem(SKU=' . $this->getProduct()->getSku() . ', unitPrice=' . StringUtilsAbstract::getCurrency($this->getUnitPrice()) . ', qty=' . $this->getQtyOrdered() . ') before it can be marked as PICKED, but got:' . $kitCount);
 				//we are picking this product
@@ -492,7 +492,7 @@ class OrderItem extends BaseEntityAbstract
 			}
 			//for shipped
 			if(self::countByCriteria('id = ? and isShipped != ?', array($this->getId(), $this->getIsShipped())) > 0) {
-				$kitCount = ($kitCount === 0 ? SellingItem::countByCriteria('orderItemId = ? and kitId is not null', array($this->getId())) : $kitCount);
+				$kitCount = ($kitCount === 0 ? SellingItem::countByCriteria('orderItemId = ? and kitId is not null and active = 1 ', array($this->getId())) : $kitCount);
 				if(intval($product->getIsKit()) === 1 && intval($kitCount) !== intval($this->getQtyOrdered()))
 					throw new EntityException($this->getQtyOrdered() . ' Kit(s) needs to be scanned to this OrderItem(ID=' . $this->getId() . ') before it can be marked as SHIPPED, but got:' . $kitCount);
 				//we are picking this product
