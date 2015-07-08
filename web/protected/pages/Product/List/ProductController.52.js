@@ -492,7 +492,9 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		tmp.me._pagination.pageSize = (pageSize || tmp.me._pagination.pageSize);
 		tmp.me.postAjax(tmp.me.getCallbackId('getItems'), {'pagination': tmp.me._pagination, 'searchCriteria': tmp.me._searchCriteria}, {
 			'onLoading': function () {
-				jQuery('#' + tmp.me.searchDivId + ' #searchBtn').button('loading');
+				jQuery('#' + tmp.me.searchDivId + ' .btn').button('loading');
+				jQuery('#' + tmp.me.searchDivId + ' input').prop('disabled', true);
+				jQuery('#' + tmp.me.searchDivId + ' select').prop('disabled', true);
 				//reset div
 				if(tmp.reset === true) {
 					tmp.resultDiv.update( new Element('tr').update( new Element('td').update( tmp.me.getLoadingImg() ) ) );
@@ -542,6 +544,9 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 					else { // finished auto loading
 						tmp.me._autoLoading = false;
 						tmp.me.hideModalBox();
+						jQuery('#' + tmp.me.searchDivId + ' .btn').button('reset');
+						jQuery('#' + tmp.me.searchDivId + ' input').prop('disabled', false);
+						jQuery('#' + tmp.me.searchDivId + ' select').prop('disabled', false);
 					}
 					
 					tmp.me._getSelection();
@@ -550,7 +555,11 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 				}
 			}
 			,'onComplete': function() {
-				jQuery('#' + tmp.me.searchDivId + ' #searchBtn').button('reset');
+				if(tmp.auto !== true) {
+					jQuery('#' + tmp.me.searchDivId + ' .btn').button('reset');
+					jQuery('#' + tmp.me.searchDivId + ' input').prop('disabled', false);
+					jQuery('#' + tmp.me.searchDivId + ' select').prop('disabled', false);
+				}
 			}
 		});
 	}
