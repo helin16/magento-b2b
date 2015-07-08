@@ -50,7 +50,7 @@ function ExecWaitTimeout($cmd, $timeout=5) {
   do {
     $timeleft = $timeout - time();
     $read = array($pipes[1]);
-    if($timeleft > 0)
+//     if($timeleft > 0)
     	stream_select($read, $write = NULL, $exeptions = NULL, $timeleft, NULL);
  
     if (!empty($read)) {
