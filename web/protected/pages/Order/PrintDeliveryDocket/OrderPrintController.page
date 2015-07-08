@@ -5,15 +5,12 @@
             <table class='orderview' cellspacing="0" cellpadding="0">
                 <thead>
                     <tr class="title_row">
-                        <td colspan=6>
+                        <td colspan=12>
                             <div>
                                 <span class="inlineblock logo">
                                     <img src="/themes/default/images/logo.png" style="padding: 0px; margin: 0px;display: block;"/>
                                     <span class="inlineblock orderno">
-                                         <%= $this->getType() %> No.: <%= $this->order->getOrderNo()%>
-                                    </span>
-                                    <span class="inlineblock orderno" style="color: brown;">
-                                            - Delivery Docket
+                                         Delivery Docket - <%= $this->getType() %> No.: <%= $this->order->getOrderNo()%>
                                     </span>
                                 </span>
                                 
@@ -34,7 +31,7 @@
                     </tr>
                     <tr class="addr_info">
                         <td colspan=6 style="padding-bottom: 35px">
-                        	<h4><%= $this->order->getCustomer()->getName() %><%= $this->getContact() %></h4>
+                        	<h4><span class="inlineblock details"><%= implode(', ', $this->order->getInfo(OrderInfoType::ID_MAGE_ORDER_SHIPPING_METHOD)) %></span></span></h4>
                             <span class="inlineblock half">
                                 <div class="title">Billing To:</div>
                                 <div class="addr"><%= $this->getAddress('Billing') %></div>

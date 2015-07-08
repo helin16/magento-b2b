@@ -73,7 +73,7 @@
 }
 
 .title_row .logo {
-    width: 60%;
+    width: 75%;
 }
 
 .title_row .logo .orderno {
@@ -85,7 +85,7 @@
     color: #c15760;
     font-weight: bold;
     text-align: right;
-    width: 38%;
+    width: 23%;
 }
 
 .title_row .info .abn {
