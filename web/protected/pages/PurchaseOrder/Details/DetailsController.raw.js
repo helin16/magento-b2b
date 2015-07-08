@@ -672,8 +672,10 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		var tmp = {};
 		tmp.me = this;
 		$(dom).setStyle('text-decoration: underline; cursor: pointer;')
-		.observe('click', function(e){
-			Event.stop(e);
+		.writeAttribute('title', 'double click to open')
+		.observe('click', function(e){Event.stop(e);})
+		.observe('dblclick', function(event) {
+			Event.stop(event);
 			tmp.window = window.open('/product/' + id + '.html', '_blank');
 			tmp.window.focus()
 		});
@@ -749,7 +751,9 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 					.insert({'bottom': new Element('div', {'class': 'row'})
 						.insert({'bottom': new Element('span', {'class': 'btn btn-link btn-xs', 'style': product.minProductPrice ? 'text-align: left': 'display:none'}).update('Product Min: ')
 							.insert({'bottom': new Element('strong').update(tmp.me.getCurrency(product.minProductPrice)) })
-							.observe('click', function(event) {
+							.writeAttribute('title', 'double click to open')
+							.observe('click', function(e){Event.stop(e);})
+							.observe('dblclick', function(event) {
 								Event.stop(event);
 								tmp.me._openPOPage(product.minProductPriceId);
 							})
@@ -757,7 +761,9 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 
 						.insert({'bottom': new Element('span', {'class': 'btn btn-link btn-xs', 'style': product.minSupplierPrice ? 'text-align: left': 'display:none'}).update('Supplier Min: ')
 							.insert({'bottom': new Element('strong').update(tmp.me.getCurrency(product.minSupplierPrice)) })
-							.observe('click', function(event) {
+							.writeAttribute('title', 'double click to open')
+							.observe('click', function(e){Event.stop(e);})
+							.observe('dblclick', function(event) {
 								Event.stop(event);
 								tmp.me._openPOPage(product.minSupplierPriceId);
 							})
@@ -765,7 +771,9 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 						
 						.insert({'bottom': new Element('span', {'class': 'btn btn-link btn-xs', 'style': product.lastSupplierPrice ? 'text-align: left': 'display:none'}).update('Supplier Last: ')
 							.insert({'bottom': new Element('strong').update(tmp.me.getCurrency(product.lastSupplierPrice)) })
-							.observe('click', function(event) {
+							.writeAttribute('title', 'double click to open')
+							.observe('click', function(e){Event.stop(e);})
+							.observe('dblclick', function(event) {
 								Event.stop(event);
 								tmp.me._openPOPage(product.lastSupplierPriceId);
 							})
