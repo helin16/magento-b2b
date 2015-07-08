@@ -30,6 +30,8 @@ foreach ($productIds as $row)
  */
 function ExecWaitTimeout($cmd, $timeout=5) {
  
+	echo $cmd . "\n";
+	
   $descriptorspec = array(
       0 => array("pipe", "r"),
       1 => array("pipe", "w"),
