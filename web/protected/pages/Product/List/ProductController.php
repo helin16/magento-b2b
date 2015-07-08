@@ -77,6 +77,8 @@ class ProductController extends CRUDPageAbstract
 			
 			$rule = ProductPriceMatchRule::create($product, $company, trim($param->CallbackParameter->rule->price_from), trim($param->CallbackParameter->rule->price_to), trim($param->CallbackParameter->rule->offset));
 			
+			PriceMatchConnector::getNewPrice($product->getSku());
+			
 			$results = $rule->getJson();
 			
 			Dao::commitTransaction();
