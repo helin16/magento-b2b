@@ -52,7 +52,7 @@
 
 .orderViewWrapper,.operationWrapper {
     vertical-align: top;
-    padding: 5px;
+    /**padding: 5px;**/
 }
 
 .orderViewWrapper {
@@ -120,7 +120,7 @@
 
 .addr_info .half {
     width: 49%;
-    height: 100px;
+    /**height: 100px;**/
 }
 
 .addr_info .half .addr {

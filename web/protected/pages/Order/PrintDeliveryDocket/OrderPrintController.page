@@ -5,12 +5,15 @@
             <table class='orderview' cellspacing="0" cellpadding="0">
                 <thead>
                     <tr class="title_row">
-                        <td colspan=12>
+                        <td colspan=6>
                             <div>
                                 <span class="inlineblock logo">
                                     <img src="/themes/default/images/logo.png" style="padding: 0px; margin: 0px;display: block;"/>
                                     <span class="inlineblock orderno">
-                                         Delivery Docket - <%= $this->getType() %> No.: <%= $this->order->getOrderNo()%>
+                                         <%= $this->getType() %> No.: <%= $this->order->getOrderNo()%>
+                                    </span>
+                                    <span class="inlineblock orderno" style="color: brown;">
+                                            - Delivery Docket
                                     </span>
                                 </span>
                                 
@@ -30,8 +33,8 @@
                         </td>
                     </tr>
                     <tr class="addr_info">
-                        <td colspan=6 style="padding-bottom: 35px">
-                        	<h4><span class="inlineblock details"><%= implode(', ', $this->order->getInfo(OrderInfoType::ID_MAGE_ORDER_SHIPPING_METHOD)) %></span></span></h4>
+                        <td colspan=6>
+                        	<h4><%= $this->order->getCustomer()->getName() %><%= $this->getContact() %></h4>
                             <span class="inlineblock half">
                                 <div class="title">Billing To:</div>
                                 <div class="addr"><%= $this->getAddress('Billing') %></div>
@@ -52,20 +55,20 @@
                         <td colspan=6>
                             <div class="order_payments">
                                 <span class="payment_details inlineblock">
-                                    <div class="bank_details box">
-                                        <span class="bank_title">Budget PC Bank Details: </span>
-                                        <span class="bank_details_name"><span class="details_title">Account Name: </span>Budget PC Pty Ltd</span>
-                                        <span class="bank_details_acc_bsb"><span class="details_title">BSB:</span>013 366</span>
-                                        <span class="bank_details_acc_no"><span class="details_title">ACC:</span>4796 74364</span>
-                                    </div>
                                     <div class="shipping_details box">
                                         <div class="print-row">
-                                            <span class="inlineblock half"><span class="inlineblock title">Salesperson:</span><span class="inlineblock details"><%= $this->order->getUpdatedBy()->getPerson() %></span></span>
-                                            <span class="inlineblock half"><span class="inlineblock title">Payment:</span><span class="inlineblock details"></span></span>
+                                            <span class="inlineblock"><span class="inlineblock title">Salesperson:</span><span class="inlineblock details"><%= $this->order->getUpdatedBy()->getPerson() %></span></span>
                                         </div>
                                         <div class="print-row">
-                                            <span class="inlineblock half"><span class="inlineblock title">Delivery Via:</span><span class="inlineblock details"></span></span>
-                                            <span class="inlineblock half"><span class="inlineblock title">comments:</span><span class="inlineblock details"></span></span>
+                                            <span class="inlineblock"><span class="inlineblock title">Payment:</span><span class="inlineblock details"></span></span>
+                                        </div>
+                                        <div class="print-row">
+                                            <span class="inlineblock"><span class="inlineblock title">Delivery Via:</span>
+                                            	<%= implode(', ', $this->order->getInfo(OrderInfoType::ID_MAGE_ORDER_SHIPPING_METHOD)) %>
+                                            </span>
+                                        </div>
+                                        <div class="print-row">
+                                            <span class="inlineblock"><span class="inlineblock title">comments:</span><span class="inlineblock details"></span></span>
                                         </div>
                                     </div>
                                 </span>
@@ -96,11 +99,9 @@
                                 <div class="addr">
                                     <span class="addr"><span class="details_title">Mount Waverley</span>Unit 111, 45 Gilby Rd, Mt Waverley</span>
                                     <span class="phone"><span class="details_title">PH</span>+61 3 9541 9000</span>
-                                    <span class="addr"><span class="details_title">Stawell</span>1 Horsham Rd, Stawell</span>
-                                    <span class="phone"><span class="details_title">PH</span>+61 3 5358 4288</span>
-                                </div>
-                                <div class="url details_title">
-                                    www.budgetpc.com.au
+	                                <span class="url details_title">
+	                                    www.budgetpc.com.au
+	                                </span>
                                 </div>
                             </div>
                         </td>
