@@ -4,6 +4,7 @@
 set db_name=bpcinternal
 
 for /f %%x in ('wmic path win32_localtime get /format:list ^| findstr "="') do set %%x
+if %Day% LSS 10 set Day=0%Day%
 if %Month% LSS 10 set Month=0%Month%
 set today=%Day%_%Month%_%Year%
 set dump_file_name=%today%.7z

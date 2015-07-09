@@ -1078,7 +1078,7 @@ class Product extends InfoEntityAbstract
 			}
 		}
 		$newStockOnOrder = ($originStockOnOrder = $this->getStockOnOrder()) + $qty;
-		if($newStockOnOrder < 0 && intval($qty) > 0 && intval(SystemSettings::getSettings(SystemSettings::TYPE_ALLOW_NEGTIVE_STOCK)) !== 1)
+		if($newStockOnOrder < 0  && intval(SystemSettings::getSettings(SystemSettings::TYPE_ALLOW_NEGTIVE_STOCK)) !== 1)
 			throw new Exception('Product (SKU:' . $this->getSKU() . ') can NOT be ' . $action . ' , as there is not enough stock: new stock on order will fall below zero');
 		return $this->setStockOnHand($newQty)
 			->setStockOnOrder($newStockOnOrder)
