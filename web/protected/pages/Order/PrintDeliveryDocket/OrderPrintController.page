@@ -34,7 +34,6 @@
                     </tr>
                     <tr class="addr_info">
                         <td colspan=6>
-                        	<h4><%= $this->order->getCustomer()->getName() %><%= $this->getContact() %></h4>
                             <span class="inlineblock half">
                                 <div class="title">Billing To:</div>
                                 <div class="addr"><%= $this->getAddress('Billing') %></div>
@@ -62,11 +61,11 @@
                                         <div class="print-row">
                                             <span class="inlineblock"><span class="inlineblock title">Payment:</span><span class="inlineblock details"></span></span>
                                         </div>
-                                        <div class="print-row">
+                                        <div class="print-row"><strong>
                                             <span class="inlineblock"><span class="inlineblock title">Delivery Via:</span>
                                             	<%= implode(', ', $this->order->getInfo(OrderInfoType::ID_MAGE_ORDER_SHIPPING_METHOD)) %>
                                             </span>
-                                        </div>
+                                        </strong></div>
                                         <div class="print-row">
                                             <span class="inlineblock"><span class="inlineblock title">comments:</span><span class="inlineblock details"></span></span>
                                         </div>
