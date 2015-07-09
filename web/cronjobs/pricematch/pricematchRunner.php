@@ -3,7 +3,7 @@ require_once dirname(__FILE__) . '/../../bootstrap.php';
 
 Core::setUser(UserAccount::get(UserAccount::ID_SYSTEM_ACCOUNT));
 
-$productIds = Dao::getResultsNative('select distinct p.id from product p inner join productpricematchrule r on (r.productId = p.id and r.active = 1) where p.active = 1', array(), PDO::FETCH_ASSOC);
+$productIds = Dao::getResultsNative('select distinct p.id from product p inner join productpricematchrule r on (r.productId = p.id and r.active = 1) where p.active = 1 order by p.id', array(), PDO::FETCH_ASSOC);
 
 foreach ($productIds as $row)
 {
