@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Host: localhost
--- Generation Time: Aug 05, 2015 at 01:22 PM
+-- Generation Time: Aug 06, 2015 at 03:10 PM
 -- Server version: 5.5.43
 -- PHP Version: 5.4.36
 
@@ -23,29 +23,11 @@ SET time_zone = "+00:00";
 -- --------------------------------------------------------
 
 --
--- Table structure for table `productpricematchrule`
---
-
-CREATE TABLE IF NOT EXISTS `productpricematchrule` (
-  `id` int(10) unsigned NOT NULL,
-  `productId` int(10) unsigned NOT NULL DEFAULT '0',
-  `price_from` varchar(16) DEFAULT NULL,
-  `price_to` varchar(16) DEFAULT NULL,
-  `offset` varchar(16) DEFAULT NULL,
-  `companyId` int(10) unsigned NOT NULL DEFAULT '0',
-  `active` tinyint(1) NOT NULL DEFAULT '1',
-  `created` datetime NOT NULL DEFAULT '0001-01-01 00:00:00',
-  `createdById` int(10) unsigned NOT NULL DEFAULT '0',
-  `updated` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  `updatedById` int(10) unsigned NOT NULL DEFAULT '0'
-) ENGINE=InnoDB AUTO_INCREMENT=216 DEFAULT CHARSET=utf8;
-
---
 -- Dumping data for table `productpricematchrule`
 --
-
+TRUNCATE `productpricematchrule`;
 INSERT INTO `productpricematchrule` (`id`, `productId`, `price_from`, `price_to`, `offset`, `companyId`, `active`, `created`, `createdById`, `updated`, `updatedById`) VALUES
-(1, 4305, NULL, NULL, NULL, 1, 1, '2015-08-04 19:30:59', 5, '2015-08-04 09:30:59', 5),
+(1, 4305, NULL, NULL, NULL, 1, 1, '2015-08-04 19:30:59', 5, '2015-08-05 08:58:36', 5),
 (2, 38829, NULL, NULL, NULL, 1, 1, '2015-08-04 19:30:59', 5, '2015-08-04 09:30:59', 5),
 (3, 30925, NULL, NULL, NULL, 1, 1, '2015-08-04 19:30:59', 5, '2015-08-04 09:30:59', 5),
 (4, 34598, NULL, NULL, NULL, 1, 1, '2015-08-04 19:31:00', 5, '2015-08-04 09:31:00', 5),
@@ -260,26 +242,3 @@ INSERT INTO `productpricematchrule` (`id`, `productId`, `price_from`, `price_to`
 (213, 32525, NULL, NULL, NULL, 3, 1, '2015-08-04 19:35:00', 5, '2015-08-04 09:35:00', 5),
 (214, 40508, NULL, NULL, NULL, 3, 1, '2015-08-04 19:35:00', 5, '2015-08-04 09:35:00', 5),
 (215, 32527, NULL, NULL, NULL, 3, 1, '2015-08-04 19:35:01', 5, '2015-08-04 09:35:01', 5);
-
---
--- Indexes for dumped tables
---
-
---
--- Indexes for table `productpricematchrule`
---
-ALTER TABLE `productpricematchrule`
-  ADD PRIMARY KEY (`id`), ADD KEY `productId` (`productId`), ADD KEY `companyId` (`companyId`), ADD KEY `createdById` (`createdById`), ADD KEY `updatedById` (`updatedById`);
-
---
--- AUTO_INCREMENT for dumped tables
---
-
---
--- AUTO_INCREMENT for table `productpricematchrule`
---
-ALTER TABLE `productpricematchrule`
-  MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT,AUTO_INCREMENT=216;
-/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
-/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
-/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
