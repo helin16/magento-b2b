@@ -29,13 +29,12 @@
                 </tr>
                 <tr class="addr_info">
                     <td colspan=6 style="padding-bottom: 25px">
-                    	<span class="inlineblock details pull-right" style="z-index:999; max-width: 18%;"><h4><%= implode(', ', $this->order->getInfo(OrderInfoType::ID_MAGE_ORDER_SHIPPING_METHOD)) %></h4></span>
                     	<div>
-                            <span class="inlineblock half" style="z-index:1; width:40%;">
+                            <span class="inlineblock half">
                                 <div class="title">Billing To:</div>
                                 <div class="addr"><%= $this->getAddress('Billing') %></div>
                             </span>
-                            <span class="inlineblock half" style="z-index:1; width:40%;">
+                            <span class="inlineblock half">
                                 <div class="title">Shipping To:</div>
                                 <div class="addr"><%= $this->getAddress('Shipping') %></div>
                             </span>
