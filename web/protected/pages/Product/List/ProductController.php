@@ -246,7 +246,7 @@ class ProductController extends CRUDPageAbstract
     	}
     	catch(Exception $ex)
     	{
-    		$errors[] = $ex->getMessage();
+    		$errors[] = $ex->getMessage().$ex->getTraceAsString();
     	}
     	$param->ResponseData = StringUtilsAbstract::getJson($results, $errors);
     }
