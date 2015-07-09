@@ -98,4 +98,8 @@ class PriceMatchCompany extends BaseEntityAbstract
 		DaoMap::createIndex('companyAlias');
 		DaoMap::commit();
 	}
+	public function getAllAlias()
+	{
+		return self::getAllByCriteria('companyName = ?', array($this->getCompanyName()));
+	}
 }

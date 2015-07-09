@@ -222,10 +222,11 @@ BPCPageJs.prototype = {
 		return (tmp.hasError === true ? null : tmp.data);
 	}
 
-	,showModalBox: function(title, content, isSM, footer, eventFuncs) {
+	,showModalBox: function(title, content, isSM, footer, eventFuncs, noClose) {
 		var tmp = {};
 		tmp.me = this;
 		tmp.isSM = (isSM === true ? true : false);
+		tmp.noClose = (noClose === true ? true : false);
 		tmp.footer = (footer || null);
 		if(!$(tmp.me.modalId)) {
 			tmp.newBox = new Element('div', {'id': tmp.me.modalId, 'class': 'modal', 'tabindex': '-1', 'role': 'dialog', 'aria-hidden': 'true', 'aria-labelledby': 'page-modal-box'})
@@ -243,6 +244,12 @@ BPCPageJs.prototype = {
 				});
 			$$('body')[0].insert({'bottom': tmp.newBox});
 			tmp.modal = jQuery('#' + tmp.me.modalId);
+			if(tmp.noClose === true) {
+				tmp.modal.modal({
+					backdrop: 'static',
+					keyboard: false
+				});
+			}
 			if(eventFuncs && typeof(eventFuncs) === 'object') {
 				$H(eventFuncs).each(function(eventFunc){
 					tmp.modal.on(eventFunc.key, eventFunc.value);
