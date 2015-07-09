@@ -1063,7 +1063,7 @@ class Product extends InfoEntityAbstract
 		$action = (intval($qty) > 0 ? 'Stock picked' : 'stock UNPICKED');
 		$newQty = (($originStockOnHand = $this->getStockOnHand()) - $qty);
 		if($newQty < 0 && intval($qty) > 0 && intval(SystemSettings::getSettings(SystemSettings::TYPE_ALLOW_NEGTIVE_STOCK)) !== 1) 
-			throw new Exception('Product (SKU:' . $this->getSKU() . ') can NOT be pick, as there is not enough stock.');
+			throw new Exception('Product (SKU:' . $this->getSKU() . ') can NOT be ' . $action . ' , as there is not enough stock: stock on hand will fall below zero');
 		if($entity instanceof OrderItem) {
 			$kits = array_map(create_function('$a', 'return $a->getKit();'), SellingItem::getAllByCriteria('orderItemId = ? and kitId is not null', array($entity->getId())));
 			$kits = array_unique($kits);
@@ -1077,8 +1077,11 @@ class Product extends InfoEntityAbstract
 				$comments .= ' ' . $action . ' KITS[' . implode(',', $barcodes) . '] with total cost value:' . StringUtilsAbstract::getCurrency($totalCost);
 			}
 		}
+		$newStockOnOrder = ($originStockOnOrder = $this->getStockOnOrder()) + $qty;
+		if($newStockOnOrder < 0 && intval($qty) > 0 && intval(SystemSettings::getSettings(SystemSettings::TYPE_ALLOW_NEGTIVE_STOCK)) !== 1)
+			throw new Exception('Product (SKU:' . $this->getSKU() . ') can NOT be ' . $action . ' , as there is not enough stock: new stock on order will fall below zero');
 		return $this->setStockOnHand($newQty)
-			->setStockOnOrder(($originStockOnOrder = $this->getStockOnOrder()) + $qty)
+			->setStockOnOrder($newStockOnOrder)
 			->setTotalOnHandValue(($origTotalOnHandValue = $this->getTotalOnHandValue()) - $totalCost)
 			->snapshotQty($entity instanceof BaseEntityAbstract ? $entity : $this, ProductQtyLog::TYPE_SALES_ORDER, $action . ': ' . ($order instanceof Order ? '[' . $order->getOrderNo() . ']' : '') . $comments)
 			->save()
