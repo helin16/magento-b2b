@@ -81,7 +81,7 @@ class ProductController extends CRUDPageAbstract
 			
 			$output = '';
 			exec($cmd, $output);
-			echo $output . "\n";
+			var_dump($output);
 			
 			$results = $rule->getJson();
 			
