@@ -188,22 +188,23 @@ BPCPageJs.prototype = {
 	/**
 	 * Collecting data from attrName
 	 */
-	,_collectFormData: function(container, attrName, groupIndexName) {
+	,_collectFormData: function(container, attrName, groupIndexName, ignoreError) {
 		var tmp = {};
 		tmp.me = this;
 		tmp.data = {};
 		tmp.hasError = false;
+		tmp.ignoreError = (ignoreError === true ? true : false);
 		$(container).getElementsBySelector('[' + attrName + ']').each(function(item) {
 			tmp.groupIndexName = groupIndexName ? item.readAttribute(groupIndexName) : null;
 			tmp.fieldName = item.readAttribute(attrName);
-			if(item.hasAttribute('required') && $F(item).blank()) {
+			if(tmp.ignoreError !== true && item.hasAttribute('required') && $F(item).blank()) {
 				tmp.me._markFormGroupError(item, 'This is requried');
 				tmp.hasError = true;
 			}
 
 			tmp.itemValue = item.readAttribute('type') !== 'checkbox' ? $F(item) : $(item).checked;
 			if(item.hasAttribute('validate_currency') || item.hasAttribute('validate_number')) {
-				if (tmp.me.getValueFromCurrency(tmp.itemValue).match(/^(-)?\d+(\.\d{1,4})?$/) === null) {
+				if (tmp.ignoreError !== true && tmp.me.getValueFromCurrency(tmp.itemValue).match(/^(-)?\d+(\.\d{1,4})?$/) === null) {
 					tmp.me._markFormGroupError(item, (item.hasAttribute('validate_currency') ? item.readAttribute('validate_currency') : item.hasAttribute('validate_number')));
 					tmp.hasError = true;
 				}
