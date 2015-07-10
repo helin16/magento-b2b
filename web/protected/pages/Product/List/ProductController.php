@@ -79,7 +79,7 @@ class ProductController extends CRUDPageAbstract
 			
 			PriceMatchConnector::run($product->getSku(), true);
 			PriceMatchConnector::getMinRecord($product->getSku(), true);
-			PriceMatchConnector::getNewPrice($product->getSku(), false, true);
+			PriceMatchConnector::getNewPrice($product->getSku(), $product->getManufacturer()->getId() == 136, true);
 			
 			$results = $rule->getJson();
 			
