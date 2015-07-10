@@ -46,7 +46,9 @@ class PriceMatchConnector
 		$rule = ProductPriceMatchRule::getByProduct($product);
 		$prices = ProductPrice::getPrices($product, ProductPriceType::get(ProductPriceType::ID_RRP));
 		$myPrice = count($prices)===0 ? 0 : $prices[0]->getPrice();
-		if($min instanceof PriceMatchMin && $rule instanceof ProductPriceMatchRule)
+		if(!$min instanceof PriceMatchMin)
+			$min = PriceMatchMin::create($this->sku);
+		if($rule instanceof ProductPriceMatchRule)
 		{
 			$company = $rule->getCompany();
 			$price_from = $rule->getPrice_from();
@@ -141,11 +143,7 @@ class PriceMatchConnector
 				echo 'new price= ' . ($result===null ? 'N/A' : $result) . ', my price= ' . (isset($myPrice) ? $myPrice : 'N/A') . ', ' . $company->getCompanyName() . ' price= ' . $base_price . ', matching range=[' . $price_from . ',' . $price_to . '], offset=' . ($offset===null ? 'null' : $offset) . "\n";
 		}
 		elseif($this->debug === true)
-		{
-			if(!$min instanceof PriceMatchMin)
-				echo 'cannot find PriceMatchMin for sku: ' . $this->sku . "\n";
-			else echo ($min instanceof PriceMatchMin ? '' : 'Cannot find result on StaticIce for all known PriceMatchCompanies') . ($rule instanceof ProductPriceMatchRule ? '' : ('cannot find ProductPriceMatchRule for product ' . $product->getSku() . '(id=' . $product->getId() . ')')) . "\n";
-		}
+			echo ($min instanceof PriceMatchMin ? '' : 'Cannot find result on StaticIce for all known PriceMatchCompanies') . ($rule instanceof ProductPriceMatchRule ? '' : ('cannot find ProductPriceMatchRule for product ' . $product->getSku() . '(id=' . $product->getId() . ')')) . "\n";
 		return $result;
 	}
 	private function _getMinRecord()
