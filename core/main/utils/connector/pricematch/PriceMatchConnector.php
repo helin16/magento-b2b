@@ -141,7 +141,11 @@ class PriceMatchConnector
 				echo 'new price= ' . ($result===null ? 'N/A' : $result) . ', my price= ' . (isset($myPrice) ? $myPrice : 'N/A') . ', ' . $company->getCompanyName() . ' price= ' . $base_price . ', matching range=[' . $price_from . ',' . $price_to . '], offset=' . ($offset===null ? 'null' : $offset) . "\n";
 		}
 		elseif($this->debug === true)
-			echo ($min instanceof PriceMatchMin ? '' : 'Cannot find result on StaticIce for all known PriceMatchCompanies') . ($rule instanceof ProductPriceMatchRule ? '' : ('cannot find ProductPriceMatchRule for product ' . $product->getSku() . '(id=' . $product->getId() . ')')) . "\n";
+		{
+			if(!$min instanceof PriceMatchMin)
+				echo 'cannot find PriceMatchMin for sku: ' . $this->sku . "\n";
+			else echo ($min instanceof PriceMatchMin ? '' : 'Cannot find result on StaticIce for all known PriceMatchCompanies') . ($rule instanceof ProductPriceMatchRule ? '' : ('cannot find ProductPriceMatchRule for product ' . $product->getSku() . '(id=' . $product->getId() . ')')) . "\n";
+		}
 		return $result;
 	}
 	private function _getMinRecord()
