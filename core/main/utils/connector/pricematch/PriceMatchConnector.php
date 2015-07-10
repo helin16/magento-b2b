@@ -124,9 +124,9 @@ class PriceMatchConnector
 						$oldPrice = $prices[0];
 						$prices[0]->setPrice(doubleval($result))->save();
 						$log = new Log();
-						$log->setEntityName('ProductPrice')->setEntityId($prices[0]->getId())->setType('FROMVALUE')->setMsg($oldPrice)->save();
+						$log->setEntityName('ProductPrice')->setEntityId($prices[0]->getId())->setType('FROMVALUE')->setMsg($oldPrice)->setTransId('')->setComments('')->save();
 						$log = new Log();
-						$log->setEntityName('ProductPrice')->setEntityId($prices[0]->getId())->setType('TOVALUE')->setMsg(doubleval($result))->save();
+						$log->setEntityName('ProductPrice')->setEntityId($prices[0]->getId())->setType('TOVALUE')->setMsg(doubleval($result))->setTransId('')->setComments('')->save();
 						if($updateMagento === true)
 							$this->updateMagentoPrice(doubleval($result));
 					}
