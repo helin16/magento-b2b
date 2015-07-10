@@ -153,7 +153,7 @@ class PriceMatchConnector
 		if($min instanceof PriceMatchMin)
 		{
 			$record =  $min->getMin();
-			if($this->debug === true)
+			if($record instanceof PriceMatchRecord && $this->debug === true)
 				echo 'min found for ' . $sku . '(id=' . Product::getBySku($sku)->getId() . '), ' .$record->getCompany()->getCompanyName() . ': $' . $record->getPrice() . "\n";
 			return $record;
 		}

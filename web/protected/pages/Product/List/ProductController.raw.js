@@ -144,16 +144,18 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		})
 		return tmp.supplierCodeString.join(', ');
 	}
-	,postNewRule: function(btn) {
+	,postNewRule: function(btn, del) {
 		var tmp = {};
 		tmp.me = this;
 		tmp.btn = (btn || null);
+		tmp.del = (del || false);
 		if(tmp.btn !== null)
 			tmp.me._signRandID(tmp.btn);
 		
 		tmp.me._priceMatchRule.price_from = tmp.me.getValueFromCurrency(tmp.me._priceMatchRule.price_from);
 		tmp.me._priceMatchRule.price_to = tmp.me.getValueFromCurrency(tmp.me._priceMatchRule.price_to);
 		tmp.me._priceMatchRule.offset = tmp.me.getValueFromCurrency(tmp.me._priceMatchRule.offset);
+		tmp.me._priceMatchRule.active = (tmp.del === true ? false : true);
 		
 		if(tmp.me._selected[tmp.me._postIndex]) {
 			window.onbeforeunload = function(){
@@ -165,7 +167,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 			tmp.me.postAjax(tmp.me.getCallbackId('newRule'), {'productId': tmp.me._selected[tmp.me._postIndex]['id'], 'rule': tmp.me._priceMatchRule}, {
 				'onLoading': function () {
 					if(tmp.btn !== null)
-						jQuery('#'+tmp.btn.id).button('loading');
+						jQuery('.right-panel.btn').button('loading');
 				}
 				,'onSuccess': function(sender, param) {
 					try{
@@ -185,15 +187,16 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 				,'onComplete': function() {
 					window.onbeforeunload = null;
 					if(tmp.btn !== null)
-						jQuery('#'+tmp.btn.id).button('reset');
+						jQuery('.right-panel.btn').button('reset');
 					tmp.me._postIndex = tmp.me._postIndex + 1;
-					tmp.me.postNewRule(tmp.btn);
+					tmp.me.postNewRule(tmp.btn, tmp.del);
 				}
 			});
 		}
 		else {
 			$(tmp.me.newRuleResultContainerId).insert({'top': new Element('div', {'class': 'col-xs-12'}).update('All Done!') });
 			tmp.me.hideModalBox();
+			jQuery('#' + tmp.me.modalId).remove();
 			$('searchBtn').click();
 		}
 	}
@@ -217,6 +220,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 							})
 							.insert({'bottom': new Element('i', {'class': 'btn btn-success btn-lg pull-right'}).update('Yes').setStyle(tmp.selected.length === 0 ? 'display: none;' : '') 
 								.observe('click', function(){
+									jQuery("#select2-drop-mask").select2("close"); // close all select2
 									$(this).up('.modal-body').update('')
 										.insert({'bottom': tmp.ruleContainer = tmp.me._getPriceMatchRuleEl(null, tmp.selected) })
 										.insert({'bottom': new Element('div', {'class': 'row', 'id': tmp.me.newRuleResultContainerId}) });
@@ -377,8 +381,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 			;
 		return tmp.newDiv;
 	}
-	,_getPriceMatchRuleEl: function(product, selected)
-	{
+	,_getPriceMatchRuleEl: function(product, selected) {
 		var tmp = {};
 		tmp.me = this;
 		tmp.product = (product || null);
@@ -426,14 +429,20 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 				})
 			})
 			.insert({'bottom': new Element('div', {'class': 'col-xs-3 text-right'})
-				.insert({'bottom': new Element('div', {'class': 'form-group form-group-sm'})
-					.insert({'bottom': new Element('i', {'class': 'btn btn-md btn-success btn-new-rule right-panel'}).update('Confirm') 
-						.observe('click', function(e){
-							tmp.me._priceMatchRule = tmp.me._collectFormData($(this).up('.modal-body'), 'match_rule');
-							tmp.me._selected = tmp.product === null ? tmp.selected : tmp.product;
-							tmp.me._postIndex = 0;
-							tmp.me.postNewRule($(this));
-						})
+				.insert({'bottom': new Element('i', {'class': 'btn btn-sm btn-success btn-new-rule right-panel'}).update('Confirm') 
+					.observe('click', function(e){
+						tmp.me._priceMatchRule = tmp.me._collectFormData($(this).up('.modal-body'), 'match_rule');
+						tmp.me._selected = tmp.product === null ? tmp.selected : tmp.product;
+						tmp.me._postIndex = 0;
+						tmp.me.postNewRule($(this));
+					})
+				})
+				.insert({'bottom': new Element('i', {'class': 'btn btn-sm btn-danger btn-del-rule right-panel'}).update('<i class="glyphicon glyphicon-trash"></i>') 
+					.observe('click', function(e){
+						tmp.me._priceMatchRule = tmp.me._collectFormData($(this).up('.modal-body'), 'match_rule');
+						tmp.me._selected = tmp.product === null ? tmp.selected : tmp.product;
+						tmp.me._postIndex = 0;
+						tmp.me.postNewRule($(this), true);
 					})
 				})
 			});
@@ -591,6 +600,14 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 					tmp.me._postIndex = 0;
 					tmp.me.postNewRule($(this));
 				});
+				$$('.btn-del-rule.right-panel').first().observe('click', function(e){
+					tmp.me._priceMatchRule = tmp.me._collectFormData($(this).up('.panel-body'), 'match_rule');
+					tmp.me._selected = [item];
+					tmp.me._postIndex = 0;
+					tmp.me.postNewRule($(this),true);
+				});
+				if(!(item.priceMatchRule && item.priceMatchRule.id && jQuery.isNumeric(item.priceMatchRule.id)))
+					$$('.btn-del-rule.right-panel').first().hide();
 				tmp.container.down('[match_rule="price_from"]')
 					.observe('keyup', function(e){
 								$(this).up('.panel-body').down('[match_rule="price_to"]').value = $F($(this));

@@ -181,7 +181,7 @@ class ProductPriceMatchRule extends BaseEntityAbstract
 		if(($price_from !== null && !is_numeric(trim(str_replace('%', '', $price_from)))) || ($price_to !== null && !is_numeric(trim(str_replace('%', '', $price_to)))) || ($offset !== null && !is_numeric(trim(str_replace('%', '', $offset)))))
 			throw new Exception('price range limits and offset must be percentage or number, "' . $price_from . '" and "' . $price_to . '" and "' . $offset . ' given');
 		
-		$obj = ($existObj = self::getByProduct($product)) instanceof self ? $existObj : new self();
+		$obj = ($existObj = self::getByProduct($product, false)) instanceof self ? $existObj : new self();
 		$obj->setProduct($product)
 			->setcompany($company)
 			->setPrice_from($price_from === null ? null : trim($price_from))
@@ -192,9 +192,9 @@ class ProductPriceMatchRule extends BaseEntityAbstract
 		
 		return $obj;
 	}
-	public static function getByProduct(Product $product)
+	public static function getByProduct(Product $product, $activeOnly = true)
 	{
-		$rules = self::getAllByCriteria('productId = ?', array($product->getId()), false, 1, 1, array('id'=> 'desc'));
+		$rules = self::getAllByCriteria('productId = ?', array($product->getId()), $activeOnly, 1, 1, array('id'=> 'desc'));
 		if(count($rules) > 0)
 			return $rules[0];
 		else return null;

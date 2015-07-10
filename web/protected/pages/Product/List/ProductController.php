@@ -70,20 +70,30 @@ class ProductController extends CRUDPageAbstract
 			Dao::beginTransaction();
 			
 			$results = $param->CallbackParameter;
+			
 			if(!isset($param->CallbackParameter->productId) || !($product = Product::get(trim($param->CallbackParameter->productId))) instanceof Product)
-				throw new Exception('Invalid Product Id passed in' . $param->CallbackParameter->productId . 'given');
-			if(!isset($param->CallbackParameter->rule) || !isset($param->CallbackParameter->rule->company_id) || !($company = PriceMatchCompany::get(trim($param->CallbackParameter->rule->company_id))) instanceof PriceMatchCompany)
-				throw new Exception('Invalid PriceMatchCompany Id passed in ' . $param->CallbackParameter->rule->company_id . 'given');
+				throw new Exception('Invalid Product Id passed in, "' . $param->CallbackParameter->productId . '" given');
+			if(!isset($param->CallbackParameter->rule))
+				throw new Exception('Invalid PriceMatchRule passed in, "' . $param->CallbackParameter->rule . '" given');
+			if(!isset($param->CallbackParameter->rule->active))
+				throw new Exception('Must pass in active (bool) for PriceMatchRule, "' . $param->CallbackParameter->rule->active . '" given');
+			else $active = $param->CallbackParameter->rule->active;
+			if($active === true && (!isset($param->CallbackParameter->rule->company_id) || !($company = PriceMatchCompany::get(trim($param->CallbackParameter->rule->company_id))) instanceof PriceMatchCompany))
+				throw new Exception('Invalid PriceMatchCompany Id passed in, "' . $param->CallbackParameter->rule->company_id . '" given');
 			
-			$rule = ProductPriceMatchRule::create($product, $company, trim($param->CallbackParameter->rule->price_from), trim($param->CallbackParameter->rule->price_to), trim($param->CallbackParameter->rule->offset));
-			
-			$cmd = 'php ' . dirname(__FILE__). '/../../../../cronjobs/pricematch/pricematchRunner.php ' . $product->getId();
-			
-			$output = '';
-			exec($cmd, $output);
-			var_dump($output);
-			
-			$results = $rule->getJson();
+			if($active === false && ($rule = ProductPriceMatchRule::getByProduct($product)) instanceof ProductPriceMatchRule)
+			{
+				$rule->setActive($active)->save();
+				$results = $rule->getJson();
+			}
+			elseif($active === true)
+			{
+				$rule = ProductPriceMatchRule::create($product, $company, trim($param->CallbackParameter->rule->price_from), trim($param->CallbackParameter->rule->price_to), trim($param->CallbackParameter->rule->offset));
+				PriceMatchConnector::run($product->getSku(), true);
+				PriceMatchConnector::getMinRecord($product->getSku(), true);
+				PriceMatchConnector::getNewPrice($product->getSku(), $product->getManufacturer() instanceof Manufacturer ? $product->getManufacturer()->getId() == 136 : false, true);
+				$results = $rule->getJson();
+			}
 			
 			Dao::commitTransaction();
 		}
