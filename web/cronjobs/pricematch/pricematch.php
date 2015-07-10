@@ -16,7 +16,7 @@ try {
 // 	echo '============================================' ."\n";
 	PriceMatchConnector::getMinRecord(Product::get($argv[1])->getSku(), true);
 	echo '============================================' ."\n";
-	PriceMatchConnector::getNewPrice(Product::get($argv[1])->getSku(), true);
+	PriceMatchConnector::getNewPrice(Product::get($argv[1])->getSku(), true, true);
 	Dao::commitTransaction();
 } catch (Exception $e)
 {

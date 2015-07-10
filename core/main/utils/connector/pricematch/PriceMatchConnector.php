@@ -27,17 +27,18 @@ class PriceMatchConnector
 		$class->debug = $debug === true ? true : false;
 		return $class->_getMinRecord();
 	}
-	public static function getNewPrice($sku, $debug = false)
+	public static function getNewPrice($sku, $updateMagento = false, $debug = false)
 	{
 		$class = new self();
 		$class->sku = trim($sku);
 		$class->debug = $debug === true ? true : false;
-		return $class->_getNewPrice();
+		return $class->_getNewPrice($updateMagento);
 	}
-	private function _getNewPrice()
+	private function _getNewPrice($updateMagento)
 	{
 		$result = null;
 		$sku = $this->sku;
+		$updateMagento = ($updateMagento === true ? true : false);
 		$product = Product::getBySku($sku);
 		if(!$product instanceof Product)
 			throw new Exception('Invalid sku passed in, "' . $sku . '" given');
@@ -118,8 +119,12 @@ class PriceMatchConnector
 					}
 					
 					// set product price
-					if(isset($prices[0]) && $prices[0] instanceof ProductPrice);
+					if(isset($prices[0]) && $prices[0] instanceof ProductPrice)
+					{
 						$prices[0]->setPrice(doubleval($result))->save();
+						if($updateMagento === true)
+							$this->updateMagentoPrice(doubleval($result));
+					}
 				}
 			}
 			else 
@@ -146,6 +151,29 @@ class PriceMatchConnector
 			return $record;
 		}
 		else return null;
+	}
+	private function updateMagentoPrice($price)
+	{
+		$product = Product::getBySku($this->sku);
+		if(!$product instanceof Product)
+			throw new Exception('Invalid Product passed in. "' . $product . '" given.');
+		
+		$connector = CatelogConnector::getConnector(B2BConnector::CONNECTOR_TYPE_CATELOG,
+				SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_WSDL),
+				SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_USER),
+				SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_KEY));
+		
+		if($this->debug)
+			echo 'Connecting to Magento for Product ' . $product->getSku() . '(id=' . $product->getId() . ')' . "\n";
+	
+		$result = $connector->updateProductPrice($product->getSku(), $price);
+	
+		if($result !== true)
+			throw new Exception('Update product (sku=' . $this->sku . ') is unsuccessful. Message from Magento: ' . $result);
+		if($this->debug)
+			echo 'Price Successfully updated to $' . $price . "\n";
+		
+		return $this;
 	}
 	/**
 	 * put given price match result for all companies into PriceMatchRecord table

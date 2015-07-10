@@ -39,6 +39,81 @@ class CatelogConnector extends B2BConnector
 		return $this->_connect()->catalogProductInfo($this->_session, $sku, null, $attributes);
 	}
 	/**
+	 * update product price on magento
+	 * 
+	 * @param string $sku
+	 * @param double $price
+	 * @throws Exception
+	 * @return Ambigous <boolean, NULL>
+	 */
+	public function updateProductPrice($sku, $price)
+	{
+		if(trim($price) === '' || doubleval(trim($price)) <= doubleval(0))
+			throw new Exception('invalid price passed in. "' . $price . '" given.');
+		$price = doubleval(trim($price));
+		return $this->updateProductInfo($sku, array('price'=> $price));
+	}
+	/**
+	 * update the required product on magento, only the given attributes
+	 * 
+	 * @param string $sku
+	 * @param array $params
+	 * @throws Exception
+	 * @return bool | string | null
+	 */
+	public function updateProductInfo($sku, $params = array())
+	{
+		if(trim($sku) === '')
+			throw new Exception('Invalid sku passed in. "' . $sku .'" given.');
+		$sku = trim($sku);
+		$currentInfo = $this->getProductInfo($sku);
+		$newinfo = array();
+		$result = null;
+		
+		if(count($params) > 0 && $this->getProductInfo($sku) !== null)
+		{
+			if(isset($params['categories']))
+				$newinfo['categories'] = $params['categories'];
+			if(isset($params['websites']))
+				$newinfo['websites'] = $params['websites'];
+			if(isset($params['name']))
+				$newinfo['name'] = $params['name'];
+			if(isset($params['description']))
+				$newinfo['description'] = $params['description'];
+			if(isset($params['short_description']))
+				$newinfo['short_description'] = $params['short_description'];
+			if(isset($params['weight']))
+				$newinfo['weight'] = $params['weight'];
+			if(isset($params['status']))
+				$newinfo['status'] = $params['status'];
+			if(isset($params['url_key']))
+				$newinfo['url_key'] = $params['url_key'];
+			if(isset($params['url_path']))
+				$newinfo['url_path'] = $params['url_path'];
+			if(isset($params['visibility']))
+				$newinfo['visibility'] = $params['visibility'];
+			if(isset($params['price']))
+				$newinfo['price'] = $params['price'];
+			if(isset($params['tax_class_id']))
+				$newinfo['tax_class_id'] = $params['tax_class_id'];
+			if(isset($params['meta_title']))
+				$newinfo['meta_title'] = $params['meta_title'];
+			if(isset($params['meta_keyword']))
+				$newinfo['meta_keyword'] = $params['meta_keyword'];
+			if(isset($params['meta_description']))
+				$newinfo['meta_description'] = $params['meta_description'];
+			
+			if(count($newinfo) > 0)
+			{
+				$result = $this->_connect()->catalogProductUpdate($this->_session, $sku, $newinfo);
+				if($result !== true)
+					throw new Exception('Product not updated. Message from Magento: "' . $result . '"');
+			}
+		}
+		
+		return $result;
+	} 
+	/**
 	 * Getting the product category tree
 	 *
 	 * @param int $mageCategoryId The magento category id
