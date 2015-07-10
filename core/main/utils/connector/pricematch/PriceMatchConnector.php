@@ -121,7 +121,12 @@ class PriceMatchConnector
 					// set product price
 					if(isset($prices[0]) && $prices[0] instanceof ProductPrice)
 					{
+						$oldPrice = $prices[0];
 						$prices[0]->setPrice(doubleval($result))->save();
+						$log = new Log();
+						$log->setEntityName('ProductPrice')->setEntityId($prices[0]->getId())->setType('FROMVALUE')->setMsg($oldPrice)->save();
+						$log = new Log();
+						$log->setEntityName('ProductPrice')->setEntityId($prices[0]->getId())->setType('TOVALUE')->setMsg(doubleval($result))->save();
 						if($updateMagento === true)
 							$this->updateMagentoPrice(doubleval($result));
 					}
