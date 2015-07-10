@@ -16,7 +16,9 @@ try {
 // 	echo '============================================' ."\n";
 	PriceMatchConnector::getMinRecord(Product::get($argv[1])->getSku(), true);
 	echo '============================================' ."\n";
-	PriceMatchConnector::getNewPrice(Product::get($argv[1])->getSku(), true, true);
+	$brandIds = array_map(create_function('$a', 'return $a->getId();'), Product::get($argv[1])->getManufacturer());
+	// 136 is qnap
+	PriceMatchConnector::getNewPrice(Product::get($argv[1])->getSku(), in_array('136', $brandIds), true);
 	Dao::commitTransaction();
 } catch (Exception $e)
 {
