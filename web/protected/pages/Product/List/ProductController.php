@@ -79,9 +79,9 @@ class ProductController extends CRUDPageAbstract
 			
 			$cmd = 'php ' . dirname(__FILE__). '/../../../../cronjobs/pricematch/pricematchRunner.php ' . $product->getId();
 			
-			PriceMatchConnector::run($product->getSku(), true);
-			PriceMatchConnector::getMinRecord($product->getSku(), true);
-			PriceMatchConnector::getNewPrice($product->getSku(), $product->getManufacturer()->getId() == 136, true);
+			$output = '';
+			exec($cmd, $output);
+			var_dump($output);
 			
 			$results = $rule->getJson();
 			
