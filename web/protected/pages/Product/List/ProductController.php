@@ -227,8 +227,9 @@ class ProductController extends CRUDPageAbstract
         //stock on hand from
         if(is_array(json_decode($serachCriteria['pro.sh'])) && count(json_decode($serachCriteria['pro.sh'])) === 2)
         {
-        	$result->sh_from = json_decode($serachCriteria['pro.sh'])[0];
-        	$result->sh_to = json_decode($serachCriteria['pro.sh'])[1];
+        	$array = json_decode($serachCriteria['pro.sh']);
+            $result->sh_from = $array[0];
+            $result->sh_to = $array[1];
         }
         else throw new Exception('Invalid stock on hand range, "' . $serachCriteria['pro.sh'] . '" given');
         //stock level
