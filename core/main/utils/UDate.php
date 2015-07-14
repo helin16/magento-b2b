@@ -8,6 +8,7 @@
  */
 class UDate
 {
+	const TIME_ZONE_MELB = "Australia/Melbourne";
 	/**
 	 * @var DateTime
 	 */
