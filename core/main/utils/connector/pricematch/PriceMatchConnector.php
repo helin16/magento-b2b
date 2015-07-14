@@ -176,9 +176,9 @@ class PriceMatchConnector
 		$result = $connector->updateProductPrice($product->getSku(), $price);
 	
 		if($result !== true)
-			throw new Exception('Update product (sku=' . $this->sku . ') is unsuccessful. Message from Magento: ' . $result);
+			throw new Exception('Update Magento product (sku=' . $this->sku . ') is unsuccessful. Message from Magento: ' . $result);
 		if($this->debug)
-			echo 'Price Successfully updated to $' . $price . "\n";
+			echo 'Magento Price Successfully updated to $' . $price . "\n";
 		
 		return $this;
 	}
