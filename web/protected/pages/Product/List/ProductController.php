@@ -91,7 +91,7 @@ class ProductController extends CRUDPageAbstract
 				$rule = ProductPriceMatchRule::create($product, $company, trim($param->CallbackParameter->rule->price_from), trim($param->CallbackParameter->rule->price_to), trim($param->CallbackParameter->rule->offset));
 				PriceMatchConnector::run($product->getSku(), true);
 				PriceMatchConnector::getMinRecord($product->getSku(), true);
-				PriceMatchConnector::getNewPrice($product->getSku(), $product->getManufacturer() instanceof Manufacturer ? $product->getManufacturer()->getId() == 136 : false, true);
+				PriceMatchConnector::getNewPrice($product->getSku(), true, true);
 				$results = $rule->getJson();
 			}
 			

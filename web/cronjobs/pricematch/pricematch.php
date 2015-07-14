@@ -17,7 +17,7 @@ try {
 	PriceMatchConnector::getMinRecord(Product::get($argv[1])->getSku(), true);
 	echo '============================================' ."\n";
 	// 136 is qnap
-	PriceMatchConnector::getNewPrice(Product::get($argv[1])->getSku(), Product::get($argv[1])->getManufacturer()->getId() == 136, true);
+	PriceMatchConnector::getNewPrice(Product::get($argv[1])->getSku(), true, true);
 	Dao::commitTransaction();
 } catch (Exception $e)
 {
