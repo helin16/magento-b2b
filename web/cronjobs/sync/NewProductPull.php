@@ -13,7 +13,7 @@ try {
 			SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_USER),
 			SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_KEY));
 
-	$result = $connector->importProducts(true, true);
+	$result = $connector->importProducts(false, true);
 	// 	$result = $connector->getProductInfo('test-graphic-card');
 
 	// 	var_dump($result);
