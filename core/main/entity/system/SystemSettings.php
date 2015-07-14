@@ -19,6 +19,8 @@ class SystemSettings extends BaseEntityAbstract
 	const TYPE_EMAIL_SENDING_SERVER = 'sending_server_conf';
 	const TYPE_EMAIL_DEFAULT_SYSTEM_EMAIL = 'sys_email_addr';
 	const TYPE_ALLOW_NEGTIVE_STOCK = 'allow_neg_stock';
+	const TYPE_LAST_NEW_PRODUCT_PULL = 'last_new_product_pull';
+	const TYPE_LAST_NEW_PRODUCT_PUSH = 'last_new_price_push';
 	/**
 	 * The value of the setting
 	 * 

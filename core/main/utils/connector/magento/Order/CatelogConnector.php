@@ -1,9 +1,16 @@
 <?php
 class CatelogConnector extends B2BConnector
 {
-	public function getProductList()
+	public function getProductList($setFromDate = false)
 	{
-		return $this->_connect()->catalogProductList ($this->_session);
+		$date = $setFromDate === true ? SystemSettings::getSettings(SystemSettings::TYPE_LAST_NEW_PRODUCT_PULL) : '';
+		echo 'Magento Products Create Date From: "' . $date . '"' . "\n";
+		$params = array('complex_filter'=>
+				array(
+						array('key'=>'created_at','value'=>array('key' =>'from','value' => $date))
+				)
+		);
+		return $this->_connect()->catalogProductList ($this->_session, $params);
 	}
 	/**
 	 * Getting the attribute information
@@ -237,9 +244,9 @@ class CatelogConnector extends B2BConnector
 	 *
 	 * @return CatelogConnector
 	 */
-	public function importProducts()
+	public function importProducts($setFromDate = false, $newOnly = false)
 	{
-		$products = $this->getProductList();
+		$products = $this->getProductList($setFromDate);
 		foreach($products as $pro)
 		{
 			try
@@ -249,6 +256,11 @@ class CatelogConnector extends B2BConnector
 				$pro = $this->getProductInfo($sku, $this->getInfoAttributes());
 				if(is_null($pro) || !isset($pro->additional_attributes))
 					continue;
+				if($newOnly === true && ($product = Product::getBySku($sku)) instanceof Product)
+				{
+					echo 'Product ' . $sku . '(id=' . $product->getId() . ') already exist, skiped' . "\n";
+					continue;
+				}
 
 				Dao::beginTransaction();
 
@@ -264,7 +276,10 @@ class CatelogConnector extends B2BConnector
 				$specialPrice_To = isset($additionAttrs['special_to_date']) ? trim($additionAttrs['special_to_date']) : null;
 
 				if(!($product = Product::getBySku($sku)) instanceof Product)
+				{
+					echo 'create Product (sku=' . $sku . ', name=' . $name . ')' . "\n";
 					$product = Product::create($sku, $name);
+				}
 				$asset = (($assetId = trim($product->getFullDescAssetId())) === '' || !($asset = Asset::getAsset($assetId)) instanceof Asset) ? Asset::registerAsset('full_desc_' . $sku, $description, Asset::TYPE_PRODUCT_DEC) : $asset;
 				$product->setName($name)
 					->setMageId($mageId)
@@ -295,6 +310,9 @@ class CatelogConnector extends B2BConnector
 						$product->addCategory($category);
 					}
 				}
+				
+				echo 'Imported Product (sku=' . $sku . ')' . "\n"; 
+				
 				Dao::commitTransaction();
 			}
 			catch(Exception $ex)
