@@ -10,7 +10,7 @@ foreach ($productIds as $row)
 {
 	try {
 		$output = '';
-		$timeout = 30;
+		$timeout = 60; // in seconds
 		$cmd = 'php ' . dirname(__FILE__). '/pricematch.php ' . $row['id'];
 		$output = ExecWaitTimeout($cmd, $timeout);
 	// 	exec($cmd, $output);
