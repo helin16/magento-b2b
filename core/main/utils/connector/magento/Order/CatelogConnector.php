@@ -4,7 +4,7 @@ class CatelogConnector extends B2BConnector
 	public function getProductList($setFromDate = false)
 	{
 		$date = $setFromDate === true ? SystemSettings::getSettings(SystemSettings::TYPE_LAST_NEW_PRODUCT_PULL) : '';
-		echo 'Magento Products Create Date From: "' . $date . '"' . "\n";
+		echo 'Looking for Magento Products with Create Date From: "' . $date . '"' . "\n";
 		$params = array('complex_filter'=>
 				array(
 						array('key'=>'created_at','value'=>array('key' =>'from','value' => $date))
