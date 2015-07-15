@@ -12,8 +12,8 @@ try
 {
 	Dao::beginTransaction();
 	
-	if(($systemSetting = SystemSettings::getSettings(SystemSettings::TYPE_LAST_NEW_PRODUCT_PULL)) instanceof SystemSettings)
-		$systemSetting->setValue(UDate::now())->save();
+	if(($systemSetting = SystemSettings::getByType(SystemSettings::TYPE_LAST_NEW_PRODUCT_PULL)) instanceof SystemSettings)
+		$systemSetting->setValue(UDate::now()->__toString())->save();
 	else throw new Exception('cannot set LAST_NEW_PRODUCT_PULL in system setting');
 	
 	Dao::commitTransaction();

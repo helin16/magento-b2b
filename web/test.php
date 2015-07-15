@@ -5,7 +5,7 @@ try {
 	Core::setUser(UserAccount::get(UserAccount::ID_SYSTEM_ACCOUNT));
 	Dao::beginTransaction();
 	
-	if(($systemSetting = SystemSettings::getSettings(SystemSettings::TYPE_LAST_NEW_PRODUCT_PULL)) instanceof SystemSettings)
+	if(($systemSetting = SystemSettings::getByType(SystemSettings::TYPE_LAST_NEW_PRODUCT_PULL)) instanceof SystemSettings)
 		$systemSetting->setValue(UDate::now()->__toString())->save();
 	
 	Dao::commitTransaction();
