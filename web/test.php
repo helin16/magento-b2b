@@ -6,7 +6,7 @@ try {
 	Dao::beginTransaction();
 	
 	if(($systemSetting = SystemSettings::getSettings(SystemSettings::TYPE_LAST_NEW_PRODUCT_PULL)) instanceof SystemSettings)
-		$systemSetting->setValue(UDate::now())->save();
+		$systemSetting->setValue(UDate::now()->__toString())->save();
 	
 	Dao::commitTransaction();
 } catch (Exception $e)
