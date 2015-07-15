@@ -249,8 +249,11 @@ class CatelogConnector extends B2BConnector
 		$products = $this->getProductList($setFromDate);
 		foreach($products as $pro)
 		{
+			$transStarted = false;
 			try
 			{
+				try {Dao::beginTransaction();} catch(Exception $e) {$transStarted = true;}
+				
 				$mageId = trim($pro->product_id);
 				$sku = trim($pro->sku);
 				$pro = $this->getProductInfo($sku, $this->getInfoAttributes());
@@ -261,8 +264,6 @@ class CatelogConnector extends B2BConnector
 					echo 'Product ' . $sku . '(id=' . $product->getId() . ') already exist, skiped' . "\n";
 					continue;
 				}
-
-				Dao::beginTransaction();
 
 				$additionAttrs = $this->_getAttributeFromAdditionAttr($pro->additional_attributes);
 				$name = trim($additionAttrs['name']);
@@ -277,8 +278,9 @@ class CatelogConnector extends B2BConnector
 
 				if(!($product = Product::getBySku($sku)) instanceof Product)
 				{
-					echo 'create Product (sku=' . $sku . ', name=' . $name . ')' . "\n";
 					$product = Product::create($sku, $name);
+					Log::logging(0, get_class($this), 'Found New Product from Magento with sku="' . trim($sku) . '" and name="' . $name . '"', self::LOG_TYPE, '', __FUNCTION__);
+					echo 'Found New Product from Magento with sku="' . $sku . '", name="' . $name . '"' . "\n";
 				}
 				$asset = (($assetId = trim($product->getFullDescAssetId())) === '' || !($asset = Asset::getAsset($assetId)) instanceof Asset) ? Asset::registerAsset('full_desc_' . $sku, $description, Asset::TYPE_PRODUCT_DEC) : $asset;
 				$product->setName($name)
@@ -311,13 +313,13 @@ class CatelogConnector extends B2BConnector
 					}
 				}
 				
-				echo 'Imported Product (sku=' . $sku . ')' . "\n"; 
-				
-				Dao::commitTransaction();
+				if($transStarted === false)
+					Dao::commitTransaction();
 			}
 			catch(Exception $ex)
 			{
-				Dao::rollbackTransaction();
+				if($transStarted === false)
+					Dao::rollbackTransaction();
 			}
 		}
 		return $this;
