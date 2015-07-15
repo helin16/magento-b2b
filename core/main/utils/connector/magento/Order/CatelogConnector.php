@@ -1,9 +1,8 @@
 <?php
 class CatelogConnector extends B2BConnector
 {
-	public function getProductList($setFromDate = false)
+	public function getProductList($date)
 	{
-		$date = $setFromDate === true ? SystemSettings::getSettings(SystemSettings::TYPE_LAST_NEW_PRODUCT_PULL) : '';
 		echo 'Looking for Magento Products with Create Date From: "' . $date . '"' . "\n";
 		$params = array('complex_filter'=>
 				array(
@@ -257,14 +256,18 @@ class CatelogConnector extends B2BConnector
 	 */
 	public function importProducts($setFromDate = false, $newOnly = false)
 	{
-		$products = $this->getProductList($setFromDate);
-		foreach($products as $pro)
+		if(!($systemSetting = SystemSettings::getByType(SystemSettings::TYPE_LAST_NEW_PRODUCT_PULL)) instanceof SystemSettings)
+			throw new Exception('cannot set LAST_NEW_PRODUCT_PULL in system setting');
+		$fromDate = '';
+		if($setFromDate === true)
+			$fromDate = $systemSetting->getValue();
+		$products = $this->getProductList($fromDate);
+		try
 		{
 			$transStarted = false;
-			try
+			try {Dao::beginTransaction();} catch(Exception $e) {$transStarted = true;}
+			foreach($products as $pro)
 			{
-				try {Dao::beginTransaction();} catch(Exception $e) {$transStarted = true;}
-				
 				$mageId = trim($pro->product_id);
 				$sku = trim($pro->sku);
 				$pro = $this->getProductInfo($sku, $this->getInfoAttributes());
@@ -276,6 +279,7 @@ class CatelogConnector extends B2BConnector
 					continue;
 				}
 
+				$created_at = trim($pro->created_at);
 				$additionAttrs = $this->_getAttributeFromAdditionAttr($pro->additional_attributes);
 				$name = trim($additionAttrs['name']);
 				$short_description = trim($additionAttrs['short_description']);
@@ -290,7 +294,7 @@ class CatelogConnector extends B2BConnector
 				if(!($product = Product::getBySku($sku)) instanceof Product)
 				{
 					$product = Product::create($sku, $name);
-					Log::logging(0, get_class($this), 'Found New Product from Magento with sku="' . trim($sku) . '" and name="' . $name . '"', self::LOG_TYPE, '', __FUNCTION__);
+					Log::logging(0, get_class($this), 'Found New Product from Magento with sku="' . trim($sku) . '" and name="' . $name . '", created_at="' . $created_at, self::LOG_TYPE, '', __FUNCTION__);
 					echo 'Found New Product from Magento with sku="' . $sku . '", name="' . $name . '"' . "\n";
 				}
 				$asset = (($assetId = trim($product->getFullDescAssetId())) === '' || !($asset = Asset::getAsset($assetId)) instanceof Asset) ? Asset::registerAsset('full_desc_' . $sku, $description, Asset::TYPE_PRODUCT_DEC) : $asset;
@@ -323,16 +327,18 @@ class CatelogConnector extends B2BConnector
 						$product->addCategory($category);
 					}
 				}
-				
-				if($transStarted === false)
-					Dao::commitTransaction();
 			}
-			catch(Exception $ex)
-			{
-				if($transStarted === false)
-					Dao::rollbackTransaction();
-				throw $ex;
-			}
+			if(($systemSetting = SystemSettings::getByType(SystemSettings::TYPE_LAST_NEW_PRODUCT_PULL)) instanceof SystemSettings)
+				$systemSetting->setValue($created_at)->save();
+			
+			if($transStarted === false)
+				Dao::commitTransaction();
+		}
+		catch(Exception $ex)
+		{
+			if($transStarted === false)
+				Dao::rollbackTransaction();
+			throw $ex;
 		}
 		return $this;
 	}
