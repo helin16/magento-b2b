@@ -181,7 +181,7 @@ OrderBtnsJs.prototype = {
 					.insert({'bottom': new Element('li')
 						.insert({'bottom': new Element('a', {'href': 'javascript: void(0);'})
 							.insert({'bottom': new Element('span').update('Print Delivery Docket ') })
-							.insert({'bottom': new Element('span', {'class': 'fa fa-ils'}) })
+							.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-list-alt'}) })
 							.observe('click', function() {
 								tmp.me.openDocketPrintPage(0);
 							})

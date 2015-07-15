@@ -47,7 +47,7 @@ class OrderDetailsController extends BPCPageAbstract
 				}
 			}
 		}
-		if(in_array(intval(Core::getRole()->getId()), array(Role::ID_SYSTEM_ADMIN, Role::ID_STORE_MANAGER, Role::ID_ACCOUNTING)))
+		if(in_array(intval(Core::getRole()->getId()), array(Role::ID_SYSTEM_ADMIN, Role::ID_STORE_MANAGER, Role::ID_ACCOUNTING, Role::ID_SALES)))
 			$accounEdit = 'true';
 		$orderArray = $order->getJson();
 		$orderArray['childrenOrders'] = array_map(create_function('$a', 'return $a->getOrder()->getJson();'), OrderInfo::getAllByCriteria('typeId = ? and value = ?', array(OrderInfoType::ID_CLONED_FROM_ORDER_NO, trim($order->getOrderNo()))));

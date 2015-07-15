@@ -1000,6 +1000,7 @@ class Product extends InfoEntityAbstract
 			$array['fullDescriptionAsset'] = (($asset = Asset::getAsset($this->getFullDescAssetId())) instanceof Asset ? $asset->getJson() : null) ;
 			$array['locations'] = array_map(create_function('$a', 'return $a->getJson();'), PreferredLocation::getPreferredLocations($this));
 			$array['unitCost'] = $this->getUnitCost();
+			$array['priceMatchRule'] = ($i=ProductPriceMatchRule::getByProduct($this)) instanceof ProductPriceMatchRule ? $i->getJson() : null;
 		}
 		return parent::getJson($array, $reset);
 	}
@@ -1063,7 +1064,7 @@ class Product extends InfoEntityAbstract
 		$action = (intval($qty) > 0 ? 'Stock picked' : 'stock UNPICKED');
 		$newQty = (($originStockOnHand = $this->getStockOnHand()) - $qty);
 		if($newQty < 0 && intval($qty) > 0 && intval(SystemSettings::getSettings(SystemSettings::TYPE_ALLOW_NEGTIVE_STOCK)) !== 1) 
-			throw new Exception('Product (SKU:' . $this->getSKU() . ') can NOT be pick, as there is not enough stock.');
+			throw new Exception('Product (SKU:' . $this->getSKU() . ') can NOT be ' . $action . ' , as there is not enough stock: stock on hand will fall below zero');
 		if($entity instanceof OrderItem) {
 			$kits = array_map(create_function('$a', 'return $a->getKit();'), SellingItem::getAllByCriteria('orderItemId = ? and kitId is not null', array($entity->getId())));
 			$kits = array_unique($kits);
@@ -1077,8 +1078,11 @@ class Product extends InfoEntityAbstract
 				$comments .= ' ' . $action . ' KITS[' . implode(',', $barcodes) . '] with total cost value:' . StringUtilsAbstract::getCurrency($totalCost);
 			}
 		}
+		$newStockOnOrder = ($originStockOnOrder = $this->getStockOnOrder()) + $qty;
+		if($newStockOnOrder < 0  && intval(SystemSettings::getSettings(SystemSettings::TYPE_ALLOW_NEGTIVE_STOCK)) !== 1)
+			throw new Exception('Product (SKU:' . $this->getSKU() . ') can NOT be ' . $action . ' , as there is not enough stock: new stock on order will fall below zero');
 		return $this->setStockOnHand($newQty)
-			->setStockOnOrder(($originStockOnOrder = $this->getStockOnOrder()) + $qty)
+			->setStockOnOrder($newStockOnOrder)
 			->setTotalOnHandValue(($origTotalOnHandValue = $this->getTotalOnHandValue()) - $totalCost)
 			->snapshotQty($entity instanceof BaseEntityAbstract ? $entity : $this, ProductQtyLog::TYPE_SALES_ORDER, $action . ': ' . ($order instanceof Order ? '[' . $order->getOrderNo() . ']' : '') . $comments)
 			->save()
@@ -1446,7 +1450,7 @@ class Product extends InfoEntityAbstract
 	 *
 	 * @return Ambigous <Ambigous, multitype:, multitype:BaseEntityAbstract >
 	 */
-	public static function getProducts($sku, $name, array $supplierIds = array(), array $manufacturerIds = array(), array $categoryIds = array(), array $statusIds = array(), $active = null, $pageNo = null, $pageSize = DaoQuery::DEFAUTL_PAGE_SIZE, $orderBy = array(), &$stats = array(), $stockLevel = null, &$sumValues = null)
+	public static function getProducts($sku, $name, array $supplierIds = array(), array $manufacturerIds = array(), array $categoryIds = array(), array $statusIds = array(), $active = null, $pageNo = null, $pageSize = DaoQuery::DEFAUTL_PAGE_SIZE, $orderBy = array(), &$stats = array(), $stockLevel = null, &$sumValues = null, $sh_from = null, $sh_to = null)
 	{
 		$where = array(1);
 		$params = array();
@@ -1499,6 +1503,16 @@ class Product extends InfoEntityAbstract
 		if(($stockLevel = trim($stockLevel)) !== '')
 		{
 			$where[] = 'pro.stockOnHand <= pro.' . $stockLevel. ' and pro.' . $stockLevel . ' is not null';
+		}
+		if(($sh_from = trim($sh_from)) !== '')
+		{
+			$where[] = 'pro.stockOnHand >= ?';
+			$params[] = intval($sh_from);
+		}
+		if(($sh_to = trim($sh_to)) !== '')
+		{
+			$where[] = 'pro.stockOnHand <= ?';
+			$params[] = intval($sh_to);
 		}
 
 		if(is_array($sumValues)) {

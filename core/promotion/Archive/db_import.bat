@@ -4,6 +4,7 @@
 set db_name=bpcinternal
 
 for /f %%x in ('wmic path win32_localtime get /format:list ^| findstr "="') do set %%x
+if %Day% LSS 10 set Day=0%Day%
 if %Month% LSS 10 set Month=0%Month%
 set today=%Day%_%Month%_%Year%
 set dump_file_name=%today%.7z
@@ -31,7 +32,7 @@ echo done.
 :: Import sql files
 echo.
 echo importing database from %dump_file_name%
-7z x -so %dump_file_name% | mysql -u root -proot %db_name%
+7z x -so -pbudget123pc %dump_file_name% | mysql -u root -proot %db_name%
 echo done
 echo importing wamp.sql
 mysql -u root -proot bpcinternal < ..\wamp.sql

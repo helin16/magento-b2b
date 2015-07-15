@@ -19,6 +19,8 @@ class SystemSettings extends BaseEntityAbstract
 	const TYPE_EMAIL_SENDING_SERVER = 'sending_server_conf';
 	const TYPE_EMAIL_DEFAULT_SYSTEM_EMAIL = 'sys_email_addr';
 	const TYPE_ALLOW_NEGTIVE_STOCK = 'allow_neg_stock';
+	const TYPE_LAST_NEW_PRODUCT_PULL = 'last_new_product_pull';
+	const TYPE_LAST_NEW_PRODUCT_PUSH = 'last_new_price_push';
 	/**
 	 * The value of the setting
 	 * 
@@ -166,5 +168,9 @@ class SystemSettings extends BaseEntityAbstract
 	
 		DaoMap::createUniqueIndex('type');
 		DaoMap::commit();
+	}
+	public static function getByType($type)
+	{
+		return count(self::getAllByCriteria('type = ?', array(trim($type)), true, 1, 1, array('id'=> 'desc'))) > 0 ? self::getAllByCriteria('type = ?', array(trim($type)))[0] : null;
 	}
 }

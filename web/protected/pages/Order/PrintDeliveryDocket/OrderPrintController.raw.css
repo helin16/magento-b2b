@@ -52,7 +52,7 @@
 
 .orderViewWrapper,.operationWrapper {
     vertical-align: top;
-    padding: 5px;
+    /**padding: 5px;**/
 }
 
 .orderViewWrapper {
@@ -73,7 +73,7 @@
 }
 
 .title_row .logo {
-    width: 60%;
+    width: 75%;
 }
 
 .title_row .logo .orderno {
@@ -85,7 +85,7 @@
     color: #c15760;
     font-weight: bold;
     text-align: right;
-    width: 38%;
+    width: 23%;
 }
 
 .title_row .info .abn {
@@ -120,7 +120,7 @@
 
 .addr_info .half {
     width: 49%;
-    height: 100px;
+    /**height: 100px;**/
 }
 
 .addr_info .half .addr {

@@ -552,27 +552,31 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			.observe('click', function(e){
 				tmp.me.serialUploader = new SerialBulkUploaderJs(tmp.me);
 				tmp.me.showModalBox('Bulk Import Serial Numbers', tmp.serialUploaderPanel = tmp.me.serialUploader.getInputPanel());
-				tmp.btn = tmp.serialUploaderPanel.down('.confimBtn');
-				tmp.btn.observe('click', function(){
-					jQuery('#' + tmp.btn.id).button('loading');
+				tmp.serialUploaderPanel.down('.confimBtn').observe('click', function(){
 					if($(this).up('.bulkSerialPanel').retrieve('data') && $(this).up('.bulkSerialPanel').retrieve('data').length !== null)
 						jQuery('#' + tmp.me.modalId).modal('hide');
-					jQuery('#' + tmp.btn.id).button('reset');
 				});
 
 				jQuery('#' + tmp.me.modalId).on('hide.bs.modal', function(e){
 						tmp.serials = $(this).down('.bulkSerialPanel').retrieve('data');
+						tmp.existingSerials = [];
+						$$('.item_row[productid="' + product.id + '"]').first().getElementsBySelector('[scanned-item="serialNo"]').each(function(item){
+							if(jQuery.isNumeric(item.value))
+								tmp.existingSerials.push(item.value);
+						});
 						if(tmp.serials && tmp.serials.length > 0) {
 							tmp.serials.each(function(item){
-								tmp.scanTableRow = $$('.item_row[productid="' + product.id + '"]').first();
-
-								tmp.scanTableRow.down('[scanned-item="qty"]').setValue(item.qty);
-								tmp.scanTableRow.down('[scanned-item="unitPrice"]').setValue(item.unitPrice);
-								tmp.scanTableRow.down('[scanned-item="serialNo"]').setValue(item.serialNo);
-								tmp.scanTableRow.down('[scanned-item="invoiceNo"]').setValue(item.invoiceNo);
-								tmp.scanTableRow.down('[scanned-item="comments"]').setValue(item.comments);
-
-								tmp.scanTableRow.down('.scanned-item-save-btn').click();
+								if(parseInt(tmp.existingSerials.indexOf(item.serialNo)) < 0) {
+									tmp.scanTableRow = $$('.item_row[productid="' + product.id + '"]').first();
+	
+									tmp.scanTableRow.down('[scanned-item="qty"]').setValue(item.qty);
+									tmp.scanTableRow.down('[scanned-item="unitPrice"]').setValue(item.unitPrice);
+									tmp.scanTableRow.down('[scanned-item="serialNo"]').setValue(item.serialNo);
+									tmp.scanTableRow.down('[scanned-item="invoiceNo"]').setValue(item.invoiceNo);
+									tmp.scanTableRow.down('[scanned-item="comments"]').setValue(item.comments);
+	
+									tmp.scanTableRow.down('.scanned-item-save-btn').click();
+								}
 							});
 						}
 					});

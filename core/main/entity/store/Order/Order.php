@@ -627,8 +627,7 @@ class Order extends InfoEntityAbstract
 	 */
 	public function postSave()
 	{
-		if(trim($this->getOrderNo()) === '')
-		{
+		if(trim($this->getOrderNo()) === '') {
 			$this->setOrderNo('BPCM' .str_pad($this->getId(), 8, '0', STR_PAD_LEFT))
 				->setMargin($this->getCalculatedTotalMargin())
 				->save();
@@ -644,6 +643,14 @@ class Order extends InfoEntityAbstract
 					->save();
 			}
 			$this->_changeToInvoice();
+		} elseif(trim($this->getStatus()->getId()) === trim(OrderStatus::ID_CANCELLED))	{ //if the order is now cancelled
+			//we need to unlink all the kits that were provided in this order item for sale.
+			SellingItem::getQuery()->eagerLoad('SellingItem.orderItem', 'inner join', 'rec_item_oi', 'rec_item_oi.id = sell_item.orderItemId and sell_item.active = 1 and sell_item.kitId is not null');
+			$items = SellingItem::getAllByCriteria('rec_item_oi.orderId = ? and rec_item_oi.isShipped = 0', array($this->getId()));
+			foreach($items as $item) {
+				$item->setActive(false)
+					->save();
+			}
 		}
 	}
 	/**

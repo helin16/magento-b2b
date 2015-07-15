@@ -1,30 +1,18 @@
 <?php
-require_once dirname(__FILE__) . '/bootstrap.php';
-
+require_once 'bootstrap.php';
 try {
-	echo "Hello<br/>";
+	echo "Begin" . "\n";
 	Core::setUser(UserAccount::get(UserAccount::ID_SYSTEM_ACCOUNT));
 	Dao::beginTransaction();
-	echo '<pre>';
 	
-	$connector = B2BConnector::getConnector(B2BConnector::CONNECTOR_TYPE_ORDER,
-			SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_WSDL),
-			SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_USER),
-			SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_KEY)
-	);
-	$session = $connector->login(SystemSettings::TYPE_B2B_SOAP_USER, SystemSettings::TYPE_B2B_SOAP_KEY);
+	if(($systemSetting = SystemSettings::getByType(SystemSettings::TYPE_LAST_NEW_PRODUCT_PULL)) instanceof SystemSettings)
+		$systemSetting->setValue(UDate::now()->__toString())->save();
 	
-	var_dump($session);
-	
-	
-	
-	
-	echo '</pre>';
-	echo "done";
 	Dao::commitTransaction();
 } catch (Exception $e)
 { 
-	echo "<pre>" . $e->getTraceAsString() . "</pre>";
+	echo "\n" . $e->getMessage() . "\n" . $e->getTraceAsString() . "\n";
 	Dao::rollbackTransaction();
 	throw $e;
 }
+?>

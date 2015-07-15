@@ -59,21 +59,29 @@ SerialBulkUploaderJs.prototype = Object.extend(new BPCPageJs(), {
 				.insert({'bottom': new Element('div', {'class': 'col-sm-12'})
 					.insert({'bottom': new Element('span', {'class': 'btn btn-md btn-success pull-right confimBtn'}).update('Confirm')
 						.observe('click', function(e){
-							tmp.data = [];
-							tmp.confirmBtn = $(this);
-							tmp.serials = $(this).up('.bulkSerialPanel').retrieve('serials', tmp.serials);
-							tmp.serials.each(function(item){
-								tmp.rawData = tmp.me._collectFormData(tmp.confirmBtn.up('.bulkSerialPanel'), 'serial-info');
-								if(tmp.rawData !== null) {
-									tmp.rawData.qty = 1;
-									tmp.rawData.serialNo = item;
-									if(tmp.rawData.comments === '')
-										tmp.rawData.comments = 'BULK IMPORTED';
-									tmp.data.push(tmp.rawData);
-								}
-							});
-							if(tmp.me._collectFormData(tmp.confirmBtn.up('.bulkSerialPanel'), 'serial-info') !== null)
-								$(this).up('.bulkSerialPanel').store('data', tmp.data)
+							tmp.btn = $(this);
+							tmp.btn.clicked = true;
+							tmp.me._signRandID(tmp.btn);
+							jQuery('#' + tmp.btn.id).button('loading');
+							if(tmp.btn.clicked === true) {
+								tmp.btn.clicked = false;
+								tmp.data = [];
+								tmp.confirmBtn = $(this);
+								tmp.serials = $(this).up('.bulkSerialPanel').retrieve('serials', tmp.serials);
+								tmp.serials.each(function(item){
+									tmp.rawData = tmp.me._collectFormData(tmp.confirmBtn.up('.bulkSerialPanel'), 'serial-info');
+									if(tmp.rawData !== null) {
+										tmp.rawData.qty = 1;
+										tmp.rawData.serialNo = item;
+										if(tmp.rawData.comments === '')
+											tmp.rawData.comments = 'BULK IMPORTED';
+										tmp.data.push(tmp.rawData);
+									}
+								});
+								if(tmp.me._collectFormData(tmp.confirmBtn.up('.bulkSerialPanel'), 'serial-info') !== null)
+									$(this).up('.bulkSerialPanel').store('data', tmp.data)
+							}
+							jQuery('#' + tmp.btn.id).button('reset');
 						})
 					})
 				})

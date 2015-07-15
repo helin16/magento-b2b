@@ -1,5 +1,6 @@
 <?php
 ini_set('memory_limit','1024M');
+ini_set('max_execution_time', 300);
 class ItemExport_Xero extends ExportAbstract
 {
 	protected static function _getData()
@@ -22,6 +23,7 @@ class ItemExport_Xero extends ExportAbstract
 				'sku' => $product->getSku()
 				,'name' => $product->getName()
 				,'short description'=> $product->getShortDescription()
+				,'category'=> join(', ', array_map(create_function('$a', 'return $a->getCategory()->getName();'), $product->getCategories()))
 				,'assetAccNo'=> $product->getAssetAccNo()
 				,'revenueAccNo'=> $product->getRevenueAccNo()
 				,'costAccNo'=> $product->getCostAccNo()
