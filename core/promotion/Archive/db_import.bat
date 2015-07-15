@@ -36,8 +36,6 @@ echo importing database from %dump_file_name%
 echo done
 echo importing wamp.sql
 mysql -u root -proot bpcinternal < ..\wamp.sql
-echo importing debugMode.sql
-mysql -u root -proot bpcinternal < ..\debugMode.sql
 
 echo.
 echo all good. good bye
