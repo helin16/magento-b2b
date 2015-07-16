@@ -44,6 +44,7 @@ abstract class SystemCoreAbstract
 			$base . '/utils/html_parser/',
 			$base . '/utils/PDF/',
 			$base . '/utils/PhpBarcode/',
+			$base . '/utils/parseCSV/',
 		);
 		foreach ($autoloadPaths as $path)
 		{

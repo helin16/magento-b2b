@@ -36,8 +36,12 @@ echo importing database from %dump_file_name%
 echo done
 echo importing wamp.sql
 mysql -u root -proot bpcinternal < ..\wamp.sql
-echo importing debugMode.sql
-mysql -u root -proot bpcinternal < ..\debugMode.sql
+echo importing datafeed.sql
+mysql -u root -proot bpcinternal < ..\datafeed.sql
+echo importing attributeSet.sql
+mysql -u root -proot bpcinternal < ..\attributeSet.sql
+echo running sync.php
+php ..\sync.php
 
 echo.
 echo all good. good bye
