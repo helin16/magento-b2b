@@ -129,7 +129,7 @@ class Manufacturer extends BaseEntityAbstract
 	public static function create($name, $description = '', $isFromB2B = false, $mageId = 0)
 	{
 		$name = trim($name);
-		$description = trim($description);
+		$description = trim($description) === '' ? $name : trim($description);
 		$isFromB2B = ($isFromB2B === true);
 		$class =__CLASS__;
 		$objects = self::getAllByCriteria('name = ?', array($name), true, 1, 1);
@@ -141,7 +141,7 @@ class Manufacturer extends BaseEntityAbstract
 			$obj->setIsFromB2B($isFromB2B);
 		}
 		$obj->setName($name)
-			->setDescription(trim($description))
+			->setDescription($description)
 			->setMageId($mageId)
 			->save();
 		$comments = $class . '(ID=' . $obj->getId() . ')' . (count($objects) > 0 ? 'updated' : 'created') . ($isFromB2B === true ? ' via B2B' : '') . ' with (name=' . $name . ', mageId=' . $mageId . ')';

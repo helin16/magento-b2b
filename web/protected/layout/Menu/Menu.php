@@ -107,7 +107,7 @@ class Menu extends TTemplateControl
 			$array['Testing'] = array(
 					'icon' => '<span class="fa fa-connectdevelop"></span>',
 					'csvdecoder' => array('url' => '/datafeed/csvdecoder.html', 'name' => 'CSV Decoder', 'icon' => '<span class=""></span>'),
-					'magentoconnector' => array('url' => '/datafeed/magentoconnector.html', 'name' => 'Magento Connector', 'icon' => '<span class=""></span>')
+					'newDatafeedRule' => array('url' => '/datafeed/new.html', 'name' => 'New Datafeed Rule', 'icon' => '<span class=""></span>')
 			);
 		}
 		$html = "<ul class='nav navbar-nav'>";
