@@ -330,7 +330,6 @@ class CatelogConnector extends B2BConnector
 			}
 			if(($systemSetting = SystemSettings::getByType(SystemSettings::TYPE_LAST_NEW_PRODUCT_PULL)) instanceof SystemSettings)
 				$systemSetting->setValue($created_at)->save();
-			
 			if($transStarted === false)
 				Dao::commitTransaction();
 		}
@@ -351,16 +350,15 @@ class CatelogConnector extends B2BConnector
 	{
 		$attributeSets = $this->getProductAttributeSetList();
 		Log::logging(0, get_class($this), 'getting AttributeSets from magento', self::LOG_TYPE, '', __FUNCTION__);
-		echo 'getting AttributeSets from magento';
+		echo 'getting AttributeSets from magento' . "\n";
 		if(count($attributeSets) === 0)
 			return;
-	
-		foreach($attributeSets as $attributeSet)
+		try
 		{
-			try
+			$transStarted = false;
+			try {Dao::beginTransaction();} catch(Exception $e) {$transStarted = true;}
+			foreach($attributeSets as $attributeSet)
 			{
-				Dao::beginTransaction();
-	
 				$mageId = trim($attributeSet->set_id);
 				$name = trim($attributeSet->name);
 				$description = isset($category->description) ? trim($category->description) : $name;
@@ -382,14 +380,14 @@ class CatelogConnector extends B2BConnector
 				}
 				$productAttributeSet->setActive(true)
 				->save();
-	
+			}
+			if($transStarted === false)
 				Dao::commitTransaction();
-			}
-			catch(Exception $e)
-			{
-				Dao::rollbackTransaction();
-				throw $e;
-			}
+		}
+		catch(Exception $e)
+		{
+			Dao::rollbackTransaction();
+			throw $e;
 		}
 		return $this;
 	}
@@ -404,11 +402,13 @@ class CatelogConnector extends B2BConnector
 		if(count($productAttributeSetIds) === 0)
 			return;
 		
-		foreach($productAttributeSetIds as $productAttributeSetId)
+		try
 		{
-			try
+			$transStarted = false;
+			try {Dao::beginTransaction();} catch(Exception $e) {$transStarted = true;}
+			
+			foreach($productAttributeSetIds as $productAttributeSetId)
 			{
-				Dao::beginTransaction();
 				$productAttributeSetId = $productAttributeSetId['id'];
 				$productAttributeSet = ProductAttributeSet::get($productAttributeSetId);
 				if(!$productAttributeSet instanceof ProductAttributeSet)
@@ -432,32 +432,40 @@ class CatelogConnector extends B2BConnector
 					$productAttribute = ProductAttribute::getByMageId($mageId);
 					if(!$productAttribute instanceof ProductAttribute)
 					{
-						Log::logging(0, get_class($this), 'found new ProductAttribute from magento(mageId="' . $mageId . '", code="' . $code . '", type="' . $type . '", required="' . $required . '", scope="' . $scope . '")', self::LOG_TYPE, '', __FUNCTION__);
-						echo 'found new ProductAttribute from magento(mageId="' . $mageId . '", code="' . $code . '", type="' . $type . '", required="' . $required . '", scope="' . $scope . '")' . "\n";
-						$productAttribute = ProductAttribute::create($code, $type, $required, $scope, $description, true, $mageId);
+						Log::logging(0, get_class($this), 'found new ProductAttribute from magento(mageId="' . $mageId . '", code="' . $code . '", type="' . $type . '", required="' . $required . '", scope="' . $scope . '", attributeSet=[' . $productAttributeSet->getId() . ']' . $productAttributeSet->getName() . ')', self::LOG_TYPE, '', __FUNCTION__);
+						echo 'found new ProductAttribute from magento(mageId="' . $mageId . '", code="' . $code . '", type="' . $type . '", required="' . $required . '", scope="' . $scope . '", attributeSet=[' . $productAttributeSet->getId() . ']' . $productAttributeSet->getName() . ')' . "\n";
+						$productAttribute = ProductAttribute::create($code, $type, $required, $scope, $description, true, $mageId, $productAttributeSet);
 					}
 					else
 					{
-						Log::logging(0, get_class($this), 'found existing ProductAttribute from magento(mageId="' . $mageId . '", code="' .$code . '", ID=' . $productAttributeSet->getId() . ', type="' . $type . '", required="' . $required . '", scope="' . $scope . '")', self::LOG_TYPE, '', __FUNCTION__);
-						echo 'found existing ProductAttribute from magento(mageId="' . $mageId . '", code="' .$code . '", ID=' . $productAttributeSet->getId() . ', type="' . $type . '", required="' . $required . '", scope="' . $scope . '")' . "\n";
+						Log::logging(0, get_class($this), 'found existing ProductAttribute from magento(mageId="' . $mageId . '", code="' .$code . '", ID=' . $productAttributeSet->getId() . ', type="' . $type . '", required="' . $required . '", scope="' . $scope . '", attributeSet=[' . $productAttributeSet->getId() . ']' . $productAttributeSet->getName() . '")', self::LOG_TYPE, '', __FUNCTION__);
+						echo 'found existing ProductAttribute from magento(mageId="' . $mageId . '", code="' .$code . '", ID=' . $productAttributeSet->getId() . ', type="' . $type . '", required="' . $required . '", scope="' . $scope . '", attributeSet=[' . $productAttributeSet->getId() . ']' . $productAttributeSet->getName() . '")' . "\n";
 						$productAttribute
 						->setCode($code)
 						->setType($type)
 						->setRequired($required)
 						->setScope($scope)
 						->setDescription($description)
-						->setIsFromB2B(true)->setActive(true)
+						->setIsFromB2B(true)
+						->setAttributeSet($productAttributeSet)
+						->setActive(true)
 						->save();
 					}
 				}
+			}	
+			if($transStarted === false)
 				Dao::commitTransaction();
-			}
-			catch(Exception $e)
-			{
-				Dao::rollbackTransaction();
-				throw $e;
-			}
+		}
+		catch(Exception $e)
+		{
+			if($transStarted === false)
+				Dao::commitTransaction();
+			throw $e;
 		}
 		return $this;
+	}
+	public function importManufacturers()
+	{
+// 		$attritube = ProductAttribute::getAllByCriteria()
 	}
 }

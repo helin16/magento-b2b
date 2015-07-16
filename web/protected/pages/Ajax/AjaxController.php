@@ -87,8 +87,6 @@ class AjaxController extends TService
   	private function _getSuppliers(Array $params)
   	{
   		$searchTxt = trim(isset($params['searchTxt']) ? $params['searchTxt'] : '');
-  		if($searchTxt === '')
-  			throw new Exception('SearchTxt is needed');
   		$pageSize = (isset($params['pageSize']) && ($pageSize = trim($params['pageSize'])) !== '' ? $pageSize : DaoQuery::DEFAUTL_PAGE_SIZE);
   		$pageNo = (isset($params['pageNo']) && ($pageNo = trim($params['pageNo'])) !== '' ? $pageNo : null);
   		$orderBy = (isset($params['orderBy']) ? $params['orderBy'] : array());
@@ -213,7 +211,7 @@ class AjaxController extends TService
   	private function _getAll($params)
   	{
   		if(!isset($params['entityName']) || ($entityName = trim($params['entityName'])) === '')
-  			throw new Exception('What are we going to get?');
+  			throw new Exception('What are we going to get? (invalid entityName provided)');
   		$searchTxt = trim(isset($params['searchTxt']) ? trim($params['searchTxt']) : '');
   		$searchParams = isset($params['searchParams']) ? $params['searchParams'] : array();
   		$pageNo = isset($params['pageNo']) ? trim($params['pageNo']) : null;

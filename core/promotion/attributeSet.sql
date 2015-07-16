@@ -1,6 +1,7 @@
 DROP TABLE IF EXISTS `productattribute`;
 CREATE TABLE `productattribute` (
 	`id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+	`attributeSetId` int(10) unsigned NULL DEFAULT NULL,
 	`code` varchar(100) NOT NULL DEFAULT '',
 	`type` varchar(100) NOT NULL DEFAULT '',
 	`required` bool NOT NULL DEFAULT 0,
@@ -14,8 +15,10 @@ CREATE TABLE `productattribute` (
 	`updated` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 	`updatedById` int(10) unsigned NOT NULL DEFAULT 0,
 	PRIMARY KEY (`id`)
+	,INDEX (`attributeSetId`)
 	,INDEX (`createdById`)
 	,INDEX (`updatedById`)
+	,INDEX (`attributeSetId`)
 	,INDEX (`isFromB2B`)
 	,INDEX (`mageId`)
 	,UNIQUE INDEX (`code`)
