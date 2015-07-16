@@ -90,6 +90,7 @@ class OrderController extends BPCPageAbstract
 			$where = array(1);
 			$params = array();
 			$innerJoinStrings = array();
+			$sort = isset($serachCriteria['ord.sort']) ? (trim($serachCriteria['ord.sort']) === 'asc' ? 'asc' : 'desc') : 'desc';
 			foreach($serachCriteria as $field => $value)
 			{
 				if((is_array($value) && count($value) === 0) || (is_string($value) && ($value = trim($value)) === ''))
@@ -175,7 +176,7 @@ class OrderController extends BPCPageAbstract
 			if($noSearch === true)
 				throw new Exception("Nothing to search!");
 			$stats = array();
-			$orders = Order::getAllByCriteria(implode(' AND ', $where), $params, true, $pageNo, $pageSize, array('ord.id' => 'desc'), $stats);
+			$orders = Order::getAllByCriteria(implode(' AND ', $where), $params, true, $pageNo, $pageSize, array('ord.id' => $sort), $stats);
 			$results['pageStats'] = $stats;
 			$results['items'] = array();
 			foreach($orders as $order)

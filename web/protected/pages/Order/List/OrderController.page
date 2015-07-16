@@ -55,7 +55,7 @@
 	                   </div>
 	               </div>
 	               <div class='row'>
-	                   <div class="col-sm-6">
+	                   <div class="col-sm-5">
 		                   <div class="form-group form-group-sm input-group">
 								<label class="input-group-addon">Order Date:</label>
 								<div class="form-control input-sm" style="padding:0px;">
@@ -69,7 +69,7 @@
 								</div>
 		                   </div>
 					   </div>
-	                   <div class="col-sm-6">
+	                   <div class="col-sm-5">
 		                   <div class="form-group form-group-sm input-group">
 								<label class="input-group-addon">Inv. Date:</label>
 								<div class="form-control input-sm" style="padding:0px;">
@@ -81,6 +81,15 @@
 										<input class="form-control input-sm datepicker" search_field="invDate_to" placeholder="TO:"/>
 									</div>
 								</div>
+		                   </div>
+					   </div>
+	                   <div class="col-sm-2">
+		                   <div class="form-group form-group-sm input-group">
+								<label class="input-group-addon">Sort</label>
+								<select search_field="ord.sort" class="form-control input-sm">
+	                               <option value="desc">Desc</option>
+	                               <option value="asc">Asc</option>
+	                            </select>
 		                   </div>
 					   </div>
 	               </div>
