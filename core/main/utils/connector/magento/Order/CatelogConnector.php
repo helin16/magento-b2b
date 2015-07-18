@@ -282,6 +282,7 @@ class CatelogConnector extends B2BConnector
 				// handle extra long sku from magento, exceeding mysql sku length limit
 				DaoMap::loadMap('Product');
 				$skuSizeLimit = DaoMap::$map['product']['sku'];
+				echo 'checking sku length, get' . strlen($sku) . ', limit is ' . $skuSizeLimit . "\n"; 
 				if(strlen($sku) > $skuSizeLimit)
 				{
 					echo 'Product ' . $sku . '(id=' . $product->getId() . ', magento Product Creation Time=' . trim($pro->created_at) . ') magento sku length exceed system sku length limit of' . $skuSizeLimit . ', skipped' . "\n";
