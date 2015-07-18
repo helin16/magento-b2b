@@ -197,7 +197,7 @@ class ProductAttribute extends BaseEntityAbstract
 	/**
 	 * Getter for mageId
 	 *
-	 * @return
+	 * @return ProductAttribute
 	 */
 	public function getMageId()
 	{
