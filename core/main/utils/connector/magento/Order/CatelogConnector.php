@@ -279,12 +279,20 @@ class CatelogConnector extends B2BConnector
 				$pro = $this->getProductInfo($sku, $this->getInfoAttributes());
 				if(is_null($pro) || !isset($pro->additional_attributes))
 					continue;
+				// handle extra long sku from magento, exceeding mysql sku length limit
+				DaoMap::loadMap('Product');
+				$skuSizeLimit = DaoMap::$map['product']['sku'];
+				if(strlen($sku) > $skuSizeLimit)
+				{
+					echo 'Product ' . $sku . '(id=' . $product->getId() . ', magento Product Creation Time=' . trim($pro->created_at) . ') magento sku length exceed system sku length limit of' . $skuSizeLimit . ', skipped' . "\n";
+					continue;
+				}
 				if($newOnly === true && ($product = Product::getBySku($sku)) instanceof Product)
 				{
 					echo 'Product ' . $sku . '(id=' . $product->getId() . ', magento Product Creation Time=' . trim($pro->created_at) . ') already exist, skipped' . "\n";
 					continue;
 				}
-
+				
 				$created_at = trim($pro->created_at);
 				$additionAttrs = $this->_getAttributeFromAdditionAttr($pro->additional_attributes);
 				$name = trim($additionAttrs['name']);
