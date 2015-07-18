@@ -327,7 +327,6 @@ class CatelogConnector extends B2BConnector
 						$product->addCategory($category);
 					}
 				}
-				break;
 			}
 			if(($systemSetting = SystemSettings::getByType(SystemSettings::TYPE_LAST_NEW_PRODUCT_PULL)) instanceof SystemSettings)
 				$systemSetting->setValue($created_at)->save();
@@ -453,6 +452,46 @@ class CatelogConnector extends B2BConnector
 						->save();
 					}
 				}
+				Dao::commitTransaction();
+			}
+			catch(Exception $e)
+			{
+				Dao::rollbackTransaction();
+				throw $e;
+			}
+		}
+		return $this;
+	}
+	/**
+	 * Importing the manufactures from magento
+	 *
+	 * @return void|CatelogConnector
+	 */
+	public function importProductManufacturers()
+	{
+		$productAttributes = ProductAttribute::getAllByCriteria('code = ? and isFromB2B = 1 and mageId <> 0', array('manufacturer'), true, 1, 1, array("id"=>"desc"));
+		if(count($productAttributes) === 0)
+			return;
+		$productAttribute = $productAttributes[0];
+		
+		foreach($this->getProductAttributeOptions($productAttribute->getMageId()) as $productAttributeOption)
+		{
+			try
+			{
+				$label = isset($productAttributeOption->label) ? trim($productAttributeOption->label) : '';
+				$value = isset($productAttributeOption->value) ? trim($productAttributeOption->value) : ''; // mageId
+				
+				if($label === '' || $value === '')
+				{
+					echo "ingore product manufacturer options due to empty label or value (" . 'label="' . $label . '", value="' . $value . '")' . "\n";
+					continue;
+				}
+				
+				Dao::beginTransaction();
+				
+				$manufacturer = Manufacturer::create($label, '', true, $value);
+				echo 'Imported manufacture (name="' . $label . '", mageId=' . $value . ')' . "\n";
+				
 				Dao::commitTransaction();
 			}
 			catch(Exception $e)
