@@ -295,7 +295,7 @@ class CatelogConnector extends B2BConnector
 				{
 					$product = Product::create($sku, $name);
 					Log::logging(0, get_class($this), 'Found New Product from Magento with sku="' . trim($sku) . '" and name="' . $name . '", created_at="' . $created_at, self::LOG_TYPE, '', __FUNCTION__);
-					echo 'Found New Product from Magento with sku="' . $sku . '", name="' . $name . '"' . "\n";
+					echo 'Found New Product from Magento with sku="' . trim($sku) . '" and name="' . $name . '", created_at="' . $created_at . "\n";
 				}
 				$asset = (($assetId = trim($product->getFullDescAssetId())) === '' || !($asset = Asset::getAsset($assetId)) instanceof Asset) ? Asset::registerAsset('full_desc_' . $sku, $description, Asset::TYPE_PRODUCT_DEC) : $asset;
 				$product->setName($name)
