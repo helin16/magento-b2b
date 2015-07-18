@@ -275,7 +275,7 @@ class CatelogConnector extends B2BConnector
 					continue;
 				if($newOnly === true && ($product = Product::getBySku($sku)) instanceof Product)
 				{
-					echo 'Product ' . $sku . '(id=' . $product->getId() . ') already exist, skiped' . "\n";
+					echo 'Product ' . $sku . '(id=' . $product->getId() . ', magento Product Creation Time=' . trim($pro->created_at) . ') already exist, skipped' . "\n";
 					continue;
 				}
 
