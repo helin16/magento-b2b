@@ -400,7 +400,7 @@ class CatelogConnector extends B2BConnector
 	 */
 	public function importProductAttributes()
 	{
-		$productAttributeSetIds = Dao::getResultsNative('select distinct pro_att_set.id from ProductAttributeSet pro_att_set where pro_att_set.isFromB2B = 1 and mageId <> 0', array(), PDO::FETCH_ASSOC);
+		$productAttributeSetIds = Dao::getResultsNative('select distinct pro_att_set.id from productattributeset pro_att_set where pro_att_set.isFromB2B = 1 and mageId <> 0', array(), PDO::FETCH_ASSOC);
 		if(count($productAttributeSetIds) === 0)
 			return;
 		
