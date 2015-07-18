@@ -240,7 +240,13 @@ class CatelogConnector extends B2BConnector
 			if(trim($option->value) === trim($mageManuValue))
 				return Manufacturer::create(trim($option->label), trim($option->label), true, trim($mageManuValue));
 		}
-		throw new Exception('No manufacture found with value(=' . $mageManuValue . '!');
+		
+		// if no manufacture assgin to product on magento side, assume unset ('unset' is a proper manufacture option in mangento)
+		$manufacturers = Manufacturer::getAllByCriteria('name = ? and isFromB2B = 1 and mageId <> 0', array('unset'), true, 1, 1, array("id"=>"desc"));
+		if(count($manufacturers) > 0)
+			return $manufacturers[0];
+		
+		throw new Exception('Invalid manufacture found with value(=' . $mageManuValue . '!');
 	}
 	private function _getAttributeFromAdditionAttr($attrArray)
 	{
