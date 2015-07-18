@@ -327,6 +327,7 @@ class CatelogConnector extends B2BConnector
 						$product->addCategory($category);
 					}
 				}
+				break;
 			}
 			if(($systemSetting = SystemSettings::getByType(SystemSettings::TYPE_LAST_NEW_PRODUCT_PULL)) instanceof SystemSettings)
 				$systemSetting->setValue($created_at)->save();
