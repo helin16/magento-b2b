@@ -432,21 +432,23 @@ class CatelogConnector extends B2BConnector
 					$productAttribute = ProductAttribute::getByMageId($mageId);
 					if(!$productAttribute instanceof ProductAttribute)
 					{
-						Log::logging(0, get_class($this), 'found new ProductAttribute from magento(mageId="' . $mageId . '", code="' . $code . '", type="' . $type . '", required="' . $required . '", scope="' . $scope . '")', self::LOG_TYPE, '', __FUNCTION__);
-						echo 'found new ProductAttribute from magento(mageId="' . $mageId . '", code="' . $code . '", type="' . $type . '", required="' . $required . '", scope="' . $scope . '")' . "\n";
-						$productAttribute = ProductAttribute::create($code, $type, $required, $scope, $description, true, $mageId);
+						Log::logging(0, get_class($this), 'found new ProductAttribute from magento(mageId="' . $mageId . '", mageAttributeSetId="' . $productAttributeSet->getMageId() . '", code="' . $code . '", type="' . $type . '", required="' . $required . '", scope="' . $scope . '")', self::LOG_TYPE, '', __FUNCTION__);
+						echo 'found new ProductAttribute from magento(mageId="' . $mageId . '", mageAttributeSetId="' . $productAttributeSet->getMageId() . '", code="' . $code . '", type="' . $type . '", required="' . $required . '", scope="' . $scope . '")' . "\n";
+						$productAttribute = ProductAttribute::create($code, $type, $required, $scope, $description, true, $mageId, $productAttributeSet->getMageId());
 					}
 					else
 					{
-						Log::logging(0, get_class($this), 'found existing ProductAttribute from magento(mageId="' . $mageId . '", code="' .$code . '", ID=' . $productAttributeSet->getId() . ', type="' . $type . '", required="' . $required . '", scope="' . $scope . '")', self::LOG_TYPE, '', __FUNCTION__);
-						echo 'found existing ProductAttribute from magento(mageId="' . $mageId . '", code="' .$code . '", ID=' . $productAttributeSet->getId() . ', type="' . $type . '", required="' . $required . '", scope="' . $scope . '")' . "\n";
+						Log::logging(0, get_class($this), 'found existing ProductAttribute from magento(mageId="' . $mageId . '", mageAttributeSetId="' . $productAttributeSet->getMageId() . '", code="' .$code . '", ID=' . $productAttributeSet->getId() . ', type="' . $type . '", required="' . $required . '", scope="' . $scope . '")', self::LOG_TYPE, '', __FUNCTION__);
+						echo 'found existing ProductAttribute from magento(mageId="' . $mageId . '", mageAttributeSetId="' . $productAttributeSet->getMageId() . '", code="' .$code . '", ID=' . $productAttributeSet->getId() . ', type="' . $type . '", required="' . $required . '", scope="' . $scope . '")' . "\n";
 						$productAttribute
 						->setCode($code)
 						->setType($type)
 						->setRequired($required)
 						->setScope($scope)
 						->setDescription($description)
-						->setIsFromB2B(true)->setActive(true)
+						->setIsFromB2B(true)
+						->setAttributeSetMageId($productAttributeSet->getId())
+						->setActive(true)
 						->save();
 					}
 				}

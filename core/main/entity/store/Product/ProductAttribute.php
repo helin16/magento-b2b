@@ -9,6 +9,12 @@
 class ProductAttribute extends BaseEntityAbstract
 {
 	/**
+	 * The magento attribute set id of this ProductAttribute from magento
+	 *
+	 * @var int
+	 */
+	private $attributeSetMageId;
+	/**
 	 * The code of this ProductAttribute from magento
 	 *
 	 * @var string
@@ -50,6 +56,26 @@ class ProductAttribute extends BaseEntityAbstract
 	 * @var bool
 	 */
 	private $isFromB2B = false;
+	
+	/**
+	 * getter for attributeSetMageId
+	 *
+	 * @return int
+	 */
+	public function getAttributeSetMageId()
+	{
+	    return $this->attributeSetMageId;
+	}
+	/**
+	 * Setter for attributeSetMageId
+	 *
+	 * @return ProductAttribute
+	 */
+	public function setAttributeSetMageId($attributeSetMageId)
+	{
+	    $this->attributeSetMageId = $attributeSetMageId;
+	    return $this;
+	}
 	/**
 	 * getter for code
 	 *
@@ -140,7 +166,7 @@ class ProductAttribute extends BaseEntityAbstract
 	 *
 	 * @param string $value The description
 	 *
-	 * @return Customer
+	 * @return ProductAttribute
 	 */
 	public function setDescription($value)
 	{
@@ -161,7 +187,7 @@ class ProductAttribute extends BaseEntityAbstract
 	 *
 	 * @param unkown $value The isFromB2B
 	 *
-	 * @return Order
+	 * @return ProductAttribute
 	 */
 	public function setIsFromB2B($value)
 	{
@@ -182,7 +208,7 @@ class ProductAttribute extends BaseEntityAbstract
 	 *
 	 * @param int $value The mageId
 	 *
-	 * @return Customer
+	 * @return ProductAttribute
 	 */
 	public function setMageId($value)
 	{
@@ -201,7 +227,7 @@ class ProductAttribute extends BaseEntityAbstract
 	 * @param number $mageId
 	 * @return ProductAttribute
 	 */
-	public static function create($code, $type, $required, $scope, $description = '', $isFromB2B = false, $mageId = 0)
+	public static function create($code, $type, $required, $scope, $description = '', $isFromB2B = false, $mageId = 0, $attributeSetMageId = 0)
 	{
 		$code = trim($code);
 		$type = trim($type);
@@ -224,8 +250,9 @@ class ProductAttribute extends BaseEntityAbstract
 			->setScope($scope)
 			->setDescription(trim($description))
 			->setMageId($mageId)
+			->setAttributeSetMageId($attributeSetMageId)
 			->save();
-		$comments = $class . '(ID=' . $obj->getId() . ')' . (count($objects) > 0 ? 'updated' : 'created') . ($isFromB2B === true ? ' via B2B' : '') . ' with (code=' . $code . ', type="' . $type . '", required="' . $required . '", scope="' . $scope . ', mageId=' . $mageId . ')';
+		$comments = $class . '(ID=' . $obj->getId() . ')' . (count($objects) > 0 ? 'updated' : 'created') . ($isFromB2B === true ? ' via B2B' : '') . ' with (code=' . $code . ', type="' . $type . '", required="' . $required . '", scope="' . $scope . ', mageId=' . $mageId . ', attributeSetMageId=' . $attributeSetMageId . ')';
 		if($isFromB2B === true)
 			Comments::addComments($obj, $comments, Comments::TYPE_SYSTEM);
 		Log::LogEntity($obj, $comments, Log::TYPE_SYSTEM, '', $class . '::' . __FUNCTION__);
@@ -239,6 +266,7 @@ class ProductAttribute extends BaseEntityAbstract
 	{
 		DaoMap::begin($this, 'pro_att');
 	
+		DaoMap::setIntType('attributeSetMageId');
 		DaoMap::setStringType('code', 'varchar', 100);
 		DaoMap::setStringType('type', 'varchar', 100);
 		DaoMap::setBoolType('required');
@@ -249,6 +277,7 @@ class ProductAttribute extends BaseEntityAbstract
 		parent::__loadDaoMap();
 	
 		DaoMap::createUniqueIndex('code');
+		DaoMap::createIndex('attributeSetMageId');
 		DaoMap::createIndex('isFromB2B');
 		DaoMap::createIndex('mageId');
 	
