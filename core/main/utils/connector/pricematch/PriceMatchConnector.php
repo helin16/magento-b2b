@@ -123,13 +123,13 @@ class PriceMatchConnector
 					// set product price
 					if(isset($prices[0]) && $prices[0] instanceof ProductPrice)
 					{
-						if(doubleval($prices[0]) === doubleval($result))
+						if(doubleval($prices[0]->getPrice()) === doubleval($result))
 						{
 							if($this->debug === true)
-								echo 'old price (' . $prices[0] . 'is same as new price (' . $result . ')' . "\n"; 
+								echo 'old price (' . $prices[0]->getPrice() . 'is same as new price (' . $result . ')' . "\n"; 
 						}
 						else {
-							$oldPrice = $prices[0];
+							$oldPrice = $prices[0]->getPrice();
 							$prices[0]->setPrice(doubleval($result))->save()->addLog('PriceMatch change price from $' . $oldPrice . 'to new price $' . $result, Log::TYPE_SYSTEM);
 							if($updateMagento === true)
 								$this->updateMagentoPrice(doubleval($result));

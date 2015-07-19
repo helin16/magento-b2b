@@ -9,11 +9,11 @@
 class ProductAttribute extends BaseEntityAbstract
 {
 	/**
-	 * The AttributeSet of this ProductAttribute
+	 * The magento attribute set id of this ProductAttribute from magento
 	 *
-	 * @var ProductAttributeSet
+	 * @var int
 	 */
-	private $attributeSet;
+	private $attributeSetMageId;
 	/**
 	 * The code of this ProductAttribute from magento
 	 *
@@ -58,23 +58,22 @@ class ProductAttribute extends BaseEntityAbstract
 	private $isFromB2B = false;
 	
 	/**
-	 * getter for attributeSet
+	 * getter for attributeSetMageId
 	 *
-	 * @return ProductAttributeSet
+	 * @return int
 	 */
-	public function getAttributeSet()
+	public function getAttributeSetMageId()
 	{
-		$this->loadManyToOne('attributeSet');
-	    return $this->attributeSet;
+	    return $this->attributeSetMageId;
 	}
 	/**
-	 * Setter for attributeSet
+	 * Setter for attributeSetMageId
 	 *
 	 * @return ProductAttribute
 	 */
-	public function setAttributeSet($attributeSet)
+	public function setAttributeSetMageId($attributeSetMageId)
 	{
-	    $this->attributeSet = $attributeSet;
+	    $this->attributeSetMageId = $attributeSetMageId;
 	    return $this;
 	}
 	/**
@@ -167,7 +166,7 @@ class ProductAttribute extends BaseEntityAbstract
 	 *
 	 * @param string $value The description
 	 *
-	 * @return Customer
+	 * @return ProductAttribute
 	 */
 	public function setDescription($value)
 	{
@@ -188,7 +187,7 @@ class ProductAttribute extends BaseEntityAbstract
 	 *
 	 * @param unkown $value The isFromB2B
 	 *
-	 * @return Order
+	 * @return ProductAttribute
 	 */
 	public function setIsFromB2B($value)
 	{
@@ -198,7 +197,7 @@ class ProductAttribute extends BaseEntityAbstract
 	/**
 	 * Getter for mageId
 	 *
-	 * @return
+	 * @return ProductAttribute
 	 */
 	public function getMageId()
 	{
@@ -209,7 +208,7 @@ class ProductAttribute extends BaseEntityAbstract
 	 *
 	 * @param int $value The mageId
 	 *
-	 * @return Customer
+	 * @return ProductAttribute
 	 */
 	public function setMageId($value)
 	{
@@ -228,10 +227,8 @@ class ProductAttribute extends BaseEntityAbstract
 	 * @param number $mageId
 	 * @return ProductAttribute
 	 */
-	public static function create($code, $type, $required, $scope, $description = '', $isFromB2B = false, $mageId = 0, $attributeSet = null)
+	public static function create($code, $type, $required, $scope, $description = '', $isFromB2B = false, $mageId = 0, $attributeSetMageId = 0)
 	{
-		if($attributeSet !== null && !$attributeSet instanceof ProductAttributeSet)
-			throw new Exception('$attributeSet has to be null or instance of ProductAttributeSet');
 		$code = trim($code);
 		$type = trim($type);
 		$required = (trim($required) === '1' || $required === true || trim($required) === 'true') ? true : false;
@@ -253,9 +250,9 @@ class ProductAttribute extends BaseEntityAbstract
 			->setScope($scope)
 			->setDescription(trim($description))
 			->setMageId($mageId)
-			->setAttributeSet($attributeSet)
+			->setAttributeSetMageId($attributeSetMageId)
 			->save();
-		$comments = $class . '(ID=' . $obj->getId() . ')' . (count($objects) > 0 ? 'updated' : 'created') . ($isFromB2B === true ? ' via B2B' : '') . ' with (code=' . $code . ', type="' . $type . '", required="' . $required . '", scope="' . $scope . ', mageId=' . $mageId . ')';
+		$comments = $class . '(ID=' . $obj->getId() . ')' . (count($objects) > 0 ? 'updated' : 'created') . ($isFromB2B === true ? ' via B2B' : '') . ' with (code=' . $code . ', type="' . $type . '", required="' . $required . '", scope="' . $scope . ', mageId=' . $mageId . ', attributeSetMageId=' . $attributeSetMageId . ')';
 		if($isFromB2B === true)
 			Comments::addComments($obj, $comments, Comments::TYPE_SYSTEM);
 		Log::LogEntity($obj, $comments, Log::TYPE_SYSTEM, '', $class . '::' . __FUNCTION__);
@@ -268,8 +265,8 @@ class ProductAttribute extends BaseEntityAbstract
 	public function __loadDaoMap()
 	{
 		DaoMap::begin($this, 'pro_att');
-		
-		DaoMap::setManyToOne('attributeSet', 'ProductAttributeSet', 'pro_att_pro_att_set', true);
+	
+		DaoMap::setIntType('attributeSetMageId');
 		DaoMap::setStringType('code', 'varchar', 100);
 		DaoMap::setStringType('type', 'varchar', 100);
 		DaoMap::setBoolType('required');
@@ -280,7 +277,7 @@ class ProductAttribute extends BaseEntityAbstract
 		parent::__loadDaoMap();
 	
 		DaoMap::createUniqueIndex('code');
-		DaoMap::createIndex('attributeSet');
+		DaoMap::createIndex('attributeSetMageId');
 		DaoMap::createIndex('isFromB2B');
 		DaoMap::createIndex('mageId');
 	
