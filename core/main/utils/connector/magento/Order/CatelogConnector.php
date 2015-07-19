@@ -229,6 +229,12 @@ class CatelogConnector extends B2BConnector
 		$attributes->additional_attributes = $attributeName;
 		return $attributes;
 	}
+	/**
+	 * 
+	 * @param int $mageManuValue
+	 * @throws Exception
+	 * @return Manufacturer
+	 */
 	public function getManufacturerName($mageManuValue)
 	{
 		$options = $this->getProductAttributeOptions('manufacturer');
@@ -324,7 +330,7 @@ class CatelogConnector extends B2BConnector
 					echo "\t" . 'Short Description: "' . $short_description . '"' . "\n"; 
 					echo "\t" . 'Full Description: "' . $description . '"' . "\n"; 
 					echo "\t" . 'Status: "' . ProductStatus::get($statusId) . '"' . "\n"; 
-					echo "\t" . 'Manufacturer: "' . $this->getManufacturerName(trim($additionAttrs['manufacturer'])) . '"' . "\n"; 
+					echo "\t" . 'Manufacturer: id=' . $this->getManufacturerName(trim($additionAttrs['manufacturer']))->getId() . ', name="' . $this->getManufacturerName(trim($additionAttrs['manufacturer']))->getName() . '"' . "\n"; 
 					echo "\t" . 'Price: "' . $price . '"' . "\n"; 
 					echo "\t" . 'Weight: "' . $weight . '"' . "\n"; 
 				}
