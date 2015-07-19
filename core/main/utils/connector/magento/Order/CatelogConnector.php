@@ -310,6 +310,18 @@ class CatelogConnector extends B2BConnector
 					$product = Product::create($sku, $name);
 					Log::logging(0, get_class($this), 'Found New Product from Magento with sku="' . trim($sku) . '" and name="' . $name . '", created_at="' . $created_at, self::LOG_TYPE, '', __FUNCTION__);
 					echo 'Found New Product from Magento with sku="' . trim($sku) . '" and name="' . $name . '", created_at="' . $created_at . "\n";
+				} elseif(Product::getBySku($sku) instanceof Product) // update old product description 
+				{
+					$product = Product::getBySku($sku);
+					echo 'Found Existing Product from Magento with sku="' . trim($sku) . '" and name="' . $name . '", created_at="' . $created_at . '"' . "\n";
+					echo "\t" . 'Name: "' . $name . '"' . "\n"; 
+					echo "\t" . 'MageId: "' . $mageId . '"' . "\n"; 
+					echo "\t" . 'Short Description: "' . $short_description . '"' . "\n"; 
+					echo "\t" . 'Full Description: "' . $description . '"' . "\n"; 
+					echo "\t" . 'Status: "' . ProductStatus::get($statusId) . '"' . "\n"; 
+					echo "\t" . 'Manufacturer: "' . $this->getManufacturerName(trim($additionAttrs['manufacturer'])) . '"' . "\n"; 
+					echo "\t" . 'Price: "' . $price . '"' . "\n"; 
+					echo "\t" . 'Weight: "' . $weight . '"' . "\n"; 
 				}
 				$asset = (($assetId = trim($product->getFullDescAssetId())) === '' || !($asset = Asset::getAsset($assetId)) instanceof Asset) ? Asset::registerAsset('full_desc_' . $sku, $description, Asset::TYPE_PRODUCT_DEC) : $asset;
 				$product->setName($name)
@@ -324,7 +336,7 @@ class CatelogConnector extends B2BConnector
 					->clearAllPrice()
 					->addPrice(ProductPriceType::get(ProductPriceType::ID_RRP), $price)
 					->addInfo(ProductInfoType::ID_WEIGHT, $weight);
-
+				
 				if($specialPrice !== '')
 					$product->addPrice(ProductPriceType::get(ProductPriceType::ID_CASUAL_SPECIAL), $specialPrice, $specialPrice_From, $specialPrice_To);
 
