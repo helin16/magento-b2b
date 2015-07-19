@@ -9,7 +9,7 @@ class CatelogConnector extends B2BConnector
 						array('key'=>'created_at','value'=>array('key' =>'from','value' => $date))
 				)
 		);
-		return $this->_connect()->catalogProductList ($this->_session, $params);
+		return $this->_connect()->catalogProductList($this->_session, $params);
 	}
 	/**
 	 * Getting the attribute information
