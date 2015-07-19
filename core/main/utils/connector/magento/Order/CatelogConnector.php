@@ -268,6 +268,11 @@ class CatelogConnector extends B2BConnector
 		if($setFromDate === true)
 			$fromDate = $systemSetting->getValue();
 		$products = $this->getProductList($fromDate);
+		if(count($products) === 0)
+		{
+			echo 'nothing from magento. exitting' . "\n";
+			return $this;
+		}
 		try
 		{
 			$transStarted = false;
