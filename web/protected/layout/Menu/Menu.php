@@ -102,7 +102,7 @@ class Menu extends TTemplateControl
 					'systemsettings' => array('url' => '/systemsettings.html', 'name' => 'Settings', 'icon' => '<span class="glyphicon glyphicon-cog"></span>')
 			);
 		}
-		if(AccessControl::canAccessUsersPage(Core::getRole()) )
+		if(AccessControl::canAccessDevelopingPage(Core::getRole()) )
 		{
 			$array['Testing'] = array(
 					'icon' => '<span class="fa fa-connectdevelop"></span>',

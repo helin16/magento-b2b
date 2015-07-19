@@ -218,4 +218,15 @@ Abstract class AccessControl
 		}
 		return false;
 	}
+	public static function canAccessDevelopingPage(Role $role)
+	{
+		switch($role->getId())
+		{
+			case Role::ID_SYSTEM_ADMIN:
+				{
+					return true;
+				}
+		}
+		return false;
+	}
 }
