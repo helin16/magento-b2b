@@ -71,12 +71,12 @@ SerialBulkUploaderJs.prototype = Object.extend(new BPCPageJs(), {
 								tmp.serials.each(function(item){
 									tmp.rawData = tmp.me._collectFormData(tmp.confirmBtn.up('.bulkSerialPanel'), 'serial-info');
 									if(tmp.rawData !== null) {
-										tmp.rawData.product = tmp.me.product;
 										tmp.rawData.qty = 1;
 										tmp.rawData.serialNo = item;
 										if(tmp.rawData.comments === '')
 											tmp.rawData.comments = 'BULK IMPORTED';
 										tmp.data.push(tmp.rawData);
+										tmp.data.product = tmp.me.product;
 									}
 								});
 								if(tmp.me._collectFormData(tmp.confirmBtn.up('.bulkSerialPanel'), 'serial-info') !== null)

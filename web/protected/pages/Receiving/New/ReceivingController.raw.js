@@ -559,15 +559,17 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 
 				jQuery('#' + tmp.me.modalId).on('hide.bs.modal', function(e){
 						tmp.serials = $(this).down('.bulkSerialPanel').retrieve('data');
+						if(tmp.serials.length === 0)
+							return;
 						tmp.existingSerials = [];
-						$$('.item_row[productid="' + product.id + '"]').first().getElementsBySelector('[scanned-item="serialNo"]').each(function(item){
-							if(jQuery.isNumeric(item.value))
+						$$('.item_row[productid="' + tmp.serials.product.id + '"]').first().getElementsBySelector('[scanned-item="serialNo"]').each(function(item){
+							if(item.value !== '')
 								tmp.existingSerials.push(item.value);
 						});
 						if(tmp.serials && tmp.serials.length > 0) {
 							tmp.serials.each(function(item){
 								if(parseInt(tmp.existingSerials.indexOf(item.serialNo)) < 0) {
-									tmp.scanTableRow = $$('.item_row[productid="' + item.product.id + '"]').first();
+									tmp.scanTableRow = $$('.item_row[productid="' + tmp.serials.product.id + '"]').first();
 	
 									tmp.scanTableRow.down('[scanned-item="qty"]').setValue(item.qty);
 									tmp.scanTableRow.down('[scanned-item="unitPrice"]').setValue(item.unitPrice);
