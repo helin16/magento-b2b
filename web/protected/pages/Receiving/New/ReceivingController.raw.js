@@ -550,7 +550,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		// bulk serial input
 		tmp.bulkSerialInputBtn = new Element('a').setStyle('cursor: pointer; text-decoration: underline; margin-left: 5px;').update('Bulk Import')
 			.observe('click', function(e){
-				tmp.me.serialUploader = new SerialBulkUploaderJs(tmp.me);
+				tmp.me.serialUploader = new SerialBulkUploaderJs(tmp.me, product);
 				tmp.me.showModalBox('Bulk Import Serial Numbers', tmp.serialUploaderPanel = tmp.me.serialUploader.getInputPanel());
 				tmp.serialUploaderPanel.down('.confimBtn').observe('click', function(){
 					if($(this).up('.bulkSerialPanel').retrieve('data') && $(this).up('.bulkSerialPanel').retrieve('data').length !== null)
@@ -567,7 +567,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 						if(tmp.serials && tmp.serials.length > 0) {
 							tmp.serials.each(function(item){
 								if(parseInt(tmp.existingSerials.indexOf(item.serialNo)) < 0) {
-									tmp.scanTableRow = $$('.item_row[productid="' + product.id + '"]').first();
+									tmp.scanTableRow = $$('.item_row[productid="' + item.product.id + '"]').first();
 	
 									tmp.scanTableRow.down('[scanned-item="qty"]').setValue(item.qty);
 									tmp.scanTableRow.down('[scanned-item="unitPrice"]').setValue(item.unitPrice);
@@ -579,7 +579,9 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 								}
 							});
 						}
+						jQuery('[role="tooltip"]').tooltip('hide'); // hide all jQuery tooltips
 					});
+				tmp.me.product = null;
 			});
 		tmp.me.scanTableSerialNoTitle = new Element('span', {'class': 'scanTableSerialNoTitle'}).update('Serial No.').insert({'bottom': tmp.bulkSerialInputBtn});
 
@@ -1135,4 +1137,3 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		}
 	}
 });
-

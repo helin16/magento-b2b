@@ -2,15 +2,15 @@ var SerialBulkUploaderJs = new Class.create();
 SerialBulkUploaderJs.prototype = Object.extend(new BPCPageJs(), {
 	_pageJs: null
 
-	,initialize: function(_pageJs) {
+	,initialize: function(_pageJs, product) {
 		this._pageJs = _pageJs;
+		this.product = product;
 	}
 
 	,getInputPanel: function() {
 		var tmp = {};
 		tmp.me = this;
 		tmp.serials = [];
-		
 		tmp.newDiv = new Element('div', {'class': 'bulkSerialPanel'})
 			.store('data', null)
 			.insert({'bottom': new Element('div', {'class': 'row'})
@@ -71,6 +71,7 @@ SerialBulkUploaderJs.prototype = Object.extend(new BPCPageJs(), {
 								tmp.serials.each(function(item){
 									tmp.rawData = tmp.me._collectFormData(tmp.confirmBtn.up('.bulkSerialPanel'), 'serial-info');
 									if(tmp.rawData !== null) {
+										tmp.rawData.product = tmp.me.product;
 										tmp.rawData.qty = 1;
 										tmp.rawData.serialNo = item;
 										if(tmp.rawData.comments === '')
