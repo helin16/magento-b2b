@@ -1373,7 +1373,7 @@ class Product extends InfoEntityAbstract
 	 *
 	 * @param string $sku The sku of the product
 	 *
-	 * @return Ambigous <NULL, BaseEntityAbstract>
+	 * @return Ambigous <NULL, Product>
 	 */
 	public static function getBySku($sku)
 	{
