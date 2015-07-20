@@ -1394,7 +1394,7 @@ class Product extends InfoEntityAbstract
 	 * @param string $shortDescr    	The short description of the product
 	 * @param string $fullDescr     	The assetId of the full description asset of the product
 	 *
-	 * @return Ambigous <Product, Ambigous, NULL, BaseEntityAbstract>
+	 * @return Product
 	 */
 	public static function create($sku, $name, $mageProductId = '', $stockOnHand = null, $stockOnOrder = null, $isFromB2B = false, $shortDescr = '', $fullDescr = '', Manufacturer $manufacturer = null, $assetAccNo = null, $revenueAccNo = null, $costAccNo = null, $stockMinLevel = null, $stockReorderLevel = null)
 	{

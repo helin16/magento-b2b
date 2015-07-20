@@ -195,7 +195,7 @@
 
 		<service id="asset" class="Application.pages.Asset.AssetController"></service>
 		<service id="soap" class="System.Web.Services.TSoapService">
-			<soap id="webauth" provider="Application.classes.Soap.WebAuth" />
+			<soap id="product" provider="Application.classes.Soap.APIProduct" />
 		</service>
 	</services>
 	<!-- application parameters -->
