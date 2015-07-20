@@ -390,7 +390,7 @@ class Product extends InfoEntityAbstract
 	/**
 	 * Getter for stockOnHand
 	 *
-	 * @return
+	 * @return int
 	 */
 	public function getStockOnHand()
 	{
@@ -411,7 +411,7 @@ class Product extends InfoEntityAbstract
 	/**
 	 * Getter for stockOnPO
 	 *
-	 * @return
+	 * @return int
 	 */
 	public function getStockOnPO()
 	{
@@ -432,7 +432,7 @@ class Product extends InfoEntityAbstract
 	/**
 	 * Getter for stockInParts
 	 *
-	 * @return
+	 * @return int
 	 */
 	public function getStockInParts()
 	{
@@ -453,7 +453,7 @@ class Product extends InfoEntityAbstract
 	/**
 	 * Getter for stockInRMA
 	 *
-	 * @return
+	 * @return int
 	 */
 	public function getStockInRMA()
 	{
@@ -1373,7 +1373,7 @@ class Product extends InfoEntityAbstract
 	 *
 	 * @param string $sku The sku of the product
 	 *
-	 * @return Ambigous <NULL, Product>
+	 * @return null|Product
 	 */
 	public static function getBySku($sku)
 	{
