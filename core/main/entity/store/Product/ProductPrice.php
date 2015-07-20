@@ -165,7 +165,8 @@ class ProductPrice extends BaseEntityAbstract
 	public static function create(Product $product, ProductPriceType $type, $price, $start = null, $end = null)
 	{
 		$class = __CLASS__;
-		$obj = new $class();
+		$exists = self::getPrices($product, $type, '', '', '', '', 1, 1, array("id"=>"desc"));
+		$obj = count($exists) > 0 ? $exists[0] : new $class();
 		$obj->setProduct($product)
 			->setType($type)
 			->setPrice(trim($price));

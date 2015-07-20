@@ -1,6 +1,6 @@
 <?php
 /**
- * Entity for Manufacturer
+ * Entity for ProductAttributeSet
  *
  * @package    Core
  * @subpackage Entity

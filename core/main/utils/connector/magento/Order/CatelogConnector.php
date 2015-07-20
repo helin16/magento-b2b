@@ -9,7 +9,7 @@ class CatelogConnector extends B2BConnector
 						array('key'=>'created_at','value'=>array('key' =>'from','value' => $date))
 				)
 		);
-		return $this->_connect()->catalogProductList ($this->_session, $params);
+		return $this->_connect()->catalogProductList($this->_session, $params);
 	}
 	/**
 	 * Getting the attribute information
@@ -229,6 +229,12 @@ class CatelogConnector extends B2BConnector
 		$attributes->additional_attributes = $attributeName;
 		return $attributes;
 	}
+	/**
+	 * 
+	 * @param int $mageManuValue
+	 * @throws Exception
+	 * @return Manufacturer
+	 */
 	public function getManufacturerName($mageManuValue)
 	{
 		$options = $this->getProductAttributeOptions('manufacturer');
@@ -268,6 +274,11 @@ class CatelogConnector extends B2BConnector
 		if($setFromDate === true)
 			$fromDate = $systemSetting->getValue();
 		$products = $this->getProductList($fromDate);
+		if(count($products) === 0)
+		{
+			echo 'nothing from magento. exitting' . "\n";
+			return $this;
+		}
 		try
 		{
 			$transStarted = false;
@@ -310,6 +321,18 @@ class CatelogConnector extends B2BConnector
 					$product = Product::create($sku, $name);
 					Log::logging(0, get_class($this), 'Found New Product from Magento with sku="' . trim($sku) . '" and name="' . $name . '", created_at="' . $created_at, self::LOG_TYPE, '', __FUNCTION__);
 					echo 'Found New Product from Magento with sku="' . trim($sku) . '" and name="' . $name . '", created_at="' . $created_at . "\n";
+				} elseif(Product::getBySku($sku) instanceof Product) // update old product description 
+				{
+					$product = Product::getBySku($sku);
+					echo 'Found Existing Product from Magento with sku="' . trim($sku) . '" and name="' . $name . '", created_at="' . $created_at . '"' . "\n";
+					echo "\t" . 'Name: "' . $name . '"' . "\n"; 
+					echo "\t" . 'MageId: "' . $mageId . '"' . "\n"; 
+					echo "\t" . 'Short Description: "' . $short_description . '"' . "\n"; 
+					echo "\t" . 'Full Description: "' . $description . '"' . "\n"; 
+					echo "\t" . 'Status: "' . ProductStatus::get($statusId) . '"' . "\n"; 
+					echo "\t" . 'Manufacturer: id=' . $this->getManufacturerName(trim($additionAttrs['manufacturer']))->getId() . ', name="' . $this->getManufacturerName(trim($additionAttrs['manufacturer']))->getName() . '"' . "\n"; 
+					echo "\t" . 'Price: "' . $price . '"' . "\n"; 
+					echo "\t" . 'Weight: "' . $weight . '"' . "\n"; 
 				}
 				$asset = (($assetId = trim($product->getFullDescAssetId())) === '' || !($asset = Asset::getAsset($assetId)) instanceof Asset) ? Asset::registerAsset('full_desc_' . $sku, $description, Asset::TYPE_PRODUCT_DEC) : $asset;
 				$product->setName($name)
@@ -324,7 +347,7 @@ class CatelogConnector extends B2BConnector
 					->clearAllPrice()
 					->addPrice(ProductPriceType::get(ProductPriceType::ID_RRP), $price)
 					->addInfo(ProductInfoType::ID_WEIGHT, $weight);
-
+				
 				if($specialPrice !== '')
 					$product->addPrice(ProductPriceType::get(ProductPriceType::ID_CASUAL_SPECIAL), $specialPrice, $specialPrice_From, $specialPrice_To);
 
@@ -344,7 +367,6 @@ class CatelogConnector extends B2BConnector
 			}
 			if(($systemSetting = SystemSettings::getByType(SystemSettings::TYPE_LAST_NEW_PRODUCT_PULL)) instanceof SystemSettings)
 				$systemSetting->setValue($created_at)->save();
-			
 			if($transStarted === false)
 				Dao::commitTransaction();
 		}
@@ -365,16 +387,15 @@ class CatelogConnector extends B2BConnector
 	{
 		$attributeSets = $this->getProductAttributeSetList();
 		Log::logging(0, get_class($this), 'getting AttributeSets from magento', self::LOG_TYPE, '', __FUNCTION__);
-		echo 'getting AttributeSets from magento';
+		echo 'getting AttributeSets from magento' . "\n";
 		if(count($attributeSets) === 0)
 			return;
-	
-		foreach($attributeSets as $attributeSet)
+		try
 		{
-			try
+			$transStarted = false;
+			try {Dao::beginTransaction();} catch(Exception $e) {$transStarted = true;}
+			foreach($attributeSets as $attributeSet)
 			{
-				Dao::beginTransaction();
-	
 				$mageId = trim($attributeSet->set_id);
 				$name = trim($attributeSet->name);
 				$description = isset($category->description) ? trim($category->description) : $name;
@@ -396,14 +417,14 @@ class CatelogConnector extends B2BConnector
 				}
 				$productAttributeSet->setActive(true)
 				->save();
-	
+			}
+			if($transStarted === false)
 				Dao::commitTransaction();
-			}
-			catch(Exception $e)
-			{
-				Dao::rollbackTransaction();
-				throw $e;
-			}
+		}
+		catch(Exception $e)
+		{
+			Dao::rollbackTransaction();
+			throw $e;
 		}
 		return $this;
 	}
@@ -418,11 +439,13 @@ class CatelogConnector extends B2BConnector
 		if(count($productAttributeSetIds) === 0)
 			return;
 		
-		foreach($productAttributeSetIds as $productAttributeSetId)
+		try
 		{
-			try
+			$transStarted = false;
+			try {Dao::beginTransaction();} catch(Exception $e) {$transStarted = true;}
+			
+			foreach($productAttributeSetIds as $productAttributeSetId)
 			{
-				Dao::beginTransaction();
 				$productAttributeSetId = $productAttributeSetId['id'];
 				$productAttributeSet = ProductAttributeSet::get($productAttributeSetId);
 				if(!$productAttributeSet instanceof ProductAttributeSet)
@@ -444,7 +467,7 @@ class CatelogConnector extends B2BConnector
 					Log::logging(0, get_class($this), 'getting productAttribute from magento (mageId="' . $mageId . '")', self::LOG_TYPE, '', __FUNCTION__);
 					
 					$productAttribute = ProductAttribute::getByMageId($mageId);
-					if(!$productAttribute instanceof ProductAttribute)
+						if(!$productAttribute instanceof ProductAttribute)
 					{
 						Log::logging(0, get_class($this), 'found new ProductAttribute from magento(mageId="' . $mageId . '", mageAttributeSetId="' . $productAttributeSet->getMageId() . '", code="' . $code . '", type="' . $type . '", required="' . $required . '", scope="' . $scope . '")', self::LOG_TYPE, '', __FUNCTION__);
 						echo 'found new ProductAttribute from magento(mageId="' . $mageId . '", mageAttributeSetId="' . $productAttributeSet->getMageId() . '", code="' . $code . '", type="' . $type . '", required="' . $required . '", scope="' . $scope . '")' . "\n";
@@ -466,21 +489,18 @@ class CatelogConnector extends B2BConnector
 						->save();
 					}
 				}
+			}	
+			if($transStarted === false)
 				Dao::commitTransaction();
-			}
-			catch(Exception $e)
-			{
-				Dao::rollbackTransaction();
-				throw $e;
-			}
+		}
+		catch(Exception $e)
+		{
+			if($transStarted === false)
+				Dao::commitTransaction();
+			throw $e;
 		}
 		return $this;
 	}
-	/**
-	 * Importing the manufactures from magento
-	 *
-	 * @return void|CatelogConnector
-	 */
 	public function importProductManufacturers()
 	{
 		$productAttributes = ProductAttribute::getAllByCriteria('code = ? and isFromB2B = 1 and mageId <> 0', array('manufacturer'), true, 1, 1, array("id"=>"desc"));
@@ -488,9 +508,11 @@ class CatelogConnector extends B2BConnector
 			return;
 		$productAttribute = $productAttributes[0];
 		
-		foreach($this->getProductAttributeOptions($productAttribute->getMageId()) as $productAttributeOption)
+		try
 		{
-			try
+			$transStarted = false;
+				try {Dao::beginTransaction();} catch(Exception $e) {$transStarted = true;}
+			foreach($this->getProductAttributeOptions($productAttribute->getMageId()) as $productAttributeOption)
 			{
 				$label = isset($productAttributeOption->label) ? trim($productAttributeOption->label) : '';
 				$value = isset($productAttributeOption->value) ? trim($productAttributeOption->value) : ''; // mageId
@@ -501,18 +523,18 @@ class CatelogConnector extends B2BConnector
 					continue;
 				}
 				
-				Dao::beginTransaction();
-				
 				$manufacturer = Manufacturer::create($label, '', true, $value);
 				echo 'Imported manufacture (name="' . $label . '", mageId=' . $value . ')' . "\n";
 				
+			}
+			if($transStarted === false)
 				Dao::commitTransaction();
-			}
-			catch(Exception $e)
-			{
-				Dao::rollbackTransaction();
-				throw $e;
-			}
+		}
+		catch(Exception $e)
+		{
+			if($transStarted === false)
+				Dao::commitTransaction();
+			throw $e;
 		}
 		return $this;
 	}
