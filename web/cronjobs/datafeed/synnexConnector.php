@@ -52,15 +52,151 @@ class synnexConnector
 			}
 		}		
 	}
+	private function getPrice($price, $data = null)
+	{
+		$price = doubleval(trim($price));
+		if($price === doubleval(0))
+		{
+			echo 'zero price given';
+			
+		}
+	}
 	private function filterByBrand($brand)
 	{
-		$brand = trim($brand);
+		$brand = strtolower(trim($brand));
 		switch ($brand)
 		{
-			case 'xxx':
-				echo 'xxx';
+			case 'access':
+				return false;
+				break;
+			case 'acer':
+				return true;
+				break;
+			case 'adaptec':
+				return true;
+				break;
+			case 'adata':
+				return true;
+				break;
+			case 'aiptek':
+				return true;
+				break;
+			case 'apple':
+				return false;
+				break;
+			case 'asus':
+				return true;
+				break;
+			case 'belkin':
+				return true;
+				break;
+			case 'brother':
+				return true;
+				break;
+			case 'checkpoint':
+				return true;
+				break;
+			case 'corsair':
+				return true;
+				break;
+			case 'dlink':
+				return true;
+				break;
+			case 'eaton':
+				return true;
+				break;
+			case 'epson':
+				return true;
+				break;
+			case 'fuji-xerox':
+				return true;
+				break;
+			case 'getac':
+				return false;
+				break;
+			case 'gigabyte':
+				return true;
+				break;
+			case 'hp':
+				return true;
+				break;
+			case 'hpe':
+				return true;
+				break;
+			case 'intel':
+				return true;
+				break;
+			case 'kingston':
+				return true;
+				break;
+			case 'laser':
+				return true;
+				break;
+			case 'lenovo':
+				return true;
+				break;
+			case 'lexmark':
+				return true;
+				break;
+			case 'lg':
+				return true;
+				break;
+			case 'lite-on':
+				return true;
+				break;
+			case 'logitech':
+				return true;
+				break;
+			case 'microsoft':
+				return true;
+				break;
+			case 'netgear':
+				return true;
+				break;
+			case 'ocz':
+				return true;
+				break;
+			case 'plextor':
+				return true;
+				break;
+			case 'rapoo':
+				return false;
+				break;
+			case 'samsung':
+				return true;
+				break;
+			case 'sandisk':
+				return true;
+				break;
+			case 'seagate':
+				return true;
+				break;
+			case 'sony':
+				return false;
+				break;
+			case 'steel series':
+				return true;
+				break;
+			case 'thecus':
+				return true;
+				break;
+			case 'toshiba':
+				return true;
+				break;
+			case 'transcend':
+				return true;
+				break;
+			case 'trendmicro':
+				return true;
+				break;
+			case 'viewsonic':
+				return true;
+				break;
+			case 'western digital':
+				return true;
 				break;
 			default:
+				echo 'brand "' . $brand . 'not found' . "\n";
 				return false;
 		}
 	}
