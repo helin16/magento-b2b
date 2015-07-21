@@ -11,7 +11,8 @@ try {
 	$feed_from_web = dirname(__FILE__) . '/synnex_export_price.txt';
 	$feed_from_ftp = dirname(__FILE__) . "/synnex_feed_ftp_2015-07-18.csv";
 	
-	$connector = synnexConnector::run($feed_from_magento, $feed_from_web, $feed_from_ftp, $debug);
+// 	$connector = synnexConnector::run($feed_from_magento, $feed_from_web, $feed_from_ftp, $debug);
+	$connector = synnexConnector::getBrandCategoryPairs($feed_from_magento, $feed_from_web, $feed_from_ftp, $debug);
 	
 } catch (Exception $e) {
 	echo "\n" . $e->getMessage() . "\n" . $e->getTraceAsString() . "\n";
