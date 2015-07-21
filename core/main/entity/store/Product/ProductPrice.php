@@ -160,7 +160,7 @@ class ProductPrice extends BaseEntityAbstract
 	 * @param string $name        The name of the productpricetype
 	 * @param string $description The decription of the productpricetype
 	 * 
-	 * @return Ambigous <Product, Ambigous, NULL, BaseEntityAbstract>
+	 * @return ProductPrice
 	 */
 	public static function create(Product $product, ProductPriceType $type, $price, $start = null, $end = null)
 	{

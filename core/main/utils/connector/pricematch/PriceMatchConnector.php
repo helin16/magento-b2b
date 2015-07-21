@@ -46,6 +46,12 @@ class PriceMatchConnector
 		$rule = ProductPriceMatchRule::getByProduct($product);
 		$prices = ProductPrice::getPrices($product, ProductPriceType::get(ProductPriceType::ID_RRP));
 		$myPrice = count($prices)===0 ? 0 : $prices[0]->getPrice();
+		if(count($prices) === 0)
+		{
+			$myPrice = ProductPrice::create($product, ProductPriceType::get(ProductPriceType::ID_RRP), 0);
+			$myPrice = $myPrice->getPrice();
+		}
+		else $myPrice = $prices[0]->getPrice();
 		if(!$min instanceof PriceMatchMin)
 			$min = PriceMatchMin::create($this->sku);
 		if($rule instanceof ProductPriceMatchRule)
