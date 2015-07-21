@@ -34,6 +34,18 @@ class PriceMatchConnector
 		$class->debug = $debug === true ? true : false;
 		return $class->_getNewPrice($updateMagento);
 	}
+	private function _getMagentoProductPrice($sku)
+	{
+		if(trim($sku) === '')
+			return null;
+		$mageData = CatelogConnector::getConnector(B2BConnector::CONNECTOR_TYPE_CATELOG,
+				SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_WSDL),
+				SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_USER),
+				SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_KEY)
+		)
+		->getProductInfo(trim($sku), array('price'));
+		return $mageData === null ? null : $mageData->price;
+	}
 	private function _getNewPrice($updateMagento)
 	{
 		$result = null;
@@ -45,13 +57,15 @@ class PriceMatchConnector
 		$min = PriceMatchMin::getBySku($sku);
 		$rule = ProductPriceMatchRule::getByProduct($product);
 		$prices = ProductPrice::getPrices($product, ProductPriceType::get(ProductPriceType::ID_RRP));
-		$myPrice = count($prices)===0 ? 0 : $prices[0]->getPrice();
 		if(count($prices) === 0)
 		{
-			$myPrice = ProductPrice::create($product, ProductPriceType::get(ProductPriceType::ID_RRP), 0);
-			$myPrice = $myPrice->getPrice();
+			$newPrice = ProductPrice::create($product, ProductPriceType::get(ProductPriceType::ID_RRP), 0);
+			$prices = array($newPrice);
 		}
-		else $myPrice = $prices[0]->getPrice();
+		if(($magePrice = $this->_getMagentoProductPrice($sku)) !== null)
+			$prices[0]->setPrice($magePrice)->save();
+		$myPrice = $prices[0]->getPrice();
+		
 		if(!$min instanceof PriceMatchMin)
 			$min = PriceMatchMin::create($this->sku);
 		if($rule instanceof ProductPriceMatchRule)
