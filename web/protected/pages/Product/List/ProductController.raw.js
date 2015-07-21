@@ -237,10 +237,9 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 				);
 		return tmp.me;
 	}
-	,_getPriceMatchCompanySelect2: function(el, open , product) {
+	,_getPriceMatchCompanySelect2: function(el, product) {
 		var tmp = {};
 		tmp.me = this;
-		tmp.open = (open || null);
 		tmp.product = (product || null);
 		
 		tmp.selectBox = jQuery(el).select2({
@@ -265,8 +264,6 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 			,cache: true
 			,escapeMarkup: function (markup) { return markup; } // let our custom formatter work
 		});
-		if(tmp.open === true)
-			tmp.selectBox.select2('open');
 		if(tmp.product !== null && tmp.product.priceMatchRule && tmp.product.priceMatchRule.id && tmp.product.priceMatchRule.priceMatchCompany && tmp.product.priceMatchRule.priceMatchCompany.id) {
 			tmp.selectBox.select2('data', {'id': tmp.product.priceMatchRule.priceMatchCompany.id, 'text': tmp.product.priceMatchRule.priceMatchCompany.companyName, 'data': tmp.product.priceMatchRule.priceMatchCompany});
 		}
