@@ -106,7 +106,7 @@ class PriceMatchConnector
 				}
 				
 				// check if in range
-				if($myPrice !== 0 && ($price_from === null || $myPrice >= $price_from) && ($price_to === null ||$myPrice <= $price_to))
+				if(($price_from === null || $myPrice >= $price_from) && ($price_to === null ||$myPrice <= $price_to))
 				{
 					$result = $base_price;
 					
@@ -123,17 +123,10 @@ class PriceMatchConnector
 					// set product price
 					if(isset($prices[0]) && $prices[0] instanceof ProductPrice)
 					{
-						if(doubleval($prices[0]->getPrice()) === doubleval($result))
-						{
-							if($this->debug === true)
-								echo 'old price (' . $prices[0]->getPrice() . 'is same as new price (' . $result . ')' . "\n"; 
-						}
-						else {
-							$oldPrice = $prices[0]->getPrice();
-							$prices[0]->setPrice(doubleval($result))->save()->addLog('PriceMatch change price from $' . $oldPrice . 'to new price $' . $result, Log::TYPE_SYSTEM);
-							if($updateMagento === true)
-								$this->updateMagentoPrice(doubleval($result));
-						}
+						$oldPrice = $prices[0]->getPrice();
+						$prices[0]->setPrice(doubleval($result))->save()->addLog('PriceMatch change price from $' . $oldPrice . 'to new price $' . $result, Log::TYPE_SYSTEM);
+						if($updateMagento === true)
+							$this->updateMagentoPrice(doubleval($result));
 					}
 				}
 			}
