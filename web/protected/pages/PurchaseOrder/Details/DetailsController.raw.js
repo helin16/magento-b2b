@@ -381,7 +381,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		tmp.me = this;
 		tmp.isTitle = (isTitleRow || false);
 		tmp.tag = (tmp.isTitle === true ? 'th' : 'td');
-		tmp.row = new Element('tr', {'class': (tmp.isTitle === true ? '' : 'item_row order-item-row')})
+		tmp.row = new Element('tr', {'class': (tmp.isTitle === true ? '' : 'item_row order-item-row'), 'item-id': orderItem.id ? orderItem.id : ''})
 			.store('data', orderItem)
 			.insert({'bottom': new Element(tmp.tag, {'class': 'productName'})
 				.insert({'bottom': orderItem.product.name })

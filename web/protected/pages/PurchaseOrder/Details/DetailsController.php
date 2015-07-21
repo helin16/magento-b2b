@@ -46,7 +46,7 @@ class DetailsController extends DetailsPageAbstract
 		};
 		$statusOptions =  $purchaseOrder->getStatusOptions();
 		$purchaseOrderItems = array();
-		foreach (PurchaseOrderItem::getAllByCriteria('purchaseOrderId = ?', array($purchaseOrder->getId()), true, 1, DaoQuery::DEFAUTL_PAGE_SIZE, array('po_item.id'=>'desc')) as $item) {
+		foreach (PurchaseOrderItem::getAllByCriteria('purchaseOrderId = ?', array($purchaseOrder->getId()), true, 1, DaoQuery::DEFAUTL_PAGE_SIZE, array('updated'=>'desc')) as $item) {
 			$product = Product::get($item->getProduct()->getId());
 			if(!$product instanceof Product)
 				throw new Exception('Invalid Product passed in!');
