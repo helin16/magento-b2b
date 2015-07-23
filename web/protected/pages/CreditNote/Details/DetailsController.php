@@ -197,12 +197,10 @@ class DetailsController extends BPCPageAbstract
 				throw new Exception('Invalid Apply To passed in!');
 			if(isset($param->CallbackParameter->creditNoteId) && ($creditNote = CreditNote::get(trim($param->CallbackParameter->creditNoteId))) instanceof CreditNote)
 				$creditNote = $creditNote;
-			else
-			{
-				if(isset($param->CallbackParameter->orderId) && ($order = Order::get(trim($param->CallbackParameter->orderId))) instanceof Order)
-					$creditNote = CreditNote::createFromOrder($order, $customer, trim($param->CallbackParameter->description));
-				else $creditNote = CreditNote::create($customer, trim($param->CallbackParameter->description));
-			}
+			else if(isset($param->CallbackParameter->orderId) && ($order = Order::get(trim($param->CallbackParameter->orderId))) instanceof Order)
+				$creditNote = CreditNote::createFromOrder($order, $customer, trim($param->CallbackParameter->description));
+			else 
+				$creditNote = CreditNote::create($customer, trim($param->CallbackParameter->description));
 			$creditNote->setShippingValue(isset($param->CallbackParameter->totalShippingCost) ? StringUtilsAbstract::getValueFromCurrency($param->CallbackParameter->totalShippingCost) : 0);
 			if(isset($param->CallbackParameter->shippingAddr)) {
 				$shippAddress = Address::create(
@@ -228,6 +226,7 @@ class DetailsController extends BPCPageAbstract
 			$totalPaymentDue = $creditNote->getShippingValue();
 			$hasShipped = ($creditNote->getOrder() instanceof Order && (Shippment::countByCriteria('orderId = ?', array($creditNote->getOrder()->getId())) > 0));
 			$creditNoteItemsMap = array();
+			
 			foreach ($param->CallbackParameter->items as $item) {
 				if(!($product = Product::get(trim($item->product->id))) instanceof Product)
 					throw new Exception('Invalid Product passed in!');
@@ -245,14 +244,15 @@ class DetailsController extends BPCPageAbstract
 				if(isset($item->orderItemId) && ($orderItem = OrderItem::get(trim($item->orderItemId))) instanceof OrderItem)
 					$unitCost = $orderItem->getUnitCost();
 
-				$creditNoteItem = is_numeric($item->creditNoteItemId) ?
+				$creditNoteItem = (is_numeric($item->creditNoteItemId) ?
 					CreditNoteItem::get(trim($item->creditNoteItemId))->setActive($active)->setProduct($product)->setQty($qtyOrdered)->setUnitPrice($unitPrice)->setItemDescription($itemDescription)->setUnitCost($unitCost)->setTotalPrice($totalPrice)->save()
 					:
 					($orderItem instanceof OrderItem ?
 							CreditNoteItem::createFromOrderItem($creditNote, $orderItem, $qtyOrdered, $unitPrice, $itemDescription, $unitCost, $totalPrice)
 							:
 							CreditNoteItem::create($creditNote, $product, $qtyOrdered, $unitPrice, $itemDescription, $unitCost, $totalPrice)
-					);
+					)
+				);
 				if(intval($creditNoteItem->getActive()) === 1) {
 					if(!isset($creditNoteItemsMap[$product->getId()]))
 						$creditNoteItemsMap[$product->getId()] = 0;
@@ -274,12 +274,18 @@ class DetailsController extends BPCPageAbstract
 						}
 					}
 				} else {
+					//revert all the shipped stock
+					foreach(OrderItem::getAllByCriteria('ord_item.orderId = ? and ord_item.isShipped = 1', array($creditNote->getOrder()->getId())) as $orderItem) {
+						$orderItem
+							->setIsShipped(false)
+							->save();
+					}
 					//revert all the picked stock
-					foreach(OrderItem::getAllByCriteria('ord_item.orderId = ? and ord_item.isShipped = 1', array($creditNote->getOrder()->getId())) as $orderItem)
-						$orderItem->getProduct()->shipped(0 - $orderItem->getQtyOrdered(), 'UnShipped this item (SKU:' . $orderItem->getProduct()->getSku() . ') as of CreditNote(CreditNoteNo:' . $creditNote->getCreditNoteNo() . ')', $creditNoteItem);
-					//revert all the picked stock
-					foreach(OrderItem::getAllByCriteria('ord_item.orderId = ? and ord_item.isPicked = 1', array($creditNote->getOrder()->getId())) as $orderItem)
-						$orderItem->getProduct()->picked(0 - $orderItem->getQtyOrdered(), 'UnPicked this item (SKU:' . $orderItem->getProduct()->getSku() . ') as of CreditNote(CreditNoteNo:' . $creditNote->getCreditNoteNo() . ')', $creditNoteItem);
+					foreach(OrderItem::getAllByCriteria('ord_item.orderId = ? and ord_item.isPicked = 1', array($creditNote->getOrder()->getId())) as $orderItem) {
+						$orderItem
+							->setIsPicked(false)
+							->save();
+					}
 				}
 			}
 

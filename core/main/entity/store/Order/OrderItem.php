@@ -473,7 +473,7 @@ class OrderItem extends BaseEntityAbstract
 		if(trim($this->getId()) === '') {
 			if(trim($this->getItemDescription()) === '')
 				$this->setItemDescription($this->getProduct()->getName());
-		} else { //if the isPicked changed
+		} else if (intval($this->getActive()) === 1) { //if the isPicked changed
 			$product = $this->getProduct();
 			$kitCount = 0;
 			//for picked
@@ -502,6 +502,23 @@ class OrderItem extends BaseEntityAbstract
 				} else {
 					$product->shipped(0 - $this->getQtyOrdered(), '', $this);
 					$this->addLog('This item is now Un-marked as SHIPPED', Log::TYPE_SYSTEM, 'Auto Log', __CLASS__ . '::' . __FUNCTION__);
+				}
+			}
+		} else { //if the orderitem is been deactivated
+			if(self::countByCriteria('id = ? and active != ?', array($this->getId(), $this->getActive())) > 0) {
+				if(self::countByCriteria('id = ? and isShipped = 1', array($this->getId())) > 0) {
+					$msg = 'This item is now Un-marked as SHIPPED, as OrderItem(Order: ' . $this->getOrder()->getOrderNo() . ' SKU: ' . $this->getProduct()->getSku() . ', Qty: ' . $this->getQtyOrdered() . ') is now Deactivated';
+					$product->shipped(0 - $this->getQtyOrdered(), $msg, $this);
+					$this->addLog($msg, Log::TYPE_SYSTEM, 'Auto Log', __CLASS__ . '::' . __FUNCTION__);
+				}
+				if(self::countByCriteria('id = ? and isPicked = 1', array($this->getId())) > 0) {
+					$msg = 'This item is now Un-PICKED, as OrderItem(Order: ' . $this->getOrder()->getOrderNo() . ' SKU: ' . $this->getProduct()->getSku() . ', Qty: ' . $this->getQtyOrdered() . ') is now Deactivated';
+					$product->shipped(0 - $this->getQtyOrdered(), $msg, $this);
+					$this->addLog($msg, Log::TYPE_SYSTEM, 'Auto Log', __CLASS__ . '::' . __FUNCTION__);
+				}
+				foreach(SellingItem::getAllByCriteria('orderItemId = ?', array($this->getId())) as $sellingItem) {
+					$sellingItem->setActive(false)
+						->save();
 				}
 			}
 		}
