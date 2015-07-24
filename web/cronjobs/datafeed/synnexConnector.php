@@ -7,7 +7,7 @@ class synnexConnector extends datafeedAbstract
 	private $ftp_user_name = "synnex";
 	private $ftp_user_pass = "b2Z]7}i?T^+D";
 	private $ftp_file_name = "BUDGETPC_synnex_au.txt";
-	public static function run($feed_from_magento, $feed_from_web = '', $feed_from_ftp = '', $debug = false) {
+	public static function run($feed_from_magento, $feed_from_web = '', $feed_from_ftp = '', $updateOnly = false,  $debug = false) {
 		$class = new self ();
 		$class->debug = $debug === true ? true : false;
 		$class->init ( $feed_from_magento, $feed_from_web, $feed_from_ftp );
@@ -98,6 +98,16 @@ class synnexConnector extends datafeedAbstract
 				;
 			}
 		}
+	}
+	
+	private function _getMageStockLevel($stocks, $sku) {
+		if (($product = Product::getBySku ( trim ( $sku ) )) instanceof Product && intval ( $product->getStockOnHand () ) > 0)
+			return self::STOCK_IN_STOCK;
+		if (intval ( $stocks ['melbourne'] ) > 0)
+			return self::STOCK_IN_STOCK;
+		if (intval ( $stocks ['sydney'] ) > 0 || intval ( $stocks ['brisbane'] ) > 0)
+			return self::STOCK_SHIP_IN_24_HOURS;
+		return self::STOCK_PREORDER;
 	}
 	private function getAdditionalInfoFromWebFeed($supplierSku, $brand = null, $categories = array()) {
 		$supplierSku = trim ( $supplierSku );
@@ -604,5 +614,17 @@ class synnexConnector extends datafeedAbstract
 		$class->feed_from_ftp_data = $class->getDataFromCsv ( $class->feed_from_ftp );
 		
 		return $class->_getBrandCategoryPairs('web');
+	}
+	private function _checkExistenceInMagento($sku)
+	{
+		if(trim($sku) === '')
+			return null;
+		$mageData = CatelogConnector::getConnector(B2BConnector::CONNECTOR_TYPE_CATELOG,
+				SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_WSDL),
+				SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_USER),
+				SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_KEY)
+		)
+		->getProductInfo(trim($sku), array('price'));
+		return $mageData === null ? false : true;
 	}
 }

@@ -3,37 +3,55 @@ require_once dirname(__FILE__) . '/datafeedAbstract.php';
 class mmtConnector extends datafeedAbstract 
 {
 	private $supplier = "synnex";
-	private $feed_from_web_link = "http://www.mmt.com.au/datafeed/index.php?lt=s&ft=csv&tk=94S0C1U223NF7AC59BO94903AC004E6B4AMD09E83AL46BBD80H648O31F 75D 665F9461C558F25AE&af[]=tn&af[]=si&af[]=li&af[]=ai&af[]=dp&af[]=et&af[]=um&af[]=wt&af[]=st&af[]=sn&af[]=ln";
+	private $feed_from_web_key = '94S0C1U223NF7AC59BO94903AC004E6B4AMD09E83AL46BBD80H648O31F 75D 665F9461C558F25AE';
+	private $feed_from_web_link = "http://www.mmt.com.au/datafeed/index.php?lt=s&ft=csv&tk={WEB_FEED_KEY}&af[]=tn&af[]=si&af[]=li&af[]=ai&af[]=dp&af[]=et&af[]=um&af[]=wt&af[]=st&af[]=sn&af[]=ln";
 	
-	public static function run($feed_from_magento, $feed_from_web = '', $debug = false) 
+	public function getData()
 	{
-		$class = new self ();
-		$class->debug = $debug === true ? true : false;
-		$class->_init ( $feed_from_magento, $feed_from_web );
-		$class->_getDatafeedFromWeb();
-// 		var_dump($class->feed_from_web_data);
+		$this->_feed_from_magento_data = $this->downloadData($this->feed_from_magento);
 	}
-	private function _init($feed_from_magento, $feed_from_web)
+	
+	private function downloadData($url)
 	{
-		$this->now = str_replace ( ' ', '_', UDate::now ( UDate::TIME_ZONE_MELB )->getDateTimeString () );
-		// magento
-		$this->feed_from_magento = trim ( $feed_from_magento );
-		// web
-		if (trim ( $feed_from_web ) !== '')
-			$this->feed_from_web = trim ( $feed_from_web );
-		else {
-			$this->feed_from_web = dirname ( __FILE__ ) . "/tmp/" . 'mmt_feed_web_' . $this->now . '.csv';
-			file_put_contents ( $this->feed_from_web, "" );
-		}
-		// output
-		$this->feed_output = dirname ( __FILE__ ) . "/tmp/" . 'mmt_feed_output_' . $this->now . '.csv';
-		return $this;
+		$url = str_replace('{WEB_FEED_KEY}', urlencode($this->feed_from_web_key), $this->feed_from_web_link);
+		$key = md5($url) . $this->_scriptStartTime->format('Y_m_d');
+		$filePath = $this->_getLogFileRootPath() . $key . '.log';
+		if(!file_exists($filePath))
+			ComScriptCURL::downloadFile($url, $filePath);
+		file_get_contents($filePath);
 	}
-	private function _getDatafeedFromWeb()
-	{
-		$i = $this->feed_from_web = file_get_contents(urlencode($this->feed_from_web_link));
-		var_dump($i);
-// 		$this->feed_from_web_data = $this->getDataFromCsv($this->feed_from_web);
-		
-	}
+	
+// 	private function _getDatafeedFromWeb()
+// 	{
+// 		$url = str_replace('{WEB_FEED_KEY}', urlencode($this->feed_from_web_key), $this->feed_from_web_link);
+// 		$this->feed_from_web = file_get_contents($url);
+// 	}
+	
+// 	private function _getBrandCategoryPairs()
+// 	{
+// 		$result = array();
+// 		foreach ($this->feed_from_web_data->data as $item)
+// 		{
+// 			$brand = trim($item['Manufacturer']);
+// 			$category = trim($item['Category Name']);
+// 			if(!isset($result[$brand]))
+// 				$result[$brand] = array();
+// 			if(!isset($result[$brand][$category]))
+// 			{
+// 				$result[$brand][$category] = 1;
+// 			}
+// 			else $result[$brand][$category] += 1;
+// 		}
+// 		if($this->debug === true)
+// 		{
+// 			foreach ($result as $brand => $categorie)
+// 			{
+// 				foreach ($categorie as $category => $count)
+// 				{
+// 					echo $brand . "\t" . $category . "\t" . $count . "\n";
+// 				}
+// 			}
+// 		}
+// 		return $result;
+// 	}
 }

@@ -64,40 +64,188 @@ abstract class datafeedAbstract
 	const MAGE_PRODUCT_STATUS_CHANGED = "";
 	const MAGE_PRODUCT_CHANGED_WEBSITES = "";
 	
-	protected $debug = false;
-	protected $now = '';
-	protected $feed_from_web = '';
-	protected $feed_from_web_data = null;
-	protected $feed_from_ftp = '';
-	protected $feed_from_ftp_data = null;
-	protected $feed_from_mail = '';
-	protected $feed_from_mail_data = null;
-	protected $feed_from_magento = '';
-	protected $feed_from_magento_data = null;
-	protected $feed_output = '';
-	protected $feed_output_data = null;
+	protected $_scriptStartTime = false;
+	protected $_debug = false;
+	protected $_feed_from_web_filePath = '';
+	protected $_feed_from_web_data = null;
+// 	protected $_feed_from_ftp = '';
+// 	protected $_feed_from_ftp_data = null;
+// 	protected $_feed_from_mail = '';
+// 	protected $_feed_from_mail_data = null;
+	protected $_feed_from_magento_filePath = '';
+	protected $_feed_from_magento_data = null;
+	protected $_feed_output_filePath = '';
+	protected $_feed_output_data = null;
+	protected $_cache = array();
 	
-	protected function getMageStockLevel($stocks, $sku) {
-		if (($product = Product::getBySku ( trim ( $sku ) )) instanceof Product && intval ( $product->getStockOnHand () ) > 0)
-			return self::STOCK_IN_STOCK;
-		if (intval ( $stocks ['melbourne'] ) > 0)
-			return self::STOCK_IN_STOCK;
-		if (intval ( $stocks ['sydney'] ) > 0 || intval ( $stocks ['brisbane'] ) > 0)
-			return self::STOCK_SHIP_IN_24_HOURS;
-		return self::STOCK_PREORDER;
+	public static function run($feed_from_magento_filePath, $feed_from_web_filePath = '', $debug = false)
+	{
+		$class = get_called_class();
+		$class = new $class ($debug);
+		//init / setup environment
+		$class->init ( $feed_from_magento_filePath, $feed_from_web_filePath )
+			->getData() //Getting the data ready. ie.:download from web/ ftp /email
+			->analyze() //compare supplier's data with magento
+			->updateSystem() //either push data to magento or update the current system only
+		;
+		return $class;
 	}
-	protected function getPrice($basePrice, $brand = null, $categories = array()) {
+	/**
+	 * Constructor
+	 * 
+	 * @param string $feed_from_magento The Url or 
+	 * @param string $feed_from_web_filePath
+	 * @param bool   $debug
+	 */
+	public function __construct($debug = false, UDate $scriptStartTime = null)
+	{
+		$this->_debug = $debug;
+		$this->_scriptStartTime = ($scriptStartTime === null ? UDate::now() : $scriptStartTime);
+	}
+	/**
+	 * Getting the root path of the logs
+	 * 
+	 * @return string
+	 */
+	protected function _getLogFileRootPath()
+	{
+		return '/tmp/';
+	}
+	/**
+	 * initiating process
+	 * 
+	 * @param string $feed_from_magento
+	 * @param string $feed_from_web_filePath
+	 * 
+	 * @return datafeedAbstract
+	 */
+	public function init($feed_from_magento_filePath, $feed_from_web_filePath)
+	{
+		$this->_feed_from_magento_filePath = $feed_from_magento_filePath;
+		$this->_feed_from_web_filePath = $feed_from_web_filePath;
+		// magento
+		$this->_feed_from_magento_filePath = trim ( $feed_from_magento_filePath );
+		// web
+		if (trim ( $feed_from_web_filePath ) !== '')
+			$this->_feed_from_web_filePath = trim ( $feed_from_web_filePath );
+		else {
+			$this->_feed_from_web_filePath = $this->_getLogFileRootPath() . get_class($this) . '_feed_web_' . $this->_scriptStartTime . '.csv';
+			file_put_contents ( $this->_feed_from_web_filePath, "" );
+		}
+		// output
+		$this->feed_output_file = $this->_getFeedOutputFile();
+		return $this;
+	}
+	/**
+	 * getting the data from web
+	 * 
+	 * @return datafeedAbstract
+	 */
+	public function getData()
+	{
+// 		$this->_downloadCSV();
+// 		$this->_feed_from_magento_data = $this->_getDataFromCsv($this->_feed_from_magento_filePath);
+// 		$this->_feed_from_web_data = $this->_getDataFromCsv($this->_feed_from_web_filePath);
+		return $this;
+	}
+	public function analyze()
+	{
+		return $this;
+	}
+	public function updateSystem()
+	{
+		return $this;
+	}
+	/**
+	 * Whether the cache exsits
+	 * 
+	 * @param unknown $key
+	 * 
+	 * @return boolean
+	 */
+	protected function _cacheExits($key)
+	{
+		return array_key_exists($key, $this->_cache);
+	}
+	protected function _cache_add($key, $value, $override = false)
+	{
+		if(!$this->_cacheExits($key) || $override === true)
+			$this->_cache[$key] = $value;
+		return $this;
+	}
+	protected function _cache_get($key)
+	{
+		if(!$this->_cacheExits($key))
+			return null;
+		return $this->_cache[$key];
+	}
+	/**
+	 * Getting the feed output file path
+	 * 
+	 * @return string
+	 */
+	protected function _getFeedOutputFile()
+	{
+		return $this->_getLogFileRootPath() . get_class($this) . '_feed_output_' . $this->_scriptStartTime . '.csv';
+	}
+	/**
+	 * Gettin gthe GST rate
+	 * 
+	 * @return number
+	 */
+	protected function _getGSTRate()
+	{
+		return 0.1;
+	}
+	/**
+	 * Getitng hte margin rate for this supplier
+	 * 
+	 * @return number
+	 */
+	protected function _getMargeRate()
+	{
+		return 0.05;
+	}
+	/**
+	 * Getting the calculated price based on margin and GST
+	 * 
+	 * @param string $basePrice
+	 * @param string $brand
+	 * @param array  $categories
+	 * 
+	 * @return number
+	 */
+	protected function _getRetailPrice($basePrice, $brand = null, $categories = array()) {
 		$basePrice = doubleval ( trim ( $basePrice ) );
-		$price = $basePrice * 1.1 * 1.05;
+		$price = $basePrice * ($this->_getGSTRate() + 1) * ($this->_getMargeRate() + 1);
 		return $price;
 	}
-	protected function getDataFromCsv($file) {
-		$file = trim ( $file );
+	/**
+	 * Getting the data from a file
+	 * 
+	 * @param string $filePath The file path of data sheet
+	 * 
+	 * @return parseCSV
+	 */
+	protected function _getDataFromCsv($filePath) {
+		$filePath = trim ( $filePath );
 		$paser = new parseCSV ();
-		// ftp
-		$paser->auto ( $file );
-		if ($this->debug === true)
-			echo "successfull get data (size=" . sizeof ( $paser->data ) . ") from " . $file . "\n";
+		$paser->auto ( $filePath );
+		$this->_log("successfull get data (size=" . sizeof ( $paser->data ) . ") from File: " . $filePath);			
 		return $paser;
+	}
+	/**
+	 * Logging messages
+	 * 
+	 * @param string $msg
+	 * @param string $newLine
+	 * 
+	 * @return datafeedAbstract
+	 */
+	protected function _log($msg, $newLine = "\n")
+	{
+		if($this->_debug === true)
+			echo $msg . $newLine;
+		return $this;
 	}
 }
