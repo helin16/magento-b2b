@@ -109,7 +109,7 @@ class AjaxController extends TService
   		$pageNo = (isset($params['pageNo']) && ($pageNo = trim($params['pageNo'])) !== '' ? $pageNo : null);
   		$orderBy = (isset($params['orderBy']) ? $params['orderBy'] : array());
 
-  		$where = array('name like :searchTxt or mageId = :searchTxtExact or sku = :searchTxtExact');
+  		$where = array('name like :searchTxt or mageId = :searchTxtExact or sku = :searchTxt');
   		$sqlParams = array('searchTxt' => '%' . $searchTxt . '%', 'searchTxtExact' => $searchTxt);
   		$stats = array();
   		$items = Product::getAllByCriteria(implode(' AND ', $where), $sqlParams, true, $pageNo, $pageSize, $orderBy, $stats);
