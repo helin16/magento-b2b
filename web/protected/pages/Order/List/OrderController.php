@@ -101,6 +101,7 @@ class OrderController extends BPCPageAbstract
 				{
 					case 'ord.orderNo':
 					case 'ord.invNo':
+					case 'ord.pONo':
 					{
 						$where[] =  $field . " like ? ";
 						$params[] = '%' . $value . '%';
