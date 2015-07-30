@@ -4,12 +4,15 @@
 var PageJs = new Class.create();
 PageJs.prototype = Object.extend(new CRUDPageJs(), {
 	_getTitleRowData: function() {
-		return {'description': "Description", 'name': 'Name', 'noOfChildren': null};
+		return {'description': "Description",
+					'name': 'Name',
+					'mageId': 'mageId',
+					'noOfChildren': null
+				};
 	}
 	,_bindSearchKey: function() {
 		var tmp = {}
 		tmp.me = this;
-		console.debug(0);
 		$('searchPanel').getElementsBySelector('[search_field]').each(function(item) {
 			item.observe('keydown', function(event) {
 				tmp.me.keydown(event, function() {
@@ -240,6 +243,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 				.insert({'bottom': tmp.me._getPreName(row) })
 				.insert({'bottom': ' ' + row.name })
 			})
+			.insert({'bottom': new Element(tmp.tag, {'class': 'mageId'}).update(row.mageId) })
 			.insert({'bottom': new Element(tmp.tag, {'class': 'description'}).update(row.description) })
 			.insert({'bottom': new Element(tmp.tag, {'class': 'text-right btns col-xs-2'}).update(
 				tmp.isTitle === true ?  

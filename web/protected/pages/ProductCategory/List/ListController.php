@@ -66,7 +66,6 @@ class ListController extends CRUDPageAbstract
 // 			$where = array(!$parent instanceof $class ? 'rootId = id' : 'parentId = ' . $parent->getId());
 			$where = array();
 			$params = array();
-			var_dump(count($serachCriteria));
 			if(isset($serachCriteria['name']) && ($name = trim($serachCriteria['name'])) !== '')
 			{
 				$where[] = 'name like ?';
@@ -78,7 +77,7 @@ class ListController extends CRUDPageAbstract
 				$params[] = $mageId;
 			}
 			$stats = array();
-			$objects = $class::getAllByCriteria(implode(' AND ', $where), $params, false, $pageNo, $pageSize, array('pro_cate.position' => 'asc'), $stats);
+			$objects = $class::getAllByCriteria(implode(' AND ', $where), $params, false, null, $pageSize, array('pro_cate.position' => 'asc'), $stats);
 			$results['pageStats'] = $stats;
 			$results['items'] = array();
 			foreach($objects as $obj)
