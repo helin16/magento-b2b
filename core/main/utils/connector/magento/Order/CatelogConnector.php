@@ -365,7 +365,8 @@ class CatelogConnector extends B2BConnector
 					}
 				}
 			}
-			if(count($products) > 0 && ($systemSetting = SystemSettings::getByType(SystemSettings::TYPE_LAST_NEW_PRODUCT_PULL)) instanceof SystemSettings)
+			var_dump($created_at);
+			if(($systemSetting = SystemSettings::getByType(SystemSettings::TYPE_LAST_NEW_PRODUCT_PULL)) instanceof SystemSettings)
 				$systemSetting->setValue($created_at)->save();
 			if($transStarted === false)
 				Dao::commitTransaction();
