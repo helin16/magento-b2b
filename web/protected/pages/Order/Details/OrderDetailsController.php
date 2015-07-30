@@ -33,7 +33,7 @@ class OrderDetailsController extends BPCPageAbstract
 			$orderItems[] = $orderItem->getJson();
 		$purchaseEdit = $warehouseEdit = $accounEdit = $statusEdit = 'false';
 		if($order->canEditBy(Core::getRole())) {
-			$statusEdit = (/** $order->canEditBy(Role::get(Role::ID_STORE_MANAGER)) || **/$order->canEditBy(Role::get(Role::ID_SYSTEM_ADMIN))) ? 'true' : 'false';
+			$statusEdit = ($order->canEditBy(Role::get(Role::ID_STORE_MANAGER)) || $order->canEditBy(Role::get(Role::ID_SYSTEM_ADMIN))) ? 'true' : 'false'; //TODO $statusEdit access control, only store admin can change status
 			if(in_array(intval(Core::getRole()->getId()), array(Role::ID_SYSTEM_ADMIN, Role::ID_STORE_MANAGER, Role::ID_SALES)))
 				$purchaseEdit = $warehouseEdit = $accounEdit = 'true';
 			else
@@ -47,8 +47,11 @@ class OrderDetailsController extends BPCPageAbstract
 				}
 			}
 		}
-		if(in_array(intval(Core::getRole()->getId()), array(Role::ID_SYSTEM_ADMIN, Role::ID_STORE_MANAGER, Role::ID_ACCOUNTING, Role::ID_SALES)))
+		if(in_array(intval(Core::getRole()->getId()), array(Role::ID_SYSTEM_ADMIN)))
 			$accounEdit = 'true';
+		if(in_array(intval(Core::getRole()->getId()), array(Role::ID_SYSTEM_ADMIN, Role::ID_STORE_MANAGER, Role::ID_ACCOUNTING, Role::ID_SALES)))
+			$statusEdit = 'true';
+		else $statusEdit = 'false';
 		$orderArray = $order->getJson();
 		$orderArray['childrenOrders'] = array_map(create_function('$a', 'return $a->getOrder()->getJson();'), OrderInfo::getAllByCriteria('typeId = ? and value = ?', array(OrderInfoType::ID_CLONED_FROM_ORDER_NO, trim($order->getOrderNo()))));
 		$orderArray['creditNotes'] = array_map(create_function('$a', 'return $a->getJson();'), CreditNote::getAllByCriteria('orderId = ?', array(trim($order->getId()))));
