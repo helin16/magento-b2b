@@ -6,7 +6,19 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 	_getTitleRowData: function() {
 		return {'description': "Description", 'name': 'Name', 'noOfChildren': null};
 	}
-
+	,_bindSearchKey: function() {
+		var tmp = {}
+		tmp.me = this;
+		console.debug(0);
+		$('searchPanel').getElementsBySelector('[search_field]').each(function(item) {
+			item.observe('keydown', function(event) {
+				tmp.me.keydown(event, function() {
+					$('searchBtn').click();
+				});
+			})
+		});
+		return this;
+	}
 	,_saveItem: function(btn, savePanel, attrName) {
 		var tmp = {};
 		tmp.me = this;

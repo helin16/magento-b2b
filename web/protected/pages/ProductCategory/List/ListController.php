@@ -35,6 +35,7 @@ class ListController extends CRUDPageAbstract
 	{
 		$js = parent::_getEndJs();
 		$js .= "pageJs.getResults(true, " . $this->pageSize . ");";
+		$js .= "pageJs._bindSearchKey();";
 		return $js;
 	}
 	/**
