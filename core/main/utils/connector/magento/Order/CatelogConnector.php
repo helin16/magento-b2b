@@ -288,6 +288,7 @@ class CatelogConnector extends B2BConnector
 				$mageId = trim($pro->product_id);
 				$sku = trim($pro->sku);
 				$pro = $this->getProductInfo($sku, $this->getInfoAttributes());
+				$created_at = trim($pro->created_at);
 				if(is_null($pro) || !isset($pro->additional_attributes))
 					continue;
 				// handle extra long sku from magento, exceeding mysql sku length limit
@@ -304,7 +305,6 @@ class CatelogConnector extends B2BConnector
 					continue;
 				}
 				
-				$created_at = trim($pro->created_at);
 				$additionAttrs = $this->_getAttributeFromAdditionAttr($pro->additional_attributes);
 				$name = trim($additionAttrs['name']);
 				$short_description = trim($additionAttrs['short_description']);
@@ -365,7 +365,6 @@ class CatelogConnector extends B2BConnector
 					}
 				}
 			}
-			var_dump($created_at);
 			if(($systemSetting = SystemSettings::getByType(SystemSettings::TYPE_LAST_NEW_PRODUCT_PULL)) instanceof SystemSettings)
 				$systemSetting->setValue($created_at)->save();
 			if($transStarted === false)
