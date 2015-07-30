@@ -108,9 +108,19 @@ class AjaxController extends TService
   		$pageSize = (isset($params['pageSize']) && ($pageSize = trim($params['pageSize'])) !== '' ? $pageSize : DaoQuery::DEFAUTL_PAGE_SIZE);
   		$pageNo = (isset($params['pageNo']) && ($pageNo = trim($params['pageNo'])) !== '' ? $pageNo : null);
   		$orderBy = (isset($params['orderBy']) ? $params['orderBy'] : array());
+  		
+  		$sqlParams = array('searchTxtExact' => $searchTxt);
+  		$searchTokens = array();
+  		StringUtilsAbstract::permute(preg_split("/[\s,]+/", trim($searchTxt)), $searchTokens);
+  		$nameLikeArray = $skuLikeArray = array();
+  		foreach($searchTokens as $index => $tokenArray) {
+  			$key = 'token' . $index;
+  			$sqlParams[$key] = '%' . implode('%', $tokenArray) . '%';
+  			$nameLikeArray[] = 'name like :' . $key;
+  			$skuLikeArray[] = 'sku like :' . $key;
+  		}
 
-  		$where = array('name like :searchTxt or mageId = :searchTxtExact or sku = :searchTxt');
-  		$sqlParams = array('searchTxt' => '%' . $searchTxt . '%', 'searchTxtExact' => $searchTxt);
+  		$where = array('mageId = :searchTxtExact OR (' . implode(' OR ', $nameLikeArray) . ') OR (' . implode(' OR ', $skuLikeArray) . ')');
   		$stats = array();
   		$items = Product::getAllByCriteria(implode(' AND ', $where), $sqlParams, true, $pageNo, $pageSize, $orderBy, $stats);
   		$results = array();
