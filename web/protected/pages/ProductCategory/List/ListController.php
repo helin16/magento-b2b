@@ -62,14 +62,16 @@ class ListController extends CRUDPageAbstract
 			$serachCriteria = isset($param->CallbackParameter->searchCriteria) ? json_decode(json_encode($param->CallbackParameter->searchCriteria), true) : array();
 			$parent = (isset($serachCriteria['parentId']) && ($parent = $class::get($serachCriteria['parentId'])) instanceof $class) ? $parent : null; 
 				
-			$where = array(!$parent instanceof $class ? 'rootId = id' : 'parentId = ' . $parent->getId());
+// 			$where = array(!$parent instanceof $class ? 'rootId = id' : 'parentId = ' . $parent->getId());
+			$where = array();
 			$params = array();
-			if(isset($serachCriteria['pro_cate.name']) && ($name = trim($serachCriteria['pro_cate.name'])) !== '')
+			var_dump(count($serachCriteria));
+			if(isset($serachCriteria['name']) && ($name = trim($serachCriteria['name'])) !== '')
 			{
 				$where[] = 'name like ?';
 				$params[] = '%' . $name . '%';
 			}
-			if(isset($serachCriteria['pro_cate.mageId']) && ($mageId = trim($serachCriteria['pro_cate.mageId'])) !== '')
+			if(isset($serachCriteria['mageId']) && ($mageId = trim($serachCriteria['mageId'])) !== '')
 			{
 				$where[] = 'mageId = ?';
 				$params[] = $mageId;
