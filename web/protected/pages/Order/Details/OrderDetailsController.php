@@ -33,7 +33,7 @@ class OrderDetailsController extends BPCPageAbstract
 			$orderItems[] = $orderItem->getJson();
 		$purchaseEdit = $warehouseEdit = $accounEdit = $statusEdit = 'false';
 		if($order->canEditBy(Core::getRole())) {
-			$statusEdit = ($order->canEditBy(Role::get(Role::ID_STORE_MANAGER)) || $order->canEditBy(Role::get(Role::ID_SYSTEM_ADMIN))) ? 'true' : 'false';
+			$statusEdit = (/** $order->canEditBy(Role::get(Role::ID_STORE_MANAGER)) || **/$order->canEditBy(Role::get(Role::ID_SYSTEM_ADMIN))) ? 'true' : 'false';
 			if(in_array(intval(Core::getRole()->getId()), array(Role::ID_SYSTEM_ADMIN, Role::ID_STORE_MANAGER, Role::ID_SALES)))
 				$purchaseEdit = $warehouseEdit = $accounEdit = 'true';
 			else
