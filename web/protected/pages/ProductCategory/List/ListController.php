@@ -66,8 +66,13 @@ class ListController extends CRUDPageAbstract
 			$params = array();
 			if(isset($serachCriteria['pro_cate.name']) && ($name = trim($serachCriteria['pro_cate.name'])) !== '')
 			{
-				$where[] = 'pro_cate.name like ?';
+				$where[] = 'name like ?';
 				$params[] = '%' . $name . '%';
+			}
+			if(isset($serachCriteria['pro_cate.mageId']) && ($mageId = trim($serachCriteria['pro_cate.mageId'])) !== '')
+			{
+				$where[] = 'mageId = ?';
+				$params[] = $mageId;
 			}
 			$stats = array();
 			$objects = $class::getAllByCriteria(implode(' AND ', $where), $params, false, $pageNo, $pageSize, array('pro_cate.position' => 'asc'), $stats);
