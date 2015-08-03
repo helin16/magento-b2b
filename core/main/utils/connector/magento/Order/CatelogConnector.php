@@ -189,6 +189,8 @@ class CatelogConnector extends B2BConnector
 
 				$productCategory = ProductCategory::getByMageId($mageId);
 				$category = $this->catalogCategoryInfo($mageId);
+				if(!is_object($category))
+					continue;
 				$description = isset($category->description) ? trim($category->description) : trim($category->name);
 				if(!$productCategory instanceof ProductCategory)
 				{
