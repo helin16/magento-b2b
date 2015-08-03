@@ -178,13 +178,12 @@ class CatelogConnector extends B2BConnector
 		Log::logging(0, get_class($this), 'getting ProductCategories(mageId=' . $categoryId . ')', self::LOG_TYPE, '', __FUNCTION__);
 		if(count($categories) === 0)
 			return;
-
-		foreach($categories as $category)
-		{
-			try
+		
+		try {
+			$transStarted = false;
+			try {Dao::beginTransaction();} catch(Exception $e) {$transStarted = true;}
+			foreach($categories as $category)
 			{
-				Dao::beginTransaction();
-
 				$mageId = trim($category->category_id);
 				Log::logging(0, get_class($this), 'getting ProductCategory(mageId=' . $mageId . ')', self::LOG_TYPE, '', __FUNCTION__);
 
@@ -211,14 +210,16 @@ class CatelogConnector extends B2BConnector
 					->setUrlKey(trim($category->url_key))
 					->save();
 
-				Dao::commitTransaction();
 				$this->importProductCategories(trim($category->category_id));
 			}
-			catch(Exception $e)
-			{
-				Dao::rollbackTransaction();
-				throw $e;
-			}
+			if($transStarted === false)
+				Dao::commitTransaction();
+		}
+		catch(Exception $ex)
+		{
+		if($transStarted === false)
+			Dao::rollbackTransaction();
+			throw $ex;
 		}
 		return $this;
 	}
