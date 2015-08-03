@@ -20,6 +20,8 @@ class ListController extends BPCPageAbstract
 	public function onLoad($param)
 	{
 		parent::onLoad($param);
+		if(!AccessControl::canAccessStockAdjustPage(Core::getRole()))
+			die('You do NOT have access to this page.');
 	}
 	/**
 	 * Getting The end javascript

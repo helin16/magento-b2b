@@ -192,6 +192,17 @@ Abstract class AccessControl
 		}
 		return false;
 	}
+	public static function canAccessStockAdjustPage(Role $role)
+	{
+		switch($role->getId())
+		{
+			case Role::ID_SYSTEM_ADMIN:
+				{
+					return true;
+				}
+		}
+		return false;
+	}
 	public static function canAccessNewSupplierPage(Role $role)
 	{
 		switch($role->getId())
