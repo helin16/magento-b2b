@@ -7,7 +7,7 @@ try {
 
 	$wsdl = 'http://www.budgetpc.com.au/api/v2_soap?wsdl=1';
 	$options = array('exceptions' => true, 'encoding'=>'utf-8', 'compression' => SOAP_COMPRESSION_ACCEPT | SOAP_COMPRESSION_GZIP);
-	$options = array_merge($options, array('proxy_host' => "proxy.bytecraft.internal", 'proxy_port' => 3128));
+// 	$options = array_merge($options, array('proxy_host' => "proxy.bytecraft.internal", 'proxy_port' => 3128));
 	$soapClient = ComScriptSoap::getScript($wsdl, $options);
 
 	$session = $soapClient->login('B2BUser', 'B2BUser');
