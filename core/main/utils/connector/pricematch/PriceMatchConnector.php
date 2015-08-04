@@ -193,7 +193,7 @@ class PriceMatchConnector
 		
 		if($result !== true && $this->debug === true)
 			echo $result;
-		if($this->debug === true)
+		if($result === true && $this->debug === true)
 			echo 'Magento Price Successfully updated to $' . $price . "\n";
 		
 		return $this;
