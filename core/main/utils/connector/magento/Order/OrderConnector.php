@@ -56,9 +56,11 @@ class OrderConnector extends B2BConnector
 				}
 				else
 				{
-					$shippingAddr = $o->getShippingAddr();
-					$billingAddr = $o->getBillingAddr();
+					//skip, if order exsits
 					Log::logging(0, get_class($this), 'Found order from DB, ID = ' . $o->getId(), self::LOG_TYPE, '$index = ' . $index, __FUNCTION__);
+					continue;
+// 					$shippingAddr = $o->getShippingAddr();
+// 					$billingAddr = $o->getBillingAddr();
 				}
 
 				$customer = Customer::create(
