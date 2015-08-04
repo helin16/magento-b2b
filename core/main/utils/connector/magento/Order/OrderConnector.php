@@ -22,110 +22,112 @@ class OrderConnector extends B2BConnector
 		//getting the lastest order since last updated time
 		$orders = $this->getlastestOrders($lastUpdatedTime);
 		$this->_log(0, get_class($this), 'Found ' . count($orders) . ' order(s) since "' . $lastUpdatedTime . '".', self::LOG_TYPE, '', __FUNCTION__);
-		foreach($orders as $index => $order)
-		{
-			$transStarted = false;
-			try
+		if(is_array($orders) && count($orders) > 0) {
+			foreach($orders as $index => $order)
 			{
-				try {Dao::beginTransaction();} catch(Exception $e) {$transStarted = true;}
-
-				$this->_log(0, get_class($this), 'Found order from Magento with orderNo = ' . trim($order->increment_id) . '.', self::LOG_TYPE, '', __FUNCTION__);
-
-				$order = $this->getOrderInfo(trim($order->increment_id));
-				if(!is_object($order))
+				$transStarted = false;
+				try
 				{
-					$this->_log(0, get_class($this), 'Found no object from $order, next element!', self::LOG_TYPE, '$index = ' . $index, __FUNCTION__);
-					continue;
+					try {Dao::beginTransaction();} catch(Exception $e) {$transStarted = true;}
+
+					$this->_log(0, get_class($this), 'Found order from Magento with orderNo = ' . trim($order->increment_id) . '.', self::LOG_TYPE, '', __FUNCTION__);
+
+					$order = $this->getOrderInfo(trim($order->increment_id));
+					if(!is_object($order))
+					{
+						$this->_log(0, get_class($this), 'Found no object from $order, next element!', self::LOG_TYPE, '$index = ' . $index, __FUNCTION__);
+						continue;
+					}
+					if(($status = trim($order->state)) === '')
+					{
+						$this->_log(0, get_class($this), 'Found no state Elment from $order, next element!', self::LOG_TYPE, '$index = ' . $index, __FUNCTION__);
+						continue;
+					}
+
+					//saving the order
+					$orderDate = new UDate(trim($order->created_at), SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_TIMEZONE));
+					$orderDate->setTimeZone('UTC');
+	// 				$totalPaid = (!isset($order->total_paid) ? 0 : trim($order->total_paid));
+
+					$shippingAddr = $billingAddr = null;
+					if(!($o = Order::getByOrderNo(trim($order->increment_id))) instanceof Order)
+					{
+						$o = new Order();
+						$this->_log(0, get_class($this), 'Found no order from DB, create new', self::LOG_TYPE, '$index = ' . $index, __FUNCTION__);
+					}
+					else
+					{
+						//skip, if order exsits
+						$this->_log(0, get_class($this), 'Found order from DB, ID = ' . $o->getId(), self::LOG_TYPE, '$index = ' . $index, __FUNCTION__);
+						continue;
+	// 					$shippingAddr = $o->getShippingAddr();
+	// 					$billingAddr = $o->getBillingAddr();
+					}
+
+					$customer = Customer::create(
+							(isset($order->billing_address) && isset($order->billing_address->company) && trim($order->billing_address->company) !== '') ? trim($order->billing_address->company) : (isset($order->customer_firstname) ? trim($order->customer_firstname) . ' ' . trim($order->customer_lastname) : ''),
+							'',
+							trim($order->customer_email),
+							$this->_createAddr($order->billing_address, $billingAddr),
+							true,
+							'',
+							$this->_createAddr($order->shipping_address, $shippingAddr),
+							isset($order->customer_id) ? trim($order->customer_id) : 0
+					);
+
+					$o->setOrderNo(trim($order->increment_id))
+						->setOrderDate(trim($orderDate))
+						->setTotalAmount(trim($order->grand_total))
+						->setStatus((strtolower($status) === 'canceled' ? OrderStatus::get(OrderStatus::ID_CANCELLED) : OrderStatus::get(OrderStatus::ID_NEW)))
+	// 					->setTotalPaid(0)
+						->setIsFromB2B(true)
+						->setShippingAddr($customer->getShippingAddress())
+						->setBillingAddr($customer->getBillingAddress())
+						->setCustomer($customer)
+						->save();
+					$this->_log(0, get_class($this), 'Saved the order, ID = ' . $o->getId(), self::LOG_TYPE, '$index = ' . $index, __FUNCTION__);
+					$totalShippingCost = StringUtilsAbstract::getValueFromCurrency(trim($order->shipping_amount)) * 1.1;
+					//create order info
+					$this->_createOrderInfo($o, OrderInfoType::get(OrderInfoType::ID_CUS_NAME), trim($customer->getName()))
+						->_createOrderInfo($o, OrderInfoType::get(OrderInfoType::ID_CUS_EMAIL), trim($customer->getEmail()))
+						->_createOrderInfo($o, OrderInfoType::get(OrderInfoType::ID_QTY_ORDERED), intval(trim($order->total_qty_ordered)))
+						->_createOrderInfo($o, OrderInfoType::get(OrderInfoType::ID_MAGE_ORDER_STATUS), trim($order->status))
+						->_createOrderInfo($o, OrderInfoType::get(OrderInfoType::ID_MAGE_ORDER_STATE), trim($order->state))
+						->_createOrderInfo($o, OrderInfoType::get(OrderInfoType::ID_MAGE_ORDER_TOTAL_AMOUNT), trim($order->grand_total))
+	// 					->_createOrderInfo($o, OrderInfoType::get(OrderInfoType::ID_MAGE_ORDER_PAID_AMOUNT), $totalPaid)
+						->_createOrderInfo($o, OrderInfoType::get(OrderInfoType::ID_MAGE_ORDER_SHIPPING_METHOD), trim($order->shipping_description))
+						->_createOrderInfo($o, OrderInfoType::get(OrderInfoType::ID_MAGE_ORDER_SHIPPING_COST), $totalShippingCost)
+						->_createOrderInfo($o, OrderInfoType::get(OrderInfoType::ID_MAGE_ORDER_PAYMENT_METHOD), (!isset($order->payment) ? '' : (!isset($order->payment->method) ? '' : trim($order->payment->method))));
+					$this->_log(0, get_class($this), 'Updated order info', self::LOG_TYPE, '$index = ' . $index, __FUNCTION__);
+
+					//saving the order item
+					$totalItemCost = 0;
+					foreach($order->items as $item)	{
+						$this->_createItem($o, $item);
+						$totalItemCost = $totalItemCost * 1 + StringUtilsAbstract::getValueFromCurrency($item->row_total) * 1.1;
+					}
+					if(($possibleSurchargeAmount = ($o->getTotalAmount() - $totalShippingCost - $totalItemCost)) > 0 && ($product = Product::getBySku('surcharge')) instanceof Product) {
+						OrderItem::create($o, $product,	$possibleSurchargeAmount, 1, $possibleSurchargeAmount);
+					}
+					//record the last imported time for this import process
+					SystemSettings::addSettings(SystemSettings::TYPE_B2B_SOAP_LAST_IMPORT_TIME, trim($order->created_at));
+					$this->_log(0, get_class($this), 'Updating the last updated time', self::LOG_TYPE, '', __FUNCTION__);
+
+					$totalItems++;
+					if($transStarted === false)
+						Dao::commitTransaction();
 				}
-				if(($status = trim($order->state)) === '')
+				catch(Exception $e)
 				{
-					$this->_log(0, get_class($this), 'Found no state Elment from $order, next element!', self::LOG_TYPE, '$index = ' . $index, __FUNCTION__);
-					continue;
+					if($transStarted === false)
+						Dao::rollbackTransaction();
+					throw $e;
 				}
-
-				//saving the order
-				$orderDate = new UDate(trim($order->created_at), SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_TIMEZONE));
-				$orderDate->setTimeZone('UTC');
-// 				$totalPaid = (!isset($order->total_paid) ? 0 : trim($order->total_paid));
-
-				$shippingAddr = $billingAddr = null;
-				if(!($o = Order::getByOrderNo(trim($order->increment_id))) instanceof Order)
-				{
-					$o = new Order();
-					$this->_log(0, get_class($this), 'Found no order from DB, create new', self::LOG_TYPE, '$index = ' . $index, __FUNCTION__);
-				}
-				else
-				{
-					//skip, if order exsits
-					$this->_log(0, get_class($this), 'Found order from DB, ID = ' . $o->getId(), self::LOG_TYPE, '$index = ' . $index, __FUNCTION__);
-					continue;
-// 					$shippingAddr = $o->getShippingAddr();
-// 					$billingAddr = $o->getBillingAddr();
-				}
-
-				$customer = Customer::create(
-						(isset($order->billing_address) && isset($order->billing_address->company) && trim($order->billing_address->company) !== '') ? trim($order->billing_address->company) : (isset($order->customer_firstname) ? trim($order->customer_firstname) . ' ' . trim($order->customer_lastname) : ''),
-						'',
-						trim($order->customer_email),
-						$this->_createAddr($order->billing_address, $billingAddr),
-						true,
-						'',
-						$this->_createAddr($order->shipping_address, $shippingAddr),
-						isset($order->customer_id) ? trim($order->customer_id) : 0
-				);
-
-				$o->setOrderNo(trim($order->increment_id))
-					->setOrderDate(trim($orderDate))
-					->setTotalAmount(trim($order->grand_total))
-					->setStatus((strtolower($status) === 'canceled' ? OrderStatus::get(OrderStatus::ID_CANCELLED) : OrderStatus::get(OrderStatus::ID_NEW)))
-// 					->setTotalPaid(0)
-					->setIsFromB2B(true)
-					->setShippingAddr($customer->getShippingAddress())
-					->setBillingAddr($customer->getBillingAddress())
-					->setCustomer($customer)
-					->save();
-				$this->_log(0, get_class($this), 'Saved the order, ID = ' . $o->getId(), self::LOG_TYPE, '$index = ' . $index, __FUNCTION__);
-				$totalShippingCost = StringUtilsAbstract::getValueFromCurrency(trim($order->shipping_amount)) * 1.1;
-				//create order info
-				$this->_createOrderInfo($o, OrderInfoType::get(OrderInfoType::ID_CUS_NAME), trim($customer->getName()))
-					->_createOrderInfo($o, OrderInfoType::get(OrderInfoType::ID_CUS_EMAIL), trim($customer->getEmail()))
-					->_createOrderInfo($o, OrderInfoType::get(OrderInfoType::ID_QTY_ORDERED), intval(trim($order->total_qty_ordered)))
-					->_createOrderInfo($o, OrderInfoType::get(OrderInfoType::ID_MAGE_ORDER_STATUS), trim($order->status))
-					->_createOrderInfo($o, OrderInfoType::get(OrderInfoType::ID_MAGE_ORDER_STATE), trim($order->state))
-					->_createOrderInfo($o, OrderInfoType::get(OrderInfoType::ID_MAGE_ORDER_TOTAL_AMOUNT), trim($order->grand_total))
-// 					->_createOrderInfo($o, OrderInfoType::get(OrderInfoType::ID_MAGE_ORDER_PAID_AMOUNT), $totalPaid)
-					->_createOrderInfo($o, OrderInfoType::get(OrderInfoType::ID_MAGE_ORDER_SHIPPING_METHOD), trim($order->shipping_description))
-					->_createOrderInfo($o, OrderInfoType::get(OrderInfoType::ID_MAGE_ORDER_SHIPPING_COST), $totalShippingCost)
-					->_createOrderInfo($o, OrderInfoType::get(OrderInfoType::ID_MAGE_ORDER_PAYMENT_METHOD), (!isset($order->payment) ? '' : (!isset($order->payment->method) ? '' : trim($order->payment->method))));
-				$this->_log(0, get_class($this), 'Updated order info', self::LOG_TYPE, '$index = ' . $index, __FUNCTION__);
-
-				//saving the order item
-				$totalItemCost = 0;
-				foreach($order->items as $item)	{
-					$this->_createItem($o, $item);
-					$totalItemCost = $totalItemCost * 1 + StringUtilsAbstract::getValueFromCurrency($item->row_total) * 1.1;
-				}
-				if(($possibleSurchargeAmount = ($o->getTotalAmount() - $totalShippingCost - $totalItemCost)) > 0 && ($product = Product::getBySku('surcharge')) instanceof Product) {
-					OrderItem::create($o, $product,	$possibleSurchargeAmount, 1, $possibleSurchargeAmount);
-				}
-				//record the last imported time for this import process
-				SystemSettings::addSettings(SystemSettings::TYPE_B2B_SOAP_LAST_IMPORT_TIME, trim($order->created_at));
-				$this->_log(0, get_class($this), 'Updating the last updated time', self::LOG_TYPE, '', __FUNCTION__);
-
-				$totalItems++;
-				if($transStarted === false)
-					Dao::commitTransaction();
-			}
-			catch(Exception $e)
-			{
-				if($transStarted === false)
-					Dao::rollbackTransaction();
-				throw $e;
 			}
 		}
 
-		return $lastUpdatedTime . " => " . SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_LAST_IMPORT_TIME) . ' => ' . $totalItems;
-// 		return $this;
+		$this->_log(0, get_class($this), $lastUpdatedTime . " => " . SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_LAST_IMPORT_TIME) . ' => ' . $totalItems, self::LOG_TYPE, '', __FUNCTION__);
+		return $this;
 	}
 	/**
 	 * creating order info
