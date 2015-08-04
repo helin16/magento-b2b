@@ -23,13 +23,13 @@ class OrderConnector extends B2BConnector
 		$orders = $this->getlastestOrders($lastUpdatedTime);
 		$this->_log(0, get_class($this), 'Found ' . count($orders) . ' order(s) since "' . $lastUpdatedTime . '".', self::LOG_TYPE, '', __FUNCTION__);
 		if(is_array($orders) && count($orders) > 0) {
-			foreach($orders as $index => $order)
+			$transStarted = false;
+			try
 			{
-				$transStarted = false;
-				try
-				{
-					try {Dao::beginTransaction();} catch(Exception $e) {$transStarted = true;}
+				try {Dao::beginTransaction();} catch(Exception $e) {$transStarted = true;}
 
+				foreach($orders as $index => $order)
+				{
 					$this->_log(0, get_class($this), 'Found order from Magento with orderNo = ' . trim($order->increment_id) . '.', self::LOG_TYPE, '', __FUNCTION__);
 
 					$order = $this->getOrderInfo(trim($order->increment_id));
@@ -112,15 +112,16 @@ class OrderConnector extends B2BConnector
 					$this->_log(0, get_class($this), 'Updating the last updated time :' . trim($order->created_at), self::LOG_TYPE, '', __FUNCTION__);
 
 					$totalItems++;
-					if($transStarted === false)
-						Dao::commitTransaction();
 				}
-				catch(Exception $e)
-				{
-					if($transStarted === false)
-						Dao::rollbackTransaction();
-					throw $e;
-				}
+
+				if($transStarted === false)
+					Dao::commitTransaction();
+			}
+			catch(Exception $e)
+			{
+				if($transStarted === false)
+					Dao::rollbackTransaction();
+				throw $e;
 			}
 		}
 
