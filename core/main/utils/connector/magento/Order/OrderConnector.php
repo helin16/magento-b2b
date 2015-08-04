@@ -29,6 +29,7 @@ class OrderConnector extends B2BConnector
 			{
 				try {Dao::beginTransaction();} catch(Exception $e) {$transStarted = true;}
 
+				echo 'increment_id: ' . $order->increment_id . "\n";
 				Log::logging(0, get_class($this), 'Found order from Magento with orderNo = ' . trim($order->increment_id) . '.', self::LOG_TYPE, '', __FUNCTION__);
 
 				$order = $this->getOrderInfo(trim($order->increment_id));
