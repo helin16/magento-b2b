@@ -35,7 +35,7 @@ class OrderConnector extends B2BConnector
 				if(!is_object($order))
 				{
 					Log::logging(0, get_class($this), 'Found no object from $order, next element!', self::LOG_TYPE, '$index = ' . $index, __FUNCTION__);
-					continue
+					continue;
 				}
 				if(($status = trim($order->state)) === '')
 				{
