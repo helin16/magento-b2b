@@ -43,6 +43,12 @@ abstract class B2BConnector
 	 */
 	private $_apiKey;
 	/**
+	 * the running logs
+	 *
+	 * @var array
+	 */
+	private $_logs = array();
+	/**
 	 * Getting a B2BConnector
 	 *
 	 * @param string $type    The type of the connector
@@ -134,8 +140,17 @@ abstract class B2BConnector
 	 */
 	protected function _log($entityId, $entityName, $msg, $type, $comments = '', $funcName = '')
 	{
-		//echo $msg . "\n";
-		Log::logging($entityId, $entityName, $msg, $type, $comments, $funcName);
+		$this->_logs[] = $msg . "\n";
+// 		Log::logging($entityId, $entityName, $msg, $type, $comments, $funcName);
 		return $this;
+	}
+	/**
+	 * Getting the running logs
+	 *
+	 * @return multitype:
+	 */
+	public function getLogs()
+	{
+		return $this->_logs;
 	}
 }
