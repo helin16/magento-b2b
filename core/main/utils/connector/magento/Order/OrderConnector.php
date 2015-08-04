@@ -11,18 +11,17 @@ class OrderConnector extends B2BConnector
 	public function importOrders($lastUpdatedTime = '')
 	{
 		$totalItems = 0;
-		Log::logging(0, get_class($this), 'starting ...', self::LOG_TYPE, 'start', __FUNCTION__);
+		$this->_log(0, get_class($this), 'starting ...', self::LOG_TYPE, 'start', __FUNCTION__);
 		if(($lastUpdatedTime = trim($lastUpdatedTime)) === '')
 		{
-			Log::logging(0, get_class($this), 'Getting the last updated time', self::LOG_TYPE, '$lastUpdatedTime is blank', __FUNCTION__);
+			$this->_log(0, get_class($this), 'Getting the last updated time', self::LOG_TYPE, '$lastUpdatedTime is blank', __FUNCTION__);
 // 			$lastImportTime = new UDate(SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_LAST_IMPORT_TIME), SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_TIMEZONE));
 			$lastUpdatedTime = trim(SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_LAST_IMPORT_TIME));
 		}
 
-		echo '$lastUpdatedTime: ' . $lastUpdatedTime . "\n";
 		//getting the lastest order since last updated time
 		$orders = $this->getlastestOrders($lastUpdatedTime);
-		Log::logging(0, get_class($this), 'Found ' . count($orders) . ' order(s) since "' . $lastUpdatedTime . '".', self::LOG_TYPE, '', __FUNCTION__);
+		$this->_log(0, get_class($this), 'Found ' . count($orders) . ' order(s) since "' . $lastUpdatedTime . '".', self::LOG_TYPE, '', __FUNCTION__);
 		foreach($orders as $index => $order)
 		{
 			$transStarted = false;
@@ -30,18 +29,17 @@ class OrderConnector extends B2BConnector
 			{
 				try {Dao::beginTransaction();} catch(Exception $e) {$transStarted = true;}
 
-				echo 'increment_id: ' . $order->increment_id . "\n";
-				Log::logging(0, get_class($this), 'Found order from Magento with orderNo = ' . trim($order->increment_id) . '.', self::LOG_TYPE, '', __FUNCTION__);
+				$this->_log(0, get_class($this), 'Found order from Magento with orderNo = ' . trim($order->increment_id) . '.', self::LOG_TYPE, '', __FUNCTION__);
 
 				$order = $this->getOrderInfo(trim($order->increment_id));
 				if(!is_object($order))
 				{
-					Log::logging(0, get_class($this), 'Found no object from $order, next element!', self::LOG_TYPE, '$index = ' . $index, __FUNCTION__);
+					$this->_log(0, get_class($this), 'Found no object from $order, next element!', self::LOG_TYPE, '$index = ' . $index, __FUNCTION__);
 					continue;
 				}
 				if(($status = trim($order->state)) === '')
 				{
-					Log::logging(0, get_class($this), 'Found no state Elment from $order, next element!', self::LOG_TYPE, '$index = ' . $index, __FUNCTION__);
+					$this->_log(0, get_class($this), 'Found no state Elment from $order, next element!', self::LOG_TYPE, '$index = ' . $index, __FUNCTION__);
 					continue;
 				}
 
@@ -54,12 +52,12 @@ class OrderConnector extends B2BConnector
 				if(!($o = Order::getByOrderNo(trim($order->increment_id))) instanceof Order)
 				{
 					$o = new Order();
-					Log::logging(0, get_class($this), 'Found no order from DB, create new', self::LOG_TYPE, '$index = ' . $index, __FUNCTION__);
+					$this->_log(0, get_class($this), 'Found no order from DB, create new', self::LOG_TYPE, '$index = ' . $index, __FUNCTION__);
 				}
 				else
 				{
 					//skip, if order exsits
-					Log::logging(0, get_class($this), 'Found order from DB, ID = ' . $o->getId(), self::LOG_TYPE, '$index = ' . $index, __FUNCTION__);
+					$this->_log(0, get_class($this), 'Found order from DB, ID = ' . $o->getId(), self::LOG_TYPE, '$index = ' . $index, __FUNCTION__);
 					continue;
 // 					$shippingAddr = $o->getShippingAddr();
 // 					$billingAddr = $o->getBillingAddr();
@@ -86,7 +84,7 @@ class OrderConnector extends B2BConnector
 					->setBillingAddr($customer->getBillingAddress())
 					->setCustomer($customer)
 					->save();
-				Log::logging(0, get_class($this), 'Saved the order, ID = ' . $o->getId(), self::LOG_TYPE, '$index = ' . $index, __FUNCTION__);
+				$this->_log(0, get_class($this), 'Saved the order, ID = ' . $o->getId(), self::LOG_TYPE, '$index = ' . $index, __FUNCTION__);
 				$totalShippingCost = StringUtilsAbstract::getValueFromCurrency(trim($order->shipping_amount)) * 1.1;
 				//create order info
 				$this->_createOrderInfo($o, OrderInfoType::get(OrderInfoType::ID_CUS_NAME), trim($customer->getName()))
@@ -99,7 +97,7 @@ class OrderConnector extends B2BConnector
 					->_createOrderInfo($o, OrderInfoType::get(OrderInfoType::ID_MAGE_ORDER_SHIPPING_METHOD), trim($order->shipping_description))
 					->_createOrderInfo($o, OrderInfoType::get(OrderInfoType::ID_MAGE_ORDER_SHIPPING_COST), $totalShippingCost)
 					->_createOrderInfo($o, OrderInfoType::get(OrderInfoType::ID_MAGE_ORDER_PAYMENT_METHOD), (!isset($order->payment) ? '' : (!isset($order->payment->method) ? '' : trim($order->payment->method))));
-				Log::logging(0, get_class($this), 'Updated order info', self::LOG_TYPE, '$index = ' . $index, __FUNCTION__);
+				$this->_log(0, get_class($this), 'Updated order info', self::LOG_TYPE, '$index = ' . $index, __FUNCTION__);
 
 				//saving the order item
 				$totalItemCost = 0;
@@ -112,7 +110,7 @@ class OrderConnector extends B2BConnector
 				}
 				//record the last imported time for this import process
 				SystemSettings::addSettings(SystemSettings::TYPE_B2B_SOAP_LAST_IMPORT_TIME, trim($order->created_at));
-				Log::logging(0, get_class($this), 'Updating the last updated time', self::LOG_TYPE, '', __FUNCTION__);
+				$this->_log(0, get_class($this), 'Updating the last updated time', self::LOG_TYPE, '', __FUNCTION__);
 
 				$totalItems++;
 				if($transStarted === false)
