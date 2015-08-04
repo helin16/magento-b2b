@@ -32,6 +32,7 @@ class OrderConnector extends B2BConnector
 				Log::logging(0, get_class($this), 'Found order from Magento with orderNo = ' . trim($order->increment_id) . '.', self::LOG_TYPE, '', __FUNCTION__);
 
 				$order = $this->getOrderInfo(trim($order->increment_id));
+				var_dump($order);
 				if(($status = trim($order->state)) === '')
 				{
 					Log::logging(0, get_class($this), 'Found no state Elment from $order, next element!', self::LOG_TYPE, '$index = ' . $index, __FUNCTION__);
