@@ -19,6 +19,7 @@ class OrderConnector extends B2BConnector
 			$lastUpdatedTime = trim(SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_LAST_IMPORT_TIME));
 		}
 
+		echo '$lastUpdatedTime: ' . $lastUpdatedTime . "\n";
 		//getting the lastest order since last updated time
 		$orders = $this->getlastestOrders($lastUpdatedTime);
 		Log::logging(0, get_class($this), 'Found ' . count($orders) . ' order(s) since "' . $lastUpdatedTime . '".', self::LOG_TYPE, '', __FUNCTION__);
