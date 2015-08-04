@@ -12,3 +12,4 @@ function importOrder()
 }
 Core::setUser(UserAccount::get(UserAccount::ID_SYSTEM_ACCOUNT));
 importOrder();
+echo "\n\n";
