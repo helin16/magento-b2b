@@ -50,12 +50,7 @@ class OrderConnector extends B2BConnector
 	// 				$totalPaid = (!isset($order->total_paid) ? 0 : trim($order->total_paid));
 
 					$shippingAddr = $billingAddr = null;
-					if(!($o = Order::getByOrderNo(trim($order->increment_id))) instanceof Order)
-					{
-						$o = new Order();
-						$this->_log(0, get_class($this), 'Found no order from DB, create new', self::LOG_TYPE, '$index = ' . $index, __FUNCTION__);
-					}
-					else
+					if(($o = Order::getByOrderNo(trim($order->increment_id))) instanceof Order)
 					{
 						//skip, if order exsits
 						$this->_log(0, get_class($this), 'Found order from DB, ID = ' . $o->getId(), self::LOG_TYPE, '$index = ' . $index, __FUNCTION__);
@@ -63,6 +58,9 @@ class OrderConnector extends B2BConnector
 	// 					$shippingAddr = $o->getShippingAddr();
 	// 					$billingAddr = $o->getBillingAddr();
 					}
+
+					$o = new Order();
+					$this->_log(0, get_class($this), 'Found no order from DB, create new', self::LOG_TYPE, '$index = ' . $index, __FUNCTION__);
 
 					$customer = Customer::create(
 							(isset($order->billing_address) && isset($order->billing_address->company) && trim($order->billing_address->company) !== '') ? trim($order->billing_address->company) : (isset($order->customer_firstname) ? trim($order->customer_firstname) . ' ' . trim($order->customer_lastname) : ''),
@@ -111,7 +109,7 @@ class OrderConnector extends B2BConnector
 					}
 					//record the last imported time for this import process
 					SystemSettings::addSettings(SystemSettings::TYPE_B2B_SOAP_LAST_IMPORT_TIME, trim($order->created_at));
-					$this->_log(0, get_class($this), 'Updating the last updated time', self::LOG_TYPE, '', __FUNCTION__);
+					$this->_log(0, get_class($this), 'Updating the last updated time :' . trim($order->created_at), self::LOG_TYPE, '', __FUNCTION__);
 
 					$totalItems++;
 					if($transStarted === false)
