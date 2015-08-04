@@ -134,7 +134,7 @@ abstract class B2BConnector
 	 */
 	protected function _log($entityId, $entityName, $msg, $type, $comments = '', $funcName = '')
 	{
-		echo $msg . "\n";
+		//echo $msg . "\n";
 		Log::logging($entityId, $entityName, $msg, $type, $comments, $funcName);
 		return $this;
 	}
