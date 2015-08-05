@@ -29,7 +29,7 @@ class APIProduct extends APIClassAbstract
 		$response = $this->_getResponse(UDate::now());
 		try {
 			Dao::beginTransaction();
-			Core::setUser(UserAccount::get(UserAccount::ID_SYSTEM_ACCOUNT));
+			Core::setUser(UserAccount::get(UserAccount::ID_SYSTEM_ACCOUNT)); //TODO
 			
 			if(Product::getBySku(trim($sku)) instanceof Product)
 				throw new Exception('sku "' . $sku .'" already exists');
@@ -64,6 +64,32 @@ class APIProduct extends APIClassAbstract
 			$response['status'] = self::RESULT_CODE_FAIL;
 			$response->addChild('error', $e->getMessage());
 		}
+		return trim($response->asXML());
+	}
+	/**
+	 * get product info by sku
+	 * 
+	 * @param string $sku
+	 * 
+	 * @return SimpleXMLElement
+	 * @soapmethod
+	 */
+	public function getProductBySku($sku)
+	{
+		var_dump(123);
+		throw new Exception('123');
+		$response = $this->_getResponse(UDate::now());
+		$sku = trim($sku);
+		Core::setUser(UserAccount::get(UserAccount::ID_SYSTEM_ACCOUNT)); //TODO
+		$obj =  Product::getBySku($sku);
+		if($obj instanceof Product)
+		{
+			$response['status'] = self::RESULT_CODE_SUCC;
+			$response->addChild('product', json_encode($obj->getJson()));
+			return trim($response->asXML());
+		}
+		$response['status'] = self::RESULT_CODE_FAIL;
+		$response->addChild('error', 'product with sku "' . $sku . '" does not exist.');
 		return trim($response->asXML());
 	}
 }

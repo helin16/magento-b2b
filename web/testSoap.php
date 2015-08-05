@@ -10,10 +10,16 @@ try {
 	$name = "namefor" . $sku;
 	
 	$soap = ComScriptSoap::getScript($wsdl);
-	$productXML = $soap->createProduct($sku, $name);
+// 	// create product
+// 	$productXML = $soap->createProduct($sku, $name);
+// 	// create product
+	$productXML = $soap->getProductBySku($sku);
 	
+	var_dump($productXML);
+	die;
 	if(intval($productXML['status']) === 1)
 		throw new Exception(trim($productXML->error));
+	
 	
 	$product = $productXML->product;
 	$productArray = json_decode($product,true);
