@@ -120,9 +120,11 @@ class CatelogConnector extends B2BConnector
 			
 			if(count($newinfo) > 0)
 			{
-				$result = $this->_connect()->catalogProductUpdate($this->_session, $sku, $newinfo);
-				if($result !== true)
-					throw new Exception('Product not updated. Message from Magento: "' . $result . '"');
+				try {
+					$result = $this->_connect()->catalogProductUpdate($this->_session, $sku, $newinfo);
+				} catch (SoapFault $e) {
+					return '***warning*** push Product "' . $sku . '" info to magento faled. Message from Magento: "' . $e -> getMessage() . '"' . "\n";
+				}
 			}
 		}
 		
