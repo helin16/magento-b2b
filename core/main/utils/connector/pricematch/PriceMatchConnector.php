@@ -34,6 +34,18 @@ class PriceMatchConnector
 		$class->debug = $debug === true ? true : false;
 		return $class->_getNewPrice($updateMagento);
 	}
+	private function _getMagentoProductPrice($sku)
+	{
+		if(trim($sku) === '')
+			return null;
+		$mageData = CatelogConnector::getConnector(B2BConnector::CONNECTOR_TYPE_CATELOG,
+				SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_WSDL),
+				SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_USER),
+				SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_KEY)
+		)
+		->getProductInfo(trim($sku), array('price'));
+		return $mageData === null ? null : $mageData->price;
+	}
 	private function _getNewPrice($updateMagento)
 	{
 		$result = null;
@@ -45,7 +57,15 @@ class PriceMatchConnector
 		$min = PriceMatchMin::getBySku($sku);
 		$rule = ProductPriceMatchRule::getByProduct($product);
 		$prices = ProductPrice::getPrices($product, ProductPriceType::get(ProductPriceType::ID_RRP));
-		$myPrice = count($prices)===0 ? 0 : $prices[0]->getPrice();
+		if(count($prices) === 0)
+		{
+			$newPrice = ProductPrice::create($product, ProductPriceType::get(ProductPriceType::ID_RRP), 0);
+			$prices = array($newPrice);
+		}
+		if(($magePrice = $this->_getMagentoProductPrice($sku)) !== null)
+			$prices[0]->setPrice($magePrice)->save();
+		$myPrice = $prices[0]->getPrice();
+		
 		if(!$min instanceof PriceMatchMin)
 			$min = PriceMatchMin::create($this->sku);
 		if($rule instanceof ProductPriceMatchRule)
@@ -106,7 +126,7 @@ class PriceMatchConnector
 				}
 				
 				// check if in range
-				if($myPrice !== 0 && ($price_from === null || $myPrice >= $price_from) && ($price_to === null ||$myPrice <= $price_to))
+				if(($price_from === null || $myPrice >= $price_from) && ($price_to === null ||$myPrice <= $price_to))
 				{
 					$result = $base_price;
 					
@@ -123,17 +143,10 @@ class PriceMatchConnector
 					// set product price
 					if(isset($prices[0]) && $prices[0] instanceof ProductPrice)
 					{
-						if(doubleval($prices[0]->getPrice()) === doubleval($result))
-						{
-							if($this->debug === true)
-								echo 'old price (' . $prices[0]->getPrice() . 'is same as new price (' . $result . ')' . "\n"; 
-						}
-						else {
-							$oldPrice = $prices[0]->getPrice();
-							$prices[0]->setPrice(doubleval($result))->save()->addLog('PriceMatch change price from $' . $oldPrice . 'to new price $' . $result, Log::TYPE_SYSTEM);
-							if($updateMagento === true)
-								$this->updateMagentoPrice(doubleval($result));
-						}
+						$oldPrice = $prices[0]->getPrice();
+						$prices[0]->setPrice(doubleval($result))->save()->addLog('PriceMatch change price from $' . $oldPrice . 'to new price $' . $result, Log::TYPE_SYSTEM);
+						if($updateMagento === true)
+							$this->updateMagentoPrice(doubleval($result));
 					}
 				}
 			}
@@ -177,10 +190,10 @@ class PriceMatchConnector
 			echo 'Connecting to Magento for Product ' . $product->getSku() . '(id=' . $product->getId() . ')' . "\n";
 	
 		$result = $connector->updateProductPrice($product->getSku(), $price);
-	
-		if($result !== true)
-			throw new Exception('Update Magento product (sku=' . $this->sku . ') is unsuccessful. Message from Magento: ' . $result);
-		if($this->debug)
+		
+		if($result !== true && $this->debug === true)
+			echo trim($result);
+		if($result === true && $this->debug === true)
 			echo 'Magento Price Successfully updated to $' . $price . "\n";
 		
 		return $this;

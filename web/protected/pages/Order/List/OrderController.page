@@ -17,10 +17,16 @@
 	           </div>
 	           <div class="panel-body" role="form" id='searchDiv'>
 	               <div class='row'>
-	                   <div class="col-sm-9">
+	                   <div class="col-sm-6">
 	                       <div class="form-group form-group-sm input-group">
 	                           <label for="custName" class="input-group-addon">Customer Name: </label>
 	                           <input id='custName' type="text" class="form-control input-sm" placeholder="Customer Name" search_field="ord.infos.<%= OrderInfoType::ID_CUS_NAME %>" />
+	                       </div>
+	                   </div>
+	                   <div class="col-sm-6">
+	                       <div class="form-group form-group-sm input-group">
+	                           <label for="custPONo" class="input-group-addon">Customer P.O.: </label>
+	                           <input id='custPONo' type="text" class="form-control input-sm" placeholder="Customer PO Number" search_field="ord.pONo" />
 	                       </div>
 	                   </div>
 	                   <div class="col-sm-3">
@@ -117,10 +123,10 @@
 				     	</div>
 				     	<div class="col-xs-6 text-right">
 						     	<div class="col-xs-4">
-			                   		Total Amt: <strong id='total_amount' class="text-info">$0</strong> 
+			                   		Total Amt: <strong id='total_amount' class="text-info">$0</strong>
 						     	</div>
 						     	<div class="col-xs-4">
-			                   		Total Due: <strong id='total_due' class="text-danger">$0</strong> 
+			                   		Total Due: <strong id='total_due' class="text-danger">$0</strong>
 						     	</div>
 						     	<div class="col-xs-4">
 			                   		<span id='total_no_of_items'>0</span> Records Found!

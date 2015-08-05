@@ -10,7 +10,13 @@
 					<div class="col-sm-4">
 						<div class="form-group form-group-sm">
                            <label>name:</label>
-                           <input type="text" search_field="pro_cate.name" placeholder="The name of the <%= $this->getFocusEntity() %>" class="form-control input-sm">
+                           <input type="text" search_field="name" placeholder="The name of the <%= $this->getFocusEntity() %>" class="form-control input-sm">
+                       </div>
+					</div>
+					<div class="col-sm-4">
+						<div class="form-group form-group-sm">
+                           <label>Magento Id:</label>
+                           <input type="text" search_field="mageId" placeholder="The magento Id the <%= $this->getFocusEntity() %>" class="form-control input-sm">
                        </div>
 					</div>
 					<div class="col-sm-2">

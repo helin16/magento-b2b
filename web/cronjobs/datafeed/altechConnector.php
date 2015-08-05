@@ -1,0 +1,2 @@
+<?php
+class altechConnector extends

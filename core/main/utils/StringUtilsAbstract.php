@@ -202,4 +202,19 @@ abstract class StringUtilsAbstract
 		}
 		return isset($fileSuffix[0]) ? "unknown/" . trim($fileSuffix[0], ".") : "text/plain";
 	}
+	
+	public static function permute($items, &$return = array(), $perms = array()) {
+		if (empty($items)) { 
+	        $return[] = $perms;
+	    }  else {
+	        for ($i = count($items) - 1; $i >= 0; --$i) {
+	             $newitems = $items;
+	             $newperms = $perms;
+	             list($foo) = array_splice($newitems, $i, 1);
+	             array_unshift($newperms, $foo);
+	             self::permute($newitems, $return, $newperms);
+	         }
+	    }
+	}
+	
 }

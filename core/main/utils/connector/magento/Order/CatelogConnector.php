@@ -120,9 +120,11 @@ class CatelogConnector extends B2BConnector
 			
 			if(count($newinfo) > 0)
 			{
-				$result = $this->_connect()->catalogProductUpdate($this->_session, $sku, $newinfo);
-				if($result !== true)
-					throw new Exception('Product not updated. Message from Magento: "' . $result . '"');
+				try {
+					$result = $this->_connect()->catalogProductUpdate($this->_session, $sku, $newinfo);
+				} catch (SoapFault $e) {
+					return '***warning*** push Product "' . $sku . '" info to magento faled. Message from Magento: "' . $e -> getMessage() . '"' . "\n";
+				}
 			}
 		}
 		
@@ -178,18 +180,19 @@ class CatelogConnector extends B2BConnector
 		Log::logging(0, get_class($this), 'getting ProductCategories(mageId=' . $categoryId . ')', self::LOG_TYPE, '', __FUNCTION__);
 		if(count($categories) === 0)
 			return;
-
-		foreach($categories as $category)
-		{
-			try
+		
+		try {
+			$transStarted = false;
+			try {Dao::beginTransaction();} catch(Exception $e) {$transStarted = true;}
+			foreach($categories as $category)
 			{
-				Dao::beginTransaction();
-
 				$mageId = trim($category->category_id);
 				Log::logging(0, get_class($this), 'getting ProductCategory(mageId=' . $mageId . ')', self::LOG_TYPE, '', __FUNCTION__);
 
 				$productCategory = ProductCategory::getByMageId($mageId);
 				$category = $this->catalogCategoryInfo($mageId);
+				if(!is_object($category))
+					continue;
 				$description = isset($category->description) ? trim($category->description) : trim($category->name);
 				if(!$productCategory instanceof ProductCategory)
 				{
@@ -211,14 +214,16 @@ class CatelogConnector extends B2BConnector
 					->setUrlKey(trim($category->url_key))
 					->save();
 
-				Dao::commitTransaction();
 				$this->importProductCategories(trim($category->category_id));
 			}
-			catch(Exception $e)
-			{
-				Dao::rollbackTransaction();
-				throw $e;
-			}
+			if($transStarted === false)
+				Dao::commitTransaction();
+		}
+		catch(Exception $ex)
+		{
+		if($transStarted === false)
+			Dao::rollbackTransaction();
+			throw $ex;
 		}
 		return $this;
 	}
@@ -288,6 +293,7 @@ class CatelogConnector extends B2BConnector
 				$mageId = trim($pro->product_id);
 				$sku = trim($pro->sku);
 				$pro = $this->getProductInfo($sku, $this->getInfoAttributes());
+				$created_at = trim($pro->created_at);
 				if(is_null($pro) || !isset($pro->additional_attributes))
 					continue;
 				// handle extra long sku from magento, exceeding mysql sku length limit
@@ -304,7 +310,6 @@ class CatelogConnector extends B2BConnector
 					continue;
 				}
 				
-				$created_at = trim($pro->created_at);
 				$additionAttrs = $this->_getAttributeFromAdditionAttr($pro->additional_attributes);
 				$name = trim($additionAttrs['name']);
 				$short_description = trim($additionAttrs['short_description']);

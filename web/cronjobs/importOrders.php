@@ -8,8 +8,8 @@ function importOrder()
 			SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_KEY)
 	)
 	->importOrders();
+	echo implode($script->getLogs());
 }
 Core::setUser(UserAccount::get(UserAccount::ID_SYSTEM_ACCOUNT));
 importOrder();
-
-echo "done";
+echo "\n\n";
