@@ -5,8 +5,8 @@ try {
 	Core::setUser(UserAccount::get(UserAccount::ID_SYSTEM_ACCOUNT));
 	Dao::beginTransaction();
 	
-	$wsdl = "http://localhost:8888/?soap=product.wsdl";
-	$sku = "test2007153";
+	$wsdl = "http://localhost:8080/?soap=product.wsdl";
+	$sku = "VS248H";
 	$name = "namefor" . $sku;
 	
 	$soap = ComScriptSoap::getScript($wsdl, array('cache_wsdl' => WSDL_CACHE_NONE));
@@ -15,8 +15,6 @@ try {
 // 	// create product
 	$productXML = $soap->getProductBySku($sku);
 	
-	var_dump($productXML);
-	die;
 	if(intval($productXML['status']) === 1)
 		throw new Exception(trim($productXML->error));
 	
