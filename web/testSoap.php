@@ -5,11 +5,11 @@ try {
 	Core::setUser(UserAccount::get(UserAccount::ID_SYSTEM_ACCOUNT));
 	Dao::beginTransaction();
 	
-	$wsdl = "http://localhost:8080/?soap=product.wsdl";
+	$wsdl = "http://localhost:8888/?soap=product.wsdl";
 	$sku = "test2007153";
 	$name = "namefor" . $sku;
 	
-	$soap = ComScriptSoap::getScript($wsdl);
+	$soap = ComScriptSoap::getScript($wsdl, array('cache_wsdl' => WSDL_CACHE_NONE));
 // 	// create product
 // 	$productXML = $soap->createProduct($sku, $name);
 // 	// create product

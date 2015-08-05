@@ -21,7 +21,7 @@ class APIProduct extends APIClassAbstract
 	 * @param string $brandName
 	 * 
 	 * @throws Exception
-	 * @return SimpleXMLElement
+	 * @return string
 	 * @soapmethod
 	 */
 	public function createProduct($sku, $name, $categoryPaths = array(), $mageProductId = '', $isFromB2B = false, $shortDescr = '', $fullDescr = '', $brandName = '')
@@ -71,25 +71,26 @@ class APIProduct extends APIClassAbstract
 	 * 
 	 * @param string $sku
 	 * 
-	 * @return SimpleXMLElement
+	 * @return string
 	 * @soapmethod
 	 */
 	public function getProductBySku($sku)
 	{
-		var_dump(123);
-		throw new Exception('123');
-		$response = $this->_getResponse(UDate::now());
-		$sku = trim($sku);
-		Core::setUser(UserAccount::get(UserAccount::ID_SYSTEM_ACCOUNT)); //TODO
-		$obj =  Product::getBySku($sku);
-		if($obj instanceof Product)
-		{
-			$response['status'] = self::RESULT_CODE_SUCC;
-			$response->addChild('product', json_encode($obj->getJson()));
-			return trim($response->asXML());
-		}
-		$response['status'] = self::RESULT_CODE_FAIL;
-		$response->addChild('error', 'product with sku "' . $sku . '" does not exist.');
-		return trim($response->asXML());
+		return 'test1';
+// 		var_dump(123);
+// 		throw new Exception('123');
+// 		$response = $this->_getResponse(UDate::now());
+// 		$sku = trim($sku);
+// 		Core::setUser(UserAccount::get(UserAccount::ID_SYSTEM_ACCOUNT)); //TODO
+// 		$obj =  Product::getBySku($sku);
+// 		if($obj instanceof Product)
+// 		{
+// 			$response['status'] = self::RESULT_CODE_SUCC;
+// 			$response->addChild('product', json_encode($obj->getJson()));
+// 			return trim($response->asXML());
+// 		}
+// 		$response['status'] = self::RESULT_CODE_FAIL;
+// 		$response->addChild('error', 'product with sku "' . $sku . '" does not exist.');
+// 		return trim($response->asXML());
 	}
 }
