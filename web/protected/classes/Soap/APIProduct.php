@@ -76,21 +76,18 @@ class APIProduct extends APIClassAbstract
 	 */
 	public function getProductBySku($sku)
 	{
-		return 'test1';
-// 		var_dump(123);
-// 		throw new Exception('123');
-// 		$response = $this->_getResponse(UDate::now());
-// 		$sku = trim($sku);
-// 		Core::setUser(UserAccount::get(UserAccount::ID_SYSTEM_ACCOUNT)); //TODO
-// 		$obj =  Product::getBySku($sku);
-// 		if($obj instanceof Product)
-// 		{
-// 			$response['status'] = self::RESULT_CODE_SUCC;
-// 			$response->addChild('product', json_encode($obj->getJson()));
-// 			return trim($response->asXML());
-// 		}
-// 		$response['status'] = self::RESULT_CODE_FAIL;
-// 		$response->addChild('error', 'product with sku "' . $sku . '" does not exist.');
-// 		return trim($response->asXML());
+		$response = $this->_getResponse(UDate::now());
+		$sku = trim($sku);
+		Core::setUser(UserAccount::get(UserAccount::ID_SYSTEM_ACCOUNT)); //TODO
+		$obj =  Product::getBySku($sku);
+		if($obj instanceof Product)
+		{
+			$response['status'] = self::RESULT_CODE_SUCC;
+			$response->addChild('product', json_encode($obj->getJson()));
+			return trim($response->asXML());
+		}
+		$response['status'] = self::RESULT_CODE_FAIL;
+		$response->addChild('error', 'product with sku "' . $sku . '" does not exist.');
+		return trim($response->asXML());
 	}
 }
