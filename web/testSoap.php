@@ -13,16 +13,16 @@ try {
 // 	// create product
 // 	$productXML = $soap->createProduct($sku, $name);
 // 	// create product
-	$productXML = $soap->getProductBySku($sku);
+	$productXML = $soap->getCategory(1);
 	
-	if(intval($productXML['status']) === 1)
-		throw new Exception(trim($productXML->error));
+// 	if(intval($productXML['status']) === 1)
+// 		throw new Exception(trim($productXML->error));
 	
+	var_dump($productXML);
+// 	$product = $productXML->product;
+// 	$productArray = json_decode($product,true);
 	
-	$product = $productXML->product;
-	$productArray = json_decode($product,true);
-	
-	var_dump($productArray);
+// 	var_dump($productArray);
 	
 	Dao::commitTransaction();
 } catch (Exception $e)

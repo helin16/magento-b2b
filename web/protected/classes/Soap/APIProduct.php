@@ -90,4 +90,21 @@ class APIProduct extends APIClassAbstract
 		$response->addChild('error', 'product with sku "' . $sku . '" does not exist.');
 		return trim($response->asXML());
 	}
+	public function getCategory($systemid)
+	{
+		return '123';
+		$response = $this->_getResponse(UDate::now());
+		$systemid = intval(trim($systemid));
+		Core::setUser(UserAccount::get(UserAccount::ID_SYSTEM_ACCOUNT)); //TODO
+		$obj =  ProductCategory::get($systemid);
+		if($obj instanceof ProductCategory)
+		{
+			$response['status'] = self::RESULT_CODE_SUCC;
+			$response->addChild('category', json_encode($obj->getJson()));
+			return trim($response->asXML());
+		}
+		$response['status'] = self::RESULT_CODE_FAIL;
+		$response->addChild('error', 'category with system id "' . $systemid . '" does not exist.');
+		return trim($response->asXML());
+	}
 }
