@@ -356,6 +356,7 @@ class ProductCategory extends BaseEntityAbstract
 			$array['namePath'] = $this->getNamePath();
 			$array['noOfChildren'] = self::countByCriteria('parentId = ? and active = 1', array($this->getId()));
 			$array['noOfProducts'] = Product_Category::countByCriteria('categoryId = ? and active = 1', array($this->getId()));
+			$array['productAttributesetId'] = 27; //TODO
 		}
 		return parent::getJson($array, $reset);
 	}
