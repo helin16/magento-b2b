@@ -90,9 +90,15 @@ class APIProduct extends APIClassAbstract
 		$response->addChild('error', 'product with sku "' . $sku . '" does not exist.');
 		return trim($response->asXML());
 	}
+	/**
+	 * get category info by magento-b2b productCategory id
+	 * 
+	 * @param string $systemid
+	 * @return string
+	 * @soapmethod
+	 */
 	public function getCategory($systemid)
 	{
-		return '123';
 		$response = $this->_getResponse(UDate::now());
 		$systemid = intval(trim($systemid));
 		Core::setUser(UserAccount::get(UserAccount::ID_SYSTEM_ACCOUNT)); //TODO

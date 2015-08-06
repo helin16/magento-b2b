@@ -15,12 +15,13 @@ try {
 // 	// create product
 	$productXML = $soap->getCategory(1);
 	
-// 	if(intval($productXML['status']) === 1)
-// 		throw new Exception(trim($productXML->error));
-	
 	var_dump($productXML);
-// 	$product = $productXML->product;
-// 	$productArray = json_decode($product,true);
+	
+	if(intval($productXML['status']) === 1)
+		throw new Exception(trim($productXML->error));
+	
+	$obj = $productXML->category;
+	$productArray = json_decode($obj,true);
 	
 // 	var_dump($productArray);
 	
