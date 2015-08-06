@@ -58,6 +58,12 @@ class ProductCategory extends BaseEntityAbstract
 	 */
 	private $mageId = 0;
 	/**
+	 * The id of the product attribute set in magento
+	 *
+	 * @var int
+	 */
+	private $productAttributesetId = 0;
+	/**
 	 * Whether this order is imported from B2B
 	 *
 	 * @var bool
@@ -295,6 +301,25 @@ class ProductCategory extends BaseEntityAbstract
 		return $this;
 	}
 	/**
+	 * getter for productAttributesetId
+	 *
+	 * @return int
+	 */
+	public function getProductAttributesetId()
+	{
+	    return $this->productAttributesetId;
+	}
+	/**
+	 * Setter for productAttributesetId
+	 *
+	 * @return ProductCategory
+	 */
+	public function setProductAttributesetId($productAttributesetId)
+	{
+	    $this->productAttributesetId = $productAttributesetId;
+	    return $this;
+	}
+	/**
 	 * (non-PHPdoc)
 	 * @see BaseEntityAbstract::postSave()
 	 */
@@ -372,6 +397,7 @@ class ProductCategory extends BaseEntityAbstract
 		DaoMap::setManyToOne('root', __CLASS__, 'pro_cate_root', true);
 		DaoMap::setStringType('position', 'varchar', 255);
 		DaoMap::setIntType('mageId');
+		DaoMap::setIntType('productAttributesetId', 'int', 10, true, true);
 		DaoMap::setBoolType('isFromB2B');
 		DaoMap::setBoolType('isAnchor');
 		DaoMap::setBoolType('includeInMenu');
@@ -382,6 +408,7 @@ class ProductCategory extends BaseEntityAbstract
 		DaoMap::createIndex('position');
 		DaoMap::createIndex('isFromB2B');
 		DaoMap::createIndex('mageId');
+		DaoMap::createIndex('productAttributesetId');
 		DaoMap::createIndex('isAnchor');
 		DaoMap::createIndex('includeInMenu');
 		DaoMap::createIndex('urlKey');
