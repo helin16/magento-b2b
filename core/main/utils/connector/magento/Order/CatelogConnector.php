@@ -1,14 +1,25 @@
 <?php
 class CatelogConnector extends B2BConnector
 {
-	public function getProductList($date)
+	public function getProductList($fromDate)
 	{
-		echo 'Looking for Magento Products with Create Date From: "' . $date . '"' . "\n";
-		$params = array('complex_filter'=>
-				array(
-						array('key'=>'created_at','value'=>array('key' =>'from','value' => $date))
-				)
-		);
+		$fromDate = trim($fromDate);
+// 		$fromId = trim($fromId);
+		$array = array();
+// 		if($fromId !== '')
+// 		{
+// 			$array[] = array('key'=>'product_id','value'=>array('key' =>'gteq','value' => intval($fromId)));
+// 			$array[] = array('key'=>'product_id','value'=>array('key' =>'lteq','value' => (intval($fromId) + $idStepSize) ));
+// 			echo 'Looking for Magento Products with ID From: "' . intval($fromId) . '" To: "' . (intval($fromId) + $idStepSize) . '"' . "\n";
+// 		}
+// 		if($fromDate !== '')
+// 		{
+			$array[] = array('key'=>'created_at','value'=>array('key' =>'from','value' => trim($fromDate)));
+// 			echo 'Looking for Magento Products with Date From: "' . $fromDate . '"' . "\n";
+// 		}
+		if(count($array) === 0)
+			throw new Exception('no param given');
+		$params = array('complex_filter' => $array);
 		return $this->_connect()->catalogProductList($this->_session, $params);
 	}
 	/**
@@ -51,6 +62,7 @@ class CatelogConnector extends B2BConnector
 	 */
 	public function getProductInfo($sku, $attributes = array())
 	{
+		$attributes = ($attributes === array() ? $this->getInfoAttributes() : $attributes);
 		return $this->_connect()->catalogProductInfo($this->_session, $sku, null, $attributes);
 	}
 	/**
@@ -84,7 +96,6 @@ class CatelogConnector extends B2BConnector
 		$currentInfo = $this->getProductInfo($sku);
 		$newinfo = array();
 		$result = null;
-		
 		if(count($params) > 0 && $this->getProductInfo($sku) !== null)
 		{
 			if(isset($params['categories']))
@@ -117,7 +128,10 @@ class CatelogConnector extends B2BConnector
 				$newinfo['meta_keyword'] = $params['meta_keyword'];
 			if(isset($params['meta_description']))
 				$newinfo['meta_description'] = $params['meta_description'];
-			
+			if(isset($params['status']))
+				$newinfo['status'] = $params['status'];
+			if(isset($params['sku']))
+				$newinfo['sku'] = $params['sku'];
 			if(count($newinfo) > 0)
 			{
 				try {
@@ -227,9 +241,10 @@ class CatelogConnector extends B2BConnector
 		}
 		return $this;
 	}
+	//create($sku, $name, $mageProductId = '', $stockOnHand = null, $stockOnOrder = null, $isFromB2B = false, $shortDescr = '', $fullDescr = '', Manufacturer $manufacturer = null, $assetAccNo = null, $revenueAccNo = null, $costAccNo = null, $stockMinLevel = null, $stockReorderLevel = null)
 	public function getInfoAttributes()
 	{
-		$attributeName = array('name', 'manufacturer', 'man_code', 'news_from_date', 'news_to_date', 'price', 'short_description', 'supplier', 'description', 'weight', 'status', 'special_price', 'special_from_date', 'special_to_date');
+		$attributeName = array('name', 'product_id', 'short_description', 'description', 'manufacturer', 'man_code', 'news_from_date', 'news_to_date', 'price', 'supplier', 'weight', 'status', 'special_price', 'special_from_date', 'special_to_date');
 		$attributes = new stdclass();
 		$attributes->additional_attributes = $attributeName;
 		return $attributes;
@@ -271,14 +286,22 @@ class CatelogConnector extends B2BConnector
 	 *
 	 * @return CatelogConnector
 	 */
-	public function importProducts($setFromDate = false, $newOnly = false)
+	public function importProducts($setFromDate = false, $newOnly = false, $setFromId = false)
 	{
+		if($setFromDate === false && $setFromId === false)
+			throw new Exception('must give a limitation on product pull');
 		if(!($systemSetting = SystemSettings::getByType(SystemSettings::TYPE_LAST_NEW_PRODUCT_PULL)) instanceof SystemSettings)
 			throw new Exception('cannot set LAST_NEW_PRODUCT_PULL in system setting');
+		// from id has higher priority
+		if($setFromId === true && !($systemSetting = SystemSettings::getByType(SystemSettings::TYPE_LAST_PRODUCT_PULL_ID)) instanceof SystemSettings)
+			throw new Exception('cannot set TYPE_LAST_PRODUCT_PULL_ID in system setting');
 		$fromDate = '';
-		if($setFromDate === true)
+		$fromId = '';
+		if($setFromId === true)
+			$fromId = $systemSetting->getValue();
+		elseif($setFromDate === true)
 			$fromDate = $systemSetting->getValue();
-		$products = $this->getProductList($fromDate);
+		$products = $this->getProductList($fromDate, $fromId);
 		if(count($products) === 0)
 		{
 			echo 'nothing from magento. exitting' . "\n";
@@ -294,6 +317,7 @@ class CatelogConnector extends B2BConnector
 				$sku = trim($pro->sku);
 				$pro = $this->getProductInfo($sku, $this->getInfoAttributes());
 				$created_at = trim($pro->created_at);
+				$product_id = trim($pro->product_id);
 				if(is_null($pro) || !isset($pro->additional_attributes))
 					continue;
 				// handle extra long sku from magento, exceeding mysql sku length limit
@@ -370,7 +394,9 @@ class CatelogConnector extends B2BConnector
 					}
 				}
 			}
-			if(($systemSetting = SystemSettings::getByType(SystemSettings::TYPE_LAST_NEW_PRODUCT_PULL)) instanceof SystemSettings)
+			if($setFromId === true && ($systemSetting = SystemSettings::getByType(SystemSettings::TYPE_LAST_PRODUCT_PULL_ID)) instanceof SystemSettings)
+				$systemSetting->setValue($product_id)->save();
+			elseif($setFromDate === true && ($systemSetting = SystemSettings::getByType(SystemSettings::TYPE_LAST_NEW_PRODUCT_PULL)) instanceof SystemSettings)
 				$systemSetting->setValue($created_at)->save();
 			if($transStarted === false)
 				Dao::commitTransaction();

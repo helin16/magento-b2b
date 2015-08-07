@@ -8,6 +8,7 @@
  */
 class ProductAttributeSet extends BaseEntityAbstract
 {
+	const ID_DEFAULT_ATTR_SET = 27;
 	/**
 	 * The name of this Manufacturer
 	 *

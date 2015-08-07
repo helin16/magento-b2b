@@ -15,7 +15,14 @@ function getProductArray($product, $pro)
 	return $proArray;
 }
 
-function updateProduct($pro, $clientScript, $fileName, $lineNo)
+function removeLineFromFile($fileName, $line)
+{
+	$contents = file_get_contents($fileName);
+	$contents = str_replace($line, '', $contents);
+	file_put_contents($fileName, $contents);
+}
+
+function updateProduct($pro, $clientScript, $fileName, $line)
 {
 	try{
 		$transStarted = false;
@@ -33,19 +40,20 @@ function updateProduct($pro, $clientScript, $fileName, $lineNo)
 		$specialPrice = trim($pro['special_price']);
 		$specialPrice_From = trim($pro['special_from_date']) === '' ? trim($pro['special_from_date']) : null;
 		$specialPrice_To = trim($pro['special_to_date']) === '' ? trim($pro['special_to_date']) : null;
+		$supplierName = trim($pro['supplier']);
 		
 		if(!$product instanceof Product)
 			$product = Product::create($sku, $name);
 		
-		$asset = (($assetId = trim($product->getFullDescAssetId())) === '' || !($asset = Asset::getAsset($assetId)) instanceof Asset) ? Asset::registerAsset('full_desc_' . $sku, $description, Asset::TYPE_PRODUCT_DEC) : $asset;
+// 		$asset = (($assetId = trim($product->getFullDescAssetId())) === '' || !($asset = Asset::getAsset($assetId)) instanceof Asset) ? Asset::registerAsset('full_desc_' . $sku, $description, Asset::TYPE_PRODUCT_DEC) : $asset;
 		$product->setName($name)
 			->setMageId($mageId)
 			->setShortDescription($short_description)
-			->setFullDescAssetId(trim($asset->getAssetId()))
+// 			->setFullDescAssetId(trim($asset->getAssetId()))
 			->setIsFromB2B(true)
 			->setStatus(ProductStatus::get($statusId))
 			->setSellOnWeb(true)
-			->setManufacturer($clientScript->getManufacturerName(trim($additionAttrs['manufacturer'])))
+			->setManufacturer($clientScript->getManufacturerName(trim($pro['manufacturer'])))
 			->save()
 			->clearAllPrice()
 			->addPrice(ProductPriceType::get(ProductPriceType::ID_RRP), $price)
@@ -54,13 +62,13 @@ function updateProduct($pro, $clientScript, $fileName, $lineNo)
 		if($specialPrice !== '')
 			$product->addPrice(ProductPriceType::get(ProductPriceType::ID_CASUAL_SPECIAL), $specialPrice, $specialPrice_From, $specialPrice_To);
 		
-		if(isset($additionAttrs['supplier']) && ($supplierName = trim($additionAttrs['supplier'])) !== '')
+		if($supplierName !== '')
 			$product->addSupplier(Supplier::create($supplierName, $supplierName, true));
 		
-		if(isset($pro->categories) && count($pro->categories) > 0)
+		if(isset($pro['categories']) && count($pro['categories']) > 0)
 		{
 			$product->clearAllCategory();
-			foreach($pro->category_ids as $cateMageId)
+			foreach($pro['categories'] as $cateMageId)
 			{
 				if(!($category = ProductCategory::getByMageId($cateMageId)) instanceof ProductCategory)
 					continue;
@@ -72,6 +80,9 @@ function updateProduct($pro, $clientScript, $fileName, $lineNo)
 			Dao::commitTransaction();
 		
 		//TODO remove the file
+		removeLineFromFile($fileName, $line);
+		
+		echo $product->getId() . " => done! \n";
 		
 	} catch(Exception $ex) {
 			
@@ -88,11 +99,11 @@ function processFile($filename, $clientScript)
 	DaoMap::loadMap('Product');
 	$skuSizeLimit = DaoMap::$map['product']['sku']['size'];
 	
-	foreach($contents as $lineNo => $line) {
+	foreach($contents as $line) {
 		$pro = json_decode(trim($line), true);
 		if(strlen($pro['sku']) > $skuSizeLimit)
 			continue;
-		updateProduct($pro, $clientScript, $filename, $lineNo);
+		updateProduct($pro, $clientScript, $filename, $line);
 	}
 }
 
@@ -106,7 +117,8 @@ try {
 	file_put_contents($cacheFile, '');
 	foreach($products as $product)
 	{
-		$pro = $clientScript->getProductInfo(trim($product->sku), $clientScript->getInfoAttributes());
+		$pro = $clientScript->getProductInfo(trim($product->sku));
+		var_dump($pro);
 		$proArray = getProductArray($product, $pro);
 		if(count($proArray) > 0)
 			file_put_contents($cacheFile, json_encode($proArray) . "\n", FILE_APPEND);

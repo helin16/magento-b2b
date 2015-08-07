@@ -175,6 +175,12 @@ class Product extends InfoEntityAbstract
 	 */
 	private $isKit = false;
 	/**
+	 * the product attribute set
+	 * 
+	 * @var ProductAttributeSet
+	 */
+	private $attributeSet = null;
+	/**
 	 * Getter for categories
 	 *
 	 * @return array()
@@ -743,6 +749,30 @@ class Product extends InfoEntityAbstract
 	    return $this;
 	}
 	/**
+	 * Getter for attributeSet
+	 *
+	 * @return ProductAttributeSet
+	 */
+	public function getAttributeSet()
+	{
+		var_dump($this->attributeSet);
+		$this->loadManyToOne('attributeSet');
+		return $this->attributeSet;
+	}
+	/**
+	 * Setter for attributeSet
+	 *
+	 * @param ProductAttributeSet $value The attributeSet
+	 *
+	 * @return Product
+	 */
+	public function setAttributeSet(ProductAttributeSet $value = null)
+	{
+		$this->attributeSet = $value;
+		return $this;
+	}
+	
+	/**
 	 * Adding a product image to the product
 	 *
 	 * @param Asset $asset The asset object that reprents the image
@@ -1022,6 +1052,8 @@ class Product extends InfoEntityAbstract
 			$exsitingSKU = self::countByCriteria(implode(' AND ', $where), $params);
 			if($exsitingSKU > 0)
 				throw new EntityException('The SKU(=' . $sku . ') is already exists!' );
+			if(($this->attributeSet instanceof ProductAttributeSet && $this->attributeSet->getId() === '') || !$this->attributeSet instanceof ProductAttributeSet)
+				$this->setAttributeSet(ProductAttributeSet::get(ProductAttributeSet::ID_DEFAULT_ATTR_SET));
 		}
 		if(($id = trim($this->getId())) !== '') {
 			if(self::countByCriteria('id = ? and isKit = 1 and isKit != ?', array($id, $this->getIsKit())) > 0) {//changing isKit flag to be not a KIT
@@ -1346,6 +1378,7 @@ class Product extends InfoEntityAbstract
 		DaoMap::setOneToMany('categories', 'Product_Category', 'pro_cate');
 		DaoMap::setOneToMany('codes', 'ProductCode', 'pro_pro_code');
 		DaoMap::setBoolType('isKit');
+		DaoMap::setManyToOne('attributeSet', 'ProductAttributeSet', 'pro_attr_set', true);
 		parent::__loadDaoMap();
 
 		DaoMap::createUniqueIndex('sku');
@@ -1366,6 +1399,7 @@ class Product extends InfoEntityAbstract
 		DaoMap::createIndex('revenueAccNo');
 		DaoMap::createIndex('costAccNo');
 		DaoMap::createIndex('isKit');
+		DaoMap::createIndex('attributeSet');
 		DaoMap::commit();
 	}
 	/**
