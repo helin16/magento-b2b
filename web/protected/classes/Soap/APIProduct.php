@@ -57,12 +57,12 @@ class APIProduct extends APIClassAbstract
 			foreach ($categories as $category)
 				$product->addCategory($category);
 			$response['status'] = self::RESULT_CODE_SUCC;
-			$response->addChild('product', json_encode($product->getJson()));
+			$this->addCData('product', json_encode($product->getJson()), $response);
 			Dao::commitTransaction();
 		} catch (Exception $e) {
 			Dao::rollbackTransaction();
 			$response['status'] = self::RESULT_CODE_FAIL;
-			$response->addChild('error', $e->getMessage());
+			$this->addCData('error', $e->getMessage(), $response);
 		}
 		return trim($response->asXML());
 	}
@@ -84,7 +84,7 @@ class APIProduct extends APIClassAbstract
 			if($obj instanceof Product)
 			{
 				$response['status'] = self::RESULT_CODE_SUCC;
-				$response->addChild('product', json_encode($obj->getJson()));
+				$this->addCData('product', json_encode($obj->getJson()), $response);
 				return trim($response->asXML());
 			}
 			$response['status'] = self::RESULT_CODE_FAIL;
@@ -92,7 +92,7 @@ class APIProduct extends APIClassAbstract
 		} catch (Exception $e) {
 			Dao::rollbackTransaction();
 			$response['status'] = self::RESULT_CODE_FAIL;
-			$response->addChild('error', $e->getMessage());
+			$this->addCData('error', $e->getMessage(), $response);
 		}
 		return trim($response->asXML());
 	}
@@ -111,18 +111,14 @@ class APIProduct extends APIClassAbstract
 			$systemid = intval(trim($systemid));
 			Core::setUser(UserAccount::get(UserAccount::ID_SYSTEM_ACCOUNT)); //TODO
 			$obj =  ProductCategory::get($systemid);
-			if($obj instanceof ProductCategory)
-			{
-				$response['status'] = self::RESULT_CODE_SUCC;
-				$response->addChild('category', json_encode($obj->getJson()));
-				return trim($response->asXML());
-			}
-			$response['status'] = self::RESULT_CODE_FAIL;
-			$response->addChild('error', 'category with system id "' . $systemid . '" does not exist.');
+			if(!$obj instanceof ProductCategory)
+				throw new Exception('category with system id "' . $systemid . '" does not exist.');
+			$response['status'] = self::RESULT_CODE_SUCC;
+			$this->addCData('category', json_encode($obj->getJson()), $response);
 		} catch (Exception $e) {
 			Dao::rollbackTransaction();
 			$response['status'] = self::RESULT_CODE_FAIL;
-			$response->addChild('error', $e->getMessage());
+			$this->addCData('error', $e->getMessage(), $response);
 		}
 		return trim($response->asXML());
 	}

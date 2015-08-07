@@ -10,7 +10,6 @@ try {
 	$name = "namefor" . $sku;
 	$id = 188;
 	
-	
 	$soap = ComScriptSoap::getScript($wsdl, array('cache_wsdl' => WSDL_CACHE_NONE));
 // 	// create product
 // 	$productXML = $soap->createProduct($sku, $name);

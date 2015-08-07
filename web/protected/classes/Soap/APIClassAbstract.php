@@ -29,4 +29,13 @@ abstract class APIClassAbstract
 		$response->addAttribute('TimeZone',trim($time->getTimeZone()->getName()));
 		return $response;
 	}
+	protected function addCData($name, $value, &$parent) {
+		$child = $parent->addChild($name);
+		if ($child !== NULL) {
+			$child_node = dom_import_simplexml($child);
+			$child_owner = $child_node->ownerDocument;
+			$child_node->appendChild($child_owner->createCDATASection($value));
+		}
+		return $child;
+	}
 }
