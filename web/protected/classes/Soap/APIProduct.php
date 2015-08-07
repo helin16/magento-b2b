@@ -77,40 +77,53 @@ class APIProduct extends APIClassAbstract
 	public function getProductBySku($sku)
 	{
 		$response = $this->_getResponse(UDate::now());
-		$sku = trim($sku);
-		Core::setUser(UserAccount::get(UserAccount::ID_SYSTEM_ACCOUNT)); //TODO
-		$obj =  Product::getBySku($sku);
-		if($obj instanceof Product)
-		{
-			$response['status'] = self::RESULT_CODE_SUCC;
-			$response->addChild('product', json_encode($obj->getJson()));
-			return trim($response->asXML());
+		try {
+			$sku = trim($sku);
+			Core::setUser(UserAccount::get(UserAccount::ID_SYSTEM_ACCOUNT)); //TODO
+			$obj =  Product::getBySku($sku);
+			if($obj instanceof Product)
+			{
+				$response['status'] = self::RESULT_CODE_SUCC;
+				$response->addChild('product', json_encode($obj->getJson()));
+				return trim($response->asXML());
+			}
+			$response['status'] = self::RESULT_CODE_FAIL;
+			$response->addChild('error', 'product with sku "' . $sku . '" does not exist.');
+		} catch (Exception $e) {
+			Dao::rollbackTransaction();
+			$response['status'] = self::RESULT_CODE_FAIL;
+			$response->addChild('error', $e->getMessage());
 		}
-		$response['status'] = self::RESULT_CODE_FAIL;
-		$response->addChild('error', 'product with sku "' . $sku . '" does not exist.');
 		return trim($response->asXML());
 	}
 	/**
 	 * get category info by magento-b2b productCategory id
 	 * 
 	 * @param string $systemid
+	 * 
 	 * @return string
 	 * @soapmethod
 	 */
 	public function getCategory($systemid)
 	{
 		$response = $this->_getResponse(UDate::now());
-		$systemid = intval(trim($systemid));
-		Core::setUser(UserAccount::get(UserAccount::ID_SYSTEM_ACCOUNT)); //TODO
-		$obj =  ProductCategory::get($systemid);
-		if($obj instanceof ProductCategory)
-		{
-			$response['status'] = self::RESULT_CODE_SUCC;
-			$response->addChild('category', json_encode($obj->getJson()));
-			return trim($response->asXML());
+		try {
+			$systemid = intval(trim($systemid));
+			Core::setUser(UserAccount::get(UserAccount::ID_SYSTEM_ACCOUNT)); //TODO
+			$obj =  ProductCategory::get($systemid);
+			if($obj instanceof ProductCategory)
+			{
+				$response['status'] = self::RESULT_CODE_SUCC;
+				$response->addChild('category', json_encode($obj->getJson()));
+				return trim($response->asXML());
+			}
+			$response['status'] = self::RESULT_CODE_FAIL;
+			$response->addChild('error', 'category with system id "' . $systemid . '" does not exist.');
+		} catch (Exception $e) {
+			Dao::rollbackTransaction();
+			$response['status'] = self::RESULT_CODE_FAIL;
+			$response->addChild('error', $e->getMessage());
 		}
-		$response['status'] = self::RESULT_CODE_FAIL;
-		$response->addChild('error', 'category with system id "' . $systemid . '" does not exist.');
 		return trim($response->asXML());
 	}
 }
