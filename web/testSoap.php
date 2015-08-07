@@ -38,6 +38,7 @@ try {
 catch (Exception $e)
 {
 	echo "Error:";
+	echo "Response:<textarea>" .  $soapClient->__getLastResponse() . "</textarea>";
 	echo $e->getMessage() . "\n" . $e->getTraceAsString() . "\n";
 // 	Dao::rollbackTransaction();
 	throw $e;
