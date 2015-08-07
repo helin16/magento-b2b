@@ -10,6 +10,7 @@ function getProductArray($product, $pro)
 	$proArray['sku'] = trim($product->sku);
 	$proArray['name'] = trim($product->name);
 	$proArray['product_id'] = trim($product->product_id);
+	$proArray['attributeSetId'] = trim($pro->set);
 	foreach($pro->additional_attributes as $row)
 		$proArray[$row->key] = trim($row->value);
 	return $proArray;
@@ -22,8 +23,9 @@ function removeLineFromFile($fileName, $line)
 	file_put_contents($fileName, $contents);
 }
 
-function updateProduct($pro, $clientScript, $fileName, $line)
+function updateProduct($pro, $fileName, $line)
 {
+	$clientScript = getClientScript();
 	try{
 		$transStarted = false;
 		try {Dao::beginTransaction();} catch(Exception $e) {$transStarted = true;}
@@ -41,15 +43,17 @@ function updateProduct($pro, $clientScript, $fileName, $line)
 		$specialPrice_From = trim($pro['special_from_date']) === '' ? trim($pro['special_from_date']) : null;
 		$specialPrice_To = trim($pro['special_to_date']) === '' ? trim($pro['special_to_date']) : null;
 		$supplierName = trim($pro['supplier']);
+		$attributeSet = ProductAttributeSet::get(trim($pro['attributeSetId']));
 		
 		if(!$product instanceof Product)
 			$product = Product::create($sku, $name);
 		
-// 		$asset = (($assetId = trim($product->getFullDescAssetId())) === '' || !($asset = Asset::getAsset($assetId)) instanceof Asset) ? Asset::registerAsset('full_desc_' . $sku, $description, Asset::TYPE_PRODUCT_DEC) : $asset;
+		$asset = (($assetId = trim($product->getFullDescAssetId())) === '' || !($asset = Asset::getAsset($assetId)) instanceof Asset) ? Asset::registerAsset('full_desc_' . $sku, $description, Asset::TYPE_PRODUCT_DEC) : $asset;
 		$product->setName($name)
 			->setMageId($mageId)
+			->setAttributeSet($attributeSet)
 			->setShortDescription($short_description)
-// 			->setFullDescAssetId(trim($asset->getAssetId()))
+			->setFullDescAssetId(trim($asset->getAssetId()))
 			->setIsFromB2B(true)
 			->setStatus(ProductStatus::get($statusId))
 			->setSellOnWeb(true)
@@ -107,24 +111,36 @@ function processFile($filename, $clientScript)
 	}
 }
 
-try {
-	echo "Begin" . "\n<pre>";
-	
+function getClientScript()
+{
 	$wsdl = 'http://www.budgetpc.com.au/api/v2_soap?wsdl=1';
 	$clientScript = CatelogConnector::getConnector(B2BConnector::CONNECTOR_TYPE_CATELOG, $wsdl, 'B2BUser', 'B2BUser');
+	return $clientScript;
+}
+
+function downloadFile($cacheFile)
+{
+	$clientScript = getClientScript();
 	$products = $clientScript->getProductList('2015-08-07', '');
-	$cacheFile = 'mageProduct.json';
 	file_put_contents($cacheFile, '');
 	foreach($products as $product)
 	{
 		$pro = $clientScript->getProductInfo(trim($product->sku));
-		var_dump($pro);
 		$proArray = getProductArray($product, $pro);
 		if(count($proArray) > 0)
 			file_put_contents($cacheFile, json_encode($proArray) . "\n", FILE_APPEND);
 	}
+	echo "File :" . $cacheFile . ' downloaded.';
+}
+
+try {
+	echo "Begin" . "\n<pre>";
+	
+	$cacheFile = '/tmp/mageProduct.json';
+	
+	downloadFile($cacheFile);
 	//process file
-	processFile($cacheFile, $clientScript);
+// 	processFile($cacheFile);
 
 } catch (SoapFault $e) {
 	var_dump($e);
