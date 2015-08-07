@@ -1,6 +1,7 @@
 <?php
 require_once 'bootstrap.php';
 try {
+	$soapClient = null;
 	echo "Begin" . __CLASS__ . " Melb Time: " . UDate::now(UDate::TIME_ZONE_MELB) . "\n <pre>";
 	Core::setUser(UserAccount::get(UserAccount::ID_SYSTEM_ACCOUNT));
 // 	Dao::beginTransaction();
@@ -38,7 +39,8 @@ try {
 catch (Exception $e)
 {
 	echo "Error:";
-	echo "Response:<textarea>" .  $soapClient->__getLastResponse() . "</textarea>";
+	if($soapClient instanceof SoapClient)
+		echo "Response:<textarea>" .  $soapClient->__getLastResponse() . "</textarea>";
 	echo $e->getMessage() . "\n" . $e->getTraceAsString() . "\n";
 // 	Dao::rollbackTransaction();
 	throw $e;
