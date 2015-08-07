@@ -14,12 +14,16 @@ try {
 	$soapClient = new SoapClient($wsdl, $options);
 // 	// create product
 // 	$productXML = $soap->createProduct($sku, $name);
-// 	// create product
-	$productXML = $soapClient->getProductBySku($sku);
+// 	// get product
+// 	$resultXml = $soapClient->getProductBySku($sku);
+	$resultXml = $soapClient->getCategory($id);
+
 	echo "Response:<textarea>" .  $soapClient->__getLastResponse() . "</textarea>";
 
-	$productXML = new SimpleXMLElement($productXML);
-	var_dump($productXML);
+	$resultXml = new SimpleXMLElement($resultXml);
+// 	var_dump($productXML->product);
+	var_dump('original category json String: ' . $resultXml->category);
+	var_dump('decoded json String: ' . print_r(json_decode($resultXml->category, true), true));
 
 	if(intval($productXML['status']) === 1)
 		throw new Exception(trim($productXML->error));
