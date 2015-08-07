@@ -10,7 +10,7 @@ class APIProduct extends APIClassAbstract
 {
 	/**
 	 * create product
-	 * 
+	 *
 	 * @param string $sku			The sku of product
 	 * @param string $name			The name of product
 	 * @param array $categoryPaths	The category paths of product (e.g. $categories = array(array('cate2', 'cate3'), array('cate4', 'cate5', 'cate6'));
@@ -19,7 +19,7 @@ class APIProduct extends APIClassAbstract
 	 * @param string $shortDescr
 	 * @param string $fullDescr
 	 * @param string $brandName
-	 * 
+	 *
 	 * @throws Exception
 	 * @return string
 	 * @soapmethod
@@ -30,7 +30,7 @@ class APIProduct extends APIClassAbstract
 		try {
 			Dao::beginTransaction();
 			Core::setUser(UserAccount::get(UserAccount::ID_SYSTEM_ACCOUNT)); //TODO
-			
+
 			if(Product::getBySku(trim($sku)) instanceof Product)
 				throw new Exception('sku "' . $sku .'" already exists');
 			$categories = array();
@@ -43,7 +43,7 @@ class APIProduct extends APIClassAbstract
 					{
 						if(count($i = ProductCategory::getAllByCriteria('name = ?', array(trim($categoryName)), true , 1, 1)) >0)
 							$categories[$i[0]->getId()] = ($category = $i[0]);
-						else 
+						else
 						{
 							$category = ProductCategory::create(trim($categoryName), trim($categoryName), $parentCategory);
 							$categories[$category->getId()] = $category;
@@ -68,9 +68,9 @@ class APIProduct extends APIClassAbstract
 	}
 	/**
 	 * get product info by sku
-	 * 
+	 *
 	 * @param string $sku
-	 * 
+	 *
 	 * @return string
 	 * @soapmethod
 	 */
@@ -84,13 +84,13 @@ class APIProduct extends APIClassAbstract
 			if($obj instanceof Product)
 			{
 				$response['status'] = self::RESULT_CODE_SUCC;
+// 				$response->product = json_encode($obj->getJson());
 				$this->addCData('product', json_encode($obj->getJson()), $response);
 				return trim($response->asXML());
 			}
 			$response['status'] = self::RESULT_CODE_FAIL;
 			$response->addChild('error', 'product with sku "' . $sku . '" does not exist.');
 		} catch (Exception $e) {
-			Dao::rollbackTransaction();
 			$response['status'] = self::RESULT_CODE_FAIL;
 			$this->addCData('error', $e->getMessage(), $response);
 		}
@@ -98,9 +98,9 @@ class APIProduct extends APIClassAbstract
 	}
 	/**
 	 * get category info by magento-b2b productCategory id
-	 * 
+	 *
 	 * @param string $systemid
-	 * 
+	 *
 	 * @return string
 	 * @soapmethod
 	 */
@@ -116,7 +116,6 @@ class APIProduct extends APIClassAbstract
 			$response['status'] = self::RESULT_CODE_SUCC;
 			$this->addCData('category', json_encode($obj->getJson()), $response);
 		} catch (Exception $e) {
-			Dao::rollbackTransaction();
 			$response['status'] = self::RESULT_CODE_FAIL;
 			$this->addCData('error', $e->getMessage(), $response);
 		}
