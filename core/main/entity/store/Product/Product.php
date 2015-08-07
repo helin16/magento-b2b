@@ -179,7 +179,7 @@ class Product extends InfoEntityAbstract
 	 * 
 	 * @var ProductAttributeSet
 	 */
-	private $attributeSet = null;
+	protected $attributeSet = null;
 	/**
 	 * Getter for categories
 	 *
