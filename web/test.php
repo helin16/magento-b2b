@@ -23,6 +23,7 @@ function updateProduct($pro, $clientScript, $fileName, $lineNo)
 		$sku = trim($pro['sku']);
 		$product = Product::getBySku($pro['sku']);
 		
+		$mageId = trim($pro['product_id']);
 		$name = trim($pro['name']);
 		$short_description = trim($pro['short_description']);
 		$description = trim($pro['description']);
@@ -100,7 +101,7 @@ try {
 	
 	$wsdl = 'http://www.budgetpc.com.au/api/v2_soap?wsdl=1';
 	$clientScript = CatelogConnector::getConnector(B2BConnector::CONNECTOR_TYPE_CATELOG, $wsdl, 'B2BUser', 'B2BUser');
-	$products = $clientScript->getProductList('2015-08-07');
+	$products = $clientScript->getProductList('2015-08-07', '');
 	$cacheFile = 'mageProduct.json';
 	file_put_contents($cacheFile, '');
 	foreach($products as $product)
