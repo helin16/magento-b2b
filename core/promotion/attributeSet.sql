@@ -1,2 +1,1 @@
-ALTER TABLE `product` ADD `attributeSetId` INT( 10 ) UNSIGNED NULL DEFAULT NULL AFTER `isKit` ,
-ADD INDEX ( `attributeSetId` ) ;
+ALTER TABLE `product` ADD `attributeSet` INT(10) UNSIGNED NULL DEFAULT NULL AFTER `isKit`, ADD INDEX `attributeSet` (`attributeSet`);

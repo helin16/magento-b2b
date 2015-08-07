@@ -755,7 +755,6 @@ class Product extends InfoEntityAbstract
 	 */
 	public function getAttributeSet()
 	{
-		var_dump($this->attributeSet);
 		$this->loadManyToOne('attributeSet');
 		return $this->attributeSet;
 	}
