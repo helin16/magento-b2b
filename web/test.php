@@ -138,9 +138,9 @@ try {
 	
 	$cacheFile = '/tmp/mageProduct.json';
 	
-	downloadFile($cacheFile);
+// 	downloadFile($cacheFile);
 	//process file
-// 	processFile($cacheFile);
+	processFile($cacheFile);
 
 } catch (SoapFault $e) {
 	var_dump($e);
