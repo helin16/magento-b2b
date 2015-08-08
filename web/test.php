@@ -107,7 +107,7 @@ function processFile($filename, $clientScript)
 		$pro = json_decode(trim($line), true);
 		if(strlen($pro['sku']) > $skuSizeLimit)
 			continue;
-		updateProduct($pro, $clientScript, $filename, $line);
+		updateProduct($pro, $filename, $line);
 	}
 }
 
