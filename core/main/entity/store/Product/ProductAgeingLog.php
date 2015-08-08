@@ -215,26 +215,26 @@ class ProductAgeingLog extends InfoEntityAbstract
 	 */
 	public function preSave()
 	{
-		$this->setProduct($productQtyLog->getproduct())
-			->setLastPurchaseTime($productQtyLog->getCreated());
-		switch($productQtyLog->getEntityName()) {
+		$this->setProduct($this->getproduct())
+			->setLastPurchaseTime($this->getCreated());
+		switch($this->getEntityName()) {
 			case 'ReceivingItem': {
-				if(($receivingItem = ReceivingItem::get($productQtyLog->getEntityId()))  instanceof ReceivingItem)
+				if(($receivingItem = ReceivingItem::get($this->getEntityId()))  instanceof ReceivingItem)
 					$this->setReceivingItem($receivingItem);
 				break;
 			}
 			case 'PurchaseOrderItem': {
-				if(($purchaseOrderItem = PurchaseOrderItem::get($productQtyLog->getEntityId()))  instanceof PurchaseOrderItem)
+				if(($purchaseOrderItem = PurchaseOrderItem::get($this->getEntityId()))  instanceof PurchaseOrderItem)
 					$this->setPurchaseOrderItem($purchaseOrderItem);
 				break;
 			}
 			case 'OrderItem': {
-				if(($orderItem = OrderItem::get($productQtyLog->getEntityId()))  instanceof OrderItem)
+				if(($orderItem = OrderItem::get($this->getEntityId()))  instanceof OrderItem)
 					$this->setOrderItem($orderItem);
 				break;
 			}
 			case 'CreditNoteItem': {
-				if(($creditNoteItem = CreditNoteItem::get($productQtyLog->getEntityId()))  instanceof CreditNoteItem)
+				if(($creditNoteItem = CreditNoteItem::get($this->getEntityId()))  instanceof CreditNoteItem)
 					$this->setCreditNoteItem($creditNoteItem);
 				break;
 			}
