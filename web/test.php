@@ -96,7 +96,7 @@ function updateProduct($pro, $fileName, $line)
 	}
 }
 
-function processFile($filename, $clientScript)
+function processFile($filename)
 {
 	//read the file
 	$contents = file($filename);
