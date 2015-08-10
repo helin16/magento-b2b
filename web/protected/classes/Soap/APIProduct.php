@@ -85,7 +85,7 @@ class APIProduct extends APIClassAbstract
 			{
 				$response['status'] = self::RESULT_CODE_SUCC;
 // 				$response->product = json_encode($obj->getJson());
-				$this->addCData('product', json_encode($obj->getJson()), $response);
+				$this->addCData('product', json_encode($obj->getJson(array('mageInfo'=>$obj->getMageInfo()))), $response);
 				return trim($response->asXML());
 			}
 			$response['status'] = self::RESULT_CODE_FAIL;

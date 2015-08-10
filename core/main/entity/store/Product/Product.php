@@ -1004,6 +1004,14 @@ class Product extends InfoEntityAbstract
 		}
 		return parent::getJson($array, $reset);
 	}
+	public function getMageInfo()
+	{
+		$script = CatelogConnector::getConnector(B2BConnector::CONNECTOR_TYPE_CATELOG,
+				SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_WSDL),
+				SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_USER),
+				SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_KEY));
+		return $script->getProductInfo($this->getSku());
+	}
 	/**
 	 * (non-PHPdoc)
 	 * @see BaseEntityAbstract::preSave()

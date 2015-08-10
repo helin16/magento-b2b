@@ -298,12 +298,13 @@ class Asset extends BaseEntityAbstract
 	 * (non-PHPdoc)
 	 * @see BaseEntityAbstract::getJson()
 	 */
-	public function getJson($extra = '', $reset = false)
+	public function getJson($extra = array(), $reset = false)
 	{
-		$a = array();
+		$a = $extra;
 		if(!$this->isJsonLoaded($reset))
 		{
 			$a['url'] = $this->getUrl();
+			$a['content'] = $this->readAssetFile($this->getUrl());
 		}
 		$array = parent::getJson($a, $reset);
 		unset($array['path']);
