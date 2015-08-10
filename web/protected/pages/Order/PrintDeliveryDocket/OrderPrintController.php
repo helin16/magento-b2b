@@ -105,6 +105,7 @@ class OrderPrintController extends BPCPageAbstract
 		$html .= $address->getStreet() . '<br />';
 		$html .= $address->getCity() . ' ' . $address->getRegion() . ' ' . $address->getPostCode() . '<br />';
 // 		$html .= $address->getCountry();
+		$html .= 'Tel: ' . ($this->getContact() === '' ? trim($address->getContactNo()) : $this->getContact());
 		return $html;
 	}
 	public function getPaymentSummary()
