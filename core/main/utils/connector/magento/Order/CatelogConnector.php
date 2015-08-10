@@ -52,7 +52,18 @@ class CatelogConnector extends B2BConnector
 	public function getProductInfo($sku, $attributes = array())
 	{
 		$attributes = ($attributes === array() ? $this->getInfoAttributes() : $attributes);
-		return $this->_connect()->catalogProductInfo($this->_session, $sku, null, $attributes);
+		$result = $this->_connect()->catalogProductInfo($this->_session, $sku, null, $attributes);
+		
+		if(is_array($result) && count($result) > 0 && isset($result['product_id']) && isset($result['additional_attributes']) && is_array($result['additional_attributes']) && count($result['additional_attributes']) > 0 )
+		{
+			foreach($result['additional_attributes'] as $item)
+			{
+				if(!isset($result[$item['key']]))
+					$result[$item['key']] = $result[$item['value']];
+			}
+		}
+		
+		return $result;
 	}
 	/**
 	 * update product price on magento
