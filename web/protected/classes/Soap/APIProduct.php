@@ -74,7 +74,7 @@ class APIProduct extends APIClassAbstract
 	 * @return string
 	 * @soapmethod
 	 */
-	public function getProductBySku($sku)
+	public function getProductBySku($sku, $getMageInfo = false)
 	{
 		$response = $this->_getResponse(UDate::now());
 		try {
@@ -85,7 +85,7 @@ class APIProduct extends APIClassAbstract
 			{
 				$response['status'] = self::RESULT_CODE_SUCC;
 // 				$response->product = json_encode($obj->getJson());
-				$this->addCData('product', json_encode($obj->getJson(array('mageInfo'=>$obj->getMageInfo()))), $response);
+				$this->addCData('product', json_encode($obj->getJson($getMageInfo === true ? array('mageInfo'=>$obj->getMageInfo()) : array())), $response);
 				return trim($response->asXML());
 			}
 			$response['status'] = self::RESULT_CODE_FAIL;
