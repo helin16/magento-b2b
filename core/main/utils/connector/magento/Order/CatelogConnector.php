@@ -51,6 +51,7 @@ class CatelogConnector extends B2BConnector
 	 */
 	public function getProductInfo($sku, $attributes = array())
 	{
+		$attributes = ($attributes === array() ? $this->getInfoAttributes() : $attributes);
 		return $this->_connect()->catalogProductInfo($this->_session, $sku, null, $attributes);
 	}
 	/**
