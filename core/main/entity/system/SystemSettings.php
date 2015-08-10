@@ -21,6 +21,7 @@ class SystemSettings extends BaseEntityAbstract
 	const TYPE_ALLOW_NEGTIVE_STOCK = 'allow_neg_stock';
 	const TYPE_LAST_NEW_PRODUCT_PULL = 'last_new_product_pull';
 	const TYPE_LAST_NEW_PRODUCT_PUSH = 'last_new_price_push';
+	const TYPE_LAST_PRODUCT_PULL_ID = 'last_product_pull_id';
 	/**
 	 * The value of the setting
 	 * 

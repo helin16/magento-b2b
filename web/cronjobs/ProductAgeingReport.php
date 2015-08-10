@@ -35,7 +35,7 @@ abstract class ProductAgeingReport
 			Dao::commitTransaction();
 		} catch (Exception $e) {
 			Dao::rollbackTransaction();
-			echo $e->getTraceAsString();
+			echo "\n" . $e->getMessage() . "\n" . $e->getTraceAsString();
 		}
 	}
 	

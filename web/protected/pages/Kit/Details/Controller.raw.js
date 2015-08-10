@@ -756,21 +756,21 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 	,_initProductSearch: function() {
 		var tmp = {};
 		tmp.me = this;
-		tmp.pageSize = 10;
+		tmp.pageSize = 30;
 		tmp.select2 = jQuery('.select2.product-search:not(.loaded)').addClass('loaded');
 		tmp.select2.select2({
 			 placeholder: "Search a product",
 			 minimumInputLength: 3,
 			 data: [],
 			 ajax: {
-				 url: "/ajax/getAll",
+				 url: "/ajax/getProducts",
 				 dataType: 'json',
 				 quietMillis: 250,
 				 data: function (term, page) { // page is the one-based page number tracked by Select2
 					 return {
 						 'entityName': 'Product',
-						 'searchTxt': '(name like :searchTxt or mageId = :searchTxtExact or sku = :searchTxtExact) and isKit = ' + tmp.select2.attr('isKit'), //search term
-						 'searchParams': {'searchTxt': '%' + term + '%', 'searchTxtExact': term},
+						 'searchTxt': term,
+						 'isKit': tmp.select2.attr('isKit'),
 						 'pageNo': page, // page number
 						 'pageSize': tmp.pageSize
 					 };
@@ -858,7 +858,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 				}
 			 },
 			 formatResult: function(result) { return tmp.me._formatTaskSelection(result);},
-			 formatSelection: function(result) { return tmp.me._formatTaskSelection(result);},
+			 formatSelection: function(result) { return tmp.me._formatTaskSelection(result);}
 		});
 		if(tmp.me._item.task && tmp.me._item.task.id){
 			tmp.select2.select2('data', {"id": tmp.me._item.task.id, 'text': tmp.me._item.task.id + ' [' + tmp.me._item.task.status.name + ']', 'data': tmp.me._item.task});

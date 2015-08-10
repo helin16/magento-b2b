@@ -108,6 +108,7 @@ class AjaxController extends TService
   		$pageSize = (isset($params['pageSize']) && ($pageSize = trim($params['pageSize'])) !== '' ? $pageSize : DaoQuery::DEFAUTL_PAGE_SIZE);
   		$pageNo = (isset($params['pageNo']) && ($pageNo = trim($params['pageNo'])) !== '' ? $pageNo : null);
   		$orderBy = (isset($params['orderBy']) ? $params['orderBy'] : array());
+  		$isKit = (isset($params['isKit']) ? $params['isKit']===true : null);
   		
   		$sqlParams = array('searchTxtExact' => $searchTxt);
   		$searchTokens = array();
@@ -125,6 +126,7 @@ class AjaxController extends TService
   		$items = Product::getAllByCriteria(implode(' AND ', $where), $sqlParams, true, $pageNo, $pageSize, $orderBy, $stats);
   		$results = array();
   		$results['items'] = array_map(create_function('$a', 'return $a->getJson();'), $items);
+  		$results['pagination'] = $stats;
   		$results['pageStats'] = $stats;
   		return $results;
   	}
