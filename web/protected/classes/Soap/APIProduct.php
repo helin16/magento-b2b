@@ -70,6 +70,7 @@ class APIProduct extends APIClassAbstract
 	 * get product info by sku
 	 *
 	 * @param string $sku
+	 * @param bool 	 $getMageInfo
 	 *
 	 * @return string
 	 * @soapmethod
