@@ -54,12 +54,16 @@ class CatelogConnector extends B2BConnector
 		$attributes = ($attributes === array() ? $this->getInfoAttributes() : $attributes);
 		$result = $this->_connect()->catalogProductInfo($this->_session, $sku, null, $attributes);
 		
-		if(is_array($result) && count($result) > 0 && isset($result['product_id']) && isset($result['additional_attributes']) && is_array($result['additional_attributes']) && count($result['additional_attributes']) > 0 )
+		
+		if(isset($result->product_id) && isset($result->additional_attributes) && is_array($result->additional_attributes) && count($result->additional_attributes) > 0 )
 		{
-			foreach($result['additional_attributes'] as $item)
+			foreach($result->additional_attributes as $item)
 			{
-				if(!isset($result[$item['key']]))
-					$result[$item['key']] = $result[$item['value']];
+				$key = $item->key;
+				$value = $item->value;	
+				
+				if(!isset($result->{$key}))
+					$result->{$key} = $value;
 			}
 		}
 		
@@ -241,7 +245,7 @@ class CatelogConnector extends B2BConnector
 	}
 	public function getInfoAttributes()
 	{
-		$attributeName = array('name', 'manufacturer', 'man_code', 'news_from_date', 'news_to_date', 'price', 'short_description', 'supplier', 'description', 'weight', 'status', 'special_price', 'special_from_date', 'special_to_date');
+		$attributeName = array('name', 'manufacturer', 'man_code', 'sup_code', 'news_from_date', 'news_to_date', 'price', 'short_description', 'supplier', 'description', 'weight', 'status', 'special_price', 'special_from_date', 'special_to_date');
 		$attributes = new stdclass();
 		$attributes->additional_attributes = $attributeName;
 		return $attributes;
