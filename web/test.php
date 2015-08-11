@@ -1,6 +1,8 @@
 <?php
 
-function getProductArray($product, $pro)
+$categories = array();
+
+function getProductArray($clientScript, $session, $product, $pro, $attributeSets, $manufacturers)
 {
 	if(is_null($pro) || !isset($pro->additional_attributes))
 		return array();
@@ -8,10 +10,25 @@ function getProductArray($product, $pro)
 	$proArray['sku'] = trim($product->sku);
 	$proArray['name'] = trim($product->name);
 	$proArray['product_id'] = trim($product->product_id);
-	$proArray['attributeSetId'] = trim($pro->set);
-	$proArray['categoryIds'] = trim($pro->category_ids);
+	$proArray['attributeSet'] = null;
+	if(isset($attributeSets[trim($pro->set)]))
+			$proArray['attributeSet'] = array('id' => trim($pro->set), 'name' => trim($attributeSets[trim($pro->set)]));
 	foreach($pro->additional_attributes as $row)
 		$proArray[$row->key] = trim($row->value);
+	if(isset($proArray['manufacturer']) && isset($manufacturers[($manId = $proArray['manufacturer'])]))
+		$proArray['manufacturer'] = array('id' => $manId, 'name' => trim($manufacturers[$manId]));
+	
+	$proArray['categories'] = array();
+	if(is_array($pro->category_ids) && count($pro->category_ids) > 0 ) {
+		foreach($pro->category_ids as $categoryId) {
+			if(!isset($categories[$categoryId])) {
+				$categoryMage = $clientScript->catalogCategoryInfo($session, $categoryId);
+				$categories[$categoryId] = trim($categoryMage->name);
+			}
+			
+			$proArray['categories'][] = array('id' => $categoryId, 'name' => $categories[$categoryId]);
+		}
+	}
 	return $proArray;
 }
 
@@ -131,17 +148,35 @@ function downloadFile($cacheFile)
 	$session = $clientScript->login('B2BUser', 'B2BUser');
 
 	$array = array();
-	$array[] = array('key'=>'created_at','value'=>array('key' =>'from','value' => trim('0001-01-01')));
-	//$array[] = array('key'=>'created_at','value'=>array('key' =>'from','value' => trim('2015-08-03')));
+// 	$array[] = array('key'=>'created_at','value'=>array('key' =>'from','value' => trim('0001-01-01')));
+	$array[] = array('key'=>'created_at','value'=>array('key' =>'from','value' => trim('2015-08-03')));
 	$params = array('complex_filter' => $array);
 	$products = $clientScript->catalogProductList($session, $params);
+	
+	$attributeSets = array();
+	$attributeSetsMage = $clientScript->catalogProductAttributeSetList($session);
+	foreach($attributeSetsMage as $attributeSetMage) {
+		$attributeSets[$attributeSetMage->set_id] = trim($attributeSetMage->name);
+	}
+	echo "Attribute Sets:\n" . print_r($attributeSets, true);
+	echo "\n";
+	
+	$manufacturers = array();
+	$manufacturersMage = $clientScript->catalogProductAttributeOptions($session, 'manufacturer');
+	foreach($manufacturersMage as $manufacturerMage) {
+		if(trim($manufacturerMage->value) !== '')
+			$manufacturers[$manufacturerMage->value] = trim($manufacturerMage->label);
+	}
+	echo "Manufacturers:\n" . print_r($manufacturers, true);
+	echo "\n";
+	
 	echo "Got " . count($products) . " products\n";
 	foreach($products as $index => $product)
 	{
 		try {
 		echo "No.: " . $index . ", SKU:" . $product->sku . "\n";
 		$pro = $clientScript->catalogProductInfo($session, trim($product->sku), null, getInfoAttributes());
-		$proArray = getProductArray($product, $pro);
+		$proArray = getProductArray($clientScript, $session, $product, $pro, $attributeSets, $manufacturers);
 		echo "\t JSON: " . json_encode($proArray) . "\n";
 		if(count($proArray) > 0)
 			file_put_contents($cacheFile, json_encode($proArray) . "\n", FILE_APPEND);
