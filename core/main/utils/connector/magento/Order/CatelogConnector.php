@@ -250,6 +250,7 @@ class CatelogConnector extends B2BConnector
 		return $attributes;
 	}
 	/**
+	 * get manfucature name
 	 * 
 	 * @param int $mageManuValue
 	 * @throws Exception
