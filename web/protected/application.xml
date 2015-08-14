@@ -195,7 +195,10 @@
 
 		<service id="asset" class="Application.pages.Asset.AssetController"></service>
 		<service id="soap" class="System.Web.Services.TSoapService">
-			<soap id="product" provider="Application.classes.Soap.APIProduct" />
+			<soap id="Product" provider="Application.classes.Soap.APIProduct" />
+			<soap id="ProductAttributeSet" provider="Application.classes.Soap.APIProductAttributeSet" />
+			<soap id="ProductCategory" provider="Application.classes.Soap.APIProductCategory" />
+			<soap id="Manufacturer" provider="Application.classes.Soap.APIManufacturer" />
 		</service>
 	</services>
 	<!-- application parameters -->

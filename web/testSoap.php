@@ -6,7 +6,7 @@ try {
 	Core::setUser(UserAccount::get(UserAccount::ID_SYSTEM_ACCOUNT));
 // 	Dao::beginTransaction();
 
-	$wsdl = "http://localhost:8081/?soap=product.wsdl";
+	$wsdl = "http://localhost:8080/?soap=product_attribute_set.wsdl";
 	$sku = "FVS336G-V2";
 	$name = "namefor" . $sku;
 	$id = 188;
@@ -17,20 +17,21 @@ try {
 // 	$productXML = $soap->createProduct($sku, $name);
 // 	// get product
 // 	$resultXml = $soapClient->getProductBySku($sku);
-	$resultXml = $soapClient->getCategory($id);
+	$resultXml = $soapClient->getAll();
 
 	echo "Response:<textarea>" .  $soapClient->__getLastResponse() . "</textarea>";
-
+	echo '$resultXml:';
 	$resultXml = new SimpleXMLElement($resultXml);
+	print_r(json_decode($resultXml->ProductAttributeSet_array, true));
 // 	var_dump($productXML->product);
-	var_dump('original category json String: ' . $resultXml->category);
-	var_dump('decoded json String: ' . print_r(json_decode($resultXml->category, true), true));
+// 	var_dump('original category json String: ' . $resultXml->category);
+// 	var_dump('decoded json String: ' . print_r(json_decode($resultXml->category, true), true));
 
-	if(intval($productXML['status']) === 1)
-		throw new Exception(trim($productXML->error));
+// 	if(intval($productXML['status']) === 1)
+// 		throw new Exception(trim($productXML->error));
 
-	$obj = $productXML->category;
-	$productArray = json_decode($obj,true);
+// 	$obj = $productXML->category;
+// 	$productArray = json_decode($obj,true);
 
 // 	var_dump($productArray);
 

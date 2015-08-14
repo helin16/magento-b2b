@@ -1,0 +1,1 @@
+ALTER TABLE `productcategory` CHANGE `productAttributesetId` `productAttributeSetId` INT( 10 ) UNSIGNED NULL DEFAULT NULL ;
