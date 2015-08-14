@@ -63,20 +63,7 @@ class CatelogConnector extends B2BConnector
 	public function getProductInfo($sku, $attributes = array())
 	{
 		$attributes = ($attributes === array() ? $this->getInfoAttributes() : $attributes);
-		$result = $this->_connect()->catalogProductInfo($this->_session, $sku, null, $attributes);
-		
-		if(isset($result->product_id) && isset($result->additional_attributes) && is_array($result->additional_attributes) && count($result->additional_attributes) > 0 )
-		{
-			foreach($result->additional_attributes as $item)
-			{
-				$key = $item->key;
-				$value = $item->value;	
-				
-				if(!isset($result->{$key}))
-					$result->{$key} = $value;
-			}
-		}
-		return $result;
+		return $this->_connect()->catalogProductInfo($this->_session, $sku, null, $attributes);
 	}
 	/**
 	 * update product price on magento
@@ -257,11 +244,7 @@ class CatelogConnector extends B2BConnector
 	//create($sku, $name, $mageProductId = '', $stockOnHand = null, $stockOnOrder = null, $isFromB2B = false, $shortDescr = '', $fullDescr = '', Manufacturer $manufacturer = null, $assetAccNo = null, $revenueAccNo = null, $costAccNo = null, $stockMinLevel = null, $stockReorderLevel = null)
 	public function getInfoAttributes()
 	{
-<<<<<<< HEAD
-		$attributeName = array('name', 'manufacturer', 'man_code', 'sup_code', 'news_from_date', 'news_to_date', 'price', 'short_description', 'supplier', 'description', 'weight', 'status', 'special_price', 'special_from_date', 'special_to_date');
-=======
 		$attributeName = array('name', 'product_id', 'short_description', 'description', 'manufacturer', 'man_code', 'news_from_date', 'news_to_date', 'price', 'supplier', 'weight', 'status', 'special_price', 'special_from_date', 'special_to_date');
->>>>>>> refs/heads/master
 		$attributes = new stdclass();
 		$attributes->additional_attributes = $attributeName;
 		return $attributes;
