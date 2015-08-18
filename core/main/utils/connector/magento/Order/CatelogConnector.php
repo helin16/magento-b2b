@@ -14,7 +14,7 @@ class CatelogConnector extends B2BConnector
 // 		}
 // 		if($fromDate !== '')
 // 		{
-			$array[] = array('key'=>'created_at','value'=>array('key' =>'from','value' => trim($fromDate)));
+			$array[] = array('key'=>'updated_at','value'=>array('key' =>'from','value' => trim($fromDate)));
 // 			echo 'Looking for Magento Products with Date From: "' . $fromDate . '"' . "\n";
 // 		}
 		if(count($array) === 0)
@@ -318,6 +318,7 @@ class CatelogConnector extends B2BConnector
 				$sku = trim($pro->sku);
 				$pro = $this->getProductInfo($sku, $this->getInfoAttributes());
 				$created_at = trim($pro->created_at);
+				$updated_at = trim($pro->updated_at);
 				$product_id = trim($pro->product_id);
 				if(is_null($pro) || !isset($pro->additional_attributes))
 					continue;
@@ -350,11 +351,11 @@ class CatelogConnector extends B2BConnector
 				{
 					$product = Product::create($sku, $name);
 					Log::logging(0, get_class($this), 'Found New Product from Magento with sku="' . trim($sku) . '" and name="' . $name . '", created_at="' . $created_at, self::LOG_TYPE, '', __FUNCTION__);
-					echo 'Found New Product from Magento with sku="' . trim($sku) . '" and name="' . $name . '", created_at="' . $created_at . "\n";
+					echo 'Found New Product from Magento with sku="' . trim($sku) . '" and name="' . $name . '", created_at="' . $created_at . ', updated_at' . $updated_at . "\n";
 				} elseif(Product::getBySku($sku) instanceof Product) // update old product description 
 				{
 					$product = Product::getBySku($sku);
-					echo 'Found Existing Product from Magento with sku="' . trim($sku) . '" and name="' . $name . '", created_at="' . $created_at . '"' . "\n";
+					echo 'Found Existing Product from Magento with sku="' . trim($sku) . '" and name="' . $name . '", created_at="' . $created_at . ', updated_at' . $updated_at . '"' . "\n";
 					echo "\t" . 'Name: "' . $name . '"' . "\n"; 
 					echo "\t" . 'MageId: "' . $mageId . '"' . "\n"; 
 					echo "\t" . 'Short Description: "' . $short_description . '"' . "\n"; 
@@ -398,7 +399,7 @@ class CatelogConnector extends B2BConnector
 			if($setFromId === true && ($systemSetting = SystemSettings::getByType(SystemSettings::TYPE_LAST_PRODUCT_PULL_ID)) instanceof SystemSettings)
 				$systemSetting->setValue($product_id)->save();
 			elseif($setFromDate === true && ($systemSetting = SystemSettings::getByType(SystemSettings::TYPE_LAST_NEW_PRODUCT_PULL)) instanceof SystemSettings)
-				$systemSetting->setValue($created_at)->save();
+				$systemSetting->setValue($updated_at)->save();
 			if($transStarted === false)
 				Dao::commitTransaction();
 		}
