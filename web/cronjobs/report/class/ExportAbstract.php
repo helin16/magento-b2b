@@ -110,16 +110,12 @@ class ExportAbstract
 		if($asset instanceof Asset)
 			$assets[] = $asset;
 		$class = get_called_class();
-		$michaelEmail = 'michael.y@budgetpc.com.au';
 		$helinEmail = 'helin16@gmail.com';
-		$xixiEmail = 'xitan@budgetpc.com.au';
 		$accountEmail = 'accounts@budgetpc.com.au';
 		$marketingEmail = 'marketing@budgetpc.com.au';
 		$salesEmail = 'sales@budgetpc.com.au';
 
-		EmailSender::addEmail('', $michaelEmail, $class::_getMailTitle(), $class::_getMailBody(), $assets);
 		EmailSender::addEmail('', $helinEmail, $class::_getMailTitle(), $class::_getMailBody(), $assets);
-		EmailSender::addEmail('', $xixiEmail, $class::_getMailTitle(), $class::_getMailBody(), $assets);
 		EmailSender::addEmail('', $accountEmail, $class::_getMailTitle(), $class::_getMailBody(), $assets);
 		EmailSender::addEmail('', $marketingEmail, $class::_getMailTitle(), $class::_getMailBody(), $assets);
 		EmailSender::addEmail('', $salesEmail, $class::_getMailTitle(), $class::_getMailBody(), $assets);
