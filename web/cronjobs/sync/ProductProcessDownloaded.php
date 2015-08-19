@@ -18,5 +18,5 @@ function importNewProduct()
 			SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_USER),
 			SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_KEY)
 	)
-	->processDownloadedProductInfo();
+	->processDownloadedProductInfo(true);
 }
