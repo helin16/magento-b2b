@@ -172,6 +172,6 @@ class SystemSettings extends BaseEntityAbstract
 	}
 	public static function getByType($type)
 	{
-		return count(self::getAllByCriteria('type = ?', array(trim($type)), true, 1, 1, array('id'=> 'desc'))) > 0 ? self::getAllByCriteria('type = ?', array(trim($type)))[0] : null;
+		return count($objs = self::getAllByCriteria('type = ?', array(trim($type)), true, 1, 1, array('id'=> 'desc'))) > 0 ? $objs[0] : null;
 	}
 }
