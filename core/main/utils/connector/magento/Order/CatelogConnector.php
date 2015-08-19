@@ -356,8 +356,6 @@ class CatelogConnector extends B2BConnector
 			$rowCount = 1;
 			foreach($contents as $line)
 			{
-				if($rowCount > 3)
-					continue;
 				echo print_r($line, true);
 				$pro = json_decode($line, true);
 				$mageId = $pro['product_id'];
