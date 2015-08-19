@@ -311,6 +311,7 @@ class CatelogConnector extends B2BConnector
 			{
 				$mageId = trim($pro->product_id);
 				$sku = trim($pro->sku);
+				echo $sku . "\n";
 				$pro = $this->getProductInfo($sku, $this->getInfoAttributes());
 				file_put_contents($cacheFile, json_encode($pro) . "\n", FILE_APPEND);
 			}
