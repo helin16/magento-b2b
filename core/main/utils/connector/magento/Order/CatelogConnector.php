@@ -321,6 +321,18 @@ class CatelogConnector extends B2BConnector
 		}
 		return $this;
 	}
+	private function _updateFullDescription(Product &$product, $fullDescription)
+	{
+		//update full description
+		if(trim($fullDescription))
+		{
+			if(($fullAsset = Asset::getAsset($product->getFullDescAssetId())) instanceof Asset)
+				Asset::removeAssets(array($fullAsset->getAssetId()));
+			$fullAsset = Asset::registerAsset('full_description_for_product.txt', $fullDescription, Asset::TYPE_PRODUCT_DEC);
+			$product->setFullDescAssetId($fullAsset->getAssetId());
+		}
+		return $this;
+	}
 	public function processDownloadedProductInfo($debug = false)
 	{
 		if(!($systemSetting = SystemSettings::getByType(SystemSettings::TYPE_LAST_NEW_PRODUCT_PULL)) instanceof SystemSettings)
@@ -341,8 +353,12 @@ class CatelogConnector extends B2BConnector
 		{
 			$transStarted = false;
 			try {Dao::beginTransaction();} catch(Exception $e) {$transStarted = true;}
+			$rowCount = 1;
 			foreach($contents as $line)
 			{
+				if($rowCount > 3)
+					continue;
+				echo print_r($line, true);
 				$pro = json_decode($line, true);
 				$mageId = $pro['product_id'];
 				$created_at = $pro['created_at'];
@@ -403,13 +419,12 @@ class CatelogConnector extends B2BConnector
 					echo "\t" . 'Price: "' . $price . '"' . "\n";
 					echo "\t" . 'Weight: "' . $weight . '"' . "\n";
 				}
-				$asset = (($assetId = trim($product->getFullDescAssetId())) === '' || !($asset = Asset::getAsset($assetId)) instanceof Asset) ? Asset::registerAsset('full_desc_' . $sku, $description, Asset::TYPE_PRODUCT_DEC) : $asset;
 				$product->setName($name)
 					->setMageId($mageId)
 					->setAttributeSet($attributeSet)
-					->setShortDescription($short_description)
-					->setFullDescAssetId(trim($asset->getAssetId()))
-					->setIsFromB2B(true)
+					->setShortDescription($short_description);
+				$this->_updateFullDescription($product, $description);
+				$product->setIsFromB2B(true)
 					->setStatus(ProductStatus::get($statusId))
 					->setSellOnWeb(true)
 					->setManufacturer($this->getManufacturerName(trim($pro['manufacturer'])))
@@ -424,10 +439,10 @@ class CatelogConnector extends B2BConnector
 				if(isset($pro['supplier']) && ($supplierName = trim($pro['supplier'])) !== '')
 					$product->addSupplier(Supplier::create($supplierName, $supplierName, true));
 				
-				if(isset($pro->categories) && count($pro->categories) > 0)
+				if(isset($pro['categories']) && count($pro['categories']) > 0)
 				{
 					$product->clearAllCategory();
-					foreach($pro->category_ids as $cateMageId)
+					foreach($pro['category_ids'] as $cateMageId)
 					{
 						if(!($category = ProductCategory::getByMageId($cateMageId)) instanceof ProductCategory)
 						{
@@ -439,11 +454,13 @@ class CatelogConnector extends B2BConnector
 						$product->addCategory($category);
 					}
 				}
+				$rowCount++;
 			}
 			$systemSetting = SystemSettings::getByType(SystemSettings::TYPE_LAST_NEW_PRODUCT_PULL);
 			$systemSetting->setValue($updated_at)->save();
 			if($transStarted === false)
 				Dao::commitTransaction();
+			else {echo "transStarted === true, nothing is commited! \n";}
 		}
 		catch(Exception $ex)
 		{
