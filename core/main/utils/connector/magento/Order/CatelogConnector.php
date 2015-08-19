@@ -1,22 +1,16 @@
 <?php
 class CatelogConnector extends B2BConnector
 {
+	const CACHE_FILE = '/tmp/mageProduct.json';
 	public function getProductList($fromDate)
 	{
 		$fromDate = trim($fromDate);
-// 		$fromId = trim($fromId);
 		$array = array();
-// 		if($fromId !== '')
-// 		{
-// 			$array[] = array('key'=>'product_id','value'=>array('key' =>'gteq','value' => intval($fromId)));
-// 			$array[] = array('key'=>'product_id','value'=>array('key' =>'lteq','value' => (intval($fromId) + $idStepSize) ));
-// 			echo 'Looking for Magento Products with ID From: "' . intval($fromId) . '" To: "' . (intval($fromId) + $idStepSize) . '"' . "\n";
-// 		}
-// 		if($fromDate !== '')
-// 		{
+		if($fromDate !== '')
+		{
 			$array[] = array('key'=>'updated_at','value'=>array('key' =>'from','value' => trim($fromDate)));
-// 			echo 'Looking for Magento Products with Date From: "' . $fromDate . '"' . "\n";
-// 		}
+			echo 'Looking for Magento Products with Date From: "' . $fromDate . '"' . "\n";
+		}
 		if(count($array) === 0)
 			throw new Exception('no param given');
 		$params = array('complex_filter' => $array);
@@ -63,7 +57,20 @@ class CatelogConnector extends B2BConnector
 	public function getProductInfo($sku, $attributes = array())
 	{
 		$attributes = ($attributes === array() ? $this->getInfoAttributes() : $attributes);
-		return $this->_connect()->catalogProductInfo($this->_session, $sku, null, $attributes);
+		$result = $this->_connect()->catalogProductInfo($this->_session, $sku, null, $attributes);
+		
+		if(isset($result->additional_attributes) and count($result->additional_attributes) > 0)
+		{
+			foreach ($result->additional_attributes as $addiInfo)
+			{
+				$key = $addiInfo->key;
+				$value = $addiInfo->value;
+				if(!isset($result->{$key}))
+					$result->{$key} = $value;
+			}
+			unset($result->additional_attributes);
+		}
+		return $result;
 	}
 	/**
 	 * update product price on magento
@@ -244,7 +251,7 @@ class CatelogConnector extends B2BConnector
 	//create($sku, $name, $mageProductId = '', $stockOnHand = null, $stockOnOrder = null, $isFromB2B = false, $shortDescr = '', $fullDescr = '', Manufacturer $manufacturer = null, $assetAccNo = null, $revenueAccNo = null, $costAccNo = null, $stockMinLevel = null, $stockReorderLevel = null)
 	public function getInfoAttributes()
 	{
-		$attributeName = array('name', 'product_id', 'short_description', 'description', 'manufacturer', 'man_code', 'news_from_date', 'news_to_date', 'price', 'supplier', 'weight', 'status', 'special_price', 'special_from_date', 'special_to_date');
+		$attributeName = array('name', 'product_id', 'short_description', 'description', 'manufacturer', 'man_code', 'sup_code', 'news_from_date', 'news_to_date', 'price', 'supplier', 'weight', 'status', 'special_price', 'special_from_date', 'special_to_date');
 		$attributes = new stdclass();
 		$attributes->additional_attributes = $attributeName;
 		return $attributes;
@@ -282,27 +289,179 @@ class CatelogConnector extends B2BConnector
 			$array[trim($attr->key)] = trim($attr->value);
 		return $array;
 	}
+	public function downloadProductInfo()
+	{
+		$cacheFile = self::CACHE_FILE;
+		file_put_contents($cacheFile, '');
+		
+		if(!($systemSetting = SystemSettings::getByType(SystemSettings::TYPE_LAST_NEW_PRODUCT_PULL)) instanceof SystemSettings)
+			throw new Exception('cannot get LAST_NEW_PRODUCT_PULL in system setting');
+		$fromDate = $systemSetting->getValue();
+		$products = $this->getProductList($fromDate);
+		if(count($products) === 0)
+		{
+			echo 'nothing from magento. exitting' . "\n";
+			return $this;
+		}
+		try
+		{
+			$transStarted = false;
+			try {Dao::beginTransaction();} catch(Exception $e) {$transStarted = true;}
+			foreach($products as $pro)
+			{
+				$mageId = trim($pro->product_id);
+				$sku = trim($pro->sku);
+				$pro = $this->getProductInfo($sku, $this->getInfoAttributes());
+				file_put_contents($cacheFile, json_encode($pro) . "\n", FILE_APPEND);
+			}
+		}
+		catch(Exception $ex)
+		{
+			throw $ex;
+		}
+		return $this;
+	}
+	public function processDownloadedProductInfo($debug = false)
+	{
+		if(!($systemSetting = SystemSettings::getByType(SystemSettings::TYPE_LAST_NEW_PRODUCT_PULL)) instanceof SystemSettings)
+			throw new Exception('cannot get LAST_NEW_PRODUCT_PULL in system setting');
+		
+		$cacheFile = self::CACHE_FILE;
+		$contents = file($cacheFile);
+		// handle extra long sku from magento, exceeding mysql sku length limit
+		DaoMap::loadMap('Product');
+		$skuSizeLimit = DaoMap::$map['product']['sku']['size'];
+		if(count($contents) === 0)
+		{
+			if($debug === true)
+				echo 'nothing from downloaded product info file ' . $cacheFile . '. exitting' . "\n";
+			return $this;
+		}
+		try
+		{
+			$transStarted = false;
+			try {Dao::beginTransaction();} catch(Exception $e) {$transStarted = true;}
+			foreach($contents as $line)
+			{
+				$pro = json_decode($line, true);
+				$mageId = $pro['product_id'];
+				$created_at = $pro['created_at'];
+				$updated_at = $pro['updated_at'];
+				$sku = $pro['sku'];
+				if(strlen($sku) > $skuSizeLimit)
+				{
+					if($debug === true)
+						echo 'Magento product [' . $pro['product_id'] . ']' . $sku . ' created at ' . $created_at . ' updated at ' . $updated_at 
+							.  ' sku length exceed system sku length limit of' . $skuSizeLimit . ', skipped' . "\n";
+					continue;
+				}
+				$attributeSetId = intval($pro['set']);
+				$attributeSet = ProductAttributeSet::getByMageId($attributeSetId);
+				if(!$attributeSet instanceof ProductAttributeSet )
+				{
+					if($debug === true)
+						echo 'Magento product [' . $pro['product_id'] . ']' . $sku . ' created at ' . $created_at . ' updated at ' . $updated_at
+					 		. 'magento attributeSetId ' . $attributeSet . ' cannot find a match in system ProductAttributeSet, skipped' . "\n";
+					continue;
+				}
+				$name = trim($pro['name']);
+				$short_description = trim($pro['short_description']);
+				if($name === '')
+				{
+					if($debug === true)
+						echo 'Magento product [' . $pro['product_id'] . ']' . $sku . ' created at ' . $created_at . ' updated at ' . $updated_at
+					 		. 'has empty produ name from magento, I use short description "' . $short_description . '" for product name ' . $attributeSet . ' cannot find a match in system ProductAttributeSet, skipped' . "\n";
+				}
+				if($short_description === '')
+					$short_description = $name;
+				$description = trim($pro['description']);
+				if($description === '')
+					$description = $short_description;
+				$weight = doubleval(trim($pro['weight']));
+				$statusId = trim($pro['status']);
+				$price = doubleval(trim($pro['price']));
+				$specialPrice = isset($pro['special_price']) ? trim($pro['special_price']) : '';
+				$specialPrice_From = isset($pro['special_from_date']) ? trim($pro['special_from_date']) : null;
+				$specialPrice_To = isset($pro['special_to_date']) ? trim($pro['special_to_date']) : null;
+				
+				if(!($product = Product::getBySku($sku)) instanceof Product)
+				{
+					$product = Product::create($sku, $name);
+					Log::logging(0, get_class($this), 'Found New Product from Magento with sku="' . trim($sku) . '" and name="' . $name . '", created_at="' . $created_at, self::LOG_TYPE, '', __FUNCTION__);
+					echo 'Found New Product from Magento with sku="' . trim($sku)
+						 . '" name="' . $name . '" created_at="' . $created_at . ' updated_at' . $updated_at . "\n";
+				} elseif(Product::getBySku($sku) instanceof Product) // update old product description
+				{
+					$product = Product::getBySku($sku);
+					echo 'Found Existing Product from Magento with sku="' . trim($sku) . '" and name="' . $name . '", created_at="' . $created_at . ', updated_at' . $updated_at . '"' . "\n";
+					echo "\t" . 'Name: "' . $name . '"' . "\n";
+					echo "\t" . 'MageId: "' . $mageId . '"' . "\n";
+					echo "\t" . 'Short Description: "' . $short_description . '"' . "\n";
+					echo "\t" . 'Full Description: "' . $description . '"' . "\n";
+					echo "\t" . 'Status: "' . ProductStatus::get($statusId) . '"' . "\n";
+					echo "\t" . 'Manufacturer: id=' . $this->getManufacturerName(trim($pro['manufacturer']))->getId() . ', name="' . $this->getManufacturerName(trim($pro['manufacturer']))->getName() . '"' . "\n";
+					echo "\t" . 'Price: "' . $price . '"' . "\n";
+					echo "\t" . 'Weight: "' . $weight . '"' . "\n";
+				}
+				$asset = (($assetId = trim($product->getFullDescAssetId())) === '' || !($asset = Asset::getAsset($assetId)) instanceof Asset) ? Asset::registerAsset('full_desc_' . $sku, $description, Asset::TYPE_PRODUCT_DEC) : $asset;
+				$product->setName($name)
+					->setMageId($mageId)
+					->setAttributeSet($attributeSet)
+					->setShortDescription($short_description)
+					->setFullDescAssetId(trim($asset->getAssetId()))
+					->setIsFromB2B(true)
+					->setStatus(ProductStatus::get($statusId))
+					->setSellOnWeb(true)
+					->setManufacturer($this->getManufacturerName(trim($pro['manufacturer'])))
+					->save()
+					->clearAllPrice()
+					->addPrice(ProductPriceType::get(ProductPriceType::ID_RRP), $price)
+					->addInfo(ProductInfoType::ID_WEIGHT, $weight);
+		
+				if($specialPrice !== '')
+					$product->addPrice(ProductPriceType::get(ProductPriceType::ID_CASUAL_SPECIAL), $specialPrice, $specialPrice_From, $specialPrice_To);
+		
+				if(isset($pro['supplier']) && ($supplierName = trim($pro['supplier'])) !== '')
+					$product->addSupplier(Supplier::create($supplierName, $supplierName, true));
+				
+				if(isset($pro->categories) && count($pro->categories) > 0)
+				{
+					$product->clearAllCategory();
+					foreach($pro->category_ids as $cateMageId)
+					{
+						if(!($category = ProductCategory::getByMageId($cateMageId)) instanceof ProductCategory)
+						{
+							if($debug === true)
+								echo 'Magento product [' . $pro['product_id'] . ']' . $sku . ' created at ' . $created_at . ' updated at ' . $updated_at
+							 		. 'magento category id ' . $cateMageId . ' cannot find a match in system ProductCategory, skipped' . "\n";
+							continue;
+						}
+						$product->addCategory($category);
+					}
+				}
+			}
+			$systemSetting = SystemSettings::getByType(SystemSettings::TYPE_LAST_NEW_PRODUCT_PULL);
+			$systemSetting->setValue($updated_at)->save();
+			if($transStarted === false)
+				Dao::commitTransaction();
+		}
+		catch(Exception $ex)
+		{
+			if($transStarted === false)
+				Dao::rollbackTransaction();
+			throw $ex;
+		}
+	}
 	/**
 	 * import all products
 	 *
 	 * @return CatelogConnector
 	 */
-	public function importProducts($setFromDate = false, $newOnly = false, $setFromId = false)
+	public function importProducts()
 	{
-		if($setFromDate === false && $setFromId === false)
-			throw new Exception('must give a limitation on product pull');
 		if(!($systemSetting = SystemSettings::getByType(SystemSettings::TYPE_LAST_NEW_PRODUCT_PULL)) instanceof SystemSettings)
-			throw new Exception('cannot set LAST_NEW_PRODUCT_PULL in system setting');
-		// from id has higher priority
-		if($setFromId === true && !($systemSetting = SystemSettings::getByType(SystemSettings::TYPE_LAST_PRODUCT_PULL_ID)) instanceof SystemSettings)
-			throw new Exception('cannot set TYPE_LAST_PRODUCT_PULL_ID in system setting');
-		$fromDate = '';
-		$fromId = '';
-		if($setFromId === true)
-			$fromId = $systemSetting->getValue();
-		elseif($setFromDate === true)
-			$fromDate = $systemSetting->getValue();
-		$products = $this->getProductList($fromDate, $fromId);
+			throw new Exception('cannot get LAST_NEW_PRODUCT_PULL in system setting');
+		$products = $this->getProductList($fromDate);
 		if(count($products) === 0)
 		{
 			echo 'nothing from magento. exitting' . "\n";
@@ -328,11 +487,6 @@ class CatelogConnector extends B2BConnector
 				if(strlen($sku) > $skuSizeLimit)
 				{
 					echo 'Product ' . $sku . '(id=' . $product->getId() . ', magento Product Creation Time=' . trim($pro->created_at) . ') magento sku length exceed system sku length limit of' . $skuSizeLimit . ', skipped' . "\n";
-					continue;
-				}
-				if($newOnly === true && ($product = Product::getBySku($sku)) instanceof Product)
-				{
-					echo 'Product ' . $sku . '(id=' . $product->getId() . ', magento Product Creation Time=' . trim($pro->created_at) . ') already exist, skipped' . "\n";
 					continue;
 				}
 				
