@@ -489,6 +489,7 @@ class CatelogConnector extends B2BConnector
 	{
 		if(!($systemSetting = SystemSettings::getByType(SystemSettings::TYPE_LAST_NEW_PRODUCT_PULL)) instanceof SystemSettings)
 			throw new Exception('cannot get LAST_NEW_PRODUCT_PULL in system setting');
+		$systemSetting->getValue();
 		$products = $this->getProductList($fromDate);
 		if(count($products) === 0)
 		{
