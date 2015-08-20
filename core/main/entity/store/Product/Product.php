@@ -1030,6 +1030,7 @@ class Product extends InfoEntityAbstract
 			$array['locations'] = array_map(create_function('$a', 'return $a->getJson();'), PreferredLocation::getPreferredLocations($this));
 			$array['unitCost'] = $this->getUnitCost();
 			$array['priceMatchRule'] = ($i=ProductPriceMatchRule::getByProduct($this)) instanceof ProductPriceMatchRule ? $i->getJson() : null;
+			$array['attributeSet'] = ($i=$this->getAttributeSet()) instanceof ProductAttributeSet ? $i->getJson() : null;
 		}
 		return parent::getJson($array, $reset);
 	}
