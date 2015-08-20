@@ -489,7 +489,7 @@ class CatelogConnector extends B2BConnector
 	{
 		if(!($systemSetting = SystemSettings::getByType(SystemSettings::TYPE_LAST_NEW_PRODUCT_PULL)) instanceof SystemSettings)
 			throw new Exception('cannot get LAST_NEW_PRODUCT_PULL in system setting');
-		$systemSetting->getValue();
+		$fromDate = $systemSetting->getValue();
 		$products = $this->getProductList($fromDate);
 		if(count($products) === 0)
 		{
@@ -579,10 +579,7 @@ class CatelogConnector extends B2BConnector
 					}
 				}
 			}
-			if($setFromId === true && ($systemSetting = SystemSettings::getByType(SystemSettings::TYPE_LAST_PRODUCT_PULL_ID)) instanceof SystemSettings)
-				$systemSetting->setValue($product_id)->save();
-			elseif($setFromDate === true && ($systemSetting = SystemSettings::getByType(SystemSettings::TYPE_LAST_NEW_PRODUCT_PULL)) instanceof SystemSettings)
-				$systemSetting->setValue($updated_at)->save();
+			$systemSetting->setValue($updated_at)->save();
 			if($transStarted === false)
 				Dao::commitTransaction();
 		}
