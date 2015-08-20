@@ -355,8 +355,6 @@ class CatelogConnector extends B2BConnector
 			{
 				try
 				{
-					$transStarted = false;
-					try {Dao::beginTransaction();} catch(Exception $e) {$transStarted = true;}
 					echo print_r($line, true);
 					$pro = json_decode($line, true);
 					$mageId = $pro['product_id'];
@@ -401,6 +399,8 @@ class CatelogConnector extends B2BConnector
 					$specialPrice_From = isset($pro['special_from_date']) ? trim($pro['special_from_date']) : null;
 					$specialPrice_To = isset($pro['special_to_date']) ? trim($pro['special_to_date']) : null;
 					
+					$transStarted = false;
+					try {Dao::beginTransaction();} catch(Exception $e) {$transStarted = true;}
 					if(!($product = Product::getBySku($sku)) instanceof Product)
 					{
 						$product = Product::create($sku, $name);
