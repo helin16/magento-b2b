@@ -370,8 +370,6 @@ class CatelogConnector extends B2BConnector
 					}
 					$attributeSetId = intval($pro['set']);
 					$attributeSet = ProductAttributeSet::getByMageId($attributeSetId);
-					if($debug === true)
-						echo "\n" . 'mageSetId:' . $attributeSetId . ' => systemSetId:' . $attributeSet->getId() . ', systemSetName:' . $attributeSet->getName() . "\n";
 					if(!$attributeSet instanceof ProductAttributeSet )
 					{
 						if($debug === true)
@@ -379,6 +377,8 @@ class CatelogConnector extends B2BConnector
 						 		. 'magento attributeSetId ' . $attributeSet . ' cannot find a match in system ProductAttributeSet, skipped' . "\n";
 						continue;
 					}
+					if($debug === true)
+						echo "\n" . 'mageSetId:' . $attributeSetId . ' => systemSetId:' . $attributeSet->getId() . ', systemSetName:' . $attributeSet->getName() . "\n";
 					$name = trim($pro['name']);
 					$short_description = trim($pro['short_description']);
 					if($name === '')
