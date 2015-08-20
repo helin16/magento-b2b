@@ -366,7 +366,7 @@ class CatelogConnector extends B2BConnector
 					if(strlen($sku) > $skuSizeLimit)
 					{
 						if($debug === true)
-							echo 'Magento product [' . $pro['product_id'] . ']' . $sku . ' created at ' . $created_at . ' updated at ' . $updated_at 
+							echo '***warnning***Magento product [' . $pro['product_id'] . ']' . $sku . ' created at ' . $created_at . ' updated at ' . $updated_at 
 								.  ' sku length exceed system sku length limit of' . $skuSizeLimit . ', skipped' . "\n";
 						continue;
 					}
@@ -478,6 +478,7 @@ class CatelogConnector extends B2BConnector
 		$contents = file_get_contents($fileName);
 		$contents = str_replace($line, '', $contents);
 		file_put_contents($fileName, $contents);
+		echo "\n" . '***line removed***' . "\n";
 	}
 	/**
 	 * import all products
