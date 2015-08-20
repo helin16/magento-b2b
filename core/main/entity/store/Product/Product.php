@@ -1030,17 +1030,9 @@ class Product extends InfoEntityAbstract
 			$array['locations'] = array_map(create_function('$a', 'return $a->getJson();'), PreferredLocation::getPreferredLocations($this));
 			$array['unitCost'] = $this->getUnitCost();
 			$array['priceMatchRule'] = ($i=ProductPriceMatchRule::getByProduct($this)) instanceof ProductPriceMatchRule ? $i->getJson() : null;
-			$array['attributeSet'] = $this->getAttributeSet()->getJson();
+			$array['attributeSet'] = ($i=$this->getAttributeSet()) instanceof ProductAttributeSet ? $i->getJson() : null;
 		}
 		return parent::getJson($array, $reset);
-	}
-	public function getMageInfo()
-	{
-		$script = CatelogConnector::getConnector(B2BConnector::CONNECTOR_TYPE_CATELOG,
-				SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_WSDL),
-				SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_USER),
-				SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_KEY));
-		return $script->getProductInfo($this->getSku());
 	}
 	/**
 	 * (non-PHPdoc)
@@ -1436,7 +1428,7 @@ class Product extends InfoEntityAbstract
 	 * @param string $shortDescr    	The short description of the product
 	 * @param string $fullDescr     	The assetId of the full description asset of the product
 	 *
-	 * @return Product
+	 * @return Ambigous <Product, Ambigous, NULL, BaseEntityAbstract>
 	 */
 	public static function create($sku, $name, $mageProductId = '', $stockOnHand = null, $stockOnOrder = null, $isFromB2B = false, $shortDescr = '', $fullDescr = '', Manufacturer $manufacturer = null, $assetAccNo = null, $revenueAccNo = null, $costAccNo = null, $stockMinLevel = null, $stockReorderLevel = null)
 	{

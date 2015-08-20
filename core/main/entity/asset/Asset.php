@@ -244,7 +244,8 @@ class Asset extends BaseEntityAbstract
 		foreach($assets as $asset)
 		{
 			// Remove the file from the NAS server
-			unlink($asset->getPath());
+			if(file_exists($asset->getPath()))
+				unlink($asset->getPath());
 			unset(self::$_cache[trim($asset->getAssetId())]);
 		}
 		return;
