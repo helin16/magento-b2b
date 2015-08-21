@@ -1,7 +1,8 @@
 <?php
 require_once 'bootstrap.php';
 try {
-	var_dump(MageOrderConnector::getLastestOrders('2015-08-01'));
+	Core::setUser(UserAccount::get(UserAccount::ID_SYSTEM_ACCOUNT));
+	var_dump(MageOrderConnector::importOrders('2015-08-18'));
 // 	$options = array('exceptions' => true, 'trace'=> true, 'encoding'=>'utf-8');
 // 	$options = array_merge($options, array('proxy_host' => "proxy.bytecraft.internal", 'proxy_port' => 3128));
 

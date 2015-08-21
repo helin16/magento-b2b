@@ -10,57 +10,63 @@ class MageOrderConnector extends MageConnectorAbstract
 	 */
 	public static function importOrders($lastUpdatedTime = '')
 	{
+		$class = get_called_class();
+
 		$totalItems = 0;
-		self::_log('starting ...', self::LOG_TYPE, 0, get_class($this), 'start', __FUNCTION__);
+		self::_log('starting ...', self::LOG_TYPE, 0, $class, 'start', __FUNCTION__);
 		if(($lastUpdatedTime = trim($lastUpdatedTime)) === '') {
-			self::_log('Getting the last updated time', self::LOG_TYPE, 0, get_class($this), '$lastUpdatedTime is blank', __FUNCTION__);
+			self::_log('Getting the last updated time', self::LOG_TYPE, 0, $class, '$lastUpdatedTime is blank', __FUNCTION__);
 			$lastUpdatedTime = trim(SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_LAST_IMPORT_TIME));
 		}
 
 		//getting the lastest order since last updated time
 		$orders = self::getLastestOrders($lastUpdatedTime);
-		self::_log('Found ' . count($orders) . ' order(s) since "' . $lastUpdatedTime . '".', self::LOG_TYPE, 0, get_class($this), '', __FUNCTION__);
+		self::_log('Found ' . count($orders) . ' order(s) since "' . $lastUpdatedTime . '".', self::LOG_TYPE, 0, $class, '', __FUNCTION__);
 		if(is_array($orders) && count($orders) > 0) {
 			$transStarted = false;
 			try {
 				try {Dao::beginTransaction();} catch(Exception $e) {$transStarted = true;}
 
+				self::_log('=== START LOOPING ' . count($orders) . 'order(s)', self::LOG_TYPE, 0, $class, '', __FUNCTION__);
 				foreach($orders as $index => $order) {
-					self::_log('Found order from Magento with orderNo = ' . trim($order->increment_id) . '.', self::LOG_TYPE, 0, get_class($this), '', __FUNCTION__);
+					$orderNo = trim($order->increment_id);
+					self::_log('Trying to getOrderInfo from Magento with orderNo = ' . $orderNo . '.', self::LOG_TYPE, 0, $class, '', __FUNCTION__, self::_getPreFix(1));
 
-					$order = $this->getOrderInfo(trim($order->increment_id));
+					$order = self::getOrderInfo($orderNo);
 					if(!is_object($order)) {
-						self::_log('Found no object from $order, next element!', self::LOG_TYPE, 0, get_class($this), '$index = ' . $index, __FUNCTION__);
+						self::_log('Found no object from $order, next element!', self::LOG_TYPE, 0, $class, '$index = ' . $index, __FUNCTION__, self::_getPreFix(1));
+						self::_log('');
 						continue;
 					}
 					if(($status = trim($order->state)) === '') {
-						self::_log('Found no state Elment from $order, next element!', self::LOG_TYPE, 0, get_class($this), '$index = ' . $index, __FUNCTION__);
+						self::_log('Found no state Elment from $order, next element!', self::LOG_TYPE, 0, $class, '$index = ' . $index, __FUNCTION__, self::_getPreFix(1));
+						self::_log('');
 						continue;
 					}
 
-					//saving the order
 					$orderDate = new UDate(trim($order->created_at), SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_TIMEZONE));
 					$orderDate->setTimeZone('UTC');
 					$shippingAddr = $billingAddr = null;
-					if(($o = Order::getByOrderNo(trim($order->increment_id))) instanceof Order){
+					if(($o = Order::getByOrderNo($orderNo)) instanceof Order){
 						//skip, if order exsits
-						self::_log('Found order from DB, ID = ' . $o->getId(), self::LOG_TYPE, 0, get_class($this), '$index = ' . $index, __FUNCTION__);
+						self::_log('Found order from DB, ID = ' . $o->getId(), self::LOG_TYPE, 0, $class, '$index = ' . $index, __FUNCTION__, self::_getPreFix(1));
+						self::_log('');
 						continue;
 					}
 
 					$o = new Order();
-					self::_log('Found no order from DB, create new', self::LOG_TYPE, 0, get_class($this), '$index = ' . $index, __FUNCTION__);
+					self::_log('-- Creating a new Order for orderNo = ' . $orderNo . ' ------------', self::LOG_TYPE, 0, $class, '$index = ' . $index, __FUNCTION__, self::_getPreFix(1));
 					$customer = Customer::create(
 							(isset($order->billing_address) && isset($order->billing_address->company) && trim($order->billing_address->company) !== '') ? trim($order->billing_address->company) : (isset($order->customer_firstname) ? trim($order->customer_firstname) . ' ' . trim($order->customer_lastname) : ''),
 							'',
 							trim($order->customer_email),
-							$this->_createAddr($order->billing_address, $billingAddr),
+							self::_createAddr($order->billing_address, $billingAddr),
 							true,
 							'',
-							$this->_createAddr($order->shipping_address, $shippingAddr),
+							self::_createAddr($order->shipping_address, $shippingAddr),
 							isset($order->customer_id) ? trim($order->customer_id) : 0
 					);
-
+					self::_log('Got a customer, ID=' . $customer->getId(), self::LOG_TYPE, 0, $class, '$index = ' . $index, __FUNCTION__, self::_getPreFix(2));
 					$o->setOrderNo(trim($order->increment_id))
 						->setOrderDate(trim($orderDate))
 						->setTotalAmount(trim($order->grand_total))
@@ -70,35 +76,49 @@ class MageOrderConnector extends MageConnectorAbstract
 						->setBillingAddr($customer->getBillingAddress())
 						->setCustomer($customer)
 						->save();
-					self::_log('Saved the order, ID = ' . $o->getId(), self::LOG_TYPE, 0, get_class($this), '$index = ' . $index, __FUNCTION__);
-					$totalShippingCost = StringUtilsAbstract::getValueFromCurrency(trim($order->shipping_amount)) * 1.1;
+					self::_log('!!!! Saved the order, ID = ' . $o->getId() . ', Start creating Order Infos: ', self::LOG_TYPE, 0, $class, '$index = ' . $index, __FUNCTION__, self::_getPreFix(2));
+
 					//create order info
-					$this->_createOrderInfo($o, OrderInfoType::get(OrderInfoType::ID_CUS_NAME), trim($customer->getName()))
-						->_createOrderInfo($o, OrderInfoType::get(OrderInfoType::ID_CUS_EMAIL), trim($customer->getEmail()))
-						->_createOrderInfo($o, OrderInfoType::get(OrderInfoType::ID_QTY_ORDERED), intval(trim($order->total_qty_ordered)))
-						->_createOrderInfo($o, OrderInfoType::get(OrderInfoType::ID_MAGE_ORDER_STATUS), trim($order->status))
-						->_createOrderInfo($o, OrderInfoType::get(OrderInfoType::ID_MAGE_ORDER_STATE), trim($order->state))
-						->_createOrderInfo($o, OrderInfoType::get(OrderInfoType::ID_MAGE_ORDER_TOTAL_AMOUNT), trim($order->grand_total))
-						->_createOrderInfo($o, OrderInfoType::get(OrderInfoType::ID_MAGE_ORDER_SHIPPING_METHOD), trim($order->shipping_description))
-						->_createOrderInfo($o, OrderInfoType::get(OrderInfoType::ID_MAGE_ORDER_SHIPPING_COST), $totalShippingCost)
-						->_createOrderInfo($o, OrderInfoType::get(OrderInfoType::ID_MAGE_ORDER_PAYMENT_METHOD), (!isset($order->payment) ? '' : (!isset($order->payment->method) ? '' : trim($order->payment->method))));
-					self::_log('Updated order info', self::LOG_TYPE, 0, get_class($this), '$index = ' . $index, __FUNCTION__);
+					$totalShippingCost = StringUtilsAbstract::getValueFromCurrency(trim($order->shipping_amount)) * 1.1;
+					self::_createOrderInfo($o, OrderInfoType::get(OrderInfoType::ID_CUS_NAME), trim($customer->getName()), self::_getPreFix(3));
+					self::_createOrderInfo($o, OrderInfoType::get(OrderInfoType::ID_CUS_EMAIL), trim($customer->getEmail()), self::_getPreFix(3));
+					self::_createOrderInfo($o, OrderInfoType::get(OrderInfoType::ID_QTY_ORDERED), intval(trim($order->total_qty_ordered)), self::_getPreFix(3));
+					self::_createOrderInfo($o, OrderInfoType::get(OrderInfoType::ID_MAGE_ORDER_STATUS), trim($order->status), self::_getPreFix(3));
+					self::_createOrderInfo($o, OrderInfoType::get(OrderInfoType::ID_MAGE_ORDER_STATE), trim($order->state), self::_getPreFix(3));
+					self::_createOrderInfo($o, OrderInfoType::get(OrderInfoType::ID_MAGE_ORDER_TOTAL_AMOUNT), trim($order->grand_total), self::_getPreFix(3));
+					self::_createOrderInfo($o, OrderInfoType::get(OrderInfoType::ID_MAGE_ORDER_SHIPPING_METHOD), trim($order->shipping_description), self::_getPreFix(3));
+					self::_createOrderInfo($o, OrderInfoType::get(OrderInfoType::ID_MAGE_ORDER_SHIPPING_COST), $totalShippingCost, self::_getPreFix(3));
+					self::_createOrderInfo($o, OrderInfoType::get(OrderInfoType::ID_MAGE_ORDER_PAYMENT_METHOD), (!isset($order->payment) ? '' : (!isset($order->payment->method) ? '' : trim($order->payment->method))), self::_getPreFix(3));
+					self::_log('Updated All Order Info(s).', self::LOG_TYPE, 0, $class, '$index = ' . $index, __FUNCTION__, self::_getPreFix(2));
+					self::_log('');
 
 					//saving the order item
+					$orderItems = $order->items;
+					self::_log('** Start Creating (' . count($orderItems) . ') Order Items ****', self::LOG_TYPE, 0, $class, '$index = ' . $index, __FUNCTION__, self::_getPreFix(2));
 					$totalItemCost = 0;
-					foreach($order->items as $item)	{
-						$this->_createItem($o, $item);
+					foreach($orderItems as $item)	{
+						self::_createItem($o, $item, self::_getPreFix(3));
+						self::_log('');
 						$totalItemCost = $totalItemCost * 1 + StringUtilsAbstract::getValueFromCurrency($item->row_total) * 1.1;
 					}
+					self::_log('** Finished Creating (' . count($orderItems) . ') Order Items ****', self::LOG_TYPE, 0, $class, '$index = ' . $index, __FUNCTION__, self::_getPreFix(2));
+					self::_log('');
+
+					self::_log('== Setting check whether there is a surcharge of the order ========', self::LOG_TYPE, 0, $class, '$index = ' . $index, __FUNCTION__, self::_getPreFix(2));
 					if(($possibleSurchargeAmount = ($o->getTotalAmount() - $totalShippingCost - $totalItemCost)) > 0 && ($product = Product::getBySku('surcharge')) instanceof Product) {
 						OrderItem::create($o, $product,	$possibleSurchargeAmount, 1, $possibleSurchargeAmount);
+						self::_log(' %% created a surcharge ' . StringUtilsAbstract::getCurrency($possibleSurchargeAmount), self::LOG_TYPE, 0, $class, '$index = ' . $index, __FUNCTION__, self::_getPreFix(3));
 					}
+					self::_log('');
+
 					//record the last imported time for this import process
 					SystemSettings::addSettings(SystemSettings::TYPE_B2B_SOAP_LAST_IMPORT_TIME, trim($order->created_at));
-					self::_log('Updating the last updated time :' . trim($order->created_at), self::LOG_TYPE, 0, get_class($this), '', __FUNCTION__);
+					self::_log('## Updating the last updated time :' . trim($order->created_at) . '##################', self::LOG_TYPE, 0, $class, '', __FUNCTION__, self::_getPreFix(2));
+					self::_log('');
 					$totalItems++;
 				}
 
+				self::_log('', self::LOG_TYPE, 0, $class, '', __FUNCTION__);
 				if($transStarted === false)
 					Dao::commitTransaction();
 			} catch(Exception $e) {
@@ -108,8 +128,8 @@ class MageOrderConnector extends MageConnectorAbstract
 			}
 		}
 
-		self::_log($lastUpdatedTime . " => " . SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_LAST_IMPORT_TIME) . ' => ' . $totalItems, self::LOG_TYPE, 0, get_class($this), '', __FUNCTION__);
-		return $this;
+		self::_log($lastUpdatedTime . " => " . SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_LAST_IMPORT_TIME) . ' => ' . $totalItems, self::LOG_TYPE, 0, $class, '', __FUNCTION__);
+		return $totalItems;
 	}
 	/**
 	 * creating order info
@@ -120,16 +140,23 @@ class MageOrderConnector extends MageConnectorAbstract
 	 *
 	 * @return B2BConnector
 	 */
-	private function _createOrderInfo(Order $order, OrderInfoType $type, $value)
+	private static function _createOrderInfo(Order $order, OrderInfoType $type, $value, $preFix = '')
 	{
+		$class = get_called_class();
+		self::_log('Creating an order info[' . $type->getName() . ', ID=' . $type->getId() . '] for OrderNo=' . $order->getOrderNo(), self::LOG_TYPE, 0, $class, '', __FUNCTION__, $preFix);
 		$items = OrderInfo::find($order, $type);
-		if(count(OrderInfo::find($order, $type)) > 0 ) {
-			foreach($items as $item)
-				OrderInfo::create($order, $type, $value, $item);
+		$itemIds = array();
+		if(count($items) > 0 ) {
+			foreach($items as $item) {
+				$orderInfo = OrderInfo::create($order, $type, $value, $item);
+				$itemIds[] = $orderInfo->getId();
+			}
 		} else {
-			OrderInfo::create($order, $type, $value);
+			$items = array($orderInfo = OrderInfo::create($order, $type, $value));
+			$itemIds[] = $orderInfo->getId();
 		}
-		return $this;
+		self::_log('Created OrderInfo, IDs: ' . implode(', ', $itemIds), self::LOG_TYPE, 0, $class, '', __FUNCTION__, $preFix);
+		return $items;
 	}
 	/**
 	 * Creating an address ojbect from Magento
@@ -138,7 +165,7 @@ class MageOrderConnector extends MageConnectorAbstract
 	 *
 	 * @return Address
 	 */
-	private function _createAddr($addressObj, &$exsitAddr = null)
+	private static function _createAddr($addressObj, &$exsitAddr = null)
 	{
 		return Address::create(isset($addressObj->street) ? preg_replace('/\s+/', ', ', trim($addressObj->street)) : '',
 				trim(isset($addressObj->city) ? trim($addressObj->city) : ''),
@@ -158,9 +185,14 @@ class MageOrderConnector extends MageConnectorAbstract
 	 *
 	 * @return Ambigous <Ambigous, OrderItem, BaseEntityAbstract>
 	 */
-	private static function _createItem(Order $order, $itemObj)
+	private static function _createItem(Order $order, $itemObj, $preFix = '')
 	{
-		$productXml = CatelogConnector::getConnector(B2BConnector::CONNECTOR_TYPE_CATELOG, $this->_getWSDL(), $this->_getApiUser(), $this->_getApiKey())->getProductInfo(trim($itemObj->sku));
+		$class = get_called_class();
+		$sku = trim($itemObj->sku);
+		self::_log('Trying to find productXml from Magento, for sku: ' . $sku, $class::LOG_TYPE, 0, $class, '', __FUNCTION__, $preFix);
+
+		$mageProduct = MageProductConnector::getProductInfo($sku);
+		$class::_log('Got result from Mage: ' . preg_replace("/[\n\r]/", "\n\t\t\t\t", print_r($mageProduct, true)), $class::LOG_TYPE, 0, $class, '', __FUNCTION__, $preFix);
 
 		$product = Product::create(trim($itemObj->sku), trim($itemObj->name), trim($itemObj->product_id));
 		if(($updateOptions = trim($itemObj->product_options)) !== '' && is_array($updateOptions = unserialize($updateOptions))) {
@@ -176,7 +208,8 @@ class MageOrderConnector extends MageConnectorAbstract
 				$updateOptions = '';
 			}
 		}
-		return OrderItem::create($order,
+
+		$orderItem = OrderItem::create($order,
 				$product,
 				trim($itemObj->price) * 1.1,
 				trim($itemObj->qty_ordered),
@@ -185,6 +218,8 @@ class MageOrderConnector extends MageConnectorAbstract
 				null,
 				$product->getName() . $updateOptions
 		);
+		$class::_log('Created OrderItem, ID: ' . $orderItem->getId(), $class::LOG_TYPE, 0, $class, '', __FUNCTION__, $preFix);
+		return $orderItem;
 	}
 	/**
 	 * Getting the list of lastest updated orders
