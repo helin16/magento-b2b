@@ -2,14 +2,14 @@
 class CatelogConnector extends B2BConnector
 {
 	const CACHE_FILE = '/tmp/mageProduct.json';
-	public function getProductList($fromDate)
+	public function getProductList($fromDate, $type = 'updated_at')
 	{
 		$fromDate = trim($fromDate);
 		$array = array();
 		if($fromDate !== '')
 		{
-			$array[] = array('key'=>'updated_at','value'=>array('key' =>'from','value' => trim($fromDate)));
-			echo 'Looking for Magento Products with Date From: "' . $fromDate . '"' . "\n";
+			$array[] = array('key'=>$type,'value'=>array('key' =>'from','value' => trim($fromDate)));
+			echo 'Looking for Magento Products with ' . $type . ' From: "' . $fromDate . '"' . "\n";
 		}
 		if(count($array) === 0)
 			throw new Exception('no param given');
