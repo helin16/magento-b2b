@@ -1522,7 +1522,7 @@ class Product extends InfoEntityAbstract
 		{
 			self::getQuery()->eagerLoad('Product.supplierCodes', 'inner join', 'pro_sup_code', 'pro.id = pro_sup_code.productId and pro_sup_code.supplierId in (' . implode(',', array_fill(0, count($supplierIds), '?')) . ')');
 			if(is_array($sumValues)) {
-				$innerJoins[] = 'inner join suppliercodes pro_sup_code on (pro.id = pro_sup_code.productId and pro_sup_code.supplierId in (' . implode(',', array_fill(0, count($supplierIds), '?')) . '))';
+				$innerJoins[] = 'inner join suppliercode pro_sup_code on (pro.id = pro_sup_code.productId and pro_sup_code.supplierId in (' . implode(',', array_fill(0, count($supplierIds), '?')) . '))';
 			}
 			$params = array_merge($supplierIds, $params);
 		}
@@ -1549,6 +1549,7 @@ class Product extends InfoEntityAbstract
 			$params[] = intval($sh_to);
 		}
 
+		$products = Product::getAllByCriteria(implode(' AND ', $where), $params, false, $pageNo, $pageSize, $orderBy, $stats);
 		if(is_array($sumValues)) {
 			$sql = 'select sum(pro.stockOnHand) `totalStockOnHand`, sum(pro.totalOnHandValue) `totalOnHandValue` from product pro ' . implode(' ', $innerJoins) . ' where pro.active = 1 and (' . implode(' AND ', $where) . ')';
 			$sumResult = Dao::getResultsNative($sql, $params);
@@ -1557,6 +1558,6 @@ class Product extends InfoEntityAbstract
 				$sumValues['totalOnHandValue'] = $sumResult[0]['totalOnHandValue'];
 			}
 		}
-		return Product::getAllByCriteria(implode(' AND ', $where), $params, false, $pageNo, $pageSize, $orderBy, $stats);
+		return $products;
 	}
 }
