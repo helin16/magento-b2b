@@ -65,7 +65,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		var tmp = {};
 		tmp.me = this;
 		tmp.me.postAjax(tmp.me.getCallbackId('deleteUser'), {"userId": item.id}, {
-			'onLoading': function(sender, param) {
+			'onCreate': function(sender, param) {
 				if($(btn)) {
 					jQuery('#' + btn.id).button('loading');
 				}
@@ -159,7 +159,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.reset = (reset || false);
 		tmp.resultDiv = $(tmp.me._resultDivId);
 		tmp.me.postAjax(tmp.me.getCallbackId('getUsers'), {"searchCriteria": tmp.me._searchCriteria, 'pagination': tmp.me._pagination}, {
-			'onLoading': function(sender, param) {
+			'onCreate': function(sender, param) {
 				if(tmp.reset === true) {
 					if(tmp.resultDiv) {
 						tmp.resultDiv.update('');

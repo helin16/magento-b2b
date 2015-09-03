@@ -927,7 +927,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.btn = $('barcode_input');
 		tmp.me._signRandID(tmp.btn);
 		tmp.me.postAjax(tmp.me.getCallbackId('checkProduct'), {'product': tmp.product, 'purchaseOrder': tmp.me._purchaseOrder}, {
-			'onLoading': function(sender, param) {
+			'onCreate': function(sender, param) {
 				jQuery('#' + tmp.btn.id).button('loading');
 			}
 			,'onSuccess': function(sender, param) {
@@ -1046,7 +1046,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		}
 		tmp.me._signRandID(tmp.btn);
 		tmp.me.postAjax(tmp.me.getCallbackId('saveOrder'), tmp.data, {
-			'onLoading': function(sender, param) {
+			'onCreate': function(sender, param) {
 				jQuery('#' + tmp.btn.id).button('loading');
 			}
 			,'onSuccess': function(sender, param) {

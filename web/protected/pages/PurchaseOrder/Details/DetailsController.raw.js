@@ -903,7 +903,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		tmp.me._signRandID(tmp.btn);
 		tmp.data.isSubmit = tmp.isSubmit;
 		tmp.me.postAjax(tmp.me.getCallbackId('saveOrder'), tmp.data, {
-			'onLoading': function(sender, param) {
+			'onCreate': function(sender, param) {
 				jQuery('#' + tmp.btn.id).button('loading');
 			}
 			,'onSuccess': function(sender, param) {

@@ -24,7 +24,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.modalBoxBodyPanel = tmp.modalBoxPanel.down('.modal-body');
 		tmp.loadingDiv = new Element('div').update('<h4>Submitting the data, please be patient.</h4><div><h3 class="fa fa-spinner fa-spin"></h3></div>');
 		tmp.me.postAjax(tmp.me.getCallbackId('saveOrder'), data, {
-			'onLoading': function(sender, param) {
+			'onCreate': function(sender, param) {
 				tmp.modalBoxTitlePanel.update('Submiting data, please wait...');
 				tmp.modalBoxBodyPanel.insert({'bottom': tmp.loadingDiv});
 				tmp.modalBoxBodyPanel.down('.confirm-div').hide().getElementsBySelector('.result-msg').each(function(el){ el.remove(); });

@@ -189,7 +189,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			}
 		}
 		tmp.me.postAjax(tmp.me.getCallbackId('saveOrder'), data, {
-			'onLoading': function(sender, param) {
+			'onCreate': function(sender, param) {
 				tmp.modalBoxTitlePanel.update('Please wait...');
 				tmp.modalBoxBodyPanel.update('<h4>Submitting the data, please be patient.</h4><div><h3 class="fa fa-spinner fa-spin"></h3></div>');
 			}

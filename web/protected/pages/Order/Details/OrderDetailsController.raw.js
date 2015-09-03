@@ -580,7 +580,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.btn = $(btn);
 		tmp.me._signRandID(tmp.btn);
 		tmp.me.postAjax(tmp.me.getCallbackId('updateOrder'), {'items': items, 'order': tmp.me._order, 'for': forType, 'notifyCustomer': tmp.notifyCustomer}, {
-			'onLoading': function(sender, param) {
+			'onCreate': function(sender, param) {
 				jQuery('#' + tmp.btn.id).button('loading');
 			},
 			'onSuccess': function(sender, param) {

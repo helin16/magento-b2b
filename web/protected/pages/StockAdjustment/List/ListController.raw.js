@@ -426,7 +426,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		}
 		tmp.me._signRandID(tmp.btn);
 		tmp.me.postAjax(tmp.me.getCallbackId('saveQuantities'), tmp.data, {
-			'onLoading': function(sender, param) {
+			'onCreate': function(sender, param) {
 				jQuery('#' + tmp.btn.id).button('loading');
 			}
 			,'onSuccess': function(sender, param) {

@@ -39,7 +39,7 @@ POCreateJs.prototype = Object.extend(new BPCPageJs(), {
 			.insert({'bottom': new Element('h4').update('Saving PO, please do NOT close the window') })
 			.insert({'bottom': new Element('span', {'class': 'fa fa-refresh fa-spin fa-5x'}) });
 		tmp.me.postAjax(tmp.me.getCallbackId('saveOrder'), data, {
-			'onLoading': function(sender, param) {
+			'onCreate': function(sender, param) {
 				tmp.me.hideModalBox();
 				$(tmp.me.getHTMLID('itemDiv')).insert({'after': tmp.loadingDiv}).hide();
 			}

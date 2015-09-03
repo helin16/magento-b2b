@@ -100,7 +100,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		if(tmp.comments.blank())
 			return this;
 		tmp.me.postAjax(tmp.me.getCallbackId('addComments'), {'comments': tmp.comments, 'RMA': tmp.me._RMA}, {
-			'onLoading': function(sender, param) {
+			'onCreate': function(sender, param) {
 				jQuery('#' + btn.id).button('loading');
 			}
 			,'onSuccess': function (sender, param) {
@@ -170,7 +170,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.modalBoxTitlePanel = tmp.modalBoxPanel.down('.modal-title');
 		tmp.modalBoxBodyPanel = tmp.modalBoxPanel.down('.modal-body');
 		tmp.me.postAjax(tmp.me.getCallbackId('saveOrder'), data, {
-			'onLoading': function(sender, param) {
+			'onCreate': function(sender, param) {
 				tmp.modalBoxTitlePanel.update('Please wait...');
 				tmp.modalBoxBodyPanel.update('<h4>Submitting the data, please be patient.</h4><div><h3 class="fa fa-spinner fa-spin"></h3></div>');
 			}
