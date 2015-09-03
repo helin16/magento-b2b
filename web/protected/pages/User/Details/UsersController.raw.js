@@ -95,7 +95,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		if(tmp.data === null)
 			return tmp.me;
 		tmp.me.postAjax(tmp.me.getCallbackId('saveUser'), tmp.data, {
-			'onLoading': function () {
+			'onCreate': function () {
 				jQuery('#' + btn.id).button('loading');
 			}
 			,'onSuccess': function(sender, param) {

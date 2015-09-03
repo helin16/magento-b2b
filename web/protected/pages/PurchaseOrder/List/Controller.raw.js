@@ -46,7 +46,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 					 delay: 10,
 					 data: function (params) {
 						 return {
-							 searchTxt: params, // search term
+							 searchTxt: params // search term
 						 };
 					 },
 					 results: function (data) {
@@ -66,7 +66,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 					 return '<div value=' + result.data.id + '>' + result.data.name + '</div >';
 				 },
 				 escapeMarkup: function (markup) { return markup; }, // let our custom formatter work
-				 minimumInputLength: 1,
+				 minimumInputLength: 1
 		});
 		tmp.selectEl = new Element('select', {'class': 'select2 form-control', 'multiple': true, 'data-placeholder': 'the Status of PO', 'search_field': 'po.status'});
 		tmp.me._status.each(function(item){
@@ -77,7 +77,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		$(tmp.me.searchDivId).down('[search_field="po.status"]').replace(tmp.selectEl);
 		jQuery('.select2[search_field="po.status"]').select2({
 			allowClear: true,
-			hidden: true,
+			hidden: true
 		});
 		tmp.selectEl = new Element('input', {'class': 'select2 form-control', 'data-placeholder': 'search for a Products', 'search_field': 'pro.ids'}).insert({'bottom': new Element('option').update('')});
 		$('searchDiv').down('[search_field="pro.ids"]').replace(tmp.selectEl);
@@ -92,7 +92,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 					return {
 						searchTxt: params, // search term
 						pageNo: 1,
-						pageSize: 10,
+						pageSize: 10
 					};
 				},
 				results: function (data) {
@@ -112,7 +112,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 				return '<div value=' + result.data.id + '>' + result.data.name + '</div >';
 			},
 			escapeMarkup: function (markup) { return markup; }, // let our custom formatter work
-			minimumInputLength: 3,
+			minimumInputLength: 3
 		});
 		// bind search key
 		$('searchDiv').getElementsBySelector('[search_field]').each(function(item) {
@@ -140,7 +140,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 			tmp.me._pagination.pageNo = 1;
 		tmp.me._pagination.pageSize = (pageSize || tmp.me._pagination.pageSize);
 		tmp.me.postAjax(tmp.me.getCallbackId('getItems'), {'pagination': tmp.me._pagination, 'searchCriteria': tmp.me._searchCriteria}, {
-			'onLoading': function () {
+			'onCreate': function () {
 				jQuery('#' + tmp.me.searchDivId + ' #searchBtn').button('loading');
 				//reset div
 				if(tmp.reset === true) {
@@ -189,7 +189,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		tmp.me = this;
 		tmp.row = $$('[item_id="'+ po.id +'"]').first();
 		tmp.me.postAjax(tmp.me.getCallbackId('deactivateItems'), {'item_id': po.id}, {
-			'onLoading': function() {
+			'onCreate': function() {
 				if(tmp.row)
 					tmp.row.hide();
 				tmp.me.hideModalBox();

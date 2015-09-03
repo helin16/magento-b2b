@@ -16,7 +16,7 @@ DetailsPageJs.prototype = Object.extend(new BPCPageJs(), {
 		if(btn)
 			tmp.me._signRandID(btn);
 		tmp.me.postAjax(tmp.me.getCallbackId('saveItem'), data, {
-			'onLoading': function (sender, param) {
+			'onCreate': function (sender, param) {
 				if(btn) {
 					jQuery('#' + btn.id).button('loading');
 				}

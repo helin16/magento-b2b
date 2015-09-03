@@ -28,7 +28,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					
 					tmp.data = {'id': (aliasData.id || ''), 'newAliasValue': tmp.newAlias, 'companyName': (aliasData.companyName || $F(tmp.aliasRow.up('.company_row').down('.company_name')) ) };
 					tmp.me.postAjax(tmp.me.getCallbackId('updatePriceMatchCompany'), tmp.data, {
-						'onLoading': function (sender, param) {
+						'onCreate': function (sender, param) {
 							jQuery(tmp.btn.id).button('loading');
 						}
 						,'onSuccess': function (sender, param) {
@@ -95,7 +95,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 						
 						tmp.aliasRow = $(this).up('.pmc_row');
 						tmp.me.postAjax(tmp.me.getCallbackId('deleteAliasForPriceMatchCompany'), {'data': alias}, {
-							'onLoading': function (sender, param) {}
+							'onCreate': function (sender, param) {}
 							,'onSuccess': function (sender, param) {
 								try {
 									tmp.result = tmp.me.getResp(param, false, true);
@@ -148,7 +148,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		var tmp = {};
 		tmp.me = this;
 		tmp.me.postAjax(tmp.me.getCallbackId('getPriceMatchCompany'), {'searchCriteria': tmp.me._searchCriteria, 'pagination': tmp.me._pageInfo}, {
-			'onLoading': function (sender, param) {}
+			'onCreate': function (sender, param) {}
 			,'onSuccess': function (sender, param) {
 				try {
 					tmp.result = tmp.me.getResp(param, false, true);

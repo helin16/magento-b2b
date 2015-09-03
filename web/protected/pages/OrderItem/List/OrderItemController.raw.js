@@ -152,7 +152,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			$(tmp.me._resultDivId).update( new Element('table', {'class': 'table'}).update( tmp.resultDiv = new Element('tbody') ) ) ;
 		}
 		tmp.me.postAjax(tmp.me.getCallbackId('getOrderitems'), {'searchCriteria': tmp.me._searchCriteria, 'pagination': tmp.me._pagination}, {
-			'onLoading': function (sender, param) {
+			'onCreate': function (sender, param) {
 				jQuery('.searching_btn').button('loading');
 			}
 			, 'onSuccess': function (sender, param) {

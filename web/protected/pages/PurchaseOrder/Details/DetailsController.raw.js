@@ -691,7 +691,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		tmp.searchTxtBox = $(tmp.btn).up('.product-autocomplete').down('.search-txt');
 		tmp.searchTxt = $F(tmp.searchTxtBox);
 		tmp.me.postAjax(tmp.me.getCallbackId('searchProduct'), {'searchTxt': tmp.searchTxt, 'supplierID': tmp.me._supplier.id}, {
-			'onLoading': function() {
+			'onCreate': function() {
 				jQuery('#' + tmp.btn.id).button('loading');
 			}
 			,'onSuccess': function(sender, param) {

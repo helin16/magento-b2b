@@ -462,7 +462,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.searchTxt = $F(tmp.searchTxtBox);
 
 		tmp.me.postAjax(tmp.me.getCallbackId('searchProduct'), {'searchTxt': tmp.searchTxt, 'pageNo': tmp.pageNo}, {
-			'onLoading': function() {
+			'onCreate': function() {
 				jQuery('#' + tmp.btn.id).button('loading');
 				jQuery('#' + tmp.searchTxtBox.id).button('loading');
 			}
@@ -1124,7 +1124,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.searchTxt = $F(txtbox).strip();
 		tmp.searchPanel = $(txtbox).up('#' + tmp.me.getHTMLID('searchPanel'));
 		tmp.me.postAjax(tmp.me.getCallbackId('searchCustomer'), {'searchTxt': tmp.searchTxt}, {
-			'onLoading': function() {
+			'onCreate': function() {
 				if($(tmp.searchPanel).down('.list-div'))
 					$(tmp.searchPanel).down('.list-div').remove();
 				$(tmp.searchPanel).insert({'bottom': new Element('div', {'class': 'panel-body'}).update(tmp.me.getLoadingImg()) });

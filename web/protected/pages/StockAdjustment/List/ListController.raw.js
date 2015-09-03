@@ -234,7 +234,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 
 		tmp.inputBox = jQuery('#' + tmp.me.getHTMLID('barcodeInput'));
 		tmp.me.postAjax(tmp.me.getCallbackId('searchProduct'), {'searchTxt': tmp.searchTxt}, {
-			'onLoading': function() {
+			'onCreate': function() {
 				jQuery('#' + tmp.me.getHTMLID('barcodeInput')).button('loading');
 				tmp.lastRow.hide();
 			}

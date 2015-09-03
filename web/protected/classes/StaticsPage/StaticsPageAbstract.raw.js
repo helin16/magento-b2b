@@ -22,7 +22,7 @@ StaticsPageJs.prototype = Object.extend(new BPCPageJs(), {
 		var tmp = {};
 		tmp.me = this;
 		tmp.me.postAjax(tmp.me.getCallbackId('getData'), tmp.me._searchCriterias, {
-			'onLoading': function() {
+			'onCreate': function() {
 				$(tmp.me.getHTMLID('resultDivId')).update(tmp.me.getLoadingImg());
 			},
 			'onSuccess': function(sender, param) {

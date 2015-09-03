@@ -53,7 +53,7 @@ PaymentListPanelJs.prototype = {
 			return;
 		tmp.data.paymentId = payment.id;
 		tmp.me._pageJs.postAjax(PaymentListPanelJs.callbackIds.delPayment, tmp.data, {
-			'onLoading': function() {
+			'onCreate': function() {
 				tmp.me._signRandID(btn);
 				jQuery('#' + btn.id).button('loading');
 			}
@@ -208,7 +208,7 @@ PaymentListPanelJs.prototype = {
 
 		if (tmp.againstEntity !== null) {
 			tmp.me._pageJs.postAjax(PaymentListPanelJs.callbackIds.addPayment, {'payment': tmp.data, 'againstEntity': tmp.againstEntity}, {
-				'onLoading': function (sender, param) {
+				'onCreate': function (sender, param) {
 					tmp.me._pageJs._signRandID(btn);
 					jQuery('#' + btn.id).button('loading');
 				}
@@ -353,7 +353,7 @@ PaymentListPanelJs.prototype = {
 			tmp.data.pagination = {'pageNo': tmp.pageNo};
 			tmp.loadingImg = tmp.me._pageJs.getLoadingImg();
 			tmp.me._pageJs.postAjax(PaymentListPanelJs.callbackIds.getPayments, tmp.data, {
-				'onLoading' : function() {
+				'onCreate' : function() {
 					if(tmp.pageNo === 1) {
 						tmp.panelBody = $(tmp.me._panelHTMLID).down('.panel-body');
 						if(tmp.panelBody)

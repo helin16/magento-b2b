@@ -100,7 +100,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.me._searchCriteria['ord.type'] = tmp.me._type;
 		tmp.me._searchCriteria['extraSearchCriteria'] = tmp.me._extraSearchCriteria ? tmp.me._extraSearchCriteria : '';
 		tmp.me.postAjax(tmp.me.getCallbackId('getOrders'), {'pagination': tmp.me._pagination, 'searchCriteria': tmp.me._searchCriteria}, {
-			'onLoading': function () {
+			'onCreate': function () {
 				jQuery('#searchBtn').button('loading');
 				jQuery('.popovershipping').popover('hide');
 				if(tmp.reset === true) {

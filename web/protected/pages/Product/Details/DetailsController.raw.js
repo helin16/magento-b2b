@@ -285,7 +285,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		var tmp = {};
 		tmp.me = this;
 		tmp.me.postAjax(tmp.me.getCallbackId('getCategories'), {}, {
-			'onLoading': function (sender, param) {
+			'onCreate': function (sender, param) {
 				$(resultDiv).update(tmp.me.getLoadingImg());
 			}
 			, 'onSuccess': function (sender, param) {
@@ -396,7 +396,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		tmp.sku = sku;
 
 		tmp.me.postAjax(tmp.me.getCallbackId('validateSKU'), {'sku': sku}, {
-			'onLoading': function (sender, param) {
+			'onCreate': function (sender, param) {
 				if(tmp.inputEl !== false)
 					tmp.inputEl.writeAttribute('disabled', true);
 			}

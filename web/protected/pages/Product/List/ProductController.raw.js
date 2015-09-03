@@ -165,7 +165,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 			if(tmp.ModalBox)
 				tmp.ModalBox.down('.modal-header').update('<h4 style="color:red;">Processing... Please Do NOT close</h4>');
 			tmp.me.postAjax(tmp.me.getCallbackId('newRule'), {'productId': tmp.me._selected[tmp.me._postIndex]['id'], 'rule': tmp.me._priceMatchRule}, {
-				'onLoading': function () {
+				'onCreate': function () {
 					if(tmp.btn !== null)
 						jQuery('.right-panel.btn').button('loading');
 				}
@@ -451,7 +451,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		tmp.infoPanel = tmp.me._getInfoPanel(product);
 		tmp.infoPanel.down('.price-trend-div iframe').writeAttribute('src', '/statics/product/pricetrend.html?productid=' + product.id);
 		tmp.me.postAjax(tmp.me.getCallbackId('priceMatching'), {'id': product.id}, {
-			'onLoading': function() {
+			'onCreate': function() {
 				tmp.infoPanel.down('.price-match-div .price-match-listing').replace(new Element('div', {'class': 'panel-body price-match-listing'}).update(tmp.me.getLoadingImg()));
 			}
 			,'onSuccess': function(sender, param) {
@@ -498,7 +498,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		
 		tmp.me._pagination.pageSize = (pageSize || tmp.me._pagination.pageSize);
 		tmp.me.postAjax(tmp.me.getCallbackId('getItems'), {'pagination': tmp.me._pagination, 'searchCriteria': tmp.me._searchCriteria}, {
-			'onLoading': function () {
+			'onCreate': function () {
 				jQuery('#' + tmp.me.searchDivId + ' .btn').button('loading');
 				jQuery('#' + tmp.me.searchDivId + ' input').prop('disabled', true);
 				jQuery('#' + tmp.me.searchDivId + ' select').prop('disabled', true);
@@ -679,7 +679,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		var tmp = {};
 		tmp.me = this;
 		tmp.me.postAjax(tmp.me.getCallbackId('updatePrice'), {'productId': productId, 'newPrice': tmp.me.getValueFromCurrency(newPrice)}, {
-			'onLoading': function() {}
+			'onCreate': function() {}
 			,'onSuccess': function(sender, param) {
 				try {
 					tmp.result = tmp.me.getResp(param, false, true);
@@ -700,7 +700,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		if(type !== 'stockMinLevel' && type !== 'stockReorderLevel')
 			tmp.me.showModalBox('Error', 'Invalid type passin to tmp.me._updateStockLevel');
 		tmp.me.postAjax(tmp.me.getCallbackId('updateStockLevel'), {'productId': productId, 'newValue': newValue, 'type': type}, {
-			'onLoading': function() {}
+			'onCreate': function() {}
 		,'onSuccess': function(sender, param) {
 			try {
 				tmp.result = tmp.me.getResp(param, false, true);

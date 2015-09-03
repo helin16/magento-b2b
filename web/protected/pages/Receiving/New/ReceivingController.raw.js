@@ -62,7 +62,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.searchTxt = $F(txtbox).strip();
 		tmp.searchPanel = $(txtbox).up('#' + tmp.me.getHTMLID('searchPanel'));
 		tmp.me.postAjax(tmp.me.getCallbackId('searchPO'), {'searchTxt': tmp.searchTxt}, {
-			'onLoading': function() {
+			'onCreate': function() {
 				if($(tmp.searchPanel).down('.list-div'))
 					$(tmp.searchPanel).down('.list-div').remove();
 				$(tmp.searchPanel).insert({'bottom': new Element('div', {'class': 'panel-body'}).update(tmp.me.getLoadingImg()) });
@@ -775,7 +775,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.inputBox = jQuery('#' + tmp.me.getHTMLID('barcodeInput'));
 
 		tmp.me.postAjax(tmp.me.getCallbackId('searchProduct'), {'searchTxt': tmp.searchTxt}, {
-			'onLoading': function() {
+			'onCreate': function() {
 				jQuery('#' + tmp.me.getHTMLID('barcodeInput')).button('loading');
 			}
 			,'onSuccess': function(sender, param) {

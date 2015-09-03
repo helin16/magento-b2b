@@ -29,7 +29,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		if(tmp.data === null)
 			return;
 		tmp.me.postAjax(tmp.me.getCallbackId('saveItem'), {'item': tmp.data}, {
-			'onLoading': function () { 
+			'onCreate': function () { 
 				if(tmp.data.id) {
 					savePanel.addClassName('item_row').writeAttribute('item_id', tmp.data.id); 
 				}
@@ -126,7 +126,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		} else {
 			tmp.icon.removeClassName('glyphicon-plus-sign').addClassName('glyphicon-minus-sign');
 			tmp.me.postAjax(tmp.me.getCallbackId('getItems'), {'searchCriteria': {'parentId': category.id}, 'pagination': {'pageNo': null, 'pageSize': tmp.me._pagination.pageSize}}, {
-				'onLoading': function () {}
+				'onCreate': function () {}
 				,'onSuccess': function(sender, param) {
 					try{
 						tmp.result = tmp.me.getResp(param, false, true);
@@ -176,7 +176,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		tmp.me = this;
 		tmp.row = $(tmp.me.resultDivId).down('tbody').down('.item_row[item_id=' + row.id + ']');
 		tmp.me.postAjax(tmp.me.getCallbackId('deleteItems'), {'ids': [row.id]}, {
-			'onLoading': function () { 
+			'onCreate': function () { 
 				if(tmp.row) {
 					tmp.row.hide(); 
 				}

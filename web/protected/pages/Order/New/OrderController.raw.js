@@ -334,7 +334,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			return;
 		tmp.data.orderId = tmp.me._order.id;
 		tmp.me.postAjax(tmp.me.getCallbackId('cancelOrder'), tmp.data, {
-			'onLoading': function() {
+			'onCreate': function() {
 				tmp.me._signRandID(btn);
 				jQuery('#' + btn.id).button('loading');
 			}
@@ -710,7 +710,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.searchTxt = $F(tmp.searchTxtBox);
 
 		tmp.me.postAjax(tmp.me.getCallbackId('searchProduct'), {'searchTxt': tmp.searchTxt, 'pageNo': tmp.pageNo, 'customerId': tmp.me._customer ? tmp.me._customer.id : ''}, {
-			'onLoading': function() {
+			'onCreate': function() {
 				jQuery('#' + tmp.btn.id).button('loading');
 				jQuery('#' + tmp.searchTxtBox.id).button('loading');
 			}
@@ -1284,7 +1284,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.searchPanel = $(btn).up('#' + tmp.me.getHTMLID('searchPanel'));
 		tmp.searchTxt = $F(tmp.searchPanel.down('.search-txt')).strip();
 		tmp.me.postAjax(tmp.me.getCallbackId('searchCustomer'), {'searchTxt': tmp.searchTxt, 'pageNo': tmp.pageNo}, {
-			'onLoading': function() {
+			'onCreate': function() {
 				tmp.me._signRandID(btn);
 				jQuery('#' + btn.id).button('loading');
 				if(tmp.pageNo === 1) {
