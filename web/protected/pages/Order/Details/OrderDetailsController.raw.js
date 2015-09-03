@@ -60,7 +60,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.data.title = title;
 		tmp.data.orderId = tmp.me._order.id;
 		tmp.me.postAjax(tmp.me.getCallbackId('updateAddress'), tmp.data, {
-			'onCreate': function() {
+			'onLoading': function() {
 				tmp.me._signRandID(btn);
 				jQuery('#' + btn.id).button('loading');
 			}
@@ -126,7 +126,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		if(!tmp.orderItem || !tmp.orderItem.id)
 			return tmp.me;
 		tmp.me.postAjax(tmp.me.getCallbackId('updateSerials'), {'orderItemId': tmp.orderItem.id, 'sellingitem': tmp.sellingitem}, {
-			'onCreate': function() {
+			'onLoading': function() {
 				$(txtBox).writeAttribute('disabled', true).writeAttribute('title', '');
 				tmp.formGroupDiv.removeClassName('has-error');
 			}
@@ -307,7 +307,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			return tmp.me;
 		}
 		tmp.me.postAjax(tmp.me.getCallbackId('clearETA'), {'item_id': item.id, 'comments': tmp.reason}, {
-			'onCreate': function (sender, param) { }
+			'onLoading': function (sender, param) { }
 			,'onSuccess': function(sender, param) {
 				try {
 					tmp.result = tmp.me.getResp(param, false, true);
@@ -396,7 +396,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		if(!confirm('You are going to change this order item to be: ' + (tmp.isOrdered === true ? 'ORDERED' : 'NOT ORDERED') ))
 			return false;
 		tmp.me.postAjax(tmp.me.getCallbackId('changeIsOrdered'), {'item_id': orderItem.id, 'isOrdered': tmp.isOrdered}, {
-			'onCreate': function (sender, param) {}
+			'onLoading': function (sender, param) {}
 			,'onSuccess': function(sender, param) {
 				try {
 					tmp.result = tmp.me.getResp(param, false, true);
@@ -580,7 +580,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.btn = $(btn);
 		tmp.me._signRandID(tmp.btn);
 		tmp.me.postAjax(tmp.me.getCallbackId('updateOrder'), {'items': items, 'order': tmp.me._order, 'for': forType, 'notifyCustomer': tmp.notifyCustomer}, {
-			'onCreate': function(sender, param) {
+			'onLoading': function(sender, param) {
 				jQuery('#' + tmp.btn.id).button('loading');
 			},
 			'onSuccess': function(sender, param) {
@@ -693,7 +693,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		if(tmp.finalShippingDataArray === null)
 			return;
 		tmp.me.postAjax(tmp.me.getCallbackId('updateShippingInfo'), {'shippingInfo': tmp.finalShippingDataArray, 'order': tmp.me._order}, {
-			'onCreate': function (sender, param) {
+			'onLoading': function (sender, param) {
 				jQuery('#' + button.id).button('loading');
 			}
 			,'onSuccess': function (sender, param) {
@@ -881,7 +881,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			tmp.me.showModalbox('<strong class="text-danger">Error</strong>', error);
 		});
 		tmp.me.postAjax(tmp.me.getCallbackId('changeOrderStatus'), {'order': tmp.me._order, 'orderStatusId': orderStatusId, 'comments': comments}, {
-			'onCreate': function (sender, param) {
+			'onLoading': function (sender, param) {
 				if(typeof(loadingFunc) === 'function')
 					loadingFunc();
 			}
@@ -985,7 +985,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		var tmp = {};
 		tmp.me = this;
 		tmp.me.postAjax(tmp.me.getCallbackId('updatePONo'), {'orderId': tmp.me._order.id, 'poNo': $F(inputBox)}, {
-			'onCreate': function() {}
+			'onLoading': function() {}
 			,'onSuccess': function(sende, param) {
 				try {
 					tmp.result = tmp.me.getResp(param, false, true);

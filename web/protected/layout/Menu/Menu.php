@@ -106,6 +106,14 @@ class Menu extends TTemplateControl
 					'systemsettings' => array('url' => '/systemsettings.html', 'name' => 'Settings', 'icon' => '<span class="glyphicon glyphicon-cog"></span>')
 			);
 		}
+		if(AccessControl::canAccessDevelopingPage(Core::getRole()) )
+		{
+			$array['Testing'] = array(
+					'icon' => '<span class="fa fa-connectdevelop"></span>',
+					'csvdecoder' => array('url' => '/datafeed/csvdecoder.html', 'name' => 'CSV Decoder', 'icon' => '<span class=""></span>'),
+					'newDatafeedRule' => array('url' => '/datafeed/new.html', 'name' => 'New Datafeed Rule', 'icon' => '<span class=""></span>')
+			);
+		}
 		$html = "<ul class='nav navbar-nav'>";
 			foreach($array as $key => $item)
 			{

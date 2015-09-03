@@ -1,3 +1,0 @@
-var StaticsPageJs=new Class.create;
-StaticsPageJs.prototype=Object.extend(new BPCPageJs,{_htmlIds:{resultDivId:""},_searchCriterias:{},setHTMLIDs:function(a){this._htmlIds.resultDivId=a;return this},_drawChart:function(a){jQuery("#"+this.getHTMLID("resultDivId")).highcharts(a);return this},_getData:function(){var a,b;a=this;a.postAjax(a.getCallbackId("getData"),a._searchCriterias,{onCreate:function(){$(a.getHTMLID("resultDivId")).update(a.getLoadingImg())},onSuccess:function(e,c){try{b=a.getResp(c,!1,!0);if(!b)throw"Syste Error: No result came back!";
-a._drawChart(b)}catch(d){$(a.getHTMLID("resultDivId")).update(a.getAlertBox("ERROR:",d).addClassName("alert-danger"))}}});return a},load:function(a){this._searchCriterias=a;return this._getData()}});

@@ -100,7 +100,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		if(tmp.comments.blank())
 			return this;
 		tmp.me.postAjax(tmp.me.getCallbackId('addComments'), {'comments': tmp.comments, 'RMA': tmp.me._RMA}, {
-			'onCreate': function(sender, param) {
+			'onLoading': function(sender, param) {
 				jQuery('#' + btn.id).button('loading');
 			}
 			,'onSuccess': function (sender, param) {
@@ -170,7 +170,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.modalBoxTitlePanel = tmp.modalBoxPanel.down('.modal-title');
 		tmp.modalBoxBodyPanel = tmp.modalBoxPanel.down('.modal-body');
 		tmp.me.postAjax(tmp.me.getCallbackId('saveOrder'), data, {
-			'onCreate': function(sender, param) {
+			'onLoading': function(sender, param) {
 				tmp.modalBoxTitlePanel.update('Please wait...');
 				tmp.modalBoxBodyPanel.update('<h4>Submitting the data, please be patient.</h4><div><h3 class="fa fa-spinner fa-spin"></h3></div>');
 			}
@@ -420,7 +420,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.searchTxt = $F(tmp.searchTxtBox);
 
 		tmp.me.postAjax(tmp.me.getCallbackId('searchProduct'), {'searchTxt': tmp.searchTxt, 'pageNo': tmp.pageNo}, {
-			'onCreate': function() {
+			'onLoading': function() {
 				jQuery('#' + tmp.btn.id).button('loading');
 				jQuery('#' + tmp.searchTxtBox.id).button('loading');
 			}
@@ -1062,7 +1062,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.searchTxt = $F(txtbox).strip();
 		tmp.searchPanel = $(txtbox).up('#' + tmp.me.getHTMLID('searchPanel'));
 		tmp.me.postAjax(tmp.me.getCallbackId('searchCustomer'), {'searchTxt': tmp.searchTxt}, {
-			'onCreate': function() {
+			'onLoading': function() {
 				if($(tmp.searchPanel).down('.list-div'))
 					$(tmp.searchPanel).down('.list-div').remove();
 				$(tmp.searchPanel).insert({'bottom': new Element('div', {'class': 'panel-body'}).update(tmp.me.getLoadingImg()) });

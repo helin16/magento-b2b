@@ -56,7 +56,7 @@ OrderBtnsJs.prototype = {
 			return;
 		tmp.data.orderId = tmp.me._order.id;
 		tmp.me._pageJs.postAjax(OrderBtnsJs.SEND_EMAIL_CALLBACK_ID, tmp.data, {
-			'onCreate': function() {
+			'onLoading': function() {
 				tmp.me._signRandID(btn);
 				jQuery('#' + btn.id).button('loading');
 			}

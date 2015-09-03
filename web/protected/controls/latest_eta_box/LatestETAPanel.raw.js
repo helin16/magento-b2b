@@ -56,7 +56,7 @@ LatestETAPanel.prototype = {
 		tmp.reset = (reset || true);
 		
 		tmp.me._pageObj.postAjax(tmp.me.callBackId, {'pagination': tmp.me.pagination}, {
-			'onCreate': function () {
+			'onLoading': function () {
 			}
 			,'onComplete': function(sender, param) {
 				try

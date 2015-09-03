@@ -149,8 +149,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.me = this;
 		tmp.me._uploadedData = {};
 		tmp.fileLists = new Element('div', {'class': 'list-group'});
-		for(tmp.i = 0; tmp.i < files.length(); tmp.i++) {
-			tmp.file = files[tmp.i];
+		for(tmp.i = 0, tmp.file; tmp.file = files[tmp.i]; tmp.i++) {
 			tmp.fileRow = new Element('div', {'class': 'row'}).update( new Element('div', {'class': 'col-lg-6 col-md-6'}).update(tmp.file.name) );
 			if((tmp.extension = tmp.file.name.split('.').pop()) !== '' && tmp.me._acceptableTypes.indexOf(tmp.extension.toLowerCase()) > -1) {
 				tmp.me._fileReader = new FileReader();
@@ -275,7 +274,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.data.importDataTypes = tmp.me._importDataTypes;
 
 		tmp.me.postAjax(tmp.me.getCallbackId('getAllCodeForProduct'), tmp.data, {
-			'onCreate': function(sender, param) {
+			'onLoading': function(sender, param) {
 				listGroupDiv.insert({'bottom': tmp.newRow });
 			}
 			,'onSuccess': function (sender, param) {

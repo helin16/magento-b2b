@@ -228,7 +228,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		tmp.row = $(btn).up('[item_id]');
 		tmp.item = tmp.row.retrieve('data');
 		tmp.me.postAjax(tmp.me.getCallbackId('deactivateItems'), {'item_id': tmp.item.id}, {
-			'onCreate': function() {
+			'onLoading': function() {
 				if(tmp.row) {
 					tmp.row.toggleClassName('danger');
 					tmp.row.hide(); 

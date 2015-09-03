@@ -44,7 +44,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		
 		jQuery('#' + btn.id).button('loading');
 		tmp.me.postAjax(tmp.me.getCallbackId('changePwd'), tmp.data, {
-			'onCreate': function () {}
+			'onLoading': function () {}
 			,'onComplete': function(sender, param) {
 				try{
 					tmp.result = tmp.me.getResp(param, false, true);
@@ -68,7 +68,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			return;
 		jQuery('#' + btn.id).button('loading');
 		tmp.me.postAjax(tmp.me.getCallbackId('changePersonInfo'), tmp.data, {
-			'onCreate': function () {}
+			'onLoading': function () {}
 			,'onComplete': function(sender, param) {
 				try{
 					tmp.result = tmp.me.getResp(param, false, true);

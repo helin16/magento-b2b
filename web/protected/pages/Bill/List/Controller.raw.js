@@ -53,7 +53,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 						return;
 					}
 					tmp.me.postAjax(tmp.me.getCallbackId('updateInvoiceNo'), {'oldInvoiceNo': row.invoiceNo, 'newInoviceNo': tmp.newInvoiceNo, 'supplierId': row.supplier.id}, {
-						'onCreate': function() {}
+						'onLoading': function() {}
 						,'onSuccess': function(sender, param){
 							try {
 								tmp.result = tmp.me.getResp(param, false, true);
@@ -112,7 +112,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 					 delay: 10,
 					 data: function (params) {
 						 return {
-							 searchTxt: params // search term
+							 searchTxt: params, // search term
 						 };
 					 },
 					 results: function (data) {
@@ -132,7 +132,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 					 return '<div value=' + result.data.id + '>' + result.data.name + '</div >';
 				 },
 				 escapeMarkup: function (markup) { return markup; }, // let our custom formatter work
-				 minimumInputLength: 1
+				 minimumInputLength: 1,
 		});
 		return tmp.me;
 	}
@@ -151,7 +151,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 					return {
 						entityName: 'PurchaseOrder',
 						searchTxt: 'po.purchaseOrderNo like :poNo',
-						searchParams: {'poNo': '%' + params + '%'} // search term
+						searchParams: {'poNo': '%' + params + '%'}, // search term
 					};
 				},
 				results: function (data) {
@@ -171,7 +171,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 				return '<div value=' + result.data.id + '>' + result.data.purchaseOrderNo + ' (' + result.data.supplier.name + ')</div >';
 			},
 			escapeMarkup: function (markup) { return markup; }, // let our custom formatter work
-			minimumInputLength: 1
+			minimumInputLength: 1,
 		});
 		return tmp.me;
 	}

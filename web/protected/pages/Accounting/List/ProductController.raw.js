@@ -220,7 +220,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		tmp.infoPanel = tmp.me._getInfoPanel(product);
 		tmp.infoPanel.down('.price-trend-div iframe').writeAttribute('src', '/statics/product/pricetrend.html?productid=' + product.id);
 		tmp.me.postAjax(tmp.me.getCallbackId('priceMatching'), {'id': product.id}, {
-			'onCreate': function() {
+			'onLoading': function() {
 				tmp.infoPanel.down('.price-match-div .price-match-listing').replace(new Element('div', {'class': 'panel-body price-match-listing'}).update(tmp.me.getLoadingImg()));
 			}
 			,'onSuccess': function(sender, param) {
@@ -256,7 +256,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 			tmp.me._pagination.pageNo = 1;
 		tmp.me._pagination.pageSize = (pageSize || tmp.me._pagination.pageSize);
 		tmp.me.postAjax(tmp.me.getCallbackId('getItems'), {'pagination': tmp.me._pagination, 'searchCriteria': tmp.me._searchCriteria}, {
-			'onCreate': function () {
+			'onLoading': function () {
 				jQuery('#' + tmp.me.searchDivId + ' #searchBtn').button('loading');
 				//reset div
 				if(tmp.reset === true) {

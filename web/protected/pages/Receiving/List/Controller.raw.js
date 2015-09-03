@@ -96,7 +96,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		tmp.confirmDiv = $(btn).up('.confirm-div');
 		tmp.confirmDiv.getElementsBySelector('.msg').each(function(item){ item.remove(); });
 		tmp.me.postAjax(tmp.me.getCallbackId('deleteItem'), {'id': row.id}, {
-			'onCreate': function() {
+			'onLoading': function() {
 				tmp.me._signRandID(btn);
 				jQuery('#' + btn.id).button('loading');
 			}

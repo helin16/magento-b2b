@@ -39,7 +39,7 @@ POCreateJs.prototype = Object.extend(new BPCPageJs(), {
 			.insert({'bottom': new Element('h4').update('Saving PO, please do NOT close the window') })
 			.insert({'bottom': new Element('span', {'class': 'fa fa-refresh fa-spin fa-5x'}) });
 		tmp.me.postAjax(tmp.me.getCallbackId('saveOrder'), data, {
-			'onCreate': function(sender, param) {
+			'onLoading': function(sender, param) {
 				tmp.me.hideModalBox();
 				$(tmp.me.getHTMLID('itemDiv')).insert({'after': tmp.loadingDiv}).hide();
 			}
@@ -461,7 +461,7 @@ POCreateJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.searchTxtBox = !$(tmp.btn).up('.product-autocomplete') || !$(tmp.btn).up('.product-autocomplete').down('.search-txt') ? $($(tmp.btn).retrieve('searchBoxId')) : $(tmp.btn).up('.product-autocomplete').down('.search-txt');
 		tmp.searchTxt = $F(tmp.searchTxtBox);
 		tmp.me.postAjax(tmp.me.getCallbackId('searchProduct'), {'searchTxt': tmp.searchTxt, 'supplierID': tmp.me._supplier.id, 'pageNo': tmp.pageNo}, {
-			'onCreate': function() {
+			'onLoading': function() {
 				jQuery('#' + tmp.btn.id).button('loading');
 			}
 			,'onSuccess': function(sender, param) {
@@ -862,7 +862,7 @@ POCreateJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.searchTxt = $F(txtbox).strip();
 		tmp.searchPanel = $(txtbox).up('#' + tmp.me.getHTMLID('searchPanel'));
 		tmp.me.postAjax(tmp.me.getCallbackId('searchSupplier'), {'searchTxt': tmp.searchTxt}, {
-			'onCreate': function() {
+			'onLoading': function() {
 				if($(tmp.searchPanel).down('.list-div'))
 					$(tmp.searchPanel).down('.list-div').remove();
 				$(tmp.searchPanel).insert({'bottom': new Element('div', {'class': 'panel-body'}).update(tmp.me.getLoadingImg()) });

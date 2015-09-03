@@ -77,7 +77,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		tmp.resultDiv = $(tmp.me.resultDivId);
 		tmp.data = {'pagination': tmp.me._pagination, 'searchCriteria': {'invoiceNo': tmp.me._preLoadData.invoiceNo, 'supplierId': tmp.me._preLoadData.supplierId}};
 		tmp.me.postAjax(tmp.me.getCallbackId('getItems'), tmp.data, {
-			'onCreate': function () {
+			'onLoading': function () {
 				tmp.resultDiv.update( new Element('tr').update( new Element('td').update( tmp.me.getLoadingImg() ) ) );
 			}
 			,'onSuccess': function(sender, param) {

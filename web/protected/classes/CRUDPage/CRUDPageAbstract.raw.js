@@ -43,7 +43,7 @@ CRUDPageJs.prototype = Object.extend(new BPCPageJs(), {
 			tmp.me._pagination.pageNo = 1;
 		tmp.me._pagination.pageSize = (pageSize || tmp.me._pagination.pageSize);
 		tmp.me.postAjax(tmp.me.getCallbackId('getItems'), {'pagination': tmp.me._pagination, 'searchCriteria': tmp.me._searchCriteria}, {
-			'onCreate': function () {
+			'onLoading': function () {
 				jQuery('#' + tmp.me.searchDivId + ' #searchBtn').button('loading');
 				//reset div
 				if(tmp.reset === true) {
@@ -114,7 +114,7 @@ CRUDPageJs.prototype = Object.extend(new BPCPageJs(), {
 			return;
 
 		tmp.me.postAjax(tmp.me.getCallbackId('saveItem'), {'item': tmp.data}, {
-			'onCreate': function () {
+			'onLoading': function () {
 				if(tmp.data.id) {
 					savePanel.addClassName('item_row').writeAttribute('item_id', tmp.data.id);
 				}
@@ -152,7 +152,7 @@ CRUDPageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.me = this;
 		tmp.row = $(tmp.me.resultDivId).down('tbody').down('.item_row[item_id=' + row.id + ']');
 		tmp.me.postAjax(tmp.me.getCallbackId('deleteItems'), {'ids': [row.id]}, {
-			'onCreate': function () {
+			'onLoading': function () {
 				if(tmp.row) {
 					tmp.row.hide();
 				}

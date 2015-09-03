@@ -50,7 +50,7 @@ LastMemoPanelJs.prototype = {
 		 }
 
 		 tmp.me._pageJs.postAjax(LastMemoPanelJs.callbackIds.addMemo, {'entity': tmp.me._entityName, 'entityId': tmp.me._entityId, 'data': tmp.data}, {
-			 'onCreate': function() {
+			 'onLoading': function() {
 				 tmp.newMemoDiv.hide();
 			 }
 		 	 , 'onSuccess': function (sender, param) {

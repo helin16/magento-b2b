@@ -234,7 +234,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 
 		tmp.inputBox = jQuery('#' + tmp.me.getHTMLID('barcodeInput'));
 		tmp.me.postAjax(tmp.me.getCallbackId('searchProduct'), {'searchTxt': tmp.searchTxt}, {
-			'onCreate': function() {
+			'onLoading': function() {
 				jQuery('#' + tmp.me.getHTMLID('barcodeInput')).button('loading');
 				tmp.lastRow.hide();
 			}
@@ -426,7 +426,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		}
 		tmp.me._signRandID(tmp.btn);
 		tmp.me.postAjax(tmp.me.getCallbackId('saveQuantities'), tmp.data, {
-			'onCreate': function(sender, param) {
+			'onLoading': function(sender, param) {
 				jQuery('#' + tmp.btn.id).button('loading');
 			}
 			,'onSuccess': function(sender, param) {

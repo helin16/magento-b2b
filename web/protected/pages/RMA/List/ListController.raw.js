@@ -39,7 +39,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 					 delay: 10,
 					 data: function (params) {
 						 return {
-							 searchTxt: params // search term
+							 searchTxt: params, // search term
 						 };
 					 },
 					 results: function (data) {
@@ -59,7 +59,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 					 return '<div value=' + result.data.id + '>' + result.data.name + '</div >';
 				 },
 				 escapeMarkup: function (markup) { return markup; }, // let our custom formatter work
-				 minimumInputLength: 1
+				 minimumInputLength: 1,
 		});
 		tmp.selectEl = new Element('input', {'class': 'select2 form-control', 'data-placeholder': 'search for a Products', 'search_field': 'pro.ids'}).insert({'bottom': new Element('option').update('')});
 		$('searchDiv').down('[search_field="pro.ids"]').replace(tmp.selectEl);
@@ -74,7 +74,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 					return {
 						searchTxt: params, // search term
 						pageNo: 1,
-						pageSize: 10
+						pageSize: 10,
 					};
 				},
 				results: function (data) {
@@ -94,7 +94,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 				return '<div value=' + result.data.id + '>' + result.data.name + '</div >';
 			},
 			escapeMarkup: function (markup) { return markup; }, // let our custom formatter work
-			minimumInputLength: 3
+			minimumInputLength: 3,
 		});
 		tmp.selectEl = new Element('select', {'class': 'select2 form-control', 'data-placeholder': 'search for a Status', 'search_field': 'ra.status', 'multiple': true}).insert({'bottom': new Element('option').update('')});
 		tmp.me._statusOptions.each(function(item){
@@ -102,7 +102,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		});
 		$('searchDiv').down('[search_field="ra.status"]').replace(tmp.selectEl);
 		jQuery('.select2[search_field="ra.status"]').select2({
-			allowClear: true
+			allowClear: true,
 		});
 		return this;
 	}
@@ -270,7 +270,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		tmp.row = $(btn).up('[item_id]');
 		tmp.item = tmp.row.retrieve('data');
 		tmp.me.postAjax(tmp.me.getCallbackId('deactivateItems'), {'item_id': tmp.item.id}, {
-			'onCreate': function() {
+			'onLoading': function() {
 				if(tmp.row) {
 					tmp.row.toggleClassName('danger');
 					tmp.row.hide(); 

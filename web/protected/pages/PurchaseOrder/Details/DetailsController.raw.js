@@ -691,7 +691,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		tmp.searchTxtBox = $(tmp.btn).up('.product-autocomplete').down('.search-txt');
 		tmp.searchTxt = $F(tmp.searchTxtBox);
 		tmp.me.postAjax(tmp.me.getCallbackId('searchProduct'), {'searchTxt': tmp.searchTxt, 'supplierID': tmp.me._supplier.id}, {
-			'onCreate': function() {
+			'onLoading': function() {
 				jQuery('#' + tmp.btn.id).button('loading');
 			}
 			,'onSuccess': function(sender, param) {
@@ -903,7 +903,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 		tmp.me._signRandID(tmp.btn);
 		tmp.data.isSubmit = tmp.isSubmit;
 		tmp.me.postAjax(tmp.me.getCallbackId('saveOrder'), tmp.data, {
-			'onCreate': function(sender, param) {
+			'onLoading': function(sender, param) {
 				jQuery('#' + tmp.btn.id).button('loading');
 			}
 			,'onSuccess': function(sender, param) {

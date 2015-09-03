@@ -1,3 +1,0 @@
-var DetailsPageJs=new Class.create;
-DetailsPageJs.prototype=Object.extend(new BPCPageJs,{_item:null,setItem:function(a){this._item=a;return this},saveItem:function(a,c,d){var b,e;b=this;a&&b._signRandID(a);b.postAjax(b.getCallbackId("saveItem"),c,{onCreate:function(b,d){a&&jQuery("#"+a.id).button("loading")},onSuccess:function(a,c){try{e=b.getResp(c,!1,!0),"function"===typeof d&&d(e)}catch(f){b.showModalBox('<strong class="text-danger">ERROR:</strong>',f)}},onComplete:function(){a&&jQuery("#"+a.id).button("reset")}});return b},_init:function(){return this},
-load:function(){this._init();$(this.getHTMLID("itemDiv")).update(this._getItemDiv());return this}});
