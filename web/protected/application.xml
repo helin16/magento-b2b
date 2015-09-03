@@ -20,11 +20,6 @@
 			<!-- FrontEnd:: login page -->
 			<url ServiceParameter="Login.LoginController" pattern="login.html" />
 
-			<!-- FrontEnd:: Datafeed CsvDecoder page -->
-			<url ServiceParameter="Datafeed.CsvDecoder.Controller" pattern="datafeed/csvdecoder.html" />
-			<!-- FrontEnd:: Datafeed Rule Detail page -->
-			<url ServiceParameter="Datafeed.Rule.Controller" pattern="datafeed/{id}.html" parameters.id="new|\d+"/>
-
 			<!-- FrontEnd:: CreditNote list page -->
 			<url ServiceParameter="CreditNote.List.ListController" pattern="creditnote.html" />
 			<!-- FrontEnd:: CreditNote detail page -->

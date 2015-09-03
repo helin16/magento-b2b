@@ -1,7 +1,0 @@
-<com:TContent ID="MainContent">
-	<com:Application.controls.select2.select2 />
-	<com:Application.controls.bootstrapSwitch.bootstrapSwitch />
-	<div class="pagewrapper">
-		<div id="content_div" class="contentDiv"></div>
-	</div>
-</com:TContent>
