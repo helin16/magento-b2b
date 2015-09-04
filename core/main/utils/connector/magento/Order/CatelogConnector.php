@@ -414,12 +414,12 @@ class CatelogConnector extends B2BConnector
 						echo 'Found Existing Product from Magento with sku="' . trim($sku) . '" and name="' . $name . '", created_at="' . $created_at . ', updated_at' . $updated_at . '"' . "\n";
 						echo "\t" . 'Name: "' . $name . '"' . "\n";
 						echo "\t" . 'MageId: "' . $mageId . '"' . "\n";
-						echo "\t" . 'Short Description: "' . $short_description . '"' . "\n";
-						echo "\t" . 'Full Description: "' . $description . '"' . "\n";
+// 						echo "\t" . 'Short Description: "' . $short_description . '"' . "\n";
+// 						echo "\t" . 'Full Description: "' . $description . '"' . "\n";
 						echo "\t" . 'Status: "' . ProductStatus::get($systemStatusId)->getName() . '"' . "\n";
-						echo "\t" . 'Manufacturer: id=' . $this->getManufacturerName(trim($pro['manufacturer']))->getId() . ', name="' . $this->getManufacturerName(trim($pro['manufacturer']))->getName() . '"' . "\n";
-						echo "\t" . 'Price: "' . $price . '"' . "\n";
-						echo "\t" . 'Weight: "' . $weight . '"' . "\n";
+// 						echo "\t" . 'Manufacturer: id=' . ($this->getManufacturerName(trim($pro['manufacturer']))->getId()) . ', name="' . $this->getManufacturerName(trim($pro['manufacturer']))->getName() . '"' . "\n";
+// 						echo "\t" . 'Price: "' . $price . '"' . "\n";
+// 						echo "\t" . 'Weight: "' . $weight . '"' . "\n";
 					}
 					try {Dao::beginTransaction();} catch(Exception $e) {$transStarted = true;} // TODO: temperaty use only
 					
