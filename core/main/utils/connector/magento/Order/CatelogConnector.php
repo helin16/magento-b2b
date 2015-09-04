@@ -369,7 +369,7 @@ class CatelogConnector extends B2BConnector
 						continue;
 					}
 					$attributeSetId = intval($pro['set']);
-// 					$attributeSet = ProductAttributeSet::getByMageId($attributeSetId);
+					$attributeSet = ProductAttributeSet::getByMageId($attributeSetId);
 					if(!$attributeSet instanceof ProductAttributeSet )
 					{
 						if($debug === true)
