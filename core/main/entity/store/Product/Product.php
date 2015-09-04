@@ -1031,6 +1031,7 @@ class Product extends InfoEntityAbstract
 			$array['unitCost'] = $this->getUnitCost();
 			$array['priceMatchRule'] = ($i=ProductPriceMatchRule::getByProduct($this)) instanceof ProductPriceMatchRule ? $i->getJson() : null;
 			$array['attributeSet'] = ($i=$this->getAttributeSet()) instanceof ProductAttributeSet ? $i->getJson() : null;
+			$array['status'] = ($i=$this->getStatus()) instanceof ProductStatus ? $i->getJson() : null;
 		}
 		return parent::getJson($array, $reset);
 	}
