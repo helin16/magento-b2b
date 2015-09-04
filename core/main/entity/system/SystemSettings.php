@@ -69,14 +69,13 @@ class SystemSettings extends BaseEntityAbstract
 	 * 
 	 * @param string $type The type string
 	 */
-	public static function addSettings($type, $value, $description)
+	public static function addSettings($type, $value)
 	{
 		$class = __CLASS__;
 		$settings = self::getAllByCriteria('type=?', array($type), false, 1, 1);
 		$setting = ((count($settings) === 0 ? new $class() : $settings[0]));
 		$setting->setType($type)
 			->setValue($value)
-			->setDescription($description)
 			->setActive(true)
 			->save();
 		self::$_cache[$type] = $value;
