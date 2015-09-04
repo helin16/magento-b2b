@@ -86,7 +86,7 @@ class POPrintController extends BPCPageAbstract
 			return '';
 		foreach($comments as $comment)
 		{
-			$html .= '<div>' . $comment->getComments() . '</div>';
+			$html .= '<p>' . $comment->getComments() . '</p>';
 		}
 		return $html;
 	}
