@@ -8,6 +8,8 @@
  */
 class ProductStatus extends BaseEntityAbstract
 {
+	const ID_ENABLED = 7;
+	const ID_DISABLED = 6;
 	/**
 	 * The name of the product
 	 * 
