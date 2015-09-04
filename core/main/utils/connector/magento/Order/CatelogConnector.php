@@ -394,15 +394,16 @@ class CatelogConnector extends B2BConnector
 						$description = $short_description;
 					$weight = doubleval(trim($pro['weight']));
 					$statusId = trim($pro['status']);
+					$systemStatusId = (intval($statusId) === 2 ? ProductStatus::ID_DISABLED : ProductStatus::ID_ENABLED); 
 					$price = doubleval(trim($pro['price']));
 					$specialPrice = isset($pro['special_price']) ? trim($pro['special_price']) : '';
 					$specialPrice_From = isset($pro['special_from_date']) ? trim($pro['special_from_date']) : null;
 					$specialPrice_To = isset($pro['special_to_date']) ? trim($pro['special_to_date']) : null;
 					
 					$transStarted = false;
-					try {Dao::beginTransaction();} catch(Exception $e) {$transStarted = true;}
 					if(!($product = Product::getBySku($sku)) instanceof Product)
 					{
+						continue; // TODO: temperaty use only
 						$product = Product::create($sku, $name);
 						Log::logging(0, get_class($this), 'Found New Product from Magento with sku="' . trim($sku) . '" and name="' . $name . '", created_at="' . $created_at, self::LOG_TYPE, '', __FUNCTION__);
 						echo 'Found New Product from Magento with sku="' . trim($sku)
@@ -415,46 +416,54 @@ class CatelogConnector extends B2BConnector
 						echo "\t" . 'MageId: "' . $mageId . '"' . "\n";
 						echo "\t" . 'Short Description: "' . $short_description . '"' . "\n";
 						echo "\t" . 'Full Description: "' . $description . '"' . "\n";
-						echo "\t" . 'Status: "' . ProductStatus::get($statusId) . '"' . "\n";
+						echo "\t" . 'Status: "' . ProductStatus::get($systemStatusId)->getName() . '"' . "\n";
 						echo "\t" . 'Manufacturer: id=' . $this->getManufacturerName(trim($pro['manufacturer']))->getId() . ', name="' . $this->getManufacturerName(trim($pro['manufacturer']))->getName() . '"' . "\n";
 						echo "\t" . 'Price: "' . $price . '"' . "\n";
 						echo "\t" . 'Weight: "' . $weight . '"' . "\n";
 					}
-					$product->setName($name)
-						->setMageId($mageId)
-						->setAttributeSet($attributeSet)
-						->setShortDescription($short_description);
-					$this->_updateFullDescription($product, $description);
-					$product->setIsFromB2B(true)
-						->setStatus(ProductStatus::get($statusId))
-						->setSellOnWeb(true)
-						->setManufacturer($this->getManufacturerName(trim($pro['manufacturer'])))
-						->save()
-						->clearAllPrice()
-						->addPrice(ProductPriceType::get(ProductPriceType::ID_RRP), $price)
-						->addInfo(ProductInfoType::ID_WEIGHT, $weight);
-			
-					if($specialPrice !== '')
-						$product->addPrice(ProductPriceType::get(ProductPriceType::ID_CASUAL_SPECIAL), $specialPrice, $specialPrice_From, $specialPrice_To);
-			
-					if(isset($pro['supplier']) && ($supplierName = trim($pro['supplier'])) !== '')
-						$product->addSupplier(Supplier::create($supplierName, $supplierName, true));
+					try {Dao::beginTransaction();} catch(Exception $e) {$transStarted = true;} // TODO: temperaty use only
 					
-					if(isset($pro['categories']) && count($pro['categories']) > 0)
-					{
-						$product->clearAllCategory();
-						foreach($pro['category_ids'] as $cateMageId)
-						{
-							if(!($category = ProductCategory::getByMageId($cateMageId)) instanceof ProductCategory)
-							{
-								if($debug === true)
-									echo 'Magento product [' . $pro['product_id'] . ']' . $sku . ' created at ' . $created_at . ' updated at ' . $updated_at
-								 		. 'magento category id ' . $cateMageId . ' cannot find a match in system ProductCategory, skipped' . "\n";
-								continue;
-							}
-							$product->addCategory($category);
-						}
-					}
+					$product->setStatus(ProductStatus::get($systemStatusId))->save();
+					
+// 					$product 
+// 						->setName($name)
+// 						->setMageId($mageId)
+// 						->setAttributeSet($attributeSet)
+// 						->setShortDescription($short_description);
+// 					$this
+// 						->_updateFullDescription($product, $description);
+// 					$product
+// 						->setIsFromB2B(true)
+// 						->setStatus(ProductStatus::get($systemStatusId))
+// 						->setSellOnWeb(true)
+// 						->setManufacturer($this->getManufacturerName(trim($pro['manufacturer'])))
+// 						->save()
+// 						->clearAllPrice()
+// 						->addPrice(ProductPriceType::get(ProductPriceType::ID_RRP), $price)
+// 						->addInfo(ProductInfoType::ID_WEIGHT, $weight)
+// 					;
+			
+// 					if($specialPrice !== '')
+// 						$product->addPrice(ProductPriceType::get(ProductPriceType::ID_CASUAL_SPECIAL), $specialPrice, $specialPrice_From, $specialPrice_To);
+			
+// 					if(isset($pro['supplier']) && ($supplierName = trim($pro['supplier'])) !== '')
+// 						$product->addSupplier(Supplier::create($supplierName, $supplierName, true));
+					
+// 					if(isset($pro['categories']) && count($pro['categories']) > 0)
+// 					{
+// 						$product->clearAllCategory();
+// 						foreach($pro['category_ids'] as $cateMageId)
+// 						{
+// 							if(!($category = ProductCategory::getByMageId($cateMageId)) instanceof ProductCategory)
+// 							{
+// 								if($debug === true)
+// 									echo 'Magento product [' . $pro['product_id'] . ']' . $sku . ' created at ' . $created_at . ' updated at ' . $updated_at
+// 								 		. 'magento category id ' . $cateMageId . ' cannot find a match in system ProductCategory, skipped' . "\n";
+// 								continue;
+// 							}
+// 							$product->addCategory($category);
+// 						}
+// 					}
 					$rowCount++;
 					$systemSetting = SystemSettings::getByType(SystemSettings::TYPE_LAST_NEW_PRODUCT_PULL);
 					$systemSetting->setValue($updated_at)->save();
