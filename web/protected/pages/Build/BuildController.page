@@ -1,0 +1,17 @@
+<com:TContent ID="MainContent">
+	<com:Application.controls.select2.select2 />
+	<com:Application.controls.PapaParse.papaparse />
+	<com:Application.controls.jsSaveAs.jsSaveAs />
+	<com:TCallback ID="updateSettingBtn" onCallBack="Page.updateSetting" />
+	<div class="row">
+		<h1 class="col-lg-6">Build Products</h1>
+		<div class="col-lg-6 text-right">
+			<span class="btn btn-lg btn-success" id="download-btn">
+				Download CSV
+			</span>
+		</div>
+	</div>
+	<div id="resultDiv">
+		<input style="width: 100%" class="select2">
+	</div>
+</com:TContent>
