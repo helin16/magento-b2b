@@ -34,11 +34,14 @@
                     </tr>
                     <tr class="">
                         <td colspan=12>
-                        	<span class="comments_details inlineblock box">
+                        	<div class="comments_details inlineblock box">
                                 <b class="print-row" style="color:black !important;">Comments: </b>
                                 <%= $this->getComments() %>
-                            </span>
+                            </div>
                         </td>
+                    </tr>
+                    <tr class="">
+                        <td colspan=12>&nbsp;</td>
                     </tr>
                     <%= $this->getRow('QTY', 'SKU', 'NAME', 'Unit Price', 'Total Price', 'header'); %>
                 </thead>
