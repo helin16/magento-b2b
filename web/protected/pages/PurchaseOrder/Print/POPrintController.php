@@ -84,9 +84,10 @@ class POPrintController extends BPCPageAbstract
 		$comments = Comments::getAllByCriteria('entityName = ? AND type = ? AND entityId = ?', array('PurchaseOrder', Comments::TYPE_PURCHASING, $this->order->getId()), true, 1, 5, array('comm.id'=> 'desc'));
 		if(count($comments) === 0)
 			return '';
+		var_dump($comments);
 		foreach($comments as $comment)
 		{
-			$html .= '<p>' . $comment->getComments() . '</p>';
+			$html .= '<div style="max-width: 670px; word-wrap: break-word;">' . $comment->getComments() . '</div>';
 		}
 		return $html;
 	}
