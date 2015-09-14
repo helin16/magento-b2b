@@ -104,7 +104,7 @@ class CatelogConnector extends B2BConnector
 		$result = null;
 		if($this->getProductInfo($sku) !== null)
 		{
-			if(count($newinfo) > 0)
+			if(count($params) > 0)
 			{
 				try {
 					$result = $this->_connect()->catalogProductUpdate($this->_session, $sku, $params);
