@@ -101,25 +101,15 @@ class CatelogConnector extends B2BConnector
 			throw new Exception('Invalid sku passed in. "' . $sku .'" given.');
 		$sku = trim($sku);
 		$currentInfo = $this->getProductInfo($sku);
-		$newinfo = isset($params['newInfo']) ? $params['newInfo'] : array();
-		$newAttributes = isset($params['newAttributes']) ? $params['newAttributes'] : array();
 		$result = null;
 		if($this->getProductInfo($sku) !== null)
 		{
 			if(count($newinfo) > 0)
 			{
 				try {
-					$result = $this->_connect()->catalogProductUpdate($this->_session, $sku, $newinfo);
+					$result = $this->_connect()->catalogProductUpdate($this->_session, $sku, $params);
 				} catch (SoapFault $e) {
 					return '***warning*** push Product "' . $sku . '" info to magento faled. Message from Magento: "' . $e -> getMessage() . '"' . "\n";
-				}
-			}
-			if(count($newAttributes) > 0)
-			{
-				try {
-					$this->_connect()->catalogProductAttributeUpdate($this->_session, $sku, $newAttributes);
-				} catch (SoapFault $e) {
-					return '***warning*** push Product "' . $sku . '" attributes to magento faled. Message from Magento: "' . $e -> getMessage() . '"' . "\n";
 				}
 			}
 		}

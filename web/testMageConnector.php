@@ -3,10 +3,8 @@ require_once 'bootstrap.php';
 try {
 	$sku = "VS247HV";
 	$param = array(
-		'newInfo' => array(
-			'price' => 189.00
-		)
-		,'newAttributes' => array(
+		'price' => 189.00
+		,'additional_attributes ' => array(
 			'all_ln_stock' => 'Ships In 24Hrs'
 		)
 	);
