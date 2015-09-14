@@ -4,7 +4,7 @@ try {
 	$sku = "VS247HV";
 	$param = array(
 		'price' => 189.00
-		,'additional_attributes ' => array(
+		,'additional_attributes' => array(
 			'all_ln_stock' => 'Ships In 24Hrs'
 		)
 	);
