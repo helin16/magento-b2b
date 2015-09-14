@@ -32,6 +32,17 @@
                         <td colspan=12>
                         </td>
                     </tr>
+                    <tr class="">
+                        <td colspan=12>
+                        	<div class="comments_details inlineblock box">
+                                <b class="print-row" style="color:black !important;">Comments: </b>
+                                <%= $this->getComments() %>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr class="">
+                        <td colspan=12>&nbsp;</td>
+                    </tr>
                     <%= $this->getRow('QTY', 'SKU', 'NAME', 'Unit Price', 'Total Price', 'header'); %>
                 </thead>
                 <tbody>
@@ -41,10 +52,6 @@
                     <tr>
                         <td colspan=6>
                             <div class="order_payments">
-                                <span class="comments_details inlineblock box">
-                                	<b class="print-row" style="color:black !important;">Comments: </b>
-                                    <%= $this->getComments() %>
-                                </span>
                                 <span class="payment_summary inlineblock box">
                                     <%= $this->getPaymentSummary() %>
                                 </span>

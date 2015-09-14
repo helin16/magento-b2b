@@ -57,6 +57,18 @@ class Product extends InfoEntityAbstract
 	 */
 	private $stockInRMA = 0;
 	/**
+	 * The minimum stock level
+	 *
+	 * @var int
+	 */
+	private $stockMinLevel = null;
+	/**
+	 * The reorder stock lelvel
+	 *
+	 * @var int
+	 */
+	private $stockReorderLevel = null;
+	/**
 	 * The total value for RMA stock
 	 *
 	 * @var double
@@ -156,6 +168,18 @@ class Product extends InfoEntityAbstract
 	 * @var string
 	 */
 	private $costAccNo = '';
+	/**
+	 * whether this product is a kit
+	 *
+	 * @var bool
+	 */
+	private $isKit = false;
+	/**
+	 * the product attribute set
+	 * 
+	 * @var ProductAttributeSet
+	 */
+	protected $attributeSet = null;
 	/**
 	 * Getter for categories
 	 *
@@ -372,7 +396,7 @@ class Product extends InfoEntityAbstract
 	/**
 	 * Getter for stockOnHand
 	 *
-	 * @return
+	 * @return int
 	 */
 	public function getStockOnHand()
 	{
@@ -393,7 +417,7 @@ class Product extends InfoEntityAbstract
 	/**
 	 * Getter for stockOnPO
 	 *
-	 * @return
+	 * @return int
 	 */
 	public function getStockOnPO()
 	{
@@ -414,7 +438,7 @@ class Product extends InfoEntityAbstract
 	/**
 	 * Getter for stockInParts
 	 *
-	 * @return
+	 * @return int
 	 */
 	public function getStockInParts()
 	{
@@ -435,7 +459,7 @@ class Product extends InfoEntityAbstract
 	/**
 	 * Getter for stockInRMA
 	 *
-	 * @return
+	 * @return int
 	 */
 	public function getStockInRMA()
 	{
@@ -452,6 +476,44 @@ class Product extends InfoEntityAbstract
 	{
 	    $this->stockInRMA = $value;
 	    return $this;
+	}
+	/**
+	 * getter for stockMinLevel
+	 *
+	 * @return int|null
+	 */
+	public function getStockMinLevel()
+	{
+		return $this->stockMinLevel;
+	}
+	/**
+	 * Setter for stockMinLevel
+	 *
+	 * @return Product
+	 */
+	public function setStockMinLevel($stockMinLevel)
+	{
+		$this->stockMinLevel = $stockMinLevel;
+		return $this;
+	}
+	/**
+	 * getter for stockReorderLevel
+	 *
+	 * @return int|null
+	 */
+	public function getStockReorderLevel()
+	{
+		return $this->stockReorderLevel;
+	}
+	/**
+	 * Setter for stockReorderLevel
+	 *
+	 * @return Product
+	 */
+	public function setStockReorderLevel($stockReorderLevel)
+	{
+		$this->stockReorderLevel = $stockReorderLevel;
+		return $this;
 	}
 	/**
 	 * Getter for isFromB2B
@@ -687,6 +749,29 @@ class Product extends InfoEntityAbstract
 	    return $this;
 	}
 	/**
+	 * Getter for attributeSet
+	 *
+	 * @return ProductAttributeSet
+	 */
+	public function getAttributeSet()
+	{
+		$this->loadManyToOne('attributeSet');
+		return $this->attributeSet;
+	}
+	/**
+	 * Setter for attributeSet
+	 *
+	 * @param ProductAttributeSet $value The attributeSet
+	 *
+	 * @return Product
+	 */
+	public function setAttributeSet(ProductAttributeSet $value = null)
+	{
+		$this->attributeSet = $value;
+		return $this;
+	}
+	
+	/**
 	 * Adding a product image to the product
 	 *
 	 * @param Asset $asset The asset object that reprents the image
@@ -884,6 +969,49 @@ class Product extends InfoEntityAbstract
 		return $this;
 	}
 	/**
+	 * Getter for isKit
+	 *
+	 * @return bool
+	 */
+	public function getIsKit()
+	{
+	    return intval($this->isKit) === 1;
+	}
+	/**
+	 * Setter for isKit
+	 *
+	 * @param bool $value The isKit
+	 *
+	 * @return Product
+	 */
+	public function setIsKit($value)
+	{
+	    $this->isKit = $value;
+	    return $this;
+	}
+	/**
+	 * recalculating the stockOnHand and stockOnHandValue of this product, if it's a kit
+	 */
+	public function reCalKitsValue()
+	{
+		if($this->getIsKit() !== true || trim($this->getId()) === '')
+			return $this;
+		$sql = 'select sum(kit.cost) `totalValue`, count(distinct kit.id) `totalCount` from kit kit where kit.active = 1 and kit.soldDate = ? and kit.productId = ?';
+		$result = Dao::getResultsNative($sql, array(trim(UDate::zeroDate()), $this->getId()));
+		if(count($result) > 0) {
+			$totalValue = (trim($result[0]['totalValue']) === '' ? '0.0000' : trim($result[0]['totalValue']));
+			$totalCount = (trim($result[0]['totalCount']) === '' ? '0' : trim($result[0]['totalCount']));
+			if(($originalTotalOnHandValue = trim($this->getTotalInPartsValue())) !== $totalValue || ($originalStockOnHand = trim($this->getStockOnHand())) !== $totalCount) { //if not matched, then we need to adjust the qty
+				$this->setStockOnHand($totalCount)
+					->setTotalOnHandValue($totalValue)
+					->snapshotQty($this, ProductQtyLog::TYPE_STOCK_ADJ, 'Realigning the TotalInPartsValue to ' . StringUtilsAbstract::getCurrency($totalValue) . ' and StockOnHand to ' . $totalCount)
+					->save()
+					->addLog('StockOnHand(' . $originalStockOnHand . ' => ' . $this->getStockOnHand() . ')', Log::TYPE_SYSTEM, 'STOCK_QTY_CHG', __CLASS__ . '::' . __FUNCTION__)
+					->addLog('TotalOnHandValue(' . $originalTotalOnHandValue . ' => ' .$this->getTotalOnHandValue() . ')', Log::TYPE_SYSTEM, 'STOCK_VALUE_CHG', __CLASS__ . '::' . __FUNCTION__);
+			}
+		}
+	}
+	/**
 	 * (non-PHPdoc)
 	 * @see BaseEntityAbstract::getJson()
 	 */
@@ -901,6 +1029,9 @@ class Product extends InfoEntityAbstract
 			$array['fullDescriptionAsset'] = (($asset = Asset::getAsset($this->getFullDescAssetId())) instanceof Asset ? $asset->getJson() : null) ;
 			$array['locations'] = array_map(create_function('$a', 'return $a->getJson();'), PreferredLocation::getPreferredLocations($this));
 			$array['unitCost'] = $this->getUnitCost();
+			$array['priceMatchRule'] = ($i=ProductPriceMatchRule::getByProduct($this)) instanceof ProductPriceMatchRule ? $i->getJson() : null;
+			$array['attributeSet'] = ($i=$this->getAttributeSet()) instanceof ProductAttributeSet ? $i->getJson() : null;
+			$array['status'] = ($i=$this->getStatus()) instanceof ProductStatus ? $i->getJson() : null;
 		}
 		return parent::getJson($array, $reset);
 	}
@@ -919,9 +1050,17 @@ class Product extends InfoEntityAbstract
 				$where[] = 'id != ?';
 				$params[] = $id;
 			}
-			$exsitingSKU = Product::countByCriteria(implode(' AND ', $where), $params);
+			$exsitingSKU = self::countByCriteria(implode(' AND ', $where), $params);
 			if($exsitingSKU > 0)
 				throw new EntityException('The SKU(=' . $sku . ') is already exists!' );
+			if(($this->attributeSet instanceof ProductAttributeSet && $this->attributeSet->getId() === '') || !$this->attributeSet instanceof ProductAttributeSet)
+				$this->setAttributeSet(ProductAttributeSet::get(ProductAttributeSet::ID_DEFAULT_ATTR_SET));
+		}
+		if(($id = trim($this->getId())) !== '') {
+			if(self::countByCriteria('id = ? and isKit = 1 and isKit != ?', array($id, $this->getIsKit())) > 0) {//changing isKit flag to be not a KIT
+				if(count($kits = Kit::getAllByCriteria('productId = ?', array($id), true, 1, 1)) > 0 )
+					throw new EntityException('Can NOT change the flag IsKit, as there are kits like [' . $kits[0]->getBarcode() . '] for this product: ' . $this->getSku());
+			}
 		}
 	}
 	/**
@@ -952,12 +1091,33 @@ class Product extends InfoEntityAbstract
 	 */
 	public function picked($qty, $comments = '', BaseEntityAbstract $entity = null)
 	{
-		$unitCost = $this->getUnitCost();
 		$order = ($entity instanceof Order ? $entity : ($entity instanceof OrderItem ? $entity->getOrder() : null));
-		return $this->setStockOnHand(($originStockOnHand = $this->getStockOnHand()) - $qty)
-			->setStockOnOrder(($originStockOnOrder = $this->getStockOnOrder()) + $qty)
-			->setTotalOnHandValue(($origTotalOnHandValue = $this->getTotalOnHandValue()) - ($qty * $unitCost))
-			->snapshotQty($entity instanceof BaseEntityAbstract ? $entity : $this, ProductQtyLog::TYPE_SALES_ORDER, (intval($qty) > 0 ? 'Stock picked' : 'stock UNPICKED') . ': ' . ($order instanceof Order ? '[' . $order->getOrderNo() . ']' : '') . $comments)
+		$unitCost = $this->getUnitCost();
+		$totalCost = ($qty * $unitCost);
+		$action = (intval($qty) > 0 ? 'Stock picked' : 'stock UNPICKED');
+		$newQty = (($originStockOnHand = $this->getStockOnHand()) - $qty);
+		if($newQty < 0 && intval($qty) > 0 && intval(SystemSettings::getSettings(SystemSettings::TYPE_ALLOW_NEGTIVE_STOCK)) !== 1) 
+			throw new Exception('Product (SKU:' . $this->getSKU() . ') can NOT be ' . $action . ' , as there is not enough stock: stock on hand will fall below zero');
+		if($entity instanceof OrderItem) {
+			$kits = array_map(create_function('$a', 'return $a->getKit();'), SellingItem::getAllByCriteria('orderItemId = ? and kitId is not null', array($entity->getId())));
+			$kits = array_unique($kits);
+			if(count($kits) > 0) {
+				$totalCost = 0;
+				$barcodes = array();
+				foreach($kits as $kit) {
+					$totalCost = $kit->getCost();
+					$barcodes[] = $kit->getBarcode();
+				}
+				$comments .= ' ' . $action . ' KITS[' . implode(',', $barcodes) . '] with total cost value:' . StringUtilsAbstract::getCurrency($totalCost);
+			}
+		}
+		$newStockOnOrder = ($originStockOnOrder = $this->getStockOnOrder()) + $qty;
+		if($newStockOnOrder < 0  && intval(SystemSettings::getSettings(SystemSettings::TYPE_ALLOW_NEGTIVE_STOCK)) !== 1)
+			throw new Exception('Product (SKU:' . $this->getSKU() . ') can NOT be ' . $action . ' , as there is not enough stock: new stock on order will fall below zero');
+		return $this->setStockOnHand($newQty)
+			->setStockOnOrder($newStockOnOrder)
+			->setTotalOnHandValue(($origTotalOnHandValue = $this->getTotalOnHandValue()) - $totalCost)
+			->snapshotQty($entity instanceof BaseEntityAbstract ? $entity : $this, ProductQtyLog::TYPE_SALES_ORDER, $action . ': ' . ($order instanceof Order ? '[' . $order->getOrderNo() . ']' : '') . $comments)
 			->save()
 			->addLog('StockOnHand(' . $originStockOnHand . ' => ' . $this->getStockOnHand() . ')', Log::TYPE_SYSTEM, 'STOCK_QTY_CHG', __CLASS__ . '::' . __FUNCTION__)
 			->addLog('StockOnOrder(' . $originStockOnOrder . ' => ' . $this->getStockOnOrder() . ')', Log::TYPE_SYSTEM, 'STOCK_QTY_CHG', __CLASS__ . '::' . __FUNCTION__)
@@ -1026,10 +1186,122 @@ class Product extends InfoEntityAbstract
 	public function shipped($qty, $comments = '', BaseEntityAbstract $entity = null)
 	{
 		$order = ($entity instanceof Order ? $entity : ($entity instanceof OrderItem ? $entity->getOrder() : null));
-		return $this->setStockOnOrder(($originStockOnOrder = $this->getStockOnOrder()) - $qty)
+		$newQty = (($originStockOnOrder = $this->getStockOnOrder()) - $qty);
+		if($newQty < 0 && intval($qty) >0  && intval(SystemSettings::getSettings(SystemSettings::TYPE_ALLOW_NEGTIVE_STOCK)) !== 1)
+			throw new Exception('Product (SKU:' . $this->getSKU() . ') can NOT be pick, as there is not enough stock.');
+		return $this->setStockOnOrder($newQty)
 			->snapshotQty($entity instanceof BaseEntityAbstract ? $entity : $this, ProductQtyLog::TYPE_STOCK_MOVE_INTERNAL, 'Stock shipped. ' . ($order instanceof Order ? '[' . $order->getOrderNo() . ']' : ''))
 			->save()
 			->addLog('StockOnOrder(' . $originStockOnOrder . ' => ' . $this->getStockOnOrder() . ')', Log::TYPE_SYSTEM, 'STOCK_QTY_CHG', __CLASS__ . '::' . __FUNCTION__);
+	}
+	/**
+	 * a product is returned for RMA
+	 *
+	 * @param unknown            $qty
+	 * @param dobuble            $unitCost
+	 * @param string             $comments
+	 * @param BaseEntityAbstract $entity
+	 */
+	public function returnedIntoRMA($qty, $unitCost, $comments, BaseEntityAbstract $entity = null)
+	{
+		$rma = ($entity instanceof RMA ? $entity : ($entity instanceof RMAItem ? $entity->getRMA() : null));
+		$order = ($rma instanceof RMA ? $rma->getOrder() : null);
+		return $this->setStockInRMA(($originalStockOnRMA = $this->getStockInRMA()) + $qty)
+			->setTotalRMAValue(($originalTotalRMAValue = $this->getTotalRMAValue()) + ($qty * $unitCost))
+			->snapshotQty($entity instanceof BaseEntityAbstract ? $entity : $this, ProductQtyLog::TYPE_RMA, 'Stock RMAed from ' . ($rma instanceof RMA ? 'RMA[' . $rma->getRaNo() . ']' : '') . ($order instanceof Order ? ' generated from Order[' . $order->getOrderNo() . ']' : '') . (trim($comments) === '' ? '.' : ': ' . $comments))
+			->save()
+			->addLog('StockInRMA(' . $originalStockOnRMA . ' => ' . $this->getStockInRMA() . '), TotalRMAValue(' . $originalTotalRMAValue . ' => ' . $this->getTotalRMAValue() . ')' . (trim($comments) === '' ? '.' : ': ' . $comments),
+					Log::TYPE_SYSTEM,
+					'STOCK_QTY_CHG',
+					__CLASS__ . '::' . __FUNCTION__);
+	}
+	/**
+	 * a product is created as a kit
+	 *
+	 * @param string             $comments
+	 * @param BaseEntityAbstract $entity
+	 */
+	public function createAsAKit($comments, Kit $entity)
+	{
+		$task = ($entity instanceof Kit ? $entity->getTask() : null);
+		return $this->setStockOnHand(($originalStockOnHand = $this->getStockOnHand()) + 1)
+			->setTotalOnHandValue(($originalTotalOnHandValue = $this->getTotalOnHandValue()) + $entity->getCost())
+			->snapshotQty($entity instanceof BaseEntityAbstract ? $entity : $this, ProductQtyLog::TYPE_WORKSHOP,
+					'Created a Kit[' . $entity->getBarcode() . '] with value(cost=' . StringUtilsAbstract::getCurrency($entity->getCost())  . ')' . ($task instanceof Task ? ' generated from Task[' . $task->getId() . ']' : '') . (trim($comments) === '' ? '.' : ': ' . $comments))
+			->save()
+			->addLog('StockOnHand(' . $originalStockOnHand . ' => ' . $this->getStockOnHand() . '), StockOnHandValue(' . $originalTotalOnHandValue . ' => ' . $this->getTotalOnHandValue() . ')' . (trim($comments) === '' ? '.' : ': ' . $comments),
+					Log::TYPE_SYSTEM,
+					'STOCK_QTY_CHG',
+					__CLASS__ . '::' . __FUNCTION__);
+	}
+	/**
+	 * a product is installed into a kit
+	 *
+	 * @param unknown            $qty
+	 * @param dobuble            $unitCost
+	 * @param string             $comments
+	 * @param BaseEntityAbstract $entity
+	 */
+	public function installedIntoKit($qty, $unitCost, $comments, BaseEntityAbstract $entity = null)
+	{
+		$kitComponent = $entity instanceof KitComponent ? $entity : null;
+		$kit = ($kitComponent instanceof KitComponent ? $kitComponent->getKit() : ($entity instanceof Kit ? $entity : null));
+		$task = ($kit instanceof Kit ? $kit->getTask() : null);
+		return $this->setStockOnHand(($originalStockOnHand = $this->getStockOnHand()) - $qty)
+			->setTotalOnHandValue(($originalTotalOnHandValue = $this->getTotalOnHandValue()) - ($qty * $unitCost))
+			->setStockInParts(($originalStockInParts = $this->getStockInParts()) + $qty)
+			->setTotalInPartsValue(($originalTotalInPartValue = $this->getTotalInPartsValue()) + ($qty * $unitCost))
+			->snapshotQty($entity instanceof BaseEntityAbstract ? $entity : $this, ProductQtyLog::TYPE_WORKSHOP,
+					'Stock ' . (intval($qty) <= 0 ? 'uninstalled from' : 'installed into') . ($kit instanceof Kit ? ' Kit [' . $kit->getBarcode() . ']' : '') . ($task instanceof Task ? ' generated from Task [' . $task->getId() . ']' : '') . (trim($comments) === '' ? '.' : ': ' . $comments))
+			->save()
+			->addLog('StockOnHand(' . $originalStockOnHand . ' => ' . $this->getStockOnHand() . '), TotalOnHandValue(' . $originalTotalOnHandValue . ' => ' . $this->getTotalOnHandValue() . '), StockInParts(' . $originalStockInParts . ' => ' . $this->getStockInParts() . '), TotalInPartsValue(' . $originalTotalInPartValue . ' => ' . $this->getTotalInPartsValue() . ')' . (trim($comments) === '' ? '.' : ': ' . $comments),
+					Log::TYPE_SYSTEM,
+					'STOCK_QTY_CHG',
+					__CLASS__ . '::' . __FUNCTION__);
+	}
+	/**
+	 * a product is returned for into stock on hand
+	 *
+	 * @param unknown            $qty
+	 * @param dobuble            $unitCost
+	 * @param string             $comments
+	 * @param BaseEntityAbstract $entity
+	 */
+	public function returnedIntoSOH($qty, $unitCost, $comments, BaseEntityAbstract $entity = null)
+	{
+		$creditNote = ($entity instanceof CreditNote ? $entity : ($entity instanceof CreditNoteItem ? $entity->getCreditNote() : null));
+		$order = ($creditNote instanceof CreditNote ? $creditNote->getOrder() : null);
+		return $this->setStockOnHand(($originalStockOnHand = $this->getStockOnHand()) + $qty)
+			->setTotalOnHandValue(($originalTotalOnHandValue = $this->getTotalOnHandValue()) + ($qty * $unitCost))
+			->snapshotQty($entity instanceof BaseEntityAbstract ? $entity : $this, ProductQtyLog::TYPE_RMA, 'Return StockOnHand ' . ($creditNote instanceof CreditNote ? ' from CreditNote[' . $creditNote->getCreditNoteNo() . ']' : '') . ($order instanceof Order ? ' generated from Order[' . $order->getOrderNo() . ']' : '') . (trim($comments) === '' ? '.' : ': ' . $comments))
+			->save()
+			->addLog('StockOnHand(' . $originalStockOnHand . ' => ' . $this->getStockOnHand() . '), TotalRMAValue(' . $originalTotalOnHandValue . ' => ' . $this->getTotalOnHandValue() . ')' . (trim($comments) === '' ? '.' : ': ' . $comments),
+					Log::TYPE_SYSTEM,
+					'STOCK_QTY_CHG',
+					__CLASS__ . '::' . __FUNCTION__);
+	}
+	/**
+	 * a product is fixed from RMA
+	 *
+	 * @param unknown            $qty
+	 * @param string             $comments
+	 * @param BaseEntityAbstract $entity
+	 */
+	public function fixedFromRMA($qty, $comments, BaseEntityAbstract $entity = null)
+	{
+		$rma = ($entity instanceof RMA ? $entity : ($entity instanceof RMAItem ? $entity->getRMA() : null));
+		$order = ($rma instanceof RMA ? $rma->getOrder() : null);
+		$unitCostFromRMA = intval($this->getStockInRMA()) === 0 ? 0 : ($this->getTotalRMAValue() /  $this->getStockInRMA());
+		return $this->setStockInRMA(($originalStockOnRMA = $this->getStockInRMA()) - $qty)
+			->setTotalRMAValue(($originalTotalRMAValue = $this->getTotalRMAValue()) - ($qty * $unitCostFromRMA))
+			->setStockOnHand(($originStockOnHand = $this->getStockOnHand()) + $qty)
+			->setTotalOnHandValue(($originalTotalOnHandValue = $this->getTotalOnHandValue()) + ($qty * $unitCostFromRMA))
+			->snapshotQty($entity instanceof BaseEntityAbstract ? $entity : $this, ProductQtyLog::TYPE_RMA, 'Stock Fixed from: ' . ($creditNote instanceof CreditNote ? 'RMA[' . $rma->getRaNo() . ']' : '') . ($order instanceof Order ? ' generated from Order[' . $order->getOrderNo() . ']' : ''). (trim($comments) === '' ? '.' : ': ' . $comments))
+			->save()
+			->addLog('StockInRMA(' . $originalStockOnRMA . ' => ' . $this->getStockInRMA() . '), TotalRMAValue(' . $originalTotalRMAValue . ' => ' . $this->getTotalRMAValue() . '), StockOnHand(' . $originStockOnHand . ' => ' . $this->getStockOnHand() . '), TotalOnHandValue(' . $originalTotalOnHandValue . ' => ' . $this->getTotalOnHandValue() . ')' . (trim($comments) === '' ? '.' : ': ' . $comments)
+				, Log::TYPE_SYSTEM
+				, 'STOCK_QTY_CHG'
+				, __CLASS__ . '::' . __FUNCTION__);
 	}
 	/**
 	 * A product is stocktake
@@ -1089,6 +1361,8 @@ class Product extends InfoEntityAbstract
 		DaoMap::setIntType('stockOnPO', 'int', 10, false);
 		DaoMap::setIntType('stockInParts', 'int', 10, false);
 		DaoMap::setIntType('stockInRMA', 'int', 10, false);
+		DaoMap::setIntType('stockMinLevel', 'int', 10, true, true);
+		DaoMap::setIntType('stockReorderLevel', 'int', 10, true, true);
 		DaoMap::setIntType('totalRMAValue', 'double', '10,4', false);
 		DaoMap::setStringType('assetAccNo', 'varchar', 10);
 		DaoMap::setStringType('revenueAccNo', 'varchar', 10);
@@ -1104,6 +1378,8 @@ class Product extends InfoEntityAbstract
 		DaoMap::setOneToMany('supplierCodes', 'SupplierCode', 'pro_sup_code');
 		DaoMap::setOneToMany('categories', 'Product_Category', 'pro_cate');
 		DaoMap::setOneToMany('codes', 'ProductCode', 'pro_pro_code');
+		DaoMap::setBoolType('isKit');
+		DaoMap::setManyToOne('attributeSet', 'ProductAttributeSet', 'pro_attr_set', true);
 		parent::__loadDaoMap();
 
 		DaoMap::createUniqueIndex('sku');
@@ -1123,6 +1399,8 @@ class Product extends InfoEntityAbstract
 		DaoMap::createIndex('assetAccNo');
 		DaoMap::createIndex('revenueAccNo');
 		DaoMap::createIndex('costAccNo');
+		DaoMap::createIndex('isKit');
+		DaoMap::createIndex('attributeSet');
 		DaoMap::commit();
 	}
 	/**
@@ -1130,7 +1408,7 @@ class Product extends InfoEntityAbstract
 	 *
 	 * @param string $sku The sku of the product
 	 *
-	 * @return Ambigous <NULL, BaseEntityAbstract>
+	 * @return null|Product
 	 */
 	public static function getBySku($sku)
 	{
@@ -1140,18 +1418,20 @@ class Product extends InfoEntityAbstract
 	/**
 	 * Creating the product based on sku
 	 *
-	 * @param string $sku           The sku of the product
-	 * @param string $name          The name of the product
-	 * @param string $mageProductId The magento id of the product
-	 * @param int    $stockOnHand   The total quantity on hand for this product
-	 * @param int    $stockOnOrder  The total quantity on order from supplier for this product
-	 * @param bool   $isFromB2B     Whether this product is created via B2B?
-	 * @param string $shortDescr    The short description of the product
-	 * @param string $fullDescr     The assetId of the full description asset of the product
+	 * @param string $sku           	The sku of the product
+	 * @param string $name          	The name of the product
+	 * @param string $mageProductId 	The magento id of the product
+	 * @param int    $stockOnHand   	The total quantity on hand for this product
+	 * @param int    $stockOnOrder  	The total quantity on order from supplier for this product
+	 * @param int    $stockMinLevel 	The minimum stock level for this product
+	 * @param int    $stockReorderLevel	The reorder stock level for this product
+	 * @param bool   $isFromB2B     	Whether this product is created via B2B?
+	 * @param string $shortDescr    	The short description of the product
+	 * @param string $fullDescr     	The assetId of the full description asset of the product
 	 *
 	 * @return Ambigous <Product, Ambigous, NULL, BaseEntityAbstract>
 	 */
-	public static function create($sku, $name, $mageProductId = '', $stockOnHand = null, $stockOnOrder = null, $isFromB2B = false, $shortDescr = '', $fullDescr = '', Manufacturer $manufacturer = null, $assetAccNo = null, $revenueAccNo = null, $costAccNo = null)
+	public static function create($sku, $name, $mageProductId = '', $stockOnHand = null, $stockOnOrder = null, $isFromB2B = false, $shortDescr = '', $fullDescr = '', Manufacturer $manufacturer = null, $assetAccNo = null, $revenueAccNo = null, $costAccNo = null, $stockMinLevel = null, $stockReorderLevel = null)
 	{
 		if(!($product = self::getBySku($sku)) instanceof Product)
 			$product = new Product();
@@ -1168,6 +1448,10 @@ class Product extends InfoEntityAbstract
 				$product->setStockOnOrder(intval($stockOnOrder));
 			if($stockOnHand !== null && is_numeric($stockOnHand))
 				$product->setStockOnHand(intval($stockOnHand));
+			if($stockMinLevel !== null && is_numeric($stockMinLevel))
+				$product->setStockMinLevel(intval($stockMinLevel));
+			if($stockReorderLevel !== null && is_numeric($stockReorderLevel))
+				$product->setStockReorderLevel(intval($stockReorderLevel));
 			if($assetAccNo !== null && is_string($assetAccNo))
 				$product->setAssetAccNo(trim($assetAccNo));
 			if($revenueAccNo !== null && is_string($revenueAccNo))
@@ -1201,45 +1485,116 @@ class Product extends InfoEntityAbstract
 	 *
 	 * @return Ambigous <Ambigous, multitype:, multitype:BaseEntityAbstract >
 	 */
-	public static function getProducts($sku, $name, array $supplierIds = array(), array $manufacturerIds = array(), array $categoryIds = array(), array $statusIds = array(), $active = null, $pageNo = null, $pageSize = DaoQuery::DEFAUTL_PAGE_SIZE, $orderBy = array(), &$stats = array())
+	public static function getProducts($sku, $name, array $supplierIds = array(), array $manufacturerIds = array(), array $categoryIds = array(), array $statusIds = array(), $active = null, $pageNo = null, $pageSize = DaoQuery::DEFAUTL_PAGE_SIZE, $orderBy = array(), &$stats = array(), $stockLevel = null, &$sumValues = null, $sh_from = null, $sh_to = null)
 	{
 		$where = array(1);
 		$params = array();
-		if(($sku = trim($sku)) !== '')
-		{
-			$where[] = 'pro.sku like ?';
-			$params[] = '%' . $sku . '%';
+		
+		if(is_array($sumValues)) {
+			$innerJoins = array();
+		}
+		if(is_array($sku)) {
+			$skus = array();
+			$keys = array();
+			foreach($sku as $index => $value){
+				$key = 'sku_' . $index;
+				$keys[] = ':' . $key;
+				$skus[$key] = trim($value);
+			}
+			$where[] = 'pro.sku in (' . implode(',', $keys) . ')';
+			$params = array_merge($params, $skus);
+		} else if(($sku = trim($sku)) !== '') {
+			$where[] = 'pro.sku like :sku';
+			$params['sku'] = '%' . $sku . '%';
 		}
 		if(($name = trim($name)) !== '')
 		{
-			$where[] = 'pro.name like ?';
-			$params[] = '%' . $name . '%';
+			$where[] = 'pro.name like :proName';
+			$params['proName'] = '%' . $name . '%';
 		}
 		if(($active = trim($active)) !== '')
 		{
-			$where[] = 'pro.active = ?';
-			$params[] = intval($active);
+			$where[] = 'pro.active = :active';
+			$params['active'] = intval($active);
 		}
 		if(count($manufacturerIds) > 0)
 		{
-			$where[] = 'pro.manufacturerId in (' . implode(',', array_fill(0, count($manufacturerIds), '?')) . ')';
-			$params = array_merge($params, $manufacturerIds);
+			$ps = array();
+			$keys = array();
+			foreach($manufacturerIds as $index => $value){
+				$key = 'manf_' . $index;
+				$keys[] = ':' . $key;
+				$ps[$key] = trim($value);
+			}
+			$where[] = 'pro.manufacturerId in (' . implode(',', $keys) . ')';
+			$params = array_merge($params, $ps);
 		}
 		if(count($statusIds) > 0)
 		{
-			$where[] = 'pro.statusId in (' . implode(',', array_fill(0, count($statusIds), '?')) . ')';
-			$params = array_merge($params, $statusIds);
+			$ps = array();
+			$keys = array();
+			foreach($statusIds as $index => $value){
+				$key = 'stId_' . $index;
+				$keys[] = ':' . $key;
+				$ps[$key] = trim($value);
+			}
+			$where[] = 'pro.statusId in (' . implode(',', $keys) . ')';
+			$params = array_merge($params, $ps);
 		}
 		if(count($supplierIds) > 0)
 		{
-			self::getQuery()->eagerLoad('Product.supplierCodes', 'inner join', 'pro_sup_code', 'pro.id = pro_sup_code.productId and pro_sup_code.supplierId in (' . implode(',', array_fill(0, count($supplierIds), '?')) . ')');
-			$params = array_merge($supplierIds, $params);
+			$ps = array();
+			$keys = array();
+			foreach($supplierIds as $index => $value){
+				$key = 'spId_' . $index;
+				$keys[] = ':' . $key;
+				$ps[$key] = trim($value);
+			}
+			self::getQuery()->eagerLoad('Product.supplierCodes', 'inner join', 'pro_sup_code', 'pro.id = pro_sup_code.productId and pro_sup_code.supplierId in (' . implode(',', $keys) . ')');
+			if(is_array($sumValues)) {
+				$innerJoins[] = 'inner join suppliercode pro_sup_code on (pro.id = pro_sup_code.productId and pro_sup_code.supplierId in (' . implode(',', $keys) . '))';
+			}
+			$params = array_merge($params, $ps);
 		}
 		if(count($categoryIds) > 0)
 		{
-			self::getQuery()->eagerLoad('Product.categories', 'inner join', 'pro_cate', 'pro.id = pro_cate.productId and pro_cate.categoryId in (' . implode(',', array_fill(0, count($categoryIds), '?')) . ')');
-			$params = array_merge($categoryIds, $params);
+			$ps = array();
+			$keys = array();
+			foreach($categoryIds as $index => $value){
+				$key = 'cateId_' . $index;
+				$keys[] = ':' . $key;
+				$ps[$key] = trim($value);
+			}
+			self::getQuery()->eagerLoad('Product.categories', 'inner join', 'pro_cate', 'pro.id = pro_cate.productId and pro_cate.categoryId in (' . implode(',', $keys) . ')');
+			if(is_array($sumValues)) {
+				$innerJoins[] = 'inner join product_category pro_cate on (pro.id = pro_cate.productId and pro_cate.categoryId in (' . implode(',', $keys) . '))';
+			}
+			$params = array_merge($params, $ps);
 		}
-		return Product::getAllByCriteria(implode(' AND ', $where), $params, false, $pageNo, $pageSize, $orderBy, $stats);
+		if(($stockLevel = trim($stockLevel)) !== '')
+		{
+			$where[] = 'pro.stockOnHand <= pro.' . $stockLevel. ' and pro.' . $stockLevel . ' is not null';
+		}
+		if(($sh_from = trim($sh_from)) !== '')
+		{
+			$where[] = 'pro.stockOnHand >= :stockOnHand_from';
+			$params['stockOnHand_from'] = intval($sh_from);
+		}
+		if(($sh_to = trim($sh_to)) !== '')
+		{
+			$where[] = 'pro.stockOnHand <= :stockOnHand_to';
+			$params['stockOnHand_to'] = intval($sh_to);
+		}
+
+		$products = Product::getAllByCriteria(implode(' AND ', $where), $params, false, $pageNo, $pageSize, $orderBy, $stats);
+		if(is_array($sumValues)) {
+			$sql = 'select sum(pro.stockOnHand) `totalStockOnHand`, sum(pro.totalOnHandValue) `totalOnHandValue` from product pro ' . implode(' ', $innerJoins) . ' where pro.active = 1 and (' . implode(' AND ', $where) . ')';
+			$sumResult = Dao::getResultsNative($sql, $params);
+			if(count($sumResult) > 0 ){
+				$sumValues['totalStockOnHand'] = $sumResult[0]['totalStockOnHand'];
+				$sumValues['totalOnHandValue'] = $sumResult[0]['totalOnHandValue'];
+			}
+		}
+		return $products;
 	}
 }

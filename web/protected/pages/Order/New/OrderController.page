@@ -2,6 +2,8 @@
 	<com:Application.controls.fancybox.FancyBox />
 	<com:Application.controls.OrderBtns.OrderBtns />
 	<com:Application.controls.CommentsDiv.CommentsDiv />
+	<com:Application.controls.LastMemoPanel.LastMemoPanel />
+	<com:Application.controls.TaskStatusListPanel.TaskStatusListPanel />
 	<com:TCallback ID="searchCustomerBtn" onCallback="searchCustomer" />
 	<com:TCallback ID="searchProductBtn" onCallback="searchProduct" />
 	<com:TCallback ID="saveOrderBtn" onCallback="saveOrder" />

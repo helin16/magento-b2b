@@ -31,7 +31,12 @@ Abstract class AccessControl
 					}
 				case Role::ID_WAREHOUSE:
 					{
-						self::$_cache['accessOrderStatusIds'][$role->getId()] = array(OrderStatus::ID_ETA, OrderStatus::ID_STOCK_CHECKED_BY_PURCHASING, OrderStatus::ID_PICKED);
+						self::$_cache['accessOrderStatusIds'][$role->getId()] = array(OrderStatus::ID_ETA, OrderStatus::ID_STOCK_CHECKED_BY_PURCHASING, OrderStatus::ID_PICKED, OrderStatus::ID_INSUFFICIENT_STOCK);
+						break;
+					}
+				case Role::ID_WORKSHOP:
+					{
+						self::$_cache['accessOrderStatusIds'][$role->getId()] = array(OrderStatus::ID_STOCK_CHECKED_BY_PURCHASING, OrderStatus::ID_NEW);
 						break;
 					}
 			}
@@ -96,6 +101,8 @@ Abstract class AccessControl
 			case Role::ID_SALES:
 			case Role::ID_PURCHASING:
 			case Role::ID_WAREHOUSE:
+			case Role::ID_WORKSHOP:
+			case Role::ID_ACCOUNTING:
 				{
 					return true;
 				}
@@ -138,6 +145,7 @@ Abstract class AccessControl
 			case Role::ID_SYSTEM_ADMIN:
 			case Role::ID_PURCHASING:
 			case Role::ID_SALES:
+			case Role::ID_WORKSHOP:
 				{
 					return true;
 				}
@@ -184,6 +192,17 @@ Abstract class AccessControl
 		}
 		return false;
 	}
+	public static function canAccessStockAdjustPage(Role $role)
+	{
+		switch($role->getId())
+		{
+			case Role::ID_SYSTEM_ADMIN:
+				{
+					return true;
+				}
+		}
+		return false;
+	}
 	public static function canAccessNewSupplierPage(Role $role)
 	{
 		switch($role->getId())
@@ -191,6 +210,30 @@ Abstract class AccessControl
 			case Role::ID_STORE_MANAGER:
 			case Role::ID_SYSTEM_ADMIN:
 			case Role::ID_PURCHASING:
+				{
+					return true;
+				}
+		}
+		return false;
+	}
+	public static function canAccessWorkShopPage(Role $role)
+	{
+		switch($role->getId())
+		{
+			case Role::ID_STORE_MANAGER:
+			case Role::ID_SYSTEM_ADMIN:
+			case Role::ID_WORKSHOP:
+				{
+					return true;
+				}
+		}
+		return false;
+	}
+	public static function canAccessDevelopingPage(Role $role)
+	{
+		switch($role->getId())
+		{
+			case Role::ID_SYSTEM_ADMIN:
 				{
 					return true;
 				}

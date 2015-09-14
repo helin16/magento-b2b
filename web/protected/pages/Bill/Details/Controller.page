@@ -1,0 +1,26 @@
+<com:TContent ID="MainContent">
+	<com:Application.controls.select2.select2 />
+	<div class="pagewrapper list-wrapper">
+		<div class="col-xs-12" style="display:none;">
+			<div class="panel panel-default summaryPanel" id="searchPanel">
+			</div>
+		</div>
+		<div class="col-xs-12 summaryPanel"></div>
+		<div class="col-xs-12 list-panel">
+			<div class="panel panel-default">
+				<div class="panel-heading">
+					Found <label id="total-found-count">0</label> items(s) for:
+					<div class="col-xs-2 pull-right">
+						<span class="pull-right">Total (inc GST): <span class="badge total-price-inc">$0</span></span>
+					</div>
+					<div class="col-xs-2 pull-right">
+						<span class="pull-right">Total (ex GST): <span class="badge total-price-ex">$0</span></span>
+					</div>
+				</div>
+				<div class="table-responsive">
+	                <table class="table table-hover table-striped" id="item-list"></table>
+	            </div>
+			</div>
+		</div>
+	</div>
+</com:TContent>

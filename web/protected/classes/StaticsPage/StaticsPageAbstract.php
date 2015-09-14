@@ -1,12 +1,12 @@
 <?php
 /**
  * The StaticsPage Page Abstract
- * 
+ *
  * @package    Web
  * @subpackage Class
  * @author     lhe<helin16@gmail.com>
  */
-abstract class StaticsPageAbstract extends BPCPageAbstract 
+abstract class StaticsPageAbstract extends BPCPageAbstract
 {
 	/**
 	 * @var TCallback
@@ -33,7 +33,7 @@ abstract class StaticsPageAbstract extends BPCPageAbstract
 	public function onInit($param)
 	{
 		parent::onInit($param);
-	
+
 		$this->_getDataBtn = new TCallback();
 		$this->_getDataBtn->ID = 'getDataBtn';
 		$this->_getDataBtn->OnCallback = 'Page.getData';
@@ -49,7 +49,7 @@ abstract class StaticsPageAbstract extends BPCPageAbstract
 		$js = parent::_getEndJs();
 		$js .= "pageJs";
 		$js .= ".setCallbackId('getData', '" . $this->_getDataBtn->getUniqueID() . "')";
-		$js .= ".setHTMLIDs('statics-div');";
+		$js .= ".setHTMLID('resultDivId', 'statics-div');";
 		return $js;
 	}
 	/**

@@ -39,6 +39,21 @@ BPCPageJs.prototype = {
 		return tmp.me._htmlIDs[$key];
 	}
 
+	,getFormGroup: function(label, input, _wantInpuClass) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.withFormControlClass = (_wantInpuClass || false);
+		tmp.newDiv = new Element('div', {'class': 'form-group'});
+		if(label)
+			tmp.newDiv.insert({'bottom': label.addClassName('control-label')});
+		if(input) {
+			if(tmp.withFormControlClass === true)
+				input.addClassName('form-control')
+			tmp.newDiv.insert({'bottom':  input});
+		}
+		return tmp.newDiv;
+	}
+
 	//posting an ajax request
 	,postAjax: function(callbackId, data, requestProperty, timeout) {
 		var tmp = {};
@@ -173,22 +188,23 @@ BPCPageJs.prototype = {
 	/**
 	 * Collecting data from attrName
 	 */
-	,_collectFormData: function(container, attrName, groupIndexName) {
+	,_collectFormData: function(container, attrName, groupIndexName, ignoreError) {
 		var tmp = {};
 		tmp.me = this;
 		tmp.data = {};
 		tmp.hasError = false;
+		tmp.ignoreError = (ignoreError === true ? true : false);
 		$(container).getElementsBySelector('[' + attrName + ']').each(function(item) {
 			tmp.groupIndexName = groupIndexName ? item.readAttribute(groupIndexName) : null;
 			tmp.fieldName = item.readAttribute(attrName);
-			if(item.hasAttribute('required') && $F(item).blank()) {
+			if(tmp.ignoreError !== true && item.hasAttribute('required') && $F(item).blank()) {
 				tmp.me._markFormGroupError(item, 'This is requried');
 				tmp.hasError = true;
 			}
 
 			tmp.itemValue = item.readAttribute('type') !== 'checkbox' ? $F(item) : $(item).checked;
 			if(item.hasAttribute('validate_currency') || item.hasAttribute('validate_number')) {
-				if (tmp.me.getValueFromCurrency(tmp.itemValue).match(/^(-)?\d+(\.\d{1,4})?$/) === null) {
+				if (tmp.ignoreError !== true && tmp.me.getValueFromCurrency(tmp.itemValue).match(/^(-)?\d+(\.\d{1,4})?$/) === null) {
 					tmp.me._markFormGroupError(item, (item.hasAttribute('validate_currency') ? item.readAttribute('validate_currency') : item.hasAttribute('validate_number')));
 					tmp.hasError = true;
 				}
@@ -207,37 +223,57 @@ BPCPageJs.prototype = {
 		return (tmp.hasError === true ? null : tmp.data);
 	}
 
-	,showModalBox: function(title, content, isSM, footer, eventFuncs) {
+	,showModalBox: function(title, content, isSM, footer, eventFuncs, noClose) {
 		var tmp = {};
 		tmp.me = this;
 		tmp.isSM = (isSM === true ? true : false);
-		tmp.footer = (footer ? footer : null);
-		tmp.newBox = new Element('div', {'class': 'modal', 'tabindex': '-1', 'role': 'dialog', 'aria-hidden': 'true', 'aria-labelledby': 'page-modal-box'})
-			.insert({'bottom': new Element('div', {'class': 'modal-dialog ' + (tmp.isSM === true ? 'modal-sm' : 'modal-lg') })
-				.insert({'bottom': new Element('div', {'class': 'modal-content' })
-					.insert({'bottom': new Element('div', {'class': 'modal-header' })
-						.insert({'bottom': new Element('div', {'class': 'close', 'type': 'button', 'data-dismiss': 'modal'})
-							.insert({'bottom':new Element('span', {'aria-hidden': 'true'}).update('&times;') })
+		tmp.noClose = (noClose === true ? true : false);
+		tmp.footer = (footer || null);
+		if(!$(tmp.me.modalId)) {
+			tmp.newBox = new Element('div', {'id': tmp.me.modalId, 'class': 'modal', 'tabindex': '-1', 'role': 'dialog', 'aria-hidden': 'true', 'aria-labelledby': 'page-modal-box'})
+				.insert({'bottom': new Element('div', {'class': 'modal-dialog ' + (tmp.isSM === true ? 'modal-sm' : 'modal-lg') })
+					.insert({'bottom': new Element('div', {'class': 'modal-content' })
+						.insert({'bottom': new Element('div', {'class': 'modal-header' })
+							.insert({'bottom': new Element('div', {'class': 'close', 'type': 'button', 'data-dismiss': 'modal'})
+								.insert({'bottom':new Element('span', {'aria-hidden': 'true'}).update('&times;') })
+							})
+							.insert({'bottom': new Element('strong', {'class': 'modal-title'}).update(title) })
 						})
-						.insert({'bottom': new Element('strong', {'class': 'modal-title', 'id': 'page-modal-box'}).update(title) })
+						.insert({'bottom': new Element('div', {'class': 'modal-body' }).update(content) })
+						.insert({'bottom': tmp.footer === null ? '' : new Element('div', {'class': 'modal-footer' }).update(tmp.footer) })
 					})
-					.insert({'bottom': new Element('div', {'class': 'modal-body' }).update(content) })
-					.insert({'bottom': tmp.footer === null ? '' : new Element('div', {'class': 'modal-footer' }).update(tmp.footer) })
-				})
-			});
-
-		if($(tmp.me.modalId)) {
-			$(tmp.me.modalId).remove();
+				});
+			$$('body')[0].insert({'bottom': tmp.newBox});
+			tmp.modal = jQuery('#' + tmp.me.modalId);
+			if(tmp.noClose === true) {
+				tmp.modal.modal({
+					backdrop: 'static',
+					keyboard: false
+				});
+			}
+			if(eventFuncs && typeof(eventFuncs) === 'object') {
+				$H(eventFuncs).each(function(eventFunc){
+					tmp.modal.on(eventFunc.key, eventFunc.value);
+				});
+			}
+		} else {
+			tmp.modal = jQuery('#' + tmp.me.modalId);
+			tmp.dialogDiv = tmp.modal.find('.modal-dialog').removeClass('modal-sm').removeClass('modal-lg').addClass(tmp.isSM === true ? 'modal-sm' : 'modal-lg');
+			tmp.modal.find('.modal-title').html(title);
+			tmp.modal.find('.modal-body').html(content);
+			if(tmp.modal.find('.modal-footer').length > 0) {
+				if(tmp.footer !== null)
+					tmp.modal.find('.modal-footer').html(tmp.footer);
+				else
+					tmp.modal.find('.modal-footer').remove();
+			} else {
+				if(tmp.footer !== null)
+					jQuery('<div class="modal-footer"></div>').html(tmp.footer).appendTo(tmp.dialogDiv.find('.modal-content'));
+			}
 		}
 
-		$$('body')[0].insert({'bottom': tmp.newBox.writeAttribute('id',  tmp.me.modalId)});
-		tmp.modal = jQuery('#' + tmp.me.modalId);
-		if(eventFuncs && typeof(eventFuncs) === 'object') {
-			$H(eventFuncs).each(function(eventFunc){
-				tmp.modal.on(eventFunc.key, eventFunc.value);
-			});
-		}
-		tmp.modal.modal({'show': true, 'target': '#' + tmp.me.modalId});
+		if(!tmp.modal.hasClass('in'))
+			tmp.modal.modal().show();
 		return tmp.me;
 	}
 	,hideModalBox: function() {
@@ -262,6 +298,9 @@ BPCPageJs.prototype = {
 		tmp.timeStrings = tmp.strings[1].split(':');
 		return new Date(Date.UTC(tmp.dateStrings[0], (tmp.dateStrings[1] * 1 - 1), tmp.dateStrings[2], tmp.timeStrings[0], tmp.timeStrings[1], tmp.timeStrings[2]));
 	}
+	/**
+	 * double click n dblclick
+	 */
 	,observeClickNDbClick: function(element, clickFunc, dblClickFunc) {
 		var tmp = {};
 		tmp.me = this;
@@ -285,5 +324,40 @@ BPCPageJs.prototype = {
 			}
 		});
 		return tmp.me;
+	}
+	/**
+	 * geting
+	 */
+	,getUrlParam: function (name) {
+		var tmp = {};
+		tmp.me = this;
+	    name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+	    var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+	        results = regex.exec(location.search);
+	    return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+	}
+	/**
+	 * open url in new tab
+	 */
+	,openInNewTab: function(url) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.win = window.open(url, '_blank');
+		tmp.win.focus();
+		
+		return this;
+	}
+	/**
+	 * pause javascript for given time
+	 */
+	,sleep: function(milliseconds) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.start = new Date().getTime();
+		for (var i = 0; i < 1e7; i++) {
+			if ((new Date().getTime() - tmp.start) > milliseconds) {
+				break;
+			}
+		}
 	}
 };

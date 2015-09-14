@@ -12,7 +12,7 @@ class POController extends BPCPageAbstract
 	 * (non-PHPdoc)
 	 * @see BPCPageAbstract::$menuItem
 	 */
-	public $menuItem = 'order.new';
+	public $menuItem = 'purchase.new';
 	/**
 	 * (non-PHPdoc)
 	 * @see BPCPageAbstract::onLoad()
@@ -22,19 +22,36 @@ class POController extends BPCPageAbstract
 		parent::onLoad($param);
 	}
 	/**
+	 * loading the page js class files
+	 */
+	protected function _loadPageJsClass()
+	{
+		parent::_loadPageJsClass();
+		$thisClass = __CLASS__;
+		$cScripts = self::getLastestJS(__CLASS__);
+		if (isset($cScripts['js']) && ($lastestJs = trim($cScripts['js'])) !== '')
+			$this->getPage()->getClientScript()->registerScriptFile($thisClass . 'Js', $this->publishFilePath(dirname(__FILE__) . DIRECTORY_SEPARATOR . $lastestJs));
+		if (isset($cScripts['css']) && ($lastestCss = trim($cScripts['css'])) !== '')
+			$this->getPage()->getClientScript()->registerStyleSheetFile($thisClass . 'Css', $this->publishFilePath(dirname(__FILE__) . DIRECTORY_SEPARATOR . $lastestCss));
+		return $this;
+	}
+	/**
 	 * Getting The end javascript
 	 *
 	 * @return string
 	 */
 	protected function _getEndJs()
 	{
-		$js = parent::_getEndJs();
+		$class = get_called_class();
+		$js = $this->_getJSPrefix();
+		$js .= parent::_getEndJs();
 
 		$paymentMethods =  array_map(create_function('$a', 'return $a->getJson();'), PaymentMethod::getAll());
 		$shippingMethods =  array_map(create_function('$a', 'return $a->getJson();'), Courier::getAll());
 		$supplier = (isset($_REQUEST['supplierid']) && ($supplier = Supplier::get(trim($_REQUEST['supplierid']))) instanceof Supplier) ? $supplier->getJson() : null;
 		$js .= "pageJs";
-			$js .= ".setHTMLIDs('detailswrapper')";
+			$js .= ".setHTMLID('itemDiv', 'detailswrapper')";
+			$js .= ".setHTMLID('searchPanel', 'search_panel')";
 			$js .= ".setCallbackId('searchSupplier', '" . $this->searchSupplierBtn->getUniqueID() . "')";
 			$js .= ".setCallbackId('searchProduct', '" . $this->searchProductBtn->getUniqueID() . "')";
 			$js .= ".setCallbackId('saveOrder', '" . $this->saveOrderBtn->getUniqueID() . "')";
@@ -42,6 +59,10 @@ class POController extends BPCPageAbstract
 			$js .= ".setShippingMethods(" . json_encode($shippingMethods) . ")";
 			$js .= ".init(" . json_encode($supplier) . ");";
 		return $js;
+	}
+	protected function _getJSPrefix()
+	{
+		return "var PageJs = new Class.create();PageJs.prototype = Object.extend(new POCreateJs(), {});";
 	}
 	/**
 	 * Searching Customer
@@ -209,6 +230,7 @@ class POController extends BPCPageAbstract
 				$pdfFile = EntityToPDF::getPDF($purchaseOrder);
 				$asset = Asset::registerAsset($purchaseOrder->getPurchaseOrderNo() . '.pdf', file_get_contents($pdfFile), Asset::TYPE_TMP);
 				EmailSender::addEmail('purchasing@budgetpc.com.au', $confirmEmail, 'BudgetPC Purchase Order:' . $purchaseOrder->getPurchaseOrderNo() , 'Please Find the attached PurchaseOrder(' . $purchaseOrder->getPurchaseOrderNo() . ') from BudgetPC.', array($asset));
+				EmailSender::addEmail('purchasing@budgetpc.com.au', 'purchasing@budgetpc.com.au', 'BudgetPC Purchase Order:' . $purchaseOrder->getPurchaseOrderNo() , 'Please Find the attached PurchaseOrder(' . $purchaseOrder->getPurchaseOrderNo() . ') from BudgetPC.', array($asset));
 				$purchaseOrder->addComment('An email sent to "' . $confirmEmail . '" with the attachment: ' . $asset->getAssetId(), Comments::TYPE_SYSTEM);
 			}
 		}
@@ -216,7 +238,7 @@ class POController extends BPCPageAbstract
 		{
 			if($daoStart === true)
 				Dao::rollbackTransaction();
-			$errors[] = $ex->getMessage();
+			$errors[] = $ex->getMessage() . "<pre>" . $ex->getTraceAsString() . "</pre>";
 		}
 		$param->ResponseData = StringUtilsAbstract::getJson($results, $errors);
 	}

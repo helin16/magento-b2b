@@ -86,14 +86,15 @@ class OrderPrintController extends BPCPageAbstract
 		{
 			$uPrice = '$' . number_format($orderItem->getUnitPrice(), 2, '.', ',');
 			$tPrice = '$' . number_format($orderItem->getTotalPrice(), 2, '.', ',');
-			$sellingItems = array();
-			foreach($orderItem->getSellingItems() as $item) {
-				if($item->getSerialNo() !== '' )
-					$sellingItems[] = $item->getSerialNo();
-			}
 			$shouldTotal = $orderItem->getUnitPrice() * $orderItem->getQtyOrdered();
 			$discount = (floatval($shouldTotal) === 0.0000 ? 0.00 : round(((($shouldTotal - $orderItem->getTotalPrice()) * 100) / $shouldTotal), 2));
 			$html .= $this->getRow($orderItem->getQtyOrdered(), $orderItem->getProduct()->getSku(), $orderItem->getItemDescription() ?: $orderItem->getProduct()->getname(), $uPrice, ($discount === 0.00 ? '' : $discount . '%'), $tPrice, 'itemRow');
+			if(($sellingItems = $orderItem->getSellingItems()) && count($sellingItems) > 0)
+			{
+				$html .= $this->getRow('&nbsp;', '&nbsp;', 'Serial Numbers:', '&nbsp;', '&nbsp;', '', 'itemRow');
+				foreach ($sellingItems as $sellingItem)
+					$html .= $this->getRow('&nbsp;', '&nbsp;', '&nbsp;&nbsp;&nbsp;&nbsp;' . $sellingItem->getSerialNo(), '&nbsp;', '&nbsp;', '', 'itemRow');
+			}
 // 			$html .= $this->getRow('', '<span class="pull-right">Serial No: </span>', '<div style="max-width: 367px; word-wrap: break-word;">' . implode(', ', $sellingItems) . '</div>', '', '', '', 'itemRow itemRow-serials');
 		}
 		for ( $i = 5; $i > $index; $i--)
@@ -104,7 +105,7 @@ class OrderPrintController extends BPCPageAbstract
 	}
 	public function getContact()
 	{
-		$contact = $this->order->getCustomer()->getContactNo();
+		$contact = trim($this->order->getCustomer()->getContactNo());
 		return empty($contact) ? '' : '(' . $contact . ')';
 	}
 	public function getAddress($type)
@@ -113,10 +114,14 @@ class OrderPrintController extends BPCPageAbstract
 		$address = $this->order->$method();
 		if(!$address instanceof Address)
 			return '';
-		$html = $address->getContactName() . '<br />';
+		$html = '';
+		if(trim($this->order->getCustomer()->getName()) !== trim($address->getContactName()))
+			$html .= $this->order->getCustomer()->getName() . '<br />';
+		$html .= $address->getContactName() . '<br />';
 		$html .= $address->getStreet() . '<br />';
 		$html .= $address->getCity() . ' ' . $address->getRegion() . ' ' . $address->getPostCode() . '<br />';
-		$html .= $address->getCountry();
+// 		$html .= $address->getCountry();
+		$html .= 'Tel: ' . ($this->getContact() === '' ? trim($address->getContactNo()) : $this->getContact());
 		return $html;
 	}
 	public function getPaymentSummary()

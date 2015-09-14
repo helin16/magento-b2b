@@ -4,7 +4,7 @@
 		<div class="orderViewWrapper inlineblock print-wrapper">
             <table class='orderview' cellspacing="0" cellpadding="0" id="main-table">
                 <tr class="title_row">
-                    <td colspan=6>
+                    <td colspan=12>
                         <div>
                             <span class="inlineblock logo">
                                 <img src="/themes/default/images/logo.png" style="padding: 0px; margin: 0px;display: block;"/>
@@ -28,8 +28,7 @@
                     </td>
                 </tr>
                 <tr class="addr_info">
-                    <td colspan=6>
-                    	<h4><%= $this->order->getCustomer()->getName() %><%= $this->getContact() %></h4>
+                    <td colspan=6 style="padding-bottom: 25px">
                     	<div>
                             <span class="inlineblock half">
                                 <div class="title">Billing To:</div>
@@ -60,7 +59,7 @@
                                         <span class="inlineblock half"><span class="inlineblock title">Payment:</span><span class="inlineblock details"><%= implode(', ', $this->order->getInfo(OrderInfoType::ID_MAGE_ORDER_PAYMENT_METHOD)) %></span></span>
                                     </div>
                                     <div class="print-row">
-                                        <span class="inlineblock half"><span class="inlineblock title">Delivery Via:</span><span class="inlineblock details"><%= implode(', ', $this->order->getInfo(OrderInfoType::ID_MAGE_ORDER_SHIPPING_METHOD)) %></span></span>
+                                        <span class="inlineblock half"><span class="inlineblock title">Delivery Via:</span><span class="inlineblock details"><strong><%= implode(', ', $this->order->getInfo(OrderInfoType::ID_MAGE_ORDER_SHIPPING_METHOD)) %></strong></span></span>
                                         <span class="inlineblock half"><span class="inlineblock title">comments:</span><span class="inlineblock details"><%= $this->getComments() %></span></span>
                                     </div>
                                 </div>
@@ -92,11 +91,9 @@
                             <div class="addr">
                                 <span class="addr"><span class="details_title">Mount Waverley</span>Unit 111, 45 Gilby Rd, Mt Waverley</span>
                                 <span class="phone"><span class="details_title">PH</span>+61 3 9541 9000</span>
-                                <span class="addr"><span class="details_title">Stawell</span>1 Horsham Rd, Stawell</span>
-                                <span class="phone"><span class="details_title">PH</span>+61 3 5358 4288</span>
-                            </div>
-                            <div class="url details_title">
-                                www.budgetpc.com.au
+                                <span class="url details_title">
+                                    www.budgetpc.com.au
+                                </span>
                             </div>
                         </div>
                     </td>

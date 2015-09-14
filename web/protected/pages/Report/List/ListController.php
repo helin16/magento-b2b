@@ -49,6 +49,11 @@ class ListController extends BPCPageAbstract
 					$asset = SalesExport_Xero::run(false, false);
 					break;
 				}
+				case 'creditnotes_daily': {
+					CreditNoteExport_Xero::setStartNEndDate(new UDate(trim($param->CallbackParameter->date_from)), new UDate(trim($param->CallbackParameter->date_to)));
+					$asset = CreditNoteExport_Xero::run(false, false);
+					break;
+				}
 				case 'supplier_bill_daily':  {
 					BillExport_Xero::setStartNEndDate(new UDate(trim($param->CallbackParameter->date_from)), new UDate(trim($param->CallbackParameter->date_to)));
 					$asset = BillExport_Xero::run(false, false);
@@ -60,17 +65,23 @@ class ListController extends BPCPageAbstract
 					break;
 				}
 				case 'payments_daily': {
-					ItemExport_Magento::setStartNEndDate(new UDate(trim($param->CallbackParameter->date_from)), new UDate(trim($param->CallbackParameter->date_to)));
+					PaymentExport_Xero::setStartNEndDate(new UDate(trim($param->CallbackParameter->date_from)), new UDate(trim($param->CallbackParameter->date_to)));
 					$asset = PaymentExport_Xero::run(false, false);
 					break;
 				}
 				case 'inventory_list': {
+					ItemExport_Xero::setStartNEndDate(new UDate(trim($param->CallbackParameter->date_from)), new UDate(trim($param->CallbackParameter->date_to)));
 					$asset = ItemExport_Xero::run(false, true);
 					break;
 				}
 				case 'magento_price': {
 					ItemExport_Magento::setStartNEndDate(new UDate(trim($param->CallbackParameter->date_from)), new UDate(trim($param->CallbackParameter->date_to)));
 					$asset = ItemExport_Magento::run(false, false);
+					break;
+				}
+				case 'open_inv': {
+					OpenInvoiceExport::setStartNEndDate(new UDate(trim($param->CallbackParameter->date_from)), new UDate(trim($param->CallbackParameter->date_to)));
+					$asset = OpenInvoiceExport::run(false, false);
 					break;
 				}
 				default: {

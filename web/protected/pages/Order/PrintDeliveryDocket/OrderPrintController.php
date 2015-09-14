@@ -98,10 +98,14 @@ class OrderPrintController extends BPCPageAbstract
 		$address = $this->order->$method();
 		if(!$address instanceof Address)
 			return '';
-		$html = $address->getContactName() . '<br />';
+		$html = '';
+		if(trim($this->order->getCustomer()->getName()) !== trim($address->getContactName()))
+			$html .= $this->order->getCustomer()->getName() . '<br />';
+		$html .= $address->getContactName() . '<br />';
 		$html .= $address->getStreet() . '<br />';
 		$html .= $address->getCity() . ' ' . $address->getRegion() . ' ' . $address->getPostCode() . '<br />';
-		$html .= $address->getCountry();
+// 		$html .= $address->getCountry();
+		$html .= 'Tel: ' . ($this->getContact() === '' ? trim($address->getContactNo()) : $this->getContact());
 		return $html;
 	}
 	public function getPaymentSummary()

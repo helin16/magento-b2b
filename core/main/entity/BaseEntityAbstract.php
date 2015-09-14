@@ -9,7 +9,7 @@ abstract class BaseEntityAbstract
 {
 	/**
 	 * The registry of json array
-	 * 
+	 *
 	 * @var array
 	 */
 	protected $_jsonArray = array();
@@ -46,11 +46,17 @@ abstract class BaseEntityAbstract
      */
     protected $proxyMode = false;
     /**
+     * The entity level runtime cache
+     *
+     * @var array
+     */
+    private static $_entityCache = array();
+    /**
      * __constructor
      */
     public function __construct()
     {
-    	
+
     }
     /**
      * Set the primary key for this entity
@@ -230,7 +236,7 @@ abstract class BaseEntityAbstract
         $alias = DaoMap::$map[strtolower($cls)]['_']['alias'];
         $field = StringUtilsAbstract::lcFirst($thisClass);
         $this->$property = Dao::findByCriteria(new DaoQuery($cls), sprintf('%s.`%sId`=?', $alias, $field), array($this->getId()));
-         
+
         return $this;
     }
     /**
@@ -266,7 +272,7 @@ abstract class BaseEntityAbstract
             else
             throw new Exception('Property (' . get_class($this) . '::' . $property . ') must be initialised to integer or proxy prior to lazy loading.', 1);
         }
-         
+
         // Load the DAO map for this entity
         $cls = DaoMap::$map[strtolower(get_class($this))][$property]['class'];
         if (!$this->$property instanceof BaseEntityAbstract)
@@ -294,7 +300,7 @@ abstract class BaseEntityAbstract
         $thisClass = get_class($this);
         $qry = new DaoQuery($cls);
         $qry->eagerLoad($cls . '.' . strtolower(substr($thisClass, 0, 1)) . substr($thisClass, 1) . 's');
-         
+
         // Load this end with an array of entities typed to the other end
         DaoMap::loadMap($cls);
         $alias = DaoMap::$map[strtolower($cls)]['_']['alias'];
@@ -328,7 +334,7 @@ abstract class BaseEntityAbstract
     }
     /**
      * getting the Json array from all the private memebers of the entity
-     * 
+     *
      * @param bool $reset Forcing the function to fetch data from the database again
      *
      * @return array The associative arary for json
@@ -367,7 +373,7 @@ abstract class BaseEntityAbstract
     }
     /**
      * Whether the $this->_jsonArray is loaded
-     * 
+     *
      * @return bool
      */
     protected function isJsonLoaded($reset = false)
@@ -378,27 +384,27 @@ abstract class BaseEntityAbstract
     }
     /**
      * Adding the comments for this entity;
-     * 
+     *
      * @param string $comments The new comments
      * @param string $type     The type of the comments
      * @param string $groupId  The group identifier for the comments
-     * 
+     *
      * @return BaseEntityAbstract
      */
-    public function addComment($comments, $type = Comments::TYPE_NORMAL, $groupId = '')
+    public function addComment($comments, $type = Comments::TYPE_NORMAL, $groupId = '', &$newComment = null)
     {
     	if((trim($comments)) !== '')
-    		Comments::addComments($this, $comments, $type, $groupId);
+    		$newComment = Comments::addComments($this, $comments, $type, $groupId);
     	return $this;
     }
     /**
      * Getting the comments for this entity
-     * 
+     *
      * @param string $type
      * @param string $pageNo
      * @param int    $pageSize
      * @param array  $orderBy
-     * 
+     *
      * @return Ambigous <multitype:, multitype:BaseEntityAbstract >
      */
     public function getComment($type = null, $pageNo = null, $pageSize = DaoQuery::DEFAUTL_PAGE_SIZE, $orderBy = array(), &$pageStats = array())
@@ -418,12 +424,12 @@ abstract class BaseEntityAbstract
     }
     /**
      * Adding a log to this entity
-     * 
+     *
      * @param string $msg
      * @param string $type
      * @param string $comments
      * @param string $funcName
-     * 
+     *
      * @return BaseEntityAbstract
      */
     public function addLog($msg, $type, $comments = '', $funcName = '')
@@ -473,22 +479,22 @@ abstract class BaseEntityAbstract
     public function postSave() {}
     /**
      * Saving the current entity
-     * 
+     *
      * @return BaseEntityAbstract
      */
-    public function save() 
+    public function save()
     {
     	return FactoryAbastract::dao(get_class($this))->save($this);
     }
     /**
      * Find all entities
-     * 
+     *
      * @param string  $activeOnly
      * @param string  $pageNo
      * @param unknown $pageSize
      * @param unknown $orderBy
      * @param array   $stats
-     * 
+     *
      * @return Ambigous <multitype:, multitype:BaseEntityAbstract >
      */
     public static function getAll($activeOnly = true, $pageNo = null, $pageSize = DaoQuery::DEFAUTL_PAGE_SIZE, $orderBy = array(), &$stats = array())
@@ -499,7 +505,7 @@ abstract class BaseEntityAbstract
     }
     /**
      * Find all entities with criterias
-     * 
+     *
      * @param unknown $criteria
      * @param unknown $params
      * @param string $activeOnly
@@ -507,7 +513,7 @@ abstract class BaseEntityAbstract
      * @param unknown $pageSize
      * @param unknown $orderBy
      * @param array   $stats
-     * 
+     *
      * @return Ambigous <multitype:, multitype:BaseEntityAbstract >
      */
     public static function getAllByCriteria($criteria, $params = array(), $activeOnly = true, $pageNo = null, $pageSize = DaoQuery::DEFAUTL_PAGE_SIZE, $orderBy = array(), &$stats = array())
@@ -518,9 +524,9 @@ abstract class BaseEntityAbstract
     }
     /**
      * Getting entity with an id
-     * 
+     *
      * @param int $id The id of the entity
-     * 
+     *
      * @return Ambigous <BaseEntityAbstract, NULL, SimpleXMLElement>
      */
     public static function get($id)
@@ -554,10 +560,10 @@ abstract class BaseEntityAbstract
     }
     /**
      * Count By Criteria
-     * 
+     *
      * @param string   $criteria The where clause
      * @param array    $params   The parameters
-     * 
+     *
      * @return number
      */
     public static function countByCriteria($criteria, $params = array())
@@ -566,7 +572,7 @@ abstract class BaseEntityAbstract
     }
     /**
      * Getting the DaoQuery
-     * 
+     *
      * @return DaoQuery
      */
     public static function getQuery()
@@ -581,7 +587,7 @@ abstract class BaseEntityAbstract
      *
      * @return int
      */
-    public function saveManyToManyJoin(BaseEntityAbstract &$leftEntity, BaseEntityAbstract $rightEntity)
+    public static function saveManyToManyJoin(BaseEntityAbstract &$leftEntity, BaseEntityAbstract $rightEntity)
     {
     	FactoryAbastract::dao(get_called_class())->saveManyToManyJoin($leftEntity, $rightEntity);
     	return $leftEntity;
@@ -598,6 +604,61 @@ abstract class BaseEntityAbstract
     {
     	FactoryAbastract::dao(get_called_class())->deleteManyToManyJoin($leftEntity, $rightEntity);
     	return $leftEntity;
+    }
+    /**
+     * Getting the runtime cache
+     *
+     * @param string $key The key of the cache
+     *
+     * @param mixed
+     */
+    protected static function getCache($key)
+    {
+    	if(!self::cacheExsits($key))
+    		return null;
+    	$class = get_called_class();
+    	return BaseEntityAbstract::$_entityCache[$class][$key];
+    }
+    /**
+     * adding the runtime cache
+     *
+     * @param string $key  The key of the cache
+     * @param mixed  $data The data of the cache
+     *
+     * @param mixed
+     */
+    protected static function addCache($key, $data)
+    {
+    	$class = get_called_class();
+    	BaseEntityAbstract::$_entityCache[$class][$key] = $data;
+    	return BaseEntityAbstract::$_entityCache[$class][$key];
+    }
+    /**
+     * Check whether the key exsits in the runtime cache
+     *
+     * @param string $key The key of the cache
+     *
+     * @return boolean
+     */
+    protected static function cacheExsits($key)
+    {
+    	$class = get_called_class();
+    	return isset(BaseEntityAbstract::$_entityCache[$class]) && isset(BaseEntityAbstract::$_entityCache[$class][$key]);
+    }
+    /**
+     * remove the cache from runtime cache
+     *
+     * @param string $key The key of the cache
+     *
+     * @return boolean
+     */
+    protected static function removeCache($key)
+    {
+    	if(!self::cacheExsits($key))
+    		return false;
+    	$class = get_called_class();
+    	unset(BaseEntityAbstract::$_entityCache[$class][$key]);
+    	return true;
     }
 }
 

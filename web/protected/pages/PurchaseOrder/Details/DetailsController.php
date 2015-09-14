@@ -46,7 +46,7 @@ class DetailsController extends DetailsPageAbstract
 		};
 		$statusOptions =  $purchaseOrder->getStatusOptions();
 		$purchaseOrderItems = array();
-		foreach (PurchaseOrderItem::getAllByCriteria('purchaseOrderId = ?', array($purchaseOrder->getId()), true, 1, DaoQuery::DEFAUTL_PAGE_SIZE, array('po_item.id'=>'asc')) as $item) {
+		foreach (PurchaseOrderItem::getAllByCriteria('purchaseOrderId = ?', array($purchaseOrder->getId()), true, null, DaoQuery::DEFAUTL_PAGE_SIZE, array('updated'=>'desc')) as $item) {
 			$product = Product::get($item->getProduct()->getId());
 			if(!$product instanceof Product)
 				throw new Exception('Invalid Product passed in!');
@@ -59,6 +59,12 @@ class DetailsController extends DetailsPageAbstract
 		$poitems = $receivingItems = array();
 		$js = parent::_getEndJs();
 		$js .= "pageJs.setPreData(" . json_encode($purchaseOrder->getJson()) . ")";
+		$js .= ".setHTMLID('paymentPanel', 'payment_panel')";
+		$js .= ".setHTMLID('totalPriceExcludeGST', 'total_price_exclude_gst')";
+		$js .= ".setHTMLID('totalPriceGST', 'total_price_gst')";
+		$js .= ".setHTMLID('totalPriceIncludeGST', 'total_price_include_gst')";
+		$js .= ".setHTMLID('totalPaidAmount', 'total-paid-amount')";
+		$js .= ".setHTMLID('totalShippingCost', 'total-shipping-cost')";
 		$js .= ".setComment(" . json_encode($comments) . ")";
 		$js .= ".setStatusOptions(" . json_encode($statusOptions) . ")";
 		$js .= ".setCallbackId('searchProduct', '" . $this->searchProductBtn->getUniqueID() . "')";
@@ -207,6 +213,7 @@ class DetailsController extends DetailsPageAbstract
 				$confirmEmail = trim($param->CallbackParameter->contactEmail);
 				$asset = Asset::registerAsset($purchaseOrder->getPurchaseOrderNo() . '.pdf', file_get_contents($pdfFile), Asset::TYPE_TMP);
 				EmailSender::addEmail('purchasing@budgetpc.com.au', $confirmEmail, 'BudgetPC Purchase Order:' . $purchaseOrder->getPurchaseOrderNo(), 'Please Find the attached PurchaseOrder(' . $purchaseOrder->getPurchaseOrderNo() . ') from BudgetPC.', array($asset));
+				EmailSender::addEmail('purchasing@budgetpc.com.au', 'purchasing@budgetpc.com.au', 'BudgetPC Purchase Order:' . $purchaseOrder->getPurchaseOrderNo(), 'Please Find the attached PurchaseOrder(' . $purchaseOrder->getPurchaseOrderNo() . ') from BudgetPC.', array($asset));
 				$purchaseOrder->addComment('An email sent to "' . $confirmEmail . '" with the attachment: ' . $asset->getAssetId(), Comments::TYPE_SYSTEM);
 			}
 			Dao::commitTransaction();

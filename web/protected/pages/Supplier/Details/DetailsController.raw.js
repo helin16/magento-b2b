@@ -17,7 +17,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 	,_submitSave: function(btn) {
 		var tmp = {};
 		tmp.me = this;
-		tmp.data = tmp.me._collectFormData($(tmp.me._htmlIds.itemDiv), 'save-item');
+		tmp.data = tmp.me._collectFormData($(tmp.me.getHTMLID('itemDiv')), 'save-item');
 		tmp.data.id = tmp.me._customer.id ? tmp.me._customer.id : '';
 		if(tmp.data === null)
 			return tmp.me;
@@ -180,11 +180,11 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 	        		tmp.mainForm.data('formValidation').disableSubmitButtons(false);
 	        	}
 	        	tmp.data = {};
-	        	$(tmp.me._htmlIds.itemDiv).getElementsBySelector('[edit-field]').each(function(item) {
+	        	$(tmp.me.getHTMLID('itemDiv')).getElementsBySelector('[edit-field]').each(function(item) {
 	        		tmp.data[item.readAttribute('edit-field')] = $F(item);
 	        	});
 	        	tmp.data.address = {};
-	        	$(tmp.me._htmlIds.itemDiv).getElementsBySelector('[address-editable-field]').each(function(item) {
+	        	$(tmp.me.getHTMLID('itemDiv')).getElementsBySelector('[address-editable-field]').each(function(item) {
 	        		tmp.data.address[item.readAttribute('address-editable-field')] = $F(item);
 	        	});
 	        	tmp.me.saveItem($('save-btn'), tmp.data, function(result){

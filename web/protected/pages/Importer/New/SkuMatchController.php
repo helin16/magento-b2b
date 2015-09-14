@@ -1,7 +1,7 @@
 <?php
 /**
  * This is the PriceMatchController
- * 
+ *
  * @package    Web
  * @subpackage Controller
  * @author     lhe<helin16@gmail.com>
@@ -32,10 +32,11 @@ class SkuMatchController extends BPCPageAbstract
 	protected function _getEndJs()
 	{
 		$importDataTypes = array('myob_ean'=> 'MYOB EAN', 'myob_upc'=> 'MYOB UPC', 'stockAdjustment' => 'Stock Adjustment', 'accounting' => 'Accounting Code for Products', 'accountingCode' => 'Accounting Code for Categories');
-		
+
 		$js = parent::_getEndJs();
 		$js .= 'pageJs';
-		$js .= ".setHTMLIDs('importer_div', 'import_type_dropdown')";
+		$js .= ".setHTMLID('importerDiv', 'importer_div')";
+		$js .= ".setHTMLID('importDataTypesDropdownId', 'import_type_dropdown')";
 		$js .= '.setCallbackId("getAllCodeForProduct", "' . $this->getAllCodeForProductBtn->getUniqueID() . '")';
 		$js .= '.load(' . json_encode($importDataTypes) . ');';
 		return $js;
@@ -80,7 +81,7 @@ class SkuMatchController extends BPCPageAbstract
 					$item = $this->updateStocktack($product
 							, trim($param->CallbackParameter->stockOnPO), trim($param->CallbackParameter->stockOnHand), trim($param->CallbackParameter->stockInRMA), trim($param->CallbackParameter->stockInParts)
 							, trim($param->CallbackParameter->totalInPartsValue), trim($param->CallbackParameter->totalOnHandValue), $param->CallbackParameter->active, trim($param->CallbackParameter->comment));
-					
+
 					$result['item'] = $item->getJson();
 					break;
 				case 'accounting':
@@ -92,7 +93,7 @@ class SkuMatchController extends BPCPageAbstract
 					$result['path'] = 'product';
 					$item = $this->updateAccountingInfo($product
 							, trim($param->CallbackParameter->assetAccNo), trim($param->CallbackParameter->costAccNo), trim($param->CallbackParameter->revenueAccNo));
-					
+
 					$result['item'] = $item->getJson();
 					break;
 				case 'accountingCode':
@@ -103,7 +104,7 @@ class SkuMatchController extends BPCPageAbstract
 						throw new Exception('Invalid Code passed in! (line ' . $index .')');
 					$result['path'] = '';
 					$item = $this->updateAccountingCode($description, $code);
-					
+
 					$result['item'] = $item->getJson();
 					break;
 				default:
@@ -121,14 +122,14 @@ class SkuMatchController extends BPCPageAbstract
 		try
 		{
 			Dao::beginTransaction();
-			
+
 			$typeId = $this->leftMostNum($code);
-			
+
 			if(!empty($description) && !empty($code) && !empty($typeId))
 				$accountingCode = AccountingCode::create($typeId, $code, $description);
-			
+
 			Dao::commitTransaction();
-				
+
 			return $accountingCode;
 		}
 		catch(Exception $e) {
@@ -139,12 +140,12 @@ class SkuMatchController extends BPCPageAbstract
 	}
 	/**
 	 * update accounting info for xero
-	 * 
+	 *
 	 * @param Product $product
 	 * @param number $assetAccNo
 	 * @param number $costAccNo
 	 * @param number $revenueAccNo
-	 * 
+	 *
 	 * @return Product
 	 */
 	private function updateAccountingInfo(Product $product, $assetAccNo = 0, $costAccNo = 0, $revenueAccNo = 0)
@@ -162,9 +163,9 @@ class SkuMatchController extends BPCPageAbstract
 				$product->addLog('Product (ID=' . $product->getId() . ') now revenueAccNo = ' . $revenueAccNo, Log::TYPE_SYSTEM)
 				->setRevenueAccNo($revenueAccNo);
 			$product->save();
-			
+
 			Dao::commitTransaction();
-			
+
 			return $product;
 		}
 		catch(Exception $e) {
@@ -175,7 +176,7 @@ class SkuMatchController extends BPCPageAbstract
 	}
 	/**
 	 * update stock tack
-	 * 
+	 *
 	 * @param Product $product
 	 * @param number $stockOnPO
 	 * @param number $stockOnHand
@@ -183,7 +184,7 @@ class SkuMatchController extends BPCPageAbstract
 	 * @param number $stockInParts
 	 * @param number $totalInPartsValue
 	 * @param number $totalOnHandValue
-	 * 
+	 *
 	 * @return Product
 	 */
 	private function updateStocktack(Product $product, $stockOnPO = 0, $stockOnHand = 0, $stockInRMA = 0, $stockInParts = 0, $totalInPartsValue = 0, $totalOnHandValue = 0, $active = true, $comment = '')
@@ -209,15 +210,15 @@ class SkuMatchController extends BPCPageAbstract
 			if(!empty($totalOnHandValue))
 				$product->addLog('Product (ID=' . $product->getId() . ') now totalOnHandValue = ' . $totalOnHandValue, Log::TYPE_SYSTEM)
 					->setTotalOnHandValue($totalOnHandValue);
-			
+
 			$active = ($active === 0 || $active === '0' || $active === false || $active === 'false' || $active === 'no') ? false : true;
 			$product->addLog('Product (ID=' . $product->getId() . ') now active = ' . $active, Log::TYPE_SYSTEM)
 				->setActive($active);
-			
+
 			$product->snapshotQty(null, ProductQtyLog::TYPE_STOCK_ADJ, empty($comment) ? 'Loaded via importer' : $comment)->save();
-			
+
 			Dao::commitTransaction();
-			
+
 			return $product;
 		}
 		catch(Exception $e) {
@@ -228,14 +229,14 @@ class SkuMatchController extends BPCPageAbstract
 	}
 	/**
 	 * Update product code
-	 * 
+	 *
 	 * @param Product $product
 	 * @param unknown $myobCode
 	 * @param ProductCodeType $productCodeType
 	 * @param string $assetAccNo
 	 * @param string $revenueAccNo
 	 * @param string $costAccNo
-	 * 
+	 *
 	 * @return Product
 	 */
 	private function updateProductCode(Product $product, $myobCode, ProductCodeType $productCodeType, $assetAccNo = '', $revenueAccNo = '', $costAccNo = '')
@@ -243,7 +244,7 @@ class SkuMatchController extends BPCPageAbstract
 		try
 		{
 			Dao::beginTransaction();
-			
+
 			// only take the myobCode (myob item#) after the first dash
 			$position = strpos($myobCode, '-');
 			if($position)
@@ -251,11 +252,11 @@ class SkuMatchController extends BPCPageAbstract
 				$myobCodeAfter = substr($myobCode, $position+1);	// get everything after first dash
 				$myobCodeAfter = str_replace(' ', '', $myobCodeAfter); // remove all whitespace
 			}
-			else 
+			else
 			{
 				$myobCodeAfter = $myobCode;
 			}
-			
+
 			$result = array();
 			$result['product'] = $product->getJson();
 			$result['code']= $myobCodeAfter;
@@ -263,7 +264,7 @@ class SkuMatchController extends BPCPageAbstract
 			$result['assetAccNo'] = $assetAccNo;
 			$result['revenueAccNo'] = $revenueAccNo;
 			$result['costAccNo'] = $costAccNo;
-			
+
 			// if such code type for such product exist, update it to the new one
 			if(!empty($myobCode))
 			{
@@ -278,7 +279,7 @@ class SkuMatchController extends BPCPageAbstract
 					$result['codeNew'] = true;
 				}
 			}
-    
+
 			// do the same for MYOB code (NOTE: have to have MYOB code in code type !!!)
 			if(!empty($myobCode))
 			{
@@ -293,16 +294,16 @@ class SkuMatchController extends BPCPageAbstract
 					$result['MYOBcodeNew'] = true;
 				}
 			}
-    
+
 			if(!empty($assetAccNo))
 				$product->setAssetAccNo($assetAccNo)->save();
 			if(!empty($revenueAccNo))
 				$product->setRevenueAccNo($revenueAccNo)->save();
 			if(!empty($costAccNo))
 				$product->setCostAccNo($costAccNo)->save();
-			 
+
 			Dao::commitTransaction();
-			
+
 			return $product;
 		}
 		catch(Exception $e) {

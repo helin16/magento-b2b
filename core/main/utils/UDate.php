@@ -8,6 +8,7 @@
  */
 class UDate
 {
+	const TIME_ZONE_MELB = "Australia/Melbourne";
 	/**
 	 * @var DateTime
 	 */
@@ -82,7 +83,7 @@ class UDate
 	/**
 	 * setting TimeZone of DateTime Object
 	 * 
-	 * @param string $timeZone The timezone string: "UTC"
+	 * @param string $timeZone The timezone string: "UTC" (example: 'Australia/Melbourne')
 	 * 
 	 * @return UDate
 	 */

@@ -1,8 +1,8 @@
 <com:TContent ID="MainContent">
 	<com:Application.controls.fancybox.FancyBox />
-	<com:Application.controls.chosen.Chosen />
 	<com:Application.controls.bootstrapDateTimePicker.bootstrapDateTimePicker />
 	<com:Application.controls.select2.select2 />
+	<com:Application.controls.InsufficientStockOrdersListPanel.InsufficientStockOrdersListPanel />
 	<com:TCallback ID="getOrdersBtn" onCallBack="Page.getOrders" />
 	<div class="row">
 	   <div class="col-md-9">
@@ -17,10 +17,16 @@
 	           </div>
 	           <div class="panel-body" role="form" id='searchDiv'>
 	               <div class='row'>
-	                   <div class="col-sm-9">
+	                   <div class="col-sm-6">
 	                       <div class="form-group form-group-sm input-group">
 	                           <label for="custName" class="input-group-addon">Customer Name: </label>
 	                           <input id='custName' type="text" class="form-control input-sm" placeholder="Customer Name" search_field="ord.infos.<%= OrderInfoType::ID_CUS_NAME %>" />
+	                       </div>
+	                   </div>
+	                   <div class="col-sm-6">
+	                       <div class="form-group form-group-sm input-group">
+	                           <label for="custPONo" class="input-group-addon">Customer P.O.: </label>
+	                           <input id='custPONo' type="text" class="form-control input-sm" placeholder="Customer PO Number" search_field="ord.pONo" />
 	                       </div>
 	                   </div>
 	                   <div class="col-sm-3">
@@ -55,7 +61,7 @@
 	                   </div>
 	               </div>
 	               <div class='row'>
-	                   <div class="col-sm-6">
+	                   <div class="col-sm-5">
 		                   <div class="form-group form-group-sm input-group">
 								<label class="input-group-addon">Order Date:</label>
 								<div class="form-control input-sm" style="padding:0px;">
@@ -69,7 +75,7 @@
 								</div>
 		                   </div>
 					   </div>
-	                   <div class="col-sm-6">
+	                   <div class="col-sm-5">
 		                   <div class="form-group form-group-sm input-group">
 								<label class="input-group-addon">Inv. Date:</label>
 								<div class="form-control input-sm" style="padding:0px;">
@@ -83,12 +89,21 @@
 								</div>
 		                   </div>
 					   </div>
+	                   <div class="col-sm-2">
+		                   <div class="form-group form-group-sm input-group">
+								<label class="input-group-addon">Sort</label>
+								<select search_field="ord.sort" class="form-control input-sm">
+	                               <option value="desc">Desc</option>
+	                               <option value="asc">Asc</option>
+	                            </select>
+		                   </div>
+					   </div>
 	               </div>
 	               <div class='row'>
 	                   <div class="col-xs-12">
 		                   <div class="form-group form-group-sm input-group">
 		                       <label for="status" class="input-group-addon">Status: </label>
-		                       <select search_field="ord.status" id="orderStatusId" multiple class="chosen"></select>
+		                       <select search_field="ord.status" id="orderStatusId" multiple class="chosen" style="width:100%"></select>
 		                   </div>
                         </div>
 	               </div>
@@ -97,17 +112,25 @@
 			<div class="panel panel-default">
 			     <div class="panel-heading" style="padding: 8px 4px 0 4px; border-bottom:none;">
 			     	<div class="row">
-				     	<div id="order-type-list" class="col-xs-8">
+				     	<div id="order-type-list" class="col-xs-6">
 				     		<ul class="nav nav-tabs">
 				     			<li class="type-swither-item" data-type="QUOTE"><a href="javascript: void(0);">QUOTE</a></li>
 				     			<li class="type-swither-item" data-type="ORDER"><a href="javascript: void(0);">ORDER</a></li>
 				     			<li class="type-swither-item active" data-type="INVOICE"><a href="javascript: void(0);">All INVOICES</a></li>
-				     			<li class="type-swither-item" data-type="INVOICE" extraSearchCriteria="(ROUND(ord.totalAmount,2) - ROUND(ord.totalPaid, 2)) > 0"><a href="javascript: void(0);">Open INVOICES</a></li>
-				     			<li class="type-swither-item" data-type="INVOICE" extraSearchCriteria="(ROUND(ord.totalAmount,2) - ROUND(ord.totalPaid, 2)) <= 0"><a href="javascript: void(0);">Closed INVOICES</a></li>
+				     			<li class="type-swither-item" data-type="INVOICE" extraSearchCriteria="(ROUND(ord.totalAmount,2) - ROUND(ord.totalPaid, 2) - ROUND(ord.totalCreditNoteValue, 2)) > 0"><a href="javascript: void(0);">Open INVOICES</a></li>
+				     			<li class="type-swither-item" data-type="INVOICE" extraSearchCriteria="(ROUND(ord.totalAmount,2) - ROUND(ord.totalPaid, 2) - ROUND(ord.totalCreditNoteValue, 2)) <= 0"><a href="javascript: void(0);">Closed INVOICES</a></li>
 				     		</ul>
 				     	</div>
-				     	<div class="col-xs-4 text-right">
-		                   <span id='total_no_of_items'>0</span> Records Found!
+				     	<div class="col-xs-6 text-right">
+						     	<div class="col-xs-4">
+			                   		Total Amt: <strong id='total_amount' class="text-info">$0</strong>
+						     	</div>
+						     	<div class="col-xs-4">
+			                   		Total Due: <strong id='total_due' class="text-danger">$0</strong>
+						     	</div>
+						     	<div class="col-xs-4">
+			                   		<span id='total_no_of_items'>0</span> Records Found!
+						     	</div>
 				     	</div>
 			     	</div>
                  </div>
@@ -116,8 +139,7 @@
                  </div>
 			</div>
 	   </div>
-	   <div class="col-md-3">
-	       <com:Application.controls.latest_eta_box.LatestETAPanel />
+	   <div class="col-md-3" id="right-panel">
 	   </div>
 	</div>
 </com:TContent>

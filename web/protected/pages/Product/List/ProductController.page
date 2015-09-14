@@ -1,75 +1,92 @@
 <com:TContent ID="MainContent">
 <com:Application.controls.fancybox.FancyBox />
-<com:Application.controls.chosen.Chosen />
+<com:Application.controls.select2.select2 />
 <com:TCallback ID="priceMatchingBtn" OnCallback = 'Page.priceMatching' />
 <com:TCallback ID="toggleActiveBtn" OnCallback = 'Page.toggleActive' />
 <com:TCallback ID="updatePriceBtn" OnCallback = 'Page.updatePrice' />
+<com:TCallback ID="updateStockLevelBtn" OnCallback = 'Page.updateStockLevel' />
+<com:TCallback ID="toggleIsKitBtn" OnCallback = 'Page.toggleIsKit' />
+<com:TCallback ID="newRuleBtn" OnCallback = 'Page.newRule' />
 	<div class="pagewrapper productlistwraper">
 		<div class="col-xs-12">
 			<div class="panel panel-default" id="searchPanel">
 				<div class="panel-heading">
 					<label for="showSearch">Show Search Criteria?</label>
 					<input id="showSearch" type="checkbox" checked onclick="pageJs.toggleSearchPanel($(this).up('#searchPanel').down('.panel-body'));">
-					<span class="pull-right">
-						<span class="btn btn-success btn-sm" onclick="pageJs._openProductDetails('new')"><i class="fa fa-plus"></i> NEW</span>
+					<span class="pull-right btn-group">
+						<a class="btn btn-success btn-sm" href="/product/new.html" target="_BLANK"><i class="fa fa-plus"></i> NEW</a>
+						<span id="newPriceMatchRuleBtn" class="btn btn-info btn-sm" data-loading-text="loading ..." >New Rule</span>
 						<span id="searchBtn" class="btn btn-primary btn-sm" data-loading-text="searching ..." >Search</span>
 					</span>
 				</div>
 				<div class="panel-body search-panel" id="searchDiv">
 					<input type="hidden" search_field="pro.id" value="<%= $this->getRequestProductID() %>"/>
 					<div class="row">
-						<div class="col-md-2">
-							<div class="form-group form-group-sm">
-	                           <label>SKU:</label>
+						<div class="col-xs-2">
+							<div class="form-group form-group-sm input-group">
+	                           <label class="contorl-label input-group-addon">SKU</label>
 	                           <input type="text" search_field="pro.sku" placeholder="The SKU of the product" class="form-control input-sm">
 	                       </div>
 						</div>
-						<div class="col-md-2">
-							<div class="form-group form-group-sm">
-	                           <label>Name:</label>
+						<div class="col-xs-4">
+							<div class="form-group form-group-sm input-group">
+	                           <label class="contorl-label input-group-addon">Name</label>
 	                           <input type="text" search_field="pro.name" placeholder="The name of the product" class="form-control input-sm">
 	                       </div>
 						</div>
-						<div class="col-md-1">
-                            <div class="form-group form-group-sm">
-                               <label>Active:</label>
-                               <select search_field="pro.active" class="form-control input-sm">
-                                    <option value="1">YES</option>
-                                    <option value="0">NO</option>
-                                    <option value=" ">All</option>
+						<div class="col-xs-1">
+                            <div class="form-group form-group-sm input-group">
+                               <label class="contorl-label input-group-addon">Active</label>
+                               <select search_field="pro.active" class="chosen form-control input-sm">
+                                    <option value="1">Yes</option>
+                                    <option value="0">No</option>
+                                    <option value="ALL">All</option>
                                </select>
                            </div>
                         </div>
-						<div class="col-md-1">
-							<div class="form-group form-group-sm">
-	                           <label>Status:</label>
-	                           <div class="form-control" style="padding: 0px; height: 100%;">
-                                    <select search_field="pro.productStatusIds" multiple class="chosen"></select>
-                                </div>
+						<div class="col-xs-2">
+							<div class="form-group form-group-sm input-group">
+	                           <label class="contorl-label input-group-addon">Status</label>
+                               <select search_field="pro.productStatusIds" multiple class="chosen form-control input-sm"></select>
 	                       </div>
 						</div>
-						<div class="col-md-2">
-							<div class="form-group form-group-sm">
-				                <label>Manufacturers: </label>
-				                <div class="form-control" style="padding: 0px; height: 100%;">
-					                <select search_field="pro.manufacturerIds" multiple class="chosen"></select>
-				                </div>
+						<div class="col-xs-2">
+							<div class="form-group form-group-sm input-group">
+	                           <label class="contorl-label input-group-addon">Stock Level</label>
+                               <select search_field="pro.stockLevel" class="chosen form-control input-sm">
+                               		<option value="">All</option>
+                               		<option value="stockReorderLevel">Lower than Reordering Level</option>
+                               		<option value="stockMinLevel">Lower than MSL</option>
+                               </select>
+	                       </div>
+						</div>
+						<div class="col-xs-1">
+							<div class="form-group form-group-sm input-group">
+				                <label class="contorl-label input-group-addon" title="Stock on Hand">SH</label>
+				                <select search_field="pro.sh" class="chosen form-control input-sm">
+				                	<option value="[null,null]">All</option>
+				                	<option value="[0,0]">=0</option>
+                               		<option value="[1,null]">>0</option>
+                               		<option value="[null,-1]"><0</option>
+				                </select>
 	                        </div>
                         </div>
-                        <div class="col-md-2">
-	                        <div class="form-group form-group-sm">
-				                <label>Suppliers: </label>
-				                <div class="form-control" style="padding: 0px; height: 100%;">
-				                	<select search_field="pro.supplierIds" multiple class="chosen"></select>
-		                        </div>
+						<div class="col-xs-2">
+							<div class="form-group form-group-sm input-group">
+				                <label class="contorl-label input-group-addon">Brand</label>
+				                <select search_field="pro.manufacturerIds" multiple class="chosen form-control input-sm"></select>
+	                        </div>
+                        </div>
+                        <div class="col-xs-2">
+	                        <div class="form-group form-group-sm input-group">
+				                <label class="contorl-label input-group-addon">Suppliers</label>
+			                	<select search_field="pro.supplierIds" multiple class="chosen form-control input-sm"></select>
 	                        </div>
 						</div>
-                        <div class="col-md-2">
-	                        <div class="form-group form-group-sm">
-				                <label>Categories: </label>
-				                <div class="form-control" style="padding: 0px; height: 100%;">
-				                	<select search_field="pro.productCategoryIds" multiple class="chosen"></select>
-		                        </div>
+                        <div class="col-xs-8">
+	                        <div class="form-group form-group-sm input-group">
+				                <label class="contorl-label input-group-addon">Categories</label>
+			                	<select search_field="pro.productCategoryIds" multiple class="chosen form-control input-sm"></select>
 	                        </div>
 						</div>
 					</div>
@@ -79,12 +96,21 @@
 		<div class="col-xs-12 list-panel">
 			<div class="panel panel-default">
 				<div class="panel-heading">
-					Found <label id="total-found-count">0</label> Products:
-					<span class="pull-right btn btn-sm btn-success" onclick="pageJs._openProductDetails('new')">
-						<span class="fa fa-plus" />
-					</span>
+					<div class="row">
+						<div class="col-xs-4">
+							Found <label id="total-found-count">0</label> Products. <label id="total-selected-count">0</label> Selected
+						</div>
+						<div class="col-xs-8 text-right">
+							<div class="col-xs-6">
+								Total Qty: <strong id="total-found-qty" class="text-info">0</strong>
+							</div>
+							<div class="col-xs-6">
+								Total Value(Ex GST): <strong id="total-found-value" class="text-info">$0</strong>
+							</div>
+						</div>
+					</div>
 				</div>
-				<div class="table-responsive">
+				<div class="table-responsive" style="overflow: hidden;">
 	                <table class="table table-hover table-striped" id="item-list"></table>
 	            </div>
 			</div>

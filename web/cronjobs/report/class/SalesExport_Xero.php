@@ -78,9 +78,9 @@ class SalesExport_Xero extends ExportAbstract
 				,'POPostalCode'=> ''
 				,'POCountry'=> ''
 				,'InvoiceNumber' => $order->getInvNo()
-				,'Reference'=> $order->getOrderNo()
+				,'Reference'=> (intval($order->getIsFromB2B()) === 1 ? $order->getOrderNo() :  $order->getPONo()) //changed for XiXi, she need the customer PO for any instore orders
 				,'InvoiceDate' => $order->getInvDate()->setTimeZone('Australia/Melbourne')->__toString()
-				,'DueDate' => ''
+				,'DueDate' => $order->getInvDate()->modify('+' . self::getTerms($customer) . ' day')->setTimeZone('Australia/Melbourne')->__toString()
 			);
 			foreach($order->getOrderItems() as $orderItem)
 			{
@@ -139,5 +139,60 @@ class SalesExport_Xero extends ExportAbstract
 		$now = new UDate();
 		$now->setTimeZone('Australia/Melbourne');
 		return 'sales_xero_' . $now->format('Y_m_d_H_i_s') . '.csv';
+	}
+	private static function getTerms(Customer $customer)
+	{
+		$terms = array('P&P COMPUTER' => 30
+				,'Stanley Security' => 30
+				,'ABACUS RENT IT' => 30
+				,'TYCO SAFETY PRODUCTS' => 30
+				,'MONASH UNIVERSITY' => 30
+				,'LDS INTERNATIONAL' => 30
+				,'SECURITY MERCHANTS AUSTRALIA PTY LTD (Stock)' => 30
+				,'Support Services Pty Ltd' => 30
+				,'Soniq Digital Media Pty Ltd' => 30
+				,'EVER SUCCESS PTY LTD' => 30
+				,'SUMMER TECHNOLOGY' => 30
+				,'N2C' => 30
+				,'BALTHOR' => 30
+				,'EVERSAFE AUSTRALIA PTY LTD' => 30
+				,'BULLER SKI LIFTS' => 30
+				,'DRAEGER MEDICAL AUSTRALIA' => 30
+				,'WESTERN PORT WATER' => 30
+				,'COMPLETE INTEGRATED ALARM SERVICES' => 30
+				,'GREENHOOD IT' => 30
+				,'ULTRASOURCE PTY LTD' => 30
+				,'WELSH DIRECT' => 30
+				,'ALARM CORP' => 30
+				,'FETHERS Pty Ltd' => 30
+				,'DELTA ENERGY SYSTEMS PTY LTD' => 30
+				,'Quatius Australia Pty Ltd' => 30
+				,'TRONSEC SECURITY PTY LTD' => 30
+				,'DRAEGER SAFETY' => 30
+				,'Quatius Logistics Pty Ltd' => 30
+				,'DFP RECRUITMENT SERVICES PTY LTD' => 30
+				,'CAR PARKING SOLUTIONS P/L' => 30
+				,'GS1 AUSTRALIA' => 30
+				,'SECURITY MERCHANTS AUSTRALIA PTY LTD (Supply)' => 30
+				,'DFP RECRUITMENT SERVICES' => 30
+				,'FISHER & PAYKEL HEALTH CARE PTY LTD' => 30
+				,'LIMA ORTHOPAEDICS AUSTRALIA' => 21
+				,'Ultra View Technology' => 14
+				,'DSN AUSTRALIA' => 14
+				,'AE SMITH & SON PTY LTD' => 14
+				,'BAXTER INSTITUTE' => 14
+				,'Acute Solutions' => 14
+				,'BLUESHIELD TECHNOLOGIES PTY LTD' => 14
+				,'KS ENVIRONMENTAL' => 14
+				,'DANMAC PRODUCTS PTY LTD' => 14
+				,'Fisher & Paykel Healthcare' => 30
+				,'GP GRADERS PTY LTD' => 30
+				,'NAVTECH SECURITY' => 7);
+		foreach($terms as $name => $days) {
+			if(strtoupper($name) === strtoupper(trim($customer->getName()))) {
+				return $terms[$name];
+			}
+		}
+		return 0;
 	}
 }

@@ -19,10 +19,24 @@
 
 			<!-- FrontEnd:: login page -->
 			<url ServiceParameter="Login.LoginController" pattern="login.html" />
-			
+
+			<!-- FrontEnd:: System Build page -->
+			<url ServiceParameter="Build.BuildController" pattern="build.html" />
+
+			<!-- FrontEnd:: CreditNote list page -->
+			<url ServiceParameter="CreditNote.List.ListController" pattern="creditnote.html" />
+			<!-- FrontEnd:: CreditNote detail page -->
+			<url ServiceParameter="CreditNote.Details.DetailsController" pattern="creditnote/{id}.html" parameters.id="new|\d+"/>
+
+			<!-- FrontEnd:: RMA list page -->
+			<url ServiceParameter="RMA.List.ListController" pattern="rma.html" />
+			<!-- FrontEnd:: RMA detail page -->
+			<url ServiceParameter="RMA.Details.DetailsController" pattern="rma/{id}.html" parameters.id="new|\d+"/>
+
 			<!-- FrontEnd:: Courier list page -->
 			<url ServiceParameter="Courier.List.ListController" pattern="courier.html" />
-			
+
+
 			<!-- FrontEnd:: order list page -->
 			<url ServiceParameter="Order.List.OrderController" pattern="order.html" />
 			<!-- FrontEnd:: order new page -->
@@ -49,6 +63,18 @@
 			<!-- FrontEnd:: system settings page -->
 			<url ServiceParameter="System.Settings.List.ListController" pattern="systemsettings.html" parameters.id="me"/>
 
+			<!-- FrontEnd:: Tasks Listing page -->
+			<url ServiceParameter="Task.List.Controller" pattern="tasks.html"/>
+			<!-- FrontEnd:: Tasks Details page -->
+			<url ServiceParameter="Task.Details.Controller" pattern="task/{id}.html"  parameters.id="\d+|new"/>
+
+			<!-- FrontEnd:: Tasks Listing page -->
+			<url ServiceParameter="Kit.List.Controller" pattern="kits.html"/>
+			<!-- FrontEnd:: Kit Details page -->
+			<url ServiceParameter="Kit.Details.Controller" pattern="kit/{id}.html"  parameters.id="\d+|new"/>
+			<!-- FrontEnd:: Kit Details page -->
+			<url ServiceParameter="Kit.Print.Controller" pattern="print/kit/{kitId}.html"  parameters.kitId="\d+"/>
+
 			<!-- FrontEnd:: Price Match page -->
 			<url ServiceParameter="PriceMatch.PriceMatchController" pattern="pricematch.html" />
 			<!-- FrontEnd:: Price Match Companypage -->
@@ -66,6 +92,9 @@
 
 			<!-- FrontEnd:: product category list page -->
 			<url ServiceParameter="ProductCategory.List.ListController" pattern="productcategories.html" />
+
+			<!-- FrontEnd:: product qty log list page -->
+			<url ServiceParameter="ProductQtyLog.List.ListController" pattern="productqtylog.html" />
 
 			<!-- FrontEnd:: product qty log list page -->
 			<url ServiceParameter="ProductQtyLog.List.ListController" pattern="productqtylog.html" />
@@ -95,10 +124,15 @@
 			<url ServiceParameter="Receiving.New.ReceivingController" pattern="receiving.html" />
 			<url ServiceParameter="Receiving.New.ReceivingController" pattern="receiving/{poid}.html" parameters.poid="\d+"/>
 
+			<!-- FrontEnd:: bill page -->
+			<url ServiceParameter="Bill.List.Controller" pattern="bills.html" />
+			<url ServiceParameter="Bill.Details.Controller" pattern="bills/{supplierId}.html" parameters.supplierId="\d+"/>
+
             <!-- FrontEnd:: PO list page -->
             <url ServiceParameter="PurchaseOrder.List.Controller" pattern="purchase.html" />
             <!-- FrontEnd:: PO details page -->
-            <url ServiceParameter="PurchaseOrder.New.POController" pattern="purchase/{id}.html" parameters.id="new"/>
+            <url ServiceParameter="PurchaseOrder.New.POController" pattern="purchase/new.html"/>
+            <url ServiceParameter="PurchaseOrder.POCredit.POCreditController" pattern="purchase/credit/new.html"/>
             <url ServiceParameter="PurchaseOrder.Details.DetailsController" pattern="purchase/{id}.html" parameters.id="\d+"/>
 			<!-- FrontEnd:: PO print page -->
 			<url ServiceParameter="PurchaseOrder.Print.POPrintController" pattern="print/purchase/{POId}.html" parameters.POId="\d+"/>
@@ -130,8 +164,11 @@
 			<!-- FrontEnd:: Report page -->
 			<url ServiceParameter="Report.List.ListController" pattern="report.html" />
 
+			<!-- FrontEnd:: Product Ageing Report page -->
+			<url ServiceParameter="Report.ProductAgeing.ListController" pattern="productageing.html" />
+
 			<!-- asset service -->
-			<url ServiceId="asset" ServiceParameter="" pattern="asset/{method}" parameters.method="get" />
+			<url ServiceId="asset" ServiceParameter="" pattern="asset/{method}" parameters.method="\w+" />
 
 			<!-- ajax service -->
 			<url ServiceId='ajax' ServiceParameter="" pattern="ajax/{method}" parameters.method="\w+"  />
@@ -156,7 +193,10 @@
 
 		<service id="asset" class="Application.pages.Asset.AssetController"></service>
 		<service id="soap" class="System.Web.Services.TSoapService">
-			<soap id="webauth" provider="Application.classes.Soap.WebAuth" />
+			<soap id="Product" provider="Application.classes.Soap.APIProduct" />
+			<soap id="ProductAttributeSet" provider="Application.classes.Soap.APIProductAttributeSet" />
+			<soap id="ProductCategory" provider="Application.classes.Soap.APIProductCategory" />
+			<soap id="Manufacturer" provider="Application.classes.Soap.APIManufacturer" />
 		</service>
 	</services>
 	<!-- application parameters -->

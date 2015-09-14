@@ -10,7 +10,7 @@ class UserAccount extends BaseEntityAbstract
 {
     /**
      * The id of the system account
-     * 
+     *
      * @var int
      */
     const ID_SYSTEM_ACCOUNT = 10;
@@ -126,7 +126,7 @@ class UserAccount extends BaseEntityAbstract
     }
     /**
      * Clear all the roles
-     * 
+     *
      * @return UserAccount
      */
     public function clearRoles()
@@ -139,9 +139,9 @@ class UserAccount extends BaseEntityAbstract
     }
     /**
      * Adding a role
-     * 
+     *
      * @param Role $role
-     * 
+     *
      * @throws CoreException
      * @return UserAccount
      */
@@ -154,9 +154,9 @@ class UserAccount extends BaseEntityAbstract
     }
     /**
      * Deleting the role
-     * 
+     *
      * @param Role $role
-     * 
+     *
      * @return UserAccount
      */
     public function removeRole(Role $role)
@@ -188,7 +188,9 @@ class UserAccount extends BaseEntityAbstract
     		foreach($this->getRoles() as $role)
     			$array['roles'][] = $role->getJson();
     	}
-    	return parent::getJson($array, $reset);
+    	$array = parent::getJson($array, $reset);
+    	unset($array['password']);
+    	return $array;
     }
     /**
      * (non-PHPdoc)
@@ -202,7 +204,7 @@ class UserAccount extends BaseEntityAbstract
         DaoMap::setManyToOne("person", "Person", "p");
         DaoMap::setManyToMany("roles", "Role", DaoMap::LEFT_SIDE, "r", false);
         parent::__loadDaoMap();
-        
+
         DaoMap::createUniqueIndex('username');
         DaoMap::createIndex('password');
         DaoMap::commit();

@@ -60,6 +60,12 @@ class Order extends InfoEntityAbstract
 	 */
 	private $totalPaid = 0;
 	/**
+	 * The total credit note value for the order
+	 *
+	 * @var number
+	 */
+	private $totalCreditNoteValue = 0;
+	/**
 	 * The shippment of the order
 	 *
 	 * @var multiple:Shippment
@@ -293,6 +299,25 @@ class Order extends InfoEntityAbstract
 	    return $this;
 	}
 	/**
+	 * getter for totalCreditNoteValue
+	 *
+	 * @return number
+	 */
+	public function getTotalCreditNoteValue()
+	{
+		return $this->totalCreditNoteValue;
+	}
+	/**
+	 * Setter for totalCreditNoteValue
+	 *
+	 * @return Order
+	 */
+	public function setTotalCreditNoteValue($totalCreditNoteValue)
+	{
+		$this->totalCreditNoteValue = $totalCreditNoteValue;
+		return $this;
+	}
+	/**
 	 * Getter for shippments
 	 *
 	 * @return Shippment
@@ -321,7 +346,7 @@ class Order extends InfoEntityAbstract
 	 */
 	public function getTotalDue()
 	{
-		return round($this->getTotalAmount() - $this->getTotalPaid(), 4);
+		return round($this->getTotalAmount() - $this->getTotalPaid() - $this->getTotalCreditNoteValue(), 4);
 	}
 	/**
 	 * Getter for shippingAddr
@@ -514,12 +539,14 @@ class Order extends InfoEntityAbstract
 	 * @param PaymentMethod $method
 	 * @param double        $value
 	 * @param string        $comments
+	 * @param mixed         $newPayment The new payment that just created
 	 *
 	 * @return Order
 	 */
-	public function addPayment(PaymentMethod $method, $value, $comments = '')
+	public function addPayment(PaymentMethod $method, $value, $comments = '', $paymentDate = null, &$newPayment = null)
 	{
-		return Payment::create($this, $method, $value, $comments)->getOrder();
+		$newPayment = Payment::create($this, $method, $value, $comments, $paymentDate);
+		return $newPayment->getOrder();
 	}
 	/**
 	 * Getter for margin
@@ -564,7 +591,6 @@ class Order extends InfoEntityAbstract
 			$this->setInvDate(Udate::zeroDate());
 		if(trim($this->getId()) !== '')
 		{
-			$this->setMargin($this->getCalculatedTotalMargin());
 			//status changed
 			$originalOrder = self::get($this->getId());
 			if($originalOrder instanceof Order && $originalOrder->getStatus()->getId() !== $this->getStatus()->getId())
@@ -574,6 +600,24 @@ class Order extends InfoEntityAbstract
 				$orderInfo = count($orderInfos) === 0 ? null : $orderInfos[0];
 				OrderInfo::create($this, $infoType, $originalOrder->getStatus()->getId(), $orderInfo);
 				$this->addLog('Changed Status from [' . $originalOrder->getStatus()->getName() . '] to [' . $this->getStatus() .']', Log::TYPE_SYSTEM, 'Auto Log', get_class($this) . '::' . __FUNCTION__);
+
+				//get the required kits qty
+				if(in_array(intval($this->getStatus()->getId()), array(OrderStatus::ID_PICKED, OrderStatus::ID_SHIPPED))) {
+					$sql = "select sum(ord_item.qtyOrdered) `requiredQty`, ord_item.productId `productId`, pro.sku `sku` from orderitem ord_item inner join product pro on (pro.id = ord_item.productId and pro.isKit = 1) where ord_item.orderId = ? and ord_item.active = 1 group by pro.id";
+					$result = Dao::getResultsNative($sql, array($this->getId()), PDO::FETCH_ASSOC);
+					if(count($result) > 0) {
+						$errMsg = array();
+						foreach($result as $row) {
+							$requiredQty = $row['requiredQty'];
+							$sku = $row['sku'];
+							if(($kitsCount = count($kits = Kit::getAllByCriteria('soldOnOrderId = ? and productId =? ', array($this->getId(), $row['productId'])))) < $requiredQty) {
+								$errMsg[] = 'Product (SKU=' . $sku . ') needs to be sold as a kit(req Qty=' . $requiredQty . ', providedQty=' . $kitsCount . '): ' . implode(', ', array_map(create_function('$a', 'return $a->getBarcode();'), $kits));
+							}
+						}
+						if(count($errMsg) > 0)
+							throw new EntityException(implode('; ', $errMsg));
+					}
+				}
 			}
 		}
 	}
@@ -583,8 +627,7 @@ class Order extends InfoEntityAbstract
 	 */
 	public function postSave()
 	{
-		if(trim($this->getOrderNo()) === '')
-		{
+		if(trim($this->getOrderNo()) === '') {
 			$this->setOrderNo('BPCM' .str_pad($this->getId(), 8, '0', STR_PAD_LEFT))
 				->setMargin($this->getCalculatedTotalMargin())
 				->save();
@@ -600,6 +643,14 @@ class Order extends InfoEntityAbstract
 					->save();
 			}
 			$this->_changeToInvoice();
+		} elseif(trim($this->getStatus()->getId()) === trim(OrderStatus::ID_CANCELLED))	{ //if the order is now cancelled
+			//we need to unlink all the kits that were provided in this order item for sale.
+			SellingItem::getQuery()->eagerLoad('SellingItem.orderItem', 'inner join', 'rec_item_oi', 'rec_item_oi.id = sell_item.orderItemId and sell_item.active = 1 and sell_item.kitId is not null');
+			$items = SellingItem::getAllByCriteria('rec_item_oi.orderId = ? and rec_item_oi.isShipped = 0', array($this->getId()));
+			foreach($items as $item) {
+				$item->setActive(false)
+					->save();
+			}
 		}
 	}
 	/**
@@ -623,11 +674,18 @@ class Order extends InfoEntityAbstract
 	{
 		if(trim($this->getInvNo()) !== "")
 			return $this;
+		//update all the order item's margin and unitcost
+		$totalMargin = 0;
+		foreach($this->getOrderItems() as $item) {
+			$item->reCalMarginFromProduct()->save();
+			$totalMargin += $item->getMargin();
+		}
 		return $this->setType(Order::TYPE_INVOICE)
+			->setMargin($totalMargin)
 			->setInvNo('BPCINV' .str_pad($this->getId(), 8, '0', STR_PAD_LEFT))
 			->setInvDate(new UDate())
 			->save()
-			->addComment('Changed this order to be an INVOCE with invoice no: ' . $this->getInvNo(), Comments::TYPE_SYSTEM, 'Auto Log', __CLASS__ . '::' . __FUNCTION__)
+			->addComment('Changed this order to be an INVOCE with invoice no: ' . $this->getInvNo(), Comments::TYPE_SYSTEM, 'Auto Log')
 			->addLog('Changed this order to be an INVOCE with invoice no: ' . $this->getInvNo(), Log::TYPE_SYSTEM, 'Auto Log', __CLASS__ . '::' . __FUNCTION__);
 	}
 	/**
@@ -642,7 +700,7 @@ class Order extends InfoEntityAbstract
 	 *
 	 * @return PurchaseOrder
 	 */
-	public function addItem(Product $product, $unitPrice = '0.0000', $qty = 1, $description = '', $totalPrice = null, $mageOrderItemId = null, $eta = null, $itemDescription= '')
+	public function addItem(Product $product, $unitPrice = '0.0000', $qty = 1, $totalPrice = null, $mageOrderItemId = null, $eta = null, $itemDescription= '')
 	{
 		OrderItem::create($this, $product, $unitPrice, $qty, $totalPrice, $mageOrderItemId, $eta, $itemDescription);
 		return $this;
@@ -656,7 +714,7 @@ class Order extends InfoEntityAbstract
 		$array = $extra;
 	    if(!$this->isJsonLoaded($reset))
 	    {
-	    	$array['customer'] = $this->getCustomer()->getJson();
+	    	$array['customer'] = $this->getCustomer() instanceof Customer ? $this->getCustomer()->getJson() : array();
 	    	$array['totalDue'] = $this->getTotalDue();
 	    	$array['infos'] = array();
 	    	$array['address']['shipping'] = $this->getShippingAddr() instanceof Address ? $this->getShippingAddr()->getJson() : array();
@@ -697,6 +755,7 @@ class Order extends InfoEntityAbstract
 		DaoMap::setManyToOne('customer', 'Customer', 'o_cust');
 		DaoMap::setIntType('totalAmount', 'Double', '10,4');
 		DaoMap::setIntType('totalPaid', 'Double', '10,4');
+		DaoMap::setIntType('totalCreditNoteValue', 'Double', '10,4');
 		DaoMap::setBoolType('passPaymentCheck');
 		DaoMap::setBoolType('isFromB2B');
 		DaoMap::setManyToOne('status', 'OrderStatus', 'o_status');
@@ -760,7 +819,7 @@ class Order extends InfoEntityAbstract
 			->setPassPaymentCheck($passPaymentCheck)
 			->setPONo(trim($poNo));
 		if($cloneFrom instanceof Order) {
-			$counts = intval(OrderInfo::countByCriteria('orderId = ? and typeId = ?', array($cloneFrom->getId(), OrderInfoType::ID_CLONED_FROM_ORDER_NO)));
+			$counts = intval(OrderInfo::countByCriteria('value = ? and typeId = ?', array($cloneFrom->getOrderNo(), OrderInfoType::ID_CLONED_FROM_ORDER_NO)));
 			$newOrderNo = $cloneFrom->getOrderNo() . '-' . ($counts + 1);
 			$order->setOrderNo($newOrderNo);
 			$cloneFrom->addComment(($msg = 'A new order has been clone from this order:' . $newOrderNo), Comments::TYPE_SYSTEM)

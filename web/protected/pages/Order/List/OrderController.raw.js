@@ -13,11 +13,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 	,_type: 'INVOICE'
 
 	,_loadChosen: function () {
-		jQuery(".chosen").chosen({
-			disable_search_threshold: 10,
-			no_results_text: "Oops, nothing found!",
-			width: "100%"
-		});
+		jQuery(".chosen").select2();
 		return this;
 	}
 
@@ -109,6 +105,8 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				jQuery('.popovershipping').popover('hide');
 				if(tmp.reset === true) {
 					$(tmp.me.totalNoOfItemsId).update('0');
+					$(tmp.me.totalSumId).update(tmp.me.getCurrency(0));
+					$(tmp.me.totalDueId).update(tmp.me.getCurrency(0));
 					$(tmp.me.resultDivId).update('').insert({'after': new Element('div', {'class': 'panel-body'}).update(tmp.me.getLoadingImg()) });
 				}
 			}
@@ -118,7 +116,14 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					if(!tmp.result)
 						return;
 					$(tmp.me.totalNoOfItemsId).update(tmp.result.pageStats.totalRows);
-
+					$(tmp.me.totalSumId).update(tmp.me.getCurrency(tmp.result.totalAmount));
+					$(tmp.me.totalDueId)
+					.update(
+						new Element('span', {'title': 'Total Amt: ' + tmp.me.getCurrency(tmp.result.totalAmount) + '\nTotal Paid: ' + tmp.me.getCurrency(tmp.result.totalPaid) + '\nTotal Credited: ' + tmp.me.getCurrency(tmp.result.totalCreditNoteValue) + '\nTotal PaidViaCrdit: ' + tmp.me.getCurrency(tmp.result.paidViaCredit) }).update(
+							tmp.me.getCurrency(tmp.result.totalAmount - tmp.result.totalPaid - tmp.result.totalCreditNoteValue + (tmp.result.paidViaCredit * 1))
+						)
+					);
+					
 					tmp.resultDiv = $(tmp.me.resultDivId);
 					//reset div
 					if(tmp.reset === true) {
@@ -171,7 +176,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.me = this;
 		return new Element('tfoot')
 			.insert({'bottom': new Element('tr')
-				.insert({'bottom': new Element('td', {'colspan': '5', 'class': 'text-center'})
+				.insert({'bottom': new Element('td', {'colspan': '11', 'class': 'text-center'})
 					.insert({'bottom': new Element('span', {'class': 'btn btn-primary', 'data-loading-text':"Fetching more results ..."}).update('Show More')
 						.observe('click', function() {
 							tmp.me._pagination.pageNo = tmp.me._pagination.pageNo*1 + 1;
@@ -218,7 +223,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			'type'			: 'iframe',
 			'href'			: '/orderdetails/' + row.id + '.html?blanklayout=1',
 			'beforeClose'	    : function() {
-				if($(tmp.me.resultDivId).down('.order_item[order_id=' + row.id + ']'))
+				if(row && row.id && $(tmp.me.resultDivId).down('.order_item[order_id=' + row.id + ']') && $$('iframe.fancybox-iframe').first().contentWindow.pageJs._order)
 					$(tmp.me.resultDivId).down('.order_item[order_id=' + row.id + ']').replace(tmp.me._getResultRow($$('iframe.fancybox-iframe').first().contentWindow.pageJs._order));
 			}
  		});
@@ -258,35 +263,51 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			})
 		return tmp.newDiv;
 	}
-
-	,_getPaymentCell: function(row) {
+	,_getPaymentCell: function(row,type) {
 		var tmp = {};
-		tmp.me = this
+		tmp.me = this;
+		switch(type) {
+			case 'totalAmount':
+				tmp.name = 'Total Amout';
+				tmp.fieldName = 'totalAmount';
+				break;
+			case 'totalPaid':
+				tmp.name = 'Total Paid';
+				tmp.fieldName = 'totalPaid';
+				break;
+			case 'totalCreditNoteValue':
+				tmp.name = 'Total Credit Note Value';
+				tmp.fieldName = 'totalCreditNoteValue';
+				break;
+			default: tmp.name = 'ERROR(_getPaymentCell)';
+		}
 		return new Element('a', {'href': 'javascript: void(0);'})
-			.insert({'bottom': ( !row.passPaymentCheck ? '' :
-					new Element('span', {'title': (row.totalDue === 0 ? 'Full Paid' : 'Short Paid'), 'class': (row.totalDue === 0 ? 'text-success' : 'text-danger') })
-						.update(new Element('span', {'class': 'glyphicon ' + (row.totalDue === 0 ? 'glyphicon-ok-sign' : 'glyphicon-warning-sign') }))
+			.insert({'bottom': ( (!row.passPaymentCheck || type !== 'totalPaid') ? '' :
+					new Element('span', {'title': (Math.round(row.totalDue,2) <= 0 ? 'Full Paid' : 'Short Paid'), 'class': (Math.round(row.totalDue,2) <= 0 ? 'text-success' : 'text-danger') })
+						.setStyle('margin-right: 3px;')
+						.update(new Element('span', {'class': 'glyphicon ' + (Math.round(row.totalDue,2) <= 0 ? 'glyphicon-ok-sign' : 'glyphicon-warning-sign') }))
 				) })
-				.insert({'bottom': " " })
 				.insert({'bottom': new Element('span')
-					.update(tmp.me.getCurrency(row.totalDue))
-					.writeAttribute('title', 'Total Due Amount:' + tmp.me.getCurrency(row.totalDue))
+					.update(tmp.currencyValue = tmp.me.getCurrency(row[tmp.fieldName]))
+					.writeAttribute('title', tmp.name + ':' + tmp.currencyValue)
 				})
 				.observe('click', function() {
-					tmp.me._openDetailsPage(row);
+					if(tmp.fieldName === 'totalCreditNoteValue')
+						window.open('/creditnote.html?orderid=' + row.id, '_blank')
+					else tmp.me._openDetailsPage(row);
 				});
 	}
 	,_getMarginCell: function(row) {
 		var tmp = {};
 		tmp.me = this;
 		return new Element('a', {'href': 'javascript: void(0);'})
-		.insert({'bottom': new Element('span')
-		.update(tmp.me.getCurrency(row.margin))
-		.writeAttribute('title', 'Order margin:' + tmp.me.getCurrency(row.margin))
-		})
-		.observe('click', function() {
-			tmp.me._openDetailsPage(row);
-		});
+			.insert({'bottom': new Element('span')
+			.update(tmp.me.getCurrency(row.margin))
+			.writeAttribute('title', 'Order margin:' + tmp.me.getCurrency(row.margin))
+			})
+			.observe('click', function() {
+				tmp.me._openDetailsPage(row);
+			});
 	}
 
 	,_getPurchasingCell: function(row) {
@@ -334,31 +355,47 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.deliveryMethod = tmp.isTitle ? 'D.Method' : (row.infos['9'] ? row.infos[9][0].value : '');
 		tmp.row = new Element('tr', {'class': (tmp.isTitle === true ? '' : 'order_item'), 'order_id' : row.id}).store('data', row)
 			.insert({'bottom': new Element('td', {'class': 'orderInfo  col-xs-1'}).update(
-				tmp.isTitle ? row.orderNo : tmp.me._getOrderInfoCell(row)
+				tmp.isTitle ? 'Order No.' : tmp.me._getOrderInfoCell(row)
 			) })
 			.insert({'bottom': new Element('td', {'class': 'order-date col-xs-1'}).update(
-					tmp.isTitle === true ? 'Order Date' : tmp.me.loadUTCTime(row.orderDate).toLocaleDateString()
+					tmp.isTitle === true ? 'Order Date' : moment(tmp.me.loadUTCTime(row.orderDate)).format('ll')
 			) })
-			.insert({'bottom': new Element('td', {'class': 'customer col-xs-2 '}).update(
+			.insert({'bottom': new Element('td', {'class': 'invoiceNo col-xs-1'}).update(
+					tmp.isTitle === true ? 'Inv. No.' : new Element('small').update(row.invNo)
+			) })
+			.insert({'bottom': new Element('td', {'class': 'customer'}).update(
 					tmp.isTitle === true ? 'Customer' : row.customer.name
 			) })
-			.insert({'bottom': new Element('td', {'class': 'text-right col-xs-1 '}).update(
-				tmp.isTitle ? 'Due Amt' : tmp.me._getPaymentCell(row)
+			.insert({'bottom': new Element('td', {'class': 'col-xs-3'}).update(
+				new Element('div', {'class': 'row'})
+					.insert({'bottom': new Element('div', {'class': 'text-right col-xs-3 '}).update(
+						tmp.isTitle ? 'Total Amt' : tmp.me._getPaymentCell(row, 'totalAmount')
+					)})
+					.insert({'bottom': new Element('div', {'class': 'text-right col-xs-4 '}).update(
+						tmp.isTitle ? 'Paid Amt' : tmp.me._getPaymentCell(row, 'totalPaid')
+					)})
+					.insert({'bottom': new Element('div', {'class': 'col-xs-2 ' + (row.totalCreditNoteValue > 0 ? 'tr-red' : '')}).setStyle('padding: 0px;').update(
+						tmp.isTitle ? 'Credit Amt' : tmp.me._getPaymentCell(row, 'totalCreditNoteValue')
+					)})
+					.insert({'bottom': new Element('div', {'class': 'text-right col-xs-3 '}).update(
+						tmp.isTitle ? 'Margin' : tmp.me._getMarginCell(row)
+					)})
 			) })
-			.insert({'bottom': new Element('td', {'class': 'text-right'}).update(
-					tmp.isTitle ? 'Margin' : tmp.me._getMarginCell(row)
+			.insert({'bottom': new Element('td', {'class': 'col-xs-1'}).update(
+					new Element('div', {'class': 'row'})
+						.insert({'bottom': new Element('div', {'class': 'col-xs-6 text-center', 'title': 'Purchasing'}).update(
+								tmp.isTitle ? 'Pur.' : tmp.me._getPurchasingCell(row)
+						)})
+						.insert({'bottom': new Element('div', {'class': 'col-xs-6 text-center', 'title': 'Warehouse'}).update(
+								tmp.isTitle ? 'Ware.' : tmp.me._getWarehouseCell(row)
+						)})
 			) })
-			.insert({'bottom': new Element('td', {'class': 'text-center'}).update(
-					tmp.isTitle ? 'Purchasing' : tmp.me._getPurchasingCell(row)
-			) })
-			.insert({'bottom': new Element('td', {'class': 'text-center'}).update(
-					tmp.isTitle ? 'Warehouse' : tmp.me._getWarehouseCell(row)
-			) })
-			.insert({'bottom': new Element('td', {'class': 'status col-xs-2', 'order_status': row.status.name}).update(
+			.insert({'bottom': new Element('td', {'class': 'status col-xs-1 truncate', 'title': row.status.name, 'order_status': row.status.name}).update(
 					row.status ? row.status.name : ''
 			) })
-			.insert({'bottom': new Element('td', {'class': 'col-xs-5 ' + (tmp.deliveryMethod.toLowerCase().indexOf('pickup') > -1 ? 'danger' : ''), 'title': 'Delivery Method'}).update(tmp.deliveryMethod) })
+			.insert({'bottom': tmp.deliveryMethodEl = new Element('td', {'class': 'col-xs-1 truncate' + (tmp.deliveryMethod.toLowerCase().indexOf('pickup') > -1 ? ' danger' : ''), 'title': tmp.deliveryMethod}).update(tmp.deliveryMethod) })
 		;
+		tmp.me.observeClickNDbClick(tmp.deliveryMethodEl, function(){}, tmp.isTitle ? function(){} : function(){tmp.me.showModalBox('Delivery Method for Order ' + row.orderNo, tmp.deliveryMethod)})
 		return tmp.row;
 	}
 	,_initDeliveryMethods: function() {
@@ -401,7 +438,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			 allowClear: true,
 			 ajax: {
 				 delay: 250
-				 ,url: '/ajax/getCustomer'
+				 ,url: '/ajax/getCustomers'
 		         ,type: 'POST'
 	        	 ,data: function (params) {
 	        		 return {"searchTxt": params};
@@ -462,6 +499,10 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			format: 'DD/MM/YYYY'
 		});
 		tmp.me._initDeliveryMethods()._initCustomerSelect2()._initTypeSwither();
+		$('right-panel')
+			.store('InsufficientStockOrdersListPanelJs', tmp.insufficientStockOrdersListPanelJs = new InsufficientStockOrdersListPanelJs(tmp.me))
+			.update(tmp.insufficientStockOrdersListPanelJs.getListPanel().addClassName('panel-default'));
+		tmp.insufficientStockOrdersListPanelJs.load();
 		return tmp.me;
 	}
 });

@@ -49,7 +49,8 @@ class OrderController extends BPCPageAbstract
 		$shippingMethods =  array_map(create_function('$a', 'return $a->getJson();'), Courier::getAll(true, null, DaoQuery::DEFAUTL_PAGE_SIZE, array('name' => 'asc')));
 		$customer = (isset($_REQUEST['customerid']) && ($customer = Customer::get(trim($_REQUEST['customerid']))) instanceof Customer) ? $customer->getJson() : null;
 		$js .= "pageJs";
-			$js .= ".setHTMLIDs('detailswrapper')";
+			$js .= ".setHTMLID('itemDiv', 'detailswrapper')";
+			$js .= ".setHTMLID('searchPanel', 'search_panel')";
 			$js .= ".setCallbackId('searchCustomer', '" . $this->searchCustomerBtn->getUniqueID() . "')";
 			$js .= ".setCallbackId('searchProduct', '" . $this->searchProductBtn->getUniqueID() . "')";
 			$js .= ".setCallbackId('saveOrder', '" . $this->saveOrderBtn->getUniqueID() . "')";
@@ -57,20 +58,19 @@ class OrderController extends BPCPageAbstract
 			$js .= ".setPaymentMethods(" . json_encode($paymentMethods) . ")";
 			$js .= ".setShippingMethods(" . json_encode($shippingMethods) . ")";
 			$js .= ".setOrderTypes(" . json_encode(Order::getAllTypes()) . ")";
-		if($order instanceof Order && trim($order->getId()) !== '') {
-			$orderArray = $order->getJson();
-			$orderArray['items'] = array_map(create_function('$a', 'return $a->getJson();'), OrderItem::getAllByCriteria('orderId = ?', array($order->getId())));
-			$js .= ".setOrder(" . json_encode($orderArray) . ")";
-		}
 		if($cloneOrder instanceof Order) {
 			$clonOrderArray = $cloneOrder->getJson();
 			$clonOrderArray['items'] = array_map(create_function('$a', 'return $a->getJson();'), OrderItem::getAllByCriteria('orderId = ?', array($cloneOrder->getId())));
 			$js .= ".setOriginalOrder(" . json_encode($clonOrderArray) . ")";
 		}
+		if($order instanceof Order && trim($order->getId()) !== '') {
+			$orderArray = $order->getJson();
+			$orderArray['items'] = array_map(create_function('$a', 'return $a->getJson();'), OrderItem::getAllByCriteria('orderId = ?', array($order->getId())));
+			$js .= ".setOrder(" . json_encode($orderArray) . ")";
+		}
 		$js .= ".init(" . json_encode($customer) . ")";
 		if(!AccessControl::canAccessCreateOrderPage(Core::getRole())) {
-			$js .= ".disableEverything()";
-			$js .= ".showModalBox('<h4>Error</h4>', '<h4>You DO NOT Have Access To This " . ($order instanceof Order ? $order->getType() : 'Page')  . "</h4>')";
+			$js .= ".disableEverything(" . (in_array(Core::getRole()->getId(), array(Role::ID_ACCOUNTING, Role::ID_SALES, Role::ID_PURCHASING)) ? 'true' : '') . ")";
 		} else if($order instanceof Order && trim($order->getId()) !== '' && intval($order->getStatus()->getId()) === OrderStatus::ID_CANCELLED ) {
 			$js .= ".disableEverything()";
 			$js .= ".showModalBox('<h4>Error</h4>', '<h4>This " . $order->getType()  . " has been " . $order->getStatus()->getName() . "!</h4><h4>No one can edit it anymore</h4>')";
@@ -125,6 +125,7 @@ class OrderController extends BPCPageAbstract
 		{
 			$items = array();
 			$searchTxt = isset($param->CallbackParameter->searchTxt) ? trim($param->CallbackParameter->searchTxt) : '';
+			$customer = isset($param->CallbackParameter->customerId) ? Customer::get(trim($param->CallbackParameter->customerId)) : null;
 			$where = 'pro_pro_code.code = :searchExact or pro.name like :searchTxt OR sku like :searchTxt';
 			$params = array('searchExact' => $searchTxt, 'searchTxt' => '%' . $searchTxt . '%');
 			$pageNo = isset($param->CallbackParameter->pageNo) ? trim($param->CallbackParameter->pageNo) : '1';
@@ -145,7 +146,14 @@ class OrderController extends BPCPageAbstract
 			$products = Product::getAllByCriteria($where, $params, true, $pageNo, DaoQuery::DEFAUTL_PAGE_SIZE, array('pro.sku' => 'asc'), $stats);
 			foreach($products as $product)
 			{
-				$items[] = $product->getJson();
+				$jsonArray = $product->getJson();
+				$jsonArray['lastOrderItemFromCustomer'] = array();
+				if($customer instanceof Customer) {
+					$query = OrderItem::getQuery()->eagerLoad('OrderItem.order', 'inner join', 'ord', 'ord_item.orderId = ord.id and ord_item.active = 1 and ord.customerId = :custId and ord.type = :ordType');
+					$orderItems = OrderItem::getAllByCriteria('productId = :prodId', array('custId' => $customer->getId(), 'prodId' => $product->getId(), 'ordType' => Order::TYPE_INVOICE), true, 1, 1, array('ord_item.id' => 'desc'));
+					$jsonArray['lastOrderItemFromCustomer'] = count($orderItems) > 0 ? $orderItems[0]->getJson() : array();
+				}
+				$items[] = $jsonArray;
 			}
 			$results['items'] = $items;
 			$results['pagination'] = $stats;
@@ -220,9 +228,10 @@ class OrderController extends BPCPageAbstract
 				$paymentMethod = PaymentMethod::get(trim($param->CallbackParameter->paymentMethodId));
 				if(!$paymentMethod instanceof PaymentMethod)
 					throw new Exception('Invalid PaymentMethod passed in!');
-				$order->addInfo(OrderInfoType::ID_MAGE_ORDER_PAYMENT_METHOD, $paymentMethod->getName(), true);
 				$totalPaidAmount = trim($param->CallbackParameter->totalPaidAmount);
-						$order->addPayment($paymentMethod, $totalPaidAmount);
+				$order->addPayment($paymentMethod, $totalPaidAmount);
+				$order = Order::get($order->getId());
+				$order->addInfo(OrderInfoType::ID_MAGE_ORDER_PAYMENT_METHOD, $paymentMethod->getName(), true);
 				if($shipped === true)
 					$order->setType(Order::TYPE_INVOICE);
 			}
@@ -230,6 +239,61 @@ class OrderController extends BPCPageAbstract
 			{
 				$paymentMethod = '';
 				$totalPaidAmount = 0;
+			}
+
+			foreach ($param->CallbackParameter->items as $item)
+			{
+				$product = Product::get(trim($item->product->id));
+				if(!$product instanceof Product)
+					throw new Exception('Invalid Product passed in!');
+				if(isset($item->active) && intval($item->active) === 1 && intval($product->getActive()) !== 1 && $type === Order::TYPE_INVOICE)
+					throw new Exception('Product(SKU:' . $product->getSku() . ') is DEACTIVATED, please change it to be proper product before converting it to a ' . $type . '!');
+
+				$unitPrice = trim($item->unitPrice);
+				$qtyOrdered = trim($item->qtyOrdered);
+				$totalPrice = trim($item->totalPrice);
+				$itemDescription = trim($item->itemDescription);
+
+				if(intval($item->active) === 1)
+				{
+					$totalPaymentDue += $totalPrice;
+					if($orderCloneFrom instanceof Order || !($orderItem = OrderItem::get($item->id)) instanceof OrderItem)
+					{
+						$orderItem = OrderItem::create($order, $product, $unitPrice, $qtyOrdered, $totalPrice, 0, null, $itemDescription);
+					}
+					else {
+						$orderItem->setActive(intval($item->active))
+							->setProduct($product)
+							->setUnitPrice($unitPrice)
+							->setQtyOrdered($qtyOrdered)
+							->setTotalPrice($totalPrice)
+							->setItemDescription($itemDescription)
+							->save();
+						$existingSellingItems = SellingItem::getAllByCriteria('orderItemId = ?', array($orderItem->getId()));
+						foreach($existingSellingItems as $sellingItem) { //DELETING ALL SERIAL NUMBER BEFORE ADDING
+							$sellingItem->setActive(false)
+								->save();
+						}
+					}
+					$orderItem = OrderItem::get($orderItem->getId())->reCalMarginFromProduct()->resetCostNMarginFromKits()->save();
+				} else {
+					if($orderCloneFrom instanceof Order) {
+						continue;
+					}
+					elseif(($orderItem = OrderItem::get($item->id)) instanceof OrderItem) {
+						$orderItem->setActive(false)->save();
+					}
+				}
+
+				if(isset($item->serials) && count($item->serials) > 0){
+					foreach($item->serials as $serialNo)
+						$orderItem->addSellingItem($serialNo)
+							->save();
+				}
+				if($shipped === true) {
+					$orderItem->setIsPicked(true)
+						->save();
+				}
 			}
 
 			if(isset($param->CallbackParameter->courierId))
@@ -264,49 +328,19 @@ class OrderController extends BPCPageAbstract
 			$order = $order->addComment($comments, Comments::TYPE_SALES)
 				->setTotalPaid($totalPaidAmount);
 
-			foreach ($param->CallbackParameter->items as $item)
-			{
-				$product = Product::get(trim($item->product->id));
-				if(!$product instanceof Product)
-					throw new Exception('Invalid Product passed in!');
-				$unitPrice = trim($item->unitPrice);
-				$qtyOrdered = trim($item->qtyOrdered);
-				$totalPrice = trim($item->totalPrice);
-				$itemDescription = trim($item->itemDescription);
-
-				if(intval($item->active) === 1)
-					$totalPaymentDue += $totalPrice;
-				if($orderCloneFrom instanceof Order || !($orderItem = OrderItem::get($item->id)) instanceof OrderItem)
-					$orderItem = OrderItem::create($order, $product, $unitPrice, $qtyOrdered, $totalPrice, 0, null, $itemDescription);
-				else {
-					$orderItem->setActive(intval($item->active))
-						->setProduct($product)
-						->setUnitPrice($unitPrice)
-						->setQtyOrdered($qtyOrdered)
-						->setTotalPrice($totalPrice)
-						->setItemDescription($itemDescription)
-						->save();
-					SellingItem::deleteByCriteria('orderItemId = ?', array($orderItem->getId())); //DELETING ALL SERIAL NUMBER BEFORE ADDING
-				}
-				if(isset($item->serials)){
-					foreach($item->serials as $serialNo)
-						$orderItem->addSellingItem($serialNo);
-				}
-				if($shipped === true) {
-					$orderItem->setIsPicked(true)
-						->save();
-				}
-			}
 			if($shipped === true) {
 				$order->setStatus(OrderStatus::get(OrderStatus::ID_SHIPPED));
 			}
 			$order->setTotalAmount($totalPaymentDue)
 				->save();
 
+			if(isset($param->CallbackParameter->newMemo) && ($newMemo = trim($param->CallbackParameter->newMemo)) !== '')
+				$order->addComment($newMemo, Comments::TYPE_MEMO);
+
 			$results['item'] = $order->getJson();
 			if($printItAfterSave === true)
 				$results['printURL'] = '/print/order/' . $order->getId() . '.html?pdf=1';
-			$results['redirectURL'] = '/order/'. $order->getId() . '.html?' . $_SERVER['QUERY_STRING'];
+			$results['redirectURL'] = '/order/'. $order->getId() . '.html' . (trim($_SERVER['QUERY_STRING']) === '' ? '' : '?' . $_SERVER['QUERY_STRING']);
 			Dao::commitTransaction();
 		}
 		catch(Exception $ex)

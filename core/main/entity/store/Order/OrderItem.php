@@ -246,7 +246,7 @@ class OrderItem extends BaseEntityAbstract
 	 */
 	public function getIsShipped()
 	{
-	    return trim($this->isPicked) === '1';
+	    return trim($this->isShipped) === '1';
 	}
 	/**
 	 * Setter for isShipped
@@ -355,23 +355,25 @@ class OrderItem extends BaseEntityAbstract
 		$array = $extra;
 	    if(!$this->isJsonLoaded($reset))
 	    {
-	    	$array['product'] = $this->getProduct()->getJson();
-	    	$array['order'] = $this->getOrder()->getJson();
+	    	$array['product'] = $this->getProduct() instanceof Product ? $this->getProduct()->getJson() : null;
+	    	$array['order'] = $this->getOrder() instanceof Order ? $this->getOrder()->getJson() : null;
+	    	$array['sellingitems'] = array_map(create_function('$a', 'return $a->getJson();'), $this->getSellingItems());
 	    }
 	    return parent::getJson($array, $reset);
 	}
 	/**
 	 * Add a selling item
 	 *
-	 * @param string $serialNo
-	 * @param string $description
+	 * @param string      $serialNo
+	 * @param string      $description
+	 * @param SellingItem $newSellingItem
 	 *
 	 * @return OrderItem
 	 */
-	public function addSellingItem($serialNo, $description = '')
+	public function addSellingItem($serialNo, $description = '', SellingItem &$newSellingItem = null)
 	{
-		SellingItem::create($this, $serialNo, $description);
-		return $this;
+		$newSellingItem = SellingItem::create($this, $serialNo, $description);
+		return self::get($this->getId());
 	}
 	/**
 	 * Getting the selling items
@@ -387,7 +389,7 @@ class OrderItem extends BaseEntityAbstract
 	 */
 	public function getSellingItems($serialNo = '', $description = '', $activeOnly = true, $pageNo = null, $pageSize = DaoQuery::DEFAUTL_PAGE_SIZE, $orderBy = array(), &$stats = array())
 	{
-		return SellingItem::getSellingItems($this, $serialNo, $description, $this->getOrder(), $this->getProduct(), $activeOnly, $pageNo, $pageSize, $orderBy, $stats);
+		return SellingItem::getSellingItems($this, $serialNo, $description, null, null, $activeOnly, $pageNo, $pageSize, $orderBy, $stats);
 	}
 	/**
 	 * Getter for unitCost
@@ -411,26 +413,74 @@ class OrderItem extends BaseEntityAbstract
 	    return $this;
 	}
 	/**
+	 * ReCalMargin
+	 *
+	 * @return OrderItem
+	 */
+	public function reCalMargin()
+	{
+		$this->setMargin(StringUtilsAbstract::getValueFromCurrency($this->getTotalPrice()) - StringUtilsAbstract::getValueFromCurrency($this->getUnitCost()) * 1.1 * intval($this->getQtyOrdered()));
+		return $this;
+	}
+	/**
+	 * The cal margin from product
+	 *
+	 * @return OrderItem
+	 */
+	public function reCalMarginFromProduct()
+	{
+		if(!$this->getProduct() instanceof Product)
+			return $this;
+		$this->setUnitCost($this->getProduct()->getUnitCost())
+			->reCalMargin();
+		return $this;
+	}
+	/**
+	 * Reset the CostNMargin from all the Kits in Selling Items
+	 * 
+	 * @return OrderItem
+	 */
+	public function resetCostNMarginFromKits()
+	{
+		if(!$this->getProduct() instanceof Product || intval($this->getProduct()->getIsKit()) !== 1)
+			return $this;
+		$totalKitsCost = 0;
+		$totalNoOfKits = 0;
+		foreach(SellingItem::getAllByCriteria('orderItemId = ?', array($this->getId())) as $sellingItem) {
+			if(!($kit = $sellingItem->getKit()) instanceof Kit)
+				continue;
+			$totalKitsCost = $totalKitsCost + $kit->getCost();
+			$totalNoOfKits++;
+		}
+		$this->setUnitCost(intval($totalNoOfKits) === 0 ? 0 : ($this->getProduct()->getUnitCost()) / $totalNoOfKits )
+			->reCalMargin();
+		return $this;
+	}
+	/**
 	 * (non-PHPdoc)
 	 * @see BaseEntityAbstract::preSave()
 	 */
 	public function preSave()
 	{
-		$this->setMargin(StringUtilsAbstract::getValueFromCurrency($this->getTotalPrice()) - StringUtilsAbstract::getValueFromCurrency($this->getUnitCost()) * 1.1 * intval($this->getQtyOrdered()));
 		if(trim($this->getMageOrderId()) === '')
 			$this->setMageOrderId('0');
 
-		if(trim($this->getUnitCost()) === '')
-			$this->setUnitCost($this->getProduct()->getUnitCost());
-
 		//when brandnew, calculate margin
+		if(trim($this->getUnitCost()) === '') {
+			$this->reCalMarginFromProduct();
+		}
+
 		if(trim($this->getId()) === '') {
 			if(trim($this->getItemDescription()) === '')
 				$this->setItemDescription($this->getProduct()->getName());
-		} else { //if the isPicked changed
+		} else if (intval($this->getActive()) === 1) { //if the isPicked changed
 			$product = $this->getProduct();
+			$kitCount = 0;
 			//for picked
 			if(self::countByCriteria('id = ? and isPicked != ?', array($this->getId(), $this->getIsPicked())) > 0) {
+				$kitCount = ($kitCount === 0 ? SellingItem::countByCriteria('orderItemId = ? and kitId is not null and active = 1 ', array($this->getId())) : $kitCount);
+				if(intval($product->getIsKit()) === 1 && intval($kitCount) !== intval($this->getQtyOrdered()))
+					throw new EntityException($this->getQtyOrdered() . ' Kit(s) needs to be scanned to this OrderItem(SKU=' . $this->getProduct()->getSku() . ', unitPrice=' . StringUtilsAbstract::getCurrency($this->getUnitPrice()) . ', qty=' . $this->getQtyOrdered() . ') before it can be marked as PICKED, but got:' . $kitCount);
 				//we are picking this product
 				if(intval($this->getIsPicked()) === 1) {
 					$product->picked($this->getQtyOrdered(), '', $this);
@@ -442,6 +492,9 @@ class OrderItem extends BaseEntityAbstract
 			}
 			//for shipped
 			if(self::countByCriteria('id = ? and isShipped != ?', array($this->getId(), $this->getIsShipped())) > 0) {
+				$kitCount = ($kitCount === 0 ? SellingItem::countByCriteria('orderItemId = ? and kitId is not null and active = 1 ', array($this->getId())) : $kitCount);
+				if(intval($product->getIsKit()) === 1 && intval($kitCount) !== intval($this->getQtyOrdered()))
+					throw new EntityException($this->getQtyOrdered() . ' Kit(s) needs to be scanned to this OrderItem(ID=' . $this->getId() . ') before it can be marked as SHIPPED, but got:' . $kitCount);
 				//we are picking this product
 				if(intval($this->getIsShipped()) === 1) {
 					$product->shipped($this->getQtyOrdered(), '', $this);
@@ -449,6 +502,23 @@ class OrderItem extends BaseEntityAbstract
 				} else {
 					$product->shipped(0 - $this->getQtyOrdered(), '', $this);
 					$this->addLog('This item is now Un-marked as SHIPPED', Log::TYPE_SYSTEM, 'Auto Log', __CLASS__ . '::' . __FUNCTION__);
+				}
+			}
+		} else { //if the orderitem is been deactivated
+			if(self::countByCriteria('id = ? and active != ?', array($this->getId(), $this->getActive())) > 0) {
+				if(self::countByCriteria('id = ? and isShipped = 1', array($this->getId())) > 0) {
+					$msg = 'This item is now Un-marked as SHIPPED, as OrderItem(Order: ' . $this->getOrder()->getOrderNo() . ' SKU: ' . $this->getProduct()->getSku() . ', Qty: ' . $this->getQtyOrdered() . ') is now Deactivated';
+					$product->shipped(0 - $this->getQtyOrdered(), $msg, $this);
+					$this->addLog($msg, Log::TYPE_SYSTEM, 'Auto Log', __CLASS__ . '::' . __FUNCTION__);
+				}
+				if(self::countByCriteria('id = ? and isPicked = 1', array($this->getId())) > 0) {
+					$msg = 'This item is now Un-PICKED, as OrderItem(Order: ' . $this->getOrder()->getOrderNo() . ' SKU: ' . $this->getProduct()->getSku() . ', Qty: ' . $this->getQtyOrdered() . ') is now Deactivated';
+					$product->shipped(0 - $this->getQtyOrdered(), $msg, $this);
+					$this->addLog($msg, Log::TYPE_SYSTEM, 'Auto Log', __CLASS__ . '::' . __FUNCTION__);
+				}
+				foreach(SellingItem::getAllByCriteria('orderItemId = ?', array($this->getId())) as $sellingItem) {
+					$sellingItem->setActive(false)
+						->save();
 				}
 			}
 		}

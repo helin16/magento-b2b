@@ -1,22 +1,22 @@
 <?php
 /**
  * The CRUDPage Page Abstract
- * 
+ *
  * @package    Web
  * @subpackage Class
  * @author     lhe<helin16@gmail.com>
  */
-abstract class CRUDPageAbstract extends BPCPageAbstract 
+abstract class CRUDPageAbstract extends BPCPageAbstract
 {
 	/**
 	 * The default page size to get items
-	 * 
+	 *
 	 * @var int
 	 */
-	public $pageSize = 10;
+	public $pageSize = 20;
 	/**
 	 * The focusing entity
-	 * 
+	 *
 	 * @var string
 	 */
 	protected $_focusEntity = '';
@@ -53,17 +53,17 @@ abstract class CRUDPageAbstract extends BPCPageAbstract
 	public function onInit($param)
 	{
 		parent::onInit($param);
-	
+
 		$this->_getItemsBtn = new TCallback();
 		$this->_getItemsBtn->ID = 'getItemsBtn';
 		$this->_getItemsBtn->OnCallback = 'Page.getItems';
 		$this->getControls()->add($this->_getItemsBtn);
-	
+
 		$this->_saveItemsBtn = new TCallback();
 		$this->_saveItemsBtn->ID = 'saveItemBtn';
 		$this->_saveItemsBtn->OnCallback = 'Page.saveItem';
 		$this->getControls()->add($this->_saveItemsBtn);
-	
+
 		$this->_delItemsBtn = new TCallback();
 		$this->_delItemsBtn->ID = 'delItemsBtn';
 		$this->_delItemsBtn->OnCallback = 'Page.deleteItems';
@@ -90,8 +90,9 @@ abstract class CRUDPageAbstract extends BPCPageAbstract
 		$js .= "pageJs.setCallbackId('getItems', '" . $this->_getItemsBtn->getUniqueID() . "')";
 		$js .= ".setCallbackId('deleteItems', '" . $this->_delItemsBtn->getUniqueID() . "')";
 		$js .= ".setCallbackId('saveItem', '" . $this->_saveItemsBtn->getUniqueID() . "')";
-		$js .= ".setHTMLIds('item-list', 'searchPanel', 'total-found-count')";
-		$js .= ".getSearchCriteria();";
+		$js .= ".setHTMLIds('item-list', 'searchPanel', 'total-found-count');";
+		$js .= "if(pageJs.init) {pageJs.init();}";
+		$js .= "pageJs.getSearchCriteria();";
 		//$js .= ".getResults(true, " . $this->pageSize . ")";
 		return $js;
 	}
@@ -164,7 +165,7 @@ abstract class CRUDPageAbstract extends BPCPageAbstract
 	public function saveItem($sender, $param){}
 	/**
 	 * getting the focus entity
-	 * 
+	 *
 	 * @return string
 	 */
 	public function getFocusEntity()

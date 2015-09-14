@@ -27,16 +27,19 @@ class Controller extends CRUDPageAbstract
 				if(!($product = Product::get(trim($_REQUEST['productid']))) instanceof Product)
 					die('Invalid Product Provided');
 				$js .= "$('searchBtn').up('.panel').down('.panel-body').insert({'bottom': new Element('input', {'type': 'hidden', 'search_field': 'productid', 'value': '" . $product->getId() . "'}) });";
+				$js .= "$('searchBtn').up('.panel').hide();";
 			}
 
 			if(isset($_REQUEST['purchaseorderid'])) {
 				if (!($purchaseOrder = PurchaseOrder::get(trim($_REQUEST['purchaseorderid']))) instanceof PurchaseOrder)
 					die('Invalid PurchaseOrder Provided');
 				$js .= "$('searchBtn').up('.panel').down('.panel-body').insert({'bottom': new Element('input', {'type': 'hidden', 'search_field': 'purchaseorderid', 'value': '" . $purchaseOrder->getId() . "'}) });";
+				$js .= "$('searchBtn').up('.panel').hide();";
 			}
 
 			$js .= "$('searchBtn').click();";
 		}
+		$js .= "pageJs._bindSearchKey();";
 		return $js;
 	}
 	/**
@@ -73,9 +76,19 @@ class Controller extends CRUDPageAbstract
 				$where[] = 'purchaseorderid = ?';
 				$params[] = trim($purchaseorderid);
 			}
+			if(isset($serachCriteria['pro.ids']) && ($productids = trim($serachCriteria['pro.ids'])) !== '' && count($productids = trim($serachCriteria['pro.ids'])) > 0) {
+				$value = explode(',', $productids);
+				$where[] = 'productId in ('.implode(", ", array_fill(0, count($value), "?")).')';
+				$params = array_merge($params, $value);
+			}
+			if(isset($serachCriteria['purchaseorderids']) && ($purchaseorderids = trim($serachCriteria['purchaseorderids'])) !== '') {
+				$value = explode(',', $purchaseorderids);
+				$where[] = 'purchaseOrderId in ('.implode(", ", array_fill(0, count($value), "?")).')';
+				$params = array_merge($params, $value);
+			}
 			$objects = array();
 			if(count($where) > 0)
-				$objects = ReceivingItem::getAllByCriteria(implode(' AND ', $where), $params, true, $pageNo, $pageSize, array('rec_item.id' => 'desc'), $stats);
+				$objects = ReceivingItem::getAllByCriteria(implode(' AND ', $where), $params, true, $pageNo, $pageSize, array('rec_item.productId' => 'desc'), $stats);
 			$results['pageStats'] = $stats;
 			$results['items'] = array();
 			foreach($objects as $obj)

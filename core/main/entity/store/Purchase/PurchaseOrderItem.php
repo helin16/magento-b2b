@@ -201,6 +201,19 @@ class PurchaseOrderItem extends BaseEntityAbstract
 	}
 	/**
 	 * (non-PHPdoc)
+	 * @see BaseEntityAbstract::getJson()
+	 */
+	public function getJson($extra = array(), $reset = false, $getItems = false)
+	{
+		$array = $extra;
+		if(!$this->isJsonLoaded($reset))
+		{
+			$array['product'] = $this->getProduct() instanceof Product ? $this->getProduct()->getJson() : array();
+		}
+		return parent::getJson($array, $reset);
+	}
+	/**
+	 * (non-PHPdoc)
 	 * 
 	 * @see BaseEntityAbstract::preSave()
 	 */
@@ -219,10 +232,10 @@ class PurchaseOrderItem extends BaseEntityAbstract
 	
 		DaoMap::setManyToOne('purchaseOrder', 'PurchaseOrder', 'po_item_po');
 		DaoMap::setManyToOne('product', 'Product', 'po_item_pro');
-		DaoMap::setIntType('qty');
-		DaoMap::setIntType('receivedQty');
+		DaoMap::setIntType('qty', 'int', 10, false);
+		DaoMap::setIntType('receivedQty', 'int', 10, false);
 		DaoMap::setIntType('unitPrice', 'double', '10,4');
-		DaoMap::setIntType('totalPrice', 'double', '10,4');
+		DaoMap::setIntType('totalPrice', 'double', '10,4', false);
 		DaoMap::setBoolType('stockCalculated');
 		
 		parent::__loadDaoMap();

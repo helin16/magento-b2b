@@ -82,6 +82,12 @@ class ProductCategory extends BaseEntityAbstract
 	 */
 	private $urlKey = '';
 	/**
+	 * the product attribute set
+	 *
+	 * @var ProductAttributeSet
+	 */
+	protected $productAttributeSet = null;
+	/**
 	 * Getter for isAnchor
 	 *
 	 * @return bool
@@ -295,6 +301,28 @@ class ProductCategory extends BaseEntityAbstract
 		return $this;
 	}
 	/**
+	 * Getter for attributeSet
+	 *
+	 * @return ProductAttributeSet
+	 */
+	public function getProductAttributeSet()
+	{
+		$this->loadManyToOne('productAttributeSet');
+		return $this->productAttributeSet;
+	}
+	/**
+	 * Setter for productAttributeSet
+	 *
+	 * @param ProductAttributeSet $value The attributeSet
+	 *
+	 * @return Product
+	 */
+	public function setProductAttributeSet(ProductAttributeSet $value = null)
+	{
+		$this->productAttributeSet = $value;
+		return $this;
+	}
+	/**
 	 * (non-PHPdoc)
 	 * @see BaseEntityAbstract::postSave()
 	 */
@@ -356,6 +384,7 @@ class ProductCategory extends BaseEntityAbstract
 			$array['namePath'] = $this->getNamePath();
 			$array['noOfChildren'] = self::countByCriteria('parentId = ? and active = 1', array($this->getId()));
 			$array['noOfProducts'] = Product_Category::countByCriteria('categoryId = ? and active = 1', array($this->getId()));
+			$array['productAttributeSet'] = $this->getProductAttributeSet() instanceof ProductAttributeSet ? $this->getProductAttributeSet()->getJson() : null;
 		}
 		return parent::getJson($array, $reset);
 	}
@@ -372,6 +401,7 @@ class ProductCategory extends BaseEntityAbstract
 		DaoMap::setManyToOne('root', __CLASS__, 'pro_cate_root', true);
 		DaoMap::setStringType('position', 'varchar', 255);
 		DaoMap::setIntType('mageId');
+		DaoMap::setManyToOne('productAttributeSet', 'ProductAttributeSet', 'pro_cate_as', true);
 		DaoMap::setBoolType('isFromB2B');
 		DaoMap::setBoolType('isAnchor');
 		DaoMap::setBoolType('includeInMenu');

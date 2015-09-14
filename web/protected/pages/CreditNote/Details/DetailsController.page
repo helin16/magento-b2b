@@ -1,0 +1,14 @@
+<%@MasterClass="Application.layout.BlankLayout"%>
+<com:TContent ID="MainContent">
+	<com:TDatePicker Style="display:none;"/>
+	<com:Application.controls.fancybox.FancyBox />
+	<com:Application.controls.PaymentListPanel.PaymentListPanel />
+	<com:Application.controls.CommentsDiv.CommentsDiv />
+	<com:Application.controls.select2.select2 />
+	<com:TCallback ID="searchCustomerBtn" onCallback="searchCustomer" />
+	<com:TCallback ID="searchProductBtn" onCallback="searchProduct" />
+	<com:TCallback ID="saveOrderBtn" onCallback="saveOrder" />
+	<div class="pagewrapper orderdetails">
+		<div id="detailswrapper" class="contentDiv"></div>
+	</div>
+</com:TContent>

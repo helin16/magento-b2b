@@ -1,19 +1,12 @@
 /**
  * The page Js file
  */
-var PageJs = new Class.create();
-PageJs.prototype = Object.extend(new BPCPageJs(), {
-	_htmlIds: {'itemDiv': '', 'searchPanel': 'search_panel'}
-	,_supplier: null
-	,_item: null
+var POCreateJs = new Class.create();
+POCreateJs.prototype = Object.extend(new BPCPageJs(), {
+	_item: null
 	,_searchTxtBox: null
-	/**
-	 * Setting the HTMLIDS
-	 */
-	,setHTMLIDs: function(itemDivId) {
-		this._htmlIds.itemDiv = itemDivId;
-		return this;
-	}
+	,_isCredit: false
+	,_purchaseOrderItems: []
 	/**
 	 * setting the payment methods
 	 */
@@ -48,7 +41,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.me.postAjax(tmp.me.getCallbackId('saveOrder'), data, {
 			'onLoading': function(sender, param) {
 				tmp.me.hideModalBox();
-				$(tmp.me._htmlIds.itemDiv).insert({'after': tmp.loadingDiv}).hide();
+				$(tmp.me.getHTMLID('itemDiv')).insert({'after': tmp.loadingDiv}).hide();
 			}
 			,'onSuccess': function(sender, param) {
 				try {
@@ -76,12 +69,12 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					});
 				} catch(e) {
 					tmp.me.showModalBox('<strong class="text-danger">Error:</strong>', e, false);
-					$(tmp.me._htmlIds.itemDiv).show();
+					$(tmp.me.getHTMLID('itemDiv')).show();
 					tmp.loadingDiv.remove();
 				}
 			}
 			,'onComplete': function(sender, param) {
-				$(tmp.me._htmlIds.itemDiv).show();
+				$(tmp.me.getHTMLID('itemDiv')).show();
 				tmp.loadingDiv.remove();
 			}
 		});
@@ -104,7 +97,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.submitData = {};
 		tmp.submitData.submitToSupplier = (submit === true ? true : false);
 		//getting all meta data
-		tmp.data = tmp.me._collectFormData($(tmp.me._htmlIds.itemDiv),'save-order');
+		tmp.data = tmp.me._collectFormData($(tmp.me.getHTMLID('itemDiv')),'save-order');
 		if(tmp.data === null)
 			return tmp.me;
 		//getting all the items
@@ -133,6 +126,13 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.submitData.shippingCost = tmp.data.shippingCost ? tmp.me.getValueFromCurrency( tmp.data.shippingCost ) : 0;
 		tmp.submitData.handlingCost = tmp.data.handlingCost ? tmp.me.getValueFromCurrency( tmp.data.handlingCost ) : 0;
 		tmp.submitData.totalPaymentDue = tmp.data.totalPaymentDue ? tmp.me.getValueFromCurrency( tmp.data.totalPaymentDue ) : 0;
+
+		//for creadit po
+		if(tmp.me._isCredit === true) {
+			tmp.submitData.type = 'CREDIT';
+			if(tmp.me._po && jQuery.isNumeric(tmp.me._po.id))
+				tmp.submitData.po = tmp.me._po;
+		}
 
 		if(tmp.submitData.submitToSupplier === true) {
 			tmp.newDiv = new Element('div', {'class': 'confirm-div'})
@@ -226,11 +226,12 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		var tmp = {};
 		tmp.me = this;
 		tmp.supplier = tmp.me._supplier;
-		tmp.newDiv = new Element('div', {'class': 'panel panel-info'})
+		tmp.newDiv = new Element('div', {'class': 'panel'}).addClassName(tmp.me._isCredit === true ? 'panel-danger' : 'panel-info')
 			.insert({'bottom': new Element('div', {'class': 'panel-heading'})
 				.insert({'bottom': new Element('div', {'class': 'row'})
 					.insert({'bottom': new Element('div', {'class': 'col-sm-4'})
-						.insert({'bottom': new Element('strong').update('Creating PO for: ' + tmp.supplier.name + ' ') })
+						.insert({'bottom': new Element('strong', {'class': 'creatingFor'}).update('Creating ' + (tmp.me._ifCredit === true ? 'PO Credit' : 'PO') + ' for: ' + tmp.supplier.name + ' ') })
+						.insert({'bottom': new Element('strong', {'class': 'creatingFor'}).update(((tmp.me._po && jQuery.isNumeric(tmp.me._po.id)) ? (' for Purchase Order <a target="_blank" href="/purchase/' + tmp.me._po.id + '">' + tmp.me._po.purchaseOrderNo + '</a>') : '')) })
 					})
 					.insert({'bottom': new Element('div', {'class': 'col-sm-8 text-right'})
 						.insert({'bottom': new Element('div', {'class': 'col-sm-8 text-right'})
@@ -240,7 +241,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 							})
 						})
 						.insert({'bottom': new Element('div', {'class': 'col-sm-4'})
-							.insert({'bottom': new Element('strong').update('Total Due: ') })
+							.insert({'bottom': new Element('strong').update('Total Due Inc GST: ') })
 							.insert({'bottom': new Element('span', {'class': 'badge total-payment-due'}).update(tmp.me.getCurrency(0) ) })
 							.insert({'bottom': new Element('input', {'type': 'hidden', 'class': 'total-payment-due', 'save-order': "totalPaymentDue", 'value': tmp.me.getCurrency(0)}) })
 						})
@@ -349,32 +350,46 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 						})
 					})
 					.insert({'bottom': new Element('div', {'class': 'row', 'style': (product.minProductPrice || product.lastSupplierPrice || product.minSupplierPrice) ? 'height: 2px; background-color: brown;' : 'display:none'}).update('&nbsp;') })
-					.insert({'bottom': new Element('div', {'class': 'row small'})
-						.insert({'bottom': new Element('span', {'class': 'col-xs-4 btn btn-link btn-xs', 'style': product.minProductPrice ? 'text-align: left': 'display:none'}).update('Minimum product price: ')
+					.insert({'bottom': new Element('div', {'class': 'row'})
+						.insert({'bottom': new Element('span', {'class': 'btn btn-link btn-xs', 'style': product.minProductPrice ? 'text-align: left': 'display:none'}).update('Product Min: ')
 							.insert({'bottom': new Element('strong').update(tmp.me.getCurrency(product.minProductPrice)) })
-						})
-						.observe('click', function(event) {
-							Event.stop(event);
-							tmp.me._openPOPage(product.minProductPriceId);
-						})
-
-						.insert({'bottom': new Element('span', {'class': 'col-xs-4 btn btn-link btn-xs', 'style': product.lastSupplierPrice ? 'text-align: left': 'display:none'}).update('Last supplier price: ')
-							.insert({'bottom': new Element('strong').update(tmp.me.getCurrency(product.lastSupplierPrice)) })
-						})
-						.observe('click', function(event) {
-							Event.stop(event);
-							tmp.me._openPOPage(product.lastSupplierPriceId);
+							.writeAttribute('title', 'double click to open')
+							.observe('click', function(e){Event.stop(e);})
+							.observe('dblclick', function(event) {
+								Event.stop(event);
+								tmp.me._openPOPage(product.minProductPriceId);
+							})
 						})
 
-						.insert({'bottom': new Element('span', {'class': 'col-xs-4 btn btn-link btn-xs', 'style': product.minSupplierPrice ? 'text-align: left': 'display:none'}).update('Minimum supplier price: ')
+						.insert({'bottom': new Element('span', {'class': 'btn btn-link btn-xs', 'style': product.minSupplierPrice ? 'text-align: left': 'display:none'}).update('Supplier Min: ')
 							.insert({'bottom': new Element('strong').update(tmp.me.getCurrency(product.minSupplierPrice)) })
+							.writeAttribute('title', 'double click to open')
+							.observe('click', function(e){Event.stop(e);})
+							.observe('dblclick', function(event) {
+								Event.stop(event);
+								tmp.me._openPOPage(product.minSupplierPriceId);
+							})
 						})
-						.observe('click', function(event) {
-							Event.stop(event);
-							tmp.me._openPOPage(product.minSupplierPriceId);
+						
+						.insert({'bottom': new Element('span', {'class': 'btn btn-link btn-xs', 'style': product.lastSupplierPrice ? 'text-align: left': 'display:none'}).update('Supplier Last: ')
+							.insert({'bottom': new Element('strong').update(tmp.me.getCurrency(product.lastSupplierPrice)) })
+							.writeAttribute('title', 'double click to open')
+							.observe('click', function(e){Event.stop(e);})
+							.observe('dblclick', function(event) {
+								Event.stop(event);
+								tmp.me._openPOPage(product.lastSupplierPriceId);
+							})
 						})
-					})
+						
+						.insert({'bottom': new Element('span', {'class': 'btn btn-xs pull-right', 'title': 'Stock on Hand'}).setStyle('text-align: left;').update('SoH: ')
+							.insert({'bottom': new Element('strong').update(product.stockOnHand) })
+						})
+						
+						.insert({'bottom': new Element('span', {'class': 'btn btn-xs pull-right', 'title': 'Stock on PO'}).setStyle('text-align: left;').update('SoPO: ')
+							.insert({'bottom': new Element('strong').update(product.stockOnPO) })
+						})
 
+					})
 				})
 			})
 			.observe('click', function(){
@@ -409,38 +424,6 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			})
 			;
 		return tmp.newRow;
-	}
-	,selectProduct: function(product, btn) {
-		var tmp = {};
-		tmp.me = this;
-		tmp.inputRow = tmp.me._searchTxtBox.up('.new-order-item-input').store('product', product);
-		tmp.me._searchTxtBox.up('.productName')
-			.writeAttribute('colspan', false)
-			.update(product.sku)
-			.insert({'bottom': new Element('small', {'class': 'btn btn-xs btn-info'})
-				.insert({'bottom': new Element('small', {'class': 'glyphicon glyphicon-new-window'} )})
-				.observe('click', function(event){
-					Event.stop(event);
-					$productId = product.id;
-					if($productId)
-						tmp.me._openProductDetailPage($productId);
-				})
-			})
-			.insert({'after': new Element('td')
-				.update(product.name)
-				.insert({'bottom': new Element('a', {'href': 'javascript: void(0);', 'class': 'text-danger pull-right', 'title': 'click to change the product'})
-					.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-remove'})  })
-					.observe('click', function() {
-						tmp.newRow = tmp.me._getNewProductRow();
-						$(this).up('.new-order-item-input').replace(tmp.newRow);
-						tmp.newRow.down('[new-order-item=product]').select();
-					})
-				})
-			});
-		jQuery('#' + tmp.me.modalId).modal('hide');
-		tmp.inputRow.down('[new-order-item=totalPrice]').writeAttribute('value', tmp.me.getCurrency(product.minProductPrice));
-		tmp.inputRow.down('[new-order-item=qtyOrdered]').writeAttribute('value', 1);
-		tmp.inputRow.down('[new-order-item=unitPrice]').writeAttribute('value', tmp.me.getCurrency(product.minProductPrice)).select();
 	}
 	/**
 	 * Open PO page in a fancybox
@@ -613,11 +596,11 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 	/**
 	 * adding a new product row after hit save btn
 	 */
-	,_addNewProductRow: function(btn) {
+	,_addNewProductRow: function(btn, poItem) {
 		var tmp = {};
 		tmp.me = this;
 		tmp.currentRow = $(btn).up('.new-order-item-input');
-		tmp.product = tmp.currentRow.retrieve('product');
+		tmp.product = (typeof poItem === 'undefined') ? tmp.currentRow.retrieve('product') : poItem.product;
 		if(!tmp.product) {
 			tmp.productBox =tmp.currentRow.down('[new-order-item=product]');
 			if(tmp.currentRow.down('[new-order-item=product]')) {
@@ -628,14 +611,14 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			return ;
 		}
 		tmp.unitPriceBox = tmp.currentRow.down('[new-order-item=unitPrice]');
-		tmp.unitPrice = tmp.me.getValueFromCurrency($F(tmp.unitPriceBox));
-		if(tmp.unitPrice.match(/^\d+(\.\d{1,2})?$/) === null) {
+		tmp.unitPrice =  (typeof poItem === 'undefined') ? tmp.me.getValueFromCurrency($F(tmp.unitPriceBox)) : poItem.unitPrice;
+		if( (!jQuery.isNumeric(tmp.unitPrice)) && (tmp.unitPrice.match(/^\d+(\.\d{1,2})?$/)  === null) ) {
 			tmp.me._markFormGroupError(tmp.unitPriceBox, 'Invalid value provided!');
 			return ;
 		}
 		tmp.qtyOrderedBox = tmp.currentRow.down('[new-order-item=qtyOrdered]');
-		tmp.qtyOrdered = tmp.me.getValueFromCurrency($F(tmp.qtyOrderedBox));
-		if(tmp.qtyOrdered.match(/^\d+(\.\d{1,2})?$/) === null) {
+		tmp.qtyOrdered = (typeof poItem === 'undefined') ? tmp.me.getValueFromCurrency($F(tmp.qtyOrderedBox)) : poItem.qty;
+		if(tmp.qtyOrdered.match(/^(-)?\d+(\.\d{1,2})?$/) === null) {
 			tmp.me._markFormGroupError(tmp.qtyOrderedBox, 'Invalid value provided!');
 			return ;
 		}
@@ -646,6 +629,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		});
 		//get all data
 		tmp.data = {
+			'id': poItem && poItem.id ? poItem.id : '',
 			'product': tmp.product,
 			'unitPrice': tmp.me.getCurrency(tmp.unitPrice),
 			'qtyOrdered': tmp.qtyOrdered,
@@ -676,8 +660,10 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		var tmp = {};
 		tmp.me = this;
 		$(dom).setStyle('text-decoration: underline; cursor: pointer;')
-		.observe('click', function(e){
-			Event.stop(e);
+		.writeAttribute('title', 'double click to open')
+		.observe('click', function(e){Event.stop(e);})
+		.observe('dblclick', function(event) {
+			Event.stop(event);
 			tmp.window = window.open('/product/' + id + '.html', '_blank');
 			tmp.window.focus()
 		});
@@ -702,7 +688,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					$(this).select();
 				})
 			)
-			,'qtyOrdered': tmp.me._getFormGroup( null, new Element('input', {'class': 'input-sm', 'new-order-item': 'qtyOrdered', 'required': 'Required!', 'value': '1'})
+			,'qtyOrdered': tmp.me._getFormGroup( null, new Element('input', {'class': 'input-sm', 'type': 'number', 'new-order-item': 'qtyOrdered', 'required': 'Required!', 'value': '1'})
 				.observe('keyup', function(){
 					tmp.row =$(this).up('.item_row');
 					tmp.unitPrice = tmp.me.getValueFromCurrency($F(tmp.row.down('[new-order-item=unitPrice]')));
@@ -724,7 +710,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					$(this).select();
 				})
 			)
-			, 'btns': new Element('span', {'class': 'btn-group btn-group-sm pull-right'})
+			, 'btns': new Element('span', {'class': 'btn-group btn-group-sm pull-right new-order-item-btn'})
 					.insert({'bottom': new Element('span', {'class': 'btn btn-primary'})
 					.insert({'bottom': new Element('span', {'class': ' glyphicon glyphicon-floppy-saved'}) })
 					.observe('click', function() {
@@ -747,7 +733,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					})
 				})
 		};
-		return tmp.me._getProductRow(tmp.data, false).addClassName('new-order-item-input info').removeClassName('order-item-row');
+		return tmp.me._getProductRow(tmp.data, false).addClassName('new-order-item-input').addClassName(tmp.me._isCredit === true ? 'danger' : 'info').removeClassName('order-item-row');
 	}
 	/**
 	 * Getting the parts panel
@@ -800,13 +786,13 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				) })
 			})
 			.insert({'bottom': new Element('tr')
-				.insert({'bottom': new Element('td', {'colspan': 2, 'class': 'text-right active'}).update( new Element('h4').update('Total Due: ') ) })
+				.insert({'bottom': new Element('td', {'colspan': 2, 'class': 'text-right active'}).update( new Element('h4').update('Total Due Inc GST: ') ) })
 				.insert({'bottom': new Element('td', {'class': 'active'}).update(
 					new Element('h4',{'save-order-summary': 'totalPaymentDue', 'class': 'total-payment-due'}).update(tmp.me.getCurrency(0))
 				) })
 			})
 		});
-		return new Element('div', {'class': 'panel panel-info'})
+		return new Element('div', {'class': 'panel'}).addClassName(tmp.me._isCredit === true ? 'panel-danger' : 'panel-info')
 			.insert({'bottom': new Element('div', {'class': 'panel-body table-responsive'})
 				.insert({'bottom':  tmp.productListDiv})
 			});
@@ -834,7 +820,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		tmp.me = this;
 		tmp.me._supplier = supplier;
 		tmp.newDiv = tmp.me._getViewOfPurchaseOrder();
-		$(tmp.me._htmlIds.itemDiv).update(tmp.newDiv);
+		$(tmp.me.getHTMLID('itemDiv')).update(tmp.newDiv);
 		tmp.newDiv.down('input[save-order="contactName"]').focus();
 		tmp.newDiv.down('input[save-order="contactName"]').select();
 		tmp.me._loadDataPicker();
@@ -874,7 +860,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		var tmp = {};
 		tmp.me = this;
 		tmp.searchTxt = $F(txtbox).strip();
-		tmp.searchPanel = $(txtbox).up('#' + tmp.me._htmlIds.searchPanel);
+		tmp.searchPanel = $(txtbox).up('#' + tmp.me.getHTMLID('searchPanel'));
 		tmp.me.postAjax(tmp.me.getCallbackId('searchSupplier'), {'searchTxt': tmp.searchTxt}, {
 			'onLoading': function() {
 				if($(tmp.searchPanel).down('.list-div'))
@@ -912,7 +898,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 	,_getSupplierListPanel: function () {
 		var tmp = {};
 		tmp.me = this;
-		tmp.newDiv = new Element('div', {'id': tmp.me._htmlIds.searchPanel, 'class': 'panel panel-info search-panel'})
+		tmp.newDiv = new Element('div', {'id': tmp.me.getHTMLID('searchPanel'), 'class': 'panel search-panel'}).addClassName(tmp.me._isCredit === true ? 'panel-danger' : 'panel-info')
 			.insert({'bottom': new Element('div', {'class': 'panel-heading form-inline'})
 				.insert({'bottom': new Element('strong').update('Creating a new order for: ') })
 				.insert({'bottom': new Element('span', {'class': 'input-group col-sm-6'})
@@ -920,11 +906,17 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 						.observe('keydown', function(event){
 							tmp.txtBox = this;
 							tmp.me.keydown(event, function() {
-								if(tmp.txtBox.up('#'+pageJs._htmlIds.searchPanel).down('.item_row')!=undefined && tmp.txtBox.up('#'+pageJs._htmlIds.searchPanel).down('tbody').getElementsBySelector('.item_row').length===1) {
-									tmp.txtBox.up('#'+pageJs._htmlIds.searchPanel).down('tbody .item_row .btn').click();
+								if(tmp.txtBox.up('#'+tmp.me.getHTMLID('searchPanel')).down('.item_row')!=undefined && tmp.txtBox.up('#'+tmp.me.getHTMLID('searchPanel')).down('tbody').getElementsBySelector('.item_row').length===1) {
+									tmp.txtBox.up('#'+tmp.me.getHTMLID('searchPanel')).down('tbody .item_row .btn').click();
 								}
-								else $(tmp.me._htmlIds.searchPanel).down('.search-btn').click();
+								else $(tmp.me.getHTMLID('searchPanel')).down('.search-btn').click();
 							});
+							tmp.me.keydown(event, function() {
+								if(tmp.txtBox.up('#'+tmp.me.getHTMLID('searchPanel')).down('.item_row')!=undefined && tmp.txtBox.up('#'+tmp.me.getHTMLID('searchPanel')).down('tbody').getElementsBySelector('.item_row').length===1) {
+									tmp.txtBox.up('#'+tmp.me.getHTMLID('searchPanel')).down('tbody .item_row .btn').click();
+								}
+								else $(tmp.me.getHTMLID('searchPanel')).down('.search-btn').click();
+							}, null, 9);
 							return false;
 						})
 					})
@@ -934,12 +926,12 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 						})
 						.observe('click', function(){
 							tmp.btn = this;
-							tmp.txtBox = $(tmp.me._htmlIds.searchPanel).down('.search-txt');
+							tmp.txtBox = $(tmp.me.getHTMLID('searchPanel')).down('.search-txt');
 							if(!$F(tmp.txtBox).blank())
 								tmp.me._searchSupplier(tmp.txtBox);
 							else {
-								if($(tmp.me._htmlIds.searchPanel).down('.table tbody'))
-									$(tmp.me._htmlIds.searchPanel).down('.table tbody').innerHTML = null;
+								if($(tmp.me.getHTMLID('searchPanel')).down('.table tbody'))
+									$(tmp.me.getHTMLID('searchPanel')).down('.table tbody').innerHTML = null;
 							}
 						})
 					})
@@ -966,8 +958,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				 		});
 					})
 				})
-			})
-			;
+			});
 		return tmp.newDiv;
 	}
 	,init: function(supplier) {
@@ -976,7 +967,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		if(supplier) {
 			tmp.me.selectSupplier(supplier);
 		} else {
-			$(tmp.me._htmlIds.itemDiv).update(tmp.me._getSupplierListPanel());
+			$(tmp.me.getHTMLID('itemDiv')).update(tmp.me._getSupplierListPanel());
 		}
 		if($$('.init-focus').size() > 0){
 			$$('.init-focus').first().focus();

@@ -42,7 +42,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 	,_submitSave: function(btn) {
 		var tmp = {};
 		tmp.me = this;
-		tmp.data = tmp.me._collectFormData($(tmp.me._htmlIds.itemDiv), 'save-item');
+		tmp.data = tmp.me._collectFormData($(tmp.me.getHTMLID('itemDiv')), 'save-item');
 		tmp.data.id = tmp.me._customer.id ? tmp.me._customer.id : '';
 		if(tmp.data === null)
 			return tmp.me;

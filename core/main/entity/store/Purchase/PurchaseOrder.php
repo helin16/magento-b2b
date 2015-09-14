@@ -22,11 +22,23 @@ class PurchaseOrder extends BaseEntityAbstract
 	 */
 	private $purchaseOrderNo = '';
 	/**
+	 * If PO is credit
+	 *
+	 * @varisCredit
+	 */
+	private $isCredit = false;
+	/**
 	 * The supplier
 	 *
 	 * @var Supplier
 	 */
 	protected $supplier;
+	/**
+	 * The purchaseOrder that we are credit from
+	 *
+	 * @var PurchaseOrder
+	 */
+	protected $fromPO = null;
 	/**
 	 * The supplier Reference No
 	 *
@@ -74,6 +86,12 @@ class PurchaseOrder extends BaseEntityAbstract
 	 * @var UDate
 	 */
 	private $eta = '';
+	/**
+	 * The items of the purchaseorder
+	 *
+	 * @var array
+	 */
+	protected $items;
 
 	private $totalAmount = 0;
 	private $totalPaid = 0;
@@ -97,6 +115,45 @@ class PurchaseOrder extends BaseEntityAbstract
 	{
 	    $this->purchaseOrderNo = $value;
 	    return $this;
+	}
+	/**
+	 * getter for isCredit
+	 *
+	 * @return bool
+	 */
+	public function getIsCredit()
+	{
+		return $this->isCredit;
+	}
+	/**
+	 * Setter for isCredit
+	 *
+	 * @return PurchaseOrder
+	 */
+	public function setIsCredit($isCredit)
+	{
+		$this->isCredit = $isCredit;
+		return $this;
+	}
+	/**
+	 * getter for fromPO
+	 *
+	 * @return PurchaseOrder
+	 */
+	public function getFromPO()
+	{
+		$this->loadManyToOne('fromPO');
+		return $this->fromPO;
+	}
+	/**
+	 * Setter for fromPO
+	 *
+	 * @return PurchaseOrder
+	 */
+	public function setFromPO(PurchaseOrder $fromPO = null)
+	{
+		$this->fromPO = $fromPO;
+		return $this;
 	}
 	/**
 	 * Getter for supplier
@@ -245,6 +302,28 @@ class PurchaseOrder extends BaseEntityAbstract
 	{
 		$this->handlingCost = $value;
 		return $this;
+	}
+	/**
+	 * Getter for items
+	 *
+	 * @return array
+	 */
+	public function getItems()
+	{
+		$this->loadOneToMany('items');
+	    return $this->items;
+	}
+	/**
+	 * Setter for items
+	 *
+	 * @param array $value The items
+	 *
+	 * @return PurchaseOrder
+	 */
+	public function setItems($value)
+	{
+	    $this->items = $value;
+	    return $this;
 	}
 	/**
 	 * Getter for totalProdcutCount
@@ -417,6 +496,12 @@ class PurchaseOrder extends BaseEntityAbstract
 					->addLog('UNMarked this item for StockOnPO and stockCalculated', Log::TYPE_SYSTEM, 'STOCK_QTY_CHG', __CLASS__ . '::' . __FUNCTION__);
 			}
 			$this->addComment(count($items) . ' POItem(s) are reverted, as this PO is now deactivated or CANCELLED');
+
+			$receivedItems = ReceivingItem::getAllByCriteria('purchaseOrderId = ?', array($this->getId()));
+			foreach($receivedItems as $item) {
+				$item->setActive(false)
+					->save();
+			}
 		}
 		else if(trim($this->getStatus()) === PurchaseOrder::STATUS_ORDERED) {
 			$items = PurchaseOrderItem::getAllByCriteria('purchaseOrderId = ? and stockCalculated = 0', array($this->getId()));
@@ -460,6 +545,8 @@ class PurchaseOrder extends BaseEntityAbstract
 					->addLog($msg, Log::TYPE_SYSTEM, 'PO_STATUS_CHANGE', __CLASS__ . '::' . __FUNCTION__);
 			}
 		}
+		if($this->getFromPO() instanceof PurchaseOrder && intval($this->getIsCredit()) !== 1)
+			throw new Exception('You can only set the From PO field, when this purchase order is for a credit');
 	}
 	/**
 	 * (non-PHPdoc)
@@ -473,6 +560,8 @@ class PurchaseOrder extends BaseEntityAbstract
 		DaoMap::setManyToOne('supplier', 'Supplier', 'po_sup');
 		DaoMap::setStringType('supplierRefNo', 'varchar', 100);
 		DaoMap::setStringType('status', 'varchar', 20);
+		DaoMap::setBoolType('isCredit', 'bool', false);
+		DaoMap::setManyToOne('fromPO', 'PurchaseOrder', 'po_fromPO', true);
 		DaoMap::setStringType('supplierContact', 'varchar', 100);
 		DaoMap::setStringType('supplierContactNumber', 'varchar', 100);
 		DaoMap::setStringType('shippingCost', 'Double', '10,4');
@@ -481,11 +570,13 @@ class PurchaseOrder extends BaseEntityAbstract
 		DaoMap::setDateType('eta');
 		DaoMap::setIntType('totalAmount', 'Double', '10,4');
 		DaoMap::setIntType('totalPaid', 'Double', '10,4');
+		DaoMap::setOneToMany('items', 'PurchaseOrderItem', 'po_item');
 		parent::__loadDaoMap();
 
 		DaoMap::createUniqueIndex('purchaseOrderNo');
 		DaoMap::createIndex('supplierRefNo');
 		DaoMap::createIndex('status');
+		DaoMap::createIndex('isCredit');
 		DaoMap::createIndex('orderDate');
 		DaoMap::createIndex('eta');
 		DaoMap::createIndex('totalAmount');
@@ -501,7 +592,7 @@ class PurchaseOrder extends BaseEntityAbstract
 	 * (non-PHPdoc)
 	 * @see BaseEntityAbstract::getJson()
 	 */
-	public function getJson($extra = array(), $reset = false)
+	public function getJson($extra = array(), $reset = false, $getItems = false)
 	{
 		$array = $extra;
 		if(!$this->isJsonLoaded($reset))
@@ -511,8 +602,19 @@ class PurchaseOrder extends BaseEntityAbstract
 			$array['totalReceivedCount'] = $this->getTotalReceivedCount();
 			$array['totalReceivedValue'] = $this->getTotalRecievedValue();
 			$array['supplierInvoices'] = $this->getSupplierInvoices();
+			if($getItems === true)
+				$array['purchaseOrderItems'] =  array_map(create_function('$a', 'return $a->getJson();'), $this->getPurchaseOrderItems());
 		}
 		return parent::getJson($array, $reset);
+	}
+	/**
+	 * get all purchase order items under this PO
+	 *
+	 * @return array
+	 */
+	public function getPurchaseOrderItems()
+	{
+		return PurchaseOrderItem::getAllByCriteria('po_item.purchaseOrderId = ?', array($this->getId()));
 	}
 	/**
 	 * creating a PO
@@ -523,19 +625,21 @@ class PurchaseOrder extends BaseEntityAbstract
 	 * @param string   $supplierContactNumber
 	 * @param string   $shippingCost
 	 * @param string   $handlingCost
+	 * @param bool	   $isCredit
 	 *
 	 * @return PurchaseOrder
 	 */
-	public static function create(Supplier $supplier, $supplierRefNo = '', $supplierContact = '', $supplierContactNumber = '',$shippingCost = 0, $handlingCost = 0)
+	public static function create(Supplier $supplier, $supplierRefNo = '', $supplierContact = '', $supplierContactNumber = '',$shippingCost = 0, $handlingCost = 0, $isCredit = false, PurchaseOrder $fromPO = null)
 	{
-		$class = get_called_class();
-		$entity = new $class();
+		$entity = new PurchaseOrder();
 		return $entity->setSupplier($supplier)
 			->setSupplierRefNo(trim($supplierRefNo))
 			->setSupplierContact($supplierContact)
 			->setSupplierContactNumber($supplierContactNumber)
 			->setshippingCost($shippingCost)
 			->sethandlingCost($handlingCost)
+			->setIsCredit($isCredit)
+			->setFromPO($fromPO)
 			->save();
 	}
 	/**

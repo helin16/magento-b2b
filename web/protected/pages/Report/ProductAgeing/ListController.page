@@ -1,0 +1,54 @@
+<com:TContent ID="MainContent">
+<com:Application.controls.fancybox.FancyBox />
+<com:Application.controls.select2.select2 />
+<com:Application.controls.bootstrapDateTimePicker.bootstrapDateTimePicker />
+<com:TCallback ID="deactivateItemBtn" OnCallback = 'Page.deactivateItems' />
+	<div class="pagewrapper item-list-wrapper">
+		<div class="panel panel-default" id="searchPanel">
+			<div class="panel-heading">
+				<label for="showSearch">Show Search Criteria?</label>
+				<input id="showSearch" type="checkbox" checked onclick="$(this).up('#searchPanel').down('.panel-body').toggle();">
+				<span class="pull-right">
+					<span id="searchBtn" class="btn btn-primary btn-sm" data-loading-text="searching ..." >Search</span>
+				</span>
+			</div>
+			<div class="panel-body search-panel" id="searchDiv" style="overflow: visible;">
+				<div class="row">
+					<div class="col-sm-6">
+						<div class="form-group form-group-sm input-group">
+                           <label class="input-group-addon">Product:</label>
+                           <input type="text" search_field="pro.ids" placeholder="the SKU or Name of Product" class="form-control input-sm select2">
+                    	</div>
+					</div>
+					<div class="col-sm-3">
+						<div class="form-group form-group-sm input-group">
+                           <label class="input-group-addon">PO:</label>
+                           <input type="text" search_field="po.id" placeholder="the PO number" class="form-control input-sm select2">
+                    	</div>
+					</div>
+					<div class="col-md-3">
+						<div class="form-group form-group-sm input-group">
+                           <label class="input-group-addon">Aged ></label>
+                           <input type="text" search_field="aged-days" placeholder="No of Days" class="form-control input-sm">
+                           <label class="input-group-addon">Days</label>
+                       </div>
+					</div>
+					<div class="col-sm-12">
+						<div class="form-group form-group-sm input-group">
+                           <label class="input-group-addon">Categories:</label>
+                           <input type="text" search_field="pro.categories" placeholder="the Name of Category" class="form-control input-sm select2">
+                    	</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="panel panel-default list-panel">
+			<div class="panel-heading">
+				Found <label id="total-found-count">0</label> <%= $this->getFocusEntity() %>:
+			</div>
+			<div class="table-responsive">
+                <table class="table table-hover table-striped" id="item-list"></table>
+            </div>
+		</div>
+	</div>
+</com:TContent>

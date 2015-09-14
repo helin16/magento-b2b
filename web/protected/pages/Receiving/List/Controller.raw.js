@@ -16,6 +16,78 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 				});
 			})
 		});
+		// product search
+		tmp.selectEl = new Element('input', {'class': 'select2 form-control', 'data-placeholder': 'search for a Products', 'search_field': 'pro.ids'}).insert({'bottom': new Element('option').update('')});
+		$('searchDiv').down('[search_field="pro.ids"]').replace(tmp.selectEl);
+		jQuery('.select2[search_field="pro.ids"]').select2({
+			allowClear: true,
+			hidden: true,
+			multiple: true,
+			ajax: { url: "/ajax/getProducts",
+				dataType: 'json',
+				delay: 10,
+				data: function (params) {
+					return {
+						searchTxt: params, // search term
+						pageNo: 1,
+						pageSize: 10
+					};
+				},
+				results: function (data) {
+					tmp.result = [];
+					data.resultData.items.each(function(item){
+						tmp.result.push({"id": item.id, 'text': item.name, 'data': item});
+					})
+					return {
+						results:  tmp.result 
+					};
+				},
+				cache: true
+			},
+			formatResult : function(result) {
+				if(!result)
+					return '';
+				return '<div value=' + result.data.id + '>' + result.data.name + '</div >';
+			},
+			escapeMarkup: function (markup) { return markup; }, // let our custom formatter work
+			minimumInputLength: 3
+		});
+		// po search
+		tmp.selectEl = new Element('input', {'class': 'select2 form-control', 'data-placeholder': 'search for a PO', 'search_field': 'purchaseorderids'}).insert({'bottom': new Element('option').update('')});
+		$('searchDiv').down('[search_field="purchaseorderids"]').replace(tmp.selectEl);
+		jQuery('.select2[search_field="purchaseorderids"]').select2({
+			allowClear: true,
+			hidden: true,
+			multiple: true,
+			ajax: { url: "/ajax/getPurchaseOrders",
+				dataType: 'json',
+				delay: 10,
+				data: function (params) {
+					return {
+						searchTxt: params, // search term
+						pageNo: 1,
+						pageSize: 10
+					};
+				},
+				results: function (data) {
+					tmp.result = [];
+					data.resultData.items.each(function(item){
+						tmp.result.push({"id": item.id, 'text': item.purchaseOrderNo, 'data': item});
+					})
+					return {
+						results:  tmp.result 
+					};
+				},
+				cache: true
+			},
+			formatResult : function(result) {
+				if(!result)
+					return '';
+				return '<div value=' + result.data.id + '>' + result.data.purchaseOrderNo + '</div >';
+			},
+			escapeMarkup: function (markup) { return markup; }, // let our custom formatter work
+			minimumInputLength: 3
+		});
 		return this;
 	}
 	,_submitDeletion: function(btn, row) {
@@ -90,7 +162,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 			.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-2'}).update(tmp.isTitle === true ? row.created : row.createdBy.person.fullname + ' @ ' + tmp.me.loadUTCTime(row.created).toLocaleString()) })
 			.insert({'bottom': new Element(tmp.tag, {'class': 'col-xs-1'}).update(tmp.isTitle === true ? '': new Element('div', {'class': 'btn-group'})
 				.insert({'bottom': new Element('span', {'class': 'btn btn-xs btn-danger'})
-					.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-remove'}) })
+					.insert({'bottom': new Element('span', {'class': 'glyphicon glyphicon-trash'}) })
 					.observe('click', function() {
 						tmp.me._showDeleteConfirmPanel(row);
 					})

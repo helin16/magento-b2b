@@ -28,50 +28,97 @@ class OrderDetailsController extends BPCPageAbstract
 		}
 
 		$js = parent::_getEndJs();
-		$orderItems = $courierArray = $paymentMethodArray = array();
+		$orderItems = $courierArray = array();
 		foreach($order->getOrderItems() as $orderItem)
 			$orderItems[] = $orderItem->getJson();
 		$purchaseEdit = $warehouseEdit = $accounEdit = $statusEdit = 'false';
-		if($order->canEditBy(Core::getRole()))
-		{
-			$statusEdit = ($order->canEditBy(Role::get(Role::ID_STORE_MANAGER)) || $order->canEditBy(Role::get(Role::ID_SYSTEM_ADMIN))) ? 'true' : 'false';
+		if($order->canEditBy(Core::getRole())) {
+			$statusEdit = ($order->canEditBy(Core::getRole()) && Core::getRole()->getId() === trim(Role::ID_SYSTEM_ADMIN)) ? 'true' : 'false';
 			if(in_array(intval(Core::getRole()->getId()), array(Role::ID_SYSTEM_ADMIN, Role::ID_STORE_MANAGER, Role::ID_SALES)))
 				$purchaseEdit = $warehouseEdit = $accounEdit = 'true';
 			else
 			{
 				if(trim(Core::getRole()->getId()) === trim(Role::ID_PURCHASING))
 					$purchaseEdit = 'true';
-				else if(trim(Core::getRole()->getId()) === trim(Role::ID_WAREHOUSE))
+				else if(trim(Core::getRole()->getId()) === trim(Role::ID_WAREHOUSE)) {
+					$purchaseEdit = 'false';
 					$warehouseEdit = 'true';
+					$statusEdit = 'false';
+				}
 			}
 		}
-		if(in_array(intval(Core::getRole()->getId()), array(Role::ID_SYSTEM_ADMIN, Role::ID_STORE_MANAGER, Role::ID_ACCOUNTING)))
+		if(in_array(intval(Core::getRole()->getId()), array(Role::ID_SYSTEM_ADMIN, Role::ID_STORE_MANAGER, Role::ID_ACCOUNTING, Role::ID_SALES)))
 			$accounEdit = 'true';
-
+		$orderArray = $order->getJson();
+		$orderArray['childrenOrders'] = array_map(create_function('$a', 'return $a->getOrder()->getJson();'), OrderInfo::getAllByCriteria('typeId = ? and value = ?', array(OrderInfoType::ID_CLONED_FROM_ORDER_NO, trim($order->getOrderNo()))));
+		$orderArray['creditNotes'] = array_map(create_function('$a', 'return $a->getJson();'), CreditNote::getAllByCriteria('orderId = ?', array(trim($order->getId()))));
 		$orderStatuses = array_map(create_function('$a', 'return $a->getJson();'), OrderStatus::findAll());
 		$courierArray = array_map(create_function('$a', 'return $a->getJson();'), Courier::findAll());
-		$paymentMethodArray = array_map(create_function('$a', 'return $a->getJson();'), PaymentMethod::findAll());
-		$payments = array_map(create_function('$a', 'return $a->getJson();'), $order->getPayments());
 		$js .= 'pageJs';
 			$js .= '.setCallbackId("updateOrder", "' . $this->updateOrderBtn->getUniqueID() . '")';
-			$js .= '.setCallbackId("confirmPayment", "' . $this->confirmPaymentBtn->getUniqueID() . '")';
 			$js .= '.setCallbackId("changeOrderStatus", "' . $this->changeOrderStatusBtn->getUniqueID() . '")';
 			$js .= '.setCallbackId("updateOIForWH", "' . $this->updateOIForWHBtn->getUniqueID() . '")';
 			$js .= '.setCallbackId("updateShippingInfo", "' . $this->updateShippingInfoBtn->getUniqueID() . '")';
 			$js .= '.setCallbackId("clearETA", "' . $this->clearETABtn->getUniqueID() . '")';
 			$js .= '.setCallbackId("changeIsOrdered", "' . $this->changeIsOrderedBtn->getUniqueID() . '")';
-			$js .= '.setCallbackId("deletePayment", "' . $this->deletePaymentBtn->getUniqueID() . '")';
 			$js .= '.setCallbackId("updateAddress", "' . $this->updateAddressBtn->getUniqueID() . '")';
+			$js .= '.setCallbackId("updatePONo", "' . $this->updatePONoBtn->getUniqueID() . '")';
+			$js .= '.setCallbackId("changeShippingMethod", "' . $this->changeShippingMethodBtn->getUniqueID() . '")';
+			$js .= '.setCallbackId("updateSerials", "' . $this->updateSerialsBtn->getUniqueID() . '")';
 			$js .= '.setEditMode(' . $purchaseEdit . ', ' . $warehouseEdit . ', ' . $accounEdit . ', ' . $statusEdit . ')';
-			$js .= '.setOrder('. json_encode($order->getJson()) . ', ' . json_encode($orderItems) . ', ' . json_encode($orderStatuses) . ', ' . OrderStatus::ID_SHIPPED . ')';
+			$js .= '.setOrder('. json_encode($orderArray) . ', ' . json_encode($orderItems) . ', ' . json_encode($orderStatuses) . ', ' . OrderStatus::ID_SHIPPED . ')';
 			$js .= '.setCourier('. json_encode($courierArray) . ', ' . Courier::ID_LOCAL_PICKUP . ')';
-			$js .= '.setPaymentMethods('. json_encode($paymentMethodArray) . ')';
 			$js .= '.setCommentType("'. Comments::TYPE_PURCHASING . '", "' . Comments::TYPE_WAREHOUSE . '")';
-			$js .= '.setOrderStatusIds(['. OrderStatus::ID_NEW . ', ' . OrderStatus::ID_INSUFFICIENT_STOCK . '], ['. OrderStatus::ID_ETA . ', ' . OrderStatus::ID_STOCK_CHECKED_BY_PURCHASING . '], ['. OrderStatus::ID_PICKED . '])';
-			$js .= '.setPayments('. json_encode($payments) . ')';
+			$js .= '.setOrderStatusIds(['. OrderStatus::ID_NEW . ', ' . OrderStatus::ID_INSUFFICIENT_STOCK . '], ['. OrderStatus::ID_ETA . ', ' . OrderStatus::ID_STOCK_CHECKED_BY_PURCHASING . ', ' . OrderStatus::ID_INSUFFICIENT_STOCK . '], ['. OrderStatus::ID_PICKED . '])';
 			$js .= '.init("detailswrapper")';
 			$js .= '.load();';
 		return $js;
+	}
+	/**
+	 * Update serial numbers
+	 *
+	 * @param unknown $sender
+	 * @param unknown $params
+	 *
+	 * @throws Exception
+	 */
+	public function updateSerials($sender, $params)
+	{
+		$results = $errors = array();
+		try
+		{
+			Dao::beginTransaction();
+			if(!isset($params->CallbackParameter->orderItemId) || !($orderItem = OrderItem::get($params->CallbackParameter->orderItemId)) instanceof OrderItem)
+				throw new Exception('System Error: invalid order item passed in!');
+			if(!isset($params->CallbackParameter->sellingitem))
+				throw new Exception('System Error: invalid sellingitem passed in!');
+
+			$sellingItemObj = $params->CallbackParameter->sellingitem;
+			$sellingItem = null;
+			if(isset($sellingItemObj->id) && !($sellingItem = SellingItem::get(trim($sellingItemObj->id))) instanceof SellingItem)
+				throw new Exception('System Error: invalid selling item id passed in!');
+			$serialNo = (isset($sellingItemObj->serialNo) ? trim($sellingItemObj->serialNo) : '');
+			if($sellingItem instanceof SellingItem) {
+				if($serialNo === '' || (isset($sellingItemObj->active) && intval($sellingItemObj->active) !== 1)) {
+					$sellingItem->setActive(false)
+						->save();
+				} else {
+					$sellingItem->setSerialNo($serialNo)
+						->save();
+				}
+			} else {
+				if(!isset($sellingItemObj->active) || (isset($sellingItemObj->active) && intval($sellingItemObj->active) === 1))
+					$sellingItem = SellingItem::create($orderItem, $serialNo);
+			}
+			$results['orderItem'] = OrderItem::get($orderItem->getId())->getJson();
+			Dao::commitTransaction();
+		}
+		catch(Exception $ex)
+		{
+			Dao::rollbackTransaction();
+			$errors[] = $ex->getMessage();
+		}
+		$params->ResponseData = StringUtilsAbstract::getJson($results, $errors);
 	}
 	/**
 	 *
@@ -83,7 +130,6 @@ class OrderDetailsController extends BPCPageAbstract
 		$results = $errors = array();
 		try
 		{
-			var_dump($params->CallbackParameter);
 			Dao::beginTransaction();
 			if(!isset($params->CallbackParameter->order) || !($order = Order::getByOrderNo($params->CallbackParameter->order->orderNo)) instanceof Order)
 				throw new Exception('System Error: invalid order passed in!');
@@ -148,6 +194,7 @@ class OrderDetailsController extends BPCPageAbstract
 						$orderItem->setEta('');
 						$allPicked = false;
 					}
+					$orderItem->reCalMarginFromProduct()->resetCostNMarginFromKits();
 				}
 				$emailBody['productUpdate'] .= '</table>';
 				$commentString .= ($notifyCustomer === true ? ' [NOTIFICATION SENT TO CUSTOMER]' : '');
@@ -177,7 +224,7 @@ class OrderDetailsController extends BPCPageAbstract
 				$emailBody['orderUpdate'] = 'Order status changed from [' . $status . '] to [' . $order->getStatus() . ']';
 			}
 			$order->save();
-			
+
 			//notify customer
 			if($notifyCustomer === true && $order->getIsFromB2B() === true)
 			{
@@ -188,7 +235,7 @@ class OrderDetailsController extends BPCPageAbstract
 						SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_WSDL),
 						SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_USER),
 						SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_KEY)
-						)->changeOrderStatus($order, $order->getStatus()->getMageStatus(), $notificationMsg, false);
+						)->changeOrderStatus($order, $order->getStatus()->getMageStatus(), $notificationMsg, true);
 // 					$emailTitle = 'Your Order ' . $order->getOrderNo() . ' has been updated';
 // 					// $order->getCustomer()->getEmail()
 // 					EmailSender::addEmail('', 'frank@budgetpc.com.au', $emailTitle, $this->_getNotifictionEmail($order, $emailBody, $emailTitle));
@@ -259,63 +306,6 @@ class OrderDetailsController extends BPCPageAbstract
 		}
 		$params->ResponseData = StringUtilsAbstract::getJson($results, $errors);
 	}
-
-	/**
-	 *
-	 * @param unknown $sender
-	 * @param unknown $params
-	 * @throws Exception
-	 */
-	public function confirmPayment($sender, $params)
-	{
-		$results = $errors = array();
-		try
-		{
-			Dao::beginTransaction();
-			if(!isset($params->CallbackParameter->order) || !($order = Order::getByOrderNo($params->CallbackParameter->order->orderNo)) instanceof Order)
-				throw new Exception('System Error: invalid order passed in!');
-			if(!isset($params->CallbackParameter->payment) || !isset($params->CallbackParameter->payment->paidAmount) || ($paidAmount = StringUtilsAbstract::getValueFromCurrency(trim($params->CallbackParameter->payment->paidAmount))) === '' || !is_numeric($paidAmount))
-				throw new Exception('System Error: invalid Paid Amount passed in!');
-			if(!isset($params->CallbackParameter->payment->payment_method_id) || ($paymentMethodId = trim($params->CallbackParameter->payment->payment_method_id)) === '' || !($paymentMethod = PaymentMethod::get($paymentMethodId)) instanceof PaymentMethod)
-				throw new Exception('System Error: invalid Payment Method passed in!');
-			$extraComment = '';
-			if(!isset($params->CallbackParameter->payment->extraComments) || ($extraComment = trim($params->CallbackParameter->payment->extraComments)) === '')
-				$extraComment = '';
-			$amtDiff = trim(abs(StringUtilsAbstract::getValueFromCurrency($order->getTotalAmount()) - $paidAmount));
-			if($extraComment === '' && $amtDiff !== '0')
-				throw new Exception('Additional Comment is Mandatory as the Paid Amount is not mathcing with the Total Amount!');
-			$notifyCust = (isset($params->CallbackParameter->payment->notifyCust) && intval($params->CallbackParameter->payment->notifyCust) === 1) ? true : false;
-			//save the payment
-			$order->addPayment($paymentMethod, $paidAmount)
-				->addComment(($amtDiff === '0' ? 'FULLY PAID' : '') . '[Total Amount Due was ' . StringUtilsAbstract::getCurrency($order->getTotalAmount()) . ". And total amount paid is " . StringUtilsAbstract::getCurrency($paidAmount) . ". Payment Method is " . $paymentMethod->getName() . ']: ' . ($extraComment !== '' ? ' : ' . $extraComment : ''), Comments::TYPE_ACCOUNTING);
-
-			//notify the customer
-			if($notifyCust === true && $order->getIsFromB2B() === true)
-			{
-				$notificationMsg = trim(OrderNotificationTemplateControl::getMessage('paid', $order));
-				if($notificationMsg !== '')
-				{
-					B2BConnector::getConnector(B2BConnector::CONNECTOR_TYPE_ORDER,
-						SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_WSDL),
-						SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_USER),
-						SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_KEY)
-						)->changeOrderStatus($order, OrderStatus::get(OrderStatus::ID_PICKED)->getMageStatus(), $notificationMsg, true);
-					$comments = 'An email notification contains payment checked info has been sent to customer for: ' . $order->getStatus()->getName();
-					Comments::addComments($order, $comments, Comments::TYPE_SYSTEM);
-				}
-			}
-
-			$results['items'] = array_map(create_function('$a', '$a->getJson();'), $order->getPayments());
-			Dao::commitTransaction();
-		}
-		catch(Exception $ex)
-		{
-			Dao::rollbackTransaction();
-			$errors[] = $ex->getMessage();
-		}
-
-		$params->ResponseData = StringUtilsAbstract::getJson($results, $errors);
-	}
 	/**
 	 * updating the shipping details
 	 *
@@ -332,6 +322,8 @@ class OrderDetailsController extends BPCPageAbstract
 				throw new Exception('System Error: invalid order passed in!');
 			if(!$order->getStatus() instanceof OrderStatus || trim($order->getStatus()->getId()) !== trim(OrderStatus::ID_PICKED))
 				throw new Exception('System Error: Order ['.$order->getOrderNo().'] Is Not is PICKED status. Current status is ['.($order->getStatus() instanceof OrderStatus ? $order->getStatus()->getName() : 'NULL').']');
+			if(intval($order->getPassPaymentCheck()) !== 1)
+				throw new Exception('Error: there is no payment or payments has been cancelled!');
 			if(!isset($params->CallbackParameter->shippingInfo))
 				throw new Exception('System Error: invalid Shipping Info Details passed in!');
 			$shippingInfo = $params->CallbackParameter->shippingInfo;
@@ -343,7 +335,6 @@ class OrderDetailsController extends BPCPageAbstract
 
 			$contactName = $shippingInfo->contactName;
 			$contactNo = $shippingInfo->contactNo;
-// 			if(($street = trim($shippingInfo->street)) !== '')
 			$shippingAddress = Address::create(
 					trim($shippingInfo->street),
 					trim($shippingInfo->city),
@@ -363,10 +354,9 @@ class OrderDetailsController extends BPCPageAbstract
 					trim($contactNo), // $contactNo = '' ,
 					trim($shippingInfo->noOfCartons), //$noOfCartons = 0,
 					'0', //$estShippingCost = '0.00',  //TODO:: need to fetch this from the order
-					trim($shippingInfo->actualShippingCost), //$actualShippingCost = '0.00',
+					StringUtilsAbstract::getValueFromCurrency(trim($shippingInfo->actualShippingCost)), //$actualShippingCost = '0.00',
 					(isset($shippingInfo->deliveryInstructions) ? trim($shippingInfo->deliveryInstructions) : '') //$deliveryInstructions = ''
 			);
-
 			$order->setStatus(OrderStatus::get(OrderStatus::ID_SHIPPED))
 				->save();
 			$result['shipment'] = $shipment->getJson();
@@ -384,14 +374,15 @@ class OrderDetailsController extends BPCPageAbstract
 						SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_KEY)
 						)
 						->shipOrder($order, $shipment, array(), $notificationMsg, false, false);
-
 					//push the status of the order to SHIPPed
+					$emailToCustomer = (trim($shipment->getCourier()->getId()) !== trim(Courier::ID_LOCAL_PICKUP));
 					B2BConnector::getConnector(B2BConnector::CONNECTOR_TYPE_ORDER,
 						SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_WSDL),
 						SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_USER),
 						SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_KEY)
-						)->changeOrderStatus($order, $order->getStatus()->getMageStatus(), $notificationMsg, true);
-					$order->addComment('An email notification contains shippment information has been sent to customer for: ' . $order->getStatus()->getName(), Comments::TYPE_SYSTEM);
+						)->changeOrderStatus($order, $order->getStatus()->getMageStatus(), $notificationMsg, $emailToCustomer);
+					if($emailToCustomer === true)
+						$order->addComment('An email notification contains shippment information has been sent to customer for: ' . $order->getStatus()->getName(), Comments::TYPE_SYSTEM);
 				}
 			}
 			Dao::commitTransaction();
@@ -485,35 +476,6 @@ class OrderDetailsController extends BPCPageAbstract
 		}
 		$param->ResponseData = StringUtilsAbstract::getJson($results, $errors);
 	}
-
-	public function deletePayment($sender, $param)
-	{
-		$results = $errors = array();
-		try
-		{
-			Dao::beginTransaction();
-			if(!isset($param->CallbackParameter->paymentId) || !($payment = Payment::get($param->CallbackParameter->paymentId)) instanceof Payment)
-				throw new Exception('System Error: invalid payment provided!');
-
-			if(!isset($param->CallbackParameter->reason) || ($reason = trim($param->CallbackParameter->reason)) === '')
-				throw new Exception('The reason for the deletion is needed!');
-
-			$comments = 'A payment [Value: ' .  StringUtilsAbstract::getCurrency($payment->getValue()) . ', Method: ' . $payment->getMethod()->getName() . '] is DELETED: ' . $reason;
-			$payment->setActive(false)
-				->save()
-				->addComment($comments, Comments::TYPE_ACCOUNTING);
-			$payment->getOrder()
-				->addComment($comments, Comments::TYPE_ACCOUNTING);
-			$results['item'] = $payment->getJson();
-			Dao::commitTransaction();
-		}
-		catch(Exception $ex)
-		{
-			Dao::rollbackTransaction();
-			$errors[] = $ex->getMessage();
-		}
-		$param->ResponseData = StringUtilsAbstract::getJson($results, $errors);
-	}
 	/**
 	 * Update the address
 	 *
@@ -554,11 +516,77 @@ class OrderDetailsController extends BPCPageAbstract
 					->save()
 					->addComment($msg, Comments::TYPE_NORMAL)
 					->addLog($msg, Log::TYPE_SYSTEM);
-				$address->addLog($msg, Log::TYPE_SYSTEM);
+				$address->addLog($msg, Log::TYPE_SYSTEM, '', __CLASS__ . '::' . __FUNCTION__);
 				$results['item'] = $address->getJson();
 			} else {
 				$results['item'] = array();
 			}
+			Dao::commitTransaction();
+		}
+		catch(Exception $ex)
+		{
+			Dao::rollbackTransaction();
+			$errors[] = $ex->getMessage();
+		}
+		$param->ResponseData = StringUtilsAbstract::getJson($results, $errors);
+	}
+	/**
+	 * Update the updatePONo
+	 *
+	 * @param unknown $sender
+	 * @param unknown $param
+	 *
+	 * @throws Exception
+	 */
+	public function updatePONo($sender, $param)
+	{
+		$results = $errors = array();
+		try
+		{
+			Dao::beginTransaction();
+			if(!isset($param->CallbackParameter->orderId) || !($order = Order::get($param->CallbackParameter->orderId)) instanceof Order)
+				throw new Exception('System Error: invalid order provided!');
+			if(!isset($param->CallbackParameter->poNo))
+				throw new Exception('System Error: invalid poNo provided!');
+			$poNo = trim($param->CallbackParameter->poNo);
+			$order->setPONo($poNo)
+				->save()
+				->addComment(($msg = 'Changed PONo. to "' . $poNo . '"'), Comments::TYPE_NORMAL)
+				->addLog($msg, Log::TYPE_SYSTEM, '', __CLASS__ . '::' . __FUNCTION__);
+			$results['item'] = $poNo;
+			Dao::commitTransaction();
+		}
+		catch(Exception $ex)
+		{
+			Dao::rollbackTransaction();
+			$errors[] = $ex->getMessage();
+		}
+		$param->ResponseData = StringUtilsAbstract::getJson($results, $errors);
+	}
+	/**
+	 * Update the changeShippingMethod
+	 *
+	 * @param unknown $sender
+	 * @param unknown $param
+	 *
+	 * @throws Exception
+	 */
+	public function changeShippingMethod($sender, $param)
+	{
+		$results = $errors = array();
+		try
+		{
+			Dao::beginTransaction();
+			if(!isset($param->CallbackParameter->orderId) || !($order = Order::get($param->CallbackParameter->orderId)) instanceof Order)
+				throw new Exception('System Error: invalid order provided!');
+			if(!isset($param->CallbackParameter->shippingMethod) || ($shippingMethod = trim($param->CallbackParameter->shippingMethod)) === '')
+				throw new Exception('System Error: invalid shippingMethod provided!');
+
+			$order->addInfo(OrderInfoType::ID_MAGE_ORDER_SHIPPING_METHOD, $shippingMethod, true)
+				->save()
+				->addComment(($msg = 'Changed Shipping Method to "' . $shippingMethod . '"'), Comments::TYPE_NORMAL)
+				->addLog($msg, Log::TYPE_SYSTEM, '', __CLASS__ . '::' . __FUNCTION__);
+			$results['item'] = $order->getJson();
 			Dao::commitTransaction();
 		}
 		catch(Exception $ex)

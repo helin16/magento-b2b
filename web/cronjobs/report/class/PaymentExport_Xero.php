@@ -22,12 +22,16 @@ class PaymentExport_Xero extends ExportAbstract
 		foreach($items as $item)
 		{
 			$return[] = array(
-					'InvNo' => (trim($item->getOrder()->getInvNo()) === '' ? '' : $item->getOrder()->getInvNo())
-					,'Order No.' => $item->getOrder()->getOrderNo()
+					'Type' => $item->getOrder() instanceof Order ? 'Payment' : 'Credit'
+					,'InvNo' => $item->getOrder() instanceof Order ? (trim($item->getOrder()->getInvNo()) === '' ? '' : $item->getOrder()->getInvNo()) : ''
+					,'Payment Date' => $item->getPaymentDate()->setTimeZone('Australia/Melbourne')->format('Y-m-d')
+					,'Customer Name' => $item->getOrder() instanceof Order ? ($item->getOrder()->getCustomer() instanceof Customer ? $item->getOrder()->getCustomer()->getName() : '') : ''
+					,'Order No.' => $item->getOrder() instanceof Order  ? $item->getOrder()->getOrderNo() : ''
+					,'CreditNote No' => $item->getCreditNote() instanceof CreditNote ? $item->getCreditNote()->getCreditNoteNo() : ''
 					,'Processed Date'=> trim($item->getCreated()->setTimeZone('Australia/Melbourne'))
 					,'Processed By' => $item->getCreatedBy() instanceof UserAccount ? $item->getCreatedBy()->getPerson()->getFullName() : ''
 					,'Method'=> ($item->getMethod() instanceof PaymentMethod ? trim($item->getMethod()->getName()) : '')
-					,'Amount'=> StringUtilsAbstract::getCurrency($item->getValue())
+					,'Amount'=> StringUtilsAbstract::getCurrency($item->getCreditNote() instanceof CreditNote ? (0 - $item->getValue()) : $item->getValue())
 					, 'Comments' => trim(implode(',', array_map(create_function('$a', 'return $a->getComments();'), Comments::getAllByCriteria('entityName = ? and entityId = ?', array(get_class($item), $item->getId())))) )
 			);
 		}

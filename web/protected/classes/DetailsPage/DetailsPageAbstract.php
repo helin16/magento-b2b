@@ -71,7 +71,7 @@ abstract class DetailsPageAbstract extends BPCPageAbstract
 		else if(!($entity = $class::get($this->Request['id'])) instanceof $class)
 			die('invalid item!');
 
-		$js .= "pageJs.setHTMLIDs('item-div')";
+		$js .= "pageJs.setHTMLID('itemDiv', 'item-div')";
 		$js .= ".setItem(" . (trim($entity->getId()) === '' ? '{}' : json_encode($entity->getJson())) . ")";
 		$js .= ".setCallbackId('saveItem', '" . $this->_saveItemBtn->getUniqueID() . "');";
 		return $js;

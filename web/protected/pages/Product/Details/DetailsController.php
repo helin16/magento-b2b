@@ -47,12 +47,31 @@ class DetailsController extends DetailsPageAbstract
 		$js .= "pageJs.setPreData(" . json_encode($manufacturers) . ", " . json_encode($suppliers) . ", " . json_encode($statuses) . ", " . json_encode($priceTypes)
 									 . ", " . json_encode($codeTypes) . ", " . json_encode($locationTypes) . ", " . json_encode($btnIdnewPO) . ", " . json_encode($accountingCodes) . ")";
 		$js .= ".setCallbackId('getCategories', '" . $this->getCategoriesBtn->getUniqueID() . "')";
+		$js .= ".setCallbackId('validateSKU', '" . $this->validateSKUBtn->getUniqueID() . "')";
 		$js .= ".load()";
 		$js .= ".bindAllEventNObjects()";
 		$js .= "._loadChosen();";
 		if(!AccessControl::canEditProduct(Core::getRole()))
 			$js .= "pageJs.readOnlyMode();";
 		return $js;
+	}
+	public function validateSKU($sender, $param)
+	{
+		$result = $errors = array();
+		try
+		{
+			if(!isset($param->CallbackParameter->sku))
+				throw new Exception('Invalid SKU (' . ($param->CallbackParameter->sku ?: '') . ') passed in.');
+			
+			if(($product = Product::getBySku(trim($param->CallbackParameter->sku))) instanceof Product)
+				$result['item'] = $product->getJson();
+			else $result['item'] = '';
+		}
+		catch(Exception $ex)
+		{
+			$errors[] = $ex->getMessage();
+		}
+		$param->ResponseData = StringUtilsAbstract::getJson($result, $errors);
 	}
 	/**
 	 * Getting the categories
@@ -314,6 +333,8 @@ class DetailsController extends DetailsPageAbstract
 			if (!($status = ProductStatus::get(trim($param->CallbackParameter->statusId))) instanceof ProductStatus)
 				throw new Exception('Invalid Status!');
 			$sku = trim($param->CallbackParameter->sku);
+			if(!isset($param->CallbackParameter->id) && ($sku === '' || Product::getBySku($sku) instanceof Product))
+				throw new Exception('Invalid SKU (' . $sku . ') passed in OR already exist.');
 			$name = trim($param->CallbackParameter->name);
 			$shortDescription = trim($param->CallbackParameter->shortDescription);
 			$sellOnWeb = (trim($param->CallbackParameter->sellOnWeb) === '1');

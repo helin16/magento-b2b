@@ -270,9 +270,9 @@ class Address extends BaseEntityAbstract
 	{
 		DaoMap::begin($this, 'addr');
 
-		DaoMap::setStringType('contactName','varchar', 50);
+		DaoMap::setStringType('contactName','varchar', 100);
 		DaoMap::setStringType('contactNo','varchar', 50);
-		DaoMap::setStringType('street','varchar', 50);
+		DaoMap::setStringType('street','varchar', 200);
 		DaoMap::setStringType('city','varchar', 20);
 		DaoMap::setStringType('region','varchar', 20);
 		DaoMap::setStringType('country','varchar', 20);

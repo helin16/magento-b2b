@@ -1,0 +1,5 @@
+.select2-results {
+  min-height: 800px !important;
+  max-height: 1024px !important;
+  overflow-y: auto !important;
+}

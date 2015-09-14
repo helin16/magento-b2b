@@ -1,2 +1,0 @@
-ALTER TABLE `orderitem` ADD `itemDescription` VARCHAR(255) NOT NULL DEFAULT '' AFTER `margin`;
-update orderitem, product set orderitem.itemDescription = product.name where product.id = orderItem.productId;

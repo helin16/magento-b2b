@@ -1,7 +1,7 @@
 <?php
 class BillExport_Xero extends ExportAbstract
 {
-	const DEFAULT_DUE_DELAY = "+7 day";
+	const DEFAULT_DUE_DELAY = "+0 day";
 	protected static function _getData()
 	{
 		if(count(self::$_dateRange) === 0) {
@@ -20,39 +20,49 @@ class BillExport_Xero extends ExportAbstract
 
 		$now = new UDate();
 		$now->setTimeZone('Australia/Melbourne');
-		$return = array();
+		$formatArray = array();
 		foreach($receivingItems as $receivingItem)
 		{
 			$product = $receivingItem->getProduct();
 			if(!$product instanceof Product)
 				continue;
+			if(!array_key_exists(($key = trim($product->getId() . '|' . $receivingItem->getInvoiceNo())), $formatArray))
+				$formatArray[$key] = $receivingItem;
+			if($formatArray[$key]->getId() !== $receivingItem->getId())
+				$formatArray[$key]->setQty($formatArray[$key]->getQty() + $receivingItem->getQty());
+		}
+
+		$return = array();
+		foreach($formatArray as $key => $receivingItem)
+		{
+			$product = $receivingItem->getProduct();
 			$purchaseOrder = $receivingItem->getPurchaseOrder();
 			$supplier = $purchaseOrder->getSupplier();
 			$return[] = array(
-				'ContactName' => $supplier->getName()
-				,'EmailAddress'=> $supplier->getEmail()
-				,'POAddressLine1'=> ''
-				,'POAddressLine2'=> ''
-				,'POAddressLine3'=> ''
-				,'POAddressLine4'=> ''
-				,'POCity'=> ''
-				,'PORegion'=> ''
-				,'POPostalCode'=> ''
-				,'POCountry'=> ''
-				,'InvoiceNumber' => $receivingItem->getInvoiceNo()
-				,'InvoiceDate' => ''
-				,'DueDate' => trim($now->modify(self::DEFAULT_DUE_DELAY))
-				,'InventoryItemCode' => $product->getSku()
-				,'Description'=> $product->getShortDescription()
-				,'Quantity'=> $receivingItem->getQty()
-				,'UnitAmount'=> $receivingItem->getUnitPrice()
-				,'AccountCode'=> $product->getAssetAccNo()
-				,'TaxType'=> "GST on Expenses"
-				,'TrackingName1'=> ''
-				,'TrackingOption1'=> ''
-				,'TrackingName2'=> ''
-				,'TrackingOption2'=> ''
-				,'Currency'=> ''
+					'ContactName' => $supplier->getName()
+					,'EmailAddress'=> $supplier->getEmail()
+					,'POAddressLine1'=> ''
+					,'POAddressLine2'=> ''
+					,'POAddressLine3'=> ''
+					,'POAddressLine4'=> ''
+					,'POCity'=> ''
+					,'PORegion'=> ''
+					,'POPostalCode'=> ''
+					,'POCountry'=> ''
+					,'InvoiceNumber' => $receivingItem->getInvoiceNo()
+					,'InvoiceDate' => ''
+					,'DueDate' => trim($now->modify(self::DEFAULT_DUE_DELAY))
+					,'InventoryItemCode' => $product->getSku()
+					,'Description'=> ($description = trim($product->getShortDescription())) === '' ? $product->getName() : $description
+					,'Quantity'=> $receivingItem->getQty()
+					,'UnitAmount'=> $receivingItem->getUnitPrice()
+					,'AccountCode'=> $product->getAssetAccNo()
+					,'TaxType'=> "GST on Expenses"
+					,'TrackingName1'=> ''
+					,'TrackingOption1'=> ''
+					,'TrackingName2'=> ''
+					,'TrackingOption2'=> ''
+					,'Currency'=> ''
 			);
 		}
 		return $return;

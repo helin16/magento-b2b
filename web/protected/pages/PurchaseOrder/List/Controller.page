@@ -2,6 +2,7 @@
 <com:Application.controls.fancybox.FancyBox />
 <com:Application.controls.chosen.Chosen />
 <com:TDatePicker Style="display:none;"/>
+<com:Application.controls.select2.select2 />
 <com:TCallback ID="deactivateItemBtn" OnCallback = 'Page.deactivateItems' />
 	<div class="pagewrapper productlistwraper">
 		<div class="col-xs-12">
@@ -16,21 +17,21 @@
 				</div>
 				<div class="panel-body search-panel" id="searchDiv" style="overflow: visible;">
 					<div class="row">
-						<div class="col-md-3">
-							<div class="form-group form-group-sm">
-	                           <label>PO No.:</label>
+						<div class="col-sm-3">
+							<div class="form-group form-group-sm input-group">
+	                           <label class="input-group-addon">PO No.:</label>
 	                           <input type="text" search_field="po.purchaseOrderNo" placeholder="The Purchase Order Number" class="form-control input-sm">
 	                       </div>
 						</div>
-						<div class="col-md-3">
-							<div class="form-group form-group-sm">
-	                           <label>Supplier Ref:</label>
+						<div class="col-sm-3">
+							<div class="form-group form-group-sm input-group">
+	                           <label class="input-group-addon">Supplier Ref:</label>
 	                           <input type="text" search_field="po.supplierRefNo" placeholder="The refrerence number from the supplier" class="form-control input-sm">
 	                       </div>
 						</div>
-						<div class="col-md-3">
-                            <div class="form-group form-group-sm">
-                               <label>Active:</label>
+						<div class="col-sm-3">
+                            <div class="form-group form-group-sm input-group">
+                               <label class="input-group-addon">Active:</label>
                                <select search_field="po.active" class="form-control input-sm">
                                     <option value="1">YES</option>
                                     <option value="0">NO</option>
@@ -38,38 +39,40 @@
                                </select>
                            </div>
                         </div>
-                        <div class="col-md-3">
-							<div class="form-group form-group-sm">
-	                           <label>Invoice No:</label>
+                        <div class="col-sm-3">
+							<div class="form-group form-group-sm input-group">
+	                           <label class="input-group-addon">Invoice No:</label>
 	                           <input type="text" search_field="rec_item.invoiceNo" placeholder="The invoice number from the supplier" class="form-control input-sm">
 	                       </div>
 						</div>
 					</div>
 					<div class="row">
-						<div class="col-md-4">
-	                        <div class="form-group form-group-sm">
-				                <label>Suppliers: </label>
-				                <div class="form-control" style="padding: 0px; height: 100%;">
-				                	<select search_field="po.supplierIds" multiple class="chosen"></select>
-		                        </div>
-	                        </div>
+						<div class="col-sm-3">
+							<div class="form-group form-group-sm input-group">
+								<label class="input-group-addon">Suppliers: </label>
+								<input type="text" search_field="po.supplierIds" class="form-control input-sm">
+							</div>
 						</div>
-						<div class="col-md-4">
-							<div class="form-group form-group-sm">
-	                           <label>Status:</label>
-	                           <div class="form-control" style="padding: 0px; height: 100%;">
-                                    <select id="statusSelect" search_field="po.status" multiple class="chosen"></select>
-                                </div>
+						<div class="col-sm-3">
+							<div class="form-group form-group-sm input-group">
+	                           <label class="input-group-addon">Status:</label>
+	                           <input type="text" search_field="po.status" class="form-control input-sm">
 	                       </div>
 						</div>
-                        <div class="col-md-4">
-							<div class="form-group form-group-sm">
-	                           <label>Order Date:</label>
+                        <div class="col-sm-3">
+							<div class="form-group form-group-sm input-group">
+	                           <label class="input-group-addon">Order Date:</label>
 	                           <div class="form-control" style="padding: 1px;">
 		                           <input type="datetime" search_field="po.orderDate_from" placeholder="The order date - from" class="datepicker" style="float:left; width: 49%;">
 		                           <input type="datetime" search_field="po.orderDate_to" placeholder="The order date - to" class="datepicker" style="float:left; width: 49%;">
 		                       </div>
 	                       </div>
+						</div>
+						<div class="col-sm-3">
+							<div class="form-group form-group-sm input-group">
+	                           <label class="input-group-addon">Product:</label>
+	                           <input type="text" search_field="pro.ids" placeholder="The Product for credit note" class="form-control input-sm">
+                        	</div>
 						</div>
 					</div>
 				</div>

@@ -35,6 +35,7 @@ class ListController extends CRUDPageAbstract
 	{
 		$js = parent::_getEndJs();
 		$js .= "pageJs.getResults(true, " . $this->pageSize . ");";
+		$js .= "pageJs._bindSearchKey();";
 		return $js;
 	}
 	/**
@@ -62,15 +63,21 @@ class ListController extends CRUDPageAbstract
 			$serachCriteria = isset($param->CallbackParameter->searchCriteria) ? json_decode(json_encode($param->CallbackParameter->searchCriteria), true) : array();
 			$parent = (isset($serachCriteria['parentId']) && ($parent = $class::get($serachCriteria['parentId'])) instanceof $class) ? $parent : null; 
 				
-			$where = array(!$parent instanceof $class ? 'rootId = id' : 'parentId = ' . $parent->getId());
+// 			$where = array(!$parent instanceof $class ? 'rootId = id' : 'parentId = ' . $parent->getId());
+			$where = array();
 			$params = array();
-			if(isset($serachCriteria['pro_cate.name']) && ($name = trim($serachCriteria['pro_cate.name'])) !== '')
+			if(isset($serachCriteria['name']) && ($name = trim($serachCriteria['name'])) !== '')
 			{
-				$where[] = 'pro_cate.name like ?';
+				$where[] = 'name like ?';
 				$params[] = '%' . $name . '%';
 			}
+			if(isset($serachCriteria['mageId']) && ($mageId = trim($serachCriteria['mageId'])) !== '')
+			{
+				$where[] = 'mageId = ?';
+				$params[] = $mageId;
+			}
 			$stats = array();
-			$objects = $class::getAllByCriteria(implode(' AND ', $where), $params, false, $pageNo, $pageSize, array('pro_cate.position' => 'asc'), $stats);
+			$objects = $class::getAllByCriteria(implode(' AND ', $where), $params, false, null, $pageSize, array('pro_cate.position' => 'asc'), $stats);
 			$results['pageStats'] = $stats;
 			$results['items'] = array();
 			foreach($objects as $obj)

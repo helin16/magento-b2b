@@ -30,7 +30,12 @@ class ReceivingController extends BPCPageAbstract
 	{
 		$js = parent::_getEndJs();
 		$js .= "pageJs";
-			$js .= ".setHTMLIDs('detailswrapper','search_panel','payment_panel','supplier_info_panel','order_change_details_table','barcode_input')";
+			$js .= ".setHTMLID('itemDiv', 'detailswrapper')";
+			$js .= ".setHTMLID('searchPanel', 'search_panel')";
+			$js .= ".setHTMLID('paymentPanel', 'payment_panel')";
+			$js .= ".setHTMLID('supplierInfoPanel', 'supplier_info_panel')";
+			$js .= ".setHTMLID('partsTable', 'order_change_details_table')";
+			$js .= ".setHTMLID('barcodeInput', 'barcode_input')";
 			$js .= ".setCallbackId('searchPO', '" . $this->searchPOBtn->getUniqueID() . "')";
 			$js .= ".setCallbackId('searchProduct', '" . $this->searchProductBtn->getUniqueID() . "')";
 			$js .= ".setCallbackId('saveOrder', '" . $this->saveOrderBtn->getUniqueID() . "')";
@@ -87,8 +92,8 @@ class ReceivingController extends BPCPageAbstract
 	private function _getPOJson(PurchaseOrder $po)
 	{
 		$array = $po->getJson();
-		$array['totalProdcutCount'] = $po->getTotalProductCount();
-		$array['totalRecievedValue'] = $po->getTotalRecievedValue();
+		$array['totalProductCount'] = $po->getTotalProductCount();
+		$array['totalReceivedValue'] = $po->getTotalRecievedValue();
 
 		$array['purchaseOrderItem'] = [];
 		foreach (PurchaseOrderItem::getAllByCriteria('po_item.purchaseOrderId = :purchaseOrderId', array('purchaseOrderId'=> $po->getId() )) as $purchaseOrderItem)
@@ -204,9 +209,9 @@ class ReceivingController extends BPCPageAbstract
 	public function saveOrder($sender, $param)
 	{
 		$results = $errors = array();
-		try
-		{
+		try {
 			Dao::beginTransaction();
+
 			$items = array();
 			$purchaseOrder = PurchaseOrder::get(trim($param->CallbackParameter->purchaseOrder->id));
 			if(!$purchaseOrder instanceof PurchaseOrder)
@@ -215,6 +220,8 @@ class ReceivingController extends BPCPageAbstract
 			$purchaseOrder->addComment(Comments::TYPE_WAREHOUSE, $comment);
 			$products = $param->CallbackParameter->products;
 
+			$outStandingOrders = array();
+			$invoiceNos = array();
 			foreach ($products->matched as $item) {
 				$product = Product::get(trim($item->product->id));
 				if(!$product instanceof Product)
@@ -243,7 +250,6 @@ class ReceivingController extends BPCPageAbstract
 					$loc = (count($locs) > 0 ? $locs[0] : Location::create($locationName, $locationName));
 					$product->addLocation(PreferredLocationType::get(PreferredLocationType::ID_WAREHOUSE), $loc);
 				}
-
 				$serials = $item->serial;
 				$totalQty = 0;
 				foreach ($serials as $serial) {
@@ -252,12 +258,32 @@ class ReceivingController extends BPCPageAbstract
 					$serialNo = trim($serial->serialNo);
 					$unitPrice = trim($serial->unitPrice);
 					$invoiceNo = trim($serial->invoiceNo);
+					$invoiceNos[] = $invoiceNo;
 					$comments = trim($serial->comments);
 					ReceivingItem::create($purchaseOrder, $product, $unitPrice, $qty, $serialNo, $invoiceNo, $comments);
 				}
+				OrderItem::getQuery()->eagerLoad('OrderItem.order', 'inner join', 'ord', 'ord.id = ord_item.orderId and ord.active = 1 and ord.type = :ordType and ord_item.productId = :productId and ord.statusId in ( :statusId1, :statusId2, :statusId3)');
+				$orderItems = OrderItem::getAllByCriteria('ord_item.active = 1', array(
+						'ordType' => Order::TYPE_INVOICE
+						,'productId' => $product->getId()
+						,'statusId1' => OrderStatus::ID_INSUFFICIENT_STOCK
+						,'statusId2' => OrderStatus::ID_ETA
+						,'statusId3' => OrderStatus::ID_STOCK_CHECKED_BY_PURCHASING
+				));
+				if(count($orderItems) > 0) {
+					$orders = array();
+					foreach($orderItems as $orderItem) {
+						if(!array_key_exists($orderItem->getOrder()->getId(), $orders))
+							$orders[$orderItem->getOrder()->getId()] = $orderItem->getOrder()->getJson();
+					}
+					$outStandingOrders[$product->getId()] = array('product' => $product->getJson(), 'recievedQty' => $totalQty, 'outStandingOrders' => array_values($orders));
+				}
 			}
-
+			$results['outStandingOrders'] = count($outStandingOrders) > 0 ? array_values($outStandingOrders) : array();
 			$results['item'] = PurchaseOrder::get($purchaseOrder->getId())->getJson();
+			$invoiceNos = array_unique($invoiceNos);
+			$results['invoiceNos'] = $invoiceNos;
+
 			Dao::commitTransaction();
 		}
 		catch(Exception $ex)

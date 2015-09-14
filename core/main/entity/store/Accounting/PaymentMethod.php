@@ -8,6 +8,7 @@
  */
 class PaymentMethod extends BaseEntityAbstract
 {
+	const ID_STORE_CREDIT = 11;
 	/**
 	 * The name of the payment method
 	 * 

@@ -1,0 +1,66 @@
+<com:TContent ID="MainContent">
+	<com:Application.controls.fancybox.FancyBox />
+	<com:Application.controls.bootstrapDateTimePicker.bootstrapDateTimePicker />
+	<com:Application.controls.select2.select2 />
+	<com:TCallback ID="actionTaskBtn" OnCallback="Page.actionTask" />
+	<div class="pagewrapper item-list-wrapper">
+		<div class="panel panel-default" id="searchPanel">
+			<div class="panel-heading">
+				<label for="showSearch">Show Search Criteria?</label>
+				<input id="showSearch" type="checkbox" onclick="$(this).up('#searchPanel').down('.panel-body').toggle();">
+				<span class="btn-group pull-right">
+			   		<span class="btn btn-success btn-sm" onclick="pageJs.showKitDetailsPage();"><i class="fa fa-plus"></i><span class="hidden-xs hidden-sm"> NEW</span></span>
+			   		<span id="searchBtn" class="btn btn-primary btn-sm" data-loading-text="<i class='fa fa-refresh fa-spin'></i>" title="search"><i class="glyphicon glyphicon-search"></i><span class="hidden-xs hidden-sm"> Search</span></span>
+				</span>
+			</div>
+			<div class="panel-body search-panel" id="searchDiv" style="display: none;">
+				<div class="row">
+					<div class="col-sm-4">
+						<div class="form-group form-group-sm input-group">
+                           <label class="input-group-addon">Barcode:</label>
+                           <input type="text" search_field="barcode" placeholder="The barcode of the kit" class="form-control input-sm" />
+                        </div>
+					</div>
+					<div class="col-sm-5">
+						<div class="form-group form-group-sm input-group">
+                           <label class="input-group-addon">Customer:</label>
+                           <input type="text" search_field="customer.id" placeholder="The customer of the task" class="form-control input-sm" />
+                       </div>
+					</div>
+					<div class="col-sm-3">
+						<div class="form-group form-group-sm input-group">
+                           <label class="input-group-addon">Task:</label>
+                           <input type="text" search_field="taskIds" placeholder="The task no" class="form-control input-sm" />
+                       </div>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-sm-4">
+						<div class="form-group form-group-sm input-group">
+                           <label class="input-group-addon">Kit Product:</label>
+                           <input type="text" search_field="kitProductIds" placeholder="The product of the Kit" class="form-control input-sm search-product select2" isKit='1' />
+                       </div>
+					</div>
+					<div class="col-sm-5">
+						<div class="form-group form-group-sm input-group">
+                           <label class="input-group-addon">Order:</label>
+                           <input type="text" search_field="ord.id" placeholder="The order that the task is created from" class="form-control input-sm" />
+                       </div>
+					</div>
+					<div class="col-sm-3">
+						<div class="form-group form-group-sm input-group">
+                           <label class="input-group-addon">Component:</label>
+                           <input type="text" search_field="componentProductIds" placeholder="The product used in the kit" class="form-control input-sm search-product select2"  isKit='0' />
+                        </div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="panel panel-default">
+			<div class="panel-heading">
+				Found <label id="total-found-count">0</label> <%= $this->getFocusEntity() %>(s):
+			</div>
+            <table class="table table-hover" id="item-list"></table>
+		</div>
+	</div>
+</com:TContent>

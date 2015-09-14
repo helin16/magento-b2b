@@ -29,8 +29,10 @@ abstract class SystemCoreAbstract
 			$base . '/entity/store/Order/',
 			$base . '/entity/store/Product/',
 			$base . '/entity/store/Purchase/',
+			$base . '/entity/store/RMA/',
 			$base . '/entity/store/Shipment/',
 			$base . '/entity/store/Tools/',
+			$base . '/entity/store/Workshop/',
 			$base . '/entity/system/',
 			$base . '/exception/',
 			$base . '/utils/',
@@ -38,10 +40,13 @@ abstract class SystemCoreAbstract
 			$base . '/utils/connector/courier/',
 			$base . '/utils/connector/magento/',
 			$base . '/utils/connector/magento/Order/',
+			$base . '/utils/connector/pricematch/',
 			$base . '/utils/connector/xero/',
 			$base . '/utils/connector/xero/class/',
 			$base . '/utils/html_parser/',
 			$base . '/utils/PDF/',
+			$base . '/utils/PhpBarcode/',
+			$base . '/utils/parseCSV/',
 		);
 		foreach ($autoloadPaths as $path)
 		{

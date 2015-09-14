@@ -33,19 +33,15 @@ class Controller extends CRUDPageAbstract
 	 */
 	protected function _getEndJs()
 	{
-		$suppliersArray = array();
-		foreach(Supplier::getAll() as $os)
-			$suppliersArray[] = $os->getJson();
 		$statusOptions = PurchaseOrder::getStatusOptions();
 		$js = parent::_getEndJs();
+		$js .= "pageJs._status=" . json_encode($statusOptions) . ";";
 		$js .= 'pageJs';
 		$js .= ".setCallbackId('deactivateItems', '" . $this->deactivateItemBtn->getUniqueID() . "')";
 		$js .= "._bindSearchKey()";
-		$js .= "._loadSuppliers(" . json_encode($suppliersArray) . ")";
-		$js .= "._setStatusOptions(" . json_encode($statusOptions) . ")";
 		$js .= "._loadChosen()";
-		$js .= "._loadDataPicker()";
-		$js .= ".getResults(true, " . $this->pageSize . ");";
+		$js .= "._loadDataPicker();";
+		$js .= "$('searchBtn').click();";
 		return $js;
 	}
 	/**
@@ -63,6 +59,7 @@ class Controller extends CRUDPageAbstract
         {
             $pageNo = 1;
             $pageSize = DaoQuery::DEFAUTL_PAGE_SIZE;
+	        $class = trim($this->_focusEntity);
             if(isset($param->CallbackParameter->pagination))
             {
                 $pageNo = $param->CallbackParameter->pagination->pageNo;
@@ -79,7 +76,7 @@ class Controller extends CRUDPageAbstract
             {
             	if((is_array($value) && count($value) === 0) || (is_string($value) && ($value = trim($value)) === ''))
             		continue;
-				
+            	$query = $class::getQuery();
             	switch ($field)
             	{
             		case 'po.purchaseOrderNo':
@@ -110,6 +107,7 @@ class Controller extends CRUDPageAbstract
             			{
             				if(count($value) > 0)
             				{
+            					$value = explode(',', $value);
             					$where[] = 'po.supplierId IN ('.implode(", ", array_fill(0, count($value), "?")).')';
             					$params = array_merge($params, $value);
             				}
@@ -140,6 +138,14 @@ class Controller extends CRUDPageAbstract
             					$params[] = '%' . trim($value) . '%';
             				}
             				break;
+            			}
+            		case 'pro.ids':
+            			{
+							$value = explode(',', $value);
+							$query->eagerLoad("PurchaseOrder.items", 'inner join', 'po_item', 'po_item.purchaseOrderId = po.id and po_item.active = 1');
+							$where[] = 'po_item.productId in ('.implode(", ", array_fill(0, count($value), "?")).')';
+							$params = array_merge($params, $value);
+							break;
             			}
             	}
             	$noSearch = false;

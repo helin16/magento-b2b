@@ -232,9 +232,9 @@ class ReceivingItem extends BaseEntityAbstract
 		DaoMap::setManyToOne('purchaseOrder', 'PurchaseOrder', 'rec_item_po');
 		DaoMap::setManyToOne('product', 'Product', 'rec_item_pro');
 		DaoMap::setIntType('unitPrice', 'double', '10,4');
-		DaoMap::setStringType('serialNo', 'varchar', '10');
-		DaoMap::setStringType('invoiceNo', 'varchar', '10');
-		DaoMap::setIntType('qty');
+		DaoMap::setStringType('serialNo', 'varchar', '100');
+		DaoMap::setStringType('invoiceNo', 'varchar', '20');
+		DaoMap::setIntType('qty', 'int', 10, false);
 
 		parent::__loadDaoMap();
 		DaoMap::createIndex('serialNo');
