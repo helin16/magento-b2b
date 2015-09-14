@@ -101,50 +101,25 @@ class CatelogConnector extends B2BConnector
 			throw new Exception('Invalid sku passed in. "' . $sku .'" given.');
 		$sku = trim($sku);
 		$currentInfo = $this->getProductInfo($sku);
-		$newinfo = array();
+		$newinfo = isset($params['newInfo']) ? $params['newInfo'] : array();
+		$newAttributes = isset($params['newAttributes']) ? $params['newAttributes'] : array();
 		$result = null;
-		if(count($params) > 0 && $this->getProductInfo($sku) !== null)
+		if($this->getProductInfo($sku) !== null)
 		{
-			if(isset($params['categories']))
-				$newinfo['categories'] = $params['categories'];
-			if(isset($params['websites']))
-				$newinfo['websites'] = $params['websites'];
-			if(isset($params['name']))
-				$newinfo['name'] = $params['name'];
-			if(isset($params['description']))
-				$newinfo['description'] = $params['description'];
-			if(isset($params['short_description']))
-				$newinfo['short_description'] = $params['short_description'];
-			if(isset($params['weight']))
-				$newinfo['weight'] = $params['weight'];
-			if(isset($params['status']))
-				$newinfo['status'] = $params['status'];
-			if(isset($params['url_key']))
-				$newinfo['url_key'] = $params['url_key'];
-			if(isset($params['url_path']))
-				$newinfo['url_path'] = $params['url_path'];
-			if(isset($params['visibility']))
-				$newinfo['visibility'] = $params['visibility'];
-			if(isset($params['price']))
-				$newinfo['price'] = $params['price'];
-			if(isset($params['tax_class_id']))
-				$newinfo['tax_class_id'] = $params['tax_class_id'];
-			if(isset($params['meta_title']))
-				$newinfo['meta_title'] = $params['meta_title'];
-			if(isset($params['meta_keyword']))
-				$newinfo['meta_keyword'] = $params['meta_keyword'];
-			if(isset($params['meta_description']))
-				$newinfo['meta_description'] = $params['meta_description'];
-			if(isset($params['status']))
-				$newinfo['status'] = $params['status'];
-			if(isset($params['sku']))
-				$newinfo['sku'] = $params['sku'];
 			if(count($newinfo) > 0)
 			{
 				try {
 					$result = $this->_connect()->catalogProductUpdate($this->_session, $sku, $newinfo);
 				} catch (SoapFault $e) {
 					return '***warning*** push Product "' . $sku . '" info to magento faled. Message from Magento: "' . $e -> getMessage() . '"' . "\n";
+				}
+			}
+			if(count($newAttributes) > 0)
+			{
+				try {
+					$this->_connect()->catalogProductAttributeUpdate($this->_session, $sku, $newAttributes);
+				} catch (SoapFault $e) {
+					return '***warning*** push Product "' . $sku . '" attributes to magento faled. Message from Magento: "' . $e -> getMessage() . '"' . "\n";
 				}
 			}
 		}
