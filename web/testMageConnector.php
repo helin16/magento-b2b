@@ -5,7 +5,9 @@ try {
 	$param = array(
 		'price' => 189.00
 		,'additional_attributes' => array(
-			'all_ln_stock' => 'Ships In 24Hrs'
+			'single_data' => array (
+	            array ('key' => 'all_ln_stock', 'value' => 'Ships In 24Hrs')
+	        )
 		)
 	);
 	$connector = CatelogConnector::getConnector(B2BConnector::CONNECTOR_TYPE_CATELOG,
