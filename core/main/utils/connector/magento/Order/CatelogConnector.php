@@ -111,6 +111,7 @@ class CatelogConnector extends B2BConnector
 				}
 			}
 		}
+		
 		return $result;
 	} 
 	/**
