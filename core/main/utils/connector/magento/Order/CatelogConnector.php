@@ -380,7 +380,7 @@ class CatelogConnector extends B2BConnector
  						echo "\t" . 'Short Description: "' . $short_description . '"' . "\n";
  						echo "\t" . 'Full Description: "' . $description . '"' . "\n";
 						echo "\t" . 'Status: "' . ProductStatus::get($systemStatusId)->getName() . '"' . "\n";
- 						echo "\t" . 'Manufacturer: id=' . ($this->getManufacturerName(trim($pro['manufacturer']))->getId()) . ', name="' . $this->getManufacturerName(trim($pro['manufacturer']))->getName() . '"' . "\n";
+ 						echo "\t" . 'Manufacturer: name="' . $this->getManufacturerName(trim($pro['manufacturer']))->getName() . '"' . "\n";
  						echo "\t" . 'Price: "' . $price . '"' . "\n";
  						echo "\t" . 'Weight: "' . $weight . '"' . "\n";
 					}
