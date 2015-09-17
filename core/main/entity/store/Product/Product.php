@@ -181,6 +181,12 @@ class Product extends InfoEntityAbstract
 	 */
 	protected $attributeSet = null;
 	/**
+	 * if the datafeed for this product is done manually
+	 * 
+	 * @var bool
+	 */
+	private $manualDatafeed = false;
+	/**
 	 * Getter for categories
 	 *
 	 * @return array()
@@ -769,6 +775,25 @@ class Product extends InfoEntityAbstract
 	{
 		$this->attributeSet = $value;
 		return $this;
+	}
+	/**
+	 * getter for manualDatafeed
+	 *
+	 * @return bool
+	 */
+	public function getManualDatafeed()
+	{
+	    return $this->manualDatafeed;
+	}
+	/**
+	 * Setter for manualDatafeed
+	 *
+	 * @return Product
+	 */
+	public function setManualDatafeed($manualDatafeed)
+	{
+	    $this->manualDatafeed = $manualDatafeed;
+	    return $this;
 	}
 	
 	/**
@@ -1380,6 +1405,7 @@ class Product extends InfoEntityAbstract
 		DaoMap::setOneToMany('codes', 'ProductCode', 'pro_pro_code');
 		DaoMap::setBoolType('isKit');
 		DaoMap::setManyToOne('attributeSet', 'ProductAttributeSet', 'pro_attr_set', true);
+		DaoMap::setBoolType('manualDatafeed');
 		parent::__loadDaoMap();
 
 		DaoMap::createUniqueIndex('sku');
@@ -1401,6 +1427,7 @@ class Product extends InfoEntityAbstract
 		DaoMap::createIndex('costAccNo');
 		DaoMap::createIndex('isKit');
 		DaoMap::createIndex('attributeSet');
+		DaoMap::createIndex('manualDatafeed');
 		DaoMap::commit();
 	}
 	/**
@@ -1431,15 +1458,16 @@ class Product extends InfoEntityAbstract
 	 *
 	 * @return Ambigous <Product, Ambigous, NULL, BaseEntityAbstract>
 	 */
-	public static function create($sku, $name, $mageProductId = '', $stockOnHand = null, $stockOnOrder = null, $isFromB2B = false, $shortDescr = '', $fullDescr = '', Manufacturer $manufacturer = null, $assetAccNo = null, $revenueAccNo = null, $costAccNo = null, $stockMinLevel = null, $stockReorderLevel = null)
+	public static function create($sku, $name, $mageProductId = '', $stockOnHand = null, $stockOnOrder = null, $isFromB2B = false, $shortDescr = '', $fullDescr = '', Manufacturer $manufacturer = null, $assetAccNo = null, $revenueAccNo = null, $costAccNo = null, $stockMinLevel = null, $stockReorderLevel = null, $manualDatafeed = false)
 	{
 		if(!($product = self::getBySku($sku)) instanceof Product)
 			$product = new Product();
 		$product->setSku(trim($sku))
-		->setName($name);
+		->setName($name)
+		->setManualDatafeed(intval($manualDatafeed) === 1);
 		if(($mageProductId = trim($mageProductId)) !== "")
 			$product->setMageId($mageProductId);
-
+		
 		if(trim($product->getId()) === '')
 		{
 			$product->setIsFromB2B($isFromB2B)

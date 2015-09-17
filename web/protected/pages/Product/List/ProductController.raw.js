@@ -675,6 +675,28 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		})
 		return tmp.me;
 	}
+	,toggleManualFeed: function(isManualFeed, product) {
+		var tmp = {};
+		tmp.me = this;
+		tmp.me.postAjax(tmp.me.getCallbackId('toggleManualFeed'), {'productId': product.id, 'isManualFeed': isManualFeed}, {
+			'onSuccess': function(sender, param) {
+				tmp.newProduct = product;
+				try{
+					tmp.result = tmp.me.getResp(param, false, true);
+					if(!tmp.result || !tmp.result.item)
+						return;
+					tmp.newProduct = tmp.result.item;
+				} catch (e) {
+					tmp.me.showModalBox('ERROR', e, true);
+				}
+				if($$('.product_item[product_id=' + product.id +']').size() >0) {
+					$$('.product_item[product_id=' + product.id +']').first().replace(tmp.me._getResultRow(tmp.newProduct, false));
+				}
+				tmp.me._bindPriceInput();
+			}
+		})
+		return tmp.me;
+	}
 	,_updatePrice: function(productId, newPrice, originalPrice) {
 		var tmp = {};
 		tmp.me = this;
@@ -867,7 +889,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 				})
 			})
 			.insert({'bottom': new Element(tmp.tag, {'class': 'product_name hidden-xs hide-when-info hidden-sm'})
-				.addClassName('col-xs-2')
+				.addClassName('col-xs-3')
 				.setStyle(tmp.me._showRightPanel ? 'display: none' : '')
 				.update(tmp.isTitle === true ? new Element('div', {'class': 'row'})
 						.insert({'bottom': new Element('div', {'class': 'col-sm-10'}).update('Product Name')})
@@ -885,11 +907,22 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 						)})
 				)
 			})
-			.insert({'bottom': new Element(tmp.tag, {'class': 'hidden-xs hide-when-info hidden-sm row'}).addClassName('col-xs-3').setStyle(tmp.me._showRightPanel ? 'display: none' : '')
-				.insert({'bottom': new Element('div', {'class': 'col-sm-3'}).update(tmp.isTitle === true ? 'Price' : new Element('input', {'class': "click-to-edit price-input", 'value': tmp.me.getCurrency(tmp.price), 'product-id': row.id}).setStyle('width: 100%') ) })
-				.insert({'bottom': new Element('div', {'class': 'col-sm-3'}).update(tmp.isTitle === true ? 'Match' : new Element('span').update((row.priceMatchRule && row.priceMatchRule.priceMatchCompany) ? row.priceMatchRule.priceMatchCompany.companyName : '').setStyle('width: 100%') ) })
-				.insert({'bottom': new Element('div', {'class': 'col-sm-3'}).update(tmp.isTitle === true ? 'Min St' : new Element('input', {'class': "click-to-edit stockMinLevel-input", 'value': row.stockMinLevel, 'product-id': row.id}).setStyle('width: 100%') ) })
-				.insert({'bottom': new Element('div', {'class': 'col-sm-3'}).update(tmp.isTitle === true ? 'Re St' : new Element('input', {'class': "click-to-edit stockReorderLevel-input", 'value': row.stockReorderLevel, 'product-id': row.id}).setStyle('width: 100%') ) })
+			.insert({'bottom': new Element(tmp.tag, {'class': 'hidden-xs hide-when-info hidden-sm row'}).addClassName('col-xs-2').setStyle(tmp.me._showRightPanel ? 'display: none' : '')
+				.insert({'bottom': new Element('div', {'class': 'col-sm-4'}).update(tmp.isTitle === true ? 'Price' : new Element('input', {'class': "click-to-edit price-input", 'value': tmp.me.getCurrency(tmp.price), 'product-id': row.id}).setStyle('width: 100%') ) })
+				.insert({'bottom': new Element('div', {'class': 'col-sm-4'}).update(tmp.isTitle === true ? 'Match' : new Element('span').update((row.priceMatchRule && row.priceMatchRule.priceMatchCompany) ? row.priceMatchRule.priceMatchCompany.companyName : '').setStyle('width: 100%') ) })
+//				.insert({'bottom': new Element('div', {'class': 'col-sm-3'}).update(tmp.isTitle === true ? 'Min St' : new Element('input', {'class': "click-to-edit stockMinLevel-input", 'value': row.stockMinLevel, 'product-id': row.id}).setStyle('width: 100%') ) })
+//				.insert({'bottom': new Element('div', {'class': 'col-sm-3'}).update(tmp.isTitle === true ? 'Re St' : new Element('input', {'class': "click-to-edit stockReorderLevel-input", 'value': row.stockReorderLevel, 'product-id': row.id}).setStyle('width: 100%') ) })
+				.insert({'bottom': new Element('div', {'class': 'col-xs-4'})
+					.insert({'bottom': tmp.isTitle === true ? 'ManFeed?' : new Element('input', {'type': 'checkbox', 'checked': row.manualDatafeed})
+						.observe('click', function(event) {
+							tmp.btn = this;
+							tmp.checked = $(tmp.btn).checked;
+							if(confirm(tmp.checked === true ? 'You are about to manual datafeed this product.\n Continue?' : 'You are about to NOT manfual datafeed this product.\n Continue?')) {
+								tmp.me.toggleManualFeed(tmp.checked, row);
+							} else $(tmp.btn).checked = !tmp.checked;
+						})
+					})
+				})
 			})
 			.insert({'bottom': new Element(tmp.tag, {'class': 'locations hide-when-info hidden-sm'}).addClassName('col-xs-1').update(
 					row.locations ? tmp.me._getLocations(row.locations, isTitle) : ''
@@ -917,7 +950,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 			.insert({'bottom': new Element(tmp.tag, {'class': 'product_active hide-when-info hidden-sm'}).addClassName('col-xs-1')
 				.insert({'bottom': (
 					new Element('div', {'class': 'row'})
-						.insert({'bottom': new Element('div', {'class': 'col-xs-4 text-right'})
+						.insert({'bottom': new Element('div', {'class': 'col-xs-3 text-right'})
 							.insert({'bottom': tmp.isTitle === true ? 'Act?' : new Element('input', {'type': 'checkbox', 'checked': row.active})
 								.observe('click', function(event) {
 									tmp.btn = this;
