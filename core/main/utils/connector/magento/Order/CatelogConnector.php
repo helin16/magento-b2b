@@ -116,8 +116,6 @@ class CatelogConnector extends B2BConnector
 					echo 'get ' . count($data) . ' data from ' . $path . PHP_EOL;
 				foreach ($data as $row)
 				{
-					if($rowCount >3)
-						continue;
 					if(!isset($row["sku"]) || !isset($row["price"]) || !isset($row["all_ln_stock"]))
 					{
 						if($debug === true)
