@@ -78,7 +78,7 @@ class OrderPrintController extends BPCPageAbstract
 				if($item->getSerialNo() !== '' )
 					$sellingItems[] = $item->getSerialNo();
 			}
-			$html .= $this->getRow($orderItem->getQtyOrdered(), $orderItem->getProduct()->getSku(), $orderItem->getItemDescription() ?: $orderItem->getProduct()->getname(), $uPrice, $tPrice, 'itemRow');
+			$html .= $this->getRow($orderItem->getQtyOrdered(), $orderItem->getProduct()->getSku(), $orderItem->getProduct()->getname() ?: $orderItem->getItemDescription(), $uPrice, $tPrice, 'itemRow');
 			$html .= $this->getRow('', '<span class="pull-right">Serial No: </span>', '<div style="max-width: 517px; word-wrap: break-word;">' . implode(', ', $sellingItems) . '</div>', '', '', 'itemRow itemRow-serials');
 		}
 		for ( $i = 12; $i > $index; $i--)

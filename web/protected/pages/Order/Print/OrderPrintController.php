@@ -88,7 +88,7 @@ class OrderPrintController extends BPCPageAbstract
 			$tPrice = '$' . number_format($orderItem->getTotalPrice(), 2, '.', ',');
 			$shouldTotal = $orderItem->getUnitPrice() * $orderItem->getQtyOrdered();
 			$discount = (floatval($shouldTotal) === 0.0000 ? 0.00 : round(((($shouldTotal - $orderItem->getTotalPrice()) * 100) / $shouldTotal), 2));
-			$html .= $this->getRow($orderItem->getQtyOrdered(), $orderItem->getProduct()->getSku(), $orderItem->getItemDescription() ?: $orderItem->getProduct()->getname(), $uPrice, ($discount === 0.00 ? '' : $discount . '%'), $tPrice, 'itemRow');
+			$html .= $this->getRow($orderItem->getQtyOrdered(), $orderItem->getProduct()->getSku(), $orderItem->getProduct()->getname() ?: $orderItem->getItemDescription(), $uPrice, ($discount === 0.00 ? '' : $discount . '%'), $tPrice, 'itemRow');
 			if(($sellingItems = $orderItem->getSellingItems()) && count($sellingItems) > 0)
 			{
 				$html .= $this->getRow('&nbsp;', '&nbsp;', 'Serial Numbers:', '&nbsp;', '&nbsp;', '', 'itemRow');
