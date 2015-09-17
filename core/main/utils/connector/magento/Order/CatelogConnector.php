@@ -90,11 +90,8 @@ class CatelogConnector extends B2BConnector
 	}
 	public function updateProductByDatafeed($debug = false)
 	{
-		$connector = CatelogConnector::getConnector(B2BConnector::CONNECTOR_TYPE_CATELOG,
-				SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_WSDL),
-				SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_USER),
-				SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_KEY));
 		$rowCount = 0;
+		$sessionRotation = 10;
 		if (!file_exists(self::DATAFEED_DIR)) {
 			mkdir(self::DATAFEED_DIR, 0777, true);
 		}
@@ -116,6 +113,14 @@ class CatelogConnector extends B2BConnector
 					echo 'get ' . count($data) . ' data from ' . $path . PHP_EOL;
 				foreach ($data as $row)
 				{
+					if($rowCount === 0 || $rowCount % $sessionRotation == 0)
+					{
+						$connector = CatelogConnector::getConnector(B2BConnector::CONNECTOR_TYPE_CATELOG,
+								SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_WSDL),
+								SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_USER),
+								SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_KEY),
+								true);
+					}
 					if(!isset($row["sku"]) || !isset($row["price"]) || !isset($row["all_ln_stock"]))
 					{
 						if($debug === true)
@@ -143,6 +148,11 @@ class CatelogConnector extends B2BConnector
 						)
 					);
 					$connector->updateProductInfo($sku, $param);
+					if($rowCount === 0 || $rowCount % $sessionRotation == 0)
+					{
+						if($debug === true)
+							echo 'session => ' . $connector->_session . PHP_EOL;
+					}
 					$rowCount++;
 				}
 			}

@@ -58,10 +58,10 @@ abstract class B2BConnector
 	 *
 	 * @return B2BConnector
 	 */
-	public static function getConnector($type, $wsdl, $apiUser, $apiKey)
+	public static function getConnector($type, $wsdl, $apiUser, $apiKey, $reset = false)
 	{
 		$key = md5($type . $wsdl . $apiUser . $apiKey);
-		if(!isset(self::$_cache[$key]))
+		if($reset === true || !isset(self::$_cache[$key]))
 		{
 			$className = $type . 'Connector';
 			self::$_cache[$key] = new $className($wsdl, $apiUser, $apiKey);
