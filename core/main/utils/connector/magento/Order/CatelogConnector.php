@@ -2,6 +2,7 @@
 class CatelogConnector extends B2BConnector
 {
 	const CACHE_FILE = '/tmp/mageProduct.json';
+	const DATAFEED_DIR = '/tmp/datafeed';
 	public function getProductList($fromDate, $type = 'updated_at')
 	{
 		$fromDate = trim($fromDate);
@@ -87,25 +88,123 @@ class CatelogConnector extends B2BConnector
 		$price = doubleval(trim($price));
 		return $this->updateProductInfo($sku, array('price'=> $price));
 	}
+	public function updateProductByDatafeed($debug = false)
+	{
+		$connector = CatelogConnector::getConnector(B2BConnector::CONNECTOR_TYPE_CATELOG,
+				SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_WSDL),
+				SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_USER),
+				SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_KEY));
+		$rowCount = 0;
+		if (!file_exists(self::DATAFEED_DIR)) {
+			mkdir(self::DATAFEED_DIR, 0777, true);
+		}
+		$files = scandir(self::DATAFEED_DIR);
+		foreach ($files as $file)
+		{
+			if($file === '.' || $file === '..')
+				continue;
+			$path = self::DATAFEED_DIR . DIRECTORY_SEPARATOR . $file;
+			$ext = pathinfo($path, PATHINFO_EXTENSION);
+			if($ext === '')
+				continue;
+			if($ext == 'csv')
+			{
+				$csv = new parseCSV();
+				$csv->auto($path);
+				$data = $csv->data;
+				if($debug === true)
+					echo 'get ' . count($data) . ' data from ' . $path . PHP_EOL;
+				foreach ($data as $row)
+				{
+					if($rowCount >3)
+						continue;
+					if(!isset($row["sku"]) || !isset($row["price"]) || !isset($row["all_ln_stock"]))
+					{
+						if($debug === true)
+							echo '***warining***' . 'invalid row deteched' . PHP_EOL;
+						continue;
+					}
+					$sku = trim($row["sku"]);
+					$price = doubleval(trim($row["price"]));
+					if($price === doubleval(0))
+					{
+						if($debug === true)
+							echo '***warining***' . 'invalid price deteched' . PHP_EOL;
+						continue;
+					}
+					$stockLevel = trim($row["all_ln_stock"]);
+					$stockLevelNo = self::mageStockNameToValue($stockLevel);
+					if($debug === true)
+						echo $rowCount . ': sku "' . $sku .'", price "' . $price . '", stockLevel "' . $stockLevel . '"[' . $stockLevelNo . ']' . PHP_EOL;
+					$param = array(
+						'price' => $price
+						,'additional_attributes' => array(
+							'single_data' => array (
+					            array ('key' => 'all_ln_stock', 'value' => $stockLevelNo)
+					        )
+						)
+					);
+					$connector->updateProductInfo($sku, $param);
+					$rowCount++;
+				}
+			}
+		}
+	}
+	public static function mageStockNameToValue($name)
+	{
+		$name = strtolower(trim($name));
+		switch($name)
+		{
+			case 'back order only':
+			{
+				return 326;
+			}
+			case 'in stock':
+			{
+				return 327;
+			}
+			case 'pre order':
+			{
+				return 329;
+			}
+			case 'ships in 24hrs':
+			{
+				return 328;
+			}
+			case 'stock low':
+			{
+				return 330;
+			}
+			default:
+			{
+				throw new Exception('Invalid mage stock level name "' . trim($name) . '" passed in');
+			}
+		}
+	}
 	/**
 	 * update the required product on magento, only the given attributes
 	 * 
 	 * @param string $sku
 	 * @param array $params
+	 * @param int $qty
+	 * 
 	 * @throws Exception
 	 * @return bool | string | null
 	 */
-	public function updateProductInfo($sku, $params = array())
+	public function updateProductInfo($sku, $params = array(), $qty = 25)
 	{
 		if(trim($sku) === '')
 			throw new Exception('Invalid sku passed in. "' . $sku .'" given.');
+		$qty = intval($qty);
 		if(count($params) > 0) {
 			$sku = trim($sku);
 			$currentInfo = $this->getProductInfo($sku);
 			$result = null;
 			if($this->getProductInfo($sku) !== null) {
 				try {
-					$result = $this->_connect()->catalogProductUpdate($this->_session, $sku, $params);
+					$result = array();
+					$result[] = $this->_connect()->catalogProductUpdate($this->_session, $sku, $params);
+					$result[] = $this->_connect()->catalogInventoryStockItemUpdate($this->_session, $sku, array('qty'=> trim($qty) ));
 				} catch (SoapFault $e) {
 					throw new Exception('***warning*** push Product "' . $sku . '" info to magento faled. Message from Magento: "' . $e -> getMessage() . '"');
 				}
