@@ -91,11 +91,8 @@ class CatelogConnector extends B2BConnector
 	}
 	public function updateProductByDatafeed($debug = false)
 	{
-		$connector = CatelogConnector::getConnector(B2BConnector::CONNECTOR_TYPE_CATELOG,
-				SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_WSDL),
-				SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_USER),
-				SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_KEY));
 		$rowCount = 0;
+		$sessionRotation = 10;
 		if (!file_exists(self::DATAFEED_DIR)) {
 			mkdir(self::DATAFEED_DIR, 0777, true);
 		}
@@ -117,6 +114,15 @@ class CatelogConnector extends B2BConnector
 					echo 'get ' . count($data) . ' data from ' . $path . PHP_EOL;
 				foreach ($data as $row)
 				{
+					if($rowCount === 0 || $rowCount % $sessionRotation == 0)
+					{
+						$connector = CatelogConnector::getConnector(B2BConnector::CONNECTOR_TYPE_CATELOG,
+							SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_WSDL),
+							SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_USER),
+							SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_KEY),
+							true
+						);
+					}
 					if(!isset($row["sku"]) || !isset($row["price"]) || !isset($row["all_ln_stock"]))
 					{
 						if($debug === true)
@@ -144,6 +150,11 @@ class CatelogConnector extends B2BConnector
 						)
 					);
 					$connector->updateProductInfo($sku, $param);
+					if($rowCount === 0 || $rowCount % $sessionRotation == 0)
+					{
+						if($debug === true)
+						echo 'session => ' . $connector->_session . PHP_EOL;
+					}
 					$rowCount++;
 				}
 			}
@@ -359,7 +370,10 @@ class CatelogConnector extends B2BConnector
 			throw new Exception('cannot get LAST_NEW_PRODUCT_PULL in system setting');
 		$fromDate = $systemSetting->getValue();
 		$downloadType = ($newOnly === true ? 'created_at' : 'updated_at');
+		$rowCount = 0;
 		$products = $this->getProductList($fromDate, $downloadType);
+		if($debug === true)
+			echo 'got ' . count($products) . ' from magento' . PHP_EOL;
 		if(count($products) === 0)
 		{
 			if($debug === true)
@@ -375,9 +389,10 @@ class CatelogConnector extends B2BConnector
 				$mageId = trim($pro->product_id);
 				$sku = trim($pro->sku);
 				if($debug === true)
-					echo $sku . "\n";
+					echo $rowCount . ': ' . $sku . "\n";
 				$pro = $this->getProductInfo($sku, $this->getInfoAttributes());
 				file_put_contents($cacheFile, json_encode($pro) . "\n", FILE_APPEND);
+				$rowCount++;
 			}
 		}
 		catch(Exception $ex)
@@ -414,11 +429,21 @@ class CatelogConnector extends B2BConnector
 				echo 'nothing from downloaded product info file ' . $cacheFile . '. exitting' . "\n";
 			return $this;
 		}
-			$rowCount = 1;
+			$rowCount = 0;
+			$sessionRotation = 10;
 			foreach($contents as $line)
 			{
 				try
 				{
+					if($rowCount === 0 || $rowCount % $sessionRotation == 0)
+					{
+						$connector = CatelogConnector::getConnector(B2BConnector::CONNECTOR_TYPE_CATELOG,
+							SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_WSDL),
+							SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_USER),
+							SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_KEY),
+							true
+						);
+					}
 					echo print_r($line, true);
 					$pro = json_decode($line, true);
 					$mageId = $pro['product_id'];
@@ -473,7 +498,7 @@ class CatelogConnector extends B2BConnector
 					if(!($product = Product::getBySku($sku)) instanceof Product)
 					{
 						$product = Product::create($sku, $name);
-						Log::logging(0, get_class($this), 'Found New Product from Magento with sku="' . trim($sku) . '" and name="' . $name . '", created_at="' . $created_at, self::LOG_TYPE, '', __FUNCTION__);
+						Log::logging(0, get_class($connector), 'Found New Product from Magento with sku="' . trim($sku) . '" and name="' . $name . '", created_at="' . $created_at, self::LOG_TYPE, '', __FUNCTION__);
 						echo 'Found New Product from Magento with sku="' . trim($sku)
 							 . '" name="' . $name . '" created_at="' . $created_at . ' updated_at' . $updated_at . "\n";
 					} elseif(Product::getBySku($sku) instanceof Product) // update old product description
@@ -485,7 +510,7 @@ class CatelogConnector extends B2BConnector
  						echo "\t" . 'Short Description: "' . $short_description . '"' . "\n";
  						echo "\t" . 'Full Description: "' . $description . '"' . "\n";
 						echo "\t" . 'Status: "' . ProductStatus::get($systemStatusId)->getName() . '"' . "\n";
- 						echo "\t" . 'Manufacturer: name="' . $this->getManufacturerName(trim($pro['manufacturer']))->getName() . '"' . "\n";
+ 						echo "\t" . 'Manufacturer: name="' . $connector->getManufacturerName(trim($pro['manufacturer']))->getName() . '"' . "\n";
  						echo "\t" . 'Price: "' . $price . '"' . "\n";
  						echo "\t" . 'Weight: "' . $weight . '"' . "\n";
 					}
@@ -493,11 +518,11 @@ class CatelogConnector extends B2BConnector
 						->setMageId($mageId)
 						->setAttributeSet($attributeSet)
 						->setShortDescription($short_description);
-					$this->_updateFullDescription($product, $description);
+					$connector->_updateFullDescription($product, $description);
 					$product->setIsFromB2B(true)
 						->setStatus(ProductStatus::get($systemStatusId))
 						->setSellOnWeb(true)
-						->setManufacturer($this->getManufacturerName(trim($pro['manufacturer'])))
+						->setManufacturer($connector->getManufacturerName(trim($pro['manufacturer'])))
 						->save()
 						->clearAllPrice()
 						->addPrice(ProductPriceType::get(ProductPriceType::ID_RRP), $price)
@@ -530,16 +555,21 @@ class CatelogConnector extends B2BConnector
 					if($transStarted === false)
 					{
 						Dao::commitTransaction();
-						$this->removeLineFromFile($cacheFile, $line);
+						$connector->removeLineFromFile($cacheFile, $line);
 					}
 					else {echo "\n" . '***ERROR***' . "transStarted === true, nothing is commited! \n";}
-			} catch(Exception $ex)
-			{
-				if($transStarted === false)
-					Dao::rollbackTransaction();
-				echo "\n" . '***ERROR***' . $ex->getMessage() . "\n" . $ex->getTraceAsString() . "\n";
+					if($rowCount === 0 || $rowCount % $sessionRotation == 0)
+					{
+						if($debug === true)
+						echo 'session => ' . $connector->_session . PHP_EOL;
+					}
+				} catch(Exception $ex)
+				{
+					if($transStarted === false)
+						Dao::rollbackTransaction();
+					echo "\n" . '***ERROR***' . $ex->getMessage() . "\n" . $ex->getTraceAsString() . "\n";
+				}
 			}
-		}
 	}
 	private function removeLineFromFile($file, $line)
 	{
