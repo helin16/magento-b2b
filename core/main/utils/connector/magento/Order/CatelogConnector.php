@@ -469,7 +469,7 @@ class CatelogConnector extends B2BConnector
 					if($debug === true)
 					{
 						echo $rowCount . '/' . $totalCount . PHP_EOL;
-						echo print_r($line, true);
+						echo print_r($line, true) . PHP_EOL;
 					}
 					$attributeSetId = intval($pro['set']);
 					$attributeSet = ProductAttributeSet::getByMageId($attributeSetId);
