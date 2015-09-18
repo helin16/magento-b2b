@@ -451,7 +451,7 @@ class CatelogConnector extends B2BConnector
 					if(!isset($pro['product_id']) || intval($pro['product_id']) === 0 || !isset($pro['sku']) || trim($pro['sku']) === '')
 					{
 						if($debug === true)
-							echo 'invalid product_id from magento, skip current line';
+							echo 'invalid product_id from magento, skip current line' . PHP_EOL;
 						continue;
 					}
 					$mageId = $pro['product_id'];
