@@ -349,7 +349,7 @@ class CatelogConnector extends B2BConnector
 			$array[trim($attr->key)] = trim($attr->value);
 		return $array;
 	}
-	public function downloadProductInfo()
+	public function downloadProductInfo($newOnly = false, $debug = false)
 	{
 		$cacheFile = self::CACHE_FILE;
 		file_put_contents($cacheFile, '');
@@ -357,10 +357,12 @@ class CatelogConnector extends B2BConnector
 		if(!($systemSetting = SystemSettings::getByType(SystemSettings::TYPE_LAST_NEW_PRODUCT_PULL)) instanceof SystemSettings)
 			throw new Exception('cannot get LAST_NEW_PRODUCT_PULL in system setting');
 		$fromDate = $systemSetting->getValue();
-		$products = $this->getProductList($fromDate);
+		$downloadType = ($newOnly === true ? 'created_at' : 'updated_at');
+		$products = $this->getProductList($fromDate, $downloadType);
 		if(count($products) === 0)
 		{
-			echo 'nothing from magento. exitting' . "\n";
+			if($debug === true)
+				echo 'nothing from magento. exitting' . "\n";
 			return $this;
 		}
 		try
@@ -371,7 +373,8 @@ class CatelogConnector extends B2BConnector
 			{
 				$mageId = trim($pro->product_id);
 				$sku = trim($pro->sku);
-				echo $sku . "\n";
+				if($debug === true)
+					echo $sku . "\n";
 				$pro = $this->getProductInfo($sku, $this->getInfoAttributes());
 				file_put_contents($cacheFile, json_encode($pro) . "\n", FILE_APPEND);
 			}
@@ -394,7 +397,7 @@ class CatelogConnector extends B2BConnector
 		}
 		return $this;
 	}
-	public function processDownloadedProductInfo($debug = false)
+	public function processDownloadedProductInfo($newOnly = false, $debug = false)
 	{
 		if(!($systemSetting = SystemSettings::getByType(SystemSettings::TYPE_LAST_NEW_PRODUCT_PULL)) instanceof SystemSettings)
 			throw new Exception('cannot get LAST_NEW_PRODUCT_PULL in system setting');
@@ -426,6 +429,10 @@ class CatelogConnector extends B2BConnector
 						if($debug === true)
 							echo '***warnning***Magento product [' . $pro['product_id'] . ']' . $sku . ' created at ' . $created_at . ' updated at ' . $updated_at 
 								.  ' sku length exceed system sku length limit of' . $skuSizeLimit . ', skipped' . "\n";
+						continue;
+					}
+					if($newOnly === true && Product::getBySku($sku) instanceof Product)
+					{
 						continue;
 					}
 					$attributeSetId = intval($pro['set']);
