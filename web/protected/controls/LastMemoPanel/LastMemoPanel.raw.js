@@ -49,11 +49,9 @@ LastMemoPanelJs.prototype = {
 			 return tmp.me;
 		 }
 
+		 tmp.newMemoDiv.hide();
 		 tmp.me._pageJs.postAjax(LastMemoPanelJs.callbackIds.addMemo, {'entity': tmp.me._entityName, 'entityId': tmp.me._entityId, 'data': tmp.data}, {
-			 'onLoading': function() {
-				 tmp.newMemoDiv.hide();
-			 }
-		 	 , 'onSuccess': function (sender, param) {
+			 'onSuccess': function (sender, param) {
 		 		 try {
 		 			 tmp.result = tmp.me._pageJs.getResp(param, false, true);
 		 			 if(!tmp.result || !tmp.result.item)
@@ -169,14 +167,12 @@ LastMemoPanelJs.prototype = {
 		 tmp.loadingDiv = new Element('div')
 		 	.insert({'bottom': tmp.me._pageJs.getLoadingImg().removeClassName('fa-5x') })
 		 	.insert({'bottom': new Element('span').update(' Loading Memo...') });
+		 if($(tmp.me._panelHTMLID))
+			 $(tmp.me._panelHTMLID).update(tmp.loadingDiv);
 		 tmp.ajax = new Ajax.Request('/ajax/getComments', {
 				method: 'get'
 				,parameters: {'entity': tmp.me._entityName, 'entityId': tmp.me._entityId, 'orderBy': {'id':'desc'}, 'pageNo': 1, 'pageSize': 1, 'type': 'MEMO'}
-				,onLoading: function() {
-					if($(tmp.me._panelHTMLID))
-						$(tmp.me._panelHTMLID).update(tmp.loadingDiv);
-				}
-				,onSuccess: function(transport) {
+				,'onSuccess': function(transport) {
 					try {
 						tmp.result = tmp.me._pageJs.getResp(transport.responseText, false, true);
 						if(!tmp.result || !tmp.result.items)
