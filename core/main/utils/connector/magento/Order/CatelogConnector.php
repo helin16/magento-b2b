@@ -366,8 +366,9 @@ class CatelogConnector extends B2BConnector
 		$cacheFile = ($newOnly === true ? self::MAGE_PULL_NEW_FILE : self::MAGE_PULL_ALL_FILE);
 		file_put_contents($cacheFile, '');
 		
-		if(!($systemSetting = SystemSettings::getByType(SystemSettings::TYPE_LAST_NEW_PRODUCT_PULL)) instanceof SystemSettings)
-			throw new Exception('cannot get LAST_NEW_PRODUCT_PULL in system setting');
+		$systemSetting = ($newOnly === true ? SystemSettings::getByType(SystemSettings::TYPE_LAST_NEW_PRODUCT_PULL) : SystemSettings::getByType(SystemSettings::TYPE_LAST_PULL_PRODUCT_PULL));
+		if(!$systemSetting instanceof SystemSettings)
+			throw new Exception('cannot get ' . ($newOnly === true ? 'TYPE_LAST_NEW_PRODUCT_PULL' : 'TYPE_LAST_PULL_PRODUCT_PULL') . ' in system setting');
 		$fromDate = $systemSetting->getValue();
 		$downloadType = ($newOnly === true ? 'created_at' : 'updated_at');
 		$rowCount = 0;
@@ -415,15 +416,17 @@ class CatelogConnector extends B2BConnector
 	}
 	public function processDownloadedProductInfo($newOnly = false, $debug = false)
 	{
-		if(!($systemSetting = SystemSettings::getByType(SystemSettings::TYPE_LAST_NEW_PRODUCT_PULL)) instanceof SystemSettings)
-			throw new Exception('cannot get LAST_NEW_PRODUCT_PULL in system setting');
+		$systemSetting = ($newOnly === true ? SystemSettings::getByType(SystemSettings::TYPE_LAST_NEW_PRODUCT_PULL) : SystemSettings::getByType(SystemSettings::TYPE_LAST_PULL_PRODUCT_PULL));
+		if(!$systemSetting instanceof SystemSettings)
+			throw new Exception('cannot get ' . ($newOnly === true ? 'TYPE_LAST_NEW_PRODUCT_PULL' : 'TYPE_LAST_PULL_PRODUCT_PULL') . ' in system setting');
 		
 		$cacheFile = ($newOnly === true ? self::MAGE_PULL_NEW_FILE : self::MAGE_PULL_ALL_FILE);
 		$contents = file($cacheFile);
 		// handle extra long sku from magento, exceeding mysql sku length limit
 		DaoMap::loadMap('Product');
 		$skuSizeLimit = DaoMap::$map['product']['sku']['size'];
-		if(count($contents) === 0)
+		$totalCount = count($contents);
+		if($totalCount === 0)
 		{
 			if($debug === true)
 				echo 'nothing from downloaded product info file ' . $cacheFile . '. exitting' . "\n";
@@ -444,7 +447,6 @@ class CatelogConnector extends B2BConnector
 							true
 						);
 					}
-					echo print_r($line, true);
 					$pro = json_decode($line, true);
 					$mageId = $pro['product_id'];
 					$created_at = $pro['created_at'];
@@ -457,9 +459,17 @@ class CatelogConnector extends B2BConnector
 								.  ' sku length exceed system sku length limit of' . $skuSizeLimit . ', skipped' . "\n";
 						continue;
 					}
-					if($newOnly === true && Product::getBySku($sku) instanceof Product)
+					if($newOnly === true && ($product = Product::getBySku($sku)) instanceof Product)
 					{
+						if($debug === true)
+							echo 'Product[' . $product->getId() . '] ' . $sku . ' already exist' . PHP_EOL;
+						$connector->removeLineFromFile($cacheFile, $line);
 						continue;
+					}
+					if($debug === true)
+					{
+						echo $rowCount . '/' . $totalCount . PHP_EOL;
+						echo print_r($line, true);
 					}
 					$attributeSetId = intval($pro['set']);
 					$attributeSet = ProductAttributeSet::getByMageId($attributeSetId);
@@ -549,15 +559,17 @@ class CatelogConnector extends B2BConnector
 							$product->addCategory($category);
 						}
 					}
-					$rowCount++;
-					$systemSetting = SystemSettings::getByType(SystemSettings::TYPE_LAST_NEW_PRODUCT_PULL);
-					$systemSetting->setValue($updated_at)->save();
 					if($transStarted === false)
 					{
 						Dao::commitTransaction();
 						$connector->removeLineFromFile($cacheFile, $line);
+						$systemSetting->setValue($newOnly === true ? $created_at : $updated_at)->save();
+						if($debug === true)
+							echo 'system setting ' . trim($systemSetting->getType()) . ' changed to ' .  trim(($newOnly === true ? $created_at : $updated_at)) . PHP_EOL;
+						$rowCount++;
 					}
 					else {echo "\n" . '***ERROR***' . "transStarted === true, nothing is commited! \n";}
+					
 					if($rowCount === 0 || $rowCount % $sessionRotation == 0)
 					{
 						if($debug === true)
