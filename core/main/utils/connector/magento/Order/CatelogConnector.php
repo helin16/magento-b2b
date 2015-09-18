@@ -1,7 +1,8 @@
 <?php
 class CatelogConnector extends B2BConnector
 {
-	const CACHE_FILE = '/tmp/mageProduct.json';
+	const MAGE_PULL_NEW_FILE = '/tmp/mageProduct_new.json';
+	const MAGE_PULL_ALL_FILE = '/tmp/mageProduct_all.json';
 	const DATAFEED_DIR = '/tmp/datafeed';
 	public function getProductList($fromDate, $type = 'updated_at')
 	{
@@ -351,7 +352,7 @@ class CatelogConnector extends B2BConnector
 	}
 	public function downloadProductInfo($newOnly = false, $debug = false)
 	{
-		$cacheFile = self::CACHE_FILE;
+		$cacheFile = ($newOnly === true ? self::MAGE_PULL_NEW_FILE : self::MAGE_PULL_ALL_FILE);
 		file_put_contents($cacheFile, '');
 		
 		if(!($systemSetting = SystemSettings::getByType(SystemSettings::TYPE_LAST_NEW_PRODUCT_PULL)) instanceof SystemSettings)
@@ -402,7 +403,7 @@ class CatelogConnector extends B2BConnector
 		if(!($systemSetting = SystemSettings::getByType(SystemSettings::TYPE_LAST_NEW_PRODUCT_PULL)) instanceof SystemSettings)
 			throw new Exception('cannot get LAST_NEW_PRODUCT_PULL in system setting');
 		
-		$cacheFile = self::CACHE_FILE;
+		$cacheFile = ($newOnly === true ? self::MAGE_PULL_NEW_FILE : self::MAGE_PULL_ALL_FILE);
 		$contents = file($cacheFile);
 		// handle extra long sku from magento, exceeding mysql sku length limit
 		DaoMap::loadMap('Product');
@@ -529,7 +530,7 @@ class CatelogConnector extends B2BConnector
 					if($transStarted === false)
 					{
 						Dao::commitTransaction();
-						$this->removeLineFromFile($line);
+						$this->removeLineFromFile($cacheFile, $line);
 					}
 					else {echo "\n" . '***ERROR***' . "transStarted === true, nothing is commited! \n";}
 			} catch(Exception $ex)
@@ -540,9 +541,9 @@ class CatelogConnector extends B2BConnector
 			}
 		}
 	}
-	private function removeLineFromFile($line)
+	private function removeLineFromFile($file, $line)
 	{
-		$fileName = self::CACHE_FILE;
+		$fileName = $file;
 		$contents = file_get_contents($fileName);
 		$contents = str_replace($line, '', $contents);
 		file_put_contents($fileName, $contents);
