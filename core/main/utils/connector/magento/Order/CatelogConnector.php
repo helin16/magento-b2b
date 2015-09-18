@@ -448,6 +448,12 @@ class CatelogConnector extends B2BConnector
 						);
 					}
 					$pro = json_decode($line, true);
+					if(!isset($pro['product_id']) || intval($pro['product_id']) === 0 || !isset($pro['sku']) || trim($pro['sku']) === '')
+					{
+						if($debug === true)
+							echo 'invalid product_id from magento, skip current line';
+						continue;
+					}
 					$mageId = $pro['product_id'];
 					$created_at = $pro['created_at'];
 					$updated_at = $pro['updated_at'];
@@ -484,12 +490,6 @@ class CatelogConnector extends B2BConnector
 						echo "\n" . 'mageSetId:' . $attributeSetId . ' => systemSetId:' . $attributeSet->getId() . ', systemSetName:' . $attributeSet->getName() . "\n";
 					$name = trim($pro['name']);
 					$short_description = trim($pro['short_description']);
-					if(!isset($pro['product_id']) || intval($pro['product_id']) === 0)
-					{
-						if($debug === true)
-							echo 'invalid product_id from magento, skip current line';
-						continue;
-					}
 					if($name === '')
 					{
 						if($debug === true)
