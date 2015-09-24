@@ -143,6 +143,7 @@ class CatelogConnector extends B2BConnector
 						echo $rowCount . ': sku "' . $sku .'", price "' . $price . '", stockLevel "' . $stockLevel . '"[' . $stockLevelNo . ']' . PHP_EOL;
 					$param = array(
 						'price' => $price
+						,'status' => '1'
 						,'additional_attributes' => array(
 							'single_data' => array (
 					            array ('key' => 'all_ln_stock', 'value' => $stockLevelNo)
