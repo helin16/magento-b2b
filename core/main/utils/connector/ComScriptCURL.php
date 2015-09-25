@@ -19,8 +19,10 @@ class ComScriptCURL
 				CURLOPT_FILE    => $fp,
 				CURLOPT_TIMEOUT => $timeout, // set this to 8 hours so we dont timeout on big files
 				CURLOPT_URL     => $url
-// 				,CURLOPT_PROXY   => 'proxy.bytecraft.internal:3128'
 		);
+		if(trim(self::_getProxy()) !== '') {
+		    $options[CURLOPT_PROXY] = self::_getProxy();
+		}
 		foreach($extraOpts as $key => $value)
 			$options[$key] = $value;
 		$ch = curl_init();
@@ -48,8 +50,10 @@ class ComScriptCURL
 				CURLOPT_RETURNTRANSFER => true,
 				CURLOPT_TIMEOUT => $timeout, // set this to 8 hours so we dont timeout on big files
 				CURLOPT_URL     => $url
-// 				,CURLOPT_PROXY   => 'proxy.bytecraft.internal:3128'
 		);
+		if(trim(self::_getProxy()) !== '') {
+		    $options[CURLOPT_PROXY] = self::_getProxy();
+		}
 		foreach($extraOpts as $key => $value)
 			$options[$key] = $value;
 		if(count($data) > 0)
@@ -66,7 +70,7 @@ class ComScriptCURL
 		curl_close($ch);
 		return $data;
 	}
-	public static function is404($url, $timeout = null, $extraOpts = array()) 
+	public static function is404($url, $timeout = null, $extraOpts = array())
 	{
 		$timeout = trim($timeout);
 		$timeout = (!is_numeric($timeout) ? self::CURL_TIMEOUT : $timeout);
@@ -75,8 +79,10 @@ class ComScriptCURL
 				CURLOPT_TIMEOUT        => $timeout, // set this to 8 hours so we dont timeout on big files
 				CURLOPT_URL            => $url,
 				CURLOPT_NOBODY         => true
-// 				,CURLOPT_PROXY   => 'proxy.bytecraft.internal:3128'
 		);
+		if(trim(self::_getProxy()) !== '') {
+		    $options[CURLOPT_PROXY] = self::_getProxy();
+		}
 		foreach($extraOpts as $key => $value)
 			$options[$key] = $value;
 		$ch = curl_init();
@@ -90,5 +96,9 @@ class ComScriptCURL
 		} else {
 			return true;
 		}
+	}
+
+	private function _getProxy() {
+	    return '223.252.33.217:18256';
 	}
 }
