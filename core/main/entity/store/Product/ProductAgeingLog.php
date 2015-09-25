@@ -215,7 +215,7 @@ class ProductAgeingLog extends InfoEntityAbstract
 	 */
 	public function preSave()
 	{
-		$this->setProduct($this->setProductQtyLog()->getproduct())
+		$this->setProduct($this->getProductQtyLog()->getproduct())
 			->setLastPurchaseTime($this->getCreated());
 		switch($this->getEntityName()) {
 			case 'ReceivingItem': {
