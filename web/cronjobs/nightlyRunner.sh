@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # backup database
-/bin/bash /var/www/magentob2b/web/cronjobs/backup_db.bash
+#/bin/bash /var/www/magentob2b/web/cronjobs/backup_db.bash
 # run all xero exporter
 /usr/bin/php /var/www/magentob2b/web/cronjobs/report/ExportRunner.php >> /tmp/export_`date +"%d_%b_%y"`.log
 # product ageing report
