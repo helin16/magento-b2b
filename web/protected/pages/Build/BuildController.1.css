@@ -3,6 +3,3 @@
   max-height: 800px !important;
   overflow-y: auto !important;
 }
-.product_item [class^='col-'] { // please ignore the error shown in eclipse
-	word-wrap: break-word;
-}

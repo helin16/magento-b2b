@@ -181,6 +181,12 @@ class Product extends InfoEntityAbstract
 	 */
 	protected $attributeSet = null;
 	/**
+	 * if the datafeed for this product is done manually
+	 * 
+	 * @var bool
+	 */
+	private $manualDatafeed = false;
+	/**
 	 * Getter for categories
 	 *
 	 * @return array()
@@ -770,6 +776,25 @@ class Product extends InfoEntityAbstract
 		$this->attributeSet = $value;
 		return $this;
 	}
+	/**
+	 * getter for manualDatafeed
+	 *
+	 * @return bool
+	 */
+	public function getManualDatafeed()
+	{
+	    return $this->manualDatafeed;
+	}
+	/**
+	 * Setter for manualDatafeed
+	 *
+	 * @return Product
+	 */
+	public function setManualDatafeed($manualDatafeed)
+	{
+	    $this->manualDatafeed = $manualDatafeed;
+	    return $this;
+	}
 	
 	/**
 	 * Adding a product image to the product
@@ -1030,6 +1055,8 @@ class Product extends InfoEntityAbstract
 			$array['locations'] = array_map(create_function('$a', 'return $a->getJson();'), PreferredLocation::getPreferredLocations($this));
 			$array['unitCost'] = $this->getUnitCost();
 			$array['priceMatchRule'] = ($i=ProductPriceMatchRule::getByProduct($this)) instanceof ProductPriceMatchRule ? $i->getJson() : null;
+			$array['attributeSet'] = ($i=$this->getAttributeSet()) instanceof ProductAttributeSet ? $i->getJson() : null;
+			$array['status'] = ($i=$this->getStatus()) instanceof ProductStatus ? $i->getJson() : null;
 		}
 		return parent::getJson($array, $reset);
 	}
@@ -1378,6 +1405,7 @@ class Product extends InfoEntityAbstract
 		DaoMap::setOneToMany('codes', 'ProductCode', 'pro_pro_code');
 		DaoMap::setBoolType('isKit');
 		DaoMap::setManyToOne('attributeSet', 'ProductAttributeSet', 'pro_attr_set', true);
+		DaoMap::setBoolType('manualDatafeed');
 		parent::__loadDaoMap();
 
 		DaoMap::createUniqueIndex('sku');
@@ -1399,6 +1427,7 @@ class Product extends InfoEntityAbstract
 		DaoMap::createIndex('costAccNo');
 		DaoMap::createIndex('isKit');
 		DaoMap::createIndex('attributeSet');
+		DaoMap::createIndex('manualDatafeed');
 		DaoMap::commit();
 	}
 	/**
@@ -1429,15 +1458,16 @@ class Product extends InfoEntityAbstract
 	 *
 	 * @return Ambigous <Product, Ambigous, NULL, BaseEntityAbstract>
 	 */
-	public static function create($sku, $name, $mageProductId = '', $stockOnHand = null, $stockOnOrder = null, $isFromB2B = false, $shortDescr = '', $fullDescr = '', Manufacturer $manufacturer = null, $assetAccNo = null, $revenueAccNo = null, $costAccNo = null, $stockMinLevel = null, $stockReorderLevel = null)
+	public static function create($sku, $name, $mageProductId = '', $stockOnHand = null, $stockOnOrder = null, $isFromB2B = false, $shortDescr = '', $fullDescr = '', Manufacturer $manufacturer = null, $assetAccNo = null, $revenueAccNo = null, $costAccNo = null, $stockMinLevel = null, $stockReorderLevel = null, $manualDatafeed = false)
 	{
 		if(!($product = self::getBySku($sku)) instanceof Product)
 			$product = new Product();
 		$product->setSku(trim($sku))
-		->setName($name);
+		->setName($name)
+		->setManualDatafeed(intval($manualDatafeed) === 1);
 		if(($mageProductId = trim($mageProductId)) !== "")
 			$product->setMageId($mageProductId);
-
+		
 		if(trim($product->getId()) === '')
 		{
 			$product->setIsFromB2B($isFromB2B)
@@ -1487,51 +1517,87 @@ class Product extends InfoEntityAbstract
 	{
 		$where = array(1);
 		$params = array();
+		
 		if(is_array($sumValues)) {
 			$innerJoins = array();
 		}
 		if(is_array($sku)) {
-			$where[] = 'pro.sku in (' . implode(',', array_fill(0, count($sku), '?')) . ')';
-			$params = array_merge($params, $sku);
+			$skus = array();
+			$keys = array();
+			foreach($sku as $index => $value){
+				$key = 'sku_' . $index;
+				$keys[] = ':' . $key;
+				$skus[$key] = trim($value);
+			}
+			$where[] = 'pro.sku in (' . implode(',', $keys) . ')';
+			$params = array_merge($params, $skus);
 		} else if(($sku = trim($sku)) !== '') {
-			$where[] = 'pro.sku like ?';
-			$params[] = '%' . $sku . '%';
+			$where[] = 'pro.sku like :sku';
+			$params['sku'] = '%' . $sku . '%';
 		}
 		if(($name = trim($name)) !== '')
 		{
-			$where[] = 'pro.name like ?';
-			$params[] = '%' . $name . '%';
+			$where[] = 'pro.name like :proName';
+			$params['proName'] = '%' . $name . '%';
 		}
 		if(($active = trim($active)) !== '')
 		{
-			$where[] = 'pro.active = ?';
-			$params[] = intval($active);
+			$where[] = 'pro.active = :active';
+			$params['active'] = intval($active);
 		}
 		if(count($manufacturerIds) > 0)
 		{
-			$where[] = 'pro.manufacturerId in (' . implode(',', array_fill(0, count($manufacturerIds), '?')) . ')';
-			$params = array_merge($params, $manufacturerIds);
+			$ps = array();
+			$keys = array();
+			foreach($manufacturerIds as $index => $value){
+				$key = 'manf_' . $index;
+				$keys[] = ':' . $key;
+				$ps[$key] = trim($value);
+			}
+			$where[] = 'pro.manufacturerId in (' . implode(',', $keys) . ')';
+			$params = array_merge($params, $ps);
 		}
 		if(count($statusIds) > 0)
 		{
-			$where[] = 'pro.statusId in (' . implode(',', array_fill(0, count($statusIds), '?')) . ')';
-			$params = array_merge($params, $statusIds);
+			$ps = array();
+			$keys = array();
+			foreach($statusIds as $index => $value){
+				$key = 'stId_' . $index;
+				$keys[] = ':' . $key;
+				$ps[$key] = trim($value);
+			}
+			$where[] = 'pro.statusId in (' . implode(',', $keys) . ')';
+			$params = array_merge($params, $ps);
 		}
 		if(count($supplierIds) > 0)
 		{
-			self::getQuery()->eagerLoad('Product.supplierCodes', 'inner join', 'pro_sup_code', 'pro.id = pro_sup_code.productId and pro_sup_code.supplierId in (' . implode(',', array_fill(0, count($supplierIds), '?')) . ')');
-			if(is_array($sumValues)) {
-				$innerJoins[] = 'inner join suppliercodes pro_sup_code on (pro.id = pro_sup_code.productId and pro_sup_code.supplierId in (' . implode(',', array_fill(0, count($supplierIds), '?')) . '))';
+			$ps = array();
+			$keys = array();
+			foreach($supplierIds as $index => $value){
+				$key = 'spId_' . $index;
+				$keys[] = ':' . $key;
+				$ps[$key] = trim($value);
 			}
-			$params = array_merge($supplierIds, $params);
+			self::getQuery()->eagerLoad('Product.supplierCodes', 'inner join', 'pro_sup_code', 'pro.id = pro_sup_code.productId and pro_sup_code.supplierId in (' . implode(',', $keys) . ')');
+			if(is_array($sumValues)) {
+				$innerJoins[] = 'inner join suppliercode pro_sup_code on (pro.id = pro_sup_code.productId and pro_sup_code.supplierId in (' . implode(',', $keys) . '))';
+			}
+			$params = array_merge($params, $ps);
 		}
 		if(count($categoryIds) > 0)
 		{
-			self::getQuery()->eagerLoad('Product.categories', 'inner join', 'pro_cate', 'pro.id = pro_cate.productId and pro_cate.categoryId in (' . implode(',', array_fill(0, count($categoryIds), '?')) . ')');
-			if(is_array($sumValues)) {
-				$innerJoins[] = 'inner join product_category pro_cate on (pro.id = pro_cate.productId and pro_cate.categoryId in (' . implode(',', array_fill(0, count($categoryIds), '?')) . '))';
+			$ps = array();
+			$keys = array();
+			foreach($categoryIds as $index => $value){
+				$key = 'cateId_' . $index;
+				$keys[] = ':' . $key;
+				$ps[$key] = trim($value);
 			}
-			$params = array_merge($categoryIds, $params);
+			self::getQuery()->eagerLoad('Product.categories', 'inner join', 'pro_cate', 'pro.id = pro_cate.productId and pro_cate.categoryId in (' . implode(',', $keys) . ')');
+			if(is_array($sumValues)) {
+				$innerJoins[] = 'inner join product_category pro_cate on (pro.id = pro_cate.productId and pro_cate.categoryId in (' . implode(',', $keys) . '))';
+			}
+			$params = array_merge($params, $ps);
 		}
 		if(($stockLevel = trim($stockLevel)) !== '')
 		{
@@ -1539,15 +1605,16 @@ class Product extends InfoEntityAbstract
 		}
 		if(($sh_from = trim($sh_from)) !== '')
 		{
-			$where[] = 'pro.stockOnHand >= ?';
-			$params[] = intval($sh_from);
+			$where[] = 'pro.stockOnHand >= :stockOnHand_from';
+			$params['stockOnHand_from'] = intval($sh_from);
 		}
 		if(($sh_to = trim($sh_to)) !== '')
 		{
-			$where[] = 'pro.stockOnHand <= ?';
-			$params[] = intval($sh_to);
+			$where[] = 'pro.stockOnHand <= :stockOnHand_to';
+			$params['stockOnHand_to'] = intval($sh_to);
 		}
 
+		$products = Product::getAllByCriteria(implode(' AND ', $where), $params, false, $pageNo, $pageSize, $orderBy, $stats);
 		if(is_array($sumValues)) {
 			$sql = 'select sum(pro.stockOnHand) `totalStockOnHand`, sum(pro.totalOnHandValue) `totalOnHandValue` from product pro ' . implode(' ', $innerJoins) . ' where pro.active = 1 and (' . implode(' AND ', $where) . ')';
 			$sumResult = Dao::getResultsNative($sql, $params);
@@ -1556,6 +1623,6 @@ class Product extends InfoEntityAbstract
 				$sumValues['totalOnHandValue'] = $sumResult[0]['totalOnHandValue'];
 			}
 		}
-		return Product::getAllByCriteria(implode(' AND ', $where), $params, false, $pageNo, $pageSize, $orderBy, $stats);
+		return $products;
 	}
 }

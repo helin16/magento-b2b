@@ -20,10 +20,8 @@
 			<!-- FrontEnd:: login page -->
 			<url ServiceParameter="Login.LoginController" pattern="login.html" />
 
-			<!-- FrontEnd:: Datafeed CsvDecoder page -->
-			<url ServiceParameter="Datafeed.CsvDecoder.Controller" pattern="datafeed/csvdecoder.html" />
-			<!-- FrontEnd:: Datafeed Rule Detail page -->
-			<url ServiceParameter="Datafeed.Rule.Controller" pattern="datafeed/{id}.html" parameters.id="new|\d+"/>
+			<!-- FrontEnd:: System Build page -->
+			<url ServiceParameter="Build.BuildController" pattern="build.html" />
 
 			<!-- FrontEnd:: CreditNote list page -->
 			<url ServiceParameter="CreditNote.List.ListController" pattern="creditnote.html" />
@@ -195,7 +193,10 @@
 
 		<service id="asset" class="Application.pages.Asset.AssetController"></service>
 		<service id="soap" class="System.Web.Services.TSoapService">
-			<soap id="webauth" provider="Application.classes.Soap.WebAuth" />
+			<soap id="Product" provider="Application.classes.Soap.APIProduct" />
+			<soap id="ProductAttributeSet" provider="Application.classes.Soap.APIProductAttributeSet" />
+			<soap id="ProductCategory" provider="Application.classes.Soap.APIProductCategory" />
+			<soap id="Manufacturer" provider="Application.classes.Soap.APIManufacturer" />
 		</service>
 	</services>
 	<!-- application parameters -->

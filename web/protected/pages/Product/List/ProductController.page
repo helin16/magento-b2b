@@ -6,6 +6,7 @@
 <com:TCallback ID="updatePriceBtn" OnCallback = 'Page.updatePrice' />
 <com:TCallback ID="updateStockLevelBtn" OnCallback = 'Page.updateStockLevel' />
 <com:TCallback ID="toggleIsKitBtn" OnCallback = 'Page.toggleIsKit' />
+<com:TCallback ID="toggleManualFeedBtn" OnCallback = 'Page.toggleManualFeed' />
 <com:TCallback ID="newRuleBtn" OnCallback = 'Page.newRule' />
 	<div class="pagewrapper productlistwraper">
 		<div class="col-xs-12">

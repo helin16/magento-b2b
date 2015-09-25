@@ -13,10 +13,12 @@ echo "Done importProducts from magento MELB TIME: " . UDate::now(UDate::TIME_ZON
 
 function importNewProduct()
 {
+	$debug = true;
+	$newOnly = false;
 	$script = CatelogConnector::getConnector(B2BConnector::CONNECTOR_TYPE_CATELOG,
 			SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_WSDL),
 			SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_USER),
 			SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_KEY)
 	)
-	->importProducts(true, false, false);
+	->processDownloadedProductInfo($newOnly, $debug);
 }

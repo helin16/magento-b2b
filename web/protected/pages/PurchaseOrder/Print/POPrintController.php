@@ -86,7 +86,7 @@ class POPrintController extends BPCPageAbstract
 			return '';
 		foreach($comments as $comment)
 		{
-			$html .= '<div>' . $comment->getComments() . '</div>';
+			$html .= '<div style="max-width: 670px; word-wrap: break-word; font-weight: bold; color: brown;">' . $comment->getComments() . '</div>';
 		}
 		return $html;
 	}

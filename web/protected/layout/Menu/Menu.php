@@ -50,6 +50,8 @@ class Menu extends TTemplateControl
 			$array['Products']['accounting']  = array('url' => '/accounting.html', 'name' => 'Accounting Info', 'icon'=> '<span class=""></span>');
 			$array['Products']['importer']  = array('url' => '/importer/new.html', 'name' => 'Importer', 'icon'=> '<span class="fa fa-bars"></span>');
 			$array['Products']['ageingreport']  = array('url' => '/productageing.html', 'name' => 'Ageing Report (beta)', 'icon'=> '<span class="glyphicon glyphicon-eye-open"></span>');
+			$array['Products']['systembuilds'] = array('url' => '/build.html', 'name' => 'System Builds');
+			
 		}
 		if(AccessControl::canAccessPurcahseOrdersPage(Core::getRole()) )
 			$array['Purchase'] = array(
@@ -104,14 +106,6 @@ class Menu extends TTemplateControl
 					'messages' => array('url' => '/messages.html', 'name' => 'Messages', 'icon' => '<span class="glyphicon glyphicon-envelope"></span>'),
 					'logs' => array('url' => '/logs.html', 'name' => 'Logs', 'icon' => '<span class="fa fa-book"></span>'),
 					'systemsettings' => array('url' => '/systemsettings.html', 'name' => 'Settings', 'icon' => '<span class="glyphicon glyphicon-cog"></span>')
-			);
-		}
-		if(AccessControl::canAccessDevelopingPage(Core::getRole()) )
-		{
-			$array['Testing'] = array(
-					'icon' => '<span class="fa fa-connectdevelop"></span>',
-					'csvdecoder' => array('url' => '/datafeed/csvdecoder.html', 'name' => 'CSV Decoder', 'icon' => '<span class=""></span>'),
-					'newDatafeedRule' => array('url' => '/datafeed/new.html', 'name' => 'New Datafeed Rule', 'icon' => '<span class=""></span>')
 			);
 		}
 		$html = "<ul class='nav navbar-nav'>";

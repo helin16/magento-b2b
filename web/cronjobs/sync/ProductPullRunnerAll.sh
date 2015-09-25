@@ -8,5 +8,7 @@
 /usr/bin/php /var/www/magentob2b/web/cronjobs/sync/ProductCategoryPull.php >> /tmp/ProductCategoryPull_`date +"%d_%b_%y"`.log
 # Product Manufacturer Pull
 /usr/bin/php /var/www/magentob2b/web/cronjobs/sync/ProductManufacturerPull.php >> /tmp/ProductManufacturerPull_`date +"%d_%b_%y"`.log
-# Product Pull
-/usr/bin/php /var/www/magentob2b/web/cronjobs/sync/ProductPull.php >> /tmp/ProductPull_`date +"%d_%b_%y"`.log
+# Product Download
+/usr/bin/php /var/www/magentob2b/web/cronjobs/sync/ProductDownloadNAll.php >> /tmp/ProductDownloadAll_`date +"%d_%b_%y"`.log
+# Product Process Download
+/usr/bin/php /var/www/magentob2b/web/cronjobs/sync/ProductProcessDownloadedAll.php >> /tmp/ProductProcessDownloadedAll.php_`date +"%d_%b_%y"`.log

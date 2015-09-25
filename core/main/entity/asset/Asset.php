@@ -244,7 +244,8 @@ class Asset extends BaseEntityAbstract
 		foreach($assets as $asset)
 		{
 			// Remove the file from the NAS server
-			unlink($asset->getPath());
+			if(file_exists($asset->getPath()))
+				unlink($asset->getPath());
 			unset(self::$_cache[trim($asset->getAssetId())]);
 		}
 		return;
@@ -298,12 +299,13 @@ class Asset extends BaseEntityAbstract
 	 * (non-PHPdoc)
 	 * @see BaseEntityAbstract::getJson()
 	 */
-	public function getJson($extra = '', $reset = false)
+	public function getJson($extra = array(), $reset = false)
 	{
-		$a = array();
+		$a = $extra;
 		if(!$this->isJsonLoaded($reset))
 		{
 			$a['url'] = $this->getUrl();
+			$a['content'] = $this->readAssetFile($this->getPath());
 		}
 		$array = parent::getJson($a, $reset);
 		unset($array['path']);

@@ -17,19 +17,19 @@
 	           </div>
 	           <div class="panel-body" role="form" id='searchDiv'>
 	               <div class='row'>
-	                   <div class="col-sm-6">
+	                   <div class="col-sm-4">
 	                       <div class="form-group form-group-sm input-group">
 	                           <label for="custName" class="input-group-addon">Customer Name: </label>
 	                           <input id='custName' type="text" class="form-control input-sm" placeholder="Customer Name" search_field="ord.infos.<%= OrderInfoType::ID_CUS_NAME %>" />
 	                       </div>
 	                   </div>
-	                   <div class="col-sm-6">
+	                   <div class="col-sm-4">
 	                       <div class="form-group form-group-sm input-group">
 	                           <label for="custPONo" class="input-group-addon">Customer P.O.: </label>
 	                           <input id='custPONo' type="text" class="form-control input-sm" placeholder="Customer PO Number" search_field="ord.pONo" />
 	                       </div>
 	                   </div>
-	                   <div class="col-sm-3">
+	                   <div class="col-sm-4">
 	                       <div class="form-group form-group-sm input-group">
 	                           <label for="invNo" class="input-group-addon">Inv No: </label>
 	                           <input id='invNo' type="text" class="form-control input-sm" placeholder="Invoice Number" search_field="ord.invNo" />
