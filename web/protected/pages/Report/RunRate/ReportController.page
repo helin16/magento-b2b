@@ -1,0 +1,62 @@
+<com:TContent ID="MainContent">
+<com:Application.controls.fancybox.FancyBox />
+<com:Application.controls.select2.select2 />
+<com:Application.controls.bootstrapDateTimePicker.bootstrapDateTimePicker />
+<com:TCallback ID="deactivateItemBtn" OnCallback = 'Page.deactivateItems' />
+	<div class="pagewrapper item-list-wrapper" style="margin-top: 30px;">
+		<div class="col-xs-10 col-xs-offset-1">
+            <div class="panel panel-default" id="searchPanel">
+                <div class="panel-heading">
+                    <h4>Product Run Rate Report:</h4>
+                </div>
+                <div class="panel-body search-panel" id="searchDiv">
+                    <div class="row">
+                        <div class="col-xs-4">
+                            <div class="form-group form-group-sm input-group">
+                               <label class="contorl-label input-group-addon">SKU</label>
+                               <input type="text" search_field="pro.sku" placeholder="The SKU of the product" class="form-control input-sm">
+                           </div>
+                        </div>
+                        <div class="col-xs-5">
+                            <div class="form-group form-group-sm input-group">
+                               <label class="contorl-label input-group-addon">Name</label>
+                               <input type="text" search_field="pro.name" placeholder="The name of the product" class="form-control input-sm">
+                           </div>
+                        </div>
+                        <div class="col-xs-3">
+                            <div class="form-group form-group-sm input-group">
+                               <label class="contorl-label input-group-addon">Active</label>
+                               <select search_field="pro.active" class="chosen form-control input-sm">
+                                    <option value="1">Yes</option>
+                                    <option value="0">No</option>
+                                    <option value="ALL">All</option>
+                               </select>
+                           </div>
+                        </div>
+                        <div class="col-xs-2">
+                            <div class="form-group form-group-sm input-group">
+                                <label class="contorl-label input-group-addon">Brand</label>
+                                <input search_field="pro.manufacturerIds" class="chosen form-control input-sm select2" entityName="Manufacturer" result-format-func="pageJs.select2_formatResult_category"></input>
+                            </div>
+                        </div>
+                        <div class="col-xs-2">
+                            <div class="form-group form-group-sm input-group">
+                                <label class="contorl-label input-group-addon">Suppliers</label>
+                                <input search_field="pro.supplierIds" multiple class="chosen form-control input-sm select2" entityName="Supplier" result-format-func="pageJs.select2_formatResult_category"></input>
+                            </div>
+                        </div>
+                        <div class="col-xs-8">
+                            <div class="form-group form-group-sm input-group">
+                                <label class="contorl-label input-group-addon">Categories</label>
+                                <input search_field="pro.productCategoryIds" multiple class="chosen form-control input-sm select2"></input>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="panel-footer text-right">
+                    <button class="btn btn-primary">Generate</button>
+                </div>
+            </div>
+        </div>
+	</div>
+</com:TContent>

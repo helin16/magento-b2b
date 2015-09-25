@@ -51,7 +51,7 @@ class Menu extends TTemplateControl
 			$array['Products']['importer']  = array('url' => '/importer/new.html', 'name' => 'Importer', 'icon'=> '<span class="fa fa-bars"></span>');
 			$array['Products']['ageingreport']  = array('url' => '/productageing.html', 'name' => 'Ageing Report (beta)', 'icon'=> '<span class="glyphicon glyphicon-eye-open"></span>');
 			$array['Products']['systembuilds'] = array('url' => '/build.html', 'name' => 'System Builds');
-			
+
 		}
 		if(AccessControl::canAccessPurcahseOrdersPage(Core::getRole()) )
 			$array['Purchase'] = array(
@@ -90,7 +90,7 @@ class Menu extends TTemplateControl
 			$array['Logistics']['courier'] = array('url' => '/courier.html', 'name' => 'Courier', 'icon'=> '<span class=""></span>');
 			$array['Logistics']['Bill'] = array('url' => '/bills.html', 'name' => 'Supplier Invoices', 'icon' => '<span class="glyphicon glyphicon-usd"></span>');
 		}
-		if(AccessControl::canAccessWorkShopPage(Core::getRole()) )
+		if(AccessControl::canAccessWorkShopPage(Core::getRole()) ) {
 			$array['Workshop'] = array(
 					'icon' => '<span class="glyphicon glyphicon-wrench"></span>',
 					'newTask' =>array('url' => '/task/new.html', 'name' => 'New Task', 'icon' => '<span class="glyphicon glyphicon-plus"></span>'),
@@ -98,8 +98,14 @@ class Menu extends TTemplateControl
 					'newKit' =>array('url' => '/kit/new.html', 'name' => 'Build a Kit', 'icon' => '<span class="fa fa-gavel"></span>'),
 					'kits' => array('url' => '/kits.html', 'name' => 'Kits', 'icon' => '<span class="glyphicon glyphicon-search"></span>')
 			);
-		if(AccessControl::canAccessUsersPage(Core::getRole()) )
-		{
+		}
+		if(AccessControl::canAccessReportsPage(Core::getRole()) ) {
+			$array['Reports'] = array(
+					'icon' => '<span class="fa fa-area-chart"></span>',
+					'Run Rates' =>array('url' => '/report/runrate.html', 'name' => 'Run Rate', 'icon' => '<span class="glyphicon glyphicon-plus"></span>')
+			);
+		}
+		if(AccessControl::canAccessUsersPage(Core::getRole()) ) {
 			$array['Systems'] = array(
 					'icon' => '<span class="glyphicon glyphicon-cog"></span>',
 					'users' => array('url' => '/users.html', 'name' => 'Users', 'icon' => '<span class="glyphicon glyphicon-user"></span>'),

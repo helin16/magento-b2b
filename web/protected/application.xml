@@ -163,6 +163,8 @@
 
 			<!-- FrontEnd:: Report page -->
 			<url ServiceParameter="Report.List.ListController" pattern="report.html" />
+			<url ServiceParameter="Report.RunRate.ReportController" pattern="/report/runrate.html" />
+
 
 			<!-- FrontEnd:: Product Ageing Report page -->
 			<url ServiceParameter="Report.ProductAgeing.ListController" pattern="productageing.html" />
