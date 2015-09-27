@@ -12,6 +12,6 @@
 		</div>
 	</div>
 	<div id="resultDiv">
-		<input style="width: 100%" class="select2">
+		<!-- NOTICE: TYPE MUST BE UNIQUE -->
 	</div>
 </com:TContent>

@@ -4,63 +4,91 @@
 var PageJs = new Class.create();
 PageJs.prototype = Object.extend(new BPCPageJs(), {
 	resultDivId: '' //the html id of the result div
-	,init: function() {
+	,init: function(reset) {
 		var tmp = {};
 		tmp.me = this;
+		tmp.reset = (reset ||false);
 		
-		tmp.me.initProductSelect2();
+		if(tmp.reset === true)
+			jQuery('#'+tmp.me.resultDivId).html('');
+		
+		tmp.me._initPage();
+		tmp.me._initProductSelect2();
 		tmp.me._bindDownloadBtn();
 		return tmp.me;
+	}
+	,_initPage: function() {
+		var tmp = {};
+		tmp.me = this;
+		jQuery.each(tmp.me.products, function(key,value){
+			jQuery('#'+tmp.me.resultDivId)
+				.append(jQuery('<h2>').html(key))
+				.append(jQuery('<input>').attr({'type':key}).data('products',tmp.me.products[key]).addClass('select2'));
+		});
 	}
 	,_bindDownloadBtn: function() {
 		var tmp = {};
 		tmp.me = this;
 		jQuery('#'+tmp.me.downloadBtnId).click(function(){
-			tmp.data = [];
-			jQuery('#'+pageJs.resultDivId+' input.select2').select2('data').each(function(item){
-				tmp.data.push({
-					'sku': item.data.sku,
-					'price': (item.data.prices.length > 0 ? item.data.prices[0].price : 'N/A')
-					});
-			});
+			tmp.data = tmp.me._getAllSelect2Data(false);
 			tmp.me._genTemplate(tmp.data);
 		});
 	}
 	,_genTemplate: function(data) {
 		var tmp = {};
 		tmp.me = this;
-		if(data.length > 0) {
-			tmp.data = Papa.unparse({
-					quotes: false,
-					delimiter: ",",
-					newline: "\r\n",
-					data: data
+		tmp.data = [];
+		jQuery.each(data,function(type,products){
+			jQuery.each(products,function(index,product){
+				tmp.product = {'type': type};
+				jQuery.extend(tmp.product,product);
+				tmp.product.price = (tmp.product.prices.length > 0 ? tmp.product.prices[0].price : 'N/A');
+				tmp.product.staticiceLink = "http://staticice.com.au/cgi-bin/search.cgi?q="+tmp.product.sku;
+				tmp.product.bpcLink = "http://budgetpc.com.au/catalogsearch/result/?q="+tmp.product.sku;
+				tmp.data.push(tmp.product);
 			});
-			tmp.now = new Date();
-			tmp.fileName = 'system_build' + '_' + tmp.now.getFullYear() + '_' + tmp.now.getMonth() + '_' + tmp.now.getDate() + '_' + tmp.now.getHours() + '_' + tmp.now.getMinutes() + '_' + tmp.now.getSeconds() + '.csv';
-			tmp.blob = new Blob([tmp.data], {type: "text/csv;charset=utf-8"});
-			saveAs(tmp.blob, tmp.fileName);
-		}
+		});
+		tmp.csv = Papa.unparse(
+			tmp.data
+		);
+		tmp.now = new Date();
+		tmp.fileName = 'system_build' + '_' + tmp.now.getFullYear() + '_' + tmp.now.getMonth() + '_' + tmp.now.getDate() + '_' + tmp.now.getHours() + '_' + tmp.now.getMinutes() + '_' + tmp.now.getSeconds() + '.csv';
+		tmp.blob = new Blob([tmp.csv], {type: "text/csv;charset=utf-8"});
+		saveAs(tmp.blob, tmp.fileName);
 		return tmp.me;
 	}
-	,_updateSetting: function(data) {
+	,_getAllSelect2Data: function(idOnly) {
 		var tmp = {};
 		tmp.me = this;
-		jQuery('#'+pageJs.resultDivId+' input.select2').prop("disabled", true);
+		tmp.idOnly = (idOnly === false ? false : true);
+		tmp.data = {};
 		
-		tmp.me.postAjax(tmp.me.getCallbackId('updateSetting'), data, {
+		jQuery('#'+pageJs.resultDivId+' input.select2').each(function(){
+			tmp.select2 = jQuery(this);
+			tmp.type = tmp.select2.attr('type');
+			tmp.data[tmp.type] = [];
+			tmp.row = tmp.select2.select2('data');
+			jQuery.each(tmp.row,function(key,value){
+				tmp.data[tmp.type].push(tmp.idOnly === true ? value.id : value.data);
+			});
+		});
+		return tmp.data;
+	}
+	,_updateSetting: function() {
+		var tmp = {};
+		tmp.me = this;
+		
+		jQuery('#'+pageJs.resultDivId+' input.select2').prop("disabled", true);
+		tmp.data = tmp.me._getAllSelect2Data();
+		
+		tmp.me.postAjax(tmp.me.getCallbackId('updateSetting'), tmp.data, {
 			'onSuccess': function (sender, param) {
 				try {
 					tmp.result = tmp.me.getResp(param, false, true);
 					if(!tmp.result)
 						return;
-					if(tmp.me.productIds) {
-						tmp.data = [];
-						tmp.result.each(function(item){
-							tmp.data.push({"id": item.id, 'text': '[' + item.sku + '] ' + item.name, 'data': item});
-						});
-						jQuery('#'+pageJs.resultDivId+' input.select2').select2('data', tmp.data);
-					}
+					tmp.me.products = tmp.result;
+					tmp.me.init(true);
 					jQuery('#'+pageJs.resultDivId+' input.select2').prop("disabled", false);
 				} catch (e) {
 					$(resultDiv).update(tmp.me.getAlertBox('Error:', e).addClassName('alert-danger'));
@@ -69,62 +97,67 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 		});
 		return tmp.me;
 	}
-	,initProductSelect2: function() {
+	,_initProductSelect2: function() {
 		var tmp = {};
 		tmp.me = this;
-		tmp.select2 = jQuery('#'+pageJs.resultDivId+' .select2');
-		tmp.select2.select2({
-			 placeholder: "Search a product",
-			 multiple: true,
-			 minimumInputLength: 3,
-			 data: [],
-			 ajax: {
-				 url: "/ajax/getProducts",
-				 dataType: 'json',
-				 quietMillis: 250,
-				 data: function (term, page) { // page is the one-based page number tracked by Select2
-					 return {
-						 'entityName': 'Product',
-						 'searchTxt': term,
-						 'isKit': tmp.select2.attr('isKit'),
-						 'pageNo': page, // page number
-						 'pageSize': tmp.pageSize
-					 };
-				 },
-				 results: function (data, page) {
-					tmp.result = [];
-					data.resultData.items.each(function(item){
-						tmp.result.push({"id": item.id, 'text': '[' + item.sku + '] ' + item.name, 'data': item});
-					})
-					return {
-						results:  tmp.result,
-						more: (page * tmp.pageSize) < data.resultData.pagination.totalRows
-					};
-				}
-			 },
-			 formatResult : function(result) {
-				 if(!result)
-					 return '';
-				 return tmp.me._getProductDetailsDiv(result.data);
-			 },
-			 escapeMarkup: function (markup) { return markup; } // let our custom formatter work
-		});
-		tmp.select2.on("select2-selecting", function(event) {
-			tmp.txtBox = $(event.target);
-			tmp.onSelectFunc = tmp.txtBox.readAttribute('onSelectFunc');
-			if(typeof(tmp.me[tmp.onSelectFunc]) === 'function')
-				tmp.me[tmp.onSelectFunc](event.object.data);
-		});
-		tmp.select2.on('change', function(e) {
-			tmp.me._updateSetting(e.val);
-		});
-		if(tmp.me.productIds) {
-			tmp.data = [];
-			tmp.me.productIds.each(function(item){
-				tmp.data.push({"id": item.id, 'text': '[' + item.sku + '] ' + item.name, 'data': item});
+		jQuery('#'+tmp.me.resultDivId+' input.select2').each(function(){
+			tmp.select2 = jQuery(this);
+			tmp.type = tmp.select2.attr('type');
+			tmp.predata = tmp.select2.data('products');
+			tmp.select2.select2({
+				placeholder: "Search a product",
+				multiple: true,
+				minimumInputLength: 3,
+				width: "100%",
+				data: [],
+				ajax: {
+					url: "/ajax/getProducts",
+					dataType: 'json',
+					quietMillis: 250,
+					data: function (term, page) { // page is the one-based page number tracked by Select2
+						return {
+							'entityName': 'Product',
+							'searchTxt': term,
+							'isKit': tmp.select2.attr('isKit'),
+							'pageNo': page, // page number
+							'pageSize': tmp.pageSize
+						};
+					},
+					results: function (data, page) {
+						tmp.result = [];
+						data.resultData.items.each(function(item){
+							tmp.result.push({"id": item.id, 'text': '[' + item.sku + '] ' + item.name, 'data': item});
+						})
+						return {
+							results:  tmp.result,
+							more: (page * tmp.pageSize) < data.resultData.pagination.totalRows
+						};
+					}
+				},
+				formatResult : function(result) {
+					if(!result)
+						return '';
+					return tmp.me._getProductDetailsDiv(result.data);
+				},
+				escapeMarkup: function (markup) { return markup; } // let our custom formatter work
 			});
-			tmp.select2.select2('data', tmp.data);
-		}
+			tmp.select2.on("select2-selecting", function(event) {
+				tmp.txtBox = $(event.target);
+				tmp.onSelectFunc = tmp.txtBox.readAttribute('onSelectFunc');
+				if(typeof(tmp.me[tmp.onSelectFunc]) === 'function')
+					tmp.me[tmp.onSelectFunc](event.object.data);
+			});
+			tmp.select2.on('change', function(e) {
+				tmp.me._updateSetting();
+			});
+			if(Array.isArray(tmp.predata) === true && tmp.predata.length > 0) {
+				tmp.data = [];
+				jQuery.each(tmp.predata,function(key,value){
+					tmp.data.push({"id": value.id, 'text': '[' + value.sku + '] ' + value.name, 'data': value});
+				});
+				tmp.select2.select2('data', tmp.data);
+			}
+		});
 		return tmp.me;
 	}
 	/**
