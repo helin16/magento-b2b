@@ -1,26 +1,32 @@
 <com:TContent ID="MainContent">
-<com:Application.controls.fancybox.FancyBox />
+<com:Application.controls.jQueryUI.jQueryUI />
+<com:Application.controls.SlickGridBootstrap.SlickGridBootstrap />
 <com:Application.controls.select2.select2 />
 <com:Application.controls.bootstrapDateTimePicker.bootstrapDateTimePicker />
 <com:TCallback ID="deactivateItemBtn" OnCallback = 'Page.deactivateItems' />
-	<div class="pagewrapper item-list-wrapper" style="margin-top: 30px;">
-		<div class="col-xs-10 col-xs-offset-1">
+	<div class="pagewrapper item-list-wrapper" style="margin-top: 10px;">
+	    <h4>Product Run Rate Report: </h4>
+		<div class="col-xs-12">
             <div class="panel panel-default" id="searchPanel">
                 <div class="panel-heading">
-                    <h4>Product Run Rate Report:</h4>
+                    <label for="showSearch">Show Search Criteria?</label>
+	                <input id="showSearch" type="checkbox" checked onclick="$(this).up('#searchPanel').down('.panel-body').toggle();">
+	                <span class="pull-right">
+	                    <span id="searchBtn" class="btn btn-primary btn-sm" data-loading-text="searching ..." >Search</span>
+	                </span>
                 </div>
                 <div class="panel-body search-panel" id="searchDiv">
                     <div class="row">
                         <div class="col-xs-4">
                             <div class="form-group form-group-sm input-group">
                                <label class="contorl-label input-group-addon">SKU</label>
-                               <input type="text" search_field="pro.sku" placeholder="The SKU of the product" class="form-control input-sm">
+                               <input type="text" search_field="pro.sku" placeholder="The SKU of the product" class="form-control input-sm select2 js-example-responsive" entityName="Product"></input>
                            </div>
                         </div>
                         <div class="col-xs-5">
                             <div class="form-group form-group-sm input-group">
                                <label class="contorl-label input-group-addon">Name</label>
-                               <input type="text" search_field="pro.name" placeholder="The name of the product" class="form-control input-sm">
+                               <input type="text" search_field="pro.name" placeholder="The name of the product" class="form-control input-sm js-example-responsive">
                            </div>
                         </div>
                         <div class="col-xs-3">
@@ -36,27 +42,27 @@
                         <div class="col-xs-2">
                             <div class="form-group form-group-sm input-group">
                                 <label class="contorl-label input-group-addon">Brand</label>
-                                <input search_field="pro.manufacturerIds" class="chosen form-control input-sm select2" entityName="Manufacturer" result-format-func="pageJs.select2_formatResult_category"></input>
+                                <input type="text" search_field="pro.manufacturerIds" class="chosen form-control input-sm select2 js-example-responsive" entityName="Manufacturer"></input>
                             </div>
                         </div>
                         <div class="col-xs-2">
                             <div class="form-group form-group-sm input-group">
                                 <label class="contorl-label input-group-addon">Suppliers</label>
-                                <input search_field="pro.supplierIds" multiple class="chosen form-control input-sm select2" entityName="Supplier" result-format-func="pageJs.select2_formatResult_category"></input>
+                                <input type="text" search_field="pro.supplierIds" class="chosen form-control input-sm select2 js-example-responsive" entityName="Supplier"></input>
                             </div>
                         </div>
                         <div class="col-xs-8">
                             <div class="form-group form-group-sm input-group">
                                 <label class="contorl-label input-group-addon">Categories</label>
-                                <input search_field="pro.productCategoryIds" multiple class="chosen form-control input-sm select2"></input>
+                                <input type="text" search_field="pro.productCategoryIds" class="chosen form-control input-sm select2" entityName="ProductCategory"></input>
                             </div>
                         </div>
                     </div>
                 </div>
-                <div class="panel-footer text-right">
-                    <button class="btn btn-primary">Generate</button>
-                </div>
             </div>
         </div>
+        <div class="col-xs-12">
+            <div id="result-div"></div>
+		</div>
 	</div>
 </com:TContent>

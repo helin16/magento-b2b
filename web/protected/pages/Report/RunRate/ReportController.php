@@ -30,6 +30,7 @@ class ReportController extends BPCPageAbstract
 	{
 		$js = parent::_getEndJs();
 		$js .= "pageJs.init()";
+		$js .= ".setHTMLID('resultDiv', 'result-div')";
 		$js .= ".setCallbackId('deactivateItems', '" . $this->deactivateItemBtn->getUniqueID() . "')";
 		return $js;
 	}
