@@ -95,7 +95,7 @@ class ReceivingController extends BPCPageAbstract
 		$array['totalProductCount'] = $po->getTotalProductCount();
 		$array['totalReceivedValue'] = $po->getTotalRecievedValue();
 
-		$array['purchaseOrderItem'] = [];
+		$array['purchaseOrderItem'] = array();
 		foreach (PurchaseOrderItem::getAllByCriteria('po_item.purchaseOrderId = :purchaseOrderId', array('purchaseOrderId'=> $po->getId() )) as $purchaseOrderItem)
 		{
 			$product = $purchaseOrderItem->getProduct();
