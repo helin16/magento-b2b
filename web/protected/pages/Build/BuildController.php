@@ -31,19 +31,22 @@ class BuildController extends BPCPageAbstract
 	{
 		$systemSetting = SystemSettings::getByType(SystemSettings::TYPE_SYSTEM_BUILD_PRODUCTS_ID);
 		$products = array();
-		if($systemSetting instanceof SystemSettings && is_array(json_decode($systemSetting->getValue())))
+		if($systemSetting instanceof SystemSettings)
 		{
-			foreach (json_decode($systemSetting->getValue()) as $id)
+			foreach (json_decode($systemSetting->getValue()) as $type=>$ids)
 			{
-				if(($product = Product::get($id)) instanceof Product)
-					$products[] = $product->getJson();
+				$products[$type] = array();
+				foreach ($ids as $id)
+				{
+					if(($product = Product::get($id)) instanceof Product)
+						$products[$type][] = $product->getJson();
+				}
 			}
 		}
-
 		$js = parent::_getEndJs();
 		$js .= 'pageJs.resultDivId = "resultDiv";';
 		$js .= 'pageJs.downloadBtnId = "download-btn";';
-		$js .= 'pageJs.productIds = ' . json_encode($products) . ';';
+		$js .= 'pageJs.products = ' . json_encode($products) . ';';
 		$js .= "pageJs.setCallbackId('updateSetting', '" . $this->updateSettingBtn->getUniqueID() . "');";
 		$js .= 'pageJs.init();';
 		return $js;
@@ -53,18 +56,22 @@ class BuildController extends BPCPageAbstract
 		$result = $errors = array();
 		try
 		{
-			$result = array();
-			$products = array();
-			foreach ($param->CallbackParameter as $id)
+			$result = $products = array();
+			$systemSetting = SystemSettings::getByType(SystemSettings::TYPE_SYSTEM_BUILD_PRODUCTS_ID);
+			foreach ($param->CallbackParameter as $type=>$ids)
 			{
-				if(($product = Product::get(intval($id))) instanceof Product)
+				$result[$type] = array();
+				$products[$type] = array();
+				foreach ($ids as $index=>$id)
 				{
-					$result[] = intval($id);
-					$products[] = $product->getJson();
+					$id = intval(trim($id));
+					if(($product = Product::get($id)) instanceof Product)
+					{
+						$result[$type][] = $id;
+						$products[$type][] = $product->getJson();
+					}
 				}
 			}
-			$systemSetting = SystemSettings::getByType(SystemSettings::TYPE_SYSTEM_BUILD_PRODUCTS_ID);
-			
 			Dao::beginTransaction();
 			
 			$systemSetting->setValue(json_encode($result))->save();
@@ -73,7 +80,7 @@ class BuildController extends BPCPageAbstract
 		}
 		catch(Exception $ex)
 		{
-			Dao::rollbackTransaction();
+// 			Dao::rollbackTransaction();
 			$errors[] = $ex->getMessage();
 		}
 		$param->ResponseData = StringUtilsAbstract::getJson($products, $errors);
