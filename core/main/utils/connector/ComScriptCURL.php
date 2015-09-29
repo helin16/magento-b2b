@@ -99,6 +99,6 @@ class ComScriptCURL
 	}
 
 	private function _getProxy() {
-	    return '223.252.33.217:18256';
+	    return 'localhost:3128';
 	}
 }
