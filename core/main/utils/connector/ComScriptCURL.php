@@ -20,9 +20,8 @@ class ComScriptCURL
 				CURLOPT_TIMEOUT => $timeout, // set this to 8 hours so we dont timeout on big files
 				CURLOPT_URL     => $url
 		);
-		if(count(self::_getProxy()) > 0 ) {
-		    $extraOpts = array_merge(self::_getProxy(), $extraOpts);
-		}
+		foreach(self::_getProxy() as $key => $value)
+	        $options[$key] = $value;
 		foreach($extraOpts as $key => $value)
 			$options[$key] = $value;
 		$ch = curl_init();
@@ -51,9 +50,8 @@ class ComScriptCURL
 				CURLOPT_TIMEOUT => $timeout, // set this to 8 hours so we dont timeout on big files
 				CURLOPT_URL     => $url
 		);
-		if(count(self::_getProxy()) > 0 ) {
-		    $extraOpts = array_merge(self::_getProxy(), $extraOpts);
-		}
+		foreach(self::_getProxy() as $key => $value)
+	        $options[$key] = $value;
 		foreach($extraOpts as $key => $value)
 			$options[$key] = $value;
 		if(count($data) > 0)
@@ -80,9 +78,8 @@ class ComScriptCURL
 				CURLOPT_URL            => $url,
 				CURLOPT_NOBODY         => true
 		);
-		if(count(self::_getProxy()) > 0 ) {
-		    $extraOpts = array_merge(self::_getProxy(), $extraOpts);
-		}
+		foreach(self::_getProxy() as $key => $value)
+	        $options[$key] = $value;
 		foreach($extraOpts as $key => $value)
 			$options[$key] = $value;
 		$ch = curl_init();
