@@ -20,8 +20,8 @@ class ComScriptCURL
 				CURLOPT_TIMEOUT => $timeout, // set this to 8 hours so we dont timeout on big files
 				CURLOPT_URL     => $url
 		);
-		if(trim(self::_getProxy()) !== '') {
-		    $options[CURLOPT_PROXY] = self::_getProxy();
+		if(count(self::_getProxy()) > 0 ) {
+		    $extraOpts = array_merge(self::_getProxy(), $extraOpts);
 		}
 		foreach($extraOpts as $key => $value)
 			$options[$key] = $value;
@@ -51,8 +51,8 @@ class ComScriptCURL
 				CURLOPT_TIMEOUT => $timeout, // set this to 8 hours so we dont timeout on big files
 				CURLOPT_URL     => $url
 		);
-		if(trim(self::_getProxy()) !== '') {
-		    $options[CURLOPT_PROXY] = self::_getProxy();
+		if(count(self::_getProxy()) > 0 ) {
+		    $extraOpts = array_merge(self::_getProxy(), $extraOpts);
 		}
 		foreach($extraOpts as $key => $value)
 			$options[$key] = $value;
@@ -80,8 +80,8 @@ class ComScriptCURL
 				CURLOPT_URL            => $url,
 				CURLOPT_NOBODY         => true
 		);
-		if(trim(self::_getProxy()) !== '') {
-		    $options[CURLOPT_PROXY] = self::_getProxy();
+		if(count(self::_getProxy()) > 0 ) {
+		    $extraOpts = array_merge(self::_getProxy(), $extraOpts);
 		}
 		foreach($extraOpts as $key => $value)
 			$options[$key] = $value;
@@ -99,6 +99,9 @@ class ComScriptCURL
 	}
 
 	private function _getProxy() {
-	    return 'localhost:3128';
+	    return array(
+	            CURLOPT_PROXY   => 'localhost:3128',
+                CURLOPT_PROXYTYPE => CURLPROXY_SOCKS5
+	    );
 	}
 }
