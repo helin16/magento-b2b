@@ -6,7 +6,7 @@ try {
 			SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_WSDL),
 			SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_USER),
 			SystemSettings::getSettings(SystemSettings::TYPE_B2B_SOAP_KEY));
-	$objPHPExcel = PHPExcel_IOFactory::load("priceList.xlsx");
+	$objPHPExcel = PHPExcel_IOFactory::load(dirname(__FILE__) . "/priceList.xlsx");
 	//  Get worksheet dimensions
 	$sheet = $objPHPExcel->getSheet(0);
 	$highestRow = $sheet->getHighestRow();
