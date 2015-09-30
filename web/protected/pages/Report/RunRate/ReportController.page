@@ -1,18 +1,13 @@
 <com:TContent ID="MainContent">
-<com:Application.controls.jQueryUI.jQueryUI />
-<com:Application.controls.SlickGridBootstrap.SlickGridBootstrap />
 <com:Application.controls.select2.select2 />
-<com:Application.controls.bootstrapDateTimePicker.bootstrapDateTimePicker />
-<com:TCallback ID="deactivateItemBtn" OnCallback = 'Page.deactivateItems' />
+<com:TCallback ID="genReportmBtn" OnCallback = 'Page.genReport' />
 	<div class="pagewrapper item-list-wrapper" style="margin-top: 10px;">
-	    <h4>Product Run Rate Report: </h4>
 		<div class="col-xs-12">
             <div class="panel panel-default" id="searchPanel">
                 <div class="panel-heading">
-                    <label for="showSearch">Show Search Criteria?</label>
-	                <input id="showSearch" type="checkbox" checked onclick="$(this).up('#searchPanel').down('.panel-body').toggle();">
+                    <label for="showSearch">Product Run Rate Report:</label>
 	                <span class="pull-right">
-	                    <span id="searchBtn" class="btn btn-primary btn-sm" data-loading-text="searching ..." >Search</span>
+	                    <span id="searchBtn" class="btn btn-primary btn-sm" data-loading-text="searching ..." onclick="pageJs.genReport(this);">Search</span>
 	                </span>
                 </div>
                 <div class="panel-body search-panel" id="searchDiv">
@@ -20,7 +15,7 @@
                         <div class="col-xs-4">
                             <div class="form-group form-group-sm input-group">
                                <label class="contorl-label input-group-addon">SKU</label>
-                               <input type="text" search_field="pro.sku" placeholder="The SKU of the product" class="form-control input-sm select2 js-example-responsive" entityName="Product"></input>
+                               <input type="text" search_field="pro.id" placeholder="The SKU of the product" class="form-control input-sm select2 js-example-responsive" entityName="Product"></input>
                            </div>
                         </div>
                         <div class="col-xs-5">
@@ -35,7 +30,7 @@
                                <select search_field="pro.active" class="chosen form-control input-sm">
                                     <option value="1">Yes</option>
                                     <option value="0">No</option>
-                                    <option value="ALL">All</option>
+                                    <option value="">All</option>
                                </select>
                            </div>
                         </div>
