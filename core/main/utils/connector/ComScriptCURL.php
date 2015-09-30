@@ -25,7 +25,8 @@ class ComScriptCURL
 		foreach($extraOpts as $key => $value)
 			$options[$key] = $value;
 		$ch = curl_init();
-		curl_setopt_array($ch, $options);
+		foreach($options as $key => $value)
+		    curl_setopt($ch, $key, $value);
 		curl_exec($ch);
 		fclose($fp);
 		curl_close($ch);
@@ -63,7 +64,8 @@ class ComScriptCURL
 			$options[CURLOPT_POSTFIELDS] = http_build_query($data);
 		}
 		$ch = curl_init();
-		curl_setopt_array($ch, $options);
+		foreach($options as $key => $value)
+		    curl_setopt($ch, $key, $value);
 		$data =curl_exec($ch);
 		curl_close($ch);
 		return $data;
@@ -83,7 +85,8 @@ class ComScriptCURL
 		foreach($extraOpts as $key => $value)
 			$options[$key] = $value;
 		$ch = curl_init();
-		curl_setopt_array($ch, $options);
+		foreach($options as $key => $value)
+		    curl_setopt($ch, $key, $value);
 		$response =curl_exec($ch);
 		$httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 		curl_close($ch);
