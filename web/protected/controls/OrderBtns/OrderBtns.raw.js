@@ -4,7 +4,7 @@
 var OrderBtnsJs = new Class.create();
 OrderBtnsJs.prototype = {
 	SEND_EMAIL_CALLBACK_ID: ''
-	,_pageJs: null	
+	,_pageJs: null
 
 	//constructor
 	,initialize : function(_pageJs, _order) {
@@ -25,7 +25,6 @@ OrderBtnsJs.prototype = {
 			tmp.newWindow.focus();
 			if(tmp.viewOnly !== true) {
 				tmp.newWindow.print();
-				tmp.newWindow.close();
 			}
 		}
 		return tmp.me;
@@ -42,7 +41,6 @@ OrderBtnsJs.prototype = {
 			tmp.newWindow.document.title = tmp.me._order.status.name + ' Order ' + tmp.me._order.orderNo;
 			tmp.newWindow.focus();
 			tmp.newWindow.print();
-			tmp.newWindow.close();
 		}
 		return tmp.me;
 	}
