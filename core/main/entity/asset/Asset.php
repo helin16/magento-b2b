@@ -211,7 +211,7 @@ class Asset extends BaseEntityAbstract
 	{
 		$now = new UDate();
 		$year = $now->format('Y');
-		if(!is_dir($yearDir = trim(self::getRootPath() .DIRECTORY_SEPARATOR . $year)))
+		if(!is_dir($yearDir = trim('/tmp' .DIRECTORY_SEPARATOR . $year)))
 		{
 			mkdir($yearDir);
 			chmod($yearDir, 0777);
@@ -235,12 +235,9 @@ class Asset extends BaseEntityAbstract
 	{
 		if(count($assetIds) === 0)
 			return;
-		$class = __CLASS__;
 		$where = "assetId in (" . implode(', ', array_fill(0, count($assetIds), '?')) . ")";
 		$params = $assetIds;
 		$assets = self::getAllByCriteria($where, $assetIds);
-		// Delete the item from the database
-		self::updateByCriteria('active = ?', $where, array_merge(array(0), $params));
 		foreach($assets as $asset)
 		{
 			// Remove the file from the NAS server
@@ -248,6 +245,8 @@ class Asset extends BaseEntityAbstract
 				unlink($asset->getPath());
 			unset(self::$_cache[trim($asset->getAssetId())]);
 		}
+		// Delete the item from the database
+		self::deleteByCriteria($where, $params);
 		return;
 	}
 	/**

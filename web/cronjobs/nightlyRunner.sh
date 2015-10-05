@@ -12,3 +12,5 @@
 # /bin/bash /var/www/magentob2b/web/cronjobs/push_db_to_ec2.bash >> /tmp/push_to_ec2_dot_5_`date +"%d_%b_%y"`.log
 # push to .7
 #/bin/bash /var/www/magentob2b/web/cronjobs/push_db_to_dot_7.bash
+# clean the assets
+/usr/bin/php /var/www/magentob2b/web/cronjobs/AssetCleaner.php >> /tmp/asset_cleaner_`date +"%d_%b_%y"`.log
