@@ -3,7 +3,7 @@ require_once dirname(__FILE__) . '/../bootstrap.php';
 class AssetCleaner
 {
     const ASSET_OVERDUE_TIME = "-2 day";
-    const NEW_LINE = "<br />";
+    const NEW_LINE = "\n";
     private static $_debug = false;
     /**
      * runner
