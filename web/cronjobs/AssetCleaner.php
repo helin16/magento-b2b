@@ -62,8 +62,8 @@ class AssetCleaner
 	{
 	    $start = self::_debug("Start to run " . __FUNCTION__ . ' =================== ', self::NEW_LINE, "\t");
 	    $overDueDate = UDate::now()->format(self::ASSET_OVERDUE_TIME);
-	    $sql = "select a.assetId from asset a left join product p on (p.fullDescAssetId = a.assetId) where p.id is null";
-	    $result = Dao::getResultsNative($sql);
+	    $sql = "select a.assetId from asset a left join product p on (p.fullDescAssetId = a.assetId) where p.id is null and type in(?, ?) ";
+	    $result = Dao::getResultsNative($sql, array(trim(Asset::TYPE_PRODUCT_DEC), trim(Asset::TYPE_PRODUCT_IMG)));
 	    $resultCount = count($result);
 	    self::_debug("Found " . $resultCount . ': ', " ", "\t\t");
 	    $assetIds = array();
