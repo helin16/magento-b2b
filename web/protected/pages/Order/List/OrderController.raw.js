@@ -220,10 +220,11 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 			'autoDimensions': false,
 			'fitToView'     : false,
 			'autoSize'      : false,
+			'helpers'       : { overlay: { locked: false }  },
 			'type'			: 'iframe',
 			'href'			: '/orderdetails/' + row.id + '.html?blanklayout=1',
 			'beforeClose'	    : function() {
-				if(row && row.id && $(tmp.me.resultDivId).down('.order_item[order_id=' + row.id + ']') && $$('iframe.fancybox-iframe').first().contentWindow.pageJs._order)
+				if(row && row.id && $(tmp.me.resultDivId).down('.order_item[order_id=' + row.id + ']') && $$('iframe.fancybox-iframe').first().contentWindow.pageJs && $$('iframe.fancybox-iframe').first().contentWindow.pageJs._order)
 					$(tmp.me.resultDivId).down('.order_item[order_id=' + row.id + ']').replace(tmp.me._getResultRow($$('iframe.fancybox-iframe').first().contentWindow.pageJs._order));
 			}
  		});
