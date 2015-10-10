@@ -192,7 +192,7 @@ class PriceMatchConnector
 		$result = $connector->updateProductPrice($product->getSku(), $price);
 		
 		if($result !== true && $this->debug === true)
-			echo trim($result);
+			echo print_r($result, true);
 		if($result === true && $this->debug === true)
 			echo 'Magento Price Successfully updated to $' . $price . "\n";
 		
