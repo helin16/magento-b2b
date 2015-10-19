@@ -6,6 +6,7 @@ abstract class CronLogOutputNotificationSender
     const NEW_LINE = "\n";
     public static function run($debug = false)
     {
+        Core::setUser(UserAccount::get(UserAccount::ID_SYSTEM_ACCOUNT));
         $checkList = array('pricematchRunner.php' => '/tmp/pricematchRunner_{date}.log');
         $today = UDate::now()->format('d_M_y');
         if($debug === true)
