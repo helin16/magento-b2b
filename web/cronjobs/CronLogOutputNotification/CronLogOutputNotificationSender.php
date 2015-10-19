@@ -9,7 +9,7 @@ abstract class CronLogOutputNotificationSender
         $checkList = array('pricematchRunner.php' => '/tmp/pricematchRunner_{date}.log');
         $today = UDate::now()->format('d_M_y');
         if($debug === true)
-            echo 'Started' . $today . self::NEW_LINE;
+            echo 'Started: ' . $today . self::NEW_LINE;
         foreach($checkList as $script => $outputFile) {
             $outputFilePath = str_replace('{date}', trim($today), $outputFile);
             if($debug === true)
@@ -20,6 +20,9 @@ abstract class CronLogOutputNotificationSender
                 self::_mailOut($script, Asset::registerAsset(basename($outputFilePath), $outputFilePath, Asset::TYPE_TMP));
                 if($debug === true)
                     echo 'Done ' . self::NEW_LINE;
+            } else {
+                if($debug === true)
+                    echo 'No file found!' . self::NEW_LINE;
             }
         }
         if($debug === true)
