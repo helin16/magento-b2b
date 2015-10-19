@@ -6,7 +6,8 @@ echo -n "MessageSender is Already Running....... :: "
 date
 echo -n " "
 else
-/usr/bin/php /var/www/magentob2b/web/cronjobs/MessageSender.php >> /tmp/message_`date +"%d_%b_%y"`.log
+/usr/bin/php /var/www/magentob2b/web/cronjobs/MessageSender.php >> /tmp/message.log
+fi
 
 
 ## run all the product import  ########################################
@@ -16,3 +17,4 @@ date
 echo -n " "
 else
 /usr/bin/php /var/www/magentob2b/web/cronjobs/importOrders.php >> /tmp/orderImport.log
+fi

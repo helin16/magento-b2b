@@ -7,6 +7,7 @@ date
 echo -n " "
 else
 /bin/bash /var/www/magentob2b/web/cronjobs/backup_db.bash >> /tmp/db_backup_`date +"%d_%b_%y"`.log
+fi
 
 ## run all xero exporter ########################################
 if ps ax | grep -v grep | grep "ExportRunner.php" > /dev/null; then
@@ -15,6 +16,7 @@ date
 echo -n " "
 else
 /usr/bin/php /var/www/magentob2b/web/cronjobs/report/ExportRunner.php >> /tmp/export_`date +"%d_%b_%y"`.log
+fi
 
 ## product ageing report ########################################
 if ps ax | grep -v grep | grep "ProductAgeingReport.php" > /dev/null; then
@@ -23,6 +25,7 @@ date
 echo -n " "
 else
 /usr/bin/php /var/www/magentob2b/web/cronjobs/ProductAgeingReport.php >> /tmp/ageingReport_`date +"%d_%b_%y"`.log
+fi
 
 ## price match ########################################
 if ps ax | grep -v grep | grep "pricematchRunner.php" > /dev/null; then
@@ -31,6 +34,7 @@ date
 echo -n " "
 else
 /usr/bin/php /var/www/magentob2b/web/cronjobs/pricematch/pricematchRunner.php >> /tmp/pricematchRunner_`date +"%d_%b_%y"`.log
+fi
 
 # push to ec2 dummy .5
 # /bin/bash /var/www/magentob2b/web/cronjobs/push_db_to_ec2.bash >> /tmp/push_to_ec2_dot_5_`date +"%d_%b_%y"`.log
@@ -45,6 +49,7 @@ date
 echo -n " "
 else
 /usr/bin/php /var/www/magentob2b/web/cronjobs/AssetCleaner.php >> /tmp/asset_cleaner_`date +"%d_%b_%y"`.log
+fi
 
 ## CronLog mailer ########################################
 if ps ax | grep -v grep | grep "CronLogOutputNotificationSender.php" > /dev/null; then
@@ -53,3 +58,4 @@ date
 echo -n " "
 else
 /usr/bin/php /var/www/magentob2b/web/cronjobs/CronLogOutputNotification/CronLogOutputNotificationSender.php >> /tmp/CronLogOutputNotificationSender.log
+fi
