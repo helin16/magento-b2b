@@ -6,7 +6,7 @@ abstract class CronLogOutputNotificationSender
     public static function run($debug = false)
     {
         $checkList = array('pricematchRunner.php' => '/tmp/pricematchRunner_{date}.log');
-        $today = UDate::now()->format('d_b_y');
+        $today = UDate::now()->format('d_M_y');
         if($debug === true)
             echo $today;
         foreach($checkList as $script => $outputFile)
