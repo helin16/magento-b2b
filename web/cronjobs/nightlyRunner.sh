@@ -52,4 +52,4 @@ echo -n "CronLogOutputNotificationSender is Already Running....... :: "
 date
 echo -n " "
 else
-/usr/bin/php /var/www/magentob2b/web/cronjobs/CronLogOutputNotification/CronLogOutputNotificationSender.php >> /tmp/CronLogOutputNotificationSender_`date +"%d_%b_%y"`.log
+/usr/bin/php /var/www/magentob2b/web/cronjobs/CronLogOutputNotification/CronLogOutputNotificationSender.php >> /tmp/CronLogOutputNotificationSender.log
