@@ -18,7 +18,7 @@ abstract class CronLogOutputNotificationSender
             if(is_file($outputFilePath)) {
                 if($debug === true)
                     echo 'Emailling out the output file: ' . $outputFilePath . self::NEW_LINE;
-                self::_mailOut($script, Asset::registerAsset(basename($outputFilePath), $outputFilePath, Asset::TYPE_TMP));
+                self::_mailOut($script, Asset::registerAsset(basename($outputFilePath), file_get_contents($outputFilePath), Asset::TYPE_TMP));
                 if($debug === true)
                     echo 'Done ' . self::NEW_LINE;
             } else {
