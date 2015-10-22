@@ -2,7 +2,9 @@
 <com:TContent ID="MainContent">
     <div class="container">
         <div class="form-signin" role="form">
-	        <h3 class="form-group form-signin-heading">Please sign in:</h3>
+	        <h3 class="form-group form-signin-heading text-center">
+	           <img src="/themes/default/images/logo.png" />
+	        </h3>
 	        <div class="form-group input-group input-group-lg" title="Username">
 	            <span class="input-group-addon"><span class="glyphicon glyphicon-user"></span></span>
 	           <com:TTextBox id="username" CssClass="form-control" Attributes.placeholder="Username" Attributes.required="Username required!"/>
@@ -17,7 +19,7 @@
 	        <div class="form-group input-group input-group-lg">
 	           <com:TButton CssClass="btn btn-lg btn-primary btn-block" Text="Log in" onClick="page.login" />
 	        </div>
-	        
+	        <div>&nbsp;</div>
 	        <div class="row text-center">
                <small><%$ AppTitle %></small>
             </div>
