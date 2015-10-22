@@ -16,7 +16,7 @@
 	        <com:TPanel id='errorDiv' CssClass='form-group input-group' Attributes.role="alert" >
                 <com:TLabel id='errorMsg' CssClass='label label-danger'/>
             </com:TPanel>
-	        <div class="form-group input-group input-group-lg">
+	        <div class="form-group">
 	           <com:TButton CssClass="btn btn-lg btn-primary col-xs-12" Text="Log in" onClick="page.login" />
 	        </div>
 	        <div>&nbsp;</div>
