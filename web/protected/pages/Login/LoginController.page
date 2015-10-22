@@ -17,7 +17,7 @@
                 <com:TLabel id='errorMsg' CssClass='label label-danger'/>
             </com:TPanel>
 	        <div class="form-group input-group input-group-lg">
-	           <com:TButton CssClass="btn btn-lg btn-primary btn-block" Text="Log in" onClick="page.login" />
+	           <com:TButton CssClass="btn btn-lg btn-primary col-xs-12" Text="Log in" onClick="page.login" />
 	        </div>
 	        <div>&nbsp;</div>
 	        <div class="row text-center">
