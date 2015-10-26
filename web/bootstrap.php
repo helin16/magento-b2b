@@ -11,6 +11,8 @@ class Web
 	{
 		$autoloadPaths = array(
 			dirname(__FILE__) . '/protected/',
+			dirname(__FILE__) . '/protected/api/',
+			dirname(__FILE__) . '/protected/api/classes/',
 			dirname(__FILE__) . '/protected/classes/',
 			dirname(__FILE__) . '/protected/classes/BPCPage/',
 			dirname(__FILE__) . '/protected/classes/CRUDPage/',
@@ -19,7 +21,7 @@ class Web
 			dirname(__FILE__) . '/protected/classes/Soap/',
 			dirname(__FILE__) . '/cronjobs/report/class/',
 		);
-		
+
 		$found = false;
 		foreach ($autoloadPaths as $path)
 		{
@@ -30,7 +32,7 @@ class Web
 				break;
 			}
 		}
-		
+
 		return $found;
 	}
 }
@@ -38,6 +40,6 @@ class Web
 spl_autoload_register(array('Web','autoload'));
 
 // Bootstrap the core for its autoloader settings
-require(dirname(__FILE__) . '/../core/main/bootstrap.php');
+require_once (dirname(__FILE__) . '/../core/main/bootstrap.php');
 
 ?>
