@@ -175,9 +175,6 @@
       <!-- ajax service -->
       <url ServiceId='ajax' ServiceParameter="" pattern="ajax/{method}" parameters.method="\w+"  />
 
-      <!-- api service -->
-      <url ServiceId='api' ServiceParameter="" pattern="api/{entityName}" parameters.entityName="\w+" />
-      <url ServiceId='api' ServiceParameter="" pattern="api/{entityName}/{methodName}" parameters.entityName="\w+" parameters.methodName="\w+|\d+"  />
     </module>
 
     <module id="globalization" class="TGlobalization">
@@ -196,8 +193,6 @@
     </service>
 
     <service id = "ajax" class = "Application.pages.Ajax.AjaxController"></service>
-
-    <service id = "api" class = "Application.api.APIService"></service>
 
     <service id="asset" class="Application.pages.Asset.AssetController"></service>
     <service id="soap" class="System.Web.Services.TSoapService">
