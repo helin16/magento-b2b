@@ -1,6 +1,6 @@
 <?php
-require 'bootstrap.php';
+require_once dirname(__FILE__) . '/bootstrap.php';
 
-$service = new APIService();
+$service = new APIService(true);
 $service->run();
 ?>

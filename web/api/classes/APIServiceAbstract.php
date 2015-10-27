@@ -1,7 +1,27 @@
 <?php
 abstract class APIServiceAbstract
 {
+    /**
+     * The focus entity name
+     *
+     * @var string
+     */
     protected $entityName = '';
+    /**
+     * The APIService
+     *
+     * @var APIService
+     */
+    protected $_runner = null;
+    /**
+     * constructor
+     *
+     * @param APIService $runner
+     */
+    public function __construct(APIService $runner)
+    {
+        $this->_runner = $runner;
+    }
   	/**
   	 * Getting an entity
   	 *
@@ -15,7 +35,9 @@ abstract class APIServiceAbstract
   		$entityName = trim($this->entityName);
   		if(!isset($params['entityId']) || ($entityId = trim($params['entityId'])) === '')
   			throw new Exception('What are we going to get with?');
-  		return ($entity = $entityName::get($entityId)) instanceof BaseEntityAbstract ? $entity->getJson() : array();
+  		if(!($entity = $entityName::get($entityId)) instanceof BaseEntityAbstract)
+  		    throw new Exception('There is no such a ' . $entityName);
+  		return $entity->getJson();
   	}
   	/**
   	 * Getting All for entity
@@ -42,6 +64,26 @@ abstract class APIServiceAbstract
   		foreach($items as $item)
   		    $return[] = $item->getJson();
   		return array('items' => $return, 'pagination' => $stats);
+  	}
+  	/**
+  	 * Getting the value from params
+  	 *
+  	 * @param array  $params
+  	 * @param string $key
+  	 * @param mixed  $defultValue
+  	 * @param bool   $compulsory
+  	 *
+  	 * @throws Exception
+  	 * @return unknown
+  	 */
+  	protected function _getPram($params, $key, $defultValue = null, $compulsory = false)
+  	{
+  	    if(!isset($params[$key])) {
+  	        if($compulsory === true)
+  	            throw new Exception($key . ' is NOT Set');
+  	        return $defaultValue;
+  	    }
+  	    return $params[$key];
   	}
 
 }

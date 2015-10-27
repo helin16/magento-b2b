@@ -176,13 +176,13 @@ class Product extends InfoEntityAbstract
 	private $isKit = false;
 	/**
 	 * the product attribute set
-	 * 
+	 *
 	 * @var ProductAttributeSet
 	 */
 	protected $attributeSet = null;
 	/**
 	 * if the datafeed for this product is done manually
-	 * 
+	 *
 	 * @var bool
 	 */
 	private $manualDatafeed = false;
@@ -795,7 +795,7 @@ class Product extends InfoEntityAbstract
 	    $this->manualDatafeed = $manualDatafeed;
 	    return $this;
 	}
-	
+
 	/**
 	 * Adding a product image to the product
 	 *
@@ -1121,7 +1121,7 @@ class Product extends InfoEntityAbstract
 		$totalCost = ($qty * $unitCost);
 		$action = (intval($qty) > 0 ? 'Stock picked' : 'stock UNPICKED');
 		$newQty = (($originStockOnHand = $this->getStockOnHand()) - $qty);
-		if($newQty < 0 && intval($qty) > 0 && intval(SystemSettings::getSettings(SystemSettings::TYPE_ALLOW_NEGTIVE_STOCK)) !== 1) 
+		if($newQty < 0 && intval($qty) > 0 && intval(SystemSettings::getSettings(SystemSettings::TYPE_ALLOW_NEGTIVE_STOCK)) !== 1)
 			throw new Exception('Product (SKU:' . $this->getSKU() . ') can NOT be ' . $action . ' , as there is not enough stock: stock on hand will fall below zero');
 		if($entity instanceof OrderItem) {
 			$kits = array_map(create_function('$a', 'return $a->getKit();'), SellingItem::getAllByCriteria('orderItemId = ? and kitId is not null', array($entity->getId())));
@@ -1463,11 +1463,11 @@ class Product extends InfoEntityAbstract
 		if(!($product = self::getBySku($sku)) instanceof Product)
 			$product = new Product();
 		$product->setSku(trim($sku))
-		->setName($name)
-		->setManualDatafeed(intval($manualDatafeed) === 1);
+    		->setName($name)
+    		->setManualDatafeed(intval($manualDatafeed) === 1);
 		if(($mageProductId = trim($mageProductId)) !== "")
 			$product->setMageId($mageProductId);
-		
+
 		if(trim($product->getId()) === '')
 		{
 			$product->setIsFromB2B($isFromB2B)
@@ -1517,7 +1517,7 @@ class Product extends InfoEntityAbstract
 	{
 		$where = array(1);
 		$params = array();
-		
+
 		if(is_array($sumValues)) {
 			$innerJoins = array();
 		}
