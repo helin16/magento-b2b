@@ -6,3 +6,4 @@ UPDATE `bpcinternal`.`systemsettings` SET  `value` =  '' WHERE  `systemsettings`
 UPDATE `bpcinternal`.`systemsettings` SET  `value` =  '' WHERE  `systemsettings`.`type` like 'sending_server_conf';
 DELETE FROM `bpcinternal`.`useraccount` WHERE  (`useraccount`.`id` != 10 and `useraccount`.`username` != 'helin16');
 UPDATE `bpcinternal`.`useraccount` SET  `username` =  'testuser', `password` = SHA1(  'test' ) WHERE  `useraccount`.`username` = 'helin16';
+UPDATE `bpcinternal`.`orderinfo` SET  `value` =  'customer@test.com.au' WHERE  `orderinfo`.`typeId` = 2;
