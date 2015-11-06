@@ -79,6 +79,11 @@ class ListController extends BPCPageAbstract
 					$asset = ItemExport_Magento::run(false, false);
 					break;
 				}
+				case 'accounting_code': {
+					AccoutingCodeExport::setStartNEndDate(new UDate(trim($param->CallbackParameter->date_from)), new UDate(trim($param->CallbackParameter->date_to)));
+					$asset = AccoutingCodeExport::run(false, false);
+					break;
+				}
 				case 'open_inv': {
 					OpenInvoiceExport::setStartNEndDate(new UDate(trim($param->CallbackParameter->date_from)), new UDate(trim($param->CallbackParameter->date_to)));
 					$asset = OpenInvoiceExport::run(false, false);

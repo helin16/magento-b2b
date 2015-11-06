@@ -13,6 +13,7 @@
 				<a class="list-group-item gen-report-btn" data-type="payments_daily" href="javascript: void(0);">Payments Report</a>
 				<a class="list-group-item gen-report-btn" data-type="inventory_list" href="javascript: void(0);">Inventory List</a>
 				<a class="list-group-item gen-report-btn" data-type="magento_price" href="javascript: void(0);">Magento Price Import File</a>
+				<a class="list-group-item gen-report-btn" data-type="accounting_code" href="javascript: void(0);">Accouting Code</a>
 			</div>
 		</div>
 	</div>
