@@ -277,7 +277,7 @@ class APIService
      */
     public function log($msg, $funcName='', $preFix ='', $postFix = "\n")
     {
-        $log = ((trim($msg) === '') ? '' : (Udate::now() . ': ')) . $preFix . $msg . ($funcName === '' ? '' : (' [' . $funcName . '] ')) . $postFix;
+        $log = ((trim($msg) === '') ? '' : (UDate::now() . ': ')) . $preFix . $msg . ($funcName === '' ? '' : (' [' . $funcName . '] ')) . $postFix;
         if(is_file($this->_logFile))
             file_put_contents($this->_logFile, $log, FILE_APPEND);
         return $this;
