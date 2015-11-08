@@ -56,7 +56,7 @@ abstract class APIServiceAbstract
   		$pageNo = isset($params['pageNo']) ? trim($params['pageNo']) : 1;
   		$pageSize = isset($params['pageSize']) ? trim($params['pageSize']) : DaoQuery::DEFAUTL_PAGE_SIZE;
   		$active = isset($params['active']) ? intval($params['active']) : 1;
-  		$orderBy = isset($params['orderBy']) ? trim($params['orderBy']) : array();
+  		$orderBy = isset($params['orderBy']) ? $params['orderBy'] : array();
 
   		$stats = array();
   		$items = $entityName::getAllByCriteria($searchTxt, $searchParams, $active, $pageNo, $pageSize, $orderBy, $stats);
