@@ -51,13 +51,13 @@ abstract class APIServiceAbstract
   	{
   		$entityName = trim($this->entityName);
 
-  		$searchTxt = trim(isset($params['searchTxt']) ? trim($params['searchTxt']) : 'active = 1');
-  		$searchParams = isset($params['searchParams']) ? $params['searchParams'] : array();
-  		$pageNo = isset($params['pageNo']) ? trim($params['pageNo']) : 1;
-  		$pageSize = isset($params['pageSize']) ? trim($params['pageSize']) : DaoQuery::DEFAUTL_PAGE_SIZE;
-  		$active = isset($params['active']) ? intval($params['active']) : 1;
-  		$orderBy = isset($params['orderBy']) ? $params['orderBy'] : array();
-
+  		$searchTxt = $this->_getPram($params, 'searchTxt', 'active = 1');
+  		$searchParams = $this->_getPram($params, 'searchParams', array());
+  		$pageNo = $this->_getPram($params, 'pageNo', 1);
+  		$pageSize = $this->_getPram($params, 'pageSize', DaoQuery::DEFAUTL_PAGE_SIZE);
+  		$active = $this->_getPram($params, 'active', true);
+  		$orderBy = $this->_getPram($params, 'orderBy', array());
+  		
   		$stats = array();
   		$items = $entityName::getAllByCriteria($searchTxt, $searchParams, $active, $pageNo, $pageSize, $orderBy, $stats);
   		$return = array();
