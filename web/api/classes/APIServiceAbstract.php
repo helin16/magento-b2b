@@ -76,7 +76,7 @@ abstract class APIServiceAbstract
   	 * @throws Exception
   	 * @return unknown
   	 */
-  	protected function _getPram($params, $key, $defultValue = null, $compulsory = false)
+  	protected function _getPram($params, $key, $defaultValue = null, $compulsory = false)
   	{
   	    if(!isset($params[$key])) {
   	        if($compulsory === true)
