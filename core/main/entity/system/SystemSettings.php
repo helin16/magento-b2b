@@ -23,35 +23,36 @@ class SystemSettings extends BaseEntityAbstract
 	const TYPE_LAST_NEW_PRODUCT_PUSH = 'last_new_price_push';
 	const TYPE_LAST_PULL_PRODUCT_PULL = 'last_full_product_pull';
 	const TYPE_SYSTEM_BUILD_PRODUCTS_ID = 'system_build_product_ids';
+	const TYPE_MAGENTO_SYNC = 'magento_sync';
 	/**
 	 * The value of the setting
-	 * 
+	 *
 	 * @var string
 	 */
 	private $value;
 	/**
 	 * The type of the setting
-	 * 
+	 *
 	 * @var string
 	 */
 	private $type;
 	/**
 	 * The description
-	 * 
+	 *
 	 * @var string
 	 */
 	private $description;
 	/**
 	 * The cache
-	 * 
+	 *
 	 * @var array
 	 */
 	private static $_cache = array();
 	/**
 	 * Getting Settings Object
-	 * 
+	 *
 	 * @param string $type The type string
-	 * 
+	 *
 	 * @return String
 	 */
 	public static function getSettings($type)
@@ -63,10 +64,10 @@ class SystemSettings extends BaseEntityAbstract
 		}
 		return self::$_cache[$type];
 	}
-	
+
 	/**
 	 * adding a new Settings Object
-	 * 
+	 *
 	 * @param string $type The type string
 	 */
 	public static function addSettings($type, $value)
@@ -82,7 +83,7 @@ class SystemSettings extends BaseEntityAbstract
 	}
 	/**
 	 * Removing Settings Object
-	 * 
+	 *
 	 * @param string $type The type string
 	 */
 	public static function removeSettings($type)
@@ -96,7 +97,7 @@ class SystemSettings extends BaseEntityAbstract
 	 *
 	 * @return int
 	 */
-	public function getValue() 
+	public function getValue()
 	{
 	    return $this->value;
 	}
@@ -107,7 +108,7 @@ class SystemSettings extends BaseEntityAbstract
 	 *
 	 * @return SystemSettings
 	 */
-	public function setValue($value) 
+	public function setValue($value)
 	{
 	    $this->value = $value;
 	    return $this;
@@ -138,7 +139,7 @@ class SystemSettings extends BaseEntityAbstract
 	 *
 	 * @return string
 	 */
-	public function getDescription() 
+	public function getDescription()
 	{
 	    return $this->description;
 	}
@@ -149,7 +150,7 @@ class SystemSettings extends BaseEntityAbstract
 	 *
 	 * @return SystemSettings
 	 */
-	public function setDescription($value) 
+	public function setDescription($value)
 	{
 	    $this->description = $value;
 	    return $this;
@@ -161,13 +162,13 @@ class SystemSettings extends BaseEntityAbstract
 	public function __loadDaoMap()
 	{
 		DaoMap::begin($this, 'syssettings');
-	
+
 		DaoMap::setStringType('type','varchar', 50);
 		DaoMap::setStringType('value','varchar', 255);
 		DaoMap::setStringType('description','varchar', 100);
-	
+
 		parent::__loadDaoMap();
-	
+
 		DaoMap::createUniqueIndex('type');
 		DaoMap::commit();
 	}
