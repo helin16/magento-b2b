@@ -1,4 +1,7 @@
 <?php
+
+require_once dirname(__FILE__) . '/../../bootstrap.php';
+
 abstract class ProductToMagento
 {
     const TAB = '    ';
@@ -24,6 +27,7 @@ abstract class ProductToMagento
     public static function run($outputFilePath = '/tmp/', $preFix = '', $debug = false)
     {
 		self::$_outputFilePath = trim ($outputFilePath);
+    	Core::setUser(UserAccount::get(UserAccount::ID_SYSTEM_ACCOUNT));
 		self::_genCSV($preFix, $debug);
     }
     private static function _getData($preFix = '', $debug = false)
@@ -178,4 +182,4 @@ abstract class ProductToMagento
    	}
 }
 
-ProductToMagento::run($debug);
+ProductToMagento::run(true);
