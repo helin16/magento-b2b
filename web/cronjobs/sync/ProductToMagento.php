@@ -101,7 +101,7 @@ abstract class ProductToMagento
    		foreach(array_keys(self::_getRowWithDefaultValues(null, $preFix, $debug)) as $colNo => $colValue) {
    			$sheet->setCellValueByColumnAndRow($colNo, $rowNo, $colValue);
    		}
-   		$rowNo++;
+   		$rowNo += 1;
    		
    		foreach($data as $product) {
    			if(!$product instanceof Product)
@@ -109,7 +109,7 @@ abstract class ProductToMagento
    			foreach(array_values(self::_getRowWithDefaultValues($product, $preFix, $debug)) as $colNo => $colValue) {
    				$sheet->setCellValueByColumnAndRow($colNo, $rowNo, $colValue);
    			}
-   			$rowNo++;
+   			$rowNo += 1;
    		}
    	}
    	
