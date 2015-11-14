@@ -86,7 +86,7 @@ abstract class ProductToMagento
    		
    		// Add some data
    		$objPHPExcel->setActiveSheetIndex(0);
-   		self::_genSheet($objPHPExcel->getActiveSheet(), Product::getAll(true, 1, 30), $preFix, $debug);
+   		self::_genSheet($objPHPExcel->getActiveSheet(), Product::getAll(true, 1, 30000), $preFix, $debug);
    		
    		$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'CSV');
    		$filePath = self::$_outputFilePath . self::OUTPUT_FILE_NAME;
