@@ -155,7 +155,7 @@ abstract class ProductToMagento
    				"custom_design_from" => '',
    				"custom_design_to" => '',
    				"weight" => '',
-   				"msrp", //Use config
+   				"msrp" => 'Use config', //
    				"gift_wrapping_price" => '',
    				"qty" => 99, //99
    				"min_qty" => 99,  //99
