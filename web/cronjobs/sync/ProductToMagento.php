@@ -97,8 +97,10 @@ abstract class ProductToMagento
    	
    	private static function _genSheet(PHPExcel_Worksheet &$sheet, array $data, $preFix = '', $debug = false)
    	{
-   		$rowNo = 0;
-   		foreach(array_keys(self::_getRowWithDefaultValues(null, $preFix, $debug)) as $colNo => $colValue) {
+   		$rowNo = 1;
+   		$titles = array_keys(self::_getRowWithDefaultValues(null, $preFix, $debug));
+   		self::_log(print_r($titles, true));
+   		foreach($titles as $colNo => $colValue) {
    			$sheet->setCellValueByColumnAndRow($colNo, $rowNo, $colValue);
    		}
    		$rowNo += 1;
