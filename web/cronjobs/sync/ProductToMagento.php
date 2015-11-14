@@ -119,7 +119,7 @@ abstract class ProductToMagento
    				"category_ids" => '', //123,12312
    				"sku" => ($product instanceof Product ? $product->getSku() : ''), //sku
    				"name" => ($product instanceof Product ? $product->getName() : ''), //product name
-   				"price" => ($product instanceof Product && count($prices = $product->getPrices()) > 0 ? $price[0]->getPrice() : ''), //unitPrice
+   				"price" => ($product instanceof Product && count($prices = $product->getPrices()) > 0 ? $prices[0]->getPrice() : ''), //unitPrice
    				"special_from_date" => '', //special_from_date
    				"special_to_date" => '', //special_to_date
    				"special_price" => '', //special_price
