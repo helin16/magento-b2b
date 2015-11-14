@@ -183,4 +183,4 @@ abstract class ProductToMagento
    	}
 }
 
-ProductToMagento::run(true);
+ProductToMagento::run('/tmp/', true);
