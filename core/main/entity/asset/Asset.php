@@ -304,7 +304,7 @@ class Asset extends BaseEntityAbstract
 		if(!$this->isJsonLoaded($reset))
 		{
 			$a['url'] = $this->getUrl();
-			$a['content'] = $this->readAssetFile($this->getPath());
+			$a['content'] = self::readAssetFile($this->getPath());
 		}
 		$array = parent::getJson($a, $reset);
 		unset($array['path']);
