@@ -103,7 +103,7 @@ abstract class ProductToMagento
    		foreach($data as $product) {
    			if(!$product instanceof Product)
    				continue;
-   			foreach(array_values(self::_getRowWithDefaultValues($sheet, $product)) as $colNo => $colValue) {
+   			foreach(array_values(self::_getRowWithDefaultValues($product, $preFix, $debug)) as $colNo => $colValue) {
    				$sheet->setCellValueByColumnAndRow($colNo, $rowNo, $colValue);
    			}
    			$rowNo++;
