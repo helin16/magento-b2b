@@ -114,7 +114,7 @@ abstract class ProductToMagento
    	private static function _getRowWithDefaultValues(Product $product = null, $preFix = '', $debug = false) {
    		return array("store" => 'default',
    				"websites" => 'base', 
-   				"attribute_set" => ($product instanceof Product ? $product->getAttributeSet()->getName() : ''), //attribute_name
+   				"attribute_set" => ($product instanceof Product && $product->getAttributeSet() instanceof ProductAttributeSet ? $product->getAttributeSet()->getName() : ''), //attribute_name
    				"type" => 'simple',
    				"category_ids" => '', //123,12312
    				"sku" => ($product instanceof Product ? $product->getSku() : ''), //sku
