@@ -130,7 +130,7 @@ abstract class ProductToMagento
    				"tax_class_id" => 2, // 2
    				"description" => '"' . ($product instanceof Product && ($asset = Asset::getAsset($product->getFullDescAssetId())) instanceof Asset ? Asset::readAssetFile($asset->getPath()) : '') . '"', //full description
    				"short_description" => ($product instanceof Product ? $product->getShortDescription() : ''), //short description
-   				"supplier" => ($product instanceof Product && count($supplierCodes = $product->getSupplierCodes()) > 0 ? $supplierCodes[0]->getSupplier()->getName() : ''), // the name of the supplier
+   				"supplier" => ($product instanceof Product && count($supplierCodes = $product->getSupplierCodes()) > 0 && ($supplier = $supplierCodes[0]->getSupplier()) instanceof Supplier ? $supplier->getName() : ''), // the name of the supplier
    				"man_code" => '', //manufacturer code
    				"sup_code" => (isset($supplierCodes[0]) && $supplierCodes[0] instanceof SupplierCode ? $supplierCodes[0]->getCode() : ''), //supplier code
    				"has_options" => '', 
