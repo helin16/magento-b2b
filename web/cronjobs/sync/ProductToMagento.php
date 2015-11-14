@@ -177,3 +177,5 @@ abstract class ProductToMagento
    				"is_recurring" => '');
    	}
 }
+
+ProductToMagento::run($debug);
