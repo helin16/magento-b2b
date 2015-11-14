@@ -89,7 +89,10 @@ abstract class ProductToMagento
    		self::_genSheet($objPHPExcel->getActiveSheet(), Product::getAll(true, 1, 30), $preFix, $debug);
    		
    		$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'CSV');
-		$objWriter->save(self::$_outputFilePath . self::OUTPUT_FILE_NAME);
+   		$filePath = self::$_outputFilePath . self::OUTPUT_FILE_NAME;
+   		self::_log ("Saving to :" . $filePath, '', $preFix);
+		$objWriter->save($filePath);
+   		self::_log ("DONE", '', $preFix . self::TAB);
    	}
    	
    	private static function _genSheet(PHPExcel_Worksheet &$sheet, array $data, $preFix = '', $debug = false)
