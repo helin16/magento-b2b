@@ -141,7 +141,7 @@ abstract class ProductToMagento
    				"has_options" => '', 
    				"meta_title" => '',
    				"meta_description" => '',
-   				"manufacturer" => ($product instanceof Product ? $product->getManufacturer()->getName() : ''), //manufacture value
+   				"manufacturer" => ($product instanceof Product && $product->getManufacturer() instanceof Manufacturer ? $product->getManufacturer()->getName() : ''), //manufacture value
    				"url_key" => '',
    				"url_path" => '',
    				"custom_design" => '',
