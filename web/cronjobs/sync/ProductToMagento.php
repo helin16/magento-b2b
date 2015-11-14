@@ -126,7 +126,7 @@ abstract class ProductToMagento
    				"status" => 1, //1 - enable, 2 - disable
    				"visibility" => 4, //4 - 
    				"tax_class_id" => 2, // 2
-   				"description" => ($product instanceof Product && ($asset = Asset::getAsset($product->getFullDescAssetId())) instanceof Asset ? Asset::readAssetFile($asset->getPath()) : ''), //full description
+   				"description" => '"' . ($product instanceof Product && ($asset = Asset::getAsset($product->getFullDescAssetId())) instanceof Asset ? Asset::readAssetFile($asset->getPath()) : '') . '"', //full description
    				"short_description" => ($product instanceof Product ? $product->getShortDescription() : ''), //short description
    				"supplier" => ($product instanceof Product && count($supplierCodes = $product->getSupplierCodes()) > 0 ? $supplierCodes[0]->getSupplier()->getName() : ''), // the name of the supplier
    				"man_code" => '', //manufacturer code
