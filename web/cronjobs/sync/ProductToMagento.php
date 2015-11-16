@@ -5,7 +5,7 @@ require_once dirname(__FILE__) . '/../../bootstrap.php';
 abstract class ProductToMagento
 {
     const TAB = '    ';
-    const OUTPUT_FILE_NAME = 'productUpdate.csv'; 
+    const OUTPUT_FILE_NAME = 'productUpdate.csv';
     /**
      * The log file
      *
@@ -19,6 +19,12 @@ abstract class ProductToMagento
      */
     private static $_outputFilePath = '';
     /**
+     * The run time cache for the settings..etc.
+     *
+     * @var array
+     */
+    private static $_cache = array();
+    /**
      * The runner
      *
      * @param string $preFix
@@ -28,26 +34,76 @@ abstract class ProductToMagento
     {
 		self::$_outputFilePath = trim ($outputFilePath);
     	Core::setUser(UserAccount::get(UserAccount::ID_SYSTEM_ACCOUNT));
-		self::_genCSV($preFix, $debug);
+
+    	$products = self::_getData($preFix, $debug);
+		self::_genCSV($products, $preFix, $debug);
     }
+    /**
+     * getting the data
+     *
+     * @param string $preFix
+     * @param string $debug
+     *
+     * @return array
+     */
     private static function _getData($preFix = '', $debug = false)
     {
-
+        self::_log('== Trying to get all the updated price for products:', __CLASS__ . '::' . __FUNCTION__,  $preFix);
+        $settings = self::_getSettings($preFix . self::TAB, $debug);
+        $lastUpdatedTime = UDate::zeroDate();
+        if(isset($settings['lastUpdatedTime']))
+            $lastUpdatedTime = new UDate(trim($settings['lastUpdatedTime']));
+        self::_log('GOT LAST SYNC TIME: ' . trim($settings['lastUpdatedTime']), '',  $preFix);
+        $productPrices = ProductPrice::getAllByCriteria('updated > ?', array(trim($lastUpdatedTime)));
+        self::_log('GOT ' . count($productPrice) . ' Price(s) that has changed after "' . trim($lastUpdatedTime) . '".', '',  $preFix);
+        $lastUpdateInDb = UDate::zeroDate();
+        $products = array();
+        foreach($productPrices as $productPrice){
+            if($productPrice->getUpdated()->afterOrEqualTo($lastUpdateInDb))
+                $lastUpdateInDb = $productPrice->getUpdated();
+            $products[] = $productPrice->getProduct();
+        }
+        self::_log('After the looping we have got last updated time from DB: "' . trim($lastUpdateInDb) . '".', '',  $preFix);
+        return $products;
     }
+    /**
+     * Getting the setting for the last sync
+     *
+     * @param string $preFix
+     * @param string $debug
+     *
+     * @throws Exception
+     * @return multitype:
+     */
     private static function _getSettings($preFix = '', $debug = false)
     {
         $paramName = SystemSettings::TYPE_MAGENTO_SYNC;
         self::_log('== Trying to get SystemSettings for :' . $paramName, __CLASS__ . '::' . __FUNCTION__,  $preFix);
+        if(!isset(self::$_cache[__CLASS__ . ':settings:' . $paramName])) {
 
-        $settingString = SystemSettings::getSettings($paramName);
-        self::_log('GOT string: ' . $settingString, '',  $preFix . self::TAB);
+            $settingString = SystemSettings::getSettings($paramName);
+            self::_log('GOT string: ' . $settingString, '',  $preFix . self::TAB);
 
-        $settings = json_decode($settingString, true);
-        if(json_last_error() == JSON_ERROR_NONE)
-            throw new Exception('Invalid JSON string:' . $settingString);
-        self::_log('GOT settings: ' . preg_replace('/\s+/', ' ', print_r($settingString, true)), '',  $preFix . self::TAB);
+            self::$_cache[__CLASS__ . ':settings'] = json_decode($settingString, true);
+            if(json_last_error() == JSON_ERROR_NONE)
+                throw new Exception('Invalid JSON string:' . $settingString);
+        }
+        self::_log('GOT settings: ' . preg_replace('/\s+/', ' ', print_r(self::$_cache[__CLASS__ . ':settings'], true)), '',  $preFix . self::TAB);
         self::_log('');
-        return $settings;
+        return self::$_cache[__CLASS__ . ':settings'];
+    }
+    private static function _setSettings($key, $value, $preFix = '', $debug = false)
+    {
+        $paramName = SystemSettings::TYPE_MAGENTO_SYNC;
+        self::_log('== Trying to set SystemSettings for: "' . $paramName . '" with new value: ' . $value, __CLASS__ . '::' . __FUNCTION__,  $preFix);
+        $settings = self::_getSettings($preFix, $debug);
+        $settings[$key] = $value;
+        if (($settingObj = SystemSettings::getByType($paramName)) instanceof SystemSettings) {
+            $jsonString = json_encode($settings);
+            $settingObj->setValue($jsonString)
+                ->save();
+        }
+        self::$_cache[__CLASS__ . ':settings:' . $paramName] = $settings;
     }
     /**
      * Logging
@@ -77,24 +133,31 @@ abstract class ProductToMagento
             file_put_contents(self::$_logFile, $logMsg, FILE_APPEND);
         return $now;
     }
-    
-   	private static function _genCSV($preFix = '', $debug = false)
+
+   	private static function _genCSV(array $products, $preFix = '', $debug = false)
    	{
    		// Create new PHPExcel object
    		self::_log ("Create new PHPExcel object", __CLASS__ . '::' . __FUNCTION__, $preFix);
    		$objPHPExcel = new PHPExcel();
-   		
+
    		// Add some data
    		$objPHPExcel->setActiveSheetIndex(0);
-   		self::_genSheet($objPHPExcel->getActiveSheet(), Product::getAll(true, 1, 3000), $preFix, $debug);
-   		
+   		self::_genSheet($objPHPExcel->getActiveSheet(), $products, $preFix, $debug);
+
    		$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'CSV');
    		$filePath = self::$_outputFilePath . self::OUTPUT_FILE_NAME;
    		self::_log ("Saving to :" . $filePath, '', $preFix);
 		$objWriter->save($filePath);
    		self::_log ("DONE", '', $preFix . self::TAB);
    	}
-   	
+   	/**
+   	 * generating the worksheet
+   	 *
+   	 * @param PHPExcel_Worksheet $sheet
+   	 * @param array              $data
+   	 * @param string             $preFix
+   	 * @param bool               $debug
+   	 */
    	private static function _genSheet(PHPExcel_Worksheet &$sheet, array $data, $preFix = '', $debug = false)
    	{
    		$rowNo = 1;
@@ -104,7 +167,7 @@ abstract class ProductToMagento
    			$sheet->setCellValueByColumnAndRow($colNo, $rowNo, $colValue);
    		}
    		$rowNo += 1;
-   		
+
    		foreach($data as $product) {
    			if(!$product instanceof Product)
    				continue;
@@ -114,11 +177,19 @@ abstract class ProductToMagento
    			$rowNo += 1;
    		}
    	}
-   	
-   	
-   	private static function _getRowWithDefaultValues(Product $product = null, $preFix = '', $debug = false) {
+   	/**
+   	 * The row with default value
+   	 *
+   	 * @param Product $product
+   	 * @param string $preFix
+   	 * @param string $debug
+   	 *
+   	 * @return multitype:string number
+   	 */
+   	private static function _getRowWithDefaultValues(Product $product = null, $preFix = '', $debug = false)
+   	{
    		return array("store" => 'default',
-   				"websites" => 'base', 
+   				"websites" => 'base',
    				"attribute_set" => ($product instanceof Product && $product->getAttributeSet() instanceof ProductAttributeSet ? $product->getAttributeSet()->getName() : 'Default'), //attribute_name
    				"type" => 'simple',
    				"category_ids" => '2', //123,12312
@@ -131,14 +202,14 @@ abstract class ProductToMagento
    				"news_from_date" => '', //news_from_date
    				"news_to_date" => '', //news_to_date
    				"status" => 1, //1 - enable, 2 - disable
-   				"visibility" => 4, //4 - 
+   				"visibility" => 4, //4 -
    				"tax_class_id" => 2, // 2
    				"description" => '"' . ($product instanceof Product && ($asset = Asset::getAsset($product->getFullDescAssetId())) instanceof Asset ? Asset::readAssetFile($asset->getPath()) : '') . '"', //full description
    				"short_description" => ($product instanceof Product ? $product->getShortDescription() : ''), //short description
    				"supplier" => ($product instanceof Product && count($supplierCodes = $product->getSupplierCodes()) > 0 && ($supplier = $supplierCodes[0]->getSupplier()) instanceof Supplier ? $supplier->getName() : ''), // the name of the supplier
    				"man_code" => '', //manufacturer code
    				"sup_code" => (isset($supplierCodes[0]) && $supplierCodes[0] instanceof SupplierCode ? $supplierCodes[0]->getCode() : ''), //supplier code
-   				"has_options" => '', 
+   				"has_options" => '',
    				"meta_title" => '',
    				"meta_description" => '',
    				"manufacturer" => ($product instanceof Product && $product->getManufacturer() instanceof Manufacturer ? $product->getManufacturer()->getName() : ''), //manufacture value
