@@ -32,11 +32,16 @@ abstract class ProductToMagento
      */
     public static function run($outputFilePath = '/tmp/', $preFix = '', $debug = false)
     {
+        $start = self::_log('## START ##############################', __CLASS__ . '::' . __FUNCTION__,  $preFix);
+
 		self::$_outputFilePath = trim ($outputFilePath);
+		self::_log('GEN CSV TO: ' . self::$_outputFilePath, '',  $preFix. self::TAB);
     	Core::setUser(UserAccount::get(UserAccount::ID_SYSTEM_ACCOUNT));
 
-    	$products = self::_getData($preFix, $debug);
-		self::_genCSV($products, $preFix, $debug);
+    	$products = self::_getData($preFix . self::TAB, $debug);
+		self::_genCSV($products, $preFix . self::TAB, $debug);
+
+        self::_log('## FINISH ##############################', __CLASS__ . '::' . __FUNCTION__,  $preFix, $start);
     }
     /**
      * getting the data
@@ -256,4 +261,7 @@ abstract class ProductToMagento
    	}
 }
 
+$filePath = '/tmp/';
+if(isset($argv) && isset($argv[1]))
+    $filePath = trim($argv[1]);
 ProductToMagento::run('/tmp/', '', true);

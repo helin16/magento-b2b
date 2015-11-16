@@ -51,6 +51,17 @@ else
 /usr/bin/php /var/www/magentob2b/web/cronjobs/AssetCleaner.php >> /tmp/asset_cleaner_`date +"%d_%b_%y"`.log
 fi
 
+
+## generate a MAGENTO product csv ########################################
+if ps ax | grep -v grep | grep "ProductToMagento.php" > /dev/null; then
+echo -n "ProductToMagento is Already Running....... :: "
+date
+echo -n " "
+else
+/usr/bin/php /var/www/magentob2b/web/cronjobs/sync/ProductToMagento.php /tmp/ >> /tmp/ProductToMagento.log
+scp /tmp/productUpdate.csv ec2-user@backup.budgetpc.com.au:/var/www/html/var/import/
+fi
+
 ## CronLog mailer ########################################
 if ps ax | grep -v grep | grep "CronLogOutputNotificationSender.php" > /dev/null; then
 echo -n "CronLogOutputNotificationSender is Already Running....... :: "
