@@ -74,6 +74,7 @@ class APIService
             if(!isset($_SERVER['PATH_INFO'])) {
                 throw new Exception('INVALID URL!');
             }
+            $request = explode("/", substr($_SERVER['PATH_INFO'], 1));
             $entityName = isset($request[0]) ? ucfirst(trim(array_shift($request))) : '';
 
   		    $serivceName = 'API' . $entityName . 'Service';
