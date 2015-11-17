@@ -1,0 +1,2 @@
+insert into systemsettings (`type`, `value`, `description`, `active`, `created`, `createdById`, `updated`, `updatedById` ) values
+    ('magento_sync', '{}', 'The sync settings with magento', 1, NOW(), 10, NOW(), 10);
