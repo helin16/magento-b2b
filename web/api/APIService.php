@@ -93,7 +93,7 @@ class APIService
   		        $request = array_merge($msgArr, $_REQUEST);
   		    }
   		    if(strtolower($requestedMethod) !== 'login'){
-  		        $token = isset($request['token']) ? trim($request['token']) : '';
+  		        $token = $this->_getToken();
   		        $this->log('validating token: "' . $token . '"');
   		        $this->_validateToken($token);
   		    }
@@ -126,6 +126,19 @@ class APIService
   		        ->sendData($response);
   		}
   		$this->log('== End Service =====================', __CLASS__ . '::' . __FUNCTION__);
+    }
+    /**
+     * Getting the token from the header
+     *
+     * @return string
+     */
+    private function _getToken()
+    {
+        foreach (getallheaders() as $name => $value) {
+            if(trim($name) === 'MAGE_API')
+                return trim($value);
+        }
+        return '';
     }
     /**
      * sending the response back
