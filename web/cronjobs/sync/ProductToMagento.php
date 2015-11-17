@@ -150,7 +150,7 @@ abstract class ProductToMagento
 
    		// Add some data
    		$objPHPExcel->setActiveSheetIndex(0);
-   		self::_log ("Populates " . count($products) . ' product(s) onto the first sheet.', '', $preFix . self::TAB);
+   		self::_log ("Populating " . count($products) . ' product(s) onto the first sheet.', '', $preFix . self::TAB);
    		self::_genSheet($objPHPExcel->getActiveSheet(), $products, $preFix, $debug);
 
    		$filePath = self::$_outputFilePath . self::OUTPUT_FILE_NAME;
@@ -171,6 +171,7 @@ abstract class ProductToMagento
    	 */
    	private static function _genSheet(PHPExcel_Worksheet &$sheet, array $data, $preFix = '', $debug = false)
    	{
+   		self::_log ('-- Generating the sheets: ', '', $preFix);
    		$rowNo = 1;
    		$titles = array_keys(self::_getRowWithDefaultValues(null, $preFix, $debug));
 //    		self::_log(print_r($titles, true));
@@ -178,15 +179,21 @@ abstract class ProductToMagento
    			$sheet->setCellValueByColumnAndRow($colNo, $rowNo, $colValue);
    		}
    		$rowNo += 1;
+   		self::_log ('Generated title row', '', $preFix . self::TAB);
 
-   		foreach($data as $product) {
-   			if(!$product instanceof Product)
+   		foreach($data as $index => $product) {
+       		self::_log ('ROW: ' . $index, '', $preFix . self::TAB);
+   			if(!$product instanceof Product) {
+           		self::_log ('SKIPPED, invalid product.', '', $preFix . self::TAB . self::TAB);
    				continue;
+   			}
    			foreach(array_values(self::_getRowWithDefaultValues($product, $preFix, $debug)) as $colNo => $colValue) {
    				$sheet->setCellValueByColumnAndRow($colNo, $rowNo, $colValue);
+   				self::_log ('ADDED.', '', $preFix . self::TAB . self::TAB);
    			}
    			$rowNo += 1;
    		}
+   		self::_log ('-- DONE', '', $preFix);
    	}
    	/**
    	 * The row with default value
