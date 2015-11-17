@@ -191,8 +191,8 @@ abstract class ProductToMagento
    			}
    			foreach(array_values(self::_getRowWithDefaultValues($product, $preFix, $debug)) as $colNo => $colValue) {
    				$sheet->setCellValueByColumnAndRow($colNo, $rowNo, $colValue);
-   				self::_log ('ADDED.', '', $preFix . self::TAB . self::TAB);
    			}
+			self::_log ('ADDED.', '', $preFix . self::TAB . self::TAB);
    			$rowNo += 1;
    		}
    		self::_log ('-- DONE', '', $preFix);
