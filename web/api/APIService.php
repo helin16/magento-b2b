@@ -71,7 +71,9 @@ class APIService
   		    $this->log('== Start Service =============', __CLASS__ . '::' . __FUNCTION__);
 
             $requestType = strtolower(trim($_SERVER['REQUEST_METHOD']));
-            $request = explode("/", substr($_SERVER['PATH_INFO'], 1));
+            if(!isset($_SERVER['PATH_INFO'])) {
+                throw new Exception('INVALID URL!');
+            }
             $entityName = isset($request[0]) ? ucfirst(trim(array_shift($request))) : '';
 
   		    $serivceName = 'API' . $entityName . 'Service';
