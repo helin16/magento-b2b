@@ -69,6 +69,7 @@ abstract class ProductToMagento
             $products[] = $productPrice->getProduct();
         }
         self::_log('After the looping we have got last updated time from DB: "' . trim($lastUpdateInDb) . '".', '',  $preFix);
+        self::_setSettings('lastUpdatedTime', trim($lastUpdateInDb), $preFix, $debug);
         return $products;
     }
     /**
@@ -108,6 +109,8 @@ abstract class ProductToMagento
             $settingObj->setValue($jsonString)
                 ->save();
         }
+        self::_log('DONE', '', $preFix . self::TAB);
+        self::_log('');
         self::$_cache[__CLASS__ . ':settings:' . $paramName] = $settings;
     }
     /**
