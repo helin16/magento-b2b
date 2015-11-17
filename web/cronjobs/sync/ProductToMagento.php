@@ -150,12 +150,15 @@ abstract class ProductToMagento
 
    		// Add some data
    		$objPHPExcel->setActiveSheetIndex(0);
+   		self::_log ("Populates " . count($products) . ' product(s) onto the first sheet.', '', $preFix . self::TAB);
    		self::_genSheet($objPHPExcel->getActiveSheet(), $products, $preFix, $debug);
 
-   		$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'CSV');
    		$filePath = self::$_outputFilePath . self::OUTPUT_FILE_NAME;
    		self::_log ("Saving to :" . $filePath, '', $preFix . self::TAB);
+
+   		$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'CSV');
 		$objWriter->save($filePath);
+
    		self::_log ("DONE", '', $preFix . self::TAB);
    	}
    	/**
