@@ -1,6 +1,8 @@
 <?php
 
 require_once dirname(__FILE__) . '/../../bootstrap.php';
+ini_set("memory_limit", "-1");
+set_time_limit(0);
 
 abstract class ProductToMagento
 {
