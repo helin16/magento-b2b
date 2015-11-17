@@ -134,8 +134,8 @@ abstract class ProductToMagento
         }
         $nowString = '';
         if(trim($msg) !== '')
-            $nowString = ' ' . trim($now) . ' ';
-        $logMsg = $preFix . $nowString . $msg . $timeElapsed . ($funcName !== '' ? (' '  . $funcName . ' ') : '') . $postFix;
+            $nowString = ' [' . trim($now) . '] ';
+        $logMsg = $preFix . $msg . $nowString . $timeElapsed . ($funcName !== '' ? (' '  . $funcName . ' ') : '') . $postFix;
         echo $logMsg;
         if(is_file(self::$_logFile))
             file_put_contents(self::$_logFile, $logMsg, FILE_APPEND);
