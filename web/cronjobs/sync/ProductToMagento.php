@@ -145,7 +145,7 @@ abstract class ProductToMagento
    	private static function _genCSV(array $products, $preFix = '', $debug = false)
    	{
    		// Create new PHPExcel object
-   		self::_log ("Create new PHPExcel object", __CLASS__ . '::' . __FUNCTION__, $preFix);
+   		self::_log ("== Create new PHPExcel object", __CLASS__ . '::' . __FUNCTION__, $preFix);
    		$objPHPExcel = new PHPExcel();
 
    		// Add some data
@@ -154,7 +154,7 @@ abstract class ProductToMagento
 
    		$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'CSV');
    		$filePath = self::$_outputFilePath . self::OUTPUT_FILE_NAME;
-   		self::_log ("Saving to :" . $filePath, '', $preFix);
+   		self::_log ("Saving to :" . $filePath, '', $preFix . self::TAB);
 		$objWriter->save($filePath);
    		self::_log ("DONE", '', $preFix . self::TAB);
    	}
