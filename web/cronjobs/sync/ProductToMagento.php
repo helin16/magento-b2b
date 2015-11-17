@@ -38,8 +38,12 @@ abstract class ProductToMagento
 		self::_log('GEN CSV TO: ' . self::$_outputFilePath, '',  $preFix. self::TAB);
     	Core::setUser(UserAccount::get(UserAccount::ID_SYSTEM_ACCOUNT));
 
-    	$products = self::_getData($preFix . self::TAB, $debug);
+    	$lastUpdatedInDB = '';
+    	$products = self::_getData($lastUpdatedInDB, $preFix . self::TAB, $debug);
 		self::_genCSV($products, $preFix . self::TAB, $debug);
+
+		self::_log('After the looping we have got last updated time from DB: "' . trim($lastUpdatedInDB) . '".', '',  $preFix);
+		self::_setSettings('lastUpdatedTime', trim($lastUpdatedInDB), $preFix, $debug);
 
         self::_log('## FINISH ##############################', __CLASS__ . '::' . __FUNCTION__,  $preFix, $start);
     }
@@ -51,7 +55,7 @@ abstract class ProductToMagento
      *
      * @return array
      */
-    private static function _getData($preFix = '', $debug = false)
+    private static function _getData(&$lastUpdateDB, $preFix = '', $debug = false)
     {
         self::_log('== Trying to get all the updated price for products:', __CLASS__ . '::' . __FUNCTION__,  $preFix);
         $settings = self::_getSettings($preFix . self::TAB, $debug);
@@ -68,8 +72,6 @@ abstract class ProductToMagento
                 $lastUpdateInDb = $productPrice->getUpdated();
             $products[] = $productPrice->getProduct();
         }
-        self::_log('After the looping we have got last updated time from DB: "' . trim($lastUpdateInDb) . '".', '',  $preFix);
-        self::_setSettings('lastUpdatedTime', trim($lastUpdateInDb), $preFix, $debug);
         return $products;
     }
     /**
