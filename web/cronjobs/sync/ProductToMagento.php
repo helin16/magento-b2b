@@ -90,8 +90,8 @@ abstract class ProductToMagento
             self::_log('GOT string: ' . $settingString, '',  $preFix . self::TAB);
 
             self::$_cache[__CLASS__ . ':settings'] = json_decode($settingString, true);
-            if(json_last_error() == JSON_ERROR_NONE)
-                throw new Exception('Invalid JSON string:' . $settingString);
+//             if(json_last_error() == JSON_ERROR_NONE)
+//                 throw new Exception('Invalid JSON string:' . $settingString);
         }
         self::_log('GOT settings: ' . preg_replace('/\s+/', ' ', print_r(self::$_cache[__CLASS__ . ':settings'], true)), '',  $preFix . self::TAB);
         self::_log('');
