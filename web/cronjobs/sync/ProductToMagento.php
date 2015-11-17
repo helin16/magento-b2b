@@ -167,7 +167,7 @@ abstract class ProductToMagento
    	{
    		$rowNo = 1;
    		$titles = array_keys(self::_getRowWithDefaultValues(null, $preFix, $debug));
-   		self::_log(print_r($titles, true));
+//    		self::_log(print_r($titles, true));
    		foreach($titles as $colNo => $colValue) {
    			$sheet->setCellValueByColumnAndRow($colNo, $rowNo, $colValue);
    		}
