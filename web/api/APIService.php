@@ -87,6 +87,11 @@ class APIService
   		        $requestedMethod = 'id';
   		    }
   		    $request = array_merge($request, $_REQUEST);
+  		    //capture the post and put body
+  		    $msgBody = file_get_contents("php://input");
+  		    if(trim($msgBody) !== '' && is_array($msgArr = json_decode($msgBody, true))) {
+  		        $request = array_merge($msgArr, $_REQUEST);
+  		    }
   		    if(strtolower($requestedMethod) !== 'login'){
   		        $token = isset($request['token']) ? trim($request['token']) : '';
   		        $this->log('validating token: "' . $token . '"');
