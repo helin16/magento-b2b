@@ -2,6 +2,7 @@
 class APIService
 {
     const TAB = "\t";
+    const TOKEN_HEADER_KEY = 'MAGE_API';
     private $_realm = '';
     private $_debug;
     private $_logFile;
@@ -93,7 +94,7 @@ class APIService
   		        $request = array_merge($msgArr, $_REQUEST);
   		    }
   		    if(strtolower($requestedMethod) !== 'login'){
-  		        $token = $this->_getToken();
+  		        $token = $this->_getTokenFromHeader();
   		        $this->log('validating token: "' . $token . '"');
   		        $this->_validateToken($token);
   		    }
@@ -132,10 +133,10 @@ class APIService
      *
      * @return string
      */
-    private function _getToken()
+    private function _getTokenFromHeader()
     {
         foreach (getallheaders() as $name => $value) {
-            if(trim($name) === 'MAGE_API')
+            if(trim($name) === self::TOKEN_HEADER_KEY)
                 return trim($value);
         }
         return '';
