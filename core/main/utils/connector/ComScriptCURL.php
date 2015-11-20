@@ -98,7 +98,7 @@ class ComScriptCURL
 		}
 	}
 
-	private function _getProxy() {
+	private static function _getProxy() {
 	    return array(
 // 	            CURLOPT_PROXY   => 'localhost:3128',
 //                 CURLOPT_PROXYTYPE => CURLPROXY_SOCKS5
