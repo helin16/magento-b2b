@@ -60,6 +60,14 @@ abstract class DataFeedImporter
         self::_log('== Set Running User : ', '',  $preFix);
     	Core::setUser(UserAccount::get(UserAccount::ID_SYSTEM_ACCOUNT));
 		self::_log('UserAccount(ID=' . Core::getUser()->getId() . ')', '',  $preFix . self::TAB);
+		if(!isset(self::$_api['token']) || ($token = trim(self::$_api['token'])) === '') {
+		    self::_log('!! no token yet, need to get token.', '',  $preFix . self::TAB);
+		    $url = $apiUrl . 'UserAccount/login';
+		    $data = json_encode(array('username' => Core::getUser()->getUserName(), 'password' => Core::getUser()->getPassword()));
+		    self::_postJson($url, $data, $preFix . self::TAB, $debug);
+		    if(trim(self::$_api['token']) === '')
+		        throw new Exception('Invalid token');
+		}
     }
     private static function _importPerFile($filePath, $preFix = '', $debug = false)
     {
@@ -94,15 +102,6 @@ abstract class DataFeedImporter
         self::_log('GOT data: ' . str_replace("\n", "\n" . $preFix . self::TAB, print_r($line, true)), '',  $preFix . self::TAB);
         if(!isset(self::$_api['URL']) || ($apiUrl = trim(self::$_api['URL'])) === '')
             throw new Exception('No API URL set!');
-        if(!isset(self::$_api['token']) || ($token = trim(self::$_api['token'])) === '') {
-            self::_log('!! no token yet, need to get token.', '',  $preFix . self::TAB);
-            $url = $apiUrl . 'UserAccount/login';
-            $data = json_encode(array('username' => Core::getUser()->getUserName(), 'password' => Core::getUser()->getPassword()));
-            self::_postJson($url, $data, $preFix . self::TAB, $debug);
-            if(trim(self::$_api['token']) === '')
-                throw new Exception('Invalid token');
-        }
-
         $url = $apiUrl . 'Product/';
         self::_log('CURL to url: ' . $url, '', $preFix . self::TAB);
         $data = $line;
