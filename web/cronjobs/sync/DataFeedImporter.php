@@ -60,6 +60,9 @@ abstract class DataFeedImporter
         self::_log('== Set Running User : ', '',  $preFix);
     	Core::setUser(UserAccount::get(UserAccount::ID_SYSTEM_ACCOUNT));
 		self::_log('UserAccount(ID=' . Core::getUser()->getId() . ')', '',  $preFix . self::TAB);
+
+		if(!isset(self::$_api['URL']) || ($apiUrl = trim(self::$_api['URL'])) === '')
+		    throw new Exception('No API URL set!');
 		if(!isset(self::$_api['token']) || ($token = trim(self::$_api['token'])) === '') {
 		    self::_log('!! no token yet, need to get token.', '',  $preFix . self::TAB);
 		    $url = $apiUrl . 'UserAccount/login';
