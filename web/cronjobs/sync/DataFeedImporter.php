@@ -100,7 +100,7 @@ abstract class DataFeedImporter
             self::_log('CURL to url: ' . $url, '', $preFix . self::TAB. self::TAB);
             $data = json_encode(array('username' => Core::getUser()->getUserName(), 'password' => Core::getUser()->getPassword()));
             self::_log('With params: ' . $data, '', $preFix . self::TAB. self::TAB);
-            $result = ComScriptCURL::readUrl(self::$_apiURL . '/Product/', null, $data);
+            $result = ComScriptCURL::readUrl($url, null, $data);
             self::_log('Got Result: ', '', $preFix . self::TAB. self::TAB);
             self::_log(str_replace("\n", "\n" . $preFix . self::TAB . self::TAB . self::TAB, print_r($result, true)), '', $preFix . self::TAB . self::TAB . self::TAB);
             $result = json_decode($result, true);
@@ -113,7 +113,7 @@ abstract class DataFeedImporter
         self::_log('CURL to url: ' . $url, '', $preFix . self::TAB);
         $data = $line;
         $data['token'] = self::$_api['token'];
-        $result = ComScriptCURL::readUrl(self::$_apiURL . '/Product/', null, json_encode($data)); //, $customerRequest = '', $extraOpts = array())
+        $result = ComScriptCURL::readUrl($url, null, json_encode($data)); //, $customerRequest = '', $extraOpts = array())
         self::_log('Got Result: ', '', $preFix . self::TAB);
         self::_log(str_replace("\n", "\n" . $preFix . self::TAB . self::TAB, print_r($result, true)), '', $preFix . self::TAB . self::TAB);
         $result = json_decode($result, true);
