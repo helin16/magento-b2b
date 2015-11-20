@@ -97,30 +97,38 @@ abstract class DataFeedImporter
         if(!isset(self::$_api['token']) || ($token = trim(self::$_api['token'])) === '') {
             self::_log('!! no token yet, need to get token.', '',  $preFix . self::TAB);
             $url = $apiUrl . 'UserAccount/login';
-            self::_log('CURL to url: ' . $url, '', $preFix . self::TAB. self::TAB);
             $data = json_encode(array('username' => Core::getUser()->getUserName(), 'password' => Core::getUser()->getPassword()));
-            self::_log('With params: ' . $data, '', $preFix . self::TAB. self::TAB);
-            $result = ComScriptCURL::readUrl($url, null, $data);
-            self::_log('Got Result: ', '', $preFix . self::TAB. self::TAB);
-            self::_log(str_replace("\n", "\n" . $preFix . self::TAB . self::TAB . self::TAB, print_r($result, true)), '', $preFix . self::TAB . self::TAB . self::TAB);
-            $result = json_decode($result, true);
-            if(!isset($result['token']) || ($token = trim($result['token'])) === '')
-                throw new Exception('Invalid token!');
-            self::$_api['token'] = $token;
+            self::_postJson($url, $data, $preFix . self::TAB, $debug);
+            if(trim(self::$_api['token']) === '')
+                throw new Exception('Invalid token');
         }
 
         $url = $apiUrl . 'Product/';
         self::_log('CURL to url: ' . $url, '', $preFix . self::TAB);
         $data = $line;
         $data['token'] = self::$_api['token'];
-        $result = ComScriptCURL::readUrl($url, null, json_encode($data)); //, $customerRequest = '', $extraOpts = array())
+        self::_postJson($url, json_encode($data), $preFix, $debug);
+        self::_log('++ DONE', __CLASS__ . '::' . __FUNCTION__,  $preFix, $start);
+    }
+    private static function _postJson($url, $data, $preFix = '', $debug = false)
+    {
+        self::_log('CURL to url: ' . $url, __CLASS__ . '::' . __FUNCTION__, $preFix);
+        $extraOptions = array( CURLOPT_CUSTOMREQUEST => "POST",
+            CURLOPT_POSTFIELDS => $data,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_HTTPHEADER => array(
+                'Content-Type: application/json',
+                'Content-Length: ' . strlen($data)
+            )
+        );
+        self::_log('With params: ' . $data, '', $preFix . self::TAB);
+        $result = ComScriptCURL::readUrl($url, null, array(), '', $extraOptions);
         self::_log('Got Result: ', '', $preFix . self::TAB);
         self::_log(str_replace("\n", "\n" . $preFix . self::TAB . self::TAB, print_r($result, true)), '', $preFix . self::TAB . self::TAB);
         $result = json_decode($result, true);
         if(isset($result['token']) && ($token = trim($result['token'])) !== '') {
             self::$_api['token'] = $token;
         }
-        self::_log('++ DONE', __CLASS__ . '::' . __FUNCTION__,  $preFix, $start);
     }
     /**
      * Archiving the file
