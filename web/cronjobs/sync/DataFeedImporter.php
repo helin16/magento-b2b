@@ -185,4 +185,4 @@ abstract class DataFeedImporter
     }
 }
 echo "<pre/>";
-DataFeedImporter::run(dirname(__FILE__));
+DataFeedImporter::run();
