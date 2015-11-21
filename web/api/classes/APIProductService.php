@@ -81,6 +81,6 @@ class APIProductService extends APIServiceAbstract
    private function _getEntityByName($name, $entityName)
    {
 		$entities = $entityName::getAllByCriteria('name = ?', array(trim($name)), 1, 1);
-		return count($entities) > 0 ? $entities[1] : null;
+		return count($entities) > 0 ? $entities[0] : null;
    }
 }
