@@ -108,7 +108,7 @@ abstract class DataFeedImporter
         self::_log('GOT data: ' . str_replace("\n", "\n" . $preFix . self::TAB, print_r($line, true)), '',  $preFix . self::TAB);
         if(!isset(self::$_api['URL']) || ($apiUrl = trim(self::$_api['URL'])) === '')
             throw new Exception('No API URL set!');
-        $url = $apiUrl . 'Product/';
+        $url = $apiUrl . 'Product/dataFeedImport';
         self::_log('CURL to url: ' . $url, '', $preFix . self::TAB);
         $data = $line;
         self::_postJson($url, json_encode($data), $preFix, $debug);
