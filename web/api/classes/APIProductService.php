@@ -88,10 +88,10 @@ class APIProductService extends APIServiceAbstract
 	               }
 	               if($fullAssetContent === '') {
 	
-	                   $this->_runner->log('GOT BLANK FULL DESD. Updating full description.', '', APIService::TAB . APIService::TAB);
+	                   $this->_runner->log('GOT BLANK FULL DESD. Updating full description.', '', APIService::TAB . APIService::TAB . APIService::TAB);
 	                   if($fullAsset instanceof Asset) {
 	                       Asset::removeAssets(array($fullAsset->getAssetId()));
-			       		   $this->_runner->log('REMOVED old empty asset for full description', '', APIService::TAB . APIService::TAB);
+			       		   $this->_runner->log('REMOVED old empty asset for full description', '', APIService::TAB . APIService::TAB . APIService::TAB);
 	                   }
 	                   $fullAsset = Asset::registerAsset('full_description_for_product.txt', $fullDesc, Asset::TYPE_PRODUCT_DEC);
 	                   $product->setFullDescAssetId($fullAsset->getAssetId())
