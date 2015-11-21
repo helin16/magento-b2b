@@ -79,25 +79,34 @@ class APIProductService extends APIServiceAbstract
 	                   $this->_runner->log('GOT BLANK FULL DESD. Updating full description.', '', APIService::TAB . APIService::TAB);
 	                   if($fullAsset instanceof Asset) {
 	                       Asset::removeAssets(array($fullAsset->getAssetId()));
+			       		   $this->_runner->log('REMOVED old empty asset for full description', '', APIService::TAB . APIService::TAB);
 	                   }
 	                   $fullAsset = Asset::registerAsset('full_description_for_product.txt', $fullDesc, Asset::TYPE_PRODUCT_DEC);
 	                   $product->setFullDescAssetId($fullAsset->getAssetId())
 	                       ->save();
+		       		   $this->_runner->log('Added a new full description with assetId: ' . $fullAsset->getAssetId(), '', APIService::TAB . APIService::TAB);
 	               }
 	           }
 	       }
 	       if(count($categoryIds) > 0) {
+	       		$this->_runner->log('Updating the categories: ' . implode(', ', $categoryIds), '', APIService::TAB . APIService::TAB);
 	       		foreach($categoryIds as $categoryId) {
 	       			if (!($category = ProductCategory::get($categoryId)) instanceof ProductCategory)
 	       				continue;
 	       			if(count($ids = explode(ProductCategory::POSITION_SEPARATOR, trim($category->getPosition()))) > 0) {
-	       				foreach(ProductCategory::getAllByCriteria('id in (' . implode(',', $ids) . ')') as $cate)
-			       			$product->addCategory($cate);
+	       				foreach(ProductCategory::getAllByCriteria('id in (' . implode(',', $ids) . ')') as $cate){
+	       					$product->addCategory($cate);
+				       		$this->_runner->log('Updated Category ID: ' . $cate->getId(), '', APIService::TAB . APIService::TAB . APIService::TAB);
+	       				}
 	       			}
 	       		}
 	       }
-	       $product->setStatus($status)->addSupplier($supplier, $supplierCode);
+	       $product->setStatus($status);
+       		$this->_runner->log('Updated Status to: ' . $status->getName(), '', APIService::TAB . APIService::TAB);
+	       $product->addSupplier($supplier, $supplierCode);
+       		$this->_runner->log('Updated Supplier(ID' . $supplier->getId() . ', name=' . $supplier->getName() . ') with code: ' . $supplierCode, '', APIService::TAB . APIService::TAB);
 	       $json = $product->save()->getJson();
+       		$this->_runner->log('Saved Product ID: ' . $product->getId(), '', APIService::TAB . APIService::TAB);
 	       
 	       Dao::commitTransaction();
 	       return $json;
