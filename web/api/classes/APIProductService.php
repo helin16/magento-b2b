@@ -88,7 +88,7 @@ class APIProductService extends APIServiceAbstract
        		foreach($categoryIds as $categoryId) {
        			if (!($category = ProductCategory::get($categoryId)) instanceof ProductCategory)
        				continue;
-       			if(count($ids = explode(self::POSITION_SEPARATOR, trim($this->getPosition()))) > 0) {
+       			if(count($ids = explode(ProductCategory::POSITION_SEPARATOR, trim($this->getPosition()))) > 0) {
        				foreach(ProductCategory::getAllByCriteria('id in (' . implode(',', $ids) . ')') as $cate)
 		       			$product->addCategory($cate);
        			}
