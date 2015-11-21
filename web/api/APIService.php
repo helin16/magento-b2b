@@ -69,6 +69,7 @@ class APIService
   		    }
   		    $this->log('');
   		    $this->log('');
+  		    $this->log('');
   		    $this->log('== Start Service =============', __CLASS__ . '::' . __FUNCTION__);
 
             $requestType = strtolower(trim($_SERVER['REQUEST_METHOD']));
