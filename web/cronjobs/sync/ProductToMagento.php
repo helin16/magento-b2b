@@ -74,6 +74,7 @@ abstract class ProductToMagento
                 $lastUpdateInDb = $productPrice->getUpdated();
             $products[] = $productPrice->getProduct();
         }
+        $lastUpdateDB = $lastUpdateInDb;
         return $products;
     }
     /**
