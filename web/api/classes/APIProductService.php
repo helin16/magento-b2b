@@ -35,7 +35,6 @@ class APIProductService extends APIServiceAbstract
    {
    	   try{
    	   	   Dao::beginTransaction();
-   	   	   $json = '';
 	       $this->_runner->log('dataFeedImport: ', __CLASS__ . '::' . __FUNCTION__);
 	       $sku = $this->_getPram($params, 'sku', null, true);
 	       $name = $this->_getPram($params, 'name', null, true);
@@ -71,7 +70,7 @@ class APIProductService extends APIServiceAbstract
 		       $canUpdate = true;
 	       } else {
 	           //if there is no price matching rule for this product
-	           if(ProductPriceMatchRule::countByCriteria('active = 1 and productId = ?', array($product->getId())) === 0) {
+	           if(($rulesCount = ProductPriceMatchRule::countByCriteria('active = 1 and productId = ?', array($product->getId()))) === 0) {
 	               $this->_runner->log('Found SKU(' . $sku . '): ', '', APIService::TAB);
 	               $this->_runner->log('Updating the price to: ' . StringUtilsAbstract::getCurrency($price), '', APIService::TAB . APIService::TAB);
 	               //update the price with
@@ -98,8 +97,12 @@ class APIProductService extends APIServiceAbstract
 		       		   $this->_runner->log('Added a new full description with assetId: ' . $fullAsset->getAssetId(), '', APIService::TAB . APIService::TAB);
 	               }
 			       $canUpdate = true;
+	           } else {
+	           	  $this->_runner->log('SKIP updating. Found ProductPriceMatchRule count:' . $rulesCount, '', APIService::TAB);
 	           }
 	       }
+	       $json = $product->getJson();
+	       
 	       //only update categories and status when there is no pricematching rule or created new
 	       if($canUpdate === true) {
 		       if(count($categoryIds) > 0) {
