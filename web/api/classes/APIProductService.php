@@ -60,11 +60,14 @@ class APIProductService extends APIServiceAbstract
 	       $revenueAccNo = $this->_getPram($params, 'revenueAccNo', null);
 	       $costAccNo = $this->_getPram($params, 'costAccNo', null);
 	       $categoryIds = $this->_getPram($params, 'category_ids', array());
+	       
+	       $canUpdate = false;
 	
 	       //if we have this product already, then skip
 	       if(!($product = Product::getBySku($sku)) instanceof Product) {
 	           $this->_runner->log('new SKU(' . $sku . ') for import, creating ...', '', APIService::TAB);
 	           $product = Product::create($sku, $name, '', null, null, false, $shortDesc, $fullDesc, $manufacturer, $assetAccNo, $revenueAccNo, $costAccNo, null, null, true);
+		       $canUpdate = true;
 	       } else {
 	           //if there is no price matching rule for this product
 	           if(ProductPriceMatchRule::countByCriteria('active = 1 and productId = ?', array($product->getId())) === 0) {
@@ -74,7 +77,14 @@ class APIProductService extends APIServiceAbstract
 	               $product->clearAllPrice()
 	                   ->addPrice(ProductPriceType::get(ProductPriceType::ID_RRP), $price);
 	
-	               if(!($fullAsset = Asset::getAsset($product->getFullDescAssetId())) instanceof Asset || (trim(file_get_contents($fullAsset->getPath())) === '') ) {
+	               $fullAsset = Asset::getAsset($product->getFullDescAssetId());
+	               $this->_runner->log('Finding asset for full description, assetId:' . ($fullAsset instanceof Asset ? $fullAsset->getAssetId() : ''), '', APIService::TAB . APIService::TAB);
+	               $fullAssetContent = '';
+	               if($fullAsset instanceof Asset) {
+	               		$fullAssetContent= trim(file_get_contents($fullAsset->getPath()));
+		               $this->_runner->log('Got full asset content: ' . $fullAssetContent, '', APIService::TAB . APIService::TAB);
+	               }
+	               if($fullAssetContent === '') {
 	
 	                   $this->_runner->log('GOT BLANK FULL DESD. Updating full description.', '', APIService::TAB . APIService::TAB);
 	                   if($fullAsset instanceof Asset) {
@@ -86,28 +96,31 @@ class APIProductService extends APIServiceAbstract
 	                       ->save();
 		       		   $this->_runner->log('Added a new full description with assetId: ' . $fullAsset->getAssetId(), '', APIService::TAB . APIService::TAB);
 	               }
+			       $canUpdate = true;
 	           }
 	       }
-	       if(count($categoryIds) > 0) {
-	       		$this->_runner->log('Updating the categories: ' . implode(', ', $categoryIds), '', APIService::TAB . APIService::TAB);
-	       		foreach($categoryIds as $categoryId) {
-	       			if (!($category = ProductCategory::get($categoryId)) instanceof ProductCategory)
-	       				continue;
-	       			if(count($ids = explode(ProductCategory::POSITION_SEPARATOR, trim($category->getPosition()))) > 0) {
-	       				foreach(ProductCategory::getAllByCriteria('id in (' . implode(',', $ids) . ')') as $cate){
-	       					$product->addCategory($cate);
-				       		$this->_runner->log('Updated Category ID: ' . $cate->getId(), '', APIService::TAB . APIService::TAB . APIService::TAB);
-	       				}
-	       			}
-	       		}
+	       //only update categories and status when there is no pricematching rule or created new
+	       if($canUpdate === true) {
+		       if(count($categoryIds) > 0) {
+		       		$this->_runner->log('Updating the categories: ' . implode(', ', $categoryIds), '', APIService::TAB . APIService::TAB);
+		       		foreach($categoryIds as $categoryId) {
+		       			if (!($category = ProductCategory::get($categoryId)) instanceof ProductCategory)
+		       				continue;
+		       			if(count($ids = explode(ProductCategory::POSITION_SEPARATOR, trim($category->getPosition()))) > 0) {
+		       				foreach(ProductCategory::getAllByCriteria('id in (' . implode(',', $ids) . ')') as $cate){
+		       					$product->addCategory($cate);
+					       		$this->_runner->log('Updated Category ID: ' . $cate->getId(), '', APIService::TAB . APIService::TAB . APIService::TAB);
+		       				}
+		       			}
+		       		}
+		       }
+		       $product->setStatus($status);
+	       		$this->_runner->log('Updated Status to: ' . $status->getName(), '', APIService::TAB . APIService::TAB);
+		       $product->addSupplier($supplier, $supplierCode);
+	       		$this->_runner->log('Updated Supplier(ID' . $supplier->getId() . ', name=' . $supplier->getName() . ') with code: ' . $supplierCode, '', APIService::TAB . APIService::TAB);
+		       $json = $product->save()->getJson();
+	       		$this->_runner->log('Saved Product ID: ' . $product->getId(), '', APIService::TAB . APIService::TAB);
 	       }
-	       $product->setStatus($status);
-       		$this->_runner->log('Updated Status to: ' . $status->getName(), '', APIService::TAB . APIService::TAB);
-	       $product->addSupplier($supplier, $supplierCode);
-       		$this->_runner->log('Updated Supplier(ID' . $supplier->getId() . ', name=' . $supplier->getName() . ') with code: ' . $supplierCode, '', APIService::TAB . APIService::TAB);
-	       $json = $product->save()->getJson();
-       		$this->_runner->log('Saved Product ID: ' . $product->getId(), '', APIService::TAB . APIService::TAB);
-	       
 	       Dao::commitTransaction();
 	       return $json;
    	   } catch (Exception $e) {
