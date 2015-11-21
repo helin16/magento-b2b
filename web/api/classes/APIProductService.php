@@ -95,7 +95,7 @@ class APIProductService extends APIServiceAbstract
        		}
        }
        $product->setStatus($status)->addSupplier($supplier, $supplierCode);
-       return $product->getJson();
+       return $product->save()->getJson();
    }
    private function _getEntityByName($name, $entityName)
    {
