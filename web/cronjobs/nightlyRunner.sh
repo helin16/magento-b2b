@@ -62,6 +62,15 @@ else
 scp /tmp/productUpdate.csv ec2-user@backup.budgetpc.com.au:/var/www/html/var/import/
 fi
 
+## generate a B2B DataFeed csv ########################################
+if ps ax | grep -v grep | grep "DataFeedImporter.php" > /dev/null; then
+echo -n "DataFeedImporter is Already Running....... :: "
+date
+echo -n " "
+else
+/usr/bin/php /var/www/magentob2b/web/cronjobs/sync/DataFeedImporter.php http://192.168.1.7/api/ /tmp/datafeed/ >> /tmp/datafeed.log
+fi
+
 ## CronLog mailer ########################################
 if ps ax | grep -v grep | grep "CronLogOutputNotificationSender.php" > /dev/null; then
 echo -n "CronLogOutputNotificationSender is Already Running....... :: "
