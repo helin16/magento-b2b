@@ -64,7 +64,7 @@ abstract class ProductToMagento
         $lastUpdatedTime = UDate::zeroDate();
         if(isset($settings['lastUpdatedTime']))
             $lastUpdatedTime = new UDate(trim($settings['lastUpdatedTime']));
-        self::_log('GOT LAST SYNC TIME: ' . trim($settings['lastUpdatedTime']), '',  $preFix);
+        self::_log('GOT LAST SYNC TIME: ' . trim($lastUpdatedTime), '',  $preFix);
         $productPrices = ProductPrice::getAllByCriteria('updated > ?', array(trim($lastUpdatedTime)));
         self::_log('GOT ' . count($productPrices) . ' Price(s) that has changed after "' . trim($lastUpdatedTime) . '".', '',  $preFix);
         $lastUpdateInDb = UDate::zeroDate();
