@@ -70,7 +70,7 @@ class APIProductService extends APIServiceAbstract
 		       $canUpdate = true;
 	       } else {
 	           //if there is no price matching rule for this product
-	           if(($rulesCount = ProductPriceMatchRule::countByCriteria('active = 1 and productId = ?', array($product->getId()))) === 0) {
+	           if(($rulesCount = intval(ProductPriceMatchRule::countByCriteria('active = 1 and productId = ?', array($product->getId())))) === 0) {
 	               $this->_runner->log('Found SKU(' . $sku . '): ', '', APIService::TAB);
 	               $this->_runner->log('Updating the price to: ' . StringUtilsAbstract::getCurrency($price), '', APIService::TAB . APIService::TAB);
 	               //update the price with
