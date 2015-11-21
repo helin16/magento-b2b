@@ -33,7 +33,7 @@ echo -n "pricematchRunner is Already Running....... :: "
 date
 echo -n " "
 else
-/usr/bin/php /var/www/magentob2b/web/cronjobs/pricematch/pricematchRunner.php >> /tmp/pricematchRunner_`date +"%d_%b_%y"`.log
+#/usr/bin/php /var/www/magentob2b/web/cronjobs/pricematch/pricematchRunner.php >> /tmp/pricematchRunner_`date +"%d_%b_%y"`.log
 fi
 
 # push to ec2 dummy .5
@@ -72,10 +72,10 @@ else
 fi
 
 ## CronLog mailer ########################################
-if ps ax | grep -v grep | grep "CronLogOutputNotificationSender.php" > /dev/null; then
-echo -n "CronLogOutputNotificationSender is Already Running....... :: "
-date
-echo -n " "
-else
-/usr/bin/php /var/www/magentob2b/web/cronjobs/CronLogOutputNotification/CronLogOutputNotificationSender.php >> /tmp/CronLogOutputNotificationSender.log
-fi
+#if ps ax | grep -v grep | grep "CronLogOutputNotificationSender.php" > /dev/null; then
+#echo -n "CronLogOutputNotificationSender is Already Running....... :: "
+#date
+#echo -n " "
+#else
+#/usr/bin/php /var/www/magentob2b/web/cronjobs/CronLogOutputNotification/CronLogOutputNotificationSender.php >> /tmp/CronLogOutputNotificationSender.log
+#fi
