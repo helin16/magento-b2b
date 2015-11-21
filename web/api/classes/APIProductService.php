@@ -84,14 +84,17 @@ class APIProductService extends APIServiceAbstract
                }
            }
        }
-       $product->setStatus($status)->addSupplier($supplier, $supplierCode);
        if(count($categoryIds) > 0) {
        		foreach($categoryIds as $categoryId) {
        			if (!($category = ProductCategory::get($categoryId)) instanceof ProductCategory)
        				continue;
-       			$product->addCategory($category);
+       			if(count($ids = explode(self::POSITION_SEPARATOR, trim($this->getPosition()))) > 0) {
+       				foreach(ProductCategory::getAllByCriteria('id in (' . implode(',', $ids) . ')') as $cate)
+		       			$product->addCategory($cate);
+       			}
        		}
        }
+       $product->setStatus($status)->addSupplier($supplier, $supplierCode);
        return $product->getJson();
    }
    private function _getEntityByName($name, $entityName)
