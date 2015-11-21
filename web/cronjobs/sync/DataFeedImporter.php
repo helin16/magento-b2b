@@ -111,7 +111,6 @@ abstract class DataFeedImporter
         $url = $apiUrl . 'Product/';
         self::_log('CURL to url: ' . $url, '', $preFix . self::TAB);
         $data = $line;
-        $data['token'] = self::$_api['token'];
         self::_postJson($url, json_encode($data), $preFix, $debug);
         self::_log('++ DONE', __CLASS__ . '::' . __FUNCTION__,  $preFix, $start);
     }
@@ -123,7 +122,8 @@ abstract class DataFeedImporter
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_HTTPHEADER => array(
                 'Content-Type: application/json',
-                'Content-Length: ' . strlen($data)
+                'Content-Length: ' . strlen($data),
+            	'MAGE_API:' . self::$_api['token']
             )
         );
         self::_log('With params: ' . $data, '', $preFix . self::TAB);
