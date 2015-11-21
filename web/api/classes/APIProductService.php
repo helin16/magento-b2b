@@ -74,7 +74,7 @@ class APIProductService extends APIServiceAbstract
 	               $product->clearAllPrice()
 	                   ->addPrice(ProductPriceType::get(ProductPriceType::ID_RRP), $price);
 	
-	               if(!($fullAsset = Asset::getAsset($product->getFullDescAssetId())) instanceof Asset || (file_get_contents($fullAsset->getPath()) === '') ) {
+	               if(!($fullAsset = Asset::getAsset($product->getFullDescAssetId())) instanceof Asset || (trim(file_get_contents($fullAsset->getPath())) === '') ) {
 	
 	                   $this->_runner->log('GOT BLANK FULL DESD. Updating full description.', '', APIService::TAB . APIService::TAB);
 	                   if($fullAsset instanceof Asset) {
