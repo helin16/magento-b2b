@@ -81,8 +81,10 @@ class APIProductService extends APIServiceAbstract
 	               $this->_runner->log('Finding asset for full description, assetId:' . ($fullAsset instanceof Asset ? $fullAsset->getAssetId() : ''), '', APIService::TAB . APIService::TAB);
 	               $fullAssetContent = '';
 	               if($fullAsset instanceof Asset) {
-	               		$fullAssetContent= trim(html_entity_decode(file_get_contents($fullAsset->getPath())));
-		               $this->_runner->log('Got full asset content: ' . $fullAssetContent, '', APIService::TAB . APIService::TAB);
+	               	   $fullAssetContent = file_get_contents($fullAsset->getPath());
+		               $this->_runner->log('Got full asset content before html_decode: <' . $fullAssetContent . '>', '', APIService::TAB . APIService::TAB);
+	               		$fullAssetContent= trim(html_entity_decode($fullAssetContent));
+		               $this->_runner->log('Got full asset content after html_code: <' . $fullAssetContent . '>', '', APIService::TAB . APIService::TAB);
 	               }
 	               if($fullAssetContent === '') {
 	
