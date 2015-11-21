@@ -62,7 +62,7 @@ abstract class ProductToMagento
         self::_log('== Trying to get all the updated price for products:', __CLASS__ . '::' . __FUNCTION__,  $preFix);
         $settings = self::_getSettings($preFix . self::TAB, $debug);
         $lastUpdatedTime = UDate::zeroDate();
-        if(isset($settings['lastUpdatedTime']))
+        if(isset($settings['lastUpdatedTime']) || trim($settings['lastUpdatedTime']) !== '')
             $lastUpdatedTime = new UDate(trim($settings['lastUpdatedTime']));
         self::_log('GOT LAST SYNC TIME: ' . trim($lastUpdatedTime), '',  $preFix);
         $productPrices = ProductPrice::getAllByCriteria('updated > ?', array(trim($lastUpdatedTime)));
