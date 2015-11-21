@@ -36,20 +36,28 @@ class APIProductService extends APIServiceAbstract
        $this->_runner->log('dataFeedImport: ', __CLASS__ . '::' . __FUNCTION__);
        $sku = $this->_getPram($params, 'sku', null, true);
        $name = $this->_getPram($params, 'name', null, true);
-       $shortDesc = $this->_getPram($params, 'shortDesc', $name);
-       $fullDesc = $this->_getPram($params, 'fullDesc', '');
+       $shortDesc = $this->_getPram($params, 'short_description', $name);
+       $fullDesc = $this->_getPram($params, 'description', '');
        $price = StringUtilsAbstract::getValueFromCurrency($this->_getPram($params, 'price', null, true));
        $supplierName = $this->_getPram($params, 'supplier', null, true);
+       $supplierCode = $this->_getPram($params, 'supplier_code', null, true);
        $supplier = $this->_getEntityByName($supplierName, 'Supplier');
        if(!$supplier instanceof Supplier)
 			throw new Exception("invalid supplier:" . $supplierName);
        
-       $brandName = $this->_getPram($params, 'brandName', null, true);
-       $manufacturer = Manufacturer::create($brandName);
-       $statusName = $this->_getPram($params, 'statusName', null, true);
+       $manufacturerId = $this->_getPram($params, 'manufacturer_id', null, true);
+       $manufacturer = Manufacturer::get($manufacturerId);
+       if(!$manufacturer instanceof Manufacturer)
+       		throw new Exception("invalid Manufacturer:" . $manufacturerId);
+       $statusName = $this->_getPram($params, 'availability', null, true);
+       $status = $this->_getEntityByName($statusName, 'ProductStatus');
+       if(!$status instanceof ProductStatus)
+       	throw new Exception("invalid ProductStatus:" . $statusName);
+       
        $assetAccNo = $this->_getPram($params, 'assetAccNo', null);
        $revenueAccNo = $this->_getPram($params, 'revenueAccNo', null);
        $costAccNo = $this->_getPram($params, 'costAccNo', null);
+       $categoryIds = $this->_getPram($params, 'category_ids', array());
 
        //if we have this product already, then skip
        if(!($product = Product::getBySku($sku)) instanceof Product) {
@@ -75,6 +83,14 @@ class APIProductService extends APIServiceAbstract
                        ->save();
                }
            }
+       }
+       $product->setStatus($status)->addSupplier($supplier, $supplierCode);
+       if(count($categoryIds) > 0) {
+       		foreach($categoryIds as $categoryId) {
+       			if (!($category = ProductCategory::get($categoryId)) instanceof ProductCategory)
+       				continue;
+       			$product->addCategory($category);
+       		}
        }
        return $product->getJson();
    }
