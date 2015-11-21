@@ -44,15 +44,16 @@ abstract class DataFeedImporter
 		self::_log('Achiving the files to: ' . self::$_outputFileDir, '',  $preFix . self::TAB);
         self::_log('');
 
-		//set user
-		self::_setRunningUser($preFix, $debug);
-
     	self::_log('== READ files under: ' . self::$_readingDir, '',  $preFix);
 	    $files = glob(self::$_readingDir . '/*.json');
 	    self::_log('Got files(' . count($files) . '): ' . implode(' ', $files), '',  $preFix . self::TAB);
-	    foreach($files as $filePath) {
-	        self::_log('');
-            self::_importPerFile($filePath, $preFix . self::TAB, $debug);
+	    if(count($files) > 0) {
+			//set user
+			self::_setRunningUser($preFix, $debug);
+		    foreach($files as $filePath) {
+		        self::_log('');
+	            self::_importPerFile($filePath, $preFix . self::TAB, $debug);
+		    }
 	    }
         self::_log('');
         self::_log('## FINISH ##############################', __CLASS__ . '::' . __FUNCTION__,  $preFix, $start);
