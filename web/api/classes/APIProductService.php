@@ -83,7 +83,7 @@ class APIProductService extends APIServiceAbstract
 	               if($fullAsset instanceof Asset) {
 	               	   $fullAssetContent = file_get_contents($fullAsset->getPath());
 		               $this->_runner->log('Got full asset content before html_decode: <' . $fullAssetContent . '>', '', APIService::TAB . APIService::TAB);
-	               		$fullAssetContent= trim(html_entity_decode($fullAssetContent));
+	               		$fullAssetContent= trim(str_replace('&nbsp;', '', $fullAssetContent));
 		               $this->_runner->log('Got full asset content after html_code: <' . $fullAssetContent . '>', '', APIService::TAB . APIService::TAB);
 	               }
 	               if($fullAssetContent === '') {
