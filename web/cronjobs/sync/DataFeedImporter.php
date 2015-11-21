@@ -32,10 +32,12 @@ abstract class DataFeedImporter
      * @param string $preFix
      * @param string $debug
      */
-    public static function run($readingDir = '/tmp/', $outputFileDir = '/tmp/Archived/', $preFix = '', $debug = false)
+    public static function run($url = '', $readingDir = '/tmp/', $outputFileDir = '/tmp/Archived/', $preFix = '', $debug = false)
     {
         $start = self::_log('## START ##############################', __CLASS__ . '::' . __FUNCTION__,  $preFix);
 
+		self::$_api['URL'] = trim ($url);
+		self::_log('API URL: ' . self::$_api['URL'], '',  $preFix . self::TAB);
 		self::$_readingDir = trim ($readingDir);
 		self::_log('Reading the files from: ' . self::$_readingDir, '',  $preFix . self::TAB);
 		self::$_outputFileDir = trim ($outputFileDir);
@@ -194,5 +196,7 @@ abstract class DataFeedImporter
         return $now;
     }
 }
-echo "<pre/>";
-DataFeedImporter::run();
+
+
+
+DataFeedImporter::run($argv[1], $argv[2]);
