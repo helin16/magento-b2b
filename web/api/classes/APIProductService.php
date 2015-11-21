@@ -100,7 +100,7 @@ class APIProductService extends APIServiceAbstract
 	       $json = $product->save()->getJson();
 	       
 	       Dao::commitTransaction();
-	       return json;
+	       return $json;
    	   } catch (Exception $e) {
    	   		Dao::rollbackTransaction();
    	   		throw $e;
