@@ -35,6 +35,7 @@ class APIProductService extends APIServiceAbstract
    {
    	   try{
    	   	   Dao::beginTransaction();
+   	   	   $json = '';
 	       $this->_runner->log('dataFeedImport: ', __CLASS__ . '::' . __FUNCTION__);
 	       $sku = $this->_getPram($params, 'sku', null, true);
 	       $name = $this->_getPram($params, 'name', null, true);
