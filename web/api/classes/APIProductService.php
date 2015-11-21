@@ -39,7 +39,11 @@ class APIProductService extends APIServiceAbstract
        $shortDesc = $this->_getPram($params, 'shortDesc', $name);
        $fullDesc = $this->_getPram($params, 'fullDesc', '');
        $price = StringUtilsAbstract::getValueFromCurrency($this->_getPram($params, 'price', null, true));
-       $supplierId = $this->_getPram($params, 'supplierId', null, true);
+       $supplierName = $this->_getPram($params, 'supplier', null, true);
+       $supplier = $this->_getEntityByName($supplierName, 'Supplier');
+       if(!$supplier instanceof Supplier)
+			throw new Exception("invalid supplier:" . $supplierName);
+       
        $brandName = $this->_getPram($params, 'brandName', null, true);
        $manufacturer = Manufacturer::create($brandName);
        $statusName = $this->_getPram($params, 'statusName', null, true);
@@ -73,5 +77,10 @@ class APIProductService extends APIServiceAbstract
            }
        }
        return $product->getJson();
+   }
+   private function _getEntityByName($name, $entityName)
+   {
+		$entities = $entityName::getAllByCriteria('name = ?', array(trim($name)), 1, 1);
+		return count($entities) > 0 ? $entities[1] : null;
    }
 }
