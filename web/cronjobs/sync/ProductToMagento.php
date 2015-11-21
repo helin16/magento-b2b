@@ -282,4 +282,4 @@ abstract class ProductToMagento
 $filePath = '/tmp/';
 if(isset($argv) && isset($argv[1]))
     $filePath = trim($argv[1]);
-ProductToMagento::run('/tmp/', '', true);
+ProductToMagento::run($filePath, '', true);
