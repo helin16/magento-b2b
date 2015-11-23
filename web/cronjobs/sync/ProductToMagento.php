@@ -232,17 +232,25 @@ abstract class ProductToMagento
    	{
    	    $attributeSetName = 'Default';
    	    $enabled = true;
-   	    $sku = $productName = $rrpPrice = $shortDescription = $fullDecription = $supplierName = $supplierCode = $manufacturerName = '';
+   	    $sku = $productName = $rrpPrice = $shortDescription = $fullDecription = $supplierName = $supplierCode = $manufacturerName = $asNewFrom = $asNewTo = $specialPrice = $specialPriceFromDate = $specialPriceToDate = '';
    	    $categoryIds = array(2); //default category
    	    if($product instanceof Product) {
    	        $sku = trim($product->getSku());
    	        $productName = trim($product->getName());
    	        $shortDescription = trim($product->getShortDescription());
+   	        $asNewFrom = trim($product->getAsNewFromDate());
+   	        $asNewTo = trim($product->getAsNewToDate());
    	        if($product->getAttributeSet() instanceof ProductAttributeSet)
    	            $attributeSetName = $product->getAttributeSet()->getName();
    	        //RRP
-   	        if($product->getRRP() instanceof ProductPrice)
-   	            $rrpPrice = StringUtilsAbstract::getValueFromCurrency($product->getRRP()->getPrice());
+   	        if(($rrp = $product->getRRP()) instanceof ProductPrice)
+   	            $rrpPrice = StringUtilsAbstract::getValueFromCurrency($rrp->getPrice());
+   	        //special price
+   	        if(($specialPriceObj = $product->getNearestSpecialPrice()) instanceof ProductPrice) {
+   	            $specialPrice = StringUtilsAbstract::getValueFromCurrency($specialPriceObj->getPrice());
+   	            $specialPriceFromDate = trim($specialPriceObj->getStart());
+   	            $specialPriceToDate = trim($specialPriceObj->getEnd());
+   	        }
    	        //full description
    	        if(($asset = Asset::getAsset($product->getFullDescAssetId())) instanceof Asset)
    	            $fullDecription = '"' . Asset::readAssetFile($asset->getPath()) . '"';
@@ -273,11 +281,11 @@ abstract class ProductToMagento
    				"sku" => $sku, //sku
    				"name" => $productName, //product name
    				"price" => $rrpPrice, //unitPrice
-   				"special_from_date" => '', //special_from_date
-   				"special_to_date" => '', //special_to_date
-   				"special_price" => '', //special_price
-   				"news_from_date" => '', //news_from_date
-   				"news_to_date" => '', //news_to_date
+   				"special_from_date" => $specialPriceFromDate, //special_from_date
+   				"special_to_date" => $specialPriceToDate, //special_to_date
+   				"special_price" => $specialPrice, //special_price
+   				"news_from_date" => $asNewFrom, //news_from_date
+   				"news_to_date" => $asNewTo, //news_to_date
    				"status" => intval($enabled) === 1 ? 1 : 2, //1 - enable, 2 - disable
    				"visibility" => 4, //4 -
    				"tax_class_id" => 2, // 2

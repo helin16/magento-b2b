@@ -1380,6 +1380,17 @@ class Product extends InfoEntityAbstract
 	    return null;
 	}
 	/**
+	 * Getting the RRP for this product
+	 * @return ProductPrice|NULL
+	 */
+	public function getNearestSpecialPrice()
+	{
+	    $now = UDate::now();
+	    if(count($prices = ProductPrice::getPrices($this, ProductPriceType::get(ProductPriceType::ID_CASUAL_SPECIAL), '', trim($now), trim($now), '', 1, 1, array('created' > 'asc'))) > 0)
+	        return $prices[0];
+	    return null;
+	}
+	/**
 	 * (non-PHPdoc)
 	 * @see BaseEntity::__loadDaoMap()
 	 */
