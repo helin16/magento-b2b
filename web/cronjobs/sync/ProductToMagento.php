@@ -214,6 +214,7 @@ abstract class ProductToMagento
    	    $attributeSetName = 'Default';
    	    $enabled = true;
    	    $sku = $productName = $rrpPrice = $shortDescription = $fullDecription = $supplierName = $supplierCode = $manufacturerName = '';
+   	    $categoryIds = array(2); //default category
    	    if(($product instanceof Product) {
    	        $sku = trim($product->getSku());
    	        $productName = trim($product->getName());
@@ -239,12 +240,17 @@ abstract class ProductToMagento
    	            $enabled = false;
    	        else if($product->getStatus() instanceof ProductStatus && intval($product->getStatus()->getId()) === ProductStatus::ID_DISABLED)
    	            $enabled = false;
+   	        //categories
+   	        if(count($categories = $product->getCategories()) > 0) {
+   	            foreach($categories as $category)
+   	                $categoryIds[] = $category->getId();
+   	        }
    	    }
    		return array("store" => 'default',
    				"websites" => 'base',
    				"attribute_set" => $attributeSetName, //attribute_name
    				"type" => 'simple',
-   				"category_ids" => '2', //123,12312
+   				"category_ids" => implode(',', $categoryIds), //123,12312
    				"sku" => $sku, //sku
    				"name" => $productName, //product name
    				"price" => $rrpPrice, //unitPrice
