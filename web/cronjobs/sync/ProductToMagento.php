@@ -125,6 +125,14 @@ abstract class ProductToMagento
         self::_log('');
         return self::$_cache[__CLASS__ . ':settings'];
     }
+    /**
+     * SEtting the value for the system settings
+     *
+     * @param string $key
+     * @param string $value
+     * @param string $preFix
+     * @param bool   $debug
+     */
     private static function _setSettings($key, $value, $preFix = '', $debug = false)
     {
         $paramName = SystemSettings::TYPE_MAGENTO_SYNC;
@@ -132,7 +140,9 @@ abstract class ProductToMagento
         $settings = self::_getSettings($preFix, $debug);
         if(!is_array($settings))
             $settings = array();
+        self::_log('Before setting: ' . preg_replace('/\s+/', ' ', print_r($settings, true)), '', $preFix . self::TAB);
         $settings[$key] = $value;
+        self::_log('After setting: ' . preg_replace('/\s+/', ' ', print_r($settings, true)), '', $preFix . self::TAB);
         if (($settingObj = SystemSettings::getByType($paramName)) instanceof SystemSettings) {
             $jsonString = json_encode($settings);
             self::_log('Saving new Settings: ' . $jsonString, '', $preFix . self::TAB);
