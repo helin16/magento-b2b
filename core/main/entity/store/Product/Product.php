@@ -1386,7 +1386,7 @@ class Product extends InfoEntityAbstract
 	public function getNearestSpecialPrice()
 	{
 	    $now = UDate::now();
-	    if(count($prices = ProductPrice::getPrices($this, ProductPriceType::get(ProductPriceType::ID_CASUAL_SPECIAL), '', trim($now), trim($now), '', 1, 1, array('created' > 'asc'))) > 0)
+	    if(count($prices = ProductPrice::getPrices($this, ProductPriceType::get(ProductPriceType::ID_CASUAL_SPECIAL), '', trim($now), trim($now), '', 1, 1, array('created' => 'asc'))) > 0)
 	        return $prices[0];
 	    return null;
 	}
