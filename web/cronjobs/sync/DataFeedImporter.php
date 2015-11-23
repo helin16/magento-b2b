@@ -34,40 +34,40 @@ abstract class DataFeedImporter
      */
     public static function run($url = '', $readingDir = '/tmp/', $outputFileDir = '/tmp/Archived/', $preFix = '', $debug = false)
     {
-        $start = self::_log('## START ##############################', __CLASS__ . '::' . __FUNCTION__,  $preFix);
+        $start = self::_log('## START ##############################', __CLASS__ . '::' . __FUNCTION__, $preFix);
 
-		self::$_api['URL'] = trim ($url);
-		self::_log('API URL: ' . self::$_api['URL'], '',  $preFix . self::TAB);
-		self::$_readingDir = trim ($readingDir);
-		self::_log('Reading the files from: ' . self::$_readingDir, '',  $preFix . self::TAB);
-		self::$_outputFileDir = trim ($outputFileDir);
-		self::_log('Achiving the files to: ' . self::$_outputFileDir, '',  $preFix . self::TAB);
+		self::$_api['URL'] = trim($url);
+		self::_log('API URL: ' . self::$_api['URL'], '', $preFix . self::TAB);
+		self::$_readingDir = trim($readingDir);
+		self::_log('Reading the files from: ' . self::$_readingDir, '', $preFix . self::TAB);
+		self::$_outputFileDir = trim($outputFileDir);
+		self::_log('Achiving the files to: ' . self::$_outputFileDir, '', $preFix . self::TAB);
         self::_log('');
 
-    	self::_log('== READ files under: ' . self::$_readingDir, '',  $preFix);
+    	self::_log('== READ files under: ' . self::$_readingDir, '', $preFix);
 	    $files = glob(self::$_readingDir . '/*.json');
-	    self::_log('Got files(' . count($files) . '): ' . implode(' ', $files), '',  $preFix . self::TAB);
-	    if(count($files) > 0) {
+	    self::_log('Got files(' . count($files) . '): ' . implode(' ', $files), '', $preFix . self::TAB);
+	    if (count($files) > 0) {
 			//set user
 			self::_setRunningUser($preFix, $debug);
-		    foreach($files as $filePath) {
+		    foreach ($files as $filePath) {
 		        self::_log('');
 	            self::_importPerFile($filePath, $preFix . self::TAB, $debug);
 		    }
 	    }
         self::_log('');
-        self::_log('## FINISH ##############################', __CLASS__ . '::' . __FUNCTION__,  $preFix, $start);
+        self::_log('## FINISH ##############################', __CLASS__ . '::' . __FUNCTION__, $preFix, $start);
     }
     private static function _setRunningUser($preFix = '', $debug = false)
     {
-        self::_log('== Set Running User : ', '',  $preFix);
+        self::_log('== Set Running User : ', '', $preFix);
     	Core::setUser(UserAccount::get(UserAccount::ID_SYSTEM_ACCOUNT));
-		self::_log('UserAccount(ID=' . Core::getUser()->getId() . ')', '',  $preFix . self::TAB);
+		self::_log('UserAccount(ID=' . Core::getUser()->getId() . ')', '', $preFix . self::TAB);
 
 		if(!isset(self::$_api['URL']) || ($apiUrl = trim(self::$_api['URL'])) === '')
 		    throw new Exception('No API URL set!');
-		if(!isset(self::$_api['token']) || ($token = trim(self::$_api['token'])) === '') {
-		    self::_log('!! no token yet, need to get token.', '',  $preFix . self::TAB);
+		if (!isset(self::$_api['token']) || ($token = trim(self::$_api['token'])) === '') {
+		    self::_log('!! no token yet, need to get token.', '', $preFix . self::TAB);
 		    $url = $apiUrl . 'UserAccount/login';
 		    $data = json_encode(array('username' => Core::getUser()->getUserName(), 'password' => Core::getUser()->getPassword()));
 		    self::_postJson($url, $data, $preFix . self::TAB, $debug);
@@ -77,23 +77,23 @@ abstract class DataFeedImporter
     }
     private static function _importPerFile($filePath, $preFix = '', $debug = false)
     {
-        $start = self::_log('-- Processing file: ' . $filePath, __CLASS__ . '::' . __FUNCTION__,  $preFix);
+        $start = self::_log('-- Processing file: ' . $filePath, __CLASS__ . '::' . __FUNCTION__, $preFix);
         try {
             if(!is_file($filePath))
                 throw new Exception("Invalid file: " . $filePath);
             $productsJsonArry = json_decode(file_get_contents($filePath), true);
-            foreach($productsJsonArry as $productJson) {
+            foreach ($productsJsonArry as $productJson) {
                 self::_log('');
                 self::_importPerLine($productJson, $preFix . self::TAB, $debug);
             }
             self::_log('');
             self::_zipFile($filePath, $preFix . self::TAB, $debug);
         } catch (Exception $ex) {
-            self::_log('ERROR: ' . $ex->getMessage(), '',  $preFix . self::TAB);
-            self::_log('Trace: ', '',  $preFix . self::TAB);
-            self::_log(str_replace("\n", "\n" . $preFix . self::TAB, $ex->getTraceAsString()), '',  $preFix . self::TAB);
+            self::_log('ERROR: ' . $ex->getMessage(), '', $preFix . self::TAB);
+            self::_log('Trace: ', '', $preFix . self::TAB);
+            self::_log(str_replace("\n", "\n" . $preFix . self::TAB, $ex->getTraceAsString()), '', $preFix . self::TAB);
         }
-        self::_log('-- DONE with file: ' . $filePath, __CLASS__ . '::' . __FUNCTION__,  $preFix, $start);
+        self::_log('-- DONE with file: ' . $filePath, __CLASS__ . '::' . __FUNCTION__, $preFix, $start);
     }
     /**
      * Import via api
@@ -104,15 +104,15 @@ abstract class DataFeedImporter
      */
     private static function _importPerLine($line, $preFix = '', $debug = false)
     {
-        $start = self::_log('++ Processing Line Data:', __CLASS__ . '::' . __FUNCTION__,  $preFix );
-        self::_log('GOT data: ' . str_replace("\n", "\n" . $preFix . self::TAB, print_r($line, true)), '',  $preFix . self::TAB);
+        $start = self::_log('++ Processing Line Data:', __CLASS__ . '::' . __FUNCTION__, $preFix );
+        self::_log('GOT data: ' . str_replace("\n", "\n" . $preFix . self::TAB, print_r($line, true)), '', $preFix . self::TAB);
         if(!isset(self::$_api['URL']) || ($apiUrl = trim(self::$_api['URL'])) === '')
             throw new Exception('No API URL set!');
         $url = $apiUrl . 'Product/dataFeedImport';
         self::_log('CURL to url: ' . $url, '', $preFix . self::TAB);
         $data = $line;
         self::_postJson($url, json_encode($data), $preFix, $debug);
-        self::_log('++ DONE', __CLASS__ . '::' . __FUNCTION__,  $preFix, $start);
+        self::_log('++ DONE', __CLASS__ . '::' . __FUNCTION__, $preFix, $start);
     }
     private static function _postJson($url, $data, $preFix = '', $debug = false)
     {
@@ -131,7 +131,7 @@ abstract class DataFeedImporter
         self::_log('Got Result: ', '', $preFix . self::TAB);
         self::_log(str_replace("\n", "\n" . $preFix . self::TAB . self::TAB, print_r($result, true)), '', $preFix . self::TAB . self::TAB);
         $result = json_decode($result, true);
-        if(isset($result['token']) && ($token = trim($result['token'])) !== '') {
+        if (isset($result['token']) && ($token = trim($result['token'])) !== '') {
             self::$_api['token'] = $token;
         }
     }
@@ -145,7 +145,7 @@ abstract class DataFeedImporter
      */
     private static function _zipFile($filePath, $preFix = '', $debug = false)
     {
-        $start = self::_log('== Archiving the file: ' . $filePath, __CLASS__ . '::' . __FUNCTION__,  $preFix );
+        $start = self::_log('== Archiving the file: ' . $filePath, __CLASS__ . '::' . __FUNCTION__, $preFix);
         if(!is_file($filePath))
              throw new Exception("Invalid file: " . $filePath);
         $zip = new ZipArchive();
@@ -166,7 +166,7 @@ abstract class DataFeedImporter
         unlink($filePath);
         self::_log('REMOVED', '', $preFix . self::TAB . self::TAB);
 
-        self::_log('== Archived', __CLASS__ . '::' . __FUNCTION__,  $preFix, $start);
+        self::_log('== Archived', __CLASS__ . '::' . __FUNCTION__, $preFix, $start);
     }
     /**
      * Logging
@@ -183,7 +183,7 @@ abstract class DataFeedImporter
     {
         $now = new UDate();
         $timeElapsed = '';
-        if($start instanceof UDate) {
+        if ($start instanceof UDate) {
             $timeElapsed = $now->diff($start);
             $timeElapsed = ' TOOK (' . $timeElapsed->format('%s') . ') seconds ';
         }
@@ -197,7 +197,5 @@ abstract class DataFeedImporter
         return $now;
     }
 }
-
-
 
 DataFeedImporter::run($argv[1], $argv[2]);

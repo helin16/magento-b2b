@@ -946,9 +946,9 @@ class Product extends InfoEntityAbstract
 	 *
 	 * @return Product
 	 */
-	public function addSupplier(Supplier $supplier, $supplierCode = 'NA')
+	public function addSupplier(Supplier $supplier, $supplierCode = 'NA', $canSupplyQty = 0)
 	{
-		SupplierCode::create($this, $supplier, $supplierCode);
+		SupplierCode::create($this, $supplier, $supplierCode, $canSupplyQty);
 		return $this;
 	}
 	/**

@@ -46,7 +46,7 @@ class APIProductService extends APIServiceAbstract
 	       $supplier = $this->_getEntityByName($supplierName, 'Supplier');
 	       if(!$supplier instanceof Supplier)
 				throw new Exception("invalid supplier:" . $supplierName);
-	       
+
 	       $manufacturerId = $this->_getPram($params, 'manufacturer_id', null, true);
 	       $manufacturer = Manufacturer::get($manufacturerId);
 	       if(!$manufacturer instanceof Manufacturer)
@@ -55,41 +55,43 @@ class APIProductService extends APIServiceAbstract
 	       $status = $this->_getEntityByName($statusName, 'ProductStatus');
 	       if(!$status instanceof ProductStatus)
 	       	throw new Exception("invalid ProductStatus:" . $statusName);
-	       
+
 	       $assetAccNo = $this->_getPram($params, 'assetAccNo', null);
 	       $revenueAccNo = $this->_getPram($params, 'revenueAccNo', null);
 	       $costAccNo = $this->_getPram($params, 'costAccNo', null);
 	       $categoryIds = $this->_getPram($params, 'category_ids', array());
-	       
+	       $canSupplyQty = $this->_getPram($params, 'qty', 0);
+	       $weight = $this->_getPram($params, 'weight', 0);
+
 	       $canUpdate = false;
-	
+
 	       //if we have this product already, then skip
-	       if(!($product = Product::getBySku($sku)) instanceof Product) {
+	       if (!($product = Product::getBySku($sku)) instanceof Product) {
 	           $this->_runner->log('new SKU(' . $sku . ') for import, creating ...', '', APIService::TAB);
 	           $product = Product::create($sku, $name, '', null, null, false, $shortDesc, $fullDesc, $manufacturer, $assetAccNo, $revenueAccNo, $costAccNo, null, null, true);
 		       $canUpdate = true;
 	       } else {
 	           //if there is no price matching rule for this product
-	           if(($rulesCount = intval(ProductPriceMatchRule::countByCriteria('active = 1 and productId = ?', array($product->getId())))) === 0) {
+	           if (($rulesCount = intval(ProductPriceMatchRule::countByCriteria('active = 1 and productId = ?', array($product->getId())))) === 0) {
 	               $this->_runner->log('Found SKU(' . $sku . '): ', '', APIService::TAB);
 	               $this->_runner->log('Updating the price to: ' . StringUtilsAbstract::getCurrency($price), '', APIService::TAB . APIService::TAB);
 	               //update the price with
 	               $product->clearAllPrice()
 	                   ->addPrice(ProductPriceType::get(ProductPriceType::ID_RRP), $price);
-	
+
 	               $fullAsset = Asset::getAsset($product->getFullDescAssetId());
 	               $this->_runner->log('Finding asset for full description, assetId:' . ($fullAsset instanceof Asset ? $fullAsset->getAssetId() : ''), '', APIService::TAB . APIService::TAB);
 	               $fullAssetContent = '';
-	               if($fullAsset instanceof Asset) {
+	               if ($fullAsset instanceof Asset) {
 	               	   $fullAssetContent = file_get_contents($fullAsset->getPath());
 		               $this->_runner->log('Got full asset content before html_decode: <' . $fullAssetContent . '>', '', APIService::TAB . APIService::TAB);
 	               		$fullAssetContent= trim(str_replace('&nbsp;', '', $fullAssetContent));
 		               $this->_runner->log('Got full asset content after html_code: <' . $fullAssetContent . '>', '', APIService::TAB . APIService::TAB);
 	               }
-	               if($fullAssetContent === '') {
-	
+	               if ($fullAssetContent === '') {
+
 	                   $this->_runner->log('GOT BLANK FULL DESD. Updating full description.', '', APIService::TAB . APIService::TAB . APIService::TAB);
-	                   if($fullAsset instanceof Asset) {
+	                   if ($fullAsset instanceof Asset) {
 	                       Asset::removeAssets(array($fullAsset->getAssetId()));
 			       		   $this->_runner->log('REMOVED old empty asset for full description', '', APIService::TAB . APIService::TAB . APIService::TAB);
 	                   }
@@ -104,16 +106,16 @@ class APIProductService extends APIServiceAbstract
 	           }
 	       }
 	       $json = $product->getJson();
-	       
+
 	       //only update categories and status when there is no pricematching rule or created new
-	       if($canUpdate === true) {
-		       if(count($categoryIds) > 0) {
+	       if ($canUpdate === true) {
+		       if (count($categoryIds) > 0) {
 		       		$this->_runner->log('Updating the categories: ' . implode(', ', $categoryIds), '', APIService::TAB . APIService::TAB);
-		       		foreach($categoryIds as $categoryId) {
+		       		foreach ($categoryIds as $categoryId) {
 		       			if (!($category = ProductCategory::get($categoryId)) instanceof ProductCategory)
 		       				continue;
-		       			if(count($ids = explode(ProductCategory::POSITION_SEPARATOR, trim($category->getPosition()))) > 0) {
-		       				foreach(ProductCategory::getAllByCriteria('id in (' . implode(',', $ids) . ')') as $cate){
+		       			if (count($ids = explode(ProductCategory::POSITION_SEPARATOR, trim($category->getPosition()))) > 0) {
+		       				foreach (ProductCategory::getAllByCriteria('id in (' . implode(',', $ids) . ')') as $cate) {
 		       					$product->addCategory($cate);
 					       		$this->_runner->log('Updated Category ID: ' . $cate->getId(), '', APIService::TAB . APIService::TAB . APIService::TAB);
 		       				}
@@ -121,11 +123,11 @@ class APIProductService extends APIServiceAbstract
 		       		}
 		       }
 		       $product->setStatus($status);
-	       		$this->_runner->log('Updated Status to: ' . $status->getName(), '', APIService::TAB . APIService::TAB);
-		       $product->addSupplier($supplier, $supplierCode);
-	       		$this->_runner->log('Updated Supplier(ID' . $supplier->getId() . ', name=' . $supplier->getName() . ') with code: ' . $supplierCode, '', APIService::TAB . APIService::TAB);
+		       $this->_runner->log('Updated Status to: ' . $status->getName(), '', APIService::TAB . APIService::TAB);
+		       $product->addSupplier($supplier, $supplierCode, $canSupplyQty);
+		       $this->_runner->log('Updated Supplier(ID' . $supplier->getId() . ', name=' . $supplier->getName() . ') with code: ' . $supplierCode . 'canSupplyQty=' . $canSupplyQty, '', APIService::TAB . APIService::TAB);
 		       $json = $product->save()->getJson();
-	       		$this->_runner->log('Saved Product ID: ' . $product->getId(), '', APIService::TAB . APIService::TAB);
+		       $this->_runner->log('Saved Product ID: ' . $product->getId(), '', APIService::TAB . APIService::TAB);
 	       }
 	       Dao::commitTransaction();
 	       return $json;

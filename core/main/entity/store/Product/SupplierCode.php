@@ -31,7 +31,7 @@ class SupplierCode extends BaseEntityAbstract
 	 *
 	 * @var int
 	 */
-	private $canSupplyQty = 0;
+	private $canSupplyQty = null;
 	/**
 	 * Getter for supplier
 	 *
@@ -142,7 +142,7 @@ class SupplierCode extends BaseEntityAbstract
 		DaoMap::setManyToOne('supplier', 'Supplier', 'scode_sup');
 		DaoMap::setManyToOne('product', 'Product', 'scode_pro');
 		DaoMap::setStringType('code', 'varchar', 100);
-		DaoMap::setIntType('canSupplyQty', 'int', 10);
+		DaoMap::setIntType('canSupplyQty', 'int', 10, true, null);
 
 		parent::__loadDaoMap();
 
@@ -159,7 +159,7 @@ class SupplierCode extends BaseEntityAbstract
 	 *
 	 * @return SupplierCode
 	 */
-	public static function create(Product $product, Supplier $supplier, $code)
+	public static function create(Product $product, Supplier $supplier, $code, $canSupplyQty = 0)
 	{
 		$class = __CLASS__;
 		$objects = self::getAllByCriteria('productId = ? and supplierId = ? and code like ?', array($product->getId(), $supplier->getId(), trim($code)), true, 1, 1);
