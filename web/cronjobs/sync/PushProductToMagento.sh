@@ -30,4 +30,6 @@ else
 		echo -n "NO SUCH A FILE: ${FILE} :: "
 		date
 	fi
+	echo
+	echo
 fi
