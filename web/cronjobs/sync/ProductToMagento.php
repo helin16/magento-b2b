@@ -143,12 +143,15 @@ abstract class ProductToMagento
         self::_log('Before setting: ' . preg_replace('/\s+/', ' ', print_r($settings, true)), '', $preFix . self::TAB);
         $settings[$key] = $value;
         self::_log('After setting: ' . preg_replace('/\s+/', ' ', print_r($settings, true)), '', $preFix . self::TAB);
-        if (($settingObj = SystemSettings::getByType($paramName)) instanceof SystemSettings) {
-            $jsonString = json_encode($settings);
-            self::_log('Saving new Settings: ' . $jsonString, '', $preFix . self::TAB);
-            $settingObj->setValue($jsonString)
-                ->save();
+        if (!($settingObj = SystemSettings::getByType($paramName)) instanceof SystemSettings) {
+        	$settingObj = new SystemSettings();
+        	$settingObj->setType($paramName)
+        		->setDescription($paramName);
         }
+        $jsonString = json_encode($settings);
+        self::_log('Saving new Settings: ' . $jsonString, '', $preFix . self::TAB);
+        $settingObj->setValue($jsonString)
+        	->save();
         self::_log('DONE', '', $preFix . self::TAB);
         self::_log('');
         self::$_cache[__CLASS__ . ':settings:' . $paramName] = $settings;
