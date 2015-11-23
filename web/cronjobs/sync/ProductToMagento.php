@@ -215,7 +215,7 @@ abstract class ProductToMagento
    	    $enabled = true;
    	    $sku = $productName = $rrpPrice = $shortDescription = $fullDecription = $supplierName = $supplierCode = $manufacturerName = '';
    	    $categoryIds = array(2); //default category
-   	    if(($product instanceof Product) {
+   	    if($product instanceof Product) {
    	        $sku = trim($product->getSku());
    	        $productName = trim($product->getName());
    	        $shortDescription = trim($product->getShortDescription());
