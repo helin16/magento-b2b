@@ -136,8 +136,8 @@ abstract class ProductToMagento
     private static function _setSettings($key, $value, $preFix = '', $debug = false)
     {
         $paramName = SystemSettings::TYPE_MAGENTO_SYNC;
-        self::_log('== Trying to set SystemSettings for: "' . $paramName . '" with new value: ' . $value, __CLASS__ . '::' . __FUNCTION__,  $preFix);
-        $settings = self::_getSettings($preFix, $debug);
+        self::_log('-- Trying to set SystemSettings for: "' . $paramName . '" with new value: ' . $value, __CLASS__ . '::' . __FUNCTION__,  $preFix);
+        $settings = self::_getSettings($preFix . self::TAB, $debug);
         if(!is_array($settings))
             $settings = array();
         self::_log('Before setting: ' . preg_replace('/\s+/', ' ', print_r($settings, true)), '', $preFix . self::TAB);
