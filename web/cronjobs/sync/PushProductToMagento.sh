@@ -15,5 +15,6 @@ else
 	if [ -e "$FILE" ]
 	then
 		scp $FILE ec2-user@$SERVER:$SERVER_PATH
+		rm -f $FILE
 	fi
 fi
