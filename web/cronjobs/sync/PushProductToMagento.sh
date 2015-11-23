@@ -10,15 +10,22 @@ if ps ax | grep -v grep | grep "ProductToMagento.php" > /dev/null; then
 	date
 	echo
 else
-	echo -n '== Generating the csv'
+	echo -n '== Generating the csv ... ::'
 	date
 	/usr/bin/php /var/www/magentob2b/web/cronjobs/sync/ProductToMagento.php $CSV_FILE_PATH
 	FILE=${CSV_FILE_PATH}productUpdate.csv
 	if [ -e "$FILE" ]
 	then
-		echo '== coping '.$FILE.'TO:'.$SERVER:$SERVER_PATH
+		echo -n "== coping ${FILE} TO ${SERVER}:${SERVER_PATH} ::"
+		date
 		scp $FILE ec2-user@$SERVER:$SERVER_PATH
+		echo -n "== copied successfully ::"
+		date
+		echo -n "== removing ${FILE}"
+		date
 		rm -f $FILE
+		echo -n "== removed successfully: ${FILE}"
+		date
 	else
 		echo "NO SUCH A FILE: ${FILE}"
 	fi
