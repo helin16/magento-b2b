@@ -10,7 +10,8 @@ if ps ax | grep -v grep | grep "ProductToMagento.php" > /dev/null; then
 	date
 	echo
 else
-	echo '== Generating the csv'
+	echo -n '== Generating the csv'
+	date
 	/usr/bin/php /var/www/magentob2b/web/cronjobs/sync/ProductToMagento.php $CSV_FILE_PATH
 	FILE=${CSV_FILE_PATH}productUpdate.csv
 	if [ -e "$FILE" ]
@@ -19,6 +20,6 @@ else
 		scp $FILE ec2-user@$SERVER:$SERVER_PATH
 		rm -f $FILE
 	else
-		echo "NO SUCN FILE: ${FILE}"
+		echo "NO SUCH A FILE: ${FILE}"
 	fi
 fi

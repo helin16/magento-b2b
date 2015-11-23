@@ -16,7 +16,7 @@ else
 	    echo -n "DONE"
 	    date
 	else
-		echo "NOT json files found under ${DIR}"
+		echo -n "NOT json files found under ${DIR}"
 	    date
 	fi
 	echo ""
