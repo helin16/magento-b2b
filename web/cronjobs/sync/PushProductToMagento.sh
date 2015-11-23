@@ -16,17 +16,18 @@ else
 	FILE=${CSV_FILE_PATH}productUpdate.csv
 	if [ -e "$FILE" ]
 	then
-		echo -n "== coping ${FILE} TO ${SERVER}:${SERVER_PATH} ::"
+		echo -n "== coping ${FILE} TO ${SERVER}:${SERVER_PATH} :: "
 		date
 		scp $FILE ec2-user@$SERVER:$SERVER_PATH
-		echo -n "== copied successfully ::"
+		echo -n "== copied successfully :: "
 		date
 		echo -n "== removing ${FILE}"
 		date
 		rm -f $FILE
-		echo -n "== removed successfully: ${FILE}"
+		echo -n "== removed successfully: ${FILE} :: "
 		date
 	else
-		echo "NO SUCH A FILE: ${FILE}"
+		echo -n "NO SUCH A FILE: ${FILE} :: "
+		date
 	fi
 fi
