@@ -27,6 +27,12 @@ class SupplierCode extends BaseEntityAbstract
 	 */
 	private $code;
 	/**
+	 * The qty from the suppliers data-feed
+	 *
+	 * @var int
+	 */
+	private $canSupplyQty = 0;
+	/**
 	 * Getter for supplier
 	 *
 	 * @return
@@ -92,14 +98,34 @@ class SupplierCode extends BaseEntityAbstract
 	    return $this;
 	}
 	/**
+	 * Getter for canSupplyQty
+	 *
+	 * @return int
+	 */
+	public function getCanSupplyQty()
+	{
+	    return $this->canSupplyQty;
+	}
+	/**
+	 * Setter for canSupplyQty
+	 *
+	 * @param int $value The canSupplyQty
+	 *
+	 * @return ProductCode
+	 */
+	public function setCanSupplyQty($value)
+	{
+	    $this->canSupplyQty = $value;
+	    return $this;
+	}
+	/**
 	 * (non-PHPdoc)
 	 * @see BaseEntityAbstract::getJson()
 	 */
 	public function getJson($extra = array(), $reset = false)
 	{
 		$array = $extra;
-		if(!$this->isJsonLoaded($reset))
-		{
+		if (!$this->isJsonLoaded($reset)) {
 			$array['product'] = $this->getProduct() instanceof Product ? array('id'=>$this->getProduct()->getId()) : null;
 			$array['supplier'] = $this->getSupplier() instanceof Supplier ? $this->getSupplier()->getJson() : null;
 		}
@@ -116,8 +142,12 @@ class SupplierCode extends BaseEntityAbstract
 		DaoMap::setManyToOne('supplier', 'Supplier', 'scode_sup');
 		DaoMap::setManyToOne('product', 'Product', 'scode_pro');
 		DaoMap::setStringType('code', 'varchar', 100);
+		DaoMap::setIntType('canSupplyQty', 'int', 10);
+
 		parent::__loadDaoMap();
+
 		DaoMap::createIndex('code');
+		DaoMap::createIndex('canSupplyQty');
 		DaoMap::commit();
 	}
 	/**

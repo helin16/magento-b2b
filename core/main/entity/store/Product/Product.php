@@ -187,6 +187,12 @@ class Product extends InfoEntityAbstract
 	 */
 	private $manualDatafeed = false;
 	/**
+	 * The weight of the product
+	 *
+	 * @var double
+	 */
+	private $weight = 0;
+	/**
 	 * Getter for categories
 	 *
 	 * @return array()
@@ -769,6 +775,27 @@ class Product extends InfoEntityAbstract
 		return $this->attributeSet;
 	}
 	/**
+	 * Getter for weight
+	 *
+	 * @return double
+	 */
+	public function getWeight()
+	{
+	    return $this->weight;
+	}
+	/**
+	 * Setter for weight
+	 *
+	 * @param double $value The weight
+	 *
+	 * @return Product
+	 */
+	public function setWeight($value)
+	{
+	    $this->weight = $value;
+	    return $this;
+	}
+	/**
 	 * Setter for attributeSet
 	 *
 	 * @param ProductAttributeSet $value The attributeSet
@@ -819,8 +846,7 @@ class Product extends InfoEntityAbstract
 	 */
 	public function getPrices()
 	{
-		if(!isset($this->_cache['prices']))
-		{
+		if (!isset($this->_cache['prices'])) {
 			$this->_cache['prices'] = ProductPrice::getPrices($this);
 		}
 		return $this->_cache['prices'];
@@ -832,8 +858,7 @@ class Product extends InfoEntityAbstract
 	 */
 	public function getImages()
 	{
-		if(!isset($this->_cache['images']))
-		{
+		if (!isset($this->_cache['images'])) {
 			$this->_cache['images'] = ProductImage::getAllByCriteria('productId = ? ', array($this->getId()));
 		}
 		return $this->_cache['images'];
@@ -1346,21 +1371,21 @@ class Product extends InfoEntityAbstract
 			throw new Exception('At least one of these quuanties needed: stockOnHand, stockOnOrder, stockInParts or stockInRMA');
 		$unitCost = $this->getUnitCost();
 		$originalProduct = self::get($this->getId());
-		if($stockOnHand != null && ($stockOnHand = trim($stockOnHand)) !== trim($origStockOnHand = $originalProduct->getStockOnHand())) {
+		if ($stockOnHand != null && ($stockOnHand = trim($stockOnHand)) !== trim($origStockOnHand = $originalProduct->getStockOnHand())) {
 			$this->setTotalOnHandValue($stockOnHand * $unitCost)
 				->setStockOnHand($stockOnHand);
 		}
-		if($stockOnOrder != null && ($stockOnOrder = trim($stockOnOrder)) !== trim($origStockOnOrder = $originalProduct->getStockOnOrder())) {
+		if ($stockOnOrder != null && ($stockOnOrder = trim($stockOnOrder)) !== trim($origStockOnOrder = $originalProduct->getStockOnOrder())) {
 			$this->setStockOnOrder($stockOnOrder);
 		}
-		if($stockInParts != null && ($stockInParts = trim($stockInParts)) !== trim($origStockInParts = $originalProduct->getStockInParts())) {
+		if ($stockInParts != null && ($stockInParts = trim($stockInParts)) !== trim($origStockInParts = $originalProduct->getStockInParts())) {
 			$this->setTotalInPartsValue($stockInParts * $unitCost)
 				->setStockInParts($stockInParts);
 		}
-		if($stockInRMA != null && ($stockInRMA = trim($stockInRMA)) !== trim($origStockInRMA = $originalProduct->getStockInRMA())) {
+		if ($stockInRMA != null && ($stockInRMA = trim($stockInRMA)) !== trim($origStockInRMA = $originalProduct->getStockInRMA())) {
 			$this->setStockInRMA($stockInRMA);
 		}
-		if($stockOnPO != null && ($stockOnPO = trim($stockOnPO)) !== trim($origStockOnPO = $originalProduct->getStockOnPO())) {
+		if ($stockOnPO != null && ($stockOnPO = trim($stockOnPO)) !== trim($origStockOnPO = $originalProduct->getStockOnPO())) {
 			$this->setStockOnPO($stockOnPO);
 		}
 		$msg = 'Stock changed: StockOnHand [' . $origStockOnHand . ' => ' . $this->getStockOnHand() . '], '
@@ -1431,6 +1456,7 @@ class Product extends InfoEntityAbstract
 		DaoMap::setBoolType('isKit');
 		DaoMap::setManyToOne('attributeSet', 'ProductAttributeSet', 'pro_attr_set', true);
 		DaoMap::setBoolType('manualDatafeed');
+		DaoMap::setIntType('weight', 'double', '10,4');
 		parent::__loadDaoMap();
 
 		DaoMap::createUniqueIndex('sku');
@@ -1453,6 +1479,7 @@ class Product extends InfoEntityAbstract
 		DaoMap::createIndex('isKit');
 		DaoMap::createIndex('attributeSet');
 		DaoMap::createIndex('manualDatafeed');
+		DaoMap::createIndex('weight');
 		DaoMap::commit();
 	}
 	/**
@@ -1493,8 +1520,7 @@ class Product extends InfoEntityAbstract
 		if(($mageProductId = trim($mageProductId)) !== "")
 			$product->setMageId($mageProductId);
 
-		if(trim($product->getId()) === '')
-		{
+		if (trim($product->getId()) === '') {
 			$product->setIsFromB2B($isFromB2B)
 				->setShortDescription($shortDescr);
 			if($stockOnOrder !== null && is_numeric($stockOnOrder))
@@ -1543,38 +1569,35 @@ class Product extends InfoEntityAbstract
 		$where = array(1);
 		$params = array();
 
-		if(is_array($sumValues)) {
+		if (is_array($sumValues)) {
 			$innerJoins = array();
 		}
-		if(is_array($sku)) {
+		if (is_array($sku)) {
 			$skus = array();
 			$keys = array();
-			foreach($sku as $index => $value){
+			foreach ($sku as $index => $value) {
 				$key = 'sku_' . $index;
 				$keys[] = ':' . $key;
 				$skus[$key] = trim($value);
 			}
 			$where[] = 'pro.sku in (' . implode(',', $keys) . ')';
 			$params = array_merge($params, $skus);
-		} else if(($sku = trim($sku)) !== '') {
+		} else if (($sku = trim($sku)) !== '') {
 			$where[] = 'pro.sku like :sku';
 			$params['sku'] = '%' . $sku . '%';
 		}
-		if(($name = trim($name)) !== '')
-		{
+		if (($name = trim($name)) !== '') {
 			$where[] = 'pro.name like :proName';
 			$params['proName'] = '%' . $name . '%';
 		}
-		if(($active = trim($active)) !== '')
-		{
+		if (($active = trim($active)) !== '') {
 			$where[] = 'pro.active = :active';
 			$params['active'] = intval($active);
 		}
-		if(count($manufacturerIds) > 0)
-		{
+		if (count($manufacturerIds) > 0) {
 			$ps = array();
 			$keys = array();
-			foreach($manufacturerIds as $index => $value){
+			foreach ($manufacturerIds as $index => $value) {
 				$key = 'manf_' . $index;
 				$keys[] = ':' . $key;
 				$ps[$key] = trim($value);
@@ -1582,11 +1605,10 @@ class Product extends InfoEntityAbstract
 			$where[] = 'pro.manufacturerId in (' . implode(',', $keys) . ')';
 			$params = array_merge($params, $ps);
 		}
-		if(count($statusIds) > 0)
-		{
+		if (count($statusIds) > 0) {
 			$ps = array();
 			$keys = array();
-			foreach($statusIds as $index => $value){
+			foreach ($statusIds as $index => $value) {
 				$key = 'stId_' . $index;
 				$keys[] = ':' . $key;
 				$ps[$key] = trim($value);
@@ -1594,56 +1616,51 @@ class Product extends InfoEntityAbstract
 			$where[] = 'pro.statusId in (' . implode(',', $keys) . ')';
 			$params = array_merge($params, $ps);
 		}
-		if(count($supplierIds) > 0)
-		{
+		if (count($supplierIds) > 0) {
 			$ps = array();
 			$keys = array();
-			foreach($supplierIds as $index => $value){
+			foreach ($supplierIds as $index => $value) {
 				$key = 'spId_' . $index;
 				$keys[] = ':' . $key;
 				$ps[$key] = trim($value);
 			}
 			self::getQuery()->eagerLoad('Product.supplierCodes', 'inner join', 'pro_sup_code', 'pro.id = pro_sup_code.productId and pro_sup_code.supplierId in (' . implode(',', $keys) . ')');
-			if(is_array($sumValues)) {
+			if (is_array($sumValues)) {
 				$innerJoins[] = 'inner join suppliercode pro_sup_code on (pro.id = pro_sup_code.productId and pro_sup_code.supplierId in (' . implode(',', $keys) . '))';
 			}
 			$params = array_merge($params, $ps);
 		}
-		if(count($categoryIds) > 0)
-		{
+		if (count($categoryIds) > 0) {
 			$ps = array();
 			$keys = array();
-			foreach($categoryIds as $index => $value){
+			foreach ($categoryIds as $index => $value) {
 				$key = 'cateId_' . $index;
 				$keys[] = ':' . $key;
 				$ps[$key] = trim($value);
 			}
 			self::getQuery()->eagerLoad('Product.categories', 'inner join', 'pro_cate', 'pro.id = pro_cate.productId and pro_cate.categoryId in (' . implode(',', $keys) . ')');
-			if(is_array($sumValues)) {
+			if (is_array($sumValues)) {
 				$innerJoins[] = 'inner join product_category pro_cate on (pro.id = pro_cate.productId and pro_cate.categoryId in (' . implode(',', $keys) . '))';
 			}
 			$params = array_merge($params, $ps);
 		}
-		if(($stockLevel = trim($stockLevel)) !== '')
-		{
+		if (($stockLevel = trim($stockLevel)) !== '') {
 			$where[] = 'pro.stockOnHand <= pro.' . $stockLevel. ' and pro.' . $stockLevel . ' is not null';
 		}
-		if(($sh_from = trim($sh_from)) !== '')
-		{
+		if (($sh_from = trim($sh_from)) !== '') {
 			$where[] = 'pro.stockOnHand >= :stockOnHand_from';
 			$params['stockOnHand_from'] = intval($sh_from);
 		}
-		if(($sh_to = trim($sh_to)) !== '')
-		{
+		if (($sh_to = trim($sh_to)) !== '') {
 			$where[] = 'pro.stockOnHand <= :stockOnHand_to';
 			$params['stockOnHand_to'] = intval($sh_to);
 		}
 
 		$products = Product::getAllByCriteria(implode(' AND ', $where), $params, false, $pageNo, $pageSize, $orderBy, $stats);
-		if(is_array($sumValues)) {
+		if (is_array($sumValues)) {
 			$sql = 'select sum(pro.stockOnHand) `totalStockOnHand`, sum(pro.totalOnHandValue) `totalOnHandValue` from product pro ' . implode(' ', $innerJoins) . ' where pro.active = 1 and (' . implode(' AND ', $where) . ')';
 			$sumResult = Dao::getResultsNative($sql, $params);
-			if(count($sumResult) > 0 ){
+			if (count($sumResult) > 0 ) {
 				$sumValues['totalStockOnHand'] = $sumResult[0]['totalStockOnHand'];
 				$sumValues['totalOnHandValue'] = $sumResult[0]['totalOnHandValue'];
 			}

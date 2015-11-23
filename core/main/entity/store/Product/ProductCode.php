@@ -10,19 +10,19 @@ class ProductCode extends BaseEntityAbstract
 {
 	/**
 	 * The product of the code
-	 * 
+	 *
 	 * @var Product
 	 */
 	protected $product;
 	/**
 	 * The type of the code
-	 * 
+	 *
 	 * @var ProductCodeType
 	 */
 	protected $type;
 	/**
 	 * The code of the product
-	 * 
+	 *
 	 * @var string
 	 */
 	private $code;
@@ -31,7 +31,7 @@ class ProductCode extends BaseEntityAbstract
 	 *
 	 * @return Product
 	 */
-	public function getProduct() 
+	public function getProduct()
 	{
 		$this->loadManyToOne('product');
 	    return $this->product;
@@ -53,7 +53,7 @@ class ProductCode extends BaseEntityAbstract
 	 *
 	 * @return ProductCodeType
 	 */
-	public function getType() 
+	public function getType()
 	{
 		$this->loadManyToOne('type');
 	    return $this->type;
@@ -70,20 +70,20 @@ class ProductCode extends BaseEntityAbstract
 	    $this->type = $value;
 	    return $this;
 	}
-	/** 
+	/**
 	 * Getter for code
-	 * 
+	 *
 	 * @return string
 	 */
 	public function getCode ()
 	{
 		return $this->code;
 	}
-	/** 
+	/**
 	 * Setter for code
-	 * 
+	 *
 	 * @param string $value
-	 * 
+	 *
 	 * @return ProductCode
 	 */
 	public function setCode($value)
@@ -98,13 +98,11 @@ class ProductCode extends BaseEntityAbstract
 	public function getJson($extra = array(), $reset = false)
 	{
 		$array = $extra;
-		if(!$this->isJsonLoaded($reset))
-		{
+		if ( !$this->isJsonLoaded($reset) ) {
 			$array['type'] = $this->getType()->getJson();
 		}
 		return parent::getJson($array, $reset);
 	}
-	
 	/**
 	 * (non-PHPdoc)
 	 * @see BaseEntity::__loadDaoMap()
@@ -116,7 +114,7 @@ class ProductCode extends BaseEntityAbstract
 		DaoMap::setManyToOne('type', 'ProductCodeType', 'pro_code_type');
 		DaoMap::setStringType('code', 'varchar', 100);
 		parent::__loadDaoMap();
-		
+
 		DaoMap::createIndex('code');
 		DaoMap::commit();
 	}
@@ -132,14 +130,14 @@ class ProductCode extends BaseEntityAbstract
 	public static function create(Product $product, ProductCodeType $type, $code)
 	{
 		$class = __CLASS__;
-		$objects = self::getCodes($product, $type, true , 1, 1);
+		$objects = self::getCodes($product, $type, true, 1, 1);
 		if($type->getAllowMultiple() !== true && count($objects) > 0)
 			throw new EntityException('Code Type(=' . $type->getName() . ') NOT allow multiple and there is one for this product already!');
 		$obj = new $class();
 		$obj->setProduct($product)
-		->setType($type)
-		->setCode(trim($code))
-		->save();
+    		->setType($type)
+    		->setCode(trim($code))
+    		->save();
 		return $obj;
 	}
 	/**

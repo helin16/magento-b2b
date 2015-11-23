@@ -1,0 +1,1 @@
+ALTER TABLE `product` ADD `weight` DOUBLE(10,4) UNSIGNED NOT NULL DEFAULT '0.0000' AFTER `manualDatafeed`, ADD INDEX (`weight`) ;
