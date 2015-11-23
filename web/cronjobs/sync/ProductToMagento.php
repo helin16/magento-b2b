@@ -67,7 +67,8 @@ abstract class ProductToMagento
         self::_log('GOT LAST SYNC TIME: ' . trim($lastUpdatedTime), '',  $preFix);
         $productPrices = ProductPrice::getAllByCriteria('updated > ?', array(trim($lastUpdatedTime)));
         self::_log('GOT ' . count($productPrices) . ' Price(s) that has changed after "' . trim($lastUpdatedTime) . '".', '',  $preFix);
-        $lastUpdateInDb = UDate::zeroDate();
+        
+        $lastUpdateInDb = $lastUpdatedTime;
         $products = array();
         foreach($productPrices as $productPrice){
             if(!$productPrice->getProduct() instanceof Product || array_key_exists($productPrice->getProduct()->getId(), $products))
