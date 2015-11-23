@@ -20,7 +20,7 @@ else
 		scp $CSV_FILE_PATH ec2-user@$SERVER:$SERVER_PATH
 		echo -n "== copied successfully :: "
 		date
-		echo -n "== removing ${CSV_FILE_PATH}"
+		echo -n "== removing ${CSV_FILE_PATH} :: "
 		date
 		rm -f $CSV_FILE_PATH
 		echo -n "== removed successfully: ${CSV_FILE_PATH} :: "
