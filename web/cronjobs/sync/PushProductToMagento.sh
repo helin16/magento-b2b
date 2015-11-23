@@ -18,5 +18,7 @@ else
 		echo -n '== coping '.$FILE.'TO:'.$SERVER:$SERVER_PATH
 		scp $FILE ec2-user@$SERVER:$SERVER_PATH
 		rm -f $FILE
+	else
+		echo -n "NO SUCN FILE: ${FILE}"
 	fi
 fi
