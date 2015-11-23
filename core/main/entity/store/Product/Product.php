@@ -259,6 +259,8 @@ class Product extends InfoEntityAbstract
 	 */
 	public function getAsNewFromDate ()
 	{
+	    if($this->asNewFromDate !== null)
+	        return new UDate(trim($this->asNewFromDate));
 		return $this->asNewFromDate;
 	}
 	/**
@@ -280,6 +282,8 @@ class Product extends InfoEntityAbstract
 	 */
 	public function getAsNewToDate ()
 	{
+	    if($this->asNewToDate !== null)
+	        return new UDate(trim($this->asNewToDate));
 		return $this->asNewToDate;
 	}
 	/**
@@ -1368,6 +1372,27 @@ class Product extends InfoEntityAbstract
 			->save()
 			->addComment($msg, Comments::TYPE_SYSTEM)
 			->addLog($msg, Log::TYPE_SYSTEM, 'STOCK_CHANGED', __CLASS__ . "::" . __FUNCTION__);
+	}
+	/**
+	 * Getting the RRP for this product
+	 * @return ProductPrice|NULL
+	 */
+	public function getRRP()
+	{
+	    if(count($prices = ProductPrice::getPrices($this, ProductPriceType::get(ProductPriceType::ID_RRP), '', '', '', '', 1, 1)) > 0)
+	        return $prices[0];
+	    return null;
+	}
+	/**
+	 * Getting the RRP for this product
+	 * @return ProductPrice|NULL
+	 */
+	public function getNearestSpecialPrice()
+	{
+	    $now = UDate::now();
+	    if(count($prices = ProductPrice::getPrices($this, ProductPriceType::get(ProductPriceType::ID_CASUAL_SPECIAL), '', trim($now), trim($now), '', 1, 1, array('created' => 'asc'))) > 0)
+	        return $prices[0];
+	    return null;
 	}
 	/**
 	 * (non-PHPdoc)

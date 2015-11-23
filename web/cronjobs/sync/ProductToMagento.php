@@ -42,7 +42,7 @@ abstract class ProductToMagento
 
     	$lastUpdatedInDB = '';
     	$products = self::_getData($lastUpdatedInDB, $preFix . self::TAB, $debug);
-		self::_genCSV($products, $preFix . self::TAB, $debug);
+		self::_genCSV(array_values($products), $preFix . self::TAB, $debug);
 
 		self::_log('After the looping we have got last updated time from DB: "' . trim($lastUpdatedInDB) . '".', '',  $preFix);
 		self::_setSettings('lastUpdatedTime', trim($lastUpdatedInDB), $preFix, $debug);
@@ -70,9 +70,31 @@ abstract class ProductToMagento
         $lastUpdateInDb = UDate::zeroDate();
         $products = array();
         foreach($productPrices as $productPrice){
+            if(!$productPrice->getProduct() instanceof Product || array_key_exists($productPrice->getProduct()->getId(), $products))
+                continue;
             if($productPrice->getUpdated()->afterOrEqualTo($lastUpdateInDb))
                 $lastUpdateInDb = $productPrice->getUpdated();
-            $products[] = $productPrice->getProduct();
+            $products[$productPrice->getProduct()->getId()] = $productPrice->getProduct();
+        }
+
+        $productArr = Product::getAllByCriteria('updated > ?', array(trim($lastUpdatedTime)));
+        self::_log('GOT ' . count($productArr) . ' Product(s) that has changed after "' . trim($lastUpdatedTime) . '".', '',  $preFix);
+        foreach($productArr as $product){
+            if(array_key_exists($product->getId(), $products))
+                continue;
+            if($product->getUpdated()->afterOrEqualTo($lastUpdateInDb))
+                $lastUpdateInDb = $product->getUpdated();
+            $products[$product->getId()] = $product;
+        }
+
+        $productCates = Product_Category::getAllByCriteria('updated > ?', array(trim($lastUpdatedTime)));
+        self::_log('GOT ' . count($productCates) . ' Product_Category(s) that has changed after "' . trim($lastUpdatedTime) . '".', '',  $preFix);
+        foreach($productCates as $productCate){
+            if(!$productCate->getProduct() instanceof Product || array_key_exists($productCate->getProduct()->getId(), $products))
+                continue;
+            if($productCate->getUpdated()->afterOrEqualTo($lastUpdateInDb))
+                $lastUpdateInDb = $productCate->getUpdated();
+            $products[$productCate->getProduct()->getId()] = $productCate->getProduct();
         }
         $lastUpdateDB = $lastUpdateInDb;
         return $products;
@@ -103,14 +125,27 @@ abstract class ProductToMagento
         self::_log('');
         return self::$_cache[__CLASS__ . ':settings'];
     }
+    /**
+     * SEtting the value for the system settings
+     *
+     * @param string $key
+     * @param string $value
+     * @param string $preFix
+     * @param bool   $debug
+     */
     private static function _setSettings($key, $value, $preFix = '', $debug = false)
     {
         $paramName = SystemSettings::TYPE_MAGENTO_SYNC;
-        self::_log('== Trying to set SystemSettings for: "' . $paramName . '" with new value: ' . $value, __CLASS__ . '::' . __FUNCTION__,  $preFix);
-        $settings = self::_getSettings($preFix, $debug);
+        self::_log('-- Trying to set SystemSettings for: "' . $paramName . '" with new value: ' . $value, __CLASS__ . '::' . __FUNCTION__,  $preFix);
+        $settings = self::_getSettings($preFix . self::TAB, $debug);
+        if(!is_array($settings))
+            $settings = array();
+        self::_log('Before setting: ' . preg_replace('/\s+/', ' ', print_r($settings, true)), '', $preFix . self::TAB);
         $settings[$key] = $value;
+        self::_log('After setting: ' . preg_replace('/\s+/', ' ', print_r($settings, true)), '', $preFix . self::TAB);
         if (($settingObj = SystemSettings::getByType($paramName)) instanceof SystemSettings) {
             $jsonString = json_encode($settings);
+            self::_log('Saving new Settings: ' . $jsonString, '', $preFix . self::TAB);
             $settingObj->setValue($jsonString)
                 ->save();
         }
@@ -139,8 +174,8 @@ abstract class ProductToMagento
         }
         $nowString = '';
         if(trim($msg) !== '')
-            $nowString = ' [' . trim($now) . '] ';
-        $logMsg = $preFix . $msg . $nowString . $timeElapsed . ($funcName !== '' ? (' '  . $funcName . ' ') : '') . $postFix;
+            $nowString = trim($now) . self::TAB;
+        $logMsg = $nowString . $preFix . $msg . $timeElapsed . ($funcName !== '' ? (' '  . $funcName . ' ') : '') . $postFix;
         echo $logMsg;
         if(is_file(self::$_logFile))
             file_put_contents(self::$_logFile, $logMsg, FILE_APPEND);
@@ -211,31 +246,77 @@ abstract class ProductToMagento
    	 */
    	private static function _getRowWithDefaultValues(Product $product = null, $preFix = '', $debug = false)
    	{
+   	    $attributeSetName = 'Default';
+   	    $enabled = true;
+   	    $sku = $productName = $rrpPrice = $shortDescription = $fullDecription = $supplierName = $supplierCode = $manufacturerName = $asNewFrom = $asNewTo = $specialPrice = $specialPriceFromDate = $specialPriceToDate = '';
+   	    $categoryIds = array(2); //default category
+   	    if($product instanceof Product) {
+   	        $sku = trim($product->getSku());
+   	        $productName = trim($product->getName());
+   	        $shortDescription = trim($product->getShortDescription());
+   	        $asNewFrom = $product->getAsNewFromDate() instanceof UDate ? $product->getAsNewFromDate()->format('Y-m-d H:i:sP') : '';
+   	        $asNewTo = $product->getAsNewToDate() instanceof UDate ? $product->getAsNewToDate()->format('Y-m-d H:i:sP') : '';
+   	        if($product->getAttributeSet() instanceof ProductAttributeSet)
+   	            $attributeSetName = $product->getAttributeSet()->getName();
+   	        //RRP
+   	        if(($rrp = $product->getRRP()) instanceof ProductPrice)
+   	            $rrpPrice = StringUtilsAbstract::getValueFromCurrency($rrp->getPrice());
+   	        //special price
+   	        if(($specialPriceObj = $product->getNearestSpecialPrice()) instanceof ProductPrice) {
+   	            $specialPrice = StringUtilsAbstract::getValueFromCurrency($specialPriceObj->getPrice());
+   	            $specialPriceFromDate = $specialPriceObj->getStart()->format('Y-m-d H:i:sP');
+   	            $specialPriceToDate = $specialPriceObj->getEnd()->format('Y-m-d H:i:sP');
+   	        }
+   	        //full description
+   	        if(($asset = Asset::getAsset($product->getFullDescAssetId())) instanceof Asset)
+   	            $fullDecription = '"' . Asset::readAssetFile($asset->getPath()) . '"';
+   	        //supplier
+   	        if(count($supplierCodes = SupplierCode::getAllByCriteria('productId = ?', array($product->getId()), true, 1, 1)) > 0) {
+   	            $supplierName = (($supplier = $supplierCodes[0]->getSupplier()) instanceof Supplier) ? $supplier->getName() : '';
+   	            $supplierCode = trim($supplierCodes[0]->getCode());
+   	        }
+   	        //Manufacturer
+   	        if($product->getManufacturer() instanceof Manufacturer)
+   	            $manufacturerName = trim($product->getManufacturer()->getName());
+   	        //disable or enabled
+   	        if(intval($product->getActive()) === 0 || intval($product->getSellOnWeb()) === 0)
+   	            $enabled = false;
+   	        else if($product->getStatus() instanceof ProductStatus && intval($product->getStatus()->getId()) === ProductStatus::ID_DISABLED)
+   	            $enabled = false;
+   	        //categories
+   	        if(count($categories = Product_Category::getAllByCriteria('productId = ? and active = 1', array($product->getId()))) > 0) {
+   	            foreach($categories as $category) {
+   	                if(!$category->getCategory() instanceof ProductCategory || ($mageCateId = trim($category->getCategory()->getMageId())) === '')
+   	                    continue;
+   	                $categoryIds[] = $mageCateId;
+   	            }
+   	        }
+   	    }
    		return array("store" => 'default',
    				"websites" => 'base',
-   				"attribute_set" => ($product instanceof Product && $product->getAttributeSet() instanceof ProductAttributeSet ? $product->getAttributeSet()->getName() : 'Default'), //attribute_name
+   				"attribute_set" => $attributeSetName, //attribute_name
    				"type" => 'simple',
-   				"category_ids" => '2', //123,12312
-   				"sku" => ($product instanceof Product ? $product->getSku() : ''), //sku
-   				"name" => ($product instanceof Product ? $product->getName() : ''), //product name
-   				"price" => ($product instanceof Product && count($prices = $product->getPrices()) > 0 ? $prices[0]->getPrice() : ''), //unitPrice
-   				"special_from_date" => '', //special_from_date
-   				"special_to_date" => '', //special_to_date
-   				"special_price" => '', //special_price
-   				"news_from_date" => '', //news_from_date
-   				"news_to_date" => '', //news_to_date
-   				"status" => 1, //1 - enable, 2 - disable
+   				"category_ids" => implode(',', $categoryIds), //123,12312
+   				"sku" => $sku, //sku
+   				"name" => $productName, //product name
+   				"price" => $rrpPrice, //unitPrice
+   				"special_from_date" => $specialPriceFromDate, //special_from_date
+   				"special_to_date" => $specialPriceToDate, //special_to_date
+   				"special_price" => $specialPrice, //special_price
+   				"news_from_date" => $asNewFrom, //news_from_date
+   				"news_to_date" => $asNewTo, //news_to_date
+   				"status" => intval($enabled) === 1 ? 1 : 2, //1 - enable, 2 - disable
    				"visibility" => 4, //4 -
    				"tax_class_id" => 2, // 2
-   				"description" => '"' . ($product instanceof Product && ($asset = Asset::getAsset($product->getFullDescAssetId())) instanceof Asset ? Asset::readAssetFile($asset->getPath()) : '') . '"', //full description
-   				"short_description" => ($product instanceof Product ? $product->getShortDescription() : ''), //short description
-   				"supplier" => ($product instanceof Product && count($supplierCodes = $product->getSupplierCodes()) > 0 && ($supplier = $supplierCodes[0]->getSupplier()) instanceof Supplier ? $supplier->getName() : ''), // the name of the supplier
+   				"description" => $fullDecription, //full description
+   				"short_description" => $shortDescription, //short description
+   				"supplier" => $supplierName, // the name of the supplier
    				"man_code" => '', //manufacturer code
-   				"sup_code" => (isset($supplierCodes[0]) && $supplierCodes[0] instanceof SupplierCode ? $supplierCodes[0]->getCode() : ''), //supplier code
+   				"sup_code" => $supplierCode, //supplier code
    				"has_options" => '',
    				"meta_title" => '',
    				"meta_description" => '',
-   				"manufacturer" => ($product instanceof Product && $product->getManufacturer() instanceof Manufacturer ? $product->getManufacturer()->getName() : ''), //manufacture value
+   				"manufacturer" => $manufacturerName, //manufacture value
    				"url_key" => '',
    				"url_path" => '',
    				"custom_design" => '',
