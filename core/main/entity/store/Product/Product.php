@@ -1370,6 +1370,16 @@ class Product extends InfoEntityAbstract
 			->addLog($msg, Log::TYPE_SYSTEM, 'STOCK_CHANGED', __CLASS__ . "::" . __FUNCTION__);
 	}
 	/**
+	 * Getting the RRP for this product
+	 * @return ProductPrice|NULL
+	 */
+	public function getRRP()
+	{
+	    if(count($prices = ProductPrice::getPrices($this, ProductPriceType::get(ProductPriceType::ID_RRP), '', '', '', '', 1, 1)) > 0)
+	        return $prices[0];
+	    return null;
+	}
+	/**
 	 * (non-PHPdoc)
 	 * @see BaseEntity::__loadDaoMap()
 	 */

@@ -211,31 +211,60 @@ abstract class ProductToMagento
    	 */
    	private static function _getRowWithDefaultValues(Product $product = null, $preFix = '', $debug = false)
    	{
+   	    $attributeSetName = 'Default';
+   	    $enabled = true;
+   	    $sku = $productName = $rrpPrice = $shortDescription = $fullDecription = $supplierName = $supplierCode = $manufacturerName = '';
+   	    if(($product instanceof Product) {
+   	        $sku = trim($product->getSku());
+   	        $productName = trim($product->getName());
+   	        $shortDescription = trim($product->getShortDescription());
+   	        if($product->getAttributeSet() instanceof ProductAttributeSet)
+   	            $attributeSetName = $product->getAttributeSet()->getName();
+   	        //RRP
+   	        if($product->getRRP() instanceof ProductPrice)
+   	            $rrpPrice = StringUtilsAbstract::getValueFromCurrency($product->getRRP()->getPrice());
+   	        //full description
+   	        if(($asset = Asset::getAsset($product->getFullDescAssetId())) instanceof Asset)
+   	            $fullDecription = '"' . Asset::readAssetFile($asset->getPath()) . '"';
+   	        //supplier
+   	        if(count($supplierCodes = SupplierCode::getAllByCriteria('productId = ?', array($product->getId()), true, 1, 1)) > 0) {
+   	            $supplierName = (($supplier = $supplierCodes[0]->getSupplier()) instanceof Supplier) ? $supplier->getName() : '';
+   	            $supplierCode = trim($supplierCodes[0]->getCode());
+   	        }
+   	        //Manufacturer
+   	        if($product->getManufacturer() instanceof Manufacturer)
+   	            $manufacturerName = trim($product->getManufacturer()->getName());
+   	        //disable or enabled
+   	        if(intval($product->getActive()) === 0 || intval($product->getSellOnWeb()) === 0)
+   	            $enabled = false;
+   	        else if($product->getStatus() instanceof ProductStatus && intval($product->getStatus()->getId()) === ProductStatus::ID_DISABLED)
+   	            $enabled = false;
+   	    }
    		return array("store" => 'default',
    				"websites" => 'base',
-   				"attribute_set" => ($product instanceof Product && $product->getAttributeSet() instanceof ProductAttributeSet ? $product->getAttributeSet()->getName() : 'Default'), //attribute_name
+   				"attribute_set" => $attributeSetName, //attribute_name
    				"type" => 'simple',
    				"category_ids" => '2', //123,12312
-   				"sku" => ($product instanceof Product ? $product->getSku() : ''), //sku
-   				"name" => ($product instanceof Product ? $product->getName() : ''), //product name
-   				"price" => ($product instanceof Product && count($prices = $product->getPrices()) > 0 ? $prices[0]->getPrice() : ''), //unitPrice
+   				"sku" => $sku, //sku
+   				"name" => $productName, //product name
+   				"price" => $rrpPrice, //unitPrice
    				"special_from_date" => '', //special_from_date
    				"special_to_date" => '', //special_to_date
    				"special_price" => '', //special_price
    				"news_from_date" => '', //news_from_date
    				"news_to_date" => '', //news_to_date
-   				"status" => 1, //1 - enable, 2 - disable
+   				"status" => intval($enabled) === 1 ? 1 : 2, //1 - enable, 2 - disable
    				"visibility" => 4, //4 -
    				"tax_class_id" => 2, // 2
-   				"description" => '"' . ($product instanceof Product && ($asset = Asset::getAsset($product->getFullDescAssetId())) instanceof Asset ? Asset::readAssetFile($asset->getPath()) : '') . '"', //full description
-   				"short_description" => ($product instanceof Product ? $product->getShortDescription() : ''), //short description
-   				"supplier" => ($product instanceof Product && count($supplierCodes = $product->getSupplierCodes()) > 0 && ($supplier = $supplierCodes[0]->getSupplier()) instanceof Supplier ? $supplier->getName() : ''), // the name of the supplier
+   				"description" => $fullDecription, //full description
+   				"short_description" => $shortDescription, //short description
+   				"supplier" => $supplierName, // the name of the supplier
    				"man_code" => '', //manufacturer code
-   				"sup_code" => (isset($supplierCodes[0]) && $supplierCodes[0] instanceof SupplierCode ? $supplierCodes[0]->getCode() : ''), //supplier code
+   				"sup_code" => $supplierCode, //supplier code
    				"has_options" => '',
    				"meta_title" => '',
    				"meta_description" => '',
-   				"manufacturer" => ($product instanceof Product && $product->getManufacturer() instanceof Manufacturer ? $product->getManufacturer()->getName() : ''), //manufacture value
+   				"manufacturer" => $manufacturerName, //manufacture value
    				"url_key" => '',
    				"url_path" => '',
    				"custom_design" => '',
