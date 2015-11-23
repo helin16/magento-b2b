@@ -32,7 +32,7 @@ abstract class ProductToMagento
      * @param string $preFix
      * @param string $debug
      */
-    public static function run($outputFilePath = '/tmp/', $preFix = '', $debug = false)
+    public static function run($outputFilePath = self::OUTPUT_FILE_NAME, $preFix = '', $debug = false)
     {
         $start = self::_log('## START ##############################', __CLASS__ . '::' . __FUNCTION__,  $preFix);
 
@@ -40,12 +40,17 @@ abstract class ProductToMagento
 		self::_log('GEN CSV TO: ' . self::$_outputFilePath, '',  $preFix. self::TAB);
     	Core::setUser(UserAccount::get(UserAccount::ID_SYSTEM_ACCOUNT));
 
-    	$lastUpdatedInDB = '';
+    	$lastUpdatedInDB = UDate::zeroDate();
     	$products = self::_getData($lastUpdatedInDB, $preFix . self::TAB, $debug);
-		self::_genCSV(array_values($products), $preFix . self::TAB, $debug);
-
-		self::_log('After the looping we have got last updated time from DB: "' . trim($lastUpdatedInDB) . '".', '',  $preFix);
-		self::_setSettings('lastUpdatedTime', trim($lastUpdatedInDB), $preFix, $debug);
+    	if(count($products) > 0) {
+			self::_genCSV(array_values($products), $preFix . self::TAB, $debug);
+			if(trim($lastUpdatedInDB) !== trim(UDate::zeroDate())) {
+				self::_log('After the looping we have got last updated time from DB: "' . trim($lastUpdatedInDB) . '".', '',  $preFix);
+				self::_setSettings('lastUpdatedTime', trim($lastUpdatedInDB), $preFix, $debug);
+			}
+    	} else {
+    		self::_log('NO changed products found after: "' . trim($lastUpdatedInDB) . '".', '',  $preFix);
+    	}
 
         self::_log('## FINISH ##############################', __CLASS__ . '::' . __FUNCTION__,  $preFix, $start);
     }
@@ -67,7 +72,8 @@ abstract class ProductToMagento
         self::_log('GOT LAST SYNC TIME: ' . trim($lastUpdatedTime), '',  $preFix);
         $productPrices = ProductPrice::getAllByCriteria('updated > ?', array(trim($lastUpdatedTime)));
         self::_log('GOT ' . count($productPrices) . ' Price(s) that has changed after "' . trim($lastUpdatedTime) . '".', '',  $preFix);
-        $lastUpdateInDb = UDate::zeroDate();
+        
+        $lastUpdateInDb = $lastUpdatedTime;
         $products = array();
         foreach($productPrices as $productPrice){
             if(!$productPrice->getProduct() instanceof Product || array_key_exists($productPrice->getProduct()->getId(), $products))
@@ -143,12 +149,15 @@ abstract class ProductToMagento
         self::_log('Before setting: ' . preg_replace('/\s+/', ' ', print_r($settings, true)), '', $preFix . self::TAB);
         $settings[$key] = $value;
         self::_log('After setting: ' . preg_replace('/\s+/', ' ', print_r($settings, true)), '', $preFix . self::TAB);
-        if (($settingObj = SystemSettings::getByType($paramName)) instanceof SystemSettings) {
-            $jsonString = json_encode($settings);
-            self::_log('Saving new Settings: ' . $jsonString, '', $preFix . self::TAB);
-            $settingObj->setValue($jsonString)
-                ->save();
+        if (!($settingObj = SystemSettings::getByType($paramName)) instanceof SystemSettings) {
+        	$settingObj = new SystemSettings();
+        	$settingObj->setType($paramName)
+        		->setDescription($paramName);
         }
+        $jsonString = json_encode($settings);
+        self::_log('Saving new Settings: ' . $jsonString, '', $preFix . self::TAB);
+        $settingObj->setValue($jsonString)
+        	->save();
         self::_log('DONE', '', $preFix . self::TAB);
         self::_log('');
         self::$_cache[__CLASS__ . ':settings:' . $paramName] = $settings;
@@ -193,7 +202,7 @@ abstract class ProductToMagento
    		self::_log ("Populating " . count($products) . ' product(s) onto the first sheet.', '', $preFix . self::TAB);
    		self::_genSheet($objPHPExcel->getActiveSheet(), $products, $preFix, $debug);
 
-   		$filePath = self::$_outputFilePath . self::OUTPUT_FILE_NAME;
+   		$filePath = self::$_outputFilePath;
    		self::_log ("Saving to :" . $filePath, '', $preFix . self::TAB);
 
    		$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'CSV');
@@ -360,7 +369,7 @@ abstract class ProductToMagento
    	}
 }
 
-$filePath = '/tmp/';
+$filePath = '/tmp/' . ProductToMagento::OUTPUT_FILE_NAME;
 if(isset($argv) && isset($argv[1]))
     $filePath = trim($argv[1]);
 ProductToMagento::run($filePath, '', true);

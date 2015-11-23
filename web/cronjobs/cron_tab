@@ -1,0 +1,5 @@
+* * * * * /bin/sh /var/www/magentob2b/web/cronjobs/cronRunner.sh
+0 * * * * /bin/sh /var/www/magentob2b/web/cronjobs/sync/DataFeedImporter.sh >> /tmp/DataFeedImporter.log
+30 * * * * /bin/sh /var/www/magentob2b/web/cronjobs/sync/PushProductToMagento.sh >> /tmp/PushProductToMagento.log
+0 14 * * * /bin/sh /var/www/magentob2b/web/cronjobs/midNightCron.sh >> /tmp/midNightCron.log
+#0 */3 * * * /bin/sh /var/www/magentob2b/web/cronjobs/sync/ProductPullRunnerNewOnly.sh >> /tmp/ProductPullRunnerNewOnly.log
