@@ -72,7 +72,7 @@ abstract class ProductToMagento
         self::_log('GOT LAST SYNC TIME: ' . trim($lastUpdatedTime), '',  $preFix);
         $productPrices = ProductPrice::getAllByCriteria('updated > ?', array(trim($lastUpdatedTime)));
         self::_log('GOT ' . count($productPrices) . ' Price(s) that has changed after "' . trim($lastUpdatedTime) . '".', '',  $preFix);
-        
+
         $lastUpdateInDb = $lastUpdatedTime;
         $products = array();
         foreach($productPrices as $productPrice){
@@ -257,7 +257,7 @@ abstract class ProductToMagento
    	{
    	    $attributeSetName = 'Default';
    	    $enabled = true;
-   	    $sku = $productName = $rrpPrice = $shortDescription = $fullDecription = $supplierName = $supplierCode = $manufacturerName = $asNewFrom = $asNewTo = $specialPrice = $specialPriceFromDate = $specialPriceToDate = '';
+   	    $sku = $productName = $rrpPrice = $weight = $shortDescription = $fullDecription = $supplierName = $supplierCode = $manufacturerName = $asNewFrom = $asNewTo = $specialPrice = $specialPriceFromDate = $specialPriceToDate = '';
    	    $categoryIds = array(2); //default category
    	    if($product instanceof Product) {
    	        $sku = trim($product->getSku());
@@ -265,6 +265,7 @@ abstract class ProductToMagento
    	        $shortDescription = trim($product->getShortDescription());
    	        $asNewFrom = $product->getAsNewFromDate() instanceof UDate ? $product->getAsNewFromDate()->format('Y-m-d H:i:sP') : '';
    	        $asNewTo = $product->getAsNewToDate() instanceof UDate ? $product->getAsNewToDate()->format('Y-m-d H:i:sP') : '';
+   	        $weight = trim($product->getWeight());
    	        if($product->getAttributeSet() instanceof ProductAttributeSet)
    	            $attributeSetName = $product->getAttributeSet()->getName();
    	        //RRP
@@ -338,7 +339,7 @@ abstract class ProductToMagento
    				"custom_layout_update" => '',
    				"custom_design_from" => '',
    				"custom_design_to" => '',
-   				"weight" => '',
+   				"weight" => $weight,
    				"msrp" => 'Use config', //
    				"gift_wrapping_price" => '',
    				"qty" => 99, //99
