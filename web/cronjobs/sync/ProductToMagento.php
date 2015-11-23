@@ -70,6 +70,8 @@ abstract class ProductToMagento
         $lastUpdateInDb = UDate::zeroDate();
         $products = array();
         foreach($productPrices as $productPrice){
+            if(!$productPrice->getProduct() instanceof Product)
+                continue;
             if($productPrice->getUpdated()->afterOrEqualTo($lastUpdateInDb))
                 $lastUpdateInDb = $productPrice->getUpdated();
             $products[$productPrice->getProduct()->getId()] = $productPrice->getProduct();
@@ -86,6 +88,8 @@ abstract class ProductToMagento
         $productCates = Product_Category::getAllByCriteria('updated > ?', array(trim($lastUpdatedTime)));
         self::_log('GOT ' . count($productCates) . ' Product_Category(s) that has changed after "' . trim($lastUpdatedTime) . '".', '',  $preFix);
         foreach($productCates as $productCate){
+            if(!$productCate->getProduct() instanceof Product)
+                continue;
             if($productCate->getUpdated()->afterOrEqualTo($lastUpdateInDb))
                 $lastUpdateInDb = $productCate->getUpdated();
             $products[$productCate->getProduct()->getId()] = $productCate->getProduct();
