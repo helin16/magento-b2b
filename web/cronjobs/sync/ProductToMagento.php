@@ -285,8 +285,11 @@ abstract class ProductToMagento
    	            $enabled = false;
    	        //categories
    	        if(count($categories = $product->getCategories()) > 0) {
-   	            foreach($categories as $category)
-   	                $categoryIds[] = $category->getId();
+   	            foreach($categories as $category) {
+   	                if(($mageCateId = trim($category->getMageId())) === '')
+   	                    continue;
+   	                $categoryIds[] = $mageCateId;
+   	            }
    	        }
    	    }
    		return array("store" => 'default',
