@@ -108,9 +108,12 @@ abstract class ProductToMagento
         $paramName = SystemSettings::TYPE_MAGENTO_SYNC;
         self::_log('== Trying to set SystemSettings for: "' . $paramName . '" with new value: ' . $value, __CLASS__ . '::' . __FUNCTION__,  $preFix);
         $settings = self::_getSettings($preFix, $debug);
+        if(!is_array($settings))
+            $settings = array();
         $settings[$key] = $value;
         if (($settingObj = SystemSettings::getByType($paramName)) instanceof SystemSettings) {
             $jsonString = json_encode($settings);
+            self::_log('Saving new Settings: ' . $jsonString, '', $preFix . self::TAB);
             $settingObj->setValue($jsonString)
                 ->save();
         }
