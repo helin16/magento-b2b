@@ -42,7 +42,7 @@ abstract class ProductToMagento
 
     	$lastUpdatedInDB = '';
     	$products = self::_getData($lastUpdatedInDB, $preFix . self::TAB, $debug);
-		self::_genCSV($products, $preFix . self::TAB, $debug);
+		self::_genCSV(array_values($products), $preFix . self::TAB, $debug);
 
 		self::_log('After the looping we have got last updated time from DB: "' . trim($lastUpdatedInDB) . '".', '',  $preFix);
 		self::_setSettings('lastUpdatedTime', trim($lastUpdatedInDB), $preFix, $debug);
@@ -72,7 +72,23 @@ abstract class ProductToMagento
         foreach($productPrices as $productPrice){
             if($productPrice->getUpdated()->afterOrEqualTo($lastUpdateInDb))
                 $lastUpdateInDb = $productPrice->getUpdated();
-            $products[] = $productPrice->getProduct();
+            $products[$productPrice->getProduct()->getId()] = $productPrice->getProduct();
+        }
+
+        $productArr = Product::getAllByCriteria('updated > ?', array(trim($lastUpdatedTime)));
+        self::_log('GOT ' . count($productArr) . ' Product(s) that has changed after "' . trim($lastUpdatedTime) . '".', '',  $preFix);
+        foreach($productArr as $product){
+            if($product->getUpdated()->afterOrEqualTo($lastUpdateInDb))
+                $lastUpdateInDb = $product->getUpdated();
+            $products[$product->getId()] = $product;
+        }
+
+        $productCates = Product_Category::getAllByCriteria('updated > ?', array(trim($lastUpdatedTime)));
+        self::_log('GOT ' . count($productCates) . ' Product_Category(s) that has changed after "' . trim($lastUpdatedTime) . '".', '',  $preFix);
+        foreach($productCates as $productCate){
+            if($productCate->getUpdated()->afterOrEqualTo($lastUpdateInDb))
+                $lastUpdateInDb = $productCate->getUpdated();
+            $products[$productCate->getProduct()->getId()] = $productCate->getProduct();
         }
         $lastUpdateDB = $lastUpdateInDb;
         return $products;
