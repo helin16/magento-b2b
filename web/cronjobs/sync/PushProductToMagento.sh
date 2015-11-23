@@ -8,17 +8,17 @@ CSV_FILE_PATH=/tmp/
 if ps ax | grep -v grep | grep "ProductToMagento.php" > /dev/null; then
 	echo -n "ProductToMagento is Already Running....... :: "
 	date
-	echo -n ""
+	echo
 else
-	echo -n '== Generating the csv'
+	echo '== Generating the csv'
 	/usr/bin/php /var/www/magentob2b/web/cronjobs/sync/ProductToMagento.php $CSV_FILE_PATH
 	FILE=${CSV_FILE_PATH}productUpdate.csv
 	if [ -e "$FILE" ]
 	then
-		echo -n '== coping '.$FILE.'TO:'.$SERVER:$SERVER_PATH
+		echo '== coping '.$FILE.'TO:'.$SERVER:$SERVER_PATH
 		scp $FILE ec2-user@$SERVER:$SERVER_PATH
 		rm -f $FILE
 	else
-		echo -n "NO SUCN FILE: ${FILE}"
+		echo "NO SUCN FILE: ${FILE}"
 	fi
 fi
