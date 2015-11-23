@@ -4,7 +4,7 @@
 if ps ax | grep -v grep | grep "DataFeedImporter.php" > /dev/null; then
 	echo -n "DataFeedImporter is Already Running....... :: "
 	date
-	echo -n " "
+	echo -n ""
 else
 	DIR=/tmp/datafeed/
 	API=http://192.168.1.7/api/
