@@ -32,7 +32,7 @@ abstract class ProductToMagento
      * @param string $preFix
      * @param string $debug
      */
-    public static function run($outputFilePath = '/tmp/', $preFix = '', $debug = false)
+    public static function run($outputFilePath = self::OUTPUT_FILE_NAME, $preFix = '', $debug = false)
     {
         $start = self::_log('## START ##############################', __CLASS__ . '::' . __FUNCTION__,  $preFix);
 
@@ -202,7 +202,7 @@ abstract class ProductToMagento
    		self::_log ("Populating " . count($products) . ' product(s) onto the first sheet.', '', $preFix . self::TAB);
    		self::_genSheet($objPHPExcel->getActiveSheet(), $products, $preFix, $debug);
 
-   		$filePath = self::$_outputFilePath . self::OUTPUT_FILE_NAME;
+   		$filePath = self::$_outputFilePath;
    		self::_log ("Saving to :" . $filePath, '', $preFix . self::TAB);
 
    		$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'CSV');
@@ -369,7 +369,7 @@ abstract class ProductToMagento
    	}
 }
 
-$filePath = '/tmp/';
+$filePath = '/tmp/' . ProductToMagento::OUTPUT_FILE_NAME;
 if(isset($argv) && isset($argv[1]))
     $filePath = trim($argv[1]);
 ProductToMagento::run($filePath, '', true);
