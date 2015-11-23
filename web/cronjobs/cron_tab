@@ -1,0 +1,4 @@
+* * * * * /var/www/magentob2b/web/cronjobs/cronRunner.sh
+30 * * * * /var/www/magentob2b/web/cronjobs/sync/PushProductToMagento.sh >> /tmp/PushProductToMagento.log
+0 14 * * * /var/www/magentob2b/web/cronjobs/midNightCron.sh
+#0 */3 * * * /var/www/magentob2b/web/cronjobs/sync/ProductPullRunnerNewOnly.sh
