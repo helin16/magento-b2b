@@ -284,9 +284,9 @@ abstract class ProductToMagento
    	        else if($product->getStatus() instanceof ProductStatus && intval($product->getStatus()->getId()) === ProductStatus::ID_DISABLED)
    	            $enabled = false;
    	        //categories
-   	        if(count($categories = $product->getCategories()) > 0) {
+   	        if(count($categories = Product_Category::getAllByCriteria('productId = ? and active = 1', array($product->getId()))) > 0) {
    	            foreach($categories as $category) {
-   	                if(($mageCateId = trim($category->getMageId())) === '')
+   	                if(!$category->getCategory() instanceof ProductCategory || ($mageCateId = trim($category->getCategory()->getMageId())) === '')
    	                    continue;
    	                $categoryIds[] = $mageCateId;
    	            }
