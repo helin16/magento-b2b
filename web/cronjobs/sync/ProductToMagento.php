@@ -254,8 +254,8 @@ abstract class ProductToMagento
    	        $sku = trim($product->getSku());
    	        $productName = trim($product->getName());
    	        $shortDescription = trim($product->getShortDescription());
-   	        $asNewFrom = trim($product->getAsNewFromDate());
-   	        $asNewTo = trim($product->getAsNewToDate());
+   	        $asNewFrom = $product->getAsNewFromDate() instanceof UDate ? $product->getAsNewFromDate()->format('Y-m-d H:i:sP') : '';
+   	        $asNewTo = $product->getAsNewToDate() instanceof UDate ? $product->getAsNewToDate()->format('Y-m-d H:i:sP') : '';
    	        if($product->getAttributeSet() instanceof ProductAttributeSet)
    	            $attributeSetName = $product->getAttributeSet()->getName();
    	        //RRP
@@ -264,8 +264,8 @@ abstract class ProductToMagento
    	        //special price
    	        if(($specialPriceObj = $product->getNearestSpecialPrice()) instanceof ProductPrice) {
    	            $specialPrice = StringUtilsAbstract::getValueFromCurrency($specialPriceObj->getPrice());
-   	            $specialPriceFromDate = trim($specialPriceObj->getStart());
-   	            $specialPriceToDate = trim($specialPriceObj->getEnd());
+   	            $specialPriceFromDate = $specialPriceObj->getStart()->format('Y-m-d H:i:sP');
+   	            $specialPriceToDate = $specialPriceObj->getEnd()->format('Y-m-d H:i:sP');
    	        }
    	        //full description
    	        if(($asset = Asset::getAsset($product->getFullDescAssetId())) instanceof Asset)

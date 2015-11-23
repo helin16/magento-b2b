@@ -259,6 +259,8 @@ class Product extends InfoEntityAbstract
 	 */
 	public function getAsNewFromDate ()
 	{
+	    if($this->asNewFromDate !== null)
+	        return new UDate(trim($this->asNewFromDate));
 		return $this->asNewFromDate;
 	}
 	/**
@@ -280,6 +282,8 @@ class Product extends InfoEntityAbstract
 	 */
 	public function getAsNewToDate ()
 	{
+	    if($this->asNewToDate !== null)
+	        return new UDate(trim($this->asNewToDate));
 		return $this->asNewToDate;
 	}
 	/**
