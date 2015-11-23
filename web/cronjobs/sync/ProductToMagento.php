@@ -40,12 +40,17 @@ abstract class ProductToMagento
 		self::_log('GEN CSV TO: ' . self::$_outputFilePath, '',  $preFix. self::TAB);
     	Core::setUser(UserAccount::get(UserAccount::ID_SYSTEM_ACCOUNT));
 
-    	$lastUpdatedInDB = '';
+    	$lastUpdatedInDB = UDate::zeroDate();
     	$products = self::_getData($lastUpdatedInDB, $preFix . self::TAB, $debug);
-		self::_genCSV(array_values($products), $preFix . self::TAB, $debug);
-
-		self::_log('After the looping we have got last updated time from DB: "' . trim($lastUpdatedInDB) . '".', '',  $preFix);
-		self::_setSettings('lastUpdatedTime', trim($lastUpdatedInDB), $preFix, $debug);
+    	if(count($products) > 0) {
+			self::_genCSV(array_values($products), $preFix . self::TAB, $debug);
+			if(trim($lastUpdatedInDB) !== trim(UDate::zeroDate())) {
+				self::_log('After the looping we have got last updated time from DB: "' . trim($lastUpdatedInDB) . '".', '',  $preFix);
+				self::_setSettings('lastUpdatedTime', trim($lastUpdatedInDB), $preFix, $debug);
+			}
+    	} else {
+    		self::_log('NO changed products found after: "' . trim($lastUpdatedInDB) . '".', '',  $preFix);
+    	}
 
         self::_log('## FINISH ##############################', __CLASS__ . '::' . __FUNCTION__,  $preFix, $start);
     }
