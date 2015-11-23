@@ -1510,7 +1510,7 @@ class Product extends InfoEntityAbstract
 	 *
 	 * @return Ambigous <Product, Ambigous, NULL, BaseEntityAbstract>
 	 */
-	public static function create($sku, $name, $mageProductId = '', $stockOnHand = null, $stockOnOrder = null, $isFromB2B = false, $shortDescr = '', $fullDescr = '', Manufacturer $manufacturer = null, $assetAccNo = null, $revenueAccNo = null, $costAccNo = null, $stockMinLevel = null, $stockReorderLevel = null, $manualDatafeed = false)
+	public static function create($sku, $name, $mageProductId = '', $stockOnHand = null, $stockOnOrder = null, $isFromB2B = false, $shortDescr = '', $fullDescr = '', Manufacturer $manufacturer = null, $assetAccNo = null, $revenueAccNo = null, $costAccNo = null, $stockMinLevel = null, $stockReorderLevel = null, $manualDatafeed = false, $weight = null)
 	{
 		if(!($product = self::getBySku($sku)) instanceof Product)
 			$product = new Product();
@@ -1543,6 +1543,9 @@ class Product extends InfoEntityAbstract
 			}
 			if ($manufacturer instanceof Manufacturer) {
 				$product->setManufacturer($manufacturer);
+			}
+			if($weight !== null) {
+    			$product->setWeight($weight);
 			}
 		}
 		return $product->save();
