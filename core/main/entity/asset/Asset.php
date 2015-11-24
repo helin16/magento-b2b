@@ -156,6 +156,15 @@ class Asset extends BaseEntityAbstract
 		return '/asset/get/?id=' . trim($this->getAssetId());
 	}
 	/**
+	 * returning the content of the file
+	 *
+	 * @return string
+	 */
+	public function read()
+	{
+	    return file_get_contents($this->getPath());
+	}
+	/**
 	 * (non-PHPdoc)
 	 * @see BaseEntityAbstract::__toString()
 	 */

@@ -62,6 +62,7 @@ class APIProductService extends APIServiceAbstract
 	       $categoryIds = $this->_getPram($params, 'category_ids', array());
 	       $canSupplyQty = $this->_getPram($params, 'qty', 0);
 	       $weight = $this->_getPram($params, 'weight', 0);
+	       $images = $this->_getPram($params, 'images', array());
 
 	       $canUpdate = false;
 
@@ -85,7 +86,7 @@ class APIProductService extends APIServiceAbstract
 	               if ($fullAsset instanceof Asset) {
 	               	   $fullAssetContent = file_get_contents($fullAsset->getPath());
 		               $this->_runner->log('Got full asset content before html_decode: <' . $fullAssetContent . '>', '', APIService::TAB . APIService::TAB);
-	               		$fullAssetContent= trim(str_replace('&nbsp;', '', $fullAssetContent));
+		               $fullAssetContent= trim(str_replace('&nbsp;', '', $fullAssetContent));
 		               $this->_runner->log('Got full asset content after html_code: <' . $fullAssetContent . '>', '', APIService::TAB . APIService::TAB);
 	               }
 	               if ($fullAssetContent === '') {
@@ -109,7 +110,7 @@ class APIProductService extends APIServiceAbstract
 
 	       //only update categories and status when there is no pricematching rule or created new
 	       if ($canUpdate === true) {
-		       if (count($categoryIds) > 0) {
+		       if (is_array($categoryIds) && count($categoryIds) > 0) {
 		       		$this->_runner->log('Updating the categories: ' . implode(', ', $categoryIds), '', APIService::TAB . APIService::TAB);
 		       		foreach ($categoryIds as $categoryId) {
 		       			if (!($category = ProductCategory::get($categoryId)) instanceof ProductCategory)
@@ -121,6 +122,41 @@ class APIProductService extends APIServiceAbstract
 		       				}
 		       			}
 		       		}
+		       }
+		       //updating the images
+		       if (is_array($images) && count($images) > 0) {
+		           $this->_runner->log('Processing ' . count($images) . ' image(s) ...', '', APIService::TAB . APIService::TAB);
+		           $exisitingImgsKeys = array();
+		           $this->_runner->log('Checking exsiting images...', '', APIService::TAB . APIService::TAB . APIService::TAB);
+		           $exisitingImgs = $product->getImages();
+		           $this->_runner->log('Got ' . count($exisitingImgs) . ' exisiting image(s), keys: ', '', APIService::TAB . APIService::TAB . APIService::TAB . APIService::TAB);
+	               foreach ($exisitingImgs as $image) {
+	                   if ((($asset = Asset::getAsset($image->getImageAssetId())) instanceof Asset)) {
+	                       $imgKey = md5($asset->read());
+    	                   $exisitingImgsKeys[] = $imgKey;
+        	               $this->_runner->log($imgKey, '', APIService::TAB . APIService::TAB . APIService::TAB . APIService::TAB . APIService::TAB);
+	                   }
+	               }
+	               $this->_runner->log('Checking ' . count($images) . ' new image(s) ...', '', APIService::TAB . APIService::TAB);
+		           foreach ($images as $image) {
+		               //if haven't got any content at all
+		               if (!isset($image['content'])) {
+        	               $this->_runner->log('No Content, SKIP!', '', APIService::TAB . APIService::TAB . APIService::TAB);
+		                   continue;
+		               }
+		               $newImageContent = base64_decode($image['content']);
+		               $newImgKey = md5($newImageContent);
+		               //if we've got the image already
+		               if (in_array($newImgKey, $exisitingImgsKeys)) {
+        	               $this->_runner->log('Same Image Exists[' . $newImgKey . '], SKIP!', '', APIService::TAB . APIService::TAB . APIService::TAB);
+		                   continue;
+		               }
+		               $asset = Asset::registerAsset($image['name'], $newImageContent, Asset::TYPE_PRODUCT_IMG);
+		               $this->_runner->log('Registered a new Asset [AssetID=' . $asset->getAssetId() . '].', '', APIService::TAB . APIService::TAB . APIService::TAB);
+		               $product->addImage($asset);
+		               $this->_runner->log('Added to product(SKU=' . $product->getSku() . ')', '', APIService::TAB . APIService::TAB . APIService::TAB);
+
+		           }
 		       }
 		       $product->setStatus($status);
 		       $this->_runner->log('Updated Status to: ' . $status->getName(), '', APIService::TAB . APIService::TAB);
