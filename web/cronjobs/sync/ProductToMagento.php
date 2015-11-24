@@ -40,14 +40,11 @@ abstract class ProductToMagento
 		self::_log('GEN CSV TO: ' . self::$_outputFilePath, '',  $preFix. self::TAB);
     	Core::setUser(UserAccount::get(UserAccount::ID_SYSTEM_ACCOUNT));
 
-    	$lastUpdatedInDB = UDate::zeroDate();
-    	$products = self::_getData($lastUpdatedInDB, $preFix . self::TAB, $debug);
+    	$lastUpdatedInDB = UDate::now();
+    	$products = self::_getData($preFix . self::TAB, $debug);
     	if(count($products) > 0) {
 			self::_genCSV(array_values($products), $preFix . self::TAB, $debug);
-			if(trim($lastUpdatedInDB) !== trim(UDate::zeroDate())) {
-				self::_log('After the looping we have got last updated time from DB: "' . trim($lastUpdatedInDB) . '".', '',  $preFix);
-				self::_setSettings('lastUpdatedTime', trim($lastUpdatedInDB), $preFix, $debug);
-			}
+			self::_setSettings('lastUpdatedTime', trim($lastUpdatedInDB), $preFix, $debug);
     	} else {
     		self::_log('NO changed products found after: "' . trim($lastUpdatedInDB) . '".', '',  $preFix);
     	}
@@ -62,7 +59,7 @@ abstract class ProductToMagento
      *
      * @return array
      */
-    private static function _getData(&$lastUpdateDB, $preFix = '', $debug = false)
+    private static function _getData($preFix = '', $debug = false)
     {
         self::_log('== Trying to get all the updated price for products:', __CLASS__ . '::' . __FUNCTION__,  $preFix);
         $settings = self::_getSettings($preFix . self::TAB, $debug);
@@ -73,13 +70,10 @@ abstract class ProductToMagento
         $productPrices = ProductPrice::getAllByCriteria('updated > ?', array(trim($lastUpdatedTime)));
         self::_log('GOT ' . count($productPrices) . ' Price(s) that has changed after "' . trim($lastUpdatedTime) . '".', '',  $preFix);
 
-        $lastUpdateInDb = $lastUpdatedTime;
         $products = array();
         foreach($productPrices as $productPrice){
             if(!$productPrice->getProduct() instanceof Product || array_key_exists($productPrice->getProduct()->getId(), $products))
                 continue;
-            if($productPrice->getUpdated()->afterOrEqualTo($lastUpdateInDb))
-                $lastUpdateInDb = $productPrice->getUpdated();
             $products[$productPrice->getProduct()->getId()] = $productPrice->getProduct();
         }
 
@@ -88,8 +82,6 @@ abstract class ProductToMagento
         foreach($productArr as $product){
             if(array_key_exists($product->getId(), $products))
                 continue;
-            if($product->getUpdated()->afterOrEqualTo($lastUpdateInDb))
-                $lastUpdateInDb = $product->getUpdated();
             $products[$product->getId()] = $product;
         }
 
@@ -98,11 +90,15 @@ abstract class ProductToMagento
         foreach($productCates as $productCate){
             if(!$productCate->getProduct() instanceof Product || array_key_exists($productCate->getProduct()->getId(), $products))
                 continue;
-            if($productCate->getUpdated()->afterOrEqualTo($lastUpdateInDb))
-                $lastUpdateInDb = $productCate->getUpdated();
             $products[$productCate->getProduct()->getId()] = $productCate->getProduct();
         }
-        $lastUpdateDB = $lastUpdateInDb;
+        $productImages = ProductImage::getAllByCriteria('updated > ?', array(trim($lastUpdatedTime)));
+        self::_log('GOT ' . count($productCates) . ' ProductImage(s) that has changed after "' . trim($lastUpdatedTime) . '".', '',  $preFix);
+        foreach($productImages as $productImage){
+            if(!$productImage->getProduct() instanceof Product || array_key_exists($productImage->getProduct()->getId(), $products))
+                continue;
+            $products[$productCate->getProduct()->getId()] = $productCate->getProduct();
+        }
         return $products;
     }
     /**
