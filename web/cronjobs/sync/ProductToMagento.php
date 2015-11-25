@@ -34,22 +34,22 @@ abstract class ProductToMagento
      */
     public static function run($outputFilePath = self::OUTPUT_FILE_NAME, $preFix = '', $debug = false)
     {
-        $start = self::_log('## START ##############################', __CLASS__ . '::' . __FUNCTION__,  $preFix);
+        $start = self::_log('## START ##############################', __CLASS__ . '::' . __FUNCTION__, $preFix);
 
-		self::$_outputFilePath = trim ($outputFilePath);
-		self::_log('GEN CSV TO: ' . self::$_outputFilePath, '',  $preFix. self::TAB);
+		self::$_outputFilePath = trim($outputFilePath);
+		self::_log('GEN CSV TO: ' . self::$_outputFilePath, '', $preFix . self::TAB);
     	Core::setUser(UserAccount::get(UserAccount::ID_SYSTEM_ACCOUNT));
 
     	$lastUpdatedInDB = UDate::now();
     	$products = self::_getData($preFix . self::TAB, $debug);
-    	if(count($products) > 0) {
+    	if (count($products) > 0) {
 			self::_genCSV(array_values($products), $preFix . self::TAB, $debug);
 			self::_setSettings('lastUpdatedTime', trim($lastUpdatedInDB), $preFix, $debug);
     	} else {
-    		self::_log('NO changed products found after: "' . trim($lastUpdatedInDB) . '".', '',  $preFix);
+    		self::_log('NO changed products found after: "' . trim($lastUpdatedInDB) . '".', '', $preFix);
     	}
 
-        self::_log('## FINISH ##############################', __CLASS__ . '::' . __FUNCTION__,  $preFix, $start);
+        self::_log('## FINISH ##############################', __CLASS__ . '::' . __FUNCTION__, $preFix, $start);
     }
     /**
      * getting the data
@@ -61,40 +61,40 @@ abstract class ProductToMagento
      */
     private static function _getData($preFix = '', $debug = false)
     {
-        self::_log('== Trying to get all the updated price for products:', __CLASS__ . '::' . __FUNCTION__,  $preFix);
+        self::_log('== Trying to get all the updated price for products:', __CLASS__ . '::' . __FUNCTION__, $preFix);
         $settings = self::_getSettings($preFix . self::TAB, $debug);
         $lastUpdatedTime = UDate::zeroDate();
         if(isset($settings['lastUpdatedTime']) && trim($settings['lastUpdatedTime']) !== '')
             $lastUpdatedTime = new UDate(trim($settings['lastUpdatedTime']));
-        self::_log('GOT LAST SYNC TIME: ' . trim($lastUpdatedTime), '',  $preFix);
+        self::_log('GOT LAST SYNC TIME: ' . trim($lastUpdatedTime), '', $preFix);
         $productPrices = ProductPrice::getAllByCriteria('updated > ?', array(trim($lastUpdatedTime)));
-        self::_log('GOT ' . count($productPrices) . ' Price(s) that has changed after "' . trim($lastUpdatedTime) . '".', '',  $preFix);
+        self::_log('GOT ' . count($productPrices) . ' Price(s) that has changed after "' . trim($lastUpdatedTime) . '".', '', $preFix);
 
         $products = array();
-        foreach($productPrices as $productPrice){
+        foreach ($productPrices as $productPrice) {
             if(!$productPrice->getProduct() instanceof Product || array_key_exists($productPrice->getProduct()->getId(), $products))
                 continue;
             $products[$productPrice->getProduct()->getId()] = $productPrice->getProduct();
         }
 
         $productArr = Product::getAllByCriteria('updated > ?', array(trim($lastUpdatedTime)));
-        self::_log('GOT ' . count($productArr) . ' Product(s) that has changed after "' . trim($lastUpdatedTime) . '".', '',  $preFix);
-        foreach($productArr as $product){
+        self::_log('GOT ' . count($productArr) . ' Product(s) that has changed after "' . trim($lastUpdatedTime) . '".', '', $preFix);
+        foreach ($productArr as $product) {
             if(array_key_exists($product->getId(), $products))
                 continue;
             $products[$product->getId()] = $product;
         }
 
         $productCates = Product_Category::getAllByCriteria('updated > ?', array(trim($lastUpdatedTime)));
-        self::_log('GOT ' . count($productCates) . ' Product_Category(s) that has changed after "' . trim($lastUpdatedTime) . '".', '',  $preFix);
-        foreach($productCates as $productCate){
+        self::_log('GOT ' . count($productCates) . ' Product_Category(s) that has changed after "' . trim($lastUpdatedTime) . '".', '', $preFix);
+        foreach ($productCates as $productCate) {
             if(!$productCate->getProduct() instanceof Product || array_key_exists($productCate->getProduct()->getId(), $products))
                 continue;
             $products[$productCate->getProduct()->getId()] = $productCate->getProduct();
         }
         $productImages = ProductImage::getAllByCriteria('updated > ?', array(trim($lastUpdatedTime)));
-        self::_log('GOT ' . count($productCates) . ' ProductImage(s) that has changed after "' . trim($lastUpdatedTime) . '".', '',  $preFix);
-        foreach($productImages as $productImage){
+        self::_log('GOT ' . count($productCates) . ' ProductImage(s) that has changed after "' . trim($lastUpdatedTime) . '".', '', $preFix);
+        foreach ($productImages as $productImage) {
             if(!$productImage->getProduct() instanceof Product || array_key_exists($productImage->getProduct()->getId(), $products))
                 continue;
             $products[$productCate->getProduct()->getId()] = $productCate->getProduct();
@@ -113,17 +113,17 @@ abstract class ProductToMagento
     private static function _getSettings($preFix = '', $debug = false)
     {
         $paramName = SystemSettings::TYPE_MAGENTO_SYNC;
-        self::_log('== Trying to get SystemSettings for :' . $paramName, __CLASS__ . '::' . __FUNCTION__,  $preFix);
-        if(!isset(self::$_cache[__CLASS__ . ':settings:' . $paramName])) {
+        self::_log('== Trying to get SystemSettings for :' . $paramName, __CLASS__ . '::' . __FUNCTION__, $preFix);
+        if (!isset(self::$_cache[__CLASS__ . ':settings:' . $paramName])) {
 
             $settingString = SystemSettings::getSettings($paramName);
-            self::_log('GOT string: ' . $settingString, '',  $preFix . self::TAB);
+            self::_log('GOT string: ' . $settingString, '', $preFix . self::TAB);
 
             self::$_cache[__CLASS__ . ':settings'] = json_decode($settingString, true);
 //             if(json_last_error() == JSON_ERROR_NONE)
 //                 throw new Exception('Invalid JSON string:' . $settingString);
         }
-        self::_log('GOT settings: ' . preg_replace('/\s+/', ' ', print_r(self::$_cache[__CLASS__ . ':settings'], true)), '',  $preFix . self::TAB);
+        self::_log('GOT settings: ' . preg_replace('/\s+/', ' ', print_r(self::$_cache[__CLASS__ . ':settings'], true)), '', $preFix . self::TAB);
         self::_log('');
         return self::$_cache[__CLASS__ . ':settings'];
     }
@@ -138,7 +138,7 @@ abstract class ProductToMagento
     private static function _setSettings($key, $value, $preFix = '', $debug = false)
     {
         $paramName = SystemSettings::TYPE_MAGENTO_SYNC;
-        self::_log('-- Trying to set SystemSettings for: "' . $paramName . '" with new value: ' . $value, __CLASS__ . '::' . __FUNCTION__,  $preFix);
+        self::_log('-- Trying to set SystemSettings for: "' . $paramName . '" with new value: ' . $value, __CLASS__ . '::' . __FUNCTION__, $preFix);
         $settings = self::_getSettings($preFix . self::TAB, $debug);
         if(!is_array($settings))
             $settings = array();
@@ -173,7 +173,7 @@ abstract class ProductToMagento
     {
         $now = new UDate();
         $timeElapsed = '';
-        if($start instanceof UDate) {
+        if ($start instanceof UDate) {
             $timeElapsed = $now->diff($start);
             $timeElapsed = ' TOOK (' . $timeElapsed->format('%s') . ') seconds ';
         }
@@ -190,21 +190,21 @@ abstract class ProductToMagento
    	private static function _genCSV(array $products, $preFix = '', $debug = false)
    	{
    		// Create new PHPExcel object
-   		self::_log ("== Create new PHPExcel object", __CLASS__ . '::' . __FUNCTION__, $preFix);
+   		self::_log("== Create new PHPExcel object", __CLASS__ . '::' . __FUNCTION__, $preFix);
    		$objPHPExcel = new PHPExcel();
 
    		// Add some data
    		$objPHPExcel->setActiveSheetIndex(0);
-   		self::_log ("Populating " . count($products) . ' product(s) onto the first sheet.', '', $preFix . self::TAB);
+   		self::_log("Populating " . count($products) . ' product(s) onto the first sheet.', '', $preFix . self::TAB);
    		self::_genSheet($objPHPExcel->getActiveSheet(), $products, $preFix, $debug);
 
    		$filePath = self::$_outputFilePath;
-   		self::_log ("Saving to :" . $filePath, '', $preFix . self::TAB);
+   		self::_log("Saving to :" . $filePath, '', $preFix . self::TAB);
 
    		$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'CSV');
 		$objWriter->save($filePath);
 
-   		self::_log ("DONE", '', $preFix . self::TAB);
+   		self::_log("DONE", '', $preFix . self::TAB);
    	}
    	/**
    	 * generating the worksheet
@@ -216,29 +216,29 @@ abstract class ProductToMagento
    	 */
    	private static function _genSheet(PHPExcel_Worksheet &$sheet, array $data, $preFix = '', $debug = false)
    	{
-   		self::_log ('-- Generating the sheets: ', '', $preFix);
+   		self::_log('-- Generating the sheets: ', '', $preFix);
    		$rowNo = 1;
    		$titles = array_keys(self::_getRowWithDefaultValues(null, $preFix, $debug));
 //    		self::_log(print_r($titles, true));
-   		foreach($titles as $colNo => $colValue) {
+   		foreach ($titles as $colNo => $colValue) {
    			$sheet->setCellValueByColumnAndRow($colNo, $rowNo, $colValue);
    		}
    		$rowNo += 1;
-   		self::_log ('Generated title row', '', $preFix . self::TAB);
+   		self::_log('Generated title row', '', $preFix . self::TAB);
 
-   		foreach($data as $index => $product) {
-       		self::_log ('ROW: ' . $index, '', $preFix . self::TAB);
-   			if(!$product instanceof Product) {
-           		self::_log ('SKIPPED, invalid product.', '', $preFix . self::TAB . self::TAB);
+   		foreach ($data as $index => $product) {
+       		self::_log('ROW: ' . $index, '', $preFix . self::TAB);
+   			if (!$product instanceof Product) {
+           		self::_log('SKIPPED, invalid product.', '', $preFix . self::TAB . self::TAB);
    				continue;
    			}
-   			foreach(array_values(self::_getRowWithDefaultValues($product, $preFix, $debug)) as $colNo => $colValue) {
+   			foreach (array_values(self::_getRowWithDefaultValues($product, $preFix, $debug)) as $colNo => $colValue) {
    				$sheet->setCellValueByColumnAndRow($colNo, $rowNo, $colValue);
    			}
-			self::_log ('ADDED.', '', $preFix . self::TAB . self::TAB);
+			self::_log('ADDED.', '', $preFix . self::TAB . self::TAB);
    			$rowNo += 1;
    		}
-   		self::_log ('-- DONE', '', $preFix);
+   		self::_log('-- DONE', '', $preFix);
    	}
    	/**
    	 * The row with default value
@@ -255,7 +255,7 @@ abstract class ProductToMagento
    	    $enabled = true;
    	    $sku = $productName = $rrpPrice = $weight = $shortDescription = $fullDecription = $supplierName = $supplierCode = $manufacturerName = $asNewFrom = $asNewTo = $specialPrice = $specialPriceFromDate = $specialPriceToDate = '';
    	    $categoryIds = array(2); //default category
-   	    if($product instanceof Product) {
+   	    if ($product instanceof Product) {
    	        $sku = trim($product->getSku());
    	        $productName = trim($product->getName());
    	        $shortDescription = trim($product->getShortDescription());
@@ -268,30 +268,30 @@ abstract class ProductToMagento
    	        if(($rrp = $product->getRRP()) instanceof ProductPrice)
    	            $rrpPrice = StringUtilsAbstract::getValueFromCurrency($rrp->getPrice());
    	        //special price
-   	        if(($specialPriceObj = $product->getNearestSpecialPrice()) instanceof ProductPrice) {
+   	        if (($specialPriceObj = $product->getNearestSpecialPrice()) instanceof ProductPrice) {
    	            $specialPrice = StringUtilsAbstract::getValueFromCurrency($specialPriceObj->getPrice());
    	            $specialPriceFromDate = $specialPriceObj->getStart()->format('Y-m-d H:i:sP');
    	            $specialPriceToDate = $specialPriceObj->getEnd()->format('Y-m-d H:i:sP');
    	        }
    	        //full description
-   	        if(($asset = Asset::getAsset($product->getFullDescAssetId())) instanceof Asset)
-   	            $fullDecription = '"' . Asset::readAssetFile($asset->getPath()) . '"';
+   	        if (($asset = Asset::getAsset($product->getFullDescAssetId())) instanceof Asset)
+   	            $fullDecription = '"' . $asset->read() . '"';
    	        //supplier
-   	        if(count($supplierCodes = SupplierCode::getAllByCriteria('productId = ?', array($product->getId()), true, 1, 1)) > 0) {
+   	        if (count($supplierCodes = SupplierCode::getAllByCriteria('productId = ?', array($product->getId()), true, 1, 1)) > 0) {
    	            $supplierName = (($supplier = $supplierCodes[0]->getSupplier()) instanceof Supplier) ? $supplier->getName() : '';
    	            $supplierCode = trim($supplierCodes[0]->getCode());
    	        }
    	        //Manufacturer
-   	        if($product->getManufacturer() instanceof Manufacturer)
+   	        if ($product->getManufacturer() instanceof Manufacturer)
    	            $manufacturerName = trim($product->getManufacturer()->getName());
    	        //disable or enabled
-   	        if(intval($product->getActive()) === 0 || intval($product->getSellOnWeb()) === 0)
+   	        if (intval($product->getActive()) === 0 || intval($product->getSellOnWeb()) === 0)
    	            $enabled = false;
-   	        else if($product->getStatus() instanceof ProductStatus && intval($product->getStatus()->getId()) === ProductStatus::ID_DISABLED)
+   	        else if ($product->getStatus() instanceof ProductStatus && intval($product->getStatus()->getId()) === ProductStatus::ID_DISABLED)
    	            $enabled = false;
    	        //categories
-   	        if(count($categories = Product_Category::getAllByCriteria('productId = ? and active = 1', array($product->getId()))) > 0) {
-   	            foreach($categories as $category) {
+   	        if (count($categories = Product_Category::getAllByCriteria('productId = ? and active = 1', array($product->getId()))) > 0) {
+   	            foreach ($categories as $category) {
    	                if(!$category->getCategory() instanceof ProductCategory || ($mageCateId = trim($category->getCategory()->getMageId())) === '')
    	                    continue;
    	                $categoryIds[] = $mageCateId;

@@ -836,7 +836,10 @@ class Product extends InfoEntityAbstract
 	 */
 	public function addImage(Asset $asset)
 	{
-		ProductImage::create($this, $asset);
+	    $image = ProductImage::create($this, $asset);
+	    if (isset($this->_cache['images'])) {
+	        $this->_cache['images'][] = $image;
+	    }
 		return $this;
 	}
 	/**
