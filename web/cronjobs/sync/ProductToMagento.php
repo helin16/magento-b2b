@@ -37,7 +37,7 @@ abstract class ProductToMagento
         $start = self::_log('## START ##############################', __CLASS__ . '::' . __FUNCTION__, $preFix);
 
 		self::$_outputFileDir = trim($outputFileDir);
-		self::_log('GEN CSV TO: ' . self::$_outputFileDir, '', $preFix . self::TAB);
+		self::_log('GEN FILE TO: ' . self::$_outputFileDir, '', $preFix . self::TAB);
     	Core::setUser(UserAccount::get(UserAccount::ID_SYSTEM_ACCOUNT));
 
     	$lastUpdatedInDB = UDate::now();
@@ -242,7 +242,7 @@ abstract class ProductToMagento
         $nowString = '';
         if(trim($msg) !== '')
             $nowString = trim($now) . self::TAB;
-        $logMsg = $nowString . $preFix . $msg . $timeElapsed . ($funcName !== '' ? (' '  . $funcName . ' ') : '') . $postFix;
+        $logMsg = $nowString . $preFix . $msg . $timeElapsed . ($funcName !== '' ? (' ['  . $funcName . '] ') : '') . $postFix;
         echo $logMsg;
         if(is_file(self::$_logFile))
             file_put_contents(self::$_logFile, $logMsg, FILE_APPEND);
