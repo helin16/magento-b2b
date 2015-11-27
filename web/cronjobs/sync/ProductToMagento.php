@@ -7,7 +7,7 @@ set_time_limit(0);
 abstract class ProductToMagento
 {
     const TAB = '    ';
-    const OUTPUT_FILE_NAME = 'productUpdate.csv';
+    const FILE_NAME = 'productUpdate';
     /**
      * The log file
      *
@@ -19,7 +19,7 @@ abstract class ProductToMagento
      *
      * @var string
      */
-    private static $_outputFilePath = '';
+    private static $_outputFileDir = '';
     /**
      * The run time cache for the settings..etc.
      *
@@ -32,24 +32,87 @@ abstract class ProductToMagento
      * @param string $preFix
      * @param string $debug
      */
-    public static function run($outputFilePath = self::OUTPUT_FILE_NAME, $preFix = '', $debug = false)
+    public static function run($outputFileDir, $preFix = '', $debug = false)
     {
         $start = self::_log('## START ##############################', __CLASS__ . '::' . __FUNCTION__, $preFix);
 
-		self::$_outputFilePath = trim($outputFilePath);
-		self::_log('GEN CSV TO: ' . self::$_outputFilePath, '', $preFix . self::TAB);
+		self::$_outputFileDir = trim($outputFileDir);
+		self::_log('GEN CSV TO: ' . self::$_outputFileDir, '', $preFix . self::TAB);
     	Core::setUser(UserAccount::get(UserAccount::ID_SYSTEM_ACCOUNT));
 
     	$lastUpdatedInDB = UDate::now();
     	$products = self::_getData($preFix . self::TAB, $debug);
     	if (count($products) > 0) {
-			self::_genCSV(array_values($products), $preFix . self::TAB, $debug);
+			$files= self::_genCSV($lastUpdatedInDB, array_values($products), $preFix . self::TAB, $debug);
+			self::_zipFile($files, $preFix, $debug);
 			self::_setSettings('lastUpdatedTime', trim($lastUpdatedInDB), $preFix, $debug);
     	} else {
     		self::_log('NO changed products found after: "' . trim($lastUpdatedInDB) . '".', '', $preFix);
     	}
 
         self::_log('## FINISH ##############################', __CLASS__ . '::' . __FUNCTION__, $preFix, $start);
+    }
+    /**
+     * Archiving the file
+     *
+     * @param unknown $filePath
+     * @param string $preFix
+     * @param string $debug
+     * @throws Exception
+     */
+    private static function _zipFile($files, $preFix = '', $debug = false)
+    {
+    	$start = self::_log('== Archiving the file: ' . $filePath, __CLASS__ . '::' . __FUNCTION__, $preFix);
+    	if(!is_file($filePath))
+    		throw new Exception("Invalid file: " . $filePath);
+    	
+    	$tarFilePath = self::$_outputFileDir . '/' . self::FILE_NAME . '.tar';
+    	$csvFilePath = '/tmp/' . md5('ProductToMagento_CSV_' . trim(UDate::now())) . '.csv';
+    	
+    	$tarFile = new PharData($tarFilePath);
+    	//add csv file
+    	self::_log('Generating the CSV file: ' . $csvFilePath, '', $preFix . self::TAB);
+    	$objWriter = PHPExcel_IOFactory::createWriter($files['phpExcel'], 'CSV');
+    	$objWriter->save($csvFilePath);
+    	self::_log('Adding the CSV file to: ' . $tarFilePath, '', $preFix . self::TAB);
+    	$tarFile->addFile($csvFilePath, self::FILE_NAME . '.csv');
+    	
+    	//add image files
+    	if ( isset($files['imageFiles']) && count($files['imageFiles']) > 0) {
+    		$imageDir = 'images';
+	    	$tarFile->addEmptyDir($imageDir);
+    		foreach ($files['imageFiles'] as $index => $imageFile) {
+		    	self::_log('Processing file: ' . $index, '', $preFix . self::TAB . self::TAB);
+    			if (!isset($imageFile['filePath'])) {
+    				self::_log('No File Path SET. SKIP ', '', $preFix . self::TAB . self::TAB . self::TAB);
+    				continue;
+    				
+    			}
+    			if (!is_file($imageFile['filePath'])) {
+    				self::_log('File NOT FOUND: ' . $imageFile['filePath'], '', $preFix . self::TAB . self::TAB . self::TAB);
+    				continue;
+    			}
+    			$tarFile->addFile($imageFile['filePath'], $imageDir . '/' . $imageFile['fileName']);
+    			self::_log('Added File:' . $imageFile['fileName'] . ', from path: ' . $imageFile['filePath'], '', $preFix . self::TAB . self::TAB . self::TAB);
+    		}
+    	} else {
+    		self::_log('No image files to add.', '', $preFix . self::TAB);
+    	}
+    	
+    	// COMPRESS archive.tar FILE. COMPRESSED FILE WILL BE archive.tar.gz
+    	self::_log('Compressing file: ' . $tarFilePath, '', $preFix . self::TAB . self::TAB . self::TAB);
+    	$tarFile->compress(Phar::GZ);
+    	
+    	// NOTE THAT BOTH FILES WILL EXISTS. SO IF YOU WANT YOU CAN UNLINK archive.tar
+    	self::_log('REMOVING the orginal file: ' . $tarFilePath, '', $preFix . self::TAB);
+    	unlink($tarFilePath);
+    	self::_log('REMOVED', '', $preFix . self::TAB . self::TAB);
+    	//remving temp csv file
+    	self::_log('REMOVING the tmp csv file: ' . $csvFilePath, '', $preFix . self::TAB);
+    	unlink($csvFilePath);
+    	self::_log('REMOVED', '', $preFix . self::TAB . self::TAB);
+    
+    	self::_log('== Archived', __CLASS__ . '::' . __FUNCTION__, $preFix, $start);
     }
     /**
      * getting the data
@@ -67,24 +130,24 @@ abstract class ProductToMagento
         if(isset($settings['lastUpdatedTime']) && trim($settings['lastUpdatedTime']) !== '')
             $lastUpdatedTime = new UDate(trim($settings['lastUpdatedTime']));
         self::_log('GOT LAST SYNC TIME: ' . trim($lastUpdatedTime), '', $preFix);
+        //product prices
         $productPrices = ProductPrice::getAllByCriteria('updated > ?', array(trim($lastUpdatedTime)));
         self::_log('GOT ' . count($productPrices) . ' Price(s) that has changed after "' . trim($lastUpdatedTime) . '".', '', $preFix);
-
         $products = array();
         foreach ($productPrices as $productPrice) {
             if(!$productPrice->getProduct() instanceof Product || array_key_exists($productPrice->getProduct()->getId(), $products))
                 continue;
             $products[$productPrice->getProduct()->getId()] = $productPrice->getProduct();
         }
-
-        $productArr = Product::getAllByCriteria('updated > ?', array(trim($lastUpdatedTime)));
+        //products
+        $productArr = Product::getAllByCriteria('updated > ?', array(trim($lastUpdatedTime)), true);
         self::_log('GOT ' . count($productArr) . ' Product(s) that has changed after "' . trim($lastUpdatedTime) . '".', '', $preFix);
         foreach ($productArr as $product) {
             if(array_key_exists($product->getId(), $products))
                 continue;
             $products[$product->getId()] = $product;
         }
-
+        //Product_Category
         $productCates = Product_Category::getAllByCriteria('updated > ?', array(trim($lastUpdatedTime)));
         self::_log('GOT ' . count($productCates) . ' Product_Category(s) that has changed after "' . trim($lastUpdatedTime) . '".', '', $preFix);
         foreach ($productCates as $productCate) {
@@ -92,7 +155,8 @@ abstract class ProductToMagento
                 continue;
             $products[$productCate->getProduct()->getId()] = $productCate->getProduct();
         }
-        $productImages = ProductImage::getAllByCriteria('updated > ?', array(trim($lastUpdatedTime)));
+        //ProductImage
+        $productImages = ProductImage::getAllByCriteria('updated > ? and active = 1', array(trim($lastUpdatedTime)));
         self::_log('GOT ' . count($productCates) . ' ProductImage(s) that has changed after "' . trim($lastUpdatedTime) . '".', '', $preFix);
         foreach ($productImages as $productImage) {
             if(!$productImage->getProduct() instanceof Product || array_key_exists($productImage->getProduct()->getId(), $products))
@@ -120,8 +184,6 @@ abstract class ProductToMagento
             self::_log('GOT string: ' . $settingString, '', $preFix . self::TAB);
 
             self::$_cache[__CLASS__ . ':settings'] = json_decode($settingString, true);
-//             if(json_last_error() == JSON_ERROR_NONE)
-//                 throw new Exception('Invalid JSON string:' . $settingString);
         }
         self::_log('GOT settings: ' . preg_replace('/\s+/', ' ', print_r(self::$_cache[__CLASS__ . ':settings'], true)), '', $preFix . self::TAB);
         self::_log('');
@@ -186,8 +248,17 @@ abstract class ProductToMagento
             file_put_contents(self::$_logFile, $logMsg, FILE_APPEND);
         return $now;
     }
-
-   	private static function _genCSV(array $products, $preFix = '', $debug = false)
+	/**
+	 * Generating the CSV file
+	 * 
+	 * @param UDate  $lastUpdatedInDB
+	 * @param array  $products
+	 * @param string $preFix
+	 * @param bool   $debug
+	 * 
+	 * @return Array The array of images
+	 */
+   	private static function _genCSV(UDate $lastUpdatedInDB, array $products, $preFix = '', $debug = false)
    	{
    		// Create new PHPExcel object
    		self::_log("== Create new PHPExcel object", __CLASS__ . '::' . __FUNCTION__, $preFix);
@@ -196,60 +267,75 @@ abstract class ProductToMagento
    		// Add some data
    		$objPHPExcel->setActiveSheetIndex(0);
    		self::_log("Populating " . count($products) . ' product(s) onto the first sheet.', '', $preFix . self::TAB);
-   		self::_genSheet($objPHPExcel->getActiveSheet(), $products, $preFix, $debug);
+   		$imageFiles = self::_genSheet($lastUpdatedInDB, $objPHPExcel->getActiveSheet(), $products, $preFix, $debug);
 
-   		$filePath = self::$_outputFilePath;
+   		$filePath = self::$_outputFileDir ;
    		self::_log("Saving to :" . $filePath, '', $preFix . self::TAB);
 
-   		$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'CSV');
-		$objWriter->save($filePath);
-
    		self::_log("DONE", '', $preFix . self::TAB);
+   		return array('imageFiles' => $imageFiles, 'phpExcel' => $objPHPExcel);
    	}
    	/**
    	 * generating the worksheet
    	 *
+   	 * @param UDate              $lastUpdatedInDB
    	 * @param PHPExcel_Worksheet $sheet
    	 * @param array              $data
    	 * @param string             $preFix
    	 * @param bool               $debug
+   	 * 
+   	 * @return Array The array of images
    	 */
-   	private static function _genSheet(PHPExcel_Worksheet &$sheet, array $data, $preFix = '', $debug = false)
+   	private static function _genSheet(UDate $lastUpdatedInDB, PHPExcel_Worksheet &$sheet, array $data, $preFix = '', $debug = false)
    	{
    		self::_log('-- Generating the sheets: ', '', $preFix);
    		$rowNo = 1;
    		$titles = array_keys(self::_getRowWithDefaultValues(null, $preFix, $debug));
-//    		self::_log(print_r($titles, true));
    		foreach ($titles as $colNo => $colValue) {
    			$sheet->setCellValueByColumnAndRow($colNo, $rowNo, $colValue);
    		}
    		$rowNo += 1;
    		self::_log('Generated title row', '', $preFix . self::TAB);
-
+		$imageFiles = array();
    		foreach ($data as $index => $product) {
        		self::_log('ROW: ' . $index, '', $preFix . self::TAB);
    			if (!$product instanceof Product) {
            		self::_log('SKIPPED, invalid product.', '', $preFix . self::TAB . self::TAB);
    				continue;
    			}
-   			foreach (array_values(self::_getRowWithDefaultValues($product, $preFix, $debug)) as $colNo => $colValue) {
-   				$sheet->setCellValueByColumnAndRow($colNo, $rowNo, $colValue);
+   			$rowValue = array_values(self::_getRowWithDefaultValues($product, $preFix, $debug));
+   			$rowValues = array($rowValue);
+   			//images
+   			if (count($images = ProductImage::getAllByCriteria('productId = ? and updated > ?', array($product->getId(), trim($lastUpdatedInDB)))) > 0) {
+   				foreach ($images as $image) {
+   					if (!($asset = $image->getAsset()) instanceof Asset)
+   						continue;
+   					$imageFiles[] = array('fileName' => $asset->getFilename(), 'filePath' => $asset->getPath());
+   					//TODO: need to change the csv
+   				}
+   			}
+   			foreach($rowValues as $row) {
+	   			foreach ($row as $colNo => $colValue) {
+	   				$sheet->setCellValueByColumnAndRow($colNo, $rowNo, $colValue);
+	   			}
    			}
 			self::_log('ADDED.', '', $preFix . self::TAB . self::TAB);
    			$rowNo += 1;
    		}
    		self::_log('-- DONE', '', $preFix);
+   		return $imageFiles;
    	}
    	/**
    	 * The row with default value
    	 *
+   	 * @param UDate   $lastUpdatedInDB
    	 * @param Product $product
-   	 * @param string $preFix
-   	 * @param string $debug
+   	 * @param string  $preFix
+   	 * @param bool    $debug
    	 *
    	 * @return multitype:string number
    	 */
-   	private static function _getRowWithDefaultValues(Product $product = null, $preFix = '', $debug = false)
+   	private static function _getRowWithDefaultValues(UDate $lastUpdatedInDB, Product $product = null, $preFix = '', $debug = false)
    	{
    	    $attributeSetName = 'Default';
    	    $enabled = true;
@@ -290,7 +376,7 @@ abstract class ProductToMagento
    	        else if ($product->getStatus() instanceof ProductStatus && intval($product->getStatus()->getId()) === ProductStatus::ID_DISABLED)
    	            $enabled = false;
    	        //categories
-   	        if (count($categories = Product_Category::getAllByCriteria('productId = ? and active = 1', array($product->getId()))) > 0) {
+   	        if (count($categories = Product_Category::getAllByCriteria('productId = ?', array($product->getId()))) > 0) {
    	            foreach ($categories as $category) {
    	                if(!$category->getCategory() instanceof ProductCategory || ($mageCateId = trim($category->getCategory()->getMageId())) === '')
    	                    continue;
@@ -366,7 +452,6 @@ abstract class ProductToMagento
    	}
 }
 
-$filePath = '/tmp/' . ProductToMagento::OUTPUT_FILE_NAME;
-if(isset($argv) && isset($argv[1]))
-    $filePath = trim($argv[1]);
-ProductToMagento::run($filePath, '', true);
+if(!isset($argv) || !isset($argv[1]))
+	die('No csv output file path given!');
+ProductToMagento::run(trim($argv[1]), '', true);

@@ -64,6 +64,15 @@ class ProductImage extends BaseEntityAbstract
 	    return $this;
 	}
 	/**
+	 * Getting the asset of the image
+	 * 
+	 * @return Asset|NULL
+	 */
+	public function getAsset()
+	{
+		return Asset::getAsset($this->getImageAssetId());
+	}
+	/**
 	 * Creating a product image 
 	 * 
 	 * @param Product $product The product
