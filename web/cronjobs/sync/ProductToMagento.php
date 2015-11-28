@@ -21,6 +21,12 @@ abstract class ProductToMagento
      */
     private static $_outputFileDir = '';
     /**
+     * The image folder name under .tar.gz
+     *
+     * @var string
+     */
+    private static $_imageDirName = 'images';
+    /**
      * The run time cache for the settings..etc.
      *
      * @var array
@@ -38,6 +44,7 @@ abstract class ProductToMagento
 
 		self::$_outputFileDir = trim($outputFileDir);
 		self::_log('GEN FILE TO: ' . self::$_outputFileDir, '', $preFix . self::TAB);
+		self::$_imageDirName = self::$_imageDirName . '_' . UDate::now()->format('Y_m_d_H_i_s');
     	Core::setUser(UserAccount::get(UserAccount::ID_SYSTEM_ACCOUNT));
 
     	$lastUpdatedInDB = UDate::now();
@@ -77,7 +84,7 @@ abstract class ProductToMagento
     	
     	//add image files
     	if ( isset($files['imageFiles']) && count($files['imageFiles']) > 0) {
-    		$imageDir = 'images';
+    		$imageDir = self::$_imageDirName;
 	    	$tarFile->addEmptyDir($imageDir);
     		foreach ($files['imageFiles'] as $index => $imageFile) {
 		    	self::_log('Processing file: ' . $index, '', $preFix . self::TAB . self::TAB);
@@ -305,13 +312,21 @@ abstract class ProductToMagento
    			$rowValues = array($rowValue);
    			//images
    			if (count($images = ProductImage::getAllByCriteria('productId = ? and updated > ?', array($product->getId(), trim($lastUpdatedInDB)))) > 0) {
-   				foreach ($images as $image) {
+   				foreach ($images as $index => $image) {
    					if (!($asset = $image->getAsset()) instanceof Asset)
    						continue;
    					$imageFiles[] = array('fileName' => $asset->getFilename(), 'filePath' => $asset->getPath());
-   					//TODO: need to change the csv
+   					$imageFilePath = '/' . self::$_imageDirName . '/' . $asset->getFilename();
+   					if($index === 0)
+   						$rowValues[0]['image'] =  $imageFilePath;
+   					else {
+   						$obj = new ArrayObject($rowValues[0]);
+   						$anotherRowValue = $obj->getArrayCopy();
+   						$rowValues[] = $anotherRowValue['image'] = $imageFilePath;
+   					}
    				}
    			}
+   			//start looping in the outer loop
    			foreach($rowValues as $row) {
 	   			foreach ($row as $colNo => $colValue) {
 	   				$sheet->setCellValueByColumnAndRow($colNo, $rowNo, $colValue);
@@ -446,6 +461,9 @@ abstract class ProductToMagento
    				"is_decimal_divided" => '',
    				"stock_status_changed_automatically" => '',
    				"use_config_enable_qty_increments" => '',
+   				"image" => '',
+   				"small_image" => '',
+   				"thumbnail" => '',
    				"is_recurring" => '');
    	}
 }
