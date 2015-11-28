@@ -63,7 +63,8 @@ class APIProductService extends APIServiceAbstract
 	       $canSupplyQty = $this->_getPram($params, 'qty', 0);
 	       $weight = $this->_getPram($params, 'weight', 0);
 	       $images = $this->_getPram($params, 'images', array());
-
+	       $showOnWeb = $this->_getPram($params, 'showonweb', true);
+	       
 	       $canUpdate = false;
 
 	       //if we have this product already, then skip
@@ -110,6 +111,8 @@ class APIProductService extends APIServiceAbstract
 
 	       //only update categories and status when there is no pricematching rule or created new
 	       if ($canUpdate === true) {
+	       		//show on web
+	       		$product->setSellOnWeb($showOnWeb);
 		       if (is_array($categoryIds) && count($categoryIds) > 0) {
 		       		$this->_runner->log('Updating the categories: ' . implode(', ', $categoryIds), '', APIService::TAB . APIService::TAB);
 		       		foreach ($categoryIds as $categoryId) {
