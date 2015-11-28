@@ -397,6 +397,7 @@ abstract class ProductToMagento
    	            }
    	        }
    	    }
+   	    $categoryIds = array_unique($categoryIds);
    		return array("store" => 'default',
    				"websites" => 'base',
    				"attribute_set" => $attributeSetName, //attribute_name
