@@ -94,6 +94,10 @@ class APIProductService extends APIServiceAbstract
 	                       Asset::removeAssets(array($fullAsset->getAssetId()));
 			       		   $this->_runner->log('REMOVED old empty asset for full description', '', APIService::TAB . APIService::TAB . APIService::TAB);
 	                   }
+	                   $product->setShortDescription($shortDesc)
+	                   			->setName($name)
+	                   			->setManufacturer($manufacturer);
+	                   
 	                   $fullAsset = Asset::registerAsset('full_description_for_product.txt', $fullDesc, Asset::TYPE_PRODUCT_DEC);
 	                   $product->setFullDescAssetId($fullAsset->getAssetId())
 	                       ->save();
