@@ -273,6 +273,7 @@ abstract class ProductToMagento
    		$objPHPExcel->setActiveSheetIndex(0);
    		self::_log("Populating " . count($products) . ' product(s) onto the first sheet.', '', $preFix . self::TAB);
    		$imageFiles = self::_genSheet($lastUpdatedInDB, $objPHPExcel->getActiveSheet(), $products, $preFix, $debug);
+   		self::_log("Got " . count($imageFiles) . ' imageFile(s)', '', $preFix . self::TAB);
 
    		$filePath = self::$_outputFileDir ;
    		self::_log("Saving to :" . $filePath, '', $preFix . self::TAB);
@@ -293,7 +294,7 @@ abstract class ProductToMagento
    	 */
    	private static function _genSheet(UDate $lastUpdatedInDB, PHPExcel_Worksheet &$sheet, array $data, $preFix = '', $debug = false)
    	{
-   		self::_log('-- Generating the sheets: ', '', $preFix);
+   		self::_log('-- Generating the sheets: ', __CLASS__ . '::' . __FUNCTION__, $preFix);
    		$rowNo = 1;
    		$titles = array_keys(self::_getRowWithDefaultValues($lastUpdatedInDB, null, $preFix, $debug));
    		foreach ($titles as $colNo => $colValue) {
@@ -303,39 +304,48 @@ abstract class ProductToMagento
    		self::_log('Generated title row', '', $preFix . self::TAB);
 		$imageFiles = array();
    		foreach ($data as $index => $product) {
-       		self::_log('ROW: ' . $index, '', $preFix . self::TAB);
+       		self::_log('ROW: ' . $index . ', SKU: ' . $product->getSku(), '', $preFix . self::TAB);
    			if (!$product instanceof Product) {
            		self::_log('SKIPPED, invalid product.', '', $preFix . self::TAB . self::TAB);
    				continue;
    			}
    			$rowValue = array_values(self::_getRowWithDefaultValues($lastUpdatedInDB, $product, $preFix, $debug));
    			$rowValues = array($rowValue);
+   			$images = ProductImage::getAllByCriteria('productId = ? and updated > ?', array($product->getId(), trim($lastUpdatedInDB)));
    			//images
-   			if (count($images = ProductImage::getAllByCriteria('productId = ? and updated > ?', array($product->getId(), trim($lastUpdatedInDB)))) > 0) {
+	   		self::_log('Got ' . count($images) . ' ProductImage(s) after "' . trim($lastUpdatedInDB) . '" for productID: ' . $product->getId(), '', $preFix . self::TAB);
+   			if (count($images) > 0) {
    				foreach ($images as $index => $image) {
-   					if (!($asset = $image->getAsset()) instanceof Asset)
+   					if (!($asset = $image->getAsset()) instanceof Asset) {
+   						self::_log('No Asset found for Image Index: ' . $index, '', $preFix . self::TAB . self::TAB);
    						continue;
+   					}
    					$imageFiles[] = array('fileName' => $asset->getFilename(), 'filePath' => $asset->getPath());
+   					self::_log('Added array(fileName=>' . $asset->getFilename() . ', filePath => ' . $asset->getPath() . ') to imageFiles', '', $preFix . self::TAB . self::TAB);
    					$imageFilePath = '/' . self::$_imageDirName . '/' . $asset->getFilename();
-   					if($index === 0)
+   					self::_log('New Image Path into the CSV("image" column):' . $imageFilePath, '', $preFix . self::TAB . self::TAB);
+   					if (intval($index) === 0) {
    						$rowValues[0]['image'] =  $imageFilePath;
-   					else {
+   					} else {
    						$obj = new ArrayObject($rowValues[0]);
    						$anotherRowValue = $obj->getArrayCopy();
-   						$rowValues[] = $anotherRowValue['image'] = $imageFilePath;
+   						$anotherRowValue['image'] = $imageFilePath;
+   						$rowValues[] = $anotherRowValue;
+	   					self::_log('Cloned a new row for:' . $imageFilePath, '', $preFix . self::TAB . self::TAB);
    					}
    				}
    			}
    			//start looping in the outer loop
+   			self::_log('There are ' . count($rowValues) . ' row(s) in total.', '', $preFix . self::TAB);
    			foreach($rowValues as $row) {
 	   			foreach ($row as $colNo => $colValue) {
 	   				$sheet->setCellValueByColumnAndRow($colNo, $rowNo, $colValue);
 	   			}
+	   			$rowNo += 1;
    			}
 			self::_log('ADDED.', '', $preFix . self::TAB . self::TAB);
-   			$rowNo += 1;
    		}
-   		self::_log('-- DONE', '', $preFix);
+   		self::_log('-- DONE', __CLASS__ . '::' . __FUNCTION__, $preFix);
    		return $imageFiles;
    	}
    	/**

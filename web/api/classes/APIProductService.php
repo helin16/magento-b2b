@@ -70,7 +70,7 @@ class APIProductService extends APIServiceAbstract
 	       //if we have this product already, then skip
 	       if (!($product = Product::getBySku($sku)) instanceof Product) {
 	           $this->_runner->log('new SKU(' . $sku . ') for import, creating ...', '', APIService::TAB);
-	           $product = Product::create($sku, $name, '', null, null, false, $shortDesc, $fullDesc, $manufacturer, $assetAccNo, $revenueAccNo, $costAccNo, null, null, true);
+	           $product = Product::create($sku, $name, '', null, null, false, $shortDesc, $fullDesc, $manufacturer, $assetAccNo, $revenueAccNo, $costAccNo, null, null, true, $weight);
 	           $canUpdate = true;
 	       } else {
 	           //if there is no price matching rule for this product
