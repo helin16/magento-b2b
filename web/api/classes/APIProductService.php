@@ -71,16 +71,12 @@ class APIProductService extends APIServiceAbstract
 	       if (!($product = Product::getBySku($sku)) instanceof Product) {
 	           $this->_runner->log('new SKU(' . $sku . ') for import, creating ...', '', APIService::TAB);
 	           $product = Product::create($sku, $name, '', null, null, false, $shortDesc, $fullDesc, $manufacturer, $assetAccNo, $revenueAccNo, $costAccNo, null, null, true);
-	           $product->addPrice(ProductPriceType::get(ProductPriceType::ID_RRP), $price);
 	           $canUpdate = true;
 	       } else {
 	           //if there is no price matching rule for this product
 	           if (($rulesCount = intval(ProductPriceMatchRule::countByCriteria('active = 1 and productId = ?', array($product->getId())))) === 0) {
 	               $this->_runner->log('Found SKU(' . $sku . '): ', '', APIService::TAB);
 	               $this->_runner->log('Updating the price to: ' . StringUtilsAbstract::getCurrency($price), '', APIService::TAB . APIService::TAB);
-	               //update the price with
-	               $product->clearAllPrice()
-	                   ->addPrice(ProductPriceType::get(ProductPriceType::ID_RRP), $price);
 
 	               $fullAsset = Asset::getAsset($product->getFullDescAssetId());
 	               $this->_runner->log('Finding asset for full description, assetId:' . ($fullAsset instanceof Asset ? $fullAsset->getAssetId() : ''), '', APIService::TAB . APIService::TAB);
@@ -108,10 +104,15 @@ class APIProductService extends APIServiceAbstract
 	           	  $this->_runner->log('SKIP updating. Found ProductPriceMatchRule count:' . $rulesCount, '', APIService::TAB);
 	           }
 	       }
+          
 	       $json = $product->getJson();
 
 	       //only update categories and status when there is no pricematching rule or created new
 	       if ($canUpdate === true) {
+	       		//weight
+	       		$product->setWeight($weight);
+				//update the price with
+				$product->clearAllPrice()->addPrice(ProductPriceType::get(ProductPriceType::ID_RRP), $price);
 	       		//show on web
 	       		$product->setSellOnWeb($showOnWeb);
 		       if (is_array($categoryIds) && count($categoryIds) > 0) {
