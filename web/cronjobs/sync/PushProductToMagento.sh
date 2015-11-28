@@ -18,9 +18,10 @@ else
 	FILE_PATH=${FILE_DIR}/${FILE_NAME}
 	if [ -e "$FILE_PATH" ]
 	then
-		echo -n "== coping ${FILE_PATH} TO ${SERVER}:${SERVER_PATH} :: "
+		SERVER_FILE=${SERVER}:${SERVER_PATH}productUpdate_`date "+%Y_%m_%d_%H_%M_%S"`.tar.gz
+		echo -n "== coping ${FILE_PATH} TO ${SERVER_FILE} :: "
 		date
-		scp $FILE_PATH ec2-user@$SERVER:$SERVER_PATH
+		scp $FILE_PATH ec2-user@${SERVER_FILE}
 		echo -n "== copied successfully :: "
 		date
 		echo -n "== removing ${FILE_PATH} :: "

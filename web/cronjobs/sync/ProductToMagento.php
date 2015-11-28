@@ -62,11 +62,9 @@ abstract class ProductToMagento
      */
     private static function _zipFile($files, $preFix = '', $debug = false)
     {
-    	$start = self::_log('== Archiving the file: ' . $filePath, __CLASS__ . '::' . __FUNCTION__, $preFix);
-    	if(!is_file($filePath))
-    		throw new Exception("Invalid file: " . $filePath);
-    	
     	$tarFilePath = self::$_outputFileDir . '/' . self::FILE_NAME . '.tar';
+    	$start = self::_log('== Archiving the file: ' . $tarFilePath, __CLASS__ . '::' . __FUNCTION__, $preFix);
+    	
     	$csvFilePath = '/tmp/' . md5('ProductToMagento_CSV_' . trim(UDate::now())) . '.csv';
     	
     	$tarFile = new PharData($tarFilePath);
@@ -290,7 +288,7 @@ abstract class ProductToMagento
    	{
    		self::_log('-- Generating the sheets: ', '', $preFix);
    		$rowNo = 1;
-   		$titles = array_keys(self::_getRowWithDefaultValues(null, $preFix, $debug));
+   		$titles = array_keys(self::_getRowWithDefaultValues($lastUpdatedInDB, null, $preFix, $debug));
    		foreach ($titles as $colNo => $colValue) {
    			$sheet->setCellValueByColumnAndRow($colNo, $rowNo, $colValue);
    		}
@@ -303,7 +301,7 @@ abstract class ProductToMagento
            		self::_log('SKIPPED, invalid product.', '', $preFix . self::TAB . self::TAB);
    				continue;
    			}
-   			$rowValue = array_values(self::_getRowWithDefaultValues($product, $preFix, $debug));
+   			$rowValue = array_values(self::_getRowWithDefaultValues($lastUpdatedInDB, $product, $preFix, $debug));
    			$rowValues = array($rowValue);
    			//images
    			if (count($images = ProductImage::getAllByCriteria('productId = ? and updated > ?', array($product->getId(), trim($lastUpdatedInDB)))) > 0) {
