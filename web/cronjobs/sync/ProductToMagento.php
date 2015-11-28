@@ -47,14 +47,20 @@ abstract class ProductToMagento
 		self::$_imageDirName = self::$_imageDirName . '_' . UDate::now()->format('Y_m_d_H_i_s');
     	Core::setUser(UserAccount::get(UserAccount::ID_SYSTEM_ACCOUNT));
 
-    	$lastUpdatedInDB = UDate::now();
-    	$products = self::_getData($preFix . self::TAB, $debug);
+    	$now = UDate::now();
+    	$settings = self::_getSettings($preFix . self::TAB, $debug);
+    	$lastUpdatedTime = UDate::zeroDate();
+    	if(isset($settings['lastUpdatedTime']) && trim($settings['lastUpdatedTime']) !== '')
+    		$lastUpdatedTime = new UDate(trim($settings['lastUpdatedTime']));
+    	self::_log('GOT LAST SYNC TIME: ' . trim($lastUpdatedTime), '', $preFix);
+    	
+    	$products = self::_getData($lastUpdatedTime, $preFix . self::TAB, $debug);
     	if (count($products) > 0) {
-			$files= self::_genCSV($lastUpdatedInDB, array_values($products), $preFix . self::TAB, $debug);
+			$files= self::_genCSV($lastUpdatedTime, array_values($products), $preFix . self::TAB, $debug);
 			self::_zipFile($files, $preFix, $debug);
-			self::_setSettings('lastUpdatedTime', trim($lastUpdatedInDB), $preFix, $debug);
+			self::_setSettings('lastUpdatedTime', trim($now), $preFix, $debug);
     	} else {
-    		self::_log('NO changed products found after: "' . trim($lastUpdatedInDB) . '".', '', $preFix);
+    		self::_log('NO changed products found after: "' . trim($lastUpdatedTime) . '".', '', $preFix);
     	}
 
         self::_log('## FINISH ##############################', __CLASS__ . '::' . __FUNCTION__, $preFix, $start);
@@ -127,14 +133,9 @@ abstract class ProductToMagento
      *
      * @return array
      */
-    private static function _getData($preFix = '', $debug = false)
+    private static function _getData(UDate $lastUpdatedTime, $preFix = '', $debug = false)
     {
         self::_log('== Trying to get all the updated price for products:', __CLASS__ . '::' . __FUNCTION__, $preFix);
-        $settings = self::_getSettings($preFix . self::TAB, $debug);
-        $lastUpdatedTime = UDate::zeroDate();
-        if(isset($settings['lastUpdatedTime']) && trim($settings['lastUpdatedTime']) !== '')
-            $lastUpdatedTime = new UDate(trim($settings['lastUpdatedTime']));
-        self::_log('GOT LAST SYNC TIME: ' . trim($lastUpdatedTime), '', $preFix);
         //product prices
         $productPrices = ProductPrice::getAllByCriteria('updated > ?', array(trim($lastUpdatedTime)));
         self::_log('GOT ' . count($productPrices) . ' Price(s) that has changed after "' . trim($lastUpdatedTime) . '".', '', $preFix);
