@@ -94,15 +94,16 @@ class APIProductService extends APIServiceAbstract
 	                       Asset::removeAssets(array($fullAsset->getAssetId()));
 			       		   $this->_runner->log('REMOVED old empty asset for full description', '', APIService::TAB . APIService::TAB . APIService::TAB);
 	                   }
-	                   $product->setShortDescription($shortDesc)
-	                   			->setName($name)
-	                   			->setManufacturer($manufacturer);
 	                   
 	                   $fullAsset = Asset::registerAsset('full_description_for_product.txt', $fullDesc, Asset::TYPE_PRODUCT_DEC);
 	                   $product->setFullDescAssetId($fullAsset->getAssetId())
 	                       ->save();
 		       		   $this->_runner->log('Added a new full description with assetId: ' . $fullAsset->getAssetId(), '', APIService::TAB . APIService::TAB);
 	               }
+	               //short description, name, manufacturer
+                   $product->setShortDescription($shortDesc)
+                   			->setName($name)
+                   			->setManufacturer($manufacturer);
 			       $canUpdate = true;
 	           } else {
 	           	  $this->_runner->log('SKIP updating. Found ProductPriceMatchRule count:' . $rulesCount, '', APIService::TAB);
