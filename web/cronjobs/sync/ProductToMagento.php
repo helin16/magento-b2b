@@ -310,7 +310,7 @@ abstract class ProductToMagento
            		self::_log('SKIPPED, invalid product.', '', $preFix . self::TAB . self::TAB);
    				continue;
    			}
-   			$rowValue = array_values(self::_getRowWithDefaultValues($lastUpdatedInDB, $product, $preFix, $debug));
+   			$rowValue = self::_getRowWithDefaultValues($lastUpdatedInDB, $product, $preFix, $debug);
    			$rowValues = array($rowValue);
    			$images = ProductImage::getAllByCriteria('productId = ? and updated > ?', array($product->getId(), trim($lastUpdatedInDB)));
    			//images
@@ -339,7 +339,7 @@ abstract class ProductToMagento
    			//start looping in the outer loop
    			self::_log('There are ' . count($rowValues) . ' row(s) in total.', '', $preFix . self::TAB);
    			foreach($rowValues as $row) {
-	   			foreach ($row as $colNo => $colValue) {
+	   			foreach (array_values($row) as $colNo => $colValue) {
 	   				$sheet->setCellValueByColumnAndRow($colNo, $rowNo, $colValue);
 	   			}
 	   			$rowNo += 1;
