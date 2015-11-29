@@ -321,6 +321,10 @@ abstract class ProductToMagento
    						self::_log('No Asset found for Image Index: ' . $index, '', $preFix . self::TAB . self::TAB);
    						continue;
    					}
+   					if (!is_file($asset->getPath()) {
+   						self::_log('No file found: ' . $asset->getPath(), '', $preFix . self::TAB . self::TAB);
+   						continue;
+   					}
    					$imageFiles[] = array('fileName' => $asset->getFilename(), 'filePath' => $asset->getPath());
    					self::_log('Added array(fileName=>' . $asset->getFilename() . ', filePath => ' . $asset->getPath() . ') to imageFiles', '', $preFix . self::TAB . self::TAB);
    					$imageFilePath = '{{IMAGE_IMPORT_DIR}}/' . self::$_imageDirName . '/' . $asset->getFilename();
