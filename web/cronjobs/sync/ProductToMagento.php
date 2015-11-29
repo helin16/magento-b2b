@@ -53,7 +53,7 @@ abstract class ProductToMagento
     	if(isset($settings['lastUpdatedTime']) && trim($settings['lastUpdatedTime']) !== '')
     		$lastUpdatedTime = new UDate(trim($settings['lastUpdatedTime']));
     	self::_log('GOT LAST SYNC TIME: ' . trim($lastUpdatedTime), '', $preFix);
-    	
+
     	$products = self::_getData($lastUpdatedTime, $preFix . self::TAB, $debug);
     	if (count($products) > 0) {
 			$files= self::_genCSV($lastUpdatedTime, array_values($products), $preFix . self::TAB, $debug);
@@ -77,9 +77,9 @@ abstract class ProductToMagento
     {
     	$tarFilePath = self::$_outputFileDir . '/' . self::FILE_NAME . '.tar';
     	$start = self::_log('== Archiving the file: ' . $tarFilePath, __CLASS__ . '::' . __FUNCTION__, $preFix);
-    	
+
     	$csvFilePath = '/tmp/' . md5('ProductToMagento_CSV_' . trim(UDate::now())) . '.csv';
-    	
+
     	$tarFile = new PharData($tarFilePath);
     	//add csv file
     	self::_log('Generating the CSV file: ' . $csvFilePath, '', $preFix . self::TAB);
@@ -87,7 +87,7 @@ abstract class ProductToMagento
     	$objWriter->save($csvFilePath);
     	self::_log('Adding the CSV file to: ' . $tarFilePath, '', $preFix . self::TAB);
     	$tarFile->addFile($csvFilePath, self::FILE_NAME . '.csv');
-    	
+
     	//add image files
     	if ( isset($files['imageFiles']) && count($files['imageFiles']) > 0) {
     		$imageDir = self::$_imageDirName;
@@ -97,7 +97,7 @@ abstract class ProductToMagento
     			if (!isset($imageFile['filePath'])) {
     				self::_log('No File Path SET. SKIP ', '', $preFix . self::TAB . self::TAB . self::TAB);
     				continue;
-    				
+
     			}
     			if (!is_file($imageFile['filePath'])) {
     				self::_log('File NOT FOUND: ' . $imageFile['filePath'], '', $preFix . self::TAB . self::TAB . self::TAB);
@@ -109,11 +109,11 @@ abstract class ProductToMagento
     	} else {
     		self::_log('No image files to add.', '', $preFix . self::TAB);
     	}
-    	
+
     	// COMPRESS archive.tar FILE. COMPRESSED FILE WILL BE archive.tar.gz
     	self::_log('Compressing file: ' . $tarFilePath, '', $preFix . self::TAB . self::TAB . self::TAB);
     	$tarFile->compress(Phar::GZ);
-    	
+
     	// NOTE THAT BOTH FILES WILL EXISTS. SO IF YOU WANT YOU CAN UNLINK archive.tar
     	self::_log('REMOVING the orginal file: ' . $tarFilePath, '', $preFix . self::TAB);
     	unlink($tarFilePath);
@@ -122,7 +122,7 @@ abstract class ProductToMagento
     	self::_log('REMOVING the tmp csv file: ' . $csvFilePath, '', $preFix . self::TAB);
     	unlink($csvFilePath);
     	self::_log('REMOVED', '', $preFix . self::TAB . self::TAB);
-    
+
     	self::_log('== Archived', __CLASS__ . '::' . __FUNCTION__, $preFix, $start);
     }
     /**
@@ -256,12 +256,12 @@ abstract class ProductToMagento
     }
 	/**
 	 * Generating the CSV file
-	 * 
+	 *
 	 * @param UDate  $lastUpdatedInDB
 	 * @param array  $products
 	 * @param string $preFix
 	 * @param bool   $debug
-	 * 
+	 *
 	 * @return Array The array of images
 	 */
    	private static function _genCSV(UDate $lastUpdatedInDB, array $products, $preFix = '', $debug = false)
@@ -290,7 +290,7 @@ abstract class ProductToMagento
    	 * @param array              $data
    	 * @param string             $preFix
    	 * @param bool               $debug
-   	 * 
+   	 *
    	 * @return Array The array of images
    	 */
    	private static function _genSheet(UDate $lastUpdatedInDB, PHPExcel_Worksheet &$sheet, array $data, $preFix = '', $debug = false)
@@ -323,7 +323,7 @@ abstract class ProductToMagento
    					}
    					$imageFiles[] = array('fileName' => $asset->getFilename(), 'filePath' => $asset->getPath());
    					self::_log('Added array(fileName=>' . $asset->getFilename() . ', filePath => ' . $asset->getPath() . ') to imageFiles', '', $preFix . self::TAB . self::TAB);
-   					$imageFilePath = '/' . self::$_imageDirName . '/' . $asset->getFilename();
+   					$imageFilePath = '{{IMAGE_IMPORT_DIR}}/' . self::$_imageDirName . '/' . $asset->getFilename();
    					self::_log('New Image Path into the CSV("image" column):' . $imageFilePath, '', $preFix . self::TAB . self::TAB);
    					if (intval($index) === 0) {
    						$rowValues[0]['image'] =  $imageFilePath;
@@ -338,7 +338,7 @@ abstract class ProductToMagento
    			}
    			//start looping in the outer loop
    			self::_log('There are ' . count($rowValues) . ' row(s) in total.', '', $preFix . self::TAB);
-   			foreach($rowValues as $row) {
+   			foreach ($rowValues as $row) {
 	   			foreach (array_values($row) as $colNo => $colValue) {
 	   				$sheet->setCellValueByColumnAndRow($colNo, $rowNo, $colValue);
 	   			}
