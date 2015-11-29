@@ -162,6 +162,9 @@ class Asset extends BaseEntityAbstract
 	 */
 	public function read()
 	{
+		if (!is_file($this->getPath())) {
+			return '';
+		}
 	    return file_get_contents($this->getPath());
 	}
 	/**
