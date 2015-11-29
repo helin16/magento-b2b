@@ -321,7 +321,7 @@ abstract class ProductToMagento
    						self::_log('No Asset found for Image Index: ' . $index, '', $preFix . self::TAB . self::TAB);
    						continue;
    					}
-   					if (!is_file($asset->getPath()) {
+   					if (!is_file($asset->getPath())) {
    						self::_log('No file found: ' . $asset->getPath(), '', $preFix . self::TAB . self::TAB);
    						continue;
    					}
