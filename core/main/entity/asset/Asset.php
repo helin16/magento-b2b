@@ -223,7 +223,7 @@ class Asset extends BaseEntityAbstract
 	{
 		$now = new UDate();
 		$year = $now->format('Y');
-		if(!is_dir($yearDir = trim('/tmp' .DIRECTORY_SEPARATOR . $year)))
+		if(!is_dir($yearDir = trim(self::getRootPath() .DIRECTORY_SEPARATOR . $year)))
 		{
 			mkdir($yearDir);
 			chmod($yearDir, 0777);
