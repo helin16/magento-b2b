@@ -331,10 +331,14 @@ abstract class ProductToMagento
    					self::_log('New Image Path into the CSV("image" column):' . $imageFilePath, '', $preFix . self::TAB . self::TAB);
    					if (intval($index) === 0) {
    						$rowValues[0]['image'] =  $imageFilePath;
+   						$rowValues[0]['small_image'] =  $imageFilePath;
+   						$rowValues[0]['thumbnail'] =  $imageFilePath;
    					} else {
    						$obj = new ArrayObject($rowValues[0]);
    						$anotherRowValue = $obj->getArrayCopy();
    						$anotherRowValue['image'] = $imageFilePath;
+   						$anotherRowValue['small_image'] =  $imageFilePath;
+   						$anotherRowValue['thumbnail'] =  $imageFilePath;
    						$rowValues[] = $anotherRowValue;
 	   					self::_log('Cloned a new row for:' . $imageFilePath, '', $preFix . self::TAB . self::TAB);
    					}
