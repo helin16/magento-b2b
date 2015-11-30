@@ -369,7 +369,8 @@ abstract class ProductToMagento
    	 */
    	private static function _getRowWithDefaultValues(UDate $lastUpdatedInDB, Product $product = null, $preFix = '', $debug = false)
    	{
-   	    $attributeSetName = 'Default';
+   	    $attributeSetDefault = 'Default';
+   	    $attributeSetName = $attributeSetDefault;
    	    $enabled = true;
    	    $sku = $productName = $rrpPrice = $weight = $shortDescription = $fullDecription = $supplierName = $supplierCode = $manufacturerName = $asNewFrom = $asNewTo = $specialPrice = $specialPriceFromDate = $specialPriceToDate = '';
    	    $categoryIds = array(2); //default category
@@ -380,8 +381,9 @@ abstract class ProductToMagento
    	        $asNewFrom = $product->getAsNewFromDate() instanceof UDate ? $product->getAsNewFromDate()->format('Y-m-d H:i:sP') : '';
    	        $asNewTo = $product->getAsNewToDate() instanceof UDate ? $product->getAsNewToDate()->format('Y-m-d H:i:sP') : '';
    	        $weight = trim($product->getWeight());
-   	        if($product->getAttributeSet() instanceof ProductAttributeSet)
+   	        if($product->getAttributeSet() instanceof ProductAttributeSet) {
    	            $attributeSetName = $product->getAttributeSet()->getName();
+   	        }
    	        //RRP
    	        if(($rrp = $product->getRRP()) instanceof ProductPrice)
    	            $rrpPrice = StringUtilsAbstract::getValueFromCurrency($rrp->getPrice());
@@ -412,6 +414,9 @@ abstract class ProductToMagento
    	            foreach ($categories as $category) {
    	                if(!$category->getCategory() instanceof ProductCategory || ($mageCateId = trim($category->getCategory()->getMageId())) === '')
    	                    continue;
+   	                if (trim($attributeSetName) === $attributeSetDefault && ($productAttributeSet = $category->getCategory()->getProductAttributeSet()) instanceof ProductAttributeSet) {
+   	                	$attributeSetName = trim($productAttributeSet->getName());
+   	                }
    	                $categoryIds[] = $mageCateId;
    	            }
    	        }
