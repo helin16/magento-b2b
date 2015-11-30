@@ -1,5 +1,5 @@
 BASEDIR=$(dirname $0)
-FNAME=`date +"%d_%m_%Y"`
+FNAME=bpcinternal.sql
 FPASSWORD=budget123pc
 DBNAME=bpcinternal
 DBHOST=localhost
@@ -14,8 +14,11 @@ echo create database $DBNAME if not exists
 mysql -h $DBHOST -u $DBUSERNAME -p$DBPASSWORD -e "CREATE DATABASE IF NOT EXISTS $DBNAME DEFAULT CHARACTER SET utf8 DEFAULT COLLATE utf8_general_ci;"
 
 echo importing datases from $BASEDIR/$FNAME.7z, may take few minutes
-7z x -so -p$FPASSWORD $BASEDIR/$FNAME.7z | mysql -h $DBHOST -u $DBUSERNAME -p$DBPASSWORD $DBNAME
+mysql -h $DBHOST -u $DBUSERNAME -p$DBPASSWORD $DBNAME < $BASEDIR/$FNAME
 
 echo import sql files
+mysql -h $DBHOST -u $DBUSERNAME -p$DBPASSWORD $DBNAME < $BASEDIR/../newSupplierQtyColumn.sql
+mysql -h $DBHOST -u $DBUSERNAME -p$DBPASSWORD $DBNAME < $BASEDIR/../newSyncSettings.sql
+mysql -h $DBHOST -u $DBUSERNAME -p$DBPASSWORD $DBNAME < $BASEDIR/../newWeightColumn.sql
 
 echo done
