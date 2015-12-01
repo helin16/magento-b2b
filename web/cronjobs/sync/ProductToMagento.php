@@ -334,17 +334,8 @@ abstract class ProductToMagento
    						$rowValues[0]['small_image'] =  $imageFilePath;
    						$rowValues[0]['thumbnail'] =  $imageFilePath;
    					} else {
-   						$obj = new ArrayObject($rowValues[0]);
-   						$anotherRowValue = $obj->getArrayCopy();
-   						//as suggested by Kevin, clearing all the other fields for second images
-   						foreach($anotherRowValue as $key => $value) {
-   							$anotherRowValue[$key] = '';
-   						}
-   						$anotherRowValue['image'] = $imageFilePath;
-   						$anotherRowValue['small_image'] =  $imageFilePath;
-   						$anotherRowValue['thumbnail'] =  $imageFilePath;
-   						$rowValues[] = $anotherRowValue;
-	   					self::_log('Cloned a new row for:' . $imageFilePath, '', $preFix . self::TAB . self::TAB);
+   						$rowValues[0]['media_gallery'] =  $rowValues[0]['media_gallery'] . ';' . $imageFilePath;
+	   					self::_log('added onto media_gallery: ' . $rowValues[0]['media_gallery'], '', $preFix . self::TAB . self::TAB);
    					}
    				}
    			}
@@ -493,6 +484,7 @@ abstract class ProductToMagento
    				"image" => '',
    				"small_image" => '',
    				"thumbnail" => '',
+   				"media_gallery" => '',
    				"is_recurring" => '');
    	}
 }
