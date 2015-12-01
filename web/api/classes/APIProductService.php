@@ -100,10 +100,6 @@ class APIProductService extends APIServiceAbstract
 	                       ->save();
 		       		   $this->_runner->log('Added a new full description with assetId: ' . $fullAsset->getAssetId(), '', APIService::TAB . APIService::TAB);
 	               }
-	               //short description, name, manufacturer
-                   $product->setShortDescription($shortDesc)
-                   			->setName($name)
-                   			->setManufacturer($manufacturer);
 			       $canUpdate = true;
 	           } else {
 	           	  $this->_runner->log('SKIP updating. Found ProductPriceMatchRule count:' . $rulesCount, '', APIService::TAB);
@@ -114,12 +110,15 @@ class APIProductService extends APIServiceAbstract
 
 	       //only update categories and status when there is no pricematching rule or created new
 	       if ($canUpdate === true) {
-	       		//weight
-	       		$product->setWeight($weight);
-				//update the price with
-				$product->clearAllPrice()->addPrice(ProductPriceType::get(ProductPriceType::ID_RRP), $price);
+	       	//short description, name, manufacturer
+	       	$product->setShortDescription($shortDesc)
+	       		->setName($name)
+	       		->setManufacturer($manufacturer)
+	       		->setWeight($weight)
+	       		->setSellOnWeb($showOnWeb)
+				->clearAllPrice()
+	       		->addPrice(ProductPriceType::get(ProductPriceType::ID_RRP), $price);
 	       		//show on web
-	       		$product->setSellOnWeb($showOnWeb);
 		       if (is_array($categoryIds) && count($categoryIds) > 0) {
 		       		$this->_runner->log('Updating the categories: ' . implode(', ', $categoryIds), '', APIService::TAB . APIService::TAB);
 		       		foreach ($categoryIds as $categoryId) {
