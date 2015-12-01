@@ -76,7 +76,6 @@ class APIProductService extends APIServiceAbstract
 	           //if there is no price matching rule for this product
 	           if (($rulesCount = intval(ProductPriceMatchRule::countByCriteria('active = 1 and productId = ?', array($product->getId())))) === 0) {
 	               $this->_runner->log('Found SKU(' . $sku . '): ', '', APIService::TAB);
-	               $this->_runner->log('Updating the price to: ' . StringUtilsAbstract::getCurrency($price), '', APIService::TAB . APIService::TAB);
 
 	               $fullAsset = Asset::getAsset($product->getFullDescAssetId());
 	               $this->_runner->log('Finding asset for full description, assetId:' . ($fullAsset instanceof Asset ? $fullAsset->getAssetId() : ''), '', APIService::TAB . APIService::TAB);
@@ -99,8 +98,8 @@ class APIProductService extends APIServiceAbstract
 	                   $product->setFullDescAssetId($fullAsset->getAssetId())
 	                       ->save();
 		       		   $this->_runner->log('Added a new full description with assetId: ' . $fullAsset->getAssetId(), '', APIService::TAB . APIService::TAB);
+				       $canUpdate = true;
 	               }
-			       $canUpdate = true;
 	           } else {
 	           	  $this->_runner->log('SKIP updating. Found ProductPriceMatchRule count:' . $rulesCount, '', APIService::TAB);
 	           }
@@ -111,6 +110,7 @@ class APIProductService extends APIServiceAbstract
 	       //only update categories and status when there is no pricematching rule or created new
 	       if ($canUpdate === true) {
 	       	//short description, name, manufacturer
+	       	$this->_runner->log('Updating the price to: ' . StringUtilsAbstract::getCurrency($price), '', APIService::TAB . APIService::TAB);
 	       	$product->setShortDescription($shortDesc)
 	       		->setName($name)
 	       		->setManufacturer($manufacturer)
