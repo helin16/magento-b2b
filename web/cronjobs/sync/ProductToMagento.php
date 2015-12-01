@@ -336,6 +336,10 @@ abstract class ProductToMagento
    					} else {
    						$obj = new ArrayObject($rowValues[0]);
    						$anotherRowValue = $obj->getArrayCopy();
+   						//as suggested by Kevin, clearing all the other fields for second images
+   						foreach($anotherRowValue as $key => $value) {
+   							$anotherRowValue[$key] = '';
+   						}
    						$anotherRowValue['image'] = $imageFilePath;
    						$anotherRowValue['small_image'] =  $imageFilePath;
    						$anotherRowValue['thumbnail'] =  $imageFilePath;
