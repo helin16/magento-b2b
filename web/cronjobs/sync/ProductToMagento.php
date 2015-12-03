@@ -417,7 +417,7 @@ abstract class ProductToMagento
    	        }
    	        //ProductStatus
    	        if($product->getStatus() instanceof ProductStatus) {
-   	        	$statusId = $product->getStatus()->getId();
+   	        	$statusId = $product->getStatus()->getName();
    	        }
    	    }
    	    $categoryIds = array_unique($categoryIds);
