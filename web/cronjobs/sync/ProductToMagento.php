@@ -367,7 +367,7 @@ abstract class ProductToMagento
    	    $attributeSetDefault = 'Default';
    	    $attributeSetName = $attributeSetDefault;
    	    $enabled = true;
-   	    $sku = $productName = $rrpPrice = $weight = $shortDescription = $fullDecription = $supplierName = $supplierCode = $manufacturerName = $asNewFrom = $asNewTo = $specialPrice = $specialPriceFromDate = $specialPriceToDate = '';
+   	    $sku = $statusId = $productName = $rrpPrice = $weight = $shortDescription = $fullDecription = $supplierName = $supplierCode = $manufacturerName = $asNewFrom = $asNewTo = $specialPrice = $specialPriceFromDate = $specialPriceToDate = '';
    	    $categoryIds = array(2); //default category
    	    if ($product instanceof Product) {
    	        $sku = trim($product->getSku());
@@ -414,6 +414,10 @@ abstract class ProductToMagento
    	                }
    	                $categoryIds[] = $mageCateId;
    	            }
+   	        }
+   	        //ProductStatus
+   	        if($product->getStatus() instanceof ProductStatus) {
+   	        	$statusId = $product->getStatus()->getId();
    	        }
    	    }
    	    $categoryIds = array_unique($categoryIds);
@@ -467,7 +471,7 @@ abstract class ProductToMagento
    				"use_config_min_sale_qty" => '',
    				"max_sale_qty" => '',
    				"use_config_max_sale_qty" => '',
-   				"is_in_stock" => 1, //1 - in-stock, 0 - out of stock
+   				"is_in_stock" => $statusId, //1 - in-stock, 0 - out of stock
    				"low_stock_date" => '',
    				"notify_stock_qty" => '',
    				"use_config_notify_stock_qty" => '',
