@@ -10,6 +10,6 @@ BASEDIR=$(dirname $0)
 # Product Manufacturer Pull
 /usr/bin/php $BASEDIR/ProductManufacturerPull.php
 # Product Download
-/usr/bin/php $BASEDIR/ProductDownloadNAll.php
+/usr/bin/php $BASEDIR/ProductDownloadAll.php
 # Product Process Download
 /usr/bin/php $BASEDIR/ProductProcessDownloadedAll.php
