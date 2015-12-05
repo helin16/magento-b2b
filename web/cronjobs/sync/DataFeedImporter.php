@@ -24,7 +24,7 @@ abstract class DataFeedImporter
      * @var string
      */
     private static $_logFile = '';
-    private static $_api = array('URL' => "http://192.168.1.7/api/", "token" => '');
+    private static $_api = array('URL' => "http://192.168.1.5/api/", "token" => '');
 
     /**
      * The runner
