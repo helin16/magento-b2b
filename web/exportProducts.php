@@ -1,4 +1,6 @@
 <?php
+require_once dirname(__FILE__) . '/bootstrap.php';
+Core::setUser(UserAccount::get(UserAccount::ID_SYSTEM_ACCOUNT));
 class ItemExport_Xero_Custom extends ItemExport_Xero
 {
 	protected static function _getData()
