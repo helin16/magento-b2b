@@ -49,3 +49,4 @@ class ItemExport_Xero_Custom extends ItemExport_Xero
 		return 'item_list_' . $now->format('Y_m_d_H_i_s') . '.csv';
 	}
 }
+ItemExport_Xero_Custom::run(false, true);
