@@ -1570,7 +1570,7 @@ class Product extends InfoEntityAbstract
 	 *
 	 * @return Ambigous <Ambigous, multitype:, multitype:BaseEntityAbstract >
 	 */
-	public static function getProducts($sku, $name, array $supplierIds = array(), array $manufacturerIds = array(), array $categoryIds = array(), array $statusIds = array(), $active = null, $pageNo = null, $pageSize = DaoQuery::DEFAUTL_PAGE_SIZE, $orderBy = array(), &$stats = array(), $stockLevel = null, &$sumValues = null, $sh_from = null, $sh_to = null)
+	public static function getProducts($sku, $name, array $supplierIds = array(), array $manufacturerIds = array(), array $categoryIds = array(), array $statusIds = array(), $active = null, $pageNo = null, $pageSize = DaoQuery::DEFAUTL_PAGE_SIZE, $orderBy = array(), &$stats = array(), $stockLevel = null, &$sumValues = null, $sh_from = null, $sh_to = null, $sellOnWeb = null)
 	{
 		$where = array(1);
 		$params = array();
@@ -1599,6 +1599,10 @@ class Product extends InfoEntityAbstract
 		if (($active = trim($active)) !== '') {
 			$where[] = 'pro.active = :active';
 			$params['active'] = intval($active);
+		}
+		if (($sellOnWeb = trim($sellOnWeb)) !== '') {
+			$where[] = 'pro.sellOnWeb = :sellOnWeb';
+			$params['sellOnWeb'] = intval($sellOnWeb);
 		}
 		if (count($manufacturerIds) > 0) {
 			$ps = array();
