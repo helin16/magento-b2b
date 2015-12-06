@@ -457,22 +457,17 @@ class ProductCategory extends BaseEntityAbstract
 	 */
 	public function getAllChildrenIds(&$result = null, $starting = 0)
 	{
-		if($starting === 0)
+		if($starting === 0) // initiate recursive function
 		{
 			$starting = $this->getId();
 			$result = array();
 		}
 		else $result[] = $this->getId();
 		
-		echo 'looking for children of ' . $this->getId() . PHP_EOL;
 		$children = ProductCategory::getAllByCriteria('parentId = ?', array($this->getId()));
-		echo 'got ' . count($children) . ' children for ' . $this->getId() . ' (' . join(', ', array_map(create_function('$a', 'return $a->getId();'), $children)) . ')' . PHP_EOL;
-		
 		foreach ($children as $child)
-		{
-			echo '$child: ' . $child->getId() . PHP_EOL;
 			$child->getAllChildrenIds($result, $starting);
-		}
+		
 		return array_unique($result);
 	}
 }
