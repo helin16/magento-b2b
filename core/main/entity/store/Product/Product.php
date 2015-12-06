@@ -1640,10 +1640,21 @@ class Product extends InfoEntityAbstract
 			$ps = array();
 			$keys = array();
 			foreach ($categoryIds as $index => $value) {
-				$key = 'cateId_' . $index;
-				$keys[] = ':' . $key;
-				$ps[$key] = trim($value);
+				if(($category = ProductCategory::get($value)) instanceof ProductCategory)
+				{
+					$key = 'cateId_' . $index;
+					$keys[] = ':' . $key;
+					$ps[$key] = $category->getId();
+					$parent_category_ids = array();
+					foreach ($category->getAllChildrenIds() as $child_category_id)
+					{
+						$key = 'cateId_' . $index . '_' . $child_category_id;
+						$keys[] = ':' . $key;
+						$ps[$key] = $child_category_id;
+					}
+				}
 			}
+			var_dump($ps);
 			self::getQuery()->eagerLoad('Product.categories', 'inner join', 'pro_cate', 'pro.id = pro_cate.productId and pro_cate.categoryId in (' . implode(',', $keys) . ')');
 			if (is_array($sumValues)) {
 				$innerJoins[] = 'inner join product_category pro_cate on (pro.id = pro_cate.productId and pro_cate.categoryId in (' . implode(',', $keys) . '))';

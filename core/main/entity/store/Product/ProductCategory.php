@@ -450,4 +450,29 @@ class ProductCategory extends BaseEntityAbstract
 		$categories = self::getAllByCriteria('mageId = ?', array(trim($mageId)), false, 1, 1);
 		return count($categories) === 0 ? null : $categories[0];
 	}
+	/**
+	 * Get all children for a Product Category, including grand children, grand grand children etc
+	 * 
+	 * @return array ProductCategory
+	 */
+	public function getAllChildrenIds(&$result = null, $starting = 0)
+	{
+		if($starting === 0)
+		{
+			$starting = $this->getId();
+			$result = array();
+		}
+		else $result[] = $this->getId();
+		
+		echo 'looking for children of ' . $this->getId() . PHP_EOL;
+		$children = ProductCategory::getAllByCriteria('parentId = ?', array($this->getId()));
+		echo 'got ' . count($children) . ' children for ' . $this->getId() . ' (' . join(', ', array_map(create_function('$a', 'return $a->getId();'), $children)) . ')' . PHP_EOL;
+		
+		foreach ($children as $child)
+		{
+			echo '$child: ' . $child->getId() . PHP_EOL;
+			$child->getAllChildrenIds($result, $starting);
+		}
+		return array_unique($result);
+	}
 }
