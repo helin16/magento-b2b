@@ -417,7 +417,7 @@ abstract class ProductToMagento
    	        }
    	        //ProductStatus
    	        if($product->getStatus() instanceof ProductStatus) {
-   	        	$statusId = $product->getStatus()->getId();
+   	        	$statusId = $product->getStatus()->getName();
    	        }
    	    }
    	    $categoryIds = array_unique($categoryIds);
@@ -471,7 +471,8 @@ abstract class ProductToMagento
    				"use_config_min_sale_qty" => '',
    				"max_sale_qty" => '',
    				"use_config_max_sale_qty" => '',
-   				"is_in_stock" => $statusId, //1 - in-stock, 0 - out of stock
+   				"all_ln_stock" => $statusId,
+   				"is_in_stock" => 1, //1 - in-stock, 0 - out of stock
    				"low_stock_date" => '',
    				"notify_stock_qty" => '',
    				"use_config_notify_stock_qty" => '',

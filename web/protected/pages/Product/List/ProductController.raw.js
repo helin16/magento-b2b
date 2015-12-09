@@ -886,6 +886,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 						tmp.me._displaySelectedProduct(row);
 					})
 					.update(row.sku)
+					.setStyle(row.sellOnWeb === false ? 'color: red;' : 'color: blue;')
 				})
 			})
 			.insert({'bottom': new Element(tmp.tag, {'class': 'product_name hidden-xs hide-when-info hidden-sm'})
@@ -896,7 +897,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 						.insert({'bottom': new Element('div', {'class': 'col-sm-2'}).update('IsKit?')})
 					:
 					new Element('div', {'class': 'row'})
-						.insert({'bottom': new Element('div', {'class': 'col-sm-10'}).update(row.name)})
+						.insert({'bottom': new Element('div', {'class': 'col-sm-10'}).update(row.name) })
 						.insert({'bottom': new Element('div', {'class': 'col-sm-2'}).update(new Element('input', {'type': 'checkbox', 'checked': row.isKit})
 							.observe('click', function(event) {
 								tmp.btn = this;

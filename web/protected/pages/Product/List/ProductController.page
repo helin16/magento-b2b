@@ -84,12 +84,22 @@
 			                	<select search_field="pro.supplierIds" multiple class="chosen form-control input-sm"></select>
 	                        </div>
 						</div>
-                        <div class="col-xs-8">
+                        <div class="col-xs-6">
 	                        <div class="form-group form-group-sm input-group">
 				                <label class="contorl-label input-group-addon">Categories</label>
 			                	<select search_field="pro.productCategoryIds" multiple class="chosen form-control input-sm"></select>
 	                        </div>
 						</div>
+						<div class="col-xs-2">
+                            <div class="form-group form-group-sm input-group">
+                               <label class="contorl-label input-group-addon">Sell On Web</label>
+                               <select search_field="pro.sellOnWeb" class="chosen form-control input-sm">
+                                    <option value="ALL">All</option>
+                                    <option value="1">Yes</option>
+                                    <option value="0">No</option>
+                               </select>
+                           </div>
+                        </div>
 					</div>
 				</div>
 			</div>

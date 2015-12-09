@@ -162,7 +162,6 @@ class ProductController extends CRUDPageAbstract
 	            $stats = array();
 	            
 	            $serachCriteria = $this->getSearchCriteria($serachCriteria);
-	            
 	            $objects = Product::getProducts(
 	            		$serachCriteria->sku
 	            		,$serachCriteria->name
@@ -179,6 +178,7 @@ class ProductController extends CRUDPageAbstract
 	            		,$sumArray
 	            		,$serachCriteria->sh_from
 	            		,$serachCriteria->sh_to
+	            		,$serachCriteria->sellOnWeb
 	            		);
             }
             $results['pageStats'] = $stats;
@@ -235,6 +235,10 @@ class ProductController extends CRUDPageAbstract
         else throw new Exception('Invalid stock on hand range, "' . $serachCriteria['pro.sh'] . '" given');
         //stock level
         $result->stockLevel = $serachCriteria['pro.stockLevel'];
+        //sellOnWeb
+        if(trim($serachCriteria['pro.sellOnWeb']) === "ALL")
+        	$result->sellOnWeb = " ";
+        else $result->sellOnWeb = trim($serachCriteria['pro.sellOnWeb']);
         
         return $result;
     }
