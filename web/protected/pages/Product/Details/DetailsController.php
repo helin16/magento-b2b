@@ -338,6 +338,7 @@ class DetailsController extends DetailsPageAbstract
 			$name = trim($param->CallbackParameter->name);
 			$shortDescription = trim($param->CallbackParameter->shortDescription);
 			$sellOnWeb = (trim($param->CallbackParameter->sellOnWeb) === '1');
+			$weight = doubleval(trim($param->CallbackParameter->weight));
 
 			$product->setName($name)
 				->setSku($sku)
@@ -350,6 +351,7 @@ class DetailsController extends DetailsPageAbstract
 				->setAssetAccNo(trim($param->CallbackParameter->assetAccNo))
 				->setRevenueAccNo(trim($param->CallbackParameter->revenueAccNo))
 				->setCostAccNo(trim($param->CallbackParameter->costAccNo))
+				->setWeight($weight)
 				;
 			if(trim($product->getId()) === '')
 				$product->setIsFromB2B(false);
