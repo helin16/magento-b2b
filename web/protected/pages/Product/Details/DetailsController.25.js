@@ -67,7 +67,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 			.insert({'bottom': new Element(tmp.tag).update(
 					tmp.isTitle === true ? titleData.type :
 					tmp.me._getSelBox(selBoxData, (data[tmp.typeString] && data[tmp.typeString].id ? data[tmp.typeString].id : ''))
-						.addClassName('form-control input-sm')
+						.addClassName('form-control input-sm ')
 						.writeAttribute('list-panel-row', 'typeId')
 						.writeAttribute('required', true)
 						.writeAttribute('list-item', (data.id ? data.id : tmp.randId))
@@ -153,16 +153,19 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 				})
 			})
 			.insert({'bottom': new Element('div', {'class': 'list-div table-responsive'})
-				.insert({'bottom': new Element('table', {'class': 'table table-condensed'})
+				.insert({'bottom': new Element('table', {'class': 'table table-condensed', 'style' : 'width : auto'})
 					.insert({'bottom': new Element('thead').update( tmp.me._getListPanelRow(titleData, selBoxData, titleData, true, selBoxChangeFunc) ) })
 					.insert({'bottom': tmp.listDiv = new Element('tbody') })
 				})
 			});
+		
 		if(listData) {
 			listData.each(function(data){
 				tmp.listDiv.insert({'bottom': tmp.me._getListPanelRow(data, selBoxData, titleData, false, selBoxChangeFunc).addClassName('list-panel-row').writeAttribute('item_id', data.id) });
 			});
 		}
+		
+		
 		return tmp.newDiv;
 	}
 	/**
@@ -814,10 +817,6 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 				.insert({'bottom': new Element('div', {'class': 'col-sm-8'})
 					.insert({'bottom': new Element('div', {'class': 'row'})
 						.insert({'bottom': tmp.me._getSummaryDiv(tmp.me._item).wrap(new Element('div', {'class': 'col-sm-12'})) })
-						.insert({'bottom': tmp.me._getAccInfoDiv(tmp.me._item).wrap(new Element('div', {'class': 'col-sm-12'})) })
-						.insert({'bottom': tmp.me._getListPanel('Suppliers:', tmp.me._item.supplierCodes, {'type': 'Supplier', 'value': 'Code'}, tmp.me._suppliers).wrap(new Element('div', {'class': 'col-sm-4 suppliers-panel'})) })
-						.insert({'bottom': tmp.me._getListPanel('Codes:', tmp.me._item.productCodes, {'type': 'Type', 'value': 'Code'}, tmp.me._codeTypes).wrap(new Element('div', {'class': 'col-sm-4 codes-panel'})) })
-						.insert({'bottom': tmp.me._getListPanel('Locations:', tmp.me._item.locations, {'type': 'Type', 'value': 'value'}, tmp.me._locationTypes).wrap(new Element('div', {'class': 'col-sm-4 locations-panel'})) })
 						.insert({'bottom': tmp.me._getListPanel('Prices:', tmp.me._item.prices, {'type': 'Type', 'value': 'Price', 'start': 'From', 'end': 'To'}, tmp.me._priceTypes, function(e){
 							tmp.selectedPriceType = null;
 							tmp.selBox = e.target;
@@ -836,7 +835,11 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 								tmp.endBox.writeAttribute('disabled', false).writeAttribute('value', '');
 								tmp.startBox.writeAttribute('disabled', false).writeAttribute('value', '').select();
 							}
-						}).wrap(new Element('div', {'class': 'col-sm-12 prices-panel'})) })
+						}).wrap(new Element('div', {'class': 'col-sm-12 prices-panel'})) })				
+						.insert({'bottom': tmp.me._getAccInfoDiv(tmp.me._item).wrap(new Element('div', {'class': 'col-sm-12'})) })
+						.insert({'bottom': tmp.me._getListPanel('Suppliers:', tmp.me._item.supplierCodes, {'type': 'Supplier', 'value': 'Code'}, tmp.me._suppliers).wrap(new Element('div', {'class': 'col-sm-4 suppliers-panel'})) })
+						.insert({'bottom': tmp.me._getListPanel('Codes:', tmp.me._item.productCodes, {'type': 'Type', 'value': 'Code'}, tmp.me._codeTypes).wrap(new Element('div', {'class': 'col-sm-4 codes-panel'})) })
+						.insert({'bottom': tmp.me._getListPanel('Locations:', tmp.me._item.locations, {'type': 'Type', 'value': 'value'}, tmp.me._locationTypes).wrap(new Element('div', {'class': 'col-sm-4 locations-panel'})) })
 					})
 					.insert({'bottom': new Element('div', {'class': 'row'})
 						.insert({'bottom': new Element('span', {'class': 'btn btn-primary pull-right col-sm-4', 'data-loading-text': 'saving ...'}).update('Save')
