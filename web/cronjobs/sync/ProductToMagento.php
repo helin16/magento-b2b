@@ -490,7 +490,8 @@ abstract class ProductToMagento
    				"small_image" => '',
    				"thumbnail" => '',
    				"media_gallery" => '',
-   				"is_recurring" => '');
+   				"is_recurring" => '',
+   				"media_gallery_reset" => 0);
    	}
 }
 
