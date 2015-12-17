@@ -1034,6 +1034,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 									tmp.checked = $(tmp.btn).checked;
 									if(confirm(tmp.checked === true ? 'You are about to ReACTIVATE this product.\n Continue?' : 'You are about to deactivate this product.\n Continue?'))
 										tmp.me.toggleActive(tmp.checked, row);
+									else $(tmp.btn).checked = !tmp.checked;
 								})
 							})
 						})
