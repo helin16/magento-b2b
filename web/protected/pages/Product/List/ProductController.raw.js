@@ -880,7 +880,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 				if(price.type && parseInt(price.type.id) === 1) {
 					tmp.price = price.price;
 				}
-				else if(price.type && ((parseInt(price.type.id) === 2) || (parseInt(price.type.id) === 3)))
+				else if(price.type && (parseInt(price.type.id) === 2))
 				{
 					tmp.specilaPrice = price.price;
 				}

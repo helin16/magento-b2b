@@ -409,7 +409,7 @@ class ProductController extends CRUDPageAbstract
     		}
     		else 
     		{
-    			$priceType = ProductPriceType::ID_SPECIAL_GROUP_1;
+    			$priceType = ProductPriceType::ID_CASUAL_SPECIAL;
     		}
     		
     		$prices = ProductPrice::getAllByCriteria('productId = ? and typeId = ?', array($product->getId(), $priceType), true, 1, 1);
