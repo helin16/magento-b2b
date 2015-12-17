@@ -980,14 +980,13 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 					})
 				})
 			})
-//			.insert({'bottom': new Element(tmp.tag, {'class': 'locations hide-when-info hidden-sm'}).addClassName('col-xs-1').update(
-//					row.locations ? tmp.me._getLocations(row.locations, isTitle) : ''
-//			) })
-			.insert({'bottom': new Element(tmp.tag, {'class': 'locations hide-when-info hidden-sm'}).addClassName('col-xs-2')
+			.insert({'bottom': new Element(tmp.tag, {'class': 'locations hide-when-info hidden-sm', 'style' : 'width:5%'}).addClassName('col-xs-1').update(
+					row.locations ? tmp.me._getLocations(row.locations, isTitle) : ''
+			) })
+			.insert({'bottom': new Element(tmp.tag, {'class': 'sellonweb hide-when-info hidden-sm ', 'style' : 'width:1%'}).addClassName('col-xs-1')
 				
 				.insert({'bottom': (
 					new Element('div', {'class': 'row'})
-						.insert({'bottom': new Element('div', {'class': 'col-sm-5 text-right'}).update(row.locations ? tmp.me._getLocations(row.locations, isTitle) : '')})
 						.insert({'bottom': new Element('div', {'class': 'col-sm-3 text-right'})
 							.insert({'bottom': tmp.isTitle === true ? 'SOW?' : new Element('input', {'type': 'checkbox', 'checked': row.sellOnWeb})
 								.observe('click', function(event) {
@@ -1006,8 +1005,8 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 			 })
 			//.insert({'bottom': new Element(tmp.tag, {'class': 'inventeryCode hide-when-info'}).addClassName('col-xs-1').update(row.invenAccNo ? row.invenAccNo : '') })
 
-			.insert({'bottom': new Element(tmp.tag, {'class': 'manufacturer hide-when-info'}).addClassName('col-xs-1').update(row.manufacturer ? row.manufacturer.name : '') })
-			.insert({'bottom': new Element(tmp.tag, {'class': 'supplier hide-when-info hidden-sm'}).addClassName('col-xs-1').update(
+			.insert({'bottom': new Element(tmp.tag, {'class': 'manufacturer hide-when-info', 'style' : 'width:4%'}).addClassName('col-xs-1').update(row.manufacturer ? row.manufacturer.name : '') })
+			.insert({'bottom': new Element(tmp.tag, {'class': 'supplier hide-when-info hidden-sm', 'style' : 'width:4%'}).addClassName('col-xs-1').update(
 					row.supplierCodes ? tmp.me._getSupplierCodes(row.supplierCodes, isTitle) : ''
 			) })
 			.insert({'bottom': new Element(tmp.tag, {'class': 'qty hidden-sm'}).addClassName('col-xs-1').update(
@@ -1025,7 +1024,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 								)
 					)
 			})
-			.insert({'bottom': new Element(tmp.tag, {'class': 'product_active hide-when-info hidden-sm', 'style' : 'width:4%'}).addClassName('col-xs-1')
+			.insert({'bottom': new Element(tmp.tag, {'class': 'product_active hide-when-info hidden-sm ', 'style' : 'width:4%'}).addClassName('col-xs-1')
 				.insert({'bottom': (
 					new Element('div', {'class': 'row'})
 						.insert({'bottom': new Element('div', {'class': 'col-xs-2 text-right'})
