@@ -1025,7 +1025,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 								)
 					)
 			})
-			.insert({'bottom': new Element(tmp.tag, {'class': 'product_active hide-when-info hidden-sm'}).addClassName('col-xs-1')
+			.insert({'bottom': new Element(tmp.tag, {'class': 'product_active hide-when-info hidden-sm', 'style' : 'width:4%'}).addClassName('col-xs-1')
 				.insert({'bottom': (
 					new Element('div', {'class': 'row'})
 						.insert({'bottom': new Element('div', {'class': 'col-xs-2 text-right'})
