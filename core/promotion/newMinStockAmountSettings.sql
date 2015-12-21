@@ -1,0 +1,2 @@
+insert into systemsettings (`type`, `value`, `description`, `active`, `created`, `createdById`, `updated`, `updatedById` ) values
+    ('min_in_stock_amount', 5, 'The minimun amount that indicates in stock. Below this amount it indicates low stock.', 1, NOW(), 10, NOW(), 10);

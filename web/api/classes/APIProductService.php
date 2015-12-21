@@ -2,6 +2,18 @@
 class APIProductService extends APIServiceAbstract
 {
    protected $entityName = 'Product';
+   
+   public function post_getStockOnHand($params)
+   {
+   	return $this->getall($params);
+   	 
+   }
+   
+   public function put_getStockOnHand($params)
+   {
+   	return $this->getall($params);
+   	 
+   }
    /**
     * Data feed import POST
     *
@@ -186,4 +198,24 @@ class APIProductService extends APIServiceAbstract
 		$entities = $entityName::getAllByCriteria('name = ?', array(trim($name)), 1, 1);
 		return count($entities) > 0 ? $entities[0] : null;
    }
+   /**
+    * Getting All for entity
+    *
+    * @param unknown $params
+    *
+    * @throws Exception
+    * @return multitype:multitype:
+    */
+   private function getall($params)
+   {
+   	$stockOnHand = 0;
+   	$results = $this->get_all($params);
+   	if (count($results['items'] > 0))
+   	{
+   		$results=$results['items'][0];
+   	}
+   	$stockOnHand = $results['stockOnHand'];
+   	return array('stockOnHand' => $stockOnHand);
+   }
+    
 }
