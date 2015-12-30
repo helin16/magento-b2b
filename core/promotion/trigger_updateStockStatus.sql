@@ -7,7 +7,9 @@ BEGIN
 	select value into $min_in_stock_amount from systemsettings where type='min_in_stock_amount';
   if old.stockOnHand = new.stockOnHand then
     -- No change
-    set new.statusId = old.statusId;
+    -- set new.statusId = old.statusId;
+    begin
+    end;
   elseif new.stockOnHand >= $min_in_stock_amount then
     -- In Stock
     set new.statusId = 2;
