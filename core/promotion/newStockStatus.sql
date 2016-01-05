@@ -1,0 +1,2 @@
+insert into productstatus (`name`, `description`, `active`, `created`, `createdById`, `updated`, `updatedById` ) values
+    ('Call for ETA', 'For products that we have no stock', 1, NOW(), 10, NOW(), 10);

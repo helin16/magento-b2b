@@ -1,0 +1,109 @@
+DROP PROCEDURE IF EXISTS DailyPromotionOpen;
+DROP PROCEDURE IF EXISTS DailyPromotionClose;
+DROP PROCEDURE IF EXISTS WeekendPromotionOpen;
+DROP PROCEDURE IF EXISTS WeekendPromotionClose;
+DROP EVENT IF EXISTS e_DailyPromotionStart;
+DROP EVENT IF EXISTS e_DailyPromotionEnd;
+DROP EVENT IF EXISTS e_WeekendPromotionStart;
+DROP EVENT IF EXISTS e_WeekendPromotionEnd;
+
+delimiter //
+CREATE PROCEDURE DailyPromotionOpen()
+BEGIN
+  -- open promotion at certain time every day 
+  -- no need to open daily promotion on saturday and sunday
+  -- 1 is Sunday and 7 is Saturday
+  declare $dayOfWeek int;
+  SELECT DAYOFWEEK(DATE_ADD(now(), INTERVAL 11 HOUR)) into $dayOfWeek;
+  if ($dayOfWeek = 1 or $dayOfWeek = 7) then
+    begin
+    end;
+  else
+    update productprice set end = '9990-10-10 00:00:00' where start = '1990-10-10 00:00:00' and end = '2009-10-10 00:00:00' and typeId = 2;
+  end if;
+END;
+
+CREATE PROCEDURE DailyPromotionClose()
+BEGIN
+  -- close daily promotion
+  -- no need to close daily promotion on Sunday and Monday
+  -- because we do not open daily promortion on Saturday and Sunday
+  -- 1 is Sunday and 2 is Monday
+  declare $dayOfWeek int;
+  SELECT DAYOFWEEK(DATE_ADD(now(), INTERVAL 11 HOUR)) into $dayOfWeek;
+  if ($dayOfWeek = 1 or $dayOfWeek = 2) then
+    begin
+    end;
+  else
+    update productprice set end = '2009-10-10 00:00:00' where start = '1990-10-10 00:00:00' and end = '9990-10-10 00:00:00' and typeId = 2;
+  end if;
+END;
+
+
+CREATE PROCEDURE WeekendPromotionOpen()
+BEGIN
+  -- open promotion at 00:00:00 every Saturday 
+  -- 7 is Saturday
+  declare $dayOfWeek int;
+  SELECT DAYOFWEEK(DATE_ADD(now(), INTERVAL 11 HOUR)) into $dayOfWeek;
+  if ($dayOfWeek = 7) then
+      update productprice set end = '9990-10-10 00:00:00' where start = '1990-10-10 00:00:00' and end = '2009-10-10 00:00:00' and typeId = 2;
+  end if;
+END;
+
+CREATE PROCEDURE WeekendPromotionClose()
+BEGIN
+  -- close weekend promotion at 00:00:00 every Monday
+  -- 2 is Monday
+  declare $dayOfWeek int;
+  SELECT DAYOFWEEK(DATE_ADD(now(), INTERVAL 11 HOUR)) into $dayOfWeek;
+  if ($dayOfWeek = 2) then
+    update productprice set end = '2009-10-10 00:00:00' where start = '1990-10-10 00:00:00' and end = '9990-10-10 00:00:00' and typeId = 2;
+  end if;
+END;
+
+-- Note the time difference(11 hours) between Melbourne time and UTC time
+-- MySQL server uses UTC time
+CREATE EVENT e_DailyPromotionStart ON SCHEDULE
+EVERY 1 DAY STARTS '2016-01-01 09:00:00'
+ON COMPLETION PRESERVE
+ENABLE
+COMMENT 'promotion starts 20:00:00(Melbourne time) every night'
+DO BEGIN
+  call DailyPromotionOpen();
+END;
+
+
+CREATE EVENT e_DailyPromotionEnd ON SCHEDULE
+EVERY 1 DAY STARTS '2016-01-02 13:00:00'
+ON COMPLETION PRESERVE
+ENABLE
+COMMENT 'promotion ends at 00:00:00(Melbourne time) every midnight'
+DO BEGIN
+  call DailyPromotionClose();
+END;
+
+-- weekend promotion starts from 00:00:00(Melbourne time)  every Saturday
+-- MySQL server uses UTC time, so need to adjust time
+-- We use Melbourne time so need to minus 11 hours
+CREATE EVENT e_WeekendPromotionStart ON SCHEDULE
+EVERY 1 WEEK STARTS CONCAT(CURRENT_DATE + INTERVAL 4 - WEEKDAY(CURRENT_DATE) DAY,' 13:00:00')
+ON COMPLETION PRESERVE
+ENABLE
+COMMENT 'weekend promotion starts 00:00:00(Melbourne time) every Saturday'
+DO BEGIN
+  call WeekendPromotionOpen();
+END;
+
+-- weekend promotion ends from 00:00:00 (Melbourne time) every Monday
+CREATE EVENT e_WeekendPromotionEnd ON SCHEDULE
+EVERY 1 WEEK STARTS CONCAT(CURRENT_DATE + INTERVAL 6 - WEEKDAY(CURRENT_DATE) DAY,' 13:00:00')
+ON COMPLETION PRESERVE
+ENABLE
+COMMENT 'weekend promotion ends at 00:00:00(Melbourne time) every Monday'
+DO BEGIN
+  call WeekendPromotionClose();
+END;
+
+//
+
