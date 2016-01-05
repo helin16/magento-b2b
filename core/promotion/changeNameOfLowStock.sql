@@ -1,0 +1,1 @@
+update productstatus set name = 'Stock Low' where id = 5 and name = 'Low Stock';
