@@ -95,10 +95,10 @@ END;
 -- Note the time difference(11 hours) between Melbourne time and UTC time
 -- MySQL server uses UTC time
 CREATE EVENT e_DailyPromotionStart ON SCHEDULE
-EVERY 1 DAY STARTS '2016-01-01 09:00:00'
+EVERY 1 DAY STARTS '2016-01-01 08:55:00'
 ON COMPLETION PRESERVE
 ENABLE
-COMMENT 'promotion starts 20:00:00(Melbourne time) every night'
+COMMENT 'promotion starts 19:55:00(Melbourne time) every night'
 DO BEGIN
   call DailyPromotionOpen();
 END;
