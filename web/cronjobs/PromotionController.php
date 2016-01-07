@@ -206,16 +206,16 @@ USAGE;
 
 		$config = Mage::getConfig()->getResourceConnectionConfig("default_setup");
 
-		$dbinfo = array(“host” => $config->host,
-				        “user” => $config->username,
-				        “pass” => $config->password,
-				        “dbname” => $config->dbname
+		$dbinfo = array("host" => $config->host,
+				        "user" => $config->username,
+				        "pass" => $config->password,
+				        "dbname" => $config->dbname
 		);
 		var_dump($dbinfo);
-		$this->_dbhost = $dbinfo[“host”];
-		$this->_username = $dbinfo[“user”];
-		$this->_password = $dbinfo[“pass”];
-		$this->_dbname = $dbinfo[“dbname”];
+		$this->_dbhost = $dbinfo["host"];
+		$this->_username = $dbinfo["user"];
+		$this->_password = $dbinfo["pass"];
+		$this->_dbname = $dbinfo["dbname"];
 
 	}
 
