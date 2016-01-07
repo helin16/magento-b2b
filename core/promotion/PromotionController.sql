@@ -7,6 +7,8 @@ DROP EVENT IF EXISTS e_DailyPromotionEnd;
 DROP EVENT IF EXISTS e_WeekendPromotionStart;
 DROP EVENT IF EXISTS e_WeekendPromotionEnd;
 
+SET GLOBAL event_scheduler = ON;
+
 delimiter //
 CREATE PROCEDURE DailyPromotionOpen()
 BEGIN
@@ -19,7 +21,14 @@ BEGIN
     begin
     end;
   else
-    update productprice set end = '9990-10-10 00:00:00' where start = '1990-10-10 00:00:00' and end = '2009-10-10 00:00:00' and typeId = 2;
+    update systemsettings set value = 1 where type = 'is_daily_promotion_time';
+    UPDATE productprice pp
+    INNER JOIN product_category pc
+       ON pp.productId = pc.productId
+    INNER JOIN product p
+       ON pp.productId = p.id
+    SET pp.updated = now()
+    WHERE pp.typeId = 5 and pp.active = 1 and p.active=1 and pc.active=1 and pc.categoryId = 334;
   end if;
 END;
 
@@ -35,7 +44,14 @@ BEGIN
     begin
     end;
   else
-    update productprice set end = '2009-10-10 00:00:00' where start = '1990-10-10 00:00:00' and end = '9990-10-10 00:00:00' and typeId = 2;
+    update systemsettings set value = 0 where type = 'is_daily_promotion_time';
+    UPDATE productprice pp
+    INNER JOIN product_category pc
+       ON pp.productId = pc.productId
+    INNER JOIN product p
+       ON pp.productId = p.id
+    SET pp.updated = now()
+    WHERE pp.typeId = 5 and pp.active = 1 and p.active=1 and pc.active=1 and pc.categoryId = 334;
   end if;
 END;
 
@@ -47,7 +63,14 @@ BEGIN
   declare $dayOfWeek int;
   SELECT DAYOFWEEK(DATE_ADD(now(), INTERVAL 11 HOUR)) into $dayOfWeek;
   if ($dayOfWeek = 7) then
-      update productprice set end = '9990-10-10 00:00:00' where start = '1990-10-10 00:00:00' and end = '2009-10-10 00:00:00' and typeId = 2;
+    update systemsettings set value = 1 where type = 'is_daily_promotion_time';
+    UPDATE productprice pp
+    INNER JOIN product_category pc
+       ON pp.productId = pc.productId
+    INNER JOIN product p
+       ON pp.productId = p.id
+    SET pp.updated = now()
+    WHERE pp.typeId = 5 and pp.active = 1 and p.active=1 and pc.active=1 and pc.categoryId = 339;
   end if;
 END;
 
@@ -58,7 +81,14 @@ BEGIN
   declare $dayOfWeek int;
   SELECT DAYOFWEEK(DATE_ADD(now(), INTERVAL 11 HOUR)) into $dayOfWeek;
   if ($dayOfWeek = 2) then
-    update productprice set end = '2009-10-10 00:00:00' where start = '1990-10-10 00:00:00' and end = '9990-10-10 00:00:00' and typeId = 2;
+    update systemsettings set value = 0 where type = 'is_daily_promotion_time';
+    UPDATE productprice pp
+    INNER JOIN product_category pc
+       ON pp.productId = pc.productId
+    INNER JOIN product p
+       ON pp.productId = p.id
+    SET pp.updated = now()
+    WHERE pp.typeId = 5 and pp.active = 1 and p.active=1 and pc.active=1  and pc.categoryId = 339;
   end if;
 END;
 
@@ -106,4 +136,5 @@ DO BEGIN
 END;
 
 //
+
 

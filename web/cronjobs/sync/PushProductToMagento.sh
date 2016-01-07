@@ -4,7 +4,7 @@ SERVER=backup.budgetpc.com.au
 SERVER_PATH=/var/www/html/var/import/
 FILE_DIR=/tmp/
 FILE_NAME=productUpdate.tar.gz
-
+DESTINATION=/var/pushdata/archive/
 
 ## generate a MAGENTO product file ########################################
 if ps ax | grep -v grep | grep "ProductToMagento.php" > /dev/null; then
@@ -22,8 +22,17 @@ else
 		echo -n "== coping ${FILE_PATH} TO ${SERVER_FILE} :: "
 		date
 		scp $FILE_PATH ec2-user@${SERVER_FILE}
-		echo -n "== copied successfully :: "
+		ret=$?
+		if [ "${ret}" -ne "0" ] 
+		then
+			echo "**** scp command erro= "${ret}" "
+		else
+		 	echo -n "== copied successfully :: "
+			date
+		fi
+		echo -n "== archiving ${FILE_PATH} :: "
 		date
+		cp ${FILE_PATH} ${DESTINATION}productUpdate_`date "+%Y_%m_%d_%H_%M_%S"`.tar.gz
 		echo -n "== removing ${FILE_PATH} :: "
 		date
 		rm -f $FILE_PATH
@@ -36,3 +45,4 @@ else
 	echo
 	echo
 fi
+

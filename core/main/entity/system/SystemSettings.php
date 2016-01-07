@@ -24,6 +24,7 @@ class SystemSettings extends BaseEntityAbstract
 	const TYPE_LAST_PULL_PRODUCT_PULL = 'last_full_product_pull';
 	const TYPE_SYSTEM_BUILD_PRODUCTS_ID = 'system_build_product_ids';
 	const TYPE_MAGENTO_SYNC = 'magento_sync';
+	const TYP_ISDAILYPROMOTIONTIME = 'is_daily_promotion_time';
 	/**
 	 * The value of the setting
 	 *

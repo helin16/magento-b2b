@@ -7,7 +7,7 @@ if ps ax | grep -v grep | grep "DataFeedImporter.php" > /dev/null; then
 	echo ""
 else
 	DIR=/tmp/datafeed/
-	API=http://192.168.1.5/api/
+	API=http://192.168.1.8/api/
 	if ls ${DIR}/*.json &>/dev/null
 	then
 	    echo -n "Start to import json files .... "

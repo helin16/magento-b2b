@@ -382,15 +382,51 @@ abstract class ProductToMagento
    	        //RRP
    	        if(($rrp = $product->getRRP()) instanceof ProductPrice)
    	            $rrpPrice = StringUtilsAbstract::getValueFromCurrency($rrp->getPrice());
+   	        
+   	        
    	        //special price
    	        if (($specialPriceObj = $product->getNearestSpecialPrice()) instanceof ProductPrice) {
-   	            $specialPrice = StringUtilsAbstract::getValueFromCurrency($specialPriceObj->getPrice());
-   	            $specialPriceFromDate = $specialPriceObj->getStart()->format('Y-m-d H:i:sP');
-   	            $specialPriceToDate = $specialPriceObj->getEnd()->format('Y-m-d H:i:sP');
+   	        	$specialPrice = StringUtilsAbstract::getValueFromCurrency($specialPriceObj->getPrice());
+   	        	$specialPriceFromDate = $specialPriceObj->getStart()->format('Y-m-d H:i:sP');
+   	        	$specialPriceToDate = $specialPriceObj->getEnd()->format('Y-m-d H:i:sP');
+   	        	if ($specialPrice == 0)
+   	        	{
+   	        		$specialPrice = '';
+   	        		$specialPriceFromDate = '1990-10-10';
+   	        		$specialPriceToDate = '2009-10-10';
+   	        	}
    	        }
+   	        else
+   	        {
+   	        	// delete the special price
+   	        	//$specialPrice = StringUtilsAbstract::getValueFromCurrency('99999999');
+   	        	//$specialPrice = '9999999';
+   	        	$specialPrice = '';
+   	        	$specialPriceFromDate = '1990-10-10';
+   	        	$specialPriceToDate = '2009-10-10';
+   	        }
+   	        
+   	        // if it is the daily promotion time then overwrite the special price with the daily special price
+   	        $isDailyPromotionTime = intval(SystemSettings::getSettings(SystemSettings::TYP_ISDAILYPROMOTIONTIME));
+   	        if ($isDailyPromotionTime === 1)
+   	        {
+   	        	// get daily promotion price
+   	           	if (($specialPriceObj = $product->getDailySpecialPrice()) instanceof ProductPrice) {
+   	        		$dailySpecialPrice = StringUtilsAbstract::getValueFromCurrency($specialPriceObj->getPrice());
+   	        		if ($dailySpecialPrice != 0)
+   	        		{
+   	        			$specialPrice = $dailySpecialPrice;
+   	        			$specialPriceFromDate = $specialPriceObj->getStart()->format('Y-m-d H:i:sP');
+   	        			$specialPriceToDate = $specialPriceObj->getEnd()->format('Y-m-d H:i:sP');
+   	        		}
+   	        	}
+   	        }
+   
+
    	        //full description
    	        if (($asset = Asset::getAsset($product->getFullDescAssetId())) instanceof Asset)
-   	            $fullDecription = '"' . $asset->read() . '"';
+   	            //$fullDecription = '"' . $asset->read() . '"';
+   	            $fullDecription = $asset->read();
    	        //supplier
    	        if (count($supplierCodes = SupplierCode::getAllByCriteria('productId = ?', array($product->getId()), true, 1, 1)) > 0) {
    	            $supplierName = (($supplier = $supplierCodes[0]->getSupplier()) instanceof Supplier) ? $supplier->getName() : '';

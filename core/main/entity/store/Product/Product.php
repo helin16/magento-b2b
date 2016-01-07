@@ -1074,21 +1074,28 @@ class Product extends InfoEntityAbstract
 	 */
 	public function getJson($extra = array(), $reset = false)
 	{
-		$array = $extra;
-		if(!$this->isJsonLoaded($reset))
+		try {
+			$array = $extra;
+			if(!$this->isJsonLoaded($reset))
+			{
+				$array['prices'] = array_map(create_function('$a', 'return $a->getJson();'), $this->getPrices());
+				$array['manufacturer'] = $this->getManufacturer() instanceof Manufacturer ? $this->getManufacturer()->getJson() : null;
+				$array['supplierCodes'] = array_map(create_function('$a', 'return $a->getJson();'), SupplierCode::getAllByCriteria('productId = ?', array($this->getId())));
+				$array['productCodes'] = array_map(create_function('$a', 'return $a->getJson();'), ProductCode::getAllByCriteria('productId = ?', array($this->getId())));
+				$array['images'] = array_map(create_function('$a', 'return $a->getJson();'), $this->getImages());
+				$array['categories'] = array_map(create_function('$a', '$json = $a->getJson(); return $json["category"];'), Product_Category::getCategories($this));
+				$array['fullDescriptionAsset'] = (($asset = Asset::getAsset($this->getFullDescAssetId())) instanceof Asset ? $asset->getJson() : null) ;
+				$array['locations'] = array_map(create_function('$a', 'return $a->getJson();'), PreferredLocation::getPreferredLocations($this));
+				$array['unitCost'] = $this->getUnitCost();
+				$array['priceMatchRule'] = ($i=ProductPriceMatchRule::getByProduct($this)) instanceof ProductPriceMatchRule ? $i->getJson() : null;
+				$array['attributeSet'] = ($i=$this->getAttributeSet()) instanceof ProductAttributeSet ? $i->getJson() : null;
+				$array['status'] = ($i=$this->getStatus()) instanceof ProductStatus ? $i->getJson() : null;
+			}
+				
+		}
+		catch (Exception $ex)
 		{
-			$array['prices'] = array_map(create_function('$a', 'return $a->getJson();'), $this->getPrices());
-			$array['manufacturer'] = $this->getManufacturer() instanceof Manufacturer ? $this->getManufacturer()->getJson() : null;
-			$array['supplierCodes'] = array_map(create_function('$a', 'return $a->getJson();'), SupplierCode::getAllByCriteria('productId = ?', array($this->getId())));
-			$array['productCodes'] = array_map(create_function('$a', 'return $a->getJson();'), ProductCode::getAllByCriteria('productId = ?', array($this->getId())));
-			$array['images'] = array_map(create_function('$a', 'return $a->getJson();'), $this->getImages());
-			$array['categories'] = array_map(create_function('$a', '$json = $a->getJson(); return $json["category"];'), Product_Category::getCategories($this));
-			$array['fullDescriptionAsset'] = (($asset = Asset::getAsset($this->getFullDescAssetId())) instanceof Asset ? $asset->getJson() : null) ;
-			$array['locations'] = array_map(create_function('$a', 'return $a->getJson();'), PreferredLocation::getPreferredLocations($this));
-			$array['unitCost'] = $this->getUnitCost();
-			$array['priceMatchRule'] = ($i=ProductPriceMatchRule::getByProduct($this)) instanceof ProductPriceMatchRule ? $i->getJson() : null;
-			$array['attributeSet'] = ($i=$this->getAttributeSet()) instanceof ProductAttributeSet ? $i->getJson() : null;
-			$array['status'] = ($i=$this->getStatus()) instanceof ProductStatus ? $i->getJson() : null;
+			throw new Exception(' ********** getJson exception :' .   $ex->getMessage());
 		}
 		return parent::getJson($array, $reset);
 	}
@@ -1421,6 +1428,16 @@ class Product extends InfoEntityAbstract
 	    if(count($prices = ProductPrice::getPrices($this, ProductPriceType::get(ProductPriceType::ID_CASUAL_SPECIAL), '', trim($now), trim($now), '', 1, 1, array('created' => 'asc'))) > 0)
 	        return $prices[0];
 	    return null;
+	}
+	/**
+	 * Getting the Daily special price for this product
+	 * @return ProductPrice|NULL
+	 */
+	public function getDailySpecialPrice()
+	{
+		if(count($prices = ProductPrice::getPrices($this, ProductPriceType::get(ProductPriceType::ID_DAILY_SPECIAL), '', '', '', '', 1, 1)) > 0)
+			return $prices[0];
+		return null;
 	}
 	/**
 	 * (non-PHPdoc)
