@@ -37,10 +37,10 @@ BEGIN
   -- close daily promotion
   -- no need to close daily promotion on Sunday and Monday
   -- because we do not open daily promortion on Saturday and Sunday
-  -- 1 is Sunday and 2 is Monday
+  -- 1 is Sunday and 7 is Saturday
   declare $dayOfWeek int;
   SELECT DAYOFWEEK(DATE_ADD(now(), INTERVAL 11 HOUR)) into $dayOfWeek;
-  if ($dayOfWeek = 1 or $dayOfWeek = 2) then
+  if ($dayOfWeek = 1 or $dayOfWeek = 7) then
     begin
     end;
   else
@@ -105,10 +105,10 @@ END;
 
 
 CREATE EVENT e_DailyPromotionEnd ON SCHEDULE
-EVERY 1 DAY STARTS '2016-01-02 13:00:00'
+EVERY 1 DAY STARTS '2016-01-02 12:55:00'
 ON COMPLETION PRESERVE
 ENABLE
-COMMENT 'promotion ends at 00:00:00(Melbourne time) every midnight'
+COMMENT 'promotion ends at 23:55:00(Melbourne time) every midnight'
 DO BEGIN
   call DailyPromotionClose();
 END;
