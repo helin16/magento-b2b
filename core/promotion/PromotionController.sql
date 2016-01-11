@@ -63,32 +63,32 @@ BEGIN
   declare $dayOfWeek int;
   SELECT DAYOFWEEK(DATE_ADD(now(), INTERVAL 11 HOUR)) into $dayOfWeek;
   if ($dayOfWeek = 7) then
-    update systemsettings set value = 1 where type = 'is_daily_promotion_time';
+    update systemsettings set value = 1 where type = 'is_weekend_promotion_time';
     UPDATE productprice pp
     INNER JOIN product_category pc
        ON pp.productId = pc.productId
     INNER JOIN product p
        ON pp.productId = p.id
     SET pp.updated = now()
-    WHERE pp.typeId = 5 and pp.active = 1 and p.active=1 and pc.active=1 and pc.categoryId = 339;
+    WHERE pp.typeId = 6 and pp.active = 1 and p.active=1 and pc.active=1 and pc.categoryId = 339;
   end if;
 END;
 
 CREATE PROCEDURE WeekendPromotionClose()
 BEGIN
-  -- close weekend promotion at 00:00:00 every Monday
-  -- 2 is Monday
+  -- close weekend promotion at 23:55:00 every Sunday
+  -- 1 is Sunday
   declare $dayOfWeek int;
   SELECT DAYOFWEEK(DATE_ADD(now(), INTERVAL 11 HOUR)) into $dayOfWeek;
-  if ($dayOfWeek = 2) then
-    update systemsettings set value = 0 where type = 'is_daily_promotion_time';
+  if ($dayOfWeek = 1) then
+    update systemsettings set value = 0 where type = 'is_weekend_promotion_time';
     UPDATE productprice pp
     INNER JOIN product_category pc
        ON pp.productId = pc.productId
     INNER JOIN product p
        ON pp.productId = p.id
     SET pp.updated = now()
-    WHERE pp.typeId = 5 and pp.active = 1 and p.active=1 and pc.active=1  and pc.categoryId = 339;
+    WHERE pp.typeId = 6 and pp.active = 1 and p.active=1 and pc.active=1  and pc.categoryId = 339;
   end if;
 END;
 
@@ -125,12 +125,12 @@ DO BEGIN
   call WeekendPromotionOpen();
 END;
 
--- weekend promotion ends from 00:00:00 (Melbourne time) every Monday
+-- weekend promotion ends from 23:55:00 (Melbourne time) every Sunday
 CREATE EVENT e_WeekendPromotionEnd ON SCHEDULE
-EVERY 1 WEEK STARTS CONCAT(CURRENT_DATE + INTERVAL 6 - WEEKDAY(CURRENT_DATE) DAY,' 13:00:00')
+EVERY 1 WEEK STARTS CONCAT(CURRENT_DATE + INTERVAL 6 - WEEKDAY(CURRENT_DATE) DAY,' 12:55:00')
 ON COMPLETION PRESERVE
 ENABLE
-COMMENT 'weekend promotion ends at 00:00:00(Melbourne time) every Monday'
+COMMENT 'weekend promotion ends at 23:55:00(Melbourne time) every Sunday'
 DO BEGIN
   call WeekendPromotionClose();
 END;
