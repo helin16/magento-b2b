@@ -297,7 +297,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 					tmp.result = tmp.me.getResp(param, false, true);
 					if(!tmp.result || !tmp.result.items)
 						return;
-					tmp.treeDiv = new Element('ul', {'id': tmp.me._productTreeId, 'data-options': 'animate:true, checkbox:true'}) ;
+					tmp.treeDiv = new Element('ul', {'id': tmp.me._productTreeId, 'data-options': 'animate:true, checkbox:true, cascadeCheck:false'}) ;
 					$(resultDiv).update(new Element('div', {'class': 'easyui-panel'}).update(tmp.treeDiv) );
 					tmp.me._signRandID(tmp.treeDiv);
 					tmp.me._initTree(tmp.result.items, '#' + tmp.treeDiv.id);
