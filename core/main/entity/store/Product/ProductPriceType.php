@@ -13,6 +13,7 @@ class ProductPriceType extends BaseEntityAbstract
 	CONST ID_SPECIAL_GROUP_1 = 3;
 	CONST ID_SPECIAL_GROUP_2 = 4;
 	CONST ID_DAILY_SPECIAL = 5;
+	CONST ID_WEEKEND_SPECIAL = 6;
 	/**
 	 * The name of the product
 	 * 

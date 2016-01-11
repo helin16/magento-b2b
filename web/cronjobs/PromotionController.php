@@ -94,6 +94,8 @@ class PromotionController extends Mage_Shell_Abstract {
 					// --weekendcancel
 				  $this->CancelWeekendPromotion();
 				  $this->clear_blockhtml();
+				} else if ($this->getArg('dbinfo')) {
+				  	// --dbinfo;				  				  
 				} else {
 					// help
 					echo $this->usageHelp();
@@ -110,6 +112,7 @@ class PromotionController extends Mage_Shell_Abstract {
 	public function usageHelp() {
 		return <<<USAGE
 Usage:  php -f PromotionController.php [options]
+  dbinfo                        Get db info.
   dailyopen                     Start daily promotion.
   dailyclose                    Close daily promotion.
   dailycancel                   Cancel daily promotion.

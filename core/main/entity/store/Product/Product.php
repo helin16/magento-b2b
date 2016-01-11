@@ -1440,6 +1440,16 @@ class Product extends InfoEntityAbstract
 		return null;
 	}
 	/**
+	 * Getting the weekend special price for this product
+	 * @return ProductPrice|NULL
+	 */
+	public function getWeekendSpecialPrice()
+	{
+		if(count($prices = ProductPrice::getPrices($this, ProductPriceType::get(ProductPriceType::ID_WEEKEND_SPECIAL), '', '', '', '', 1, 1)) > 0)
+			return $prices[0];
+		return null;
+	}
+	/**
 	 * (non-PHPdoc)
 	 * @see BaseEntity::__loadDaoMap()
 	 */

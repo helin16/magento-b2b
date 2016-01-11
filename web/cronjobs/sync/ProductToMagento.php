@@ -421,7 +421,22 @@ abstract class ProductToMagento
    	        		}
    	        	}
    	        }
-   
+   	        
+   	        // if it is the daily promotion time then overwrite the special price with the daily special price
+   	        $isWeekendPromotionTime = intval(SystemSettings::getSettings(SystemSettings::TYP_ISWEEKENDPROMOTIONTIME));
+   	        if ($isWeekendPromotionTime === 1)
+   	        {
+   	        	// get weekend promotion price
+   	        	if (($specialPriceObj = $product->getWeekendSpecialPrice()) instanceof ProductPrice) {
+   	        		$weekendSpecialPrice = StringUtilsAbstract::getValueFromCurrency($specialPriceObj->getPrice());
+   	        		if ($weekendSpecialPrice != 0)
+   	        		{
+   	        			$specialPrice = $weekendSpecialPrice;
+   	        			$specialPriceFromDate = $specialPriceObj->getStart()->format('Y-m-d H:i:sP');
+   	        			$specialPriceToDate = $specialPriceObj->getEnd()->format('Y-m-d H:i:sP');
+   	        		}
+   	        	}
+   	        }  
 
    	        //full description
    	        if (($asset = Asset::getAsset($product->getFullDescAssetId())) instanceof Asset)
