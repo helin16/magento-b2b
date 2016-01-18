@@ -493,7 +493,7 @@ abstract class ProductToMagento
    				"supplier" => $supplierName, // the name of the supplier
    				"man_code" => '', //manufacturer code
    				"sup_code" => $supplierCode, //supplier code
-   				"has_options" => '',
+   				// "has_options" => '',
    				"meta_title" => '',
    				"meta_description" => '',
    				"manufacturer" => $manufacturerName, //manufacture value
@@ -501,7 +501,7 @@ abstract class ProductToMagento
    				"url_path" => '',
    				"custom_design" => '',
    				"page_layout" => '',
-   				"options_container" => '',
+   				// "options_container" => '',
    				"country_of_manufacture" => '',
    				"msrp_enabled" => '',
    				"msrp_display_actual_price_type" => '',
