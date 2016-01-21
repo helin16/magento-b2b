@@ -378,6 +378,7 @@ abstract class ProductToMagento
    	        $weight = trim($product->getWeight());
    	        if($product->getAttributeSet() instanceof ProductAttributeSet) {
    	            $attributeSetName = $product->getAttributeSet()->getName();
+   	            self::_log('-- getting', __CLASS__ . '::' . __FUNCTION__ . "  attributeSetName=$attributeSetName", $preFix);
    	        }
    	        //RRP
    	        if(($rrp = $product->getRRP()) instanceof ProductPrice)
