@@ -76,15 +76,19 @@ class APIProductService extends APIServiceAbstract
 	       $weight = $this->_getPram($params, 'weight', 0);
 	       $images = $this->_getPram($params, 'images', array());
 	       $showOnWeb = $this->_getPram($params, 'showonweb', true);
+	       $attributesetId = $this->_getPram($params, 'attributesetId', null);
 	       
 	       $canUpdate = false;
 
 	       //if we have this product already, then skip
 	       if (!($product = Product::getBySku($sku)) instanceof Product) {
 	           $this->_runner->log('new SKU(' . $sku . ') for import, creating ...', '', APIService::TAB);
-	           $product = Product::create($sku, $name, '', null, null, false, $shortDesc, $fullDesc, $manufacturer, $assetAccNo, $revenueAccNo, $costAccNo, null, null, true, $weight);
+	           $product = Product::create($sku, $name, '', null, null, false, $shortDesc, $fullDesc, $manufacturer, $assetAccNo, $revenueAccNo, $costAccNo, null, null, true, $weight, $attributesetId);
+	           $this->log_product("NEW", "=== new === sku=$sku, name=$name, shortDesc=$shortDesc, fullDesc=$fullDesc, category=" . implode(', ', $categoryIds),  '', APIService::TAB);
 	           $canUpdate = true;
 	       } else {
+	       		//$this->log_product("UPDATE", "=== update === sku=$sku, name=$name, shortDesc=$shortDesc, fullDesc=$fullDesc, category=" . implode(', ', $categoryIds),  '', APIService::TAB);
+    	 
 	           //if there is no price matching rule for this product
 	           if (($rulesCount = intval(ProductPriceMatchRule::countByCriteria('active = 1 and productId = ?', array($product->getId())))) === 0) {
 	               $this->_runner->log('Found SKU(' . $sku . '): ', '', APIService::TAB);
@@ -111,9 +115,16 @@ class APIProductService extends APIServiceAbstract
 	                       ->save();
 		       		   $this->_runner->log('Added a new full description with assetId: ' . $fullAsset->getAssetId(), '', APIService::TAB . APIService::TAB);
 				       $canUpdate = true;
+				       $this->log_product("UPDATE", "=== updating === sku=$sku Found ",  '', APIService::TAB);
 	               }
+	               else 
+	               {
+	                   $this->log_product("SKIP", "=== SKIP updating === sku=$sku for full description not null",  '', APIService::TAB);
+	               }
+	               
 	           } else {
 	           	  $this->_runner->log('SKIP updating. Found ProductPriceMatchRule count:' . $rulesCount, '', APIService::TAB);
+	           	  $this->log_product("SKIP", "=== SKIP updating === sku=$sku Found ProductPriceMatchRule count:$rulesCount",  '', APIService::TAB);	           	   
 	           }
 	       }
           
@@ -217,5 +228,60 @@ class APIProductService extends APIServiceAbstract
    	$stockOnHand = $results['stockOnHand'];
    	return array('stockOnHand' => $stockOnHand);
    }
-    
+   
+   /**
+    * output new products list
+    *
+    * @param string $msg
+    * @param string $funcName
+    * @param string $preFix
+    * @param string $postFix
+    *
+    * @return 
+    */
+   private function log_product($type, $msg, $funcName='', $preFix ='', $postFix = "\n")
+   {
+   	$maxsize = 5 * 1024 * 1024; //Max filesize in bytes (e.q. 5MB)
+   	$dir = "/tmp/";
+   	if ($type === "NEW")
+   	{
+   		$filename = "new_productlist.log";
+   	}
+   	elseif ($type === "UPDATE")
+   	{
+   		$filename = "update_productlist.log";
+   	}
+   	else
+   	{
+   		$filename = "skip_productlist.log";
+   	}
+   	
+   	$productfile = $dir.$filename;
+   	   	
+   	$log = ((trim($msg) === '') ? '' : (UDate::now() . ': ')) . $preFix . $msg . ($funcName === '' ? '' : (' [' . $funcName . '] ')) . $postFix;
+   		
+   	if(file_exists($productfile) &&
+   		filesize($productfile) > $maxsize)
+   	{
+   		$nb = 1;
+   		$logfiles = scandir($dir);
+   		foreach ($logfiles as $file) 
+   		{
+   			$tmpnb = substr($file, strlen($filename) - 1);
+   			if($nb < $tmpnb)
+   			{
+   				$nb = $tmpnb;
+   			}
+   		}
+   		rename($dir.$filename, $dir.$filename.($nb + 1));
+   	}
+   		
+   	if(!is_file($productfile))
+   	{
+   		file_put_contents($productfile, 'Init log file: ' . $productfile . '>>>>' . "\n");
+   	}
+    file_put_contents($productfile, $log, FILE_APPEND);	 
+   		
+   }
+      
 }
