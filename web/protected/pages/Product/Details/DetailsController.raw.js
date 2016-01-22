@@ -585,8 +585,13 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 			return tmp.me;
 		//get all prices
 		tmp.data.prices = tmp.me._collectFormData($(tmp.me.getHTMLID('itemDiv')).down('.prices-panel'), 'list-panel-row', 'list-item');
-		if(tmp.data.prices === null)
-			return tmp.me;
+//		if(tmp.data.prices === null)
+//			return tmp.me;
+		if (jQuery.isEmptyObject(tmp.data.prices))
+		{
+			tmp.me.showModalBox('Notice', '<span class="text-warning">You <b>MUST</b> enter a valid <b>price</b>');
+			return;
+		}
 		//get all suppliercode
 		tmp.data.supplierCodes = tmp.me._collectFormData($(tmp.me.getHTMLID('itemDiv')).down('.suppliers-panel'), 'list-panel-row', 'list-item');
 		if(tmp.data.supplierCodes === null)

@@ -83,11 +83,11 @@ class ProductController extends CRUDPageAbstract
 			else $active = $param->CallbackParameter->rule->active;
 			if($active === true && (!isset($param->CallbackParameter->rule->company_id) || !($company = PriceMatchCompany::get(trim($param->CallbackParameter->rule->company_id))) instanceof PriceMatchCompany))
 				throw new Exception('Invalid PriceMatchCompany Id passed in, "' . $param->CallbackParameter->rule->company_id . '" given');
-			
 			if($active === false && ($rule = ProductPriceMatchRule::getByProduct($product)) instanceof ProductPriceMatchRule)
 			{
 				$rule->setActive($active)->save();
 				$results = $rule->getJson();
+				
 			}
 			elseif($active === true)
 			{
@@ -106,6 +106,7 @@ class ProductController extends CRUDPageAbstract
 			$errors[] = $ex->getMessage();
 		}
 		$param->ResponseData = StringUtilsAbstract::getJson($results, $errors);
+		
 	}
 	public function getRequestProductID()
 	{
@@ -258,11 +259,15 @@ class ProductController extends CRUDPageAbstract
     		$id = isset($param->CallbackParameter->id) ? $param->CallbackParameter->id : '';
     		$product = Product::get($id);
     		$prices = ProductPrice::getPrices($product, ProductPriceType::get(ProductPriceType::ID_RRP));
+    		
     		$companies = PriceMatcher::getAllCompaniesForPriceMatching();
-    		$prices = PriceMatcher::getPrices($companies, $product->getSku(), (count($prices)===0 ? 0 : $prices[0]->getPrice()) );
-    		$myPrice = $prices['myPrice'];
-    		$minPrice = $prices['minPrice'];
-    		$msyPrice = $prices['companyPrices']['MSY'];
+    		//$prices = PriceMatcher::getPrices($companies, $product->getSku(), (count($prices)===0 ? 0 : $prices[0]->getPrice()) );
+    		$prices = PriceMatcher::getMatchPrices($companies, $product->getSku(), (count($prices)===0 ? 0 : $prices[0]->getPrice()) );
+    		
+    		
+//     		$myPrice = $prices['myPrice'];
+//     		$minPrice = $prices['minPrice'];
+//     		$msyPrice = $prices['companyPrices']['MSY'];
     		$prices['id'] = $id;
     		$results = $prices;
     	}
@@ -271,6 +276,7 @@ class ProductController extends CRUDPageAbstract
     		$errors[] = $ex->getMessage().$ex->getTraceAsString();
     	}
     	$param->ResponseData = StringUtilsAbstract::getJson($results, $errors);
+
     }
     
     /**

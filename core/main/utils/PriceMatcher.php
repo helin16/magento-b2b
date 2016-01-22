@@ -86,4 +86,58 @@ abstract class PriceMatcher
 		$finalOutputArray['priceDiff'] = ($finalOutputArray['myPrice'] - $finalOutputArray['minPrice']);
 		return $finalOutputArray;
 	}
+	public static function getMatchPrices($companyAliases, $sku, $myPrice)
+	{
+		
+		$myPrice = StringUtilsAbstract::getValueFromCurrency($myPrice);
+		//initialize values
+		$finalOutputArray = array(
+				'sku'             => $sku
+				,'myPrice'        => $myPrice
+				,'minPrice'       => 0
+				,'companyPrices'  => array()
+		);
+		
+		foreach($companyAliases as $key => $value)
+		{
+			$finalOutputArray['companyPrices'][$key] = array('price' => 0, 'priceURL' => '', 'PriceMatchCompanyId' => $value['PriceMatchCompanyId']);
+		}
+						
+		//getting actual values
+		$productPriceArray = PriceMatchConnector::getMatchPrices($sku);
+
+		foreach($productPriceArray as $productPriceInfo)
+		{
+			$companyDetails = $productPriceInfo['PriceMatchCompany'];
+			$companyDetails = $companyDetails->getCompanyAlias();
+
+			if($companyDetails  === '')
+				continue;
+			
+	
+			foreach($companyAliases as $key => $value)
+			{
+				if(is_array($value) === true && in_array(strtolower($companyDetails), array_map(create_function('$a', 'return strtolower($a);'), $value)))
+				{
+					$price = str_replace(' ', '', str_replace('$', '', str_replace(',', '', $productPriceInfo['price']) ) );
+					if($finalOutputArray['minPrice'] == 0 || $finalOutputArray['minPrice'] > $price)
+						$finalOutputArray['minPrice'] = $price;
+					$finalOutputArray['companyPrices'][$key] = array(
+							'price' => $price
+							,'priceURL' => $productPriceInfo['url']
+							,'PriceMatchCompanyId' => $value['PriceMatchCompanyId'] // added b/c improvment of pricematch (Jun2015). it keeps PriceMatchCompany for further reference
+					);
+					break;
+				}
+			}
+		}
+		$companyAliases = null;
+		$price = null;
+		$productPriceArray = null;
+			
+		//return the result
+		$finalOutputArray['priceDiff'] = ($finalOutputArray['myPrice'] - $finalOutputArray['minPrice']);
+
+		return $finalOutputArray;
+	}
 }

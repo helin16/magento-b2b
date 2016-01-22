@@ -383,7 +383,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		tmp.me = this;
 		tmp.product = (product || null);
 		tmp.selected = (selected || null);
-		
+
 		tmp.newDiv = new Element('div', {'class': ''})
 			.insert({'bottom': new Element('div', {'class': 'col-xs-12'})
 				.insert({'bottom': new Element('div', {'class': 'form-group form-group-sm input-group'})
@@ -961,26 +961,45 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 						)})
 				)
 			})
-			.insert({'bottom': new Element(tmp.tag, {'class': 'hidden-xs hide-when-info hidden-sm row'}).addClassName('col-xs-3').setStyle(tmp.me._showRightPanel ? 'display: none' : '')
-				.insert({'bottom': new Element('div', {'class': 'col-sm-4'}).update(tmp.isTitle === true ? 'Price' : new Element('input', {'class': "click-to-edit price-input", 'value': tmp.me.getCurrency(tmp.price), 'product-id': row.id}).setStyle('width: 100%') ) })
-				.insert({'bottom': new Element('div', {'class': 'col-sm-4'}).update(tmp.isTitle === true ? 'Special Price' : new Element('input', {'class': "click-to-edit price-input", 'value': tmp.me.getCurrency(tmp.specilaPrice), 'product-id': row.id, 'isSpecial' : '1'}).setStyle('width: 100%') ) })
+			.insert({'bottom': new Element(tmp.tag, {'class': 'hidden-xs hide-when-info hidden-sm row'}).addClassName('col-xs-2').setStyle(tmp.me._showRightPanel ? 'display: none' : '')
+				.insert({'bottom': new Element('div', {'class': 'col-sm-6'}).update(tmp.isTitle === true ? 'Price' : new Element('input', {'class': "click-to-edit price-input", 'value': tmp.me.getCurrency(tmp.price), 'product-id': row.id}).setStyle('width: 80%') ) })
+				.insert({'bottom': new Element('div', {'class': 'col-sm-6'}).update(tmp.isTitle === true ? 'Special Price' : new Element('input', {'class': "click-to-edit price-input", 'value': tmp.me.getCurrency(tmp.specilaPrice), 'product-id': row.id, 'isSpecial' : '1'}).setStyle('width: 80%') ) })
 				
-				.insert({'bottom': new Element('div', {'class': 'col-sm-2'}).update(tmp.isTitle === true ? 'Match' : new Element('span').update((row.priceMatchRule && row.priceMatchRule.priceMatchCompany) ? row.priceMatchRule.priceMatchCompany.companyName : '').setStyle('width: 100%') ) })
+				//.insert({'bottom': new Element('div', {'class': 'col-sm-2'}).update(tmp.isTitle === true ? 'Match' : new Element('span').update((row.priceMatchRule && row.priceMatchRule.priceMatchCompany) ? row.priceMatchRule.priceMatchCompany.companyName : '').setStyle('width: 100%') ) })
 //				.insert({'bottom': new Element('div', {'class': 'col-sm-3'}).update(tmp.isTitle === true ? 'Min St' : new Element('input', {'class': "click-to-edit stockMinLevel-input", 'value': row.stockMinLevel, 'product-id': row.id}).setStyle('width: 100%') ) })
 //				.insert({'bottom': new Element('div', {'class': 'col-sm-3'}).update(tmp.isTitle === true ? 'Re St' : new Element('input', {'class': "click-to-edit stockReorderLevel-input", 'value': row.stockReorderLevel, 'product-id': row.id}).setStyle('width: 100%') ) })
-				.insert({'bottom': new Element('div', {'class': 'col-xs-2'})
-					.insert({'bottom': tmp.isTitle === true ? 'ManFeed?' : new Element('input', {'type': 'checkbox', 'checked': row.manualDatafeed})
-						.observe('click', function(event) {
-							tmp.btn = this;
-							tmp.checked = $(tmp.btn).checked;
-							if(confirm(tmp.checked === true ? 'You are about to manual datafeed this product.\n Continue?' : 'You are about to NOT manfual datafeed this product.\n Continue?')) {
-								tmp.me.toggleManualFeed(tmp.checked, row);
-							} else $(tmp.btn).checked = !tmp.checked;
-						})
+//				.insert({'bottom': new Element('div', {'class': 'col-xs-2'})
+//					.insert({'bottom': tmp.isTitle === true ? 'ManFeed?' : new Element('input', {'type': 'checkbox', 'checked': row.manualDatafeed})
+//						.observe('click', function(event) {
+//							tmp.btn = this;
+//							tmp.checked = $(tmp.btn).checked;
+//							if(confirm(tmp.checked === true ? 'You are about to manual datafeed this product.\n Continue?' : 'You are about to NOT manfual datafeed this product.\n Continue?')) {
+//								tmp.me.toggleManualFeed(tmp.checked, row);
+//							} else $(tmp.btn).checked = !tmp.checked;
+//						})
+//					})
+//				})
+			})
+			.insert({'bottom': tmp.match = new Element(tmp.tag, {'class': 'match'+ row.id +' hide-when-info hidden-sm', 'style':'width:5%' }).addClassName('col-xs-1').update(
+					
+				)
+				.insert({'bottom': new Element('div', {'class': 'col-sm-12'}).update(tmp.isTitle === true ? 'Match' : new Element('span').update((row.priceMatchRule && row.priceMatchRule.priceMatchCompany) ? row.priceMatchRule.priceMatchCompany.companyName : '').setStyle('width: 100%') ) })
+			 })
+			.insert({'bottom': new Element(tmp.tag, {'class': 'ManFeed hide-when-info hidden-sm', 'style':'width:5%'}).addClassName('col-xs-1')
+				.insert({'bottom': new Element('div', {'class': 'col-xs-12'})
+				.insert({'bottom': tmp.isTitle === true ? 'ManFeed?' : new Element('input', {'type': 'checkbox', 'checked': row.manualDatafeed})
+					.observe('click', function(event) {
+						tmp.btn = this;
+						tmp.checked = $(tmp.btn).checked;
+						if(confirm(tmp.checked === true ? 'You are about to manual datafeed this product.\n Continue?' : 'You are about to NOT manfual datafeed this product.\n Continue?')) {
+							tmp.me.toggleManualFeed(tmp.checked, row);
+						} else $(tmp.btn).checked = !tmp.checked;
 					})
 				})
 			})
-			.insert({'bottom': new Element(tmp.tag, {'class': 'locations hide-when-info hidden-sm', 'style' : 'width:5%'}).addClassName('col-xs-1').update(
+	
+			 })			
+			.insert({'bottom': new Element(tmp.tag, {'class': 'locations hide-when-info hidden-sm', 'style' : 'width:8%'}).addClassName('col-xs-1').update(
 					row.locations ? tmp.me._getLocations(row.locations, isTitle) : ''
 			) })
 			.insert({'bottom': new Element(tmp.tag, {'class': 'sellonweb hide-when-info hidden-sm ', 'style' : 'width:1%'}).addClassName('col-xs-1')
@@ -1005,8 +1024,8 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 			 })
 			//.insert({'bottom': new Element(tmp.tag, {'class': 'inventeryCode hide-when-info'}).addClassName('col-xs-1').update(row.invenAccNo ? row.invenAccNo : '') })
 
-			.insert({'bottom': new Element(tmp.tag, {'class': 'manufacturer hide-when-info', 'style' : 'width:4%'}).addClassName('col-xs-1').update(row.manufacturer ? row.manufacturer.name : '') })
-			.insert({'bottom': new Element(tmp.tag, {'class': 'supplier hide-when-info hidden-sm', 'style' : 'width:4%'}).addClassName('col-xs-1').update(
+			.insert({'bottom': new Element(tmp.tag, {'class': 'manufacturer hide-when-info', 'style' : 'width:5%'}).addClassName('col-xs-1').update(row.manufacturer ? row.manufacturer.name : '') })
+			.insert({'bottom': new Element(tmp.tag, {'class': 'supplier hide-when-info hidden-sm', 'style' : 'width:5%'}).addClassName('col-xs-1').update(
 					row.supplierCodes ? tmp.me._getSupplierCodes(row.supplierCodes, isTitle) : ''
 			) })
 			.insert({'bottom': new Element(tmp.tag, {'class': 'qty hidden-sm'}).addClassName('col-xs-1').update(
@@ -1034,7 +1053,6 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 									tmp.checked = $(tmp.btn).checked;
 									if(confirm(tmp.checked === true ? 'You are about to ReACTIVATE this product.\n Continue?' : 'You are about to deactivate this product.\n Continue?'))
 										tmp.me.toggleActive(tmp.checked, row);
-									else $(tmp.btn).checked = !tmp.checked;
 								})
 							})
 						})
@@ -1045,6 +1063,55 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 				) })
 
 			});
+		
+		if ( !tmp.isTitle )
+		{
+			//console.log('row.priceMatchRule = ', row.priceMatchRule);
+			//console.log('tmp.row = ', tmp.row);
+			// price match is valid
+			// row.priceMatchRule.updated
+			if (row.priceMatchRule && row.priceMatchRule.updated)
+			{
+				var m = row.priceMatchRule.updated.substr(0, 10);
+				//console.log('m = ', m);
+				var d1 = new Date(m);
+				var d2 = new Date();
+				//console.log('d1 = ', d1);
+				//console.log('d2 = ', d2);
+				var timeDiff = d2.getTime() - d1.getTime();
+				//console.log('timeDiff = ', timeDiff);
+				var daysDiff = timeDiff / (1000*3600*24);
+				
+				//console.log('daysDiff = ', daysDiff);
+
+				if (daysDiff < 1)
+				{
+					// keep the latest match
+					//console.log(' <1 ');
+					jQuery(tmp.match).css({"background-color" : "green"})
+				}
+				else if (daysDiff < 2)
+				{
+					//console.log(' >1 ');
+					// more than 1 day not do the match
+					jQuery(tmp.match).css({"background-color" : "yellow"})
+				}
+				else
+				{
+					jQuery(tmp.match).css({"background-color" : "orange"});
+				}
+			}
+			else
+			{
+				// no match rule 
+				// do nothing
+				//console.log('row.priceMatchRule = ', row.priceMatchRule);
+				//console.log('select= ', tmp.match);
+				// jQuery(tmp.match).css({"background-color" : "orange"});
+				
+			}
+		}
+
 		return tmp.row;
 	}
 });

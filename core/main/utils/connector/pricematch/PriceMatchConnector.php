@@ -4,6 +4,8 @@ class PriceMatchConnector
 	private $sku;
 	private $base_url = 'http://www.staticice.com.au/cgi-bin/search.cgi';
 	private $debug;
+	private  static $_api = array('URL' => "http://192.168.1.7:8080/api/", 'token' => '');
+	
 	/**
 	 * runner for PriceMatchConnector
 	 *
@@ -18,7 +20,9 @@ class PriceMatchConnector
 		$class->sku = trim($sku);
 		$class->debug = $debug === true ? true : false;
 		
-		$class->recordResult($class->getPrices());
+		//$class->recordResult($class->getPrices());
+		$class->recordResult(self::getMatchPrices($sku));
+		
 	}
 	public static function getMinRecord($sku, $debug = false)
 	{
@@ -259,4 +263,107 @@ class PriceMatchConnector
 		}
 		return $result;
 	}
+	private static function _login()
+	{
+		//Core::setUser(UserAccount::get(UserAccount::ID_SYSTEM_ACCOUNT), Core::getRole());
+		$username = UserAccount::get(UserAccount::ID_SYSTEM_ACCOUNT)->getUserName();
+		$password = UserAccount::get(UserAccount::ID_SYSTEM_ACCOUNT)->getPassword();
+	
+		if(!isset(self::$_api['URL']) || ($apiUrl = trim(self::$_api['URL'])) === '')
+			throw new Exception('No API URL set!');
+		$url = $apiUrl . 'UserAccount/login';
+		$data = json_encode(array('username' => $username, 'password' => $password));
+	
+		self::_postJson($url, $data);
+		if(trim(self::$_api['token']) === '')
+			throw new Exception('Invalid token');
+	
+	}
+	private static function _postJson($url, $data)
+	{
+	
+		$extraOptions = array( CURLOPT_CUSTOMREQUEST => "POST",
+				CURLOPT_POSTFIELDS => $data,
+				CURLOPT_RETURNTRANSFER => true,
+				CURLOPT_HTTPHEADER => array(
+						'Content-Type: application/json',
+						'Content-Length: ' . strlen($data),
+						'MAGE_API:' . self::$_api['token']
+				)
+		);
+	
+		$result = ComScriptCURL::readUrl($url, null, array(), '', $extraOptions);
+	
+		$result = json_decode($result, true);
+		if (isset($result['token']) && ($token = trim($result['token'])) !== '')
+		{
+			self::$_api['token'] = $token;
+				
+			//return $result;
+		}
+		else
+		{
+			$result = null;
+		}
+		return $result;
+	}
+	private static function getPricesBySku($sku)
+	{
+		$params = $results = array();
+		self::_login();
+	
+		$apiUrl = trim(self::$_api['URL']);
+			
+		$api_url = $apiUrl . 'PriceMatch/getPrices';
+	
+		// first try to find product by manufacturerPartNo
+		$params = array('searchTxt' => 'sku = ?',
+				'searchParams' =>  array($sku),
+		);
+	
+		$data = json_encode($params);
+		$results_api = self::_postJson($api_url, $data);
+		//var_dump($results_api);
+	
+	
+		$token = trim($results_api['token']);
+		if ($token !== '')
+		{
+			$results = $results_api;
+		}
+		return $results;
+	}
+	public static function getMatchPrices($sku)
+	{
+		//file_put_contents('/tmp/datafeed/web.log', __FILE__ .':' . __FUNCTION__ . ':' . __LINE__ . ':' . '----start getMatchPrices' . PHP_EOL, FILE_APPEND | LOCK_EX);
+		$result = array();
+		$priceMatchResults=self::getPricesBySku($sku);
+		
+		$priceMatchResults = $priceMatchResults['items'];
+		$companies = PriceMatchCompany::getAll();
+
+		
+		foreach($priceMatchResults as $priceMatchResult)
+		{
+			if(($name = trim($priceMatchResult['name'])) === '')
+				continue;
+	
+			$price = str_replace(' ', '', str_replace('$', '', str_replace(',', '', $priceMatchResult['price']) ) );
+			$url = $priceMatchResult['url'];
+
+				
+			foreach ($companies as $company)
+			{
+				$companyAlias = $company->getCompanyAlias();
+				
+				if(strtolower($name) === strtolower($companyAlias))
+				{
+					$result[] = array('PriceMatchCompany'=> $company, 'price'=> $price, 'name'=> $name, 'url'=> $url);					
+				}
+			}
+		}
+		//file_put_contents('/tmp/datafeed/web.log', __FILE__ .':' . __FUNCTION__ . ':' . __LINE__ . ':' . '----end getMatchPrices' . PHP_EOL, FILE_APPEND | LOCK_EX);
+		return $result;
+	}
+	
 }
