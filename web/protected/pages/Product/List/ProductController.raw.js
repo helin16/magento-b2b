@@ -164,6 +164,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 			tmp.ModalBox = $(tmp.me.modalId);
 			if(tmp.ModalBox)
 				tmp.ModalBox.down('.modal-header').update('<h4 style="color:red;">Processing... Please Do NOT close</h4>');
+			
 			tmp.me.postAjax(tmp.me.getCallbackId('newRule'), {'productId': tmp.me._selected[tmp.me._postIndex]['id'], 'rule': tmp.me._priceMatchRule}, {
 				'onLoading': function () {
 					if(tmp.btn !== null)
@@ -303,6 +304,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 		tmp.me = this;
 		tmp.minPrice = 0;
 		tmp.tbody = new Element('tbody');
+		
 		$H(prices["companyPrices"]).each(function(price){
 			if(parseInt(price.value.price) !== 0) {
 				if((parseInt(tmp.minPrice) === 0 && parseFloat(price.value.price) > 0) || parseFloat(price.value.price) < parseFloat(tmp.minPrice))
@@ -879,6 +881,12 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 			row.prices.each(function(price) {
 				if(price.type && parseInt(price.type.id) === 1) {
 					tmp.price = price.price;
+					tmp.updatedDate = price.updated;
+					//var n = tmp.updatedDate.getTimezoneOffset();
+					//tmp.updatedDate.setTime(tmp.updatedDate.getTime() - n);
+					//var d1 = new Date(tmp.updatedDate);
+					//d1.setHours(d1.getHours() + 11);
+					//tmp.updatedDate = d1;
 				}
 				else if(price.type && (parseInt(price.type.id) === 2))
 				{
@@ -983,7 +991,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 			.insert({'bottom': tmp.match = new Element(tmp.tag, {'class': 'match'+ row.id +' hide-when-info hidden-sm', 'style':'width:5%' }).addClassName('col-xs-1').update(
 					
 				)
-				.insert({'bottom': new Element('div', {'class': 'col-sm-12'}).update(tmp.isTitle === true ? 'Match' : new Element('span').update((row.priceMatchRule && row.priceMatchRule.priceMatchCompany) ? row.priceMatchRule.priceMatchCompany.companyName : '').setStyle('width: 100%') ) })
+				.insert({'bottom': new Element('div', {'class': 'col-sm-12'}).update(tmp.isTitle === true ? 'Match' : new Element('span').update((row.priceMatchRule && row.priceMatchRule.priceMatchCompany) ? '<abbr title="Updated: '  + tmp.updatedDate + '">' + row.priceMatchRule.priceMatchCompany.companyName + '</abbr>' : '').setStyle('width: 100%') ) })
 			 })
 			.insert({'bottom': new Element(tmp.tag, {'class': 'ManFeed hide-when-info hidden-sm', 'style':'width:5%'}).addClassName('col-xs-1')
 				.insert({'bottom': new Element('div', {'class': 'col-xs-12'})
@@ -1070,11 +1078,19 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 			//console.log('tmp.row = ', tmp.row);
 			// price match is valid
 			// row.priceMatchRule.updated
-			if (row.priceMatchRule && row.priceMatchRule.updated)
+			if (row.priceMatchRule && tmp.updatedDate)
 			{
-				var m = row.priceMatchRule.updated.substr(0, 10);
+				//var d = tmp.updatedDate;
+				//var n = d.getTimezoneOffset();
+				//d.setTime(d.getTime() - n);
+				//console.log('tmp.updatedDate = ', tmp.updatedDate);
+				//var m = tmp.updatedDate.substr(0, 10);
+				//var m = m.substr(0, 10);
 				//console.log('m = ', m);
-				var d1 = new Date(m);
+				var d1 = new Date(tmp.updatedDate);
+				//console.log('d1 = ', d1);
+				d1.setHours(d1.getHours()+11);
+				//console.log('d1 = ', d1);
 				var d2 = new Date();
 				//console.log('d1 = ', d1);
 				//console.log('d2 = ', d2);

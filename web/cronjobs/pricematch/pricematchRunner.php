@@ -8,6 +8,9 @@ if(isset($argv) && isset($argv[1]) && Product::get($argv[1]) instanceof Product)
 	$productIds = Dao::getResultsNative('select distinct p.id from product p where p.id = ?', array($argv[1]), PDO::FETCH_ASSOC);
 else $productIds = Dao::getResultsNative('select distinct p.id from product p inner join productpricematchrule r on (r.productId = p.id and r.active = 1) where p.active = 1 order by p.id', array(), PDO::FETCH_ASSOC);
 
+$rows = count($productIds);
+echo "--- Got ($rows) products having price matching rules !";
+
 foreach ($productIds as $row)
 {
 	try {

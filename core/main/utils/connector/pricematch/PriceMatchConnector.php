@@ -66,8 +66,8 @@ class PriceMatchConnector
 			$newPrice = ProductPrice::create($product, ProductPriceType::get(ProductPriceType::ID_RRP), 0);
 			$prices = array($newPrice);
 		}
-		if(($magePrice = $this->_getMagentoProductPrice($sku)) !== null)
-			$prices[0]->setPrice($magePrice)->save();
+// 		if(($magePrice = $this->_getMagentoProductPrice($sku)) !== null)
+// 			$prices[0]->setPrice($magePrice)->save();
 		$myPrice = $prices[0]->getPrice();
 		
 		if(!$min instanceof PriceMatchMin)
@@ -97,8 +97,10 @@ class PriceMatchConnector
 			$where[] = 'companyId IN ('.implode(", ", array_fill(0, count($companyIds), "?")).')';
 			$params = array_merge($params, $companyIds);
 			
+		
 			//calculate target compatitor price
 			$records = PriceMatchRecord::getAllByCriteria(implode(' AND ', $where), $params, true, null, DaoQuery::DEFAUTL_PAGE_SIZE, array('price'=>'asc'));
+						
 			$base_price = null;
 			foreach ($records as $record)
 			{
@@ -148,9 +150,10 @@ class PriceMatchConnector
 					if(isset($prices[0]) && $prices[0] instanceof ProductPrice)
 					{
 						$oldPrice = $prices[0]->getPrice();
+						echo 'update price from old price : ' . $oldPrice . ' to new price :'  . $result . "\n";
 						$prices[0]->setPrice(doubleval($result))->save()->addLog('PriceMatch change price from $' . $oldPrice . 'to new price $' . $result, Log::TYPE_SYSTEM);
-						if($updateMagento === true)
-							$this->updateMagentoPrice(doubleval($result));
+// 						if($updateMagento === true)
+// 							$this->updateMagentoPrice(doubleval($result));
 					}
 				}
 			}
@@ -268,6 +271,8 @@ class PriceMatchConnector
 		//Core::setUser(UserAccount::get(UserAccount::ID_SYSTEM_ACCOUNT), Core::getRole());
 		$username = UserAccount::get(UserAccount::ID_SYSTEM_ACCOUNT)->getUserName();
 		$password = UserAccount::get(UserAccount::ID_SYSTEM_ACCOUNT)->getPassword();
+		//$username = Core::getUser()->getUserName();
+		//$password = Core::getUser()->getPassword();
 	
 		if(!isset(self::$_api['URL']) || ($apiUrl = trim(self::$_api['URL'])) === '')
 			throw new Exception('No API URL set!');

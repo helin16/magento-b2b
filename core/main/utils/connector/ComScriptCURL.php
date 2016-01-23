@@ -67,6 +67,10 @@ class ComScriptCURL
 		foreach($options as $key => $value)
 		    curl_setopt($ch, $key, $value);
 		$data =curl_exec($ch);
+		if ($data === false)
+		{
+			throw new Exception(curl_error($ch), curl_errno($ch));
+		}
 		curl_close($ch);
 		return $data;
 	}

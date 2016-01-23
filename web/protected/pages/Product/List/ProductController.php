@@ -91,10 +91,16 @@ class ProductController extends CRUDPageAbstract
 			}
 			elseif($active === true)
 			{
+				
 				$rule = ProductPriceMatchRule::create($product, $company, trim($param->CallbackParameter->rule->price_from), trim($param->CallbackParameter->rule->price_to), trim($param->CallbackParameter->rule->offset));
+				//file_put_contents('/tmp/datafeed/web.log', __FILE__ .':' . __FUNCTION__ . ':' . __LINE__ . ': run' . date('Y-m-d\TH:i:sP') . PHP_EOL, FILE_APPEND | LOCK_EX);
 				PriceMatchConnector::run($product->getSku(), true);
+				//file_put_contents('/tmp/datafeed/web.log', __FILE__ .':' . __FUNCTION__ . ':' . __LINE__ . ': getMinRecord' . date('Y-m-d\TH:i:sP'). PHP_EOL, FILE_APPEND | LOCK_EX);
+				
 				PriceMatchConnector::getMinRecord($product->getSku(), true);
+				//file_put_contents('/tmp/datafeed/web.log', __FILE__ .':' . __FUNCTION__ . ':' . __LINE__ . ': getNewPrice' . date('Y-m-d\TH:i:sP') . PHP_EOL, FILE_APPEND | LOCK_EX);
 				PriceMatchConnector::getNewPrice($product->getSku(), true, true);
+				//file_put_contents('/tmp/datafeed/web.log', __FILE__ .':' . __FUNCTION__ . ':' . __LINE__ . ': end' . date('Y-m-d\TH:i:sP'). PHP_EOL, FILE_APPEND | LOCK_EX);
 				$results = $rule->getJson();
 			}
 			
@@ -190,6 +196,7 @@ class ProductController extends CRUDPageAbstract
                 $results['items'][] = $obj->getJson();
             $results['totalStockOnHand'] = isset($sumArray['totalStockOnHand']) ? trim($sumArray['totalStockOnHand']) : 0;
             $results['totalOnHandValue'] = isset($sumArray['totalOnHandValue']) ? trim($sumArray['totalOnHandValue']) : 0;
+
         }
         catch(Exception $ex)
         {
