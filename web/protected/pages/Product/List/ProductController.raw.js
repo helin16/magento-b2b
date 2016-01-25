@@ -13,8 +13,7 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 	,_postIndex: null // for new rule post, start from 0
 	,_selected: null // for new rule post, selected products
 	,_priceMatchRule: null // for new rule post, the rule itself
-	,newRuleResultContainerId: 'new_rule_result_container' // the element id for new rule post result container
-	
+	,newRuleResultContainerId: 'new_rule_result_container' // the element id for new rule post result container	
 	,_getTitleRowData: function() {
 		return {'sku': 'SKU', 'name': 'Product Name','locations': 'Locations', 'invenAccNo': 'AccNo.', 'manufacturer' : {'name': 'Brand'}, 'supplierCodes': [{'supplier': {'name': 'Supplier'}, 'code': ''}],  'active': 'act?', 'stockOnOrder': 'OnOrder', 'stockOnHand': 'OnHand', 'stockOnPO': 'OnPO'};
 	}
@@ -1087,7 +1086,9 @@ PageJs.prototype = Object.extend(new CRUDPageJs(), {
 				//var m = tmp.updatedDate.substr(0, 10);
 				//var m = m.substr(0, 10);
 				//console.log('m = ', m);
-				var d1 = new Date(tmp.updatedDate);
+				var d = tmp.updatedDate;
+				var d1 = new Date(d.substr(0, 4), d.substr(5, 2) - 1, d.substr(8, 2), d.substr(11, 2), d.substr(14, 2), d.substr(17, 2));
+				//var d1 = new Date(tmp.updatedDate);
 				//console.log('d1 = ', d1);
 				d1.setHours(d1.getHours()+11);
 				//console.log('d1 = ', d1);
