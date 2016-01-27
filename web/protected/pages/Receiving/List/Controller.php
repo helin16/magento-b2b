@@ -66,7 +66,7 @@ class Controller extends CRUDPageAbstract
 			$where = $params = $stats = array();
 			if(isset($serachCriteria['serialno']) && ($serialno = trim($serachCriteria['serialno'])) !== '') {
 				$where[] = 'serialNo like ?';
-				$params[] = trim($serialno);
+				$params[] = '%' . trim($serialno) . '%';
 			}
 			if(isset($serachCriteria['productid']) && ($productid = trim($serachCriteria['productid'])) !== '') {
 				$where[] = 'productId = ?';
