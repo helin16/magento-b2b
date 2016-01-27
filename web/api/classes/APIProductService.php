@@ -3,6 +3,23 @@ class APIProductService extends APIServiceAbstract
 {
    protected $entityName = 'Product';
    
+   public function get_getAllSku($params)
+   {
+   	return $this->getallskus($params);
+   	 
+   }
+   
+   public function post_getAllSku($params)
+   {                    
+   	return $this->getallskus($params);
+   	 
+   }
+   
+   public function put_getAllSku($params)
+   {
+   	return $this->getallskus($params);
+   	 
+   }
    public function post_getStockOnHand($params)
    {
    	return $this->getall($params);
@@ -283,5 +300,41 @@ class APIProductService extends APIServiceAbstract
     file_put_contents($productfile, $log, FILE_APPEND);	 
    		
    }
+   
+   /**
+    * Getting All for entity
+    *
+    * @param unknown $params
+    *
+    * @throws Exception
+    * @return multitype:multitype:
+    */
+   private function getallskus($params)
+   {
+   	$entityName = trim($this->entityName);
+   
+   	$searchTxt = $this->_getPram($params, 'searchTxt', 'active = 1');
+   	$searchParams = $this->_getPram($params, 'searchParams', array());
+   	$pageNo = $this->_getPram($params, 'pageNo', null);
+   	$pageSize = $this->_getPram($params, 'pageSize', DaoQuery::DEFAUTL_PAGE_SIZE);
+   	$active = $this->_getPram($params, 'active', true);
+   	$orderBy = $this->_getPram($params, 'orderBy', array());
+   
+   	$stats = array();
+   
+   	$items = $entityName::getAllByCriteria($searchTxt, $searchParams, $active, $pageNo, $pageSize, $orderBy, $stats);
+   	$return = array();
+   	foreach($items as $item)
+   	{
+   		//$return[] = $item->getJson();
+   		//$row['sku'] = $item->getSku();
+   		//$row['shortDescription'] = $item->getShortDescription();
+   		//$row['updated'] = $item->getUpdated()->format('Y-m-d H:i:s');
+   		$return[] = array('sku' => $item->getSku(), 'shortDescription' => $item->getShortDescription(), 'updated' => $item->getUpdated()->format('Y-m-d H:i:s'));
+   	}
+   		
+   	return array('items' => $return, 'pagination' => $stats);
+   }
+    
       
 }
