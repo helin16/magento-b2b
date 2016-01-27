@@ -149,11 +149,19 @@ class PriceMatchConnector
 					// set product price
 					if(isset($prices[0]) && $prices[0] instanceof ProductPrice)
 					{
-						$oldPrice = $prices[0]->getPrice();
-						echo 'update price from old price : ' . $oldPrice . ' to new price :'  . $result . "\n";
-						$prices[0]->setPrice(doubleval($result))->save()->addLog('PriceMatch change price from $' . $oldPrice . 'to new price $' . $result, Log::TYPE_SYSTEM);
-// 						if($updateMagento === true)
+						$newmatchprice = doubleval($result);
+						if  ( $newmatchprice >0 )
+						{
+							$oldPrice = $prices[0]->getPrice();
+							echo 'update price from old price : ' . $oldPrice . ' to new price :'  . $newmatchprice . "\n";
+							$prices[0]->setPrice(doubleval($result))->save()->addLog('PriceMatch change price from $' . $oldPrice . 'to new price $' . $result, Log::TYPE_SYSTEM);
+	// 						if($updateMagento === true)
 // 							$this->updateMagentoPrice(doubleval($result));
+						}
+						else 
+						{
+							echo 'not update price because new match price is 0 ( ' . $newmatchprice .' )' . "\n";
+						}
 					}
 				}
 			}
@@ -347,7 +355,6 @@ class PriceMatchConnector
 		$priceMatchResults = $priceMatchResults['items'];
 		$companies = PriceMatchCompany::getAll();
 
-		
 		foreach($priceMatchResults as $priceMatchResult)
 		{
 			if(($name = trim($priceMatchResult['name'])) === '')

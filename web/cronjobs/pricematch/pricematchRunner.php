@@ -2,7 +2,7 @@
 require_once dirname(__FILE__) . '/../../bootstrap.php';
 
 Core::setUser(UserAccount::get(UserAccount::ID_SYSTEM_ACCOUNT));
-echo "Begin MELB TIME: " . UDate::now(UDate::TIME_ZONE_MELB) . "\n";
+echo "Begin at MELB TIME: " . UDate::now(UDate::TIME_ZONE_MELB) . "\n";
 
 if(isset($argv) && isset($argv[1]) && Product::get($argv[1]) instanceof Product)
 	$productIds = Dao::getResultsNative('select distinct p.id from product p where p.id = ?', array($argv[1]), PDO::FETCH_ASSOC);
@@ -25,6 +25,8 @@ foreach ($productIds as $row)
 		echo $e->getMessage() . "\n";
 	}
 }
+
+echo "End at MELB TIME: " . UDate::now(UDate::TIME_ZONE_MELB) . "\n";
 
 /**
  * Execute a command and kill it if the timeout limit fired to prevent long php execution
