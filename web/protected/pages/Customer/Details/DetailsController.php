@@ -63,11 +63,13 @@ class DetailsController extends DetailsPageAbstract
 		{
 			Dao::beginTransaction();
 
+			
 			$name = trim($param->CallbackParameter->name);
 			$id = !is_numeric($param->CallbackParameter->id) ? '' : trim($param->CallbackParameter->id);
 			$active = !is_numeric($param->CallbackParameter->id) ? '' : trim($param->CallbackParameter->active);
 			$email = trim($param->CallbackParameter->email);
 			$contactNo = trim($param->CallbackParameter->contactNo);
+			$billingCompanyName = trim($param->CallbackParameter->billingCompanyName);
 			$billingName = trim($param->CallbackParameter->billingName);
 			$billingContactNo = trim($param->CallbackParameter->billingContactNo);
 			$billingStreet = trim($param->CallbackParameter->billingStreet);
@@ -75,6 +77,7 @@ class DetailsController extends DetailsPageAbstract
 			$billingState = trim($param->CallbackParameter->billingState);
 			$billingCountry = trim($param->CallbackParameter->billingCountry);
 			$billingPostcode = trim($param->CallbackParameter->billingPosecode);
+			$shippingCompanyName = trim($param->CallbackParameter->shippingCompanyName);
 			$shippingName = trim($param->CallbackParameter->shippingName);
 			$shippingContactNo = trim($param->CallbackParameter->shippingContactNo);
 			$shippingStreet = trim($param->CallbackParameter->shippingStreet);
@@ -100,9 +103,10 @@ class DetailsController extends DetailsPageAbstract
 						->setPostCode($billingPostcode)
 						->setContactName($billingName)
 						->setContactNo($billingContactNo)
+						->setCompanyName($billingCompanyName)
 						->save();
-				} else if(trim($billingStreet) !== '' || trim($billingCity) !== '' || trim($billingState) !== '' || trim($billingCountry) !== '' || trim($billingPostcode) !== '' || trim($billingName) !== '' || trim($billingContactNo) !== '') {
-					$customer->setBillingAddress(Address::create($billingStreet, $billingCity, $billingState, $billingCountry, $billingPostcode, $billingName, $billingContactNo));
+				} else if(trim($billingStreet) !== '' || trim($billingCity) !== '' || trim($billingState) !== '' || trim($billingCountry) !== '' || trim($billingPostcode) !== '' || trim($billingName) !== '' || trim($billingContactNo) !== '' || trim($billingCompanyName) !== '') {
+					$customer->setBillingAddress(Address::create($billingStreet, $billingCity, $billingState, $billingCountry, $billingPostcode, $billingName, $billingContactNo, $billingCompanyName));
 				}
 				$shippingAddress = $customer->getShippingAddress();
 				if($shippingAddress instanceof Address && $billingAddress instanceof Address && $shippingAddress->getId() !== $billingAddress->getId()) {
@@ -113,21 +117,22 @@ class DetailsController extends DetailsPageAbstract
 						->setPostCode($shippingPosecode)
 						->setContactName($shippingName)
 						->setContactNo($shippingContactNo)
+						->setCompanyName($shippingCompanyName)
 						->save();
-				} else if(trim($shippingStreet) !== '' || trim($shippingCity) !== '' || trim($shippingState) !== '' || trim($shippingCountry) !== '' || trim($shippingPosecode) !== '' || trim($shippingName) !== '' || trim($shippingContactNo) !== '') {
-					$customer->setShippingAddress(Address::create($shippingStreet, $shippingCity, $shippingState, $shippingCountry, $shippingPosecode, $shippingName, $shippingContactNo));
+				} else if(trim($shippingStreet) !== '' || trim($shippingCity) !== '' || trim($shippingState) !== '' || trim($shippingCountry) !== '' || trim($shippingPosecode) !== '' || trim($shippingName) !== '' || trim($shippingContactNo) !== '' || trim($shippingCompanyName) !== '') {
+					$customer->setShippingAddress(Address::create($shippingStreet, $shippingCity, $shippingState, $shippingCountry, $shippingPosecode, $shippingName, $shippingContactNo, $shippingCompanyName));
 				}
 				$customer->save();
 
 			} else {
-				if(trim($billingStreet) === '' && trim($billingCity) === '' && trim($billingState) === '' && trim($billingCountry) === '' && trim($billingPostcode) === '' && trim($billingName) === '' && trim($billingContactNo) === '')
+				if(trim($billingStreet) === '' && trim($billingCity) === '' && trim($billingState) === '' && trim($billingCountry) === '' && trim($billingPostcode) === '' && trim($billingName) === '' && trim($billingContactNo) === '' && trim($billingCompanyName) === '')
 					$billingAdressFull = null;
 				else
-					$billingAdressFull = Address::create($billingStreet, $billingCity, $billingState, $billingCountry, $billingPostcode, $billingName, $billingContactNo);
-				if(trim($shippingStreet) === '' && trim($shippingCity) === '' && trim($shippingState) === '' && trim($shippingCountry) === '' && trim($shippingPosecode) === '' && trim($shippingName) === '' && trim($shippingContactNo) === '')
+					$billingAdressFull = Address::create($billingStreet, $billingCity, $billingState, $billingCountry, $billingPostcode, $billingName, $billingContactNo, $billingCompanyName);
+				if(trim($shippingStreet) === '' && trim($shippingCity) === '' && trim($shippingState) === '' && trim($shippingCountry) === '' && trim($shippingPosecode) === '' && trim($shippingName) === '' && trim($shippingContactNo) === '' && trim($shippingCompanyName) === '')
 					$shippingAdressFull = null;
 				else
-					$shippingAdressFull = Address::create($shippingStreet, $shippingCity, $shippingState, $shippingCountry, $shippingPosecode, $shippingName, $shippingContactNo);
+					$shippingAdressFull = Address::create($shippingStreet, $shippingCity, $shippingState, $shippingCountry, $shippingPosecode, $shippingName, $shippingContactNo, $shippingCompanyName);
 				$customer = Customer::create($name, $contactNo, $email, $billingAdressFull, false, '', $shippingAdressFull);
 				if(!$customer instanceof Customer)
 					throw new Exception('Error creating customer!');

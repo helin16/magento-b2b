@@ -167,7 +167,9 @@ class OrderConnector extends B2BConnector
 				trim(isset($addressObj->postcode) ? trim($addressObj->postcode) : ''),
 				trim(trim(isset($addressObj->firstname) ? trim($addressObj->firstname) : '') . ' ' . trim(isset($addressObj->lastname) ? trim($addressObj->lastname) : '')),
 				trim(isset($addressObj->telephone) ? trim($addressObj->telephone) : ''),
+				trim(isset($addressObj->company) ? trim($addressObj->company) : ''),
 				$exsitAddr
+				
 		);
 	}
 	/**

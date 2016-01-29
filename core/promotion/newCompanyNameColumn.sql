@@ -1,0 +1,1 @@
+ALTER TABLE `address` ADD `companyName` varchar(100) NOT NULL DEFAULT '' AFTER `id`, ADD INDEX (`companyName`) ;

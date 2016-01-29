@@ -874,6 +874,9 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 						.insert({'bottom': new Element('div', {'class' : 'col-sm-6'}).update(
 								tmp.editable !== true ? addr.contactNo : new Element('input', {'address-editable-field': 'contactNo', 'class': 'form-control input-sm', 'placeholder': 'The contact number of contact person',  'value': tmp.address.contactNo ? tmp.address.contactNo : ''})
 						) })
+						.insert({'bottom': new Element('div', {'class' : 'col-sm-6'}).update(
+								tmp.editable !== true ? addr.companyName : new Element('input', {'address-editable-field': 'companyName', 'class': 'form-control input-sm', 'placeholder': 'The company name of contact person',  'value': tmp.address.companyName ? tmp.address.companyName : ''})
+							) })
 					})
 				})
 				.insert({'bottom': new Element('dt').update(

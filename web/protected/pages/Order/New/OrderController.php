@@ -207,6 +207,7 @@ class OrderController extends BPCPageAbstract
 					$param->CallbackParameter->shippingAddr->postCode,
 					$param->CallbackParameter->shippingAddr->contactName,
 					$param->CallbackParameter->shippingAddr->contactNo,
+					$param->CallbackParameter->shippingAddr->companyName,
 					$shippAddress
 				);
 			}

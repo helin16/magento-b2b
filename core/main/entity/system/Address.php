@@ -8,6 +8,12 @@
 class Address extends BaseEntityAbstract
 {
 	/**
+	 * The company name of the address
+	 *
+	 * @var string
+	 */
+	private $companyName = '';
+	/**
 	 * The contact name of the address
 	 *
 	 * @var string
@@ -55,6 +61,27 @@ class Address extends BaseEntityAbstract
 	 * @var string
 	 */
 	private $sKey;
+	/**
+	 * Getter for companyName
+	 *
+	 * @return string
+	 */
+	public function getCompanyName()
+	{
+		return $this->companyName;
+	}
+	/**
+	 * Setter for companyName
+	 *
+	 * @param string $value The companyName
+	 *
+	 * @return Address
+	 */
+	public function setCompanyName($value)
+	{
+		$this->companyName = $value;
+		return $this;
+	}
 	/**
 	 * Getter for contactName
 	 *
@@ -230,7 +257,7 @@ class Address extends BaseEntityAbstract
 	 */
 	public function getFull()
 	{
-		return $this->getContactName() . ', ' . $this->getContactNo() . ', ' . $this->getStreet() . ', ' . $this->getCity() . ' ' . $this->getRegion() . ' ' . $this->getCountry() . ' ' . $this->getPostCode();
+		return $this->getCompanyName() . ', ' . $this->getContactName() . ', ' . $this->getContactNo() . ', ' . $this->getStreet() . ', ' . $this->getCity() . ' ' . $this->getRegion() . ' ' . $this->getCountry() . ' ' . $this->getPostCode();
 	}
 	/**
 	 * (non-PHPdoc)
@@ -238,7 +265,7 @@ class Address extends BaseEntityAbstract
 	 */
 	public function __toString()
 	{
-		return trim($this->getStreet() . ', ' . $this->getCity() . ' ' . $this->getRegion() . ' ' . $this->getCountry() . ' ' . $this->getPostCode() );
+		return trim($this->getCompanyName() . ', ' . $this->getStreet() . ', ' . $this->getCity() . ' ' . $this->getRegion() . ' ' . $this->getCountry() . ' ' . $this->getPostCode() );
 	}
 	/**
 	 * (non-PHPdoc)
@@ -270,6 +297,7 @@ class Address extends BaseEntityAbstract
 	{
 		DaoMap::begin($this, 'addr');
 
+		DaoMap::setStringType('companyName','varchar', 100);
 		DaoMap::setStringType('contactName','varchar', 100);
 		DaoMap::setStringType('contactNo','varchar', 50);
 		DaoMap::setStringType('street','varchar', 200);
@@ -282,6 +310,7 @@ class Address extends BaseEntityAbstract
 		parent::__loadDaoMap();
 
 		DaoMap::createIndex('sKey');
+		DaoMap::createIndex('companyName');
 		DaoMap::createIndex('contactName');
 		DaoMap::createIndex('contactNo');
 		DaoMap::createIndex('city');
@@ -304,9 +333,9 @@ class Address extends BaseEntityAbstract
 	 *
 	 * @return Address
 	 */
-	public static function create($street, $city, $region, $country, $postCode, $contactName = '', $contactNo = '', Address &$exsitAddr = null)
+	public static function create($street, $city, $region, $country, $postCode, $contactName = '', $contactNo = '', $companyName = '', Address &$exsitAddr = null)
 	{
-		if(trim($street) === '' && trim($city) === '' && trim($region) === '' && trim($country) === '' && trim($postCode) === '' && trim($contactName) === '' && trim($contactNo) === '')
+		if(trim($street) === '' && trim($city) === '' && trim($region) === '' && trim($country) === '' && trim($postCode) === '' && trim($contactName) === '' && trim($contactNo) === '' && trim($companyName) === '')
 			return null;
 		$obj = new Address();
 		if($exsitAddr instanceof Address)
@@ -318,6 +347,7 @@ class Address extends BaseEntityAbstract
 			->setPostCode(trim($postCode))
 			->setContactName(trim($contactName))
 			->setContactNo(trim($contactNo))
+			->setCompanyName(trim($companyName))
 			->save();
 	}
 	/**

@@ -333,6 +333,7 @@ class OrderDetailsController extends BPCPageAbstract
 				throw new Exception('This ' . $order->getType() . ' has NOT pass payment check yet, please let the accounting department know before further actions!');
 			$notifyCust = (isset($shippingInfo->notifyCust) && intval($shippingInfo->notifyCust) === 1) ? true : false;
 
+			//$companyName = $shippingInfo->companyName;
 			$contactName = $shippingInfo->contactName;
 			$contactNo = $shippingInfo->contactNo;
 			$shippingAddress = Address::create(
@@ -506,8 +507,9 @@ class OrderDetailsController extends BPCPageAbstract
 				trim($param->CallbackParameter->country),
 				trim($param->CallbackParameter->postCode),
 				trim($param->CallbackParameter->contactName),
-				trim($param->CallbackParameter->contactNo)
-				,$address
+				trim($param->CallbackParameter->contactNo),
+			    trim($param->CallbackParameter->companyName),
+				$address
 			);
 			if($address instanceof Address) {
 				$setter = 'set' . ucfirst($type) . 'Addr';

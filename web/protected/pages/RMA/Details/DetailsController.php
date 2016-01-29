@@ -197,7 +197,8 @@ public function saveOrder($sender, $param)
 					$param->CallbackParameter->shippingAddr->country,
 					$param->CallbackParameter->shippingAddr->postCode,
 					$param->CallbackParameter->shippingAddr->contactName,
-					$param->CallbackParameter->shippingAddr->contactNo
+					$param->CallbackParameter->shippingAddr->contactNo,
+					$param->CallbackParameter->shippingAddr->companyName
 				);
 				$customer->setShippingAddress($shippAddress);
 			}

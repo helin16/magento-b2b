@@ -133,6 +133,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 					.insert({'bottom': new Element('button', {'class': 'btn btn-default btn-xs', 'type': 'button'}).update('Copy from Shipping') })
 				})
 				.observe('click', function() {
+					tmp.me._copyInfoFields($(this),'shipping','billing','CompanyName');
 					tmp.me._copyInfoFields($(this),'shipping','billing','Name');
 					tmp.me._copyInfoFields($(this),'shipping','billing','ContactNo');
 					tmp.me._copyInfoFields($(this),'shipping','billing','Street');
@@ -143,6 +144,10 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 				})
 			})
 			.insert({'bottom': new Element('div', {'class': 'panel-body'})
+				.insert({'bottom': new Element('div', {'class': 'row'})
+					.insert({'bottom': new Element('div', {'class': 'col-sm-12', 'id': 'billingCompanyName'}).update(tmp.me._getFormGroup('Company Name', new Element('input', {'save-item': 'billingCompanyName', 'type': 'text', 'value': tmp.address.companyName ? tmp.address.companyName : ''}) ) ) })
+				})
+			
 				.insert({'bottom': new Element('div', {'class': 'row'})
 					.insert({'bottom': new Element('div', {'class': 'col-sm-12', 'id': 'billingName'}).update(tmp.me._getFormGroup('Name', new Element('input', {'save-item': 'billingName', 'type': 'text', 'value': tmp.address.contactName ? tmp.address.contactName : ''}) ) ) })
 				})
@@ -177,6 +182,7 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 					.insert({'bottom': new Element('button', {'class': 'btn btn-default btn-xs', 'type': 'button'}).update('Copy from Billing') })
 				})
 				.observe('click', function() {
+					tmp.me._copyInfoFields($(this),'billing','shipping','CompanyName');
 					tmp.me._copyInfoFields($(this),'billing','shipping','Name');
 					tmp.me._copyInfoFields($(this),'billing','shipping','ContactNo');
 					tmp.me._copyInfoFields($(this),'billing','shipping','Street');
@@ -187,6 +193,9 @@ PageJs.prototype = Object.extend(new DetailsPageJs(), {
 				})
 			})
 			.insert({'bottom': new Element('div', {'class': 'panel-body'})
+				.insert({'bottom': new Element('div', {'class': 'row'})
+					.insert({'bottom': new Element('div', {'class': 'col-sm-12', 'id': 'shippingCompanyName'}).update(tmp.me._getFormGroup('Company Name', new Element('input', {'save-item': 'shippingCompanyName', 'type': 'text', 'value': tmp.address.companyName ? tmp.address.companyName : ''}) ) ) })
+				})
 				.insert({'bottom': new Element('div', {'class': 'row'})
 					.insert({'bottom': new Element('div', {'class': 'col-sm-12', 'id': 'shippingName'}).update(tmp.me._getFormGroup('Name', new Element('input', {'save-item': 'shippingName', 'type': 'text', 'value': tmp.address.contactName ? tmp.address.contactName : ''}) ) ) })
 				})

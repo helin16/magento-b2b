@@ -165,6 +165,9 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 						.insert({'bottom': new Element('div', {'class' : 'col-sm-6'}).update(
 								new Element('input', {'address-editable-field': 'contactNo', 'class': 'form-control input-sm', 'placeholder': 'The contact number of contact person',  'value': addr.contactNo ? addr.contactNo : ''})
 						) })
+						.insert({'bottom': new Element('div', {'class' : 'col-sm-6'}).update(
+								new Element('input', {'address-editable-field': 'companyName', 'class': 'form-control input-sm', 'placeholder': 'The company name of contact person',  'value': addr.companyName ? addr.companyName : ''})
+							) })					
 					})
 				})
 				.insert({'bottom': new Element('dt').update(
@@ -224,7 +227,9 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 				.insert({'bottom': new Element('dt')
 					.update(new Element('span', {'class': "glyphicon glyphicon-user", 'title': "Customer Name"}) )
 				})
+
 				.insert({'bottom': new Element('dd').update(addr.contactName ? addr.contactName : '') })
+				.insert({'bottom': new Element('dd').update(addr.companyName ? addr.companyName : '') })				
 				.insert({'bottom': new Element('dt')
 					.update(new Element('span', {'class': "glyphicon glyphicon-map-marker", 'title': "Address"}) )
 				})
