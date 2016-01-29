@@ -80,6 +80,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 	,_showDateSelectPanel: function(btn, type) {
 		var tmp = {};
 		tmp.me = this;
+		tmp.me.type = type;
 		tmp.newDiv = new Element('form', {'class': 'confirm-div form-horizontal', 'id': tmp.me._confirm_form_id})
 			.insert({'bottom': new Element('div', {'class': 'form-group'})
 				.insert({'bottom': new Element('label', {'class': 'col-sm-2 control-label'}).update('Date From:') })
@@ -111,7 +112,7 @@ PageJs.prototype = Object.extend(new BPCPageJs(), {
 					format: 'DD/MM/YYYY'
 					,viewMode: 'days'
 				});
-				tmp.me._initFormValdation(tmp.newDiv.down('.submit-btn'), type);
+				tmp.me._initFormValdation(tmp.newDiv.down('.submit-btn'), tmp.me.type );
 			}
 			,'hide.bs.modal': function(e) {
 				tmp.fv = jQuery('#' + tmp.me._confirm_form_id).data('formValidation');
