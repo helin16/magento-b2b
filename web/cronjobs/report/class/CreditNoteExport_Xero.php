@@ -64,14 +64,14 @@ class CreditNoteExport_Xero extends ExportAbstract
 		$return = array();
 		foreach($creditNotes as $creditNote)
 		{
-			$orderStatus = $creditNote->getOrder()->getStatus()->getId();
-			$orderType = $creditNote->getOrder()->getType();
+// 			$orderStatus = $creditNote->getOrder()->getStatus()->getId();
+// 			$orderType = $creditNote->getOrder()->getType();
 
-			//file_put_contents('/tmp/datafeed/web.log', __FILE__ .':' . __FUNCTION__ . ':' . __LINE__ . ':' . $orderType .  ":" . $orderStatus . PHP_EOL, FILE_APPEND | LOCK_EX);
-			if (($orderType == Order::TYPE_INVOICE) && ($orderStatus == OrderStatus::ID_CANCELLED))
-			{
-				continue;
-			}
+// 			//file_put_contents('/tmp/datafeed/web.log', __FILE__ .':' . __FUNCTION__ . ':' . __LINE__ . ':' . $orderType .  ":" . $orderStatus . PHP_EOL, FILE_APPEND | LOCK_EX);
+// 			if (($orderType == Order::TYPE_INVOICE) && ($orderStatus == OrderStatus::ID_CANCELLED))
+// 			{
+// 				continue;
+// 			}
 			//common fields
 			$customer = $creditNote->getCustomer();
 			$row = array(

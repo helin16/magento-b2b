@@ -59,8 +59,9 @@ class SalesExport_Xero extends ExportAbstract
 			$fromDate = self::$_dateRange['start'];
 			$toDate = self::$_dateRange['end'];
 		}
-		$orders = Order::getAllByCriteria('invDate >= :fromDate and invDate < :toDate and statusId != :cancelStatusId', array('fromDate' => trim($fromDate), 'toDate' => trim($toDate), 'cancelStatusId' => trim(OrderStatus::ID_CANCELLED)));
-
+		//$orders = Order::getAllByCriteria('invDate >= :fromDate and invDate < :toDate and statusId != :cancelStatusId', array('fromDate' => trim($fromDate), 'toDate' => trim($toDate), 'cancelStatusId' => trim(OrderStatus::ID_CANCELLED)));
+		$orders = Order::getAllByCriteria('invDate >= :fromDate and invDate < :toDate ', array('fromDate' => trim($fromDate), 'toDate' => trim($toDate)));
+		
 		$return = array();
 		foreach($orders as $order)
 		{
