@@ -105,7 +105,27 @@ class APIProductService extends APIServiceAbstract
 	           $canUpdate = true;
 	       } else {
 	       		//$this->log_product("UPDATE", "=== update === sku=$sku, name=$name, shortDesc=$shortDesc, fullDesc=$fullDesc, category=" . implode(', ', $categoryIds),  '', APIService::TAB);
-    	 
+		       	$existingAssetAccNo = $product->getAssetAccNo();
+		       	$existingCostAccNo = $product->getCostAccNo();
+		       	$existingRevenueAccNo = $product->getRevenueAccNo();
+		       	if($existingAssetAccNo === null || trim($existingAssetAccNo) === '')
+		       	{
+		       		if($assetAccNo !== null && is_string($assetAccNo))
+		       			$product->setAssetAccNo(trim($assetAccNo));
+		       		$this->log_product("UPDATE", "=== updating === sku=$sku assetAccNo= $assetAccNo",  '', APIService::TAB);
+		       	}
+		       	if($existingCostAccNo === null || trim($existingCostAccNo) === '')
+		       	{
+		       		if($costAccNo !== null && is_string($costAccNo))
+		       			$product->setCostAccNo(trim($costAccNo));
+		       		$this->log_product("UPDATE", "=== updating === sku=$sku costAccNo= $costAccNo",  '', APIService::TAB);
+		       	}
+		       	if($existingRevenueAccNo === null || trim($existingRevenueAccNo) === '')
+		       	{
+		       		if($revenueAccNo !== null && is_string($revenueAccNo))
+		       			$product->setRevenueAccNo(trim($revenueAccNo));
+		       		$this->log_product("UPDATE", "=== updating === sku=$sku revenueAccNo= $revenueAccNo",  '', APIService::TAB);
+		       	}    	 
 	           //if there is no price matching rule for this product
 	           if (($rulesCount = intval(ProductPriceMatchRule::countByCriteria('active = 1 and productId = ?', array($product->getId())))) === 0) {
 	               $this->_runner->log('Found SKU(' . $sku . '): ', '', APIService::TAB);
@@ -131,17 +151,26 @@ class APIProductService extends APIServiceAbstract
 	                   $product->setFullDescAssetId($fullAsset->getAssetId())
 	                       ->save();
 		       		   $this->_runner->log('Added a new full description with assetId: ' . $fullAsset->getAssetId(), '', APIService::TAB . APIService::TAB);
+		       		   
 				       $canUpdate = true;
 				       $this->log_product("UPDATE", "=== updating === sku=$sku Found ",  '', APIService::TAB);
 	               }
 	               else 
 	               {
 	                   $this->log_product("SKIP", "=== SKIP updating === sku=$sku for full description not null",  '', APIService::TAB);
+	                   // need to update price and stock info      	                   
+	                   $product->clearAllPrice()
+	                   ->addPrice(ProductPriceType::get(ProductPriceType::ID_RRP), $price);
+	                   $product->setStatus($status);
+	                   $product->save();
 	               }
 	               
 	           } else {
 	           	  $this->_runner->log('SKIP updating. Found ProductPriceMatchRule count:' . $rulesCount, '', APIService::TAB);
-	           	  $this->log_product("SKIP", "=== SKIP updating === sku=$sku Found ProductPriceMatchRule count:$rulesCount",  '', APIService::TAB);	           	   
+	           	  $this->log_product("SKIP", "=== SKIP updating === sku=$sku Found ProductPriceMatchRule count:$rulesCount",  '', APIService::TAB);	
+	           	  // need to update stock info
+	           	  $product->setStatus($status);
+	           	  $product->save();
 	           }
 	       }
           
