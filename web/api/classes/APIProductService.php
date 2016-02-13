@@ -96,6 +96,7 @@ class APIProductService extends APIServiceAbstract
 	       $attributesetId = $this->_getPram($params, 'attributesetId', null);
 	       
 	       $canUpdate = false;
+	       $isUpdated = false;
 
 	       //if we have this product already, then skip
 	       if (!($product = Product::getBySku($sku)) instanceof Product) {
@@ -108,22 +109,43 @@ class APIProductService extends APIServiceAbstract
 		       	$existingAssetAccNo = $product->getAssetAccNo();
 		       	$existingCostAccNo = $product->getCostAccNo();
 		       	$existingRevenueAccNo = $product->getRevenueAccNo();
+		       	//$existigPrice = $product->getPrices();
+		       	$existigPrice = ProductPrice::getPrices($product, ProductPriceType::get(ProductPriceType::ID_RRP));
+		       	if (count($existigPrice) === 0)
+		       	{
+		       		$existigPrice = 0;
+		       	}
+		       	else
+		       	{
+		       		$existigPrice = $existigPrice[0]->getPrice();
+		       	}
+		       	$existingStatus = $product->getStatus()->getName();
+		       	
 		       	if($existingAssetAccNo === null || trim($existingAssetAccNo) === '')
 		       	{
 		       		if($assetAccNo !== null && is_string($assetAccNo))
+		       		{
 		       			$product->setAssetAccNo(trim($assetAccNo));
+		       			$isUpdated = true;
+		       		}
 		       		$this->log_product("UPDATE", "=== updating === sku=$sku assetAccNo= $assetAccNo",  '', APIService::TAB);
 		       	}
 		       	if($existingCostAccNo === null || trim($existingCostAccNo) === '')
 		       	{
 		       		if($costAccNo !== null && is_string($costAccNo))
+		       		{
 		       			$product->setCostAccNo(trim($costAccNo));
+		       			$isUpdated = true;
+		       		}
 		       		$this->log_product("UPDATE", "=== updating === sku=$sku costAccNo= $costAccNo",  '', APIService::TAB);
 		       	}
 		       	if($existingRevenueAccNo === null || trim($existingRevenueAccNo) === '')
 		       	{
 		       		if($revenueAccNo !== null && is_string($revenueAccNo))
+		       		{
 		       			$product->setRevenueAccNo(trim($revenueAccNo));
+		       			$isUpdated = true;
+		       		}
 		       		$this->log_product("UPDATE", "=== updating === sku=$sku revenueAccNo= $revenueAccNo",  '', APIService::TAB);
 		       	}    	 
 	           //if there is no price matching rule for this product
@@ -157,20 +179,41 @@ class APIProductService extends APIServiceAbstract
 	               }
 	               else 
 	               {
-	                   $this->log_product("SKIP", "=== SKIP updating === sku=$sku for full description not null",  '', APIService::TAB);
-	                   // need to update price and stock info      	                   
-	                   $product->clearAllPrice()
-	                   ->addPrice(ProductPriceType::get(ProductPriceType::ID_RRP), $price);
-	                   $product->setStatus($status);
-	                   $product->save();
+	                   $this->log_product("SKIP", "=== SKIP updating === sku=$sku for full description not null, existigPrice=$existigPrice, newprice=$price, existingStatus=$existingStatus, newstatus=$status",  '', APIService::TAB);
+	                   // need to update price and stock info                 
+	                   if (doubleval($existigPrice) != doubleval($price))
+	                   {
+		                   	$product->clearAllPrice()
+		                   	->addPrice(ProductPriceType::get(ProductPriceType::ID_RRP), $price);
+		                   	$isUpdated = true;
+	                   }
+					  
+					   if (trim($existingStatus) != trim($status))
+					   {
+	                   		$product->setStatus($status);
+	                   		$isUpdated = true;
+					   }
+					   if ($isUpdated === true)
+					   {
+					   		$this->log_product("SKIP", "=== updating === sku=$sku  ",  '', APIService::TAB);
+	                   		$product->save();
+					   }
 	               }
 	               
 	           } else {
 	           	  $this->_runner->log('SKIP updating. Found ProductPriceMatchRule count:' . $rulesCount, '', APIService::TAB);
-	           	  $this->log_product("SKIP", "=== SKIP updating === sku=$sku Found ProductPriceMatchRule count:$rulesCount",  '', APIService::TAB);	
+	           	  $this->log_product("SKIP", "=== SKIP updating === sku=$sku Found ProductPriceMatchRule count:$rulesCount, existingStatus=$existingStatus, newstatus=$status",  '', APIService::TAB);	
 	           	  // need to update stock info
-	           	  $product->setStatus($status);
-	           	  $product->save();
+	           	  if (trim($existingStatus) != trim($status))
+				  {
+                   		$product->setStatus($status);
+                   		$isUpdated = true;
+				  }
+				  if ($isUpdated === true)
+				  {
+				  		$this->log_product("SKIP", "=== updating pricematchrule  === sku=$sku  ",  '', APIService::TAB);
+                   		$product->save();
+				  }
 	           }
 	       }
           
