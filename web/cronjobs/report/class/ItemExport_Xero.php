@@ -1,6 +1,6 @@
 <?php
-ini_set('memory_limit','1024M');
-ini_set('max_execution_time', 300);
+ini_set('memory_limit','2048M');
+ini_set('max_execution_time', 60000);
 class ItemExport_Xero extends ExportAbstract
 {
 	protected static function _getData()
