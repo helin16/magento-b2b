@@ -11,15 +11,21 @@ else $productIds = Dao::getResultsNative('select distinct p.id from product p in
 $rows = count($productIds);
 echo "--- Got ($rows) products having price matching rules ! \n";
 
+$count = 0;
 foreach ($productIds as $row)
 {
 	try {
+		$count++;
+		$left = $rows - $count;
+		echo "+++ Getting price No.$count,  $left products left to be done.  \n";
 		$output = '';
 		$timeout = 60; // in seconds
 		$cmd = 'php ' . dirname(__FILE__). '/pricematch.php ' . $row['id'];
 		$output = ExecWaitTimeout($cmd, $timeout);
 	// 	exec($cmd, $output);
 		echo print_r($output, true) . "\n";
+		// randomly wait for between 1 and 10 seconds
+		sleep(rand(1, 10));
 	} catch (Exception $e)
 	{
 		echo $e->getMessage() . "\n";

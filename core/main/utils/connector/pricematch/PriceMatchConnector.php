@@ -1,6 +1,7 @@
 <?php
 class PriceMatchConnector
 {
+	//private static $use_api = false;
 	private $sku;
 	private $base_url = 'http://www.staticice.com.au/cgi-bin/search.cgi';
 	private $debug;
@@ -322,33 +323,48 @@ class PriceMatchConnector
 	}
 	private static function getPricesBySku($sku)
 	{
-		$params = $results = array();
-		self::_login();
+//		file_put_contents('/tmp/datafeed/web.log', __FILE__ .':' . __FUNCTION__ . ':' . __LINE__ . ':' . 'getPricesBySku' . PHP_EOL, FILE_APPEND | LOCK_EX);
+		
+// 		// using api to get price from crawler
+// 		$params = $results = array();
+// 		self::_login();
 	
-		$apiUrl = trim(self::$_api['URL']);
+// 		$apiUrl = trim(self::$_api['URL']);
 			
-		$api_url = $apiUrl . 'PriceMatch/getPrices';
+// 		$api_url = $apiUrl . 'PriceMatch/getPrices';
 	
-		// first try to find product by manufacturerPartNo
-		$params = array('searchTxt' => 'sku = ?',
-				'searchParams' =>  array($sku),
-		);
+// 		// first try to find product by manufacturerPartNo
+// 		$params = array('searchTxt' => 'sku = ?',
+// 				'searchParams' =>  array($sku),
+// 		);
 	
-		$data = json_encode($params);
-		$results_api = self::_postJson($api_url, $data);
-		//var_dump($results_api);
+// 		$data = json_encode($params);
+// 		$results_api = self::_postJson($api_url, $data);
+// 		//var_dump($results_api);
 	
 	
-		$token = trim($results_api['token']);
-		if ($token !== '')
-		{
-			$results = $results_api;
-		}
+// 		$token = trim($results_api['token']);
+// 		if ($token !== '')
+// 		{
+// 			$results = $results_api;
+// 		}
+// 		return $results;
+//		}
+
+		// directly access staticice to get prices
+		$results = staticiceConnector::getPrices($sku);
+// 		ob_start();
+// 		var_dump($results);
+// 		$content = ob_get_contents();
+// 		ob_end_clean();
+// 		file_put_contents('/tmp/datafeed/web.log', __FILE__ .':' . __FUNCTION__ . ':' . __LINE__ . ':' . $content . PHP_EOL, FILE_APPEND | LOCK_EX);
+		
 		return $results;
+
 	}
 	public static function getMatchPrices($sku)
 	{
-		//file_put_contents('/tmp/datafeed/web.log', __FILE__ .':' . __FUNCTION__ . ':' . __LINE__ . ':' . '----start getMatchPrices' . PHP_EOL, FILE_APPEND | LOCK_EX);
+//		file_put_contents('/tmp/datafeed/web.log', __FILE__ .':' . __FUNCTION__ . ':' . __LINE__ . ':' . '----start getMatchPrices' . PHP_EOL, FILE_APPEND | LOCK_EX);
 		$result = array();
 		$priceMatchResults=self::getPricesBySku($sku);
 		
