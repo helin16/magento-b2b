@@ -188,6 +188,7 @@ class ProductController extends CRUDPageAbstract
 	            		,$serachCriteria->sh_from
 	            		,$serachCriteria->sh_to
 	            		,$serachCriteria->sellOnWeb
+	            		,$serachCriteria->barcode
 	            		);
             }
             $results['pageStats'] = $stats;
@@ -249,7 +250,8 @@ class ProductController extends CRUDPageAbstract
         if(trim($serachCriteria['pro.sellOnWeb']) === "ALL")
         	$result->sellOnWeb = " ";
         else $result->sellOnWeb = trim($serachCriteria['pro.sellOnWeb']);
-        
+        //barcode
+		$result->barcode = trim($serachCriteria['pro.barcode']);
         return $result;
     }
     /**

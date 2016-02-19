@@ -31,13 +31,19 @@
 	                           <input type="text" search_field="pro.sku" placeholder="The SKU of the product" class="form-control input-sm">
 	                       </div>
 						</div>
-						<div class="col-xs-4">
+						<div class="col-xs-3">
 							<div class="form-group form-group-sm input-group">
 	                           <label class="contorl-label input-group-addon">Name</label>
 	                           <input type="text" search_field="pro.name" placeholder="The name of the product" class="form-control input-sm">
 	                       </div>
 						</div>
-						<div class="col-xs-1">
+						<div class="col-xs-2">
+							<div class="form-group form-group-sm input-group">
+	                           <label class="contorl-label input-group-addon">Barcode</label>
+	                           <input type="text" search_field="pro.barcode" placeholder="The barcode of the product" class="form-control input-sm">
+	                       </div>
+						</div>
+						<div class="col-xs-2">
                             <div class="form-group form-group-sm input-group">
                                <label class="contorl-label input-group-addon">Active</label>
                                <select search_field="pro.active" class="chosen form-control input-sm">
@@ -47,23 +53,7 @@
                                </select>
                            </div>
                         </div>
-						<div class="col-xs-2">
-							<div class="form-group form-group-sm input-group">
-	                           <label class="contorl-label input-group-addon">Status</label>
-                               <select search_field="pro.productStatusIds" multiple class="chosen form-control input-sm"></select>
-	                       </div>
-						</div>
-						<div class="col-xs-2">
-							<div class="form-group form-group-sm input-group">
-	                           <label class="contorl-label input-group-addon">Stock Level</label>
-                               <select search_field="pro.stockLevel" class="chosen form-control input-sm">
-                               		<option value="">All</option>
-                               		<option value="stockReorderLevel">Lower than Reordering Level</option>
-                               		<option value="stockMinLevel">Lower than MSL</option>
-                               </select>
-	                       </div>
-						</div>
-						<div class="col-xs-1">
+                        <div class="col-xs-1">
 							<div class="form-group form-group-sm input-group">
 				                <label class="contorl-label input-group-addon" title="Stock on Hand">SH</label>
 				                <select search_field="pro.sh" class="chosen form-control input-sm">
@@ -74,6 +64,17 @@
 				                </select>
 	                        </div>
                         </div>
+						<div class="col-xs-1">
+                            <div class="form-group form-group-sm input-group">
+                               <label class="contorl-label input-group-addon">Sell On Web</label>
+                               <select search_field="pro.sellOnWeb" class="chosen form-control input-sm">
+                                    <option value="ALL">All</option>
+                                    <option value="1">Yes</option>
+                                    <option value="0">No</option>
+                               </select>
+                           </div>
+                        </div>
+
 						<div class="col-xs-2">
 							<div class="form-group form-group-sm input-group">
 				                <label class="contorl-label input-group-addon">Brand</label>
@@ -86,22 +87,30 @@
 			                	<select search_field="pro.supplierIds" multiple class="chosen form-control input-sm"></select>
 	                        </div>
 						</div>
-                        <div class="col-xs-6">
+                        <div class="col-xs-4">
 	                        <div class="form-group form-group-sm input-group">
 				                <label class="contorl-label input-group-addon">Categories</label>
 			                	<select search_field="pro.productCategoryIds" multiple class="chosen form-control input-sm"></select>
 	                        </div>
 						</div>
 						<div class="col-xs-2">
-                            <div class="form-group form-group-sm input-group">
-                               <label class="contorl-label input-group-addon">Sell On Web</label>
-                               <select search_field="pro.sellOnWeb" class="chosen form-control input-sm">
-                                    <option value="ALL">All</option>
-                                    <option value="1">Yes</option>
-                                    <option value="0">No</option>
+							<div class="form-group form-group-sm input-group">
+	                           <label class="contorl-label input-group-addon">Status</label>
+                               <select search_field="pro.productStatusIds" multiple class="chosen form-control input-sm"></select>
+	                       </div>
+						</div>
+						
+
+						<div class="col-xs-2">
+							<div class="form-group form-group-sm input-group">
+	                           <label class="contorl-label input-group-addon">Stock Level</label>
+                               <select search_field="pro.stockLevel" class="chosen form-control input-sm">
+                               		<option value="">All</option>
+                               		<option value="stockReorderLevel">Lower than Reordering Level</option>
+                               		<option value="stockMinLevel">Lower than MSL</option>
                                </select>
-                           </div>
-                        </div>
+	                       </div>
+						</div>
 					</div>
 				</div>
 			</div>
