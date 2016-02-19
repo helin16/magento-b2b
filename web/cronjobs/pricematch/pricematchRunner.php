@@ -24,8 +24,8 @@ foreach ($productIds as $row)
 		$output = ExecWaitTimeout($cmd, $timeout);
 	// 	exec($cmd, $output);
 		echo print_r($output, true) . "\n";
-		// randomly wait for between 1 and 10 seconds
-		sleep(rand(1, 10));
+		// randomly wait for between 1 and 5 seconds
+		sleep(rand(1, 5));
 	} catch (Exception $e)
 	{
 		echo $e->getMessage() . "\n";
