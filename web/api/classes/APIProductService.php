@@ -94,6 +94,7 @@ class APIProductService extends APIServiceAbstract
 	       $images = $this->_getPram($params, 'images', array());
 	       $showOnWeb = $this->_getPram($params, 'showonweb', true);
 	       $attributesetId = $this->_getPram($params, 'attributesetId', null);
+	       $this->log_product("UPDATE", "=== updating === sku=$sku, supplierCode= $supplierCode, canSupplyQty=$canSupplyQty",  '', APIService::TAB);
 	       
 	       $canUpdate = false;
 	       $isUpdated = false;
@@ -119,6 +120,19 @@ class APIProductService extends APIServiceAbstract
 		       	{
 		       		$existigPrice = $existigPrice[0]->getPrice();
 		       	}
+		       	
+		       	$existingSupplierCodes = $product->getSupplierCodes();
+		       	$existingSupplierQty = 0;
+		       	foreach ($existingSupplierCodes as $existingSupplierCode)
+		       	{
+		       		if ($existingSupplierCode->getCode() == $supplierCode)
+		       		{
+		       			$existingSupplierQty = intval($existingSupplierCode->getCanSupplyQty());
+		       			$this->log_product("UPDATE", "=== updating === sku=$sku, supplierCode= $supplierCode, existingSupplierQty=$existingSupplierQty",  '', APIService::TAB);		       			
+		       			break;
+		       		}
+		       	}
+
 		       	$existingStatus = $product->getStatus()->getName();
 		       	
 		       	if($existingAssetAccNo === null || trim($existingAssetAccNo) === '')
@@ -193,6 +207,15 @@ class APIProductService extends APIServiceAbstract
 	                   		$product->setStatus($status);
 	                   		$isUpdated = true;
 					   }
+					   
+// 					   $statusId = $status->getId();
+					   if ($existingSupplierQty != $canSupplyQty)
+					   {
+					   		$this->log_product("SKIP", "=== updating === sku=$sku, existingSupplierQty=$existingSupplierQty, canSupplyQty=$canSupplyQty, ",  '', APIService::TAB);
+					   		$product->addSupplier($supplier, $supplierCode, $canSupplyQty);
+					   		//$isUpdated = true;
+					   }
+					   
 					   if ($isUpdated === true)
 					   {
 					   		$this->log_product("SKIP", "=== updating === sku=$sku  ",  '', APIService::TAB);
@@ -208,6 +231,12 @@ class APIProductService extends APIServiceAbstract
 				  {
                    		$product->setStatus($status);
                    		$isUpdated = true;
+				  }
+				  if ($existingSupplierQty != $canSupplyQty)
+				  {
+				  	$this->log_product("SKIP", "=== updating === sku=$sku, existingSupplierQty=$existingSupplierQty, canSupplyQty=$canSupplyQty, ",  '', APIService::TAB);
+				  	$product->addSupplier($supplier, $supplierCode, $canSupplyQty);
+				  	//$isUpdated = true;
 				  }
 				  if ($isUpdated === true)
 				  {

@@ -1599,7 +1599,7 @@ class Product extends InfoEntityAbstract
 	 *
 	 * @return Ambigous <Ambigous, multitype:, multitype:BaseEntityAbstract >
 	 */
-	public static function getProducts($sku, $name, array $supplierIds = array(), array $manufacturerIds = array(), array $categoryIds = array(), array $statusIds = array(), $active = null, $pageNo = null, $pageSize = DaoQuery::DEFAUTL_PAGE_SIZE, $orderBy = array(), &$stats = array(), $stockLevel = null, &$sumValues = null, $sh_from = null, $sh_to = null, $sellOnWeb = null)
+	public static function getProducts($sku, $name, array $supplierIds = array(), array $manufacturerIds = array(), array $categoryIds = array(), array $statusIds = array(), $active = null, $pageNo = null, $pageSize = DaoQuery::DEFAUTL_PAGE_SIZE, $orderBy = array(), &$stats = array(), $stockLevel = null, &$sumValues = null, $sh_from = null, $sh_to = null, $sellOnWeb = null, $barcode = null)
 	{
 		$where = array(1);
 		$params = array();
@@ -1632,6 +1632,14 @@ class Product extends InfoEntityAbstract
 		if (($sellOnWeb = trim($sellOnWeb)) !== '') {
 			$where[] = 'pro.sellOnWeb = :sellOnWeb';
 			$params['sellOnWeb'] = intval($sellOnWeb);
+		}
+		if (($barcode = trim($barcode)) !== '') {
+			self::getQuery()->eagerLoad('Product.codes', 'inner join', 'pro_code', 'pro.id = pro_code.productId and pro_code.code = :barcode');
+			if (is_array($sumValues)) {
+				$innerJoins[] = 'inner join productcode pro_code on (pro.id = pro_code.productId and pro_code.code = :barcode)';
+			}
+			$params['barcode'] = $barcode;
+				
 		}
 		if (count($manufacturerIds) > 0) {
 			$ps = array();
@@ -1687,7 +1695,7 @@ class Product extends InfoEntityAbstract
 					}
 				}
 			}
-			var_dump($ps);
+			//var_dump($ps);
 			self::getQuery()->eagerLoad('Product.categories', 'inner join', 'pro_cate', 'pro.id = pro_cate.productId and pro_cate.categoryId in (' . implode(',', $keys) . ')');
 			if (is_array($sumValues)) {
 				$innerJoins[] = 'inner join product_category pro_cate on (pro.id = pro_cate.productId and pro_cate.categoryId in (' . implode(',', $keys) . '))';
@@ -1705,7 +1713,7 @@ class Product extends InfoEntityAbstract
 			$where[] = 'pro.stockOnHand <= :stockOnHand_to';
 			$params['stockOnHand_to'] = intval($sh_to);
 		}
-	
+
 		$products = Product::getAllByCriteria(implode(' AND ', $where), $params, false, $pageNo, $pageSize, $orderBy, $stats);
 		if (is_array($sumValues)) {
 			$sql = 'select sum(pro.stockOnHand) `totalStockOnHand`, sum(pro.totalOnHandValue) `totalOnHandValue` from product pro ' . implode(' ', $innerJoins) . ' where pro.active = 1 and (' . implode(' AND ', $where) . ')';

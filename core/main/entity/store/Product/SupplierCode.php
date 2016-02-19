@@ -167,6 +167,7 @@ class SupplierCode extends BaseEntityAbstract
 		return $obj->setProduct($product)
 		->setSupplier($supplier)
 		->setCode(trim($code))
+		->setCanSupplyQty(intval($canSupplyQty))
 		->save();
 	}
 }
